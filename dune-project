@@ -1,6 +1,7 @@
 (lang dune 3.0)
 (name contdice)
 (generate_opam_files true)
+(using menhir 2.1)
 
 (package
  (name contdice)
@@ -9,4 +10,5 @@
  (depends
   (ocaml (>= 4.13.0))
   (dune (>= 3.0.0))
+  (menhir (>= 20210310))
   (alcotest :with-test)))

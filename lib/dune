@@ -1,3 +1,9 @@
 (library
  (name contdice)
- (public_name contdice))
+ (public_name contdice)
+ (modules types parser lexer contdice))
+
+(ocamllex lexer)
+
+(menhir
+ (modules parser))

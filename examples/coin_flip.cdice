@@ -1,0 +1,2 @@
+let x = uniform(0, 1) in
+if x < 0.5 then uniform(0, 0) else uniform(1, 1)

@@ -1,3 +1,4 @@
 (test
  (name test_contdice)
- (libraries alcotest contdice))
+ (libraries contdice)
+ (action (ignore-stderr (run %{test}))))
