@@ -15,22 +15,25 @@ let process_file filename =
     let content = read_file filename in
     Printf.printf "Source:\n%s\n\n" content;
     
+    (* Parse the expression *)
     let expr = parse_expr content in
     Printf.printf "Parsed AST:\n%s\n\n" (string_of_expr expr);
     
+    (* Type-check the expression *)
     let texpr = elab expr in
     Printf.printf "Typed AST:\n%s\n\n" (string_of_texpr texpr);
     
-    print_endline (String.make 40 '-');
+    (* Print a nice separator *)
+    print_endline (String.make 60 '-');
     true
   with
   | Failure msg -> 
       Printf.printf "Error: %s\n\n" msg;
-      print_endline (String.make 40 '-');
+      print_endline (String.make 60 '-');
       false
   | e -> 
       Printf.printf "Unexpected error: %s\n\n" (Printexc.to_string e);
-      print_endline (String.make 40 '-');
+      print_endline (String.make 60 '-');
       false
 
 (* Check if a filename has .cdice extension *)

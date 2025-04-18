@@ -22,17 +22,30 @@ let parse_expr (s : string) : expr =
       let token = Lexing.lexeme lexbuf in
       failwith (Printf.sprintf "Parse error at line %d, column %d: unexpected token '%s'" line col token)
 
-(* Pretty printers *)
-let rec string_of_expr = function
+(* Pretty printers with indentation *)
+let rec string_of_expr_indented ?(indent=0) = function
   | Var x -> x
   | Let (x, e1, e2) -> 
-      Printf.sprintf "let %s = %s in %s" x (string_of_expr e1) (string_of_expr e2)
+      let indent_str = String.make indent ' ' in
+      let e1_str = string_of_expr_indented ~indent:(indent+2) e1 in
+      let e2_str = string_of_expr_indented ~indent:(indent+2) e2 in
+      Printf.sprintf "let %s = %s in\n%s%s" x e1_str indent_str e2_str
   | Uniform (lo, hi) -> 
       Printf.sprintf "uniform(%g, %g)" lo hi
   | Less (e, f) -> 
-      Printf.sprintf "%s < %g" (string_of_expr e) f
+      Printf.sprintf "%s < %g" (string_of_expr_indented ~indent e) f
   | If (e1, e2, e3) -> 
-      Printf.sprintf "if %s then %s else %s" (string_of_expr e1) (string_of_expr e2) (string_of_expr e3)
+      let indent_str = String.make indent ' ' in
+      let next_indent_str = String.make (indent+2) ' ' in
+      let e1_str = string_of_expr_indented ~indent e1 in
+      let e2_str = string_of_expr_indented ~indent:(indent+2) e2 in
+      let e3_str = string_of_expr_indented ~indent:(indent+2) e3 in
+      Printf.sprintf "if %s then\n%s%s\n%selse\n%s%s" 
+        e1_str next_indent_str e2_str indent_str next_indent_str e3_str
+
+(* Wrapper for the indented pretty printer *)
+let string_of_expr expr =
+  string_of_expr_indented expr
 
 (* ======== Bags as union‑find + FloatSet ======== *)
 
@@ -172,20 +185,37 @@ let string_of_ty = function
             Printf.sprintf "float<%s>" str_elems
       | Link _ -> failwith "Impossible: find returned a Link"
 
-(* Pretty printer for typed expressions *)
-let rec string_of_texpr ((ty, aexpr) : texpr) : string =
-  Printf.sprintf "(%s : %s)" (string_of_aexpr aexpr) (string_of_ty ty)
+(* Pretty printer for typed expressions with indentation *)
+let rec string_of_texpr_indented ?(indent=0) ((ty, aexpr) : texpr) : string =
+  let aexpr_str = string_of_aexpr_indented ~indent aexpr in
+  Printf.sprintf "(%s : %s)" aexpr_str (string_of_ty ty)
 
-and string_of_aexpr = function
+and string_of_aexpr_indented ?(indent=0) = function
   | Var x -> x
   | Let (x, e1, e2) -> 
-      Printf.sprintf "let %s = %s in %s" x (string_of_texpr e1) (string_of_texpr e2)
+      let indent_str = String.make indent ' ' in
+      let e1_str = string_of_texpr_indented ~indent:(indent+2) e1 in
+      let e2_str = string_of_texpr_indented ~indent:(indent+2) e2 in
+      Printf.sprintf "let %s = %s in\n%s%s" x e1_str indent_str e2_str
   | Uniform (lo, hi) -> 
       Printf.sprintf "uniform(%g, %g)" lo hi
   | Less (e, f) -> 
-      Printf.sprintf "%s < %g" (string_of_texpr e) f
+      Printf.sprintf "%s < %g" (string_of_texpr_indented ~indent e) f
   | If (e1, e2, e3) -> 
-      Printf.sprintf "if %s then %s else %s" (string_of_texpr e1) (string_of_texpr e2) (string_of_texpr e3)
+      let indent_str = String.make indent ' ' in
+      let next_indent_str = String.make (indent+2) ' ' in
+      let e1_str = string_of_texpr_indented ~indent e1 in
+      let e2_str = string_of_texpr_indented ~indent:(indent+2) e2 in
+      let e3_str = string_of_texpr_indented ~indent:(indent+2) e3 in
+      Printf.sprintf "if %s then\n%s%s\n%selse\n%s%s" 
+        e1_str next_indent_str e2_str indent_str next_indent_str e3_str
+
+(* Wrappers for the indented pretty printers *)
+let string_of_texpr expr =
+  string_of_texpr_indented expr
+
+let string_of_aexpr aexpr =
+  string_of_aexpr_indented aexpr
 
 (* A small test helper *)
 let hello name =
