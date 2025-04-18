@@ -22,26 +22,38 @@ let parse_expr (s : string) : expr =
       let token = Lexing.lexeme lexbuf in
       failwith (Printf.sprintf "Parse error at line %d, column %d: unexpected token '%s'" line col token)
 
-(* Pretty printers with indentation *)
+(* ANSI color codes for syntax highlighting *)
+let keyword_color = "\027[1;34m"  (* Bold Blue *)
+let operator_color = "\027[1;31m" (* Bold Red *)
+let number_color = "\027[0;32m"   (* Green *)
+let variable_color = "\027[0;33m" (* Yellow *)
+let reset_color = "\027[0m"       (* Reset *)
+
+(* Pretty printers with indentation and colors *)
 let rec string_of_expr_indented ?(indent=0) = function
-  | Var x -> x
+  | Var x -> Printf.sprintf "%s%s%s" variable_color x reset_color
   | Let (x, e1, e2) -> 
       let indent_str = String.make indent ' ' in
       let e1_str = string_of_expr_indented ~indent:(indent+2) e1 in
       let e2_str = string_of_expr_indented ~indent:(indent+2) e2 in
-      Printf.sprintf "let %s = %s in\n%s%s" x e1_str indent_str e2_str
+      Printf.sprintf "%slet%s %s%s%s = %s %sin%s\n%s%s" 
+        keyword_color reset_color variable_color x reset_color e1_str 
+        keyword_color reset_color indent_str e2_str
   | Uniform (lo, hi) -> 
-      Printf.sprintf "uniform(%g, %g)" lo hi
+      Printf.sprintf "%suniform%s(%s%g%s, %s%g%s)" 
+        keyword_color reset_color number_color lo reset_color number_color hi reset_color
   | Less (e, f) -> 
-      Printf.sprintf "%s < %g" (string_of_expr_indented ~indent e) f
+      Printf.sprintf "%s %s<%s %s%g%s" 
+        (string_of_expr_indented ~indent e) operator_color reset_color number_color f reset_color
   | If (e1, e2, e3) -> 
       let indent_str = String.make indent ' ' in
       let next_indent_str = String.make (indent+2) ' ' in
       let e1_str = string_of_expr_indented ~indent e1 in
       let e2_str = string_of_expr_indented ~indent:(indent+2) e2 in
       let e3_str = string_of_expr_indented ~indent:(indent+2) e3 in
-      Printf.sprintf "if %s then\n%s%s\n%selse\n%s%s" 
-        e1_str next_indent_str e2_str indent_str next_indent_str e3_str
+      Printf.sprintf "%sif%s %s %sthen%s\n%s%s\n%s%selse%s\n%s%s" 
+        keyword_color reset_color e1_str keyword_color reset_color 
+        next_indent_str e2_str indent_str keyword_color reset_color next_indent_str e3_str
 
 (* Wrapper for the indented pretty printer *)
 let string_of_expr expr =
@@ -170,45 +182,58 @@ let elab (e : expr) : texpr =
 
   aux e
 
-(* Pretty printer for types *)
+(* Pretty printer for types with colors *)
+let type_color = "\027[1;35m"    (* Bold Magenta *)
+let bracket_color = "\027[1;36m" (* Bold Cyan *)
+
 let string_of_ty = function
-  | TBool -> "bool"
+  | TBool -> Printf.sprintf "%sbool%s" type_color reset_color
   | TFloat bag ->
       let root = find bag in
       match !root with
       | Root { elems } ->
           if FloatSet.is_empty elems then
-            "float"
+            Printf.sprintf "%sfloat%s" type_color reset_color
           else
             let elements = FloatSet.elements elems in
-            let str_elems = String.concat ", " (List.map string_of_float elements) in
-            Printf.sprintf "float<%s>" str_elems
+            let str_elems = String.concat ", " 
+              (List.map (fun f -> Printf.sprintf "%s%g%s" number_color f reset_color) elements) in
+            Printf.sprintf "%sfloat%s%s<%s%s>%s" 
+              type_color reset_color bracket_color str_elems bracket_color reset_color
       | Link _ -> failwith "Impossible: find returned a Link"
 
-(* Pretty printer for typed expressions with indentation *)
+(* Pretty printer for typed expressions with indentation and colors *)
+let paren_color = "\027[1;37m"   (* Bold White *)
+
 let rec string_of_texpr_indented ?(indent=0) ((ty, aexpr) : texpr) : string =
   let aexpr_str = string_of_aexpr_indented ~indent aexpr in
-  Printf.sprintf "(%s : %s)" aexpr_str (string_of_ty ty)
+  Printf.sprintf "%s(%s%s : %s%s)%s" 
+    paren_color reset_color aexpr_str (string_of_ty ty) paren_color reset_color
 
 and string_of_aexpr_indented ?(indent=0) = function
-  | Var x -> x
+  | Var x -> Printf.sprintf "%s%s%s" variable_color x reset_color
   | Let (x, e1, e2) -> 
       let indent_str = String.make indent ' ' in
       let e1_str = string_of_texpr_indented ~indent:(indent+2) e1 in
       let e2_str = string_of_texpr_indented ~indent:(indent+2) e2 in
-      Printf.sprintf "let %s = %s in\n%s%s" x e1_str indent_str e2_str
+      Printf.sprintf "%slet%s %s%s%s = %s %sin%s\n%s%s" 
+        keyword_color reset_color variable_color x reset_color e1_str 
+        keyword_color reset_color indent_str e2_str
   | Uniform (lo, hi) -> 
-      Printf.sprintf "uniform(%g, %g)" lo hi
+      Printf.sprintf "%suniform%s(%s%g%s, %s%g%s)" 
+        keyword_color reset_color number_color lo reset_color number_color hi reset_color
   | Less (e, f) -> 
-      Printf.sprintf "%s < %g" (string_of_texpr_indented ~indent e) f
+      Printf.sprintf "%s %s<%s %s%g%s" 
+        (string_of_texpr_indented ~indent e) operator_color reset_color number_color f reset_color
   | If (e1, e2, e3) -> 
       let indent_str = String.make indent ' ' in
       let next_indent_str = String.make (indent+2) ' ' in
       let e1_str = string_of_texpr_indented ~indent e1 in
       let e2_str = string_of_texpr_indented ~indent:(indent+2) e2 in
       let e3_str = string_of_texpr_indented ~indent:(indent+2) e3 in
-      Printf.sprintf "if %s then\n%s%s\n%selse\n%s%s" 
-        e1_str next_indent_str e2_str indent_str next_indent_str e3_str
+      Printf.sprintf "%sif%s %s %sthen%s\n%s%s\n%s%selse%s\n%s%s" 
+        keyword_color reset_color e1_str keyword_color reset_color 
+        next_indent_str e2_str indent_str keyword_color reset_color next_indent_str e3_str
 
 (* Wrappers for the indented pretty printers *)
 let string_of_texpr expr =
