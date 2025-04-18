@@ -1,0 +1,2 @@
+let () =
+  Contdice.hello "World"

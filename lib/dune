@@ -1,0 +1,3 @@
+(library
+ (name contdice)
+ (public_name contdice))

@@ -1,0 +1,12 @@
+_build/
+*.annot
+*.cmo
+*.cma
+*.cmi
+*.a
+*.o
+*.cmx
+*.cmxs
+*.cmxa
+*.install
+.merlin
