@@ -7,13 +7,15 @@ open Types
 %token LET IN
 %token IF THEN ELSE
 %token UNIFORM
+%token DISCRETE
 %token LESS
+%token LESSEQ
 %token LPAREN RPAREN
 %token COMMA
 %token EQUAL
 %token EOF
 
-%nonassoc LESS
+%nonassoc LESS LESSEQ
 %nonassoc ELSE
 %nonassoc THEN
 %nonassoc IF
@@ -36,6 +38,8 @@ expr:
     { If (cond, e1, e2) }
   | e = simple_expr LESS f = FLOAT
     { Less (e, f) }
+  | e = simple_expr LESSEQ n = FLOAT
+    { LessEq (e, int_of_float n) }
   ;
 
 simple_expr:
@@ -43,6 +47,8 @@ simple_expr:
     { Var x }
   | UNIFORM LPAREN lo = FLOAT COMMA hi = FLOAT RPAREN
     { Uniform (lo, hi) }
+  | DISCRETE LPAREN probs = separated_list(COMMA, FLOAT) RPAREN
+    { Discrete probs }
   | LPAREN e = expr RPAREN
     { e }
   ;

@@ -23,9 +23,9 @@ let process_file filename =
     let texpr = elab_bool expr in
     Printf.printf "Typed AST:\n%s\n\n" (string_of_texpr texpr);
     
-    (* Compile to discrete expressions *)
-    let dexpr = compile texpr in
-    Printf.printf "Compiled Program:\n%s\n\n" (string_of_dexpr dexpr);
+    (* Discretize to discrete expressions *)
+    let discretized_expr = discretize texpr in
+    Printf.printf "Discretized Program:\n%s\n\n" (string_of_expr discretized_expr);
     
     (* Print a nice separator *)
     print_endline (String.make 60 '-');

@@ -29,7 +29,9 @@ rule token = parse
   | "then"    { THEN }
   | "else"    { ELSE }
   | "uniform" { UNIFORM }
+  | "discrete" { DISCRETE }
   | '<'       { LESS }
+  | "<="      { LESSEQ }
   | '='       { EQUAL }
   | '('       { LPAREN }
   | ')'       { RPAREN }

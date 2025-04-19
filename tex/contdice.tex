@@ -25,6 +25,7 @@
 \newcommand{\uniform}{\text{\ttfamily\bfseries uniform}}
 \newcommand{\discrete}{\text{\ttfamily\bfseries discrete}}
 \newcommand{\bool}{\text{\ttfamily\bfseries bool}}
+\newcommand{\intty}{\text{\ttfamily\bfseries int}}
 \newcommand{\float}{\text{\ttfamily\bfseries float}}
 
 % Macros for language names, use small caps
@@ -41,7 +42,7 @@
 
 \section{Introduction}
 
-Probabilistic programming offers a way to define models involving random variables and perform inference. \CDice is a small functional language designed for expressing programs with continuous distributions with the aim of discretizing them into \DDice, a language with discrete distributions. Here is a simple example:
+Probabilistic programming offers a way to define models involving random variables and perform inference. \CDice is a small functional language designed for expressing programs with both continuous and discrete distributions. Here is a simple example:
 
 \begin{lstlisting}
 let x = uniform(0, 1) in
@@ -49,48 +50,42 @@ let y = uniform(0, 2) in
 if x < 0.5 then x < 0.1 else y < 0.1
 \end{lstlisting}
 
-Exact inference on programs with continuous variables is often intractable, so we will restrict our attention to a subset of \CDice programs that can be discretized into \DDice.
-The program above can be discretized into the following \DDice program:
+
+Exact inference on programs with continuous variables is often intractable, so we convert continuous distributions into discrete ones by analyzing the comparison points used in the program. The program above can be discretized into:
 
 \begin{lstlisting}
-let x = discrete[0.1; 0.4; 0.5] in
-let y = discrete[0.05; 0.95] in
+let x = discrete(0.1, 0.4, 0.5) in
+let y = discrete(0.05, 0.95) in
 if x <= 1 then x <= 0 else y <= 0
 \end{lstlisting}
 
 \section{Language}
 
-The syntax of the continuous language \CDice is:
+The syntax of the \CDice language is:
 %
 \begin{align*}
 e ::= &\; x                               & \text{variable} \\
     | &\; \letkw \; x = e_1\; \inkw \; e_2  & \text{let binding} \\
-    | &\; \uniform(c_1, c_2)      & \text{uniform distribution} \\
-    | &\; e < c                           & \text{threshold test} \\
+    | &\; \uniform(c_1, c_2)      & \text{uniform distribution (returns a float)} \\
+    | &\; \discrete(p_0, \ldots, p_{n})      & \text{discrete distribution (returns an integer)} \\
+    | &\; e < c                           & \text{less-than test} \\
+    | &\; e \leq i                           & \text{less-than-or-equal test (for integers)} \\
     | &\; \ifkw \; e_1\; \thenkw \; e_2\; \elsekw \; e_3 & \text{conditional}
 \end{align*}
 
-\noindent where $x$ ranges over variable names and $c$ ranges over floating point constants.
+\noindent where $x$ ranges over variable names, $c$ ranges over floating point constants, $i$ ranges over integer constants, and $p_0, \ldots, p_n$ are probabilities that should sum to 1.
 
-The syntax of the discrete language \DDice is similar, but replaces uniform distributions with discrete distributions over a fixed set of points:
-%
-\begin{align*}
-e ::= &\; x                               & \text{variable} \\
-    | &\; \letkw \; x = e_1\; \inkw \; e_2  & \text{let binding} \\
-    | &\; \discrete[p_0; \ldots; p_{n}]      & \text{discrete distribution} \\
-    | &\; e \leq c                           & \text{threshold test} \\
-    | &\; \ifkw \; e_1\; \thenkw \; e_2\; \elsekw \; e_3 & \text{conditional}
-\end{align*}
+The uniform distribution $\uniform(c_1, c_2)$ represents a continuous random value in the range $[c_1, c_2)$. The discrete distribution $\discrete(p_0, \ldots, p_{n})$ represents a random integer value, returning a value $i \in \{0, \ldots, n\}$ with probability $p_i$.
 
-\noindent Note that threshold tests use $\leq$ in DDice rather than $<$ as in CDice.
-The discrete distribution $\discrete[p_0; \ldots; p_{n}]$ is a distribution over natural numbers $\{0, \ldots, n\}$, with $p_i$ being the probability of observing $i$.
+When we discretize continuous programs, we convert expressions with uniform distributions into expressions with discrete distributions, and convert less-than comparisons into less-than-or-equal comparisons on the corresponding discrete intervals.
 
 \section{Type System}
 
-We introduce a type system that analyzes the threshold points of each floating point expression. We have two types:
+We introduce a type system that analyzes the threshold points of each floating point expression. We have three types:
 \begin{itemize}
     \item \bool: the expression is a boolean value (true or false)
-    \item \float$\langle c_0, \ldots, c_n \rangle$: the expression is a floating point value that can only be compared with threshold tests $e \leq c_i$ for $i \in \{0, \ldots, n\}$.
+    \item \intty: the expression is an integer value
+    \item \float$\langle c_0, \ldots, c_n \rangle$: the expression is a floating point value that can only be compared with threshold tests $e < c_i$ for $i \in \{0, \ldots, n\}$.
 \end{itemize}
 
 The typing rules are as follows:
@@ -114,22 +109,32 @@ The typing rules are as follows:
     \inferrule[\textsc{Uniform}]
     {\ }
     {\Gamma \vdash \uniform(c_1, c_2) : \float\langle c'_0, \ldots, c'_n \rangle}
+    
+    \inferrule[\textsc{Discrete}]
+    {\ }
+    {\Gamma \vdash \discrete(p_0, \ldots, p_n) : \intty}
 
-    \inferrule[\textsc{Threshold}]
+    \inferrule[\textsc{Less}]
     {\Gamma \vdash e : \float\langle c_0, \ldots, c_n \rangle}
-    {\Gamma \vdash e \leq c_i : \bool}
+    {\Gamma \vdash e < c_i : \bool}
+    
+    \inferrule[\textsc{LessEq}]
+    {\Gamma \vdash e : \intty}
+    {\Gamma \vdash e \leq i : \bool}
 \end{mathpar}
 
 \section{Type Inference}
 
-Type inference for \CDice aims to assign a type (either \bool{} or \float$\langle c_0, \dots, c_n \rangle$) to every subexpression while simultaneously collecting all relevant comparison threshold points for each float expression. This process works by traversing the abstract syntax tree (AST) of the program and generating type constraints based on the structure of the code and the typing rules.
+Type inference for \CDice aims to assign a type (either \bool{}, \intty, or \float$\langle c_0, \dots, c_n \rangle$) to every subexpression while simultaneously collecting all relevant comparison threshold points for each float expression. This process works by traversing the abstract syntax tree (AST) of the program and generating type constraints based on the structure of the code and the typing rules.
 
 Key constraints include:
 \begin{itemize}
     \item In an $\ifkw \; e_1\; \thenkw \; e_2\; \elsekw \; e_3$ expression, $e_1$ must have type \bool, and the types inferred for $e_2$ and $e_3$ must be compatible (unified).
-    \item A comparison $e \leq c$ requires $e$ to have a $\float\langle B \rangle$ type. Furthermore, the constant $c$ becomes a relevant threshold point for the value computed by $e$, so we have the constraint $c \in B$.
+    \item A comparison $e < c$ requires $e$ to have a $\float\langle B \rangle$ type. Furthermore, the constant $c$ becomes a relevant threshold point for the value computed by $e$, so we have the constraint $c \in B$.
+    \item A comparison $e \leq i$ requires $e$ to have an $\intty$ type.
     \item A $\letkw \; x = e_1 \; \inkw \; e_2$ expression requires the type inferred for $e_1$ to be used for the variable $x$ when inferring the type of $e_2$.
     \item A $\uniform(c_1, c_2)$ expression intrinsically has a $\float\langle B \rangle$ type, with unconstrained $B$.
+    \item A $\discrete(p_0, \ldots, p_n)$ expression has type $\intty$, representing an integer in the range $[0,n]$ with probability distribution given by the probabilities.
 \end{itemize}
 
 To manage the constraints on the threshold points associated with $\float\langle B \rangle$ types, we use a concept called ``bags''. Each expression inferred to have type $\float\langle B \rangle$ is associated with a bag $B$, which represents the set of constants $\{c_0, \dots, c_n\}$ it might be compared against. These bags are implemented using a variant of the disjoint-set data structure, commonly known as union-find.
@@ -144,26 +149,31 @@ A union-find data structure maintains a collection of disjoint sets (our bags). 
 Type constraints are solved using unification. When two types $t_1$ and $t_2$ must be unified:
 \begin{itemize}
     \item If $t_1 = \bool$ and $t_2 = \bool$, unification succeeds.
+    \item If $t_1 = \intty$ and $t_2 = \intty$, unification succeeds.
     \item If $t_1 = \float\langle B_1 \rangle$ and $t_2 = \float\langle B_2 \rangle$, where $B_1$ and $B_2$ are the underlying bags, we perform $\texttt{union}(B_1, B_2)$. This ensures both expressions now share the same bag (and thus the same combined set of threshold points).
-    \item If the types are incompatible (e.g., \bool{} and \float{}), a type error occurs.
+    \item If the types are incompatible (e.g., \bool{} and \float{}, or \intty{} and \float{}), a type error occurs.
 \end{itemize}
 
 The inference algorithm recursively walks the expression AST. It maintains an environment mapping variables to their inferred types. At each node, it generates and solves constraints using unification and the bag operations. The final result is an AST annotated with types, where each $\float\langle B \rangle$ type carries a bag containing the complete set of relevant threshold points determined by the inference process.
 
 \section{Discretization}
 
-After type inference, we have a \CDice expression annotated with types, where each $\float\langle B \rangle$ type includes a bag $B$ containing all relevant threshold points $\{c_0, \dots, c_n\}$ (assumed sorted). The discretization process transforms this typed \CDice expression into a \DDice expression, replacing continuous distributions and comparisons with their discrete counterparts.
+After type inference, we have a \CDice expression annotated with types, where each $\float\langle B \rangle$ type includes a bag $B$ containing all relevant threshold points $\{c_0, \dots, c_n\}$ (assumed sorted). The discretization process transforms continuous distributions in this typed expression into discrete distributions, replacing continuous uniform distributions and continuous comparisons with their discrete counterparts.
 
-The core idea is to map the continuous range of a float variable onto a finite set of integers, representing intervals defined by the threshold points in its bag. A comparison against a threshold constant $c_k$ in \CDice becomes a comparison against the corresponding interval index $k$ in \DDice.
+The core idea is to map the continuous range of a float variable onto a finite set of integers, representing intervals defined by the threshold points in its bag. A comparison against a threshold constant $c_k$ becomes a comparison against the corresponding interval index $k$.
 
-Let $e$ be a subexpression with inferred type $t$ and associated bag $B = \{c_0, \dots, c_n\}$ (if $t$ is a float type). Let $\texttt{discretize}(e)$ be the corresponding \DDice expression.
+Let $e$ be a subexpression with inferred type $t$ and associated bag $B = \{c_0, \dots, c_n\}$ (if $t$ is a float type). Let $\texttt{discretize}(e)$ be the corresponding discretized expression.
 
 \begin{itemize}
-    \item \textbf{Uniform Distribution}: If $e = \uniform(l, h)$ with type $\float\langle B \rangle$, where $B = \{c_0, \dots, c_n\}$ are the sorted threshold points. We define $n+2$ intervals based on these points: $I_0 = (-\infty, c_0)$, $I_1 = [c_0, c_1)$, \dots, $I_n = [c_{n-1}, c_n)$, $I_{n+1} = [c_n, +\infty)$. The discretization is $\texttt{discretize}(e) = \discrete[p_0, \dots, p_{n+1}]$, where $p_i$ is the probability mass of the original $\uniform(l, h)$ distribution within the interval $I_i$. This is calculated as:
+    \item \textbf{Uniform Distribution}: If $e = \uniform(l, h)$ with type $\float\langle B \rangle$, where $B = \{c_0, \dots, c_n\}$ are the sorted threshold points. We define $n+2$ intervals based on these points: $I_0 = (-\infty, c_0)$, $I_1 = [c_0, c_1)$, \dots, $I_n = [c_{n-1}, c_n)$, $I_{n+1} = [c_n, +\infty)$. The discretization is $\texttt{discretize}(e) = \discrete(p_0, \dots, p_{n+1})$, where $p_i$ is the probability mass of the original $\uniform(l, h)$ distribution within the interval $I_i$. This is calculated as:
     \[ p_i = \frac{\max(0, \min(h, \text{right}_i) - \max(l, \text{left}_i))}{h - l} \]
     where $\text{left}_i$ and $\text{right}_i$ are the bounds of interval $I_i$ (using $-\infty$ and $+\infty$ appropriately). This \discrete{} distribution yields an integer $i$ with probability $p_i$, signifying that the original continuous value fell within interval $I_i$. (If $h = l$, then the calculation is done in a different way to avoid division by zero.)
 
+    \item \textbf{Discrete Distribution}: If $e = \discrete(p_0, \ldots, p_n)$ with type $\intty$, the discretization simply preserves the discrete distribution as is: $\texttt{discretize}(e) = \discrete(p_0, \ldots, p_n)$. This expression returns an integer value $i \in \{0, 1, \ldots, n\}$ with probability $p_i$.
+    
     \item \textbf{Less Than Comparison}: If $e = e' < c_k$, where $e'$ has type $\float\langle B \rangle$ and $c_k$ is the $k$-th smallest element in the sorted bag $B = \{c_0, \dots, c_n\}$ (i.e., the element at index $k$ if using 0-based indexing). The discretization is $\texttt{discretize}(e) = \texttt{discretize}(e') \leq k$. The discretized subexpression $\texttt{discretize}(e')$ evaluates to an integer $i$ representing an interval $I_i$. The comparison $i \leq k$ checks if the value falls into any of the intervals $I_0, \dots, I_k$. The union of these intervals is $(-\infty, c_k)$. Thus, the comparison correctly determines if the original value of $e'$ was less than $c_k$.
+    
+    \item \textbf{Less Than or Equal Comparison}: If $e = e' \leq i$, where $e'$ has type $\intty$, the discretization preserves the comparison: $\texttt{discretize}(e) = \texttt{discretize}(e') \leq i$. This form is used for comparing integer values, particularly the results of discrete distributions.
 
     \item \textbf{Variables, Let, If}: These constructs are translated recursively, preserving their structure:
     \begin{itemize}
@@ -173,6 +183,6 @@ Let $e$ be a subexpression with inferred type $t$ and associated bag $B = \{c_0,
     \end{itemize}
 \end{itemize}
 
-This process effectively translates the probabilistic logic over continuous variables defined by thresholds into equivalent logic over discrete variables representing intervals.
+This process effectively translates continuous uniform distributions into discrete distributions based on the thresholds used in the program, while preserving the original discrete distributions and program structure.
 
 \end{document}

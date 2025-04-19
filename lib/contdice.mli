@@ -5,7 +5,9 @@ type expr = Types.expr =
   | Var of string
   | Let of string * expr * expr
   | Uniform of float * float
+  | Discrete of float list
   | Less of expr * float
+  | LessEq of expr * int
   | If of expr * expr * expr
 
 (* FloatSet module *)
@@ -22,6 +24,7 @@ and bag = bag_contents ref
 type ty =
   | TBool
   | TFloat of bag
+  | TInt
 
 (* Typed expressions *)
 type texpr = ty * aexpr
@@ -29,7 +32,9 @@ and aexpr =
   | Var     of string
   | Let     of string * texpr * texpr
   | Uniform of float * float
+  | Discrete of float list
   | Less    of texpr * float
+  | LessEq   of texpr * int
   | If      of texpr * texpr * texpr
 
 (* Bag operations *)
@@ -42,24 +47,16 @@ val unify : ty -> ty -> unit
 (* Parsing *)
 val parse_expr : string -> expr
 
-(* Discrete expressions *)
-type dexpr =
-  | Var    of string
-  | Let    of string * dexpr * dexpr
-  | Discrete of float list 
-  | LessEq   of dexpr * int
-  | If     of dexpr * dexpr * dexpr
 
 (* Pretty printing *)
 val string_of_expr : expr -> string
 val string_of_ty : ty -> string
 val string_of_texpr : texpr -> string
 val string_of_aexpr : aexpr -> string
-val string_of_dexpr : dexpr -> string
 
 (* Elaboration *)
 val elab : expr -> texpr
 val elab_bool : expr -> texpr
 
 (* Compilation *)
-val compile : texpr -> dexpr
+val discretize : texpr -> expr

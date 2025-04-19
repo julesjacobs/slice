@@ -5,7 +5,9 @@ type expr =
   | Var of string
   | Let of string * expr * expr
   | Uniform of float * float
+  | Discrete of float list
   | Less of expr * float
+  | LessEq of expr * int
   | If of expr * expr * expr
 
 module FloatSet : Set.S with type elt = float

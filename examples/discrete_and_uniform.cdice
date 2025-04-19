@@ -1,0 +1,6 @@
+let coin = discrete(0.5, 0.5) in  (* Returns 0 or 1 with equal probability *)
+let u = uniform(0.0, 1.0) in
+if coin <= 0 then
+  u < 0.2  (* If coin is 0, check if u < 0.2 *)
+else
+  u < 0.8  (* If coin is 1, check if u < 0.8 *)

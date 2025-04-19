@@ -1,0 +1,2 @@
+let coin = discrete(0.5, 0.5) in
+coin <= 0  (* Check if coin is 0 (first outcome) *)

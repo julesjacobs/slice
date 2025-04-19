@@ -5,7 +5,9 @@ type expr = Types.expr =
   | Var    of string
   | Let    of string * expr * expr
   | Uniform of float * float
+  | Discrete of float list  (* list of probabilities, sum should be 1; i-th element is probability of i; returns an integer *)
   | Less   of expr * float
+  | LessEq  of expr * int  (* less than or equal to; for comparing against integer outputs *)
   | If     of expr * expr * expr
 
 (* Parser for expressions *)
@@ -42,9 +44,17 @@ let rec string_of_expr_indented ?(indent=0) = function
   | Uniform (lo, hi) -> 
       Printf.sprintf "%suniform%s(%s%g%s, %s%g%s)" 
         keyword_color reset_color number_color lo reset_color number_color hi reset_color
+  | Discrete probs -> 
+      Printf.sprintf "%sdiscrete%s(%s%s%s)" 
+        keyword_color reset_color number_color
+        (String.concat ", " (List.map (fun f -> Printf.sprintf "%g" f) probs))
+        reset_color
   | Less (e, f) -> 
       Printf.sprintf "%s %s<%s %s%g%s" 
         (string_of_expr_indented ~indent e) operator_color reset_color number_color f reset_color
+  | LessEq (e, n) -> 
+      Printf.sprintf "%s %s<=%s %s%d%s" 
+        (string_of_expr_indented ~indent e) operator_color reset_color number_color n reset_color
   | If (e1, e2, e3) -> 
       let indent_str = String.make indent ' ' in
       let next_indent_str = String.make (indent+2) ' ' in
@@ -118,13 +128,19 @@ let assert_elem (x : float) (b : bag) : unit =
 type ty =
   | TBool
   | TFloat of bag
+  | TInt
 
 let unify (t1 : ty) (t2 : ty) : unit =
   match t1, t2 with
   | TBool,    TBool      -> ()
   | TFloat b1, TFloat b2 -> assert_eq b1 b2
+  | TInt,     TInt       -> ()
   | TBool,    TFloat _   -> failwith "Type error: expected bool, got float"
+  | TBool,    TInt       -> failwith "Type error: expected bool, got int"
   | TFloat _, TBool      -> failwith "Type error: expected float, got bool"
+  | TFloat _, TInt       -> failwith "Type error: expected float, got int"
+  | TInt,     TBool      -> failwith "Type error: expected int, got bool"
+  | TInt,     TFloat _   -> failwith "Type error: expected int, got float"
 
 (* ======== Annotated expressions ======== *)
 
@@ -133,7 +149,9 @@ and aexpr =
   | Var     of string
   | Let     of string * texpr * texpr
   | Uniform of float * float
+  | Discrete of float list
   | Less    of texpr * float
+  | LessEq   of texpr * int
   | If      of texpr * texpr * texpr
 
 (* Elaborator: expr -> (ty * aexpr), generating bag constraints *)
@@ -155,6 +173,14 @@ let elab (e : expr) : texpr =
     | Uniform (lo, hi) ->
       let b = new_bag () in
       (TFloat b, Uniform (lo, hi))
+      
+    | Discrete probs ->
+      let sum = List.fold_left (+.) 0.0 probs in
+      if abs_float (sum -. 1.0) > 0.0001 then
+        failwith (Printf.sprintf "Discrete distribution probabilities must sum to 1.0, got %f" sum);
+      
+      (* Discrete distributions return an integer type *)
+      (TInt, Discrete probs)
 
     | Less (e1, f) ->
       let t1, a1 = aux env e1 in
@@ -163,6 +189,12 @@ let elab (e : expr) : texpr =
       unify t1 (TFloat b);
       assert_elem f b;
       (TBool, Less ((t1,a1), f))
+      
+    | LessEq (e1, n) ->
+      let t1, a1 = aux env e1 in
+      (* For LessEq, the expression must be of integer type *)
+      unify t1 TInt;
+      (TBool, LessEq ((t1,a1), n))
 
     | If (e1, e2, e3) ->
       let t1, a1 = aux env e1 in
@@ -187,6 +219,7 @@ let bracket_color = "\027[1;36m" (* Bold Cyan *)
 
 let string_of_ty = function
   | TBool -> Printf.sprintf "%sbool%s" type_color reset_color
+  | TInt -> Printf.sprintf "%sint%s" type_color reset_color
   | TFloat bag ->
       let root = find bag in
       match !root with
@@ -221,9 +254,17 @@ and string_of_aexpr_indented ?(indent=0) = function
   | Uniform (lo, hi) -> 
       Printf.sprintf "%suniform%s(%s%g%s, %s%g%s)" 
         keyword_color reset_color number_color lo reset_color number_color hi reset_color
+  | Discrete probs -> 
+      Printf.sprintf "%sdiscrete%s(%s%s%s)" 
+        keyword_color reset_color number_color
+        (String.concat ", " (List.map (fun f -> Printf.sprintf "%g" f) probs))
+        reset_color
   | Less (e, f) -> 
       Printf.sprintf "%s %s<%s %s%g%s" 
         (string_of_texpr_indented ~indent e) operator_color reset_color number_color f reset_color
+  | LessEq (e, n) -> 
+      Printf.sprintf "%s %s<=%s %s%d%s" 
+        (string_of_texpr_indented ~indent e) operator_color reset_color number_color n reset_color
   | If (e1, e2, e3) -> 
       let indent_str = String.make indent ' ' in
       let next_indent_str = String.make (indent+2) ' ' in
@@ -241,45 +282,6 @@ let string_of_texpr expr =
 let string_of_aexpr aexpr =
   string_of_aexpr_indented aexpr
 
-(* Discrete expressions *)
-type dexpr =
-  | Var    of string
-  | Let    of string * dexpr * dexpr
-  | Discrete of float list (* list of probabilities, sum must be 1; i-th element is probability of i *)
-  | LessEq   of dexpr * int (* less than or equal to *)
-  | If     of dexpr * dexpr * dexpr
-
-(* Pretty printer for discrete expressions with indentation and colors *)
-let rec string_of_dexpr_indented ?(indent=0) = function
-  | Var x -> Printf.sprintf "%s%s%s" variable_color x reset_color
-  | Let (x, e1, e2) -> 
-      let indent_str = String.make indent ' ' in
-      let e1_str = string_of_dexpr_indented ~indent:(indent+2) e1 in
-      let e2_str = string_of_dexpr_indented ~indent:(indent+2) e2 in
-      Printf.sprintf "%slet%s %s%s%s = %s %sin%s\n%s%s" 
-        keyword_color reset_color variable_color x reset_color e1_str 
-        keyword_color reset_color indent_str e2_str
-  | Discrete probs -> 
-      Printf.sprintf "%sdiscrete%s[%s%s%s]"
-        keyword_color reset_color number_color
-        (String.concat "; " (List.map string_of_float probs))
-        reset_color
-  | LessEq (e, n) -> 
-      Printf.sprintf "%s %s<=%s %s%d%s" 
-        (string_of_dexpr_indented ~indent e) operator_color reset_color number_color n reset_color
-  | If (e1, e2, e3) -> 
-      let indent_str = String.make indent ' ' in
-      let next_indent_str = String.make (indent+2) ' ' in
-      let e1_str = string_of_dexpr_indented ~indent e1 in
-      let e2_str = string_of_dexpr_indented ~indent:(indent+2) e2 in
-      let e3_str = string_of_dexpr_indented ~indent:(indent+2) e3 in
-      Printf.sprintf "%sif%s %s %sthen%s\n%s%s\n%s%selse%s\n%s%s" 
-        keyword_color reset_color e1_str keyword_color reset_color 
-        next_indent_str e2_str indent_str keyword_color reset_color next_indent_str e3_str
-
-(* Wrapper for the indented pretty printer *)
-let string_of_dexpr expr =
-  string_of_dexpr_indented expr
 
 (* Function to compute the probability mass of a 
    uniform distribution uniform(lo, hi) in an 
@@ -296,7 +298,7 @@ let prob_uniform_interval (left : float) (right : float) (lo : float) (hi : floa
     intersection_length /. range
 
 (* 
-Compiler from typed expressions to discrete expressions.
+Discretizer from typed expressions to discrete expressions.
 
 The idea is that the type system infers a bag of floats that each 
 expression possibly compares against. Instead of sampling from a continuous 
@@ -306,8 +308,8 @@ probabilities of the interval between two floats.
 When doing a comparison against a float, we convert that to a comparison 
 against the discrete integer that represents the i-th float in the bag.
 *)
-let compile (e : texpr) : dexpr =
-  let rec aux ((ty, ae) : texpr) : dexpr =
+let discretize (e : texpr) : expr =
+  let rec aux ((ty, ae) : texpr) : expr =
     match ae with
     | Var x ->
         Var x
@@ -335,6 +337,10 @@ let compile (e : texpr) : dexpr =
           prob_uniform_interval left right lo hi
         ) intervals in
         Discrete probs
+        
+    | Discrete probs ->
+        (* For integer types, we pass through the discrete distribution directly *)
+        Discrete probs
 
     | Less ((t_sub, ae_sub), f) ->
         let d_sub = aux (t_sub, ae_sub) in
@@ -348,6 +354,11 @@ let compile (e : texpr) : dexpr =
         in
         let idx = List.length (List.filter (fun x -> x < f) cuts) in
         LessEq (d_sub, idx)
+        
+    | LessEq ((t_sub, ae_sub), n) ->
+        let d_sub = aux (t_sub, ae_sub) in
+        (* For integer LessEq comparisons, we pass them through unchanged *)
+        LessEq (d_sub, n)
 
     | If ((t1, ae1), (t2, ae2), (t3, ae3)) ->
         If (aux (t1, ae1), aux (t2, ae2), aux (t3, ae3))
