@@ -1,13 +1,12 @@
 (* Main implementation of continuous dice *)
 
-(* Re-export types from Types module *)
 type expr = Types.expr =
   | Var    of string
   | Let    of string * expr * expr
-  | Uniform of float * float
-  | Discrete of float list  (* list of probabilities, sum should be 1; i-th element is probability of i; returns an integer *)
+  | CDistr of Stats.cdistr          (* Continuous distribution *)
+  | Discrete of float list    (* list of probabilities, sum should be 1; i-th element is probability of i; returns an integer *)
   | Less   of expr * float
-  | LessEq  of expr * int  (* less than or equal to; for comparing against integer outputs *)
+  | LessEq  of expr * int     (* less than or equal to; for comparing against integer outputs *)
   | If     of expr * expr * expr
 
 (* Parser for expressions *)
@@ -31,6 +30,21 @@ let number_color = "\027[0;32m"   (* Green *)
 let variable_color = "\027[0;33m" (* Yellow *)
 let reset_color = "\027[0m"       (* Reset *)
 
+(* Pretty printer for continuous distributions *)
+let string_of_cdistr = function
+| Stats.Uniform (lo, hi) -> 
+    Printf.sprintf "%suniform%s(%s%g%s, %s%g%s)" 
+        keyword_color reset_color number_color lo reset_color number_color hi reset_color
+| Stats.Gaussian (mean, std) -> 
+    Printf.sprintf "%sgaussian%s(%s%g%s, %s%g%s)" 
+        keyword_color reset_color number_color mean reset_color number_color std reset_color
+| Stats.Exponential rate -> 
+    Printf.sprintf "%sexponential%s(%s%g%s)" 
+        keyword_color reset_color number_color rate reset_color
+| Stats.Beta (alpha, beta) -> 
+    Printf.sprintf "%sbeta%s(%s%g%s, %s%g%s)" 
+        keyword_color reset_color number_color alpha reset_color number_color beta reset_color
+
 (* Pretty printers with indentation and colors *)
 let rec string_of_expr_indented ?(indent=0) = function
   | Var x -> Printf.sprintf "%s%s%s" variable_color x reset_color
@@ -41,9 +55,7 @@ let rec string_of_expr_indented ?(indent=0) = function
       Printf.sprintf "%slet%s %s%s%s = %s %sin%s\n%s%s" 
         keyword_color reset_color variable_color x reset_color e1_str 
         keyword_color reset_color indent_str e2_str
-  | Uniform (lo, hi) -> 
-      Printf.sprintf "%suniform%s(%s%g%s, %s%g%s)" 
-        keyword_color reset_color number_color lo reset_color number_color hi reset_color
+  | CDistr dist -> string_of_cdistr dist
   | Discrete probs -> 
       Printf.sprintf "%sdiscrete%s(%s%s%s)" 
         keyword_color reset_color number_color
@@ -129,9 +141,23 @@ type ty =
   | TBool
   | TFloat of bag
   | TInt
+  | TMeta of ty option ref
+
+(* 
+let new_meta () : ty =
+  TMeta (ref None)
+*)
+
+let rec force t =
+  match t with
+  | TMeta r ->
+      (match !r with
+      | Some t -> force t
+      | None -> t)
+  | _ -> t
 
 let unify (t1 : ty) (t2 : ty) : unit =
-  match t1, t2 with
+  match force t1, force t2 with
   | TBool,    TBool      -> ()
   | TFloat b1, TFloat b2 -> assert_eq b1 b2
   | TInt,     TInt       -> ()
@@ -141,6 +167,10 @@ let unify (t1 : ty) (t2 : ty) : unit =
   | TFloat _, TInt       -> failwith "Type error: expected float, got int"
   | TInt,     TBool      -> failwith "Type error: expected int, got bool"
   | TInt,     TFloat _   -> failwith "Type error: expected int, got float"
+  | TMeta r1, _   ->
+      r1 := Some t2
+  | _, TMeta r2   ->
+      r2 := Some t1
 
 (* ======== Annotated expressions ======== *)
 
@@ -148,7 +178,7 @@ type texpr = ty * aexpr
 and aexpr =
   | Var     of string
   | Let     of string * texpr * texpr
-  | Uniform of float * float
+  | CDistr  of Stats.cdistr
   | Discrete of float list
   | Less    of texpr * float
   | LessEq   of texpr * int
@@ -170,9 +200,9 @@ let elab (e : expr) : texpr =
       let t2, a2 = aux env' e2 in
       (t2, Let (x, (t1,a1), (t2,a2)))
 
-    | Uniform (lo, hi) ->
+    | CDistr dist ->
       let b = new_bag () in
-      (TFloat b, Uniform (lo, hi))
+      (TFloat b, CDistr dist)
       
     | Discrete probs ->
       let sum = List.fold_left (+.) 0.0 probs in
@@ -217,12 +247,12 @@ let elab_bool (e : expr) : texpr =
 let type_color = "\027[1;35m"    (* Bold Magenta *)
 let bracket_color = "\027[1;36m" (* Bold Cyan *)
 
-let string_of_ty = function
+let rec string_of_ty = function
   | TBool -> Printf.sprintf "%sbool%s" type_color reset_color
   | TInt -> Printf.sprintf "%sint%s" type_color reset_color
   | TFloat bag ->
       let root = find bag in
-      match !root with
+      (match !root with
       | Root { elems } ->
           if FloatSet.is_empty elems then
             Printf.sprintf "%sfloat%s" type_color reset_color
@@ -232,7 +262,11 @@ let string_of_ty = function
               (List.map (fun f -> Printf.sprintf "%s%g%s" number_color f reset_color) elements) in
             Printf.sprintf "%sfloat%s%s<%s%s>%s" 
               type_color reset_color bracket_color str_elems bracket_color reset_color
-      | Link _ -> failwith "Impossible: find returned a Link"
+      | Link _ -> failwith "Impossible: find returned a Link")
+    | TMeta r ->
+        match !r with
+        | Some t -> string_of_ty t
+        | None -> "?"
 
 (* Pretty printer for typed expressions with indentation and colors *)
 let paren_color = "\027[1;37m"   (* Bold White *)
@@ -251,9 +285,7 @@ and string_of_aexpr_indented ?(indent=0) = function
       Printf.sprintf "%slet%s %s%s%s = %s %sin%s\n%s%s" 
         keyword_color reset_color variable_color x reset_color e1_str 
         keyword_color reset_color indent_str e2_str
-  | Uniform (lo, hi) -> 
-      Printf.sprintf "%suniform%s(%s%g%s, %s%g%s)" 
-        keyword_color reset_color number_color lo reset_color number_color hi reset_color
+  | CDistr dist -> string_of_cdistr dist
   | Discrete probs -> 
       Printf.sprintf "%sdiscrete%s(%s%s%s)" 
         keyword_color reset_color number_color
@@ -282,20 +314,10 @@ let string_of_texpr expr =
 let string_of_aexpr aexpr =
   string_of_aexpr_indented aexpr
 
-
-(* Function to compute the probability mass of a 
-   uniform distribution uniform(lo, hi) in an 
-   interval [left, right) *)
-let prob_uniform_interval (left : float) (right : float) (lo : float) (hi : float) : float =
-  if lo = hi then
-    if left <= lo && lo < right then 1.0 else 0.0
-  else
-    let range = hi -. lo in
-    (* Compute the interval intersection *)
-    let left' = max left lo in
-    let right' = min right hi in
-    let intersection_length = max 0.0 (right' -. left') in
-    intersection_length /. range
+(* Calculate probability for a given distribution in an interval *)
+let prob_cdistr_interval (left : float) (right : float) (dist : Stats.cdistr) : float =
+  let cdf = Stats.cdistr_cdf dist in
+  cdf right -. cdf left
 
 (* 
 Discretizer from typed expressions to discrete expressions.
@@ -317,9 +339,9 @@ let discretize (e : texpr) : expr =
     | Let (x, te1, te2) ->
         Let (x, aux te1, aux te2)
 
-    | Uniform (lo, hi) ->
+    | CDistr dist ->
         let b =
-          match ty with TFloat b -> b | _ -> failwith "Uniform must be float"
+          match ty with TFloat b -> b | _ -> failwith "Continuous distribution must be float"
         in
         (* GLOBAL sorted list of *all* cut‑points for this bag *)
         let cuts =
@@ -334,7 +356,7 @@ let discretize (e : texpr) : expr =
           (left, right)
         ) in
         let probs = List.map (fun (left, right) ->
-          prob_uniform_interval left right lo hi
+          prob_cdistr_interval left right dist
         ) intervals in
         Discrete probs
         

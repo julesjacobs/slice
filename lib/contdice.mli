@@ -1,11 +1,10 @@
 (* Interface for continuous dice *)
 
-(* Re-export types from Types module *)
 type expr = Types.expr =
   | Var of string
   | Let of string * expr * expr
-  | Uniform of float * float
-  | Discrete of float list
+  | CDistr of Stats.cdistr          (* Continuous distribution *)
+  | Discrete of float list    (* list of probabilities, sum should be 1; i-th element is probability of i *)
   | Less of expr * float
   | LessEq of expr * int
   | If of expr * expr * expr
@@ -25,13 +24,14 @@ type ty =
   | TBool
   | TFloat of bag
   | TInt
+  | TMeta of ty option ref
 
 (* Typed expressions *)
 type texpr = ty * aexpr
 and aexpr =
   | Var     of string
   | Let     of string * texpr * texpr
-  | Uniform of float * float
+  | CDistr  of Stats.cdistr
   | Discrete of float list
   | Less    of texpr * float
   | LessEq   of texpr * int

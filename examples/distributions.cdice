@@ -1,0 +1,14 @@
+let a = uniform(0, 1) in
+let b = gaussian(0, 1) in
+let c = exponential(1) in
+let d = beta(2, 2) in
+if a < 0.5 then
+  if b < 0 then
+    c < 1
+  else
+    d < 0.5
+else
+  if c < 1 then
+    d < 0.5
+  else
+    b < 0

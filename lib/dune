@@ -1,7 +1,8 @@
 (library
  (name contdice)
  (public_name contdice)
- (modules types parser lexer contdice))
+ (modules types parser lexer contdice stats)
+ (libraries owl-base))
 
 (ocamllex lexer)
 

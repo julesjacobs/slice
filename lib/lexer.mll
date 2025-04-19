@@ -29,6 +29,10 @@ rule token = parse
   | "then"    { THEN }
   | "else"    { ELSE }
   | "uniform" { UNIFORM }
+  | "gaussian" { GAUSSIAN }
+  | "normal"  { GAUSSIAN }  (* Alias for gaussian *)
+  | "exponential" { EXPONENTIAL }
+  | "beta"    { BETA }
   | "discrete" { DISCRETE }
   | '<'       { LESS }
   | "<="      { LESSEQ }

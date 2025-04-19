@@ -11,4 +11,5 @@
   (ocaml (>= 4.13.0))
   (dune (>= 3.0.0))
   (menhir (>= 20210310))
+  (owl (>= 1.0))
   (alcotest :with-test)))

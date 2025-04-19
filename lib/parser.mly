@@ -7,6 +7,9 @@ open Types
 %token LET IN
 %token IF THEN ELSE
 %token UNIFORM
+%token GAUSSIAN
+%token EXPONENTIAL
+%token BETA
 %token DISCRETE
 %token LESS
 %token LESSEQ
@@ -46,7 +49,13 @@ simple_expr:
   | x = IDENT 
     { Var x }
   | UNIFORM LPAREN lo = FLOAT COMMA hi = FLOAT RPAREN
-    { Uniform (lo, hi) }
+    { CDistr (Uniform (lo, hi)) }
+  | GAUSSIAN LPAREN mean = FLOAT COMMA std = FLOAT RPAREN
+    { CDistr (Gaussian (mean, std)) }
+  | EXPONENTIAL LPAREN rate = FLOAT RPAREN
+    { CDistr (Exponential rate) }
+  | BETA LPAREN alpha = FLOAT COMMA beta = FLOAT RPAREN
+    { CDistr (Beta (alpha, beta)) }
   | DISCRETE LPAREN probs = separated_list(COMMA, FLOAT) RPAREN
     { Discrete probs }
   | LPAREN e = expr RPAREN
