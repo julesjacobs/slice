@@ -6,7 +6,7 @@
 \usepackage{xspace}
 \title{CDice: Discretizing Continuous Probabilistic Programs for BDD-based Inference}
 
-\lstdefinelanguage{CDice}{
+\lstdefinelanguage{Dice}{
     morekeywords={let, in, if, then, else},
     morekeywords=[2]{uniform, discrete},
     morekeywords=[3]{bool, float},
@@ -32,7 +32,7 @@
 \newcommand{\DDice}{\text{\scshape DDice}\xspace}
 
 % Set this as the default language for listings
-\lstset{language=CDice}
+\lstset{language=Dice}
 
 \begin{document}
 
@@ -41,13 +41,18 @@
 
 \section{Introduction}
 
-\begin{lstlisting}[language=CDice]
+Probabilistic programming offers a way to define models involving random variables and perform inference. \CDice is a small functional language designed for expressing programs with continuous distributions with the aim of discretizing them into \DDice, a language with discrete distributions. Here is a simple example:
+
+\begin{lstlisting}
 let x = uniform(0, 1) in
 let y = uniform(0, 2) in
 if x < 0.5 then x < 0.1 else y < 0.1
 \end{lstlisting}
 
-\begin{lstlisting}[language=CDice]
+Exact inference on programs with continuous variables is often intractable, so we will restrict our attention to a subset of \CDice programs that can be discretized into \DDice.
+The program above can be discretized into the following \DDice program:
+
+\begin{lstlisting}
 let x = discrete[0.1; 0.4; 0.5] in
 let y = discrete[0.05; 0.95] in
 if x <= 1 then x <= 0 else y <= 0
@@ -115,10 +120,59 @@ The typing rules are as follows:
     {\Gamma \vdash e \leq c_i : \bool}
 \end{mathpar}
 
-Note that the typing rule for $\uniform(c_1, c_2)$ allows \emph{any} threshold points $c'_0, \ldots, c'_n$, unrelated to the original $c_1, c_2$.
+\section{Type Inference}
 
-\section{Inference}
+Type inference for \CDice aims to assign a type (either \bool{} or \float$\langle c_0, \dots, c_n \rangle$) to every subexpression while simultaneously collecting all relevant comparison threshold points for each float expression. This process works by traversing the abstract syntax tree (AST) of the program and generating type constraints based on the structure of the code and the typing rules.
+
+Key constraints include:
+\begin{itemize}
+    \item In an $\ifkw \; e_1\; \thenkw \; e_2\; \elsekw \; e_3$ expression, $e_1$ must have type \bool, and the types inferred for $e_2$ and $e_3$ must be compatible (unified).
+    \item A comparison $e \leq c$ requires $e$ to have a $\float\langle B \rangle$ type. Furthermore, the constant $c$ becomes a relevant threshold point for the value computed by $e$, so we have the constraint $c \in B$.
+    \item A $\letkw \; x = e_1 \; \inkw \; e_2$ expression requires the type inferred for $e_1$ to be used for the variable $x$ when inferring the type of $e_2$.
+    \item A $\uniform(c_1, c_2)$ expression intrinsically has a $\float\langle B \rangle$ type, with unconstrained $B$.
+\end{itemize}
+
+To manage the constraints on the threshold points associated with $\float\langle B \rangle$ types, we use a concept called ``bags''. Each expression inferred to have type $\float\langle B \rangle$ is associated with a bag $B$, which represents the set of constants $\{c_0, \dots, c_n\}$ it might be compared against. These bags are implemented using a variant of the disjoint-set data structure, commonly known as union-find.
+
+A union-find data structure maintains a collection of disjoint sets (our bags). Each bag is represented by a tree, where the root is the canonical representative of the set. It supports three main operations:
+\begin{itemize}
+    \item \texttt{find(b)}: Returns the canonical representative (root) of the bag $b$, containing the set of threshold points currently known for $b$. Path compression is used for efficiency: during the traversal from $b$ to the root, all nodes encountered are made direct children of the root. This flattens the tree and speeds up future \texttt{find} operations.
+    \item \texttt{union(b1, b2)}: Merges the bags containing $b1$ and $b2$. It first finds the roots of both bags. If they are different, one root is made a child of the other. Crucially, when merging bags associated with \float{} types, the sets of threshold points stored at the roots are combined (using set union).
+    \item \texttt{add(b, c)}: Adds a new threshold point $c$ to the bag $b$.
+\end{itemize}
+
+Type constraints are solved using unification. When two types $t_1$ and $t_2$ must be unified:
+\begin{itemize}
+    \item If $t_1 = \bool$ and $t_2 = \bool$, unification succeeds.
+    \item If $t_1 = \float\langle B_1 \rangle$ and $t_2 = \float\langle B_2 \rangle$, where $B_1$ and $B_2$ are the underlying bags, we perform $\texttt{union}(B_1, B_2)$. This ensures both expressions now share the same bag (and thus the same combined set of threshold points).
+    \item If the types are incompatible (e.g., \bool{} and \float{}), a type error occurs.
+\end{itemize}
+
+The inference algorithm recursively walks the expression AST. It maintains an environment mapping variables to their inferred types. At each node, it generates and solves constraints using unification and the bag operations. The final result is an AST annotated with types, where each $\float\langle B \rangle$ type carries a bag containing the complete set of relevant threshold points determined by the inference process.
 
 \section{Discretization}
+
+After type inference, we have a \CDice expression annotated with types, where each $\float\langle B \rangle$ type includes a bag $B$ containing all relevant threshold points $\{c_0, \dots, c_n\}$ (assumed sorted). The discretization process transforms this typed \CDice expression into a \DDice expression, replacing continuous distributions and comparisons with their discrete counterparts.
+
+The core idea is to map the continuous range of a float variable onto a finite set of integers, representing intervals defined by the threshold points in its bag. A comparison against a threshold constant $c_k$ in \CDice becomes a comparison against the corresponding interval index $k$ in \DDice.
+
+Let $e$ be a subexpression with inferred type $t$ and associated bag $B = \{c_0, \dots, c_n\}$ (if $t$ is a float type). Let $\texttt{discretize}(e)$ be the corresponding \DDice expression.
+
+\begin{itemize}
+    \item \textbf{Uniform Distribution}: If $e = \uniform(l, h)$ with type $\float\langle B \rangle$, where $B = \{c_0, \dots, c_n\}$ are the sorted threshold points. We define $n+2$ intervals based on these points: $I_0 = (-\infty, c_0)$, $I_1 = [c_0, c_1)$, \dots, $I_n = [c_{n-1}, c_n)$, $I_{n+1} = [c_n, +\infty)$. The discretization is $\texttt{discretize}(e) = \discrete[p_0, \dots, p_{n+1}]$, where $p_i$ is the probability mass of the original $\uniform(l, h)$ distribution within the interval $I_i$. This is calculated as:
+    \[ p_i = \frac{\max(0, \min(h, \text{right}_i) - \max(l, \text{left}_i))}{h - l} \]
+    where $\text{left}_i$ and $\text{right}_i$ are the bounds of interval $I_i$ (using $-\infty$ and $+\infty$ appropriately). This \discrete{} distribution yields an integer $i$ with probability $p_i$, signifying that the original continuous value fell within interval $I_i$. (If $h = l$, then the calculation is done in a different way to avoid division by zero.)
+
+    \item \textbf{Less Than Comparison}: If $e = e' < c_k$, where $e'$ has type $\float\langle B \rangle$ and $c_k$ is the $k$-th smallest element in the sorted bag $B = \{c_0, \dots, c_n\}$ (i.e., the element at index $k$ if using 0-based indexing). The discretization is $\texttt{discretize}(e) = \texttt{discretize}(e') \leq k$. The discretized subexpression $\texttt{discretize}(e')$ evaluates to an integer $i$ representing an interval $I_i$. The comparison $i \leq k$ checks if the value falls into any of the intervals $I_0, \dots, I_k$. The union of these intervals is $(-\infty, c_k)$. Thus, the comparison correctly determines if the original value of $e'$ was less than $c_k$.
+
+    \item \textbf{Variables, Let, If}: These constructs are translated recursively, preserving their structure:
+    \begin{itemize}
+        \item $\texttt{discretize}(x) = x$
+        \item $\texttt{discretize}(\letkw \; x = e_1 \; \inkw \; e_2) = \letkw \; x = \texttt{discretize}(e_1) \; \inkw \; \texttt{discretize}(e_2)$
+        \item $\texttt{discretize}(\ifkw \; e_1 \; \thenkw \; e_2 \; \elsekw \; e_3) = \ifkw \; \texttt{discretize}(e_1) \; \thenkw \; \texttt{discretize}(e_2) \; \elsekw \; \texttt{discretize}(e_3)$
+    \end{itemize}
+\end{itemize}
+
+This process effectively translates the probabilistic logic over continuous variables defined by thresholds into equivalent logic over discrete variables representing intervals.
 
 \end{document}
