@@ -66,6 +66,8 @@ module FloatSet = Set.Make(struct
   let compare = compare
 end)
 
+module StringMap = Map.Make(String)
+
 (* A bag is a ref to either:
    - Root { elems }  : the canonical node holding a set of floats
    - Link parent     : pointing up to another bag
@@ -136,27 +138,18 @@ and aexpr =
 
 (* Elaborator: expr -> (ty * aexpr), generating bag constraints *)
 let elab (e : expr) : texpr =
-  let env : (string, texpr) Hashtbl.t = Hashtbl.create 16 in
-
-  let rec aux (e : expr) : texpr =
+  let rec aux (env : ty StringMap.t) (e : expr) : texpr =
     match e with
     | Var x ->
       (try 
-         Hashtbl.find env x
+        (StringMap.find x env, Var x)
        with Not_found -> 
-         (* Try to parse as a number *)
-         try 
-           let n = float_of_string x in
-           let b = new_bag () in
-           assert_elem n b;
-           (TFloat b, Uniform (n, n))  (* Represent constants as uniform(n,n) *)
-         with _ -> 
-           failwith ("Unbound variable: " ^ x))
+        failwith ("Unbound variable: " ^ x))
 
     | Let (x, e1, e2) ->
-      let t1, a1 = aux e1 in
-      Hashtbl.add env x (t1, a1);
-      let t2, a2 = aux e2 in
+      let t1, a1 = aux env e1 in
+      let env' = StringMap.add x t1 env in
+      let t2, a2 = aux env' e2 in
       (t2, Let (x, (t1,a1), (t2,a2)))
 
     | Uniform (lo, hi) ->
@@ -164,7 +157,7 @@ let elab (e : expr) : texpr =
       (TFloat b, Uniform (lo, hi))
 
     | Less (e1, f) ->
-      let t1, a1 = aux e1 in
+      let t1, a1 = aux env e1 in
       (* enforce e1 : float and record f ∈ its bag *)
       let b = new_bag () in
       unify t1 (TFloat b);
@@ -172,15 +165,21 @@ let elab (e : expr) : texpr =
       (TBool, Less ((t1,a1), f))
 
     | If (e1, e2, e3) ->
-      let t1, a1 = aux e1 in
+      let t1, a1 = aux env e1 in
       unify t1 TBool;
-      let t2, a2 = aux e2 in
-      let t3, a3 = aux e3 in
+      let t2, a2 = aux env e2 in
+      let t3, a3 = aux env e3 in
       unify t2 t3;
       (t2, If ((t1,a1), (t2,a2), (t3,a3)))
   in
 
-  aux e
+  aux StringMap.empty e
+
+(* Function that does elab but insists that the return type is TBool *)
+let elab_bool (e : expr) : texpr =
+  let t, a = elab e in
+  if t != TBool then failwith "Type error: expected bool, got float";
+  (t, a)
 
 (* Pretty printer for types with colors *)
 let type_color = "\027[1;35m"    (* Bold Magenta *)
@@ -242,6 +241,112 @@ let string_of_texpr expr =
 let string_of_aexpr aexpr =
   string_of_aexpr_indented aexpr
 
-(* A small test helper *)
-let hello name =
-  Printf.printf "Hello, %s!\n" name
+(* Discrete expressions *)
+type dexpr =
+  | Var    of string
+  | Let    of string * dexpr * dexpr
+  | Discrete of float list (* list of probabilities, sum must be 1; i-th element is probability of i *)
+  | LessEq   of dexpr * int (* less than or equal to *)
+  | If     of dexpr * dexpr * dexpr
+
+(* Pretty printer for discrete expressions with indentation and colors *)
+let rec string_of_dexpr_indented ?(indent=0) = function
+  | Var x -> Printf.sprintf "%s%s%s" variable_color x reset_color
+  | Let (x, e1, e2) -> 
+      let indent_str = String.make indent ' ' in
+      let e1_str = string_of_dexpr_indented ~indent:(indent+2) e1 in
+      let e2_str = string_of_dexpr_indented ~indent:(indent+2) e2 in
+      Printf.sprintf "%slet%s %s%s%s = %s %sin%s\n%s%s" 
+        keyword_color reset_color variable_color x reset_color e1_str 
+        keyword_color reset_color indent_str e2_str
+  | Discrete probs -> 
+      Printf.sprintf "%sdiscrete%s[%s%s%s]"
+        keyword_color reset_color number_color
+        (String.concat "; " (List.map string_of_float probs))
+        reset_color
+  | LessEq (e, n) -> 
+      Printf.sprintf "%s %s<=%s %s%d%s" 
+        (string_of_dexpr_indented ~indent e) operator_color reset_color number_color n reset_color
+  | If (e1, e2, e3) -> 
+      let indent_str = String.make indent ' ' in
+      let next_indent_str = String.make (indent+2) ' ' in
+      let e1_str = string_of_dexpr_indented ~indent e1 in
+      let e2_str = string_of_dexpr_indented ~indent:(indent+2) e2 in
+      let e3_str = string_of_dexpr_indented ~indent:(indent+2) e3 in
+      Printf.sprintf "%sif%s %s %sthen%s\n%s%s\n%s%selse%s\n%s%s" 
+        keyword_color reset_color e1_str keyword_color reset_color 
+        next_indent_str e2_str indent_str keyword_color reset_color next_indent_str e3_str
+
+(* Wrapper for the indented pretty printer *)
+let string_of_dexpr expr =
+  string_of_dexpr_indented expr
+
+
+(* 
+Compiler from typed expressions to discrete expressions.
+
+The idea is that the type system infers a bag of floats that each 
+expression possibly compares against. Instead of sampling from a continuous 
+distribution, we sample from a discrete distribution that tells us the 
+probabilities of the interval between two floats.
+
+When doing a comparison against a float, we convert that to a comparison 
+against the discrete integer that represents the i-th float in the bag.
+*)
+let compile (e : texpr) : dexpr =
+  let rec aux ((ty, ae) : texpr) : dexpr =
+    match ae with
+    | Var x ->
+        Var x
+
+    | Let (x, te1, te2) ->
+        Let (x, aux te1, aux te2)
+
+    | Uniform (lo, hi) ->
+        let b =
+          match ty with TFloat b -> b | _ -> failwith "Uniform must be float"
+        in
+        (* GLOBAL sorted list of *all* cut‑points for this bag *)
+        let cuts =
+          match !(find b) with
+          | Root { elems } -> FloatSet.elements elems
+          | Link _         -> assert false
+        in
+    
+        if lo = hi then begin
+          (* Degenerate: build a one‑hot vector of length (n_cuts+1),
+            with the 1.0 in the bucket containing lo. *)
+          let n = List.length cuts in
+          let idx = List.length (List.filter (fun x -> x < lo) cuts) in
+          let vec = List.init (n+1) (fun i -> if i = idx then 1.0 else 0.0) in
+          Discrete vec
+        end
+        else begin
+          (* Non‑degenerate: slice [lo,hi] at the *local* cuts in [lo,hi] *)
+          let local = List.filter (fun x -> x >= lo && x <= hi) cuts in
+          let boundaries = lo :: (local @ [hi]) in
+          let range = hi -. lo in
+          let rec gaps = function
+            | x :: (y :: _ as rest) -> ((y -. x) /. range) :: gaps rest
+            | _ -> []
+          in
+          Discrete (gaps boundaries)
+        end
+
+    | Less ((t_sub, ae_sub), f) ->
+        let d_sub = aux (t_sub, ae_sub) in
+        (* compute threshold index by counting all cut‑points < f *)
+        let cuts =
+          match !(find (
+            match t_sub with TFloat b -> b | _ -> failwith "Less must be float"
+          )) with
+          | Root { elems } -> FloatSet.elements elems
+          | Link _         -> assert false
+        in
+        let idx = List.length (List.filter (fun x -> x < f) cuts) in
+        LessEq (d_sub, idx)
+
+    | If ((t1, ae1), (t2, ae2), (t3, ae3)) ->
+        If (aux (t1, ae1), aux (t2, ae2), aux (t3, ae3))
+  in
+  aux e

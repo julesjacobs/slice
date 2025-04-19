@@ -42,14 +42,24 @@ val unify : ty -> ty -> unit
 (* Parsing *)
 val parse_expr : string -> expr
 
+(* Discrete expressions *)
+type dexpr =
+  | Var    of string
+  | Let    of string * dexpr * dexpr
+  | Discrete of float list 
+  | LessEq   of dexpr * int
+  | If     of dexpr * dexpr * dexpr
+
 (* Pretty printing *)
 val string_of_expr : expr -> string
 val string_of_ty : ty -> string
 val string_of_texpr : texpr -> string
 val string_of_aexpr : aexpr -> string
+val string_of_dexpr : dexpr -> string
 
 (* Elaboration *)
 val elab : expr -> texpr
+val elab_bool : expr -> texpr
 
-val hello : string -> unit
-(** Prints a greeting to the given name. *)
+(* Compilation *)
+val compile : texpr -> dexpr

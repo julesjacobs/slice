@@ -20,8 +20,12 @@ let process_file filename =
     Printf.printf "Parsed AST:\n%s\n\n" (string_of_expr expr);
     
     (* Type-check the expression *)
-    let texpr = elab expr in
+    let texpr = elab_bool expr in
     Printf.printf "Typed AST:\n%s\n\n" (string_of_texpr texpr);
+    
+    (* Compile to discrete expressions *)
+    let dexpr = compile texpr in
+    Printf.printf "Compiled Program:\n%s\n\n" (string_of_dexpr dexpr);
     
     (* Print a nice separator *)
     print_endline (String.make 60 '-');

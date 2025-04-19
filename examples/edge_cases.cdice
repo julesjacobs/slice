@@ -1,0 +1,20 @@
+let a = uniform(-3.0, 3.0) in
+let b = uniform(0.0, 0.0) in    (* degenerate constant *)
+let c =
+  if a < -1.0 then
+    uniform(-3.0, -1.0)
+  else if a < 0.0 then
+    uniform(-1.0, 1.0)
+  else
+    uniform(0.0, 3.0) in
+let d =
+  if b < 0.0 then             (* tests threshold equal to the only point in b *)
+    uniform(-1.0, 0.0)
+  else
+    uniform(0.0, 1.0) in
+let e =
+  if c < 0.5 then             (* mixes c’s three‑way split with d *)
+    d
+  else
+    c in
+e < 0.0                       (* final threshold before and after zero *)

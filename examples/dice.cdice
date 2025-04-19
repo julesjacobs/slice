@@ -1,0 +1,2 @@
+let roll = uniform(1, 7) in
+roll < 4

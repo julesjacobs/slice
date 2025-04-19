@@ -1,6 +1,0 @@
-let u1 = uniform(0, 1) in
-let u2 = uniform(0, 1) in
-let r = uniform(-2.0, -2.0) in
-let theta = uniform(6.28318530718, 6.28318530718) in
-let result = uniform(0, 1) in
-result
