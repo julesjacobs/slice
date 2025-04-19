@@ -7,9 +7,9 @@
 \title{CDice: Discretizing Continuous Probabilistic Programs for BDD-based Inference}
 
 \lstdefinelanguage{Dice}{
-    morekeywords={let, in, if, then, else},
-    morekeywords=[2]{uniform, discrete},
-    morekeywords=[3]{bool, float},
+    morekeywords={let, in, if, then, else, fst, snd, fun},
+    morekeywords=[2]{uniform, discrete, gaussian, exponential, beta},
+    morekeywords=[3]{bool, float, int},
     basicstyle=\ttfamily,
     keywordstyle=\bfseries,
     commentstyle=\itshape,
@@ -24,6 +24,12 @@
 \newcommand{\elsekw}{\text{\ttfamily\bfseries else}}
 \newcommand{\uniform}{\text{\ttfamily\bfseries uniform}}
 \newcommand{\discrete}{\text{\ttfamily\bfseries discrete}}
+\newcommand{\gaussian}{\text{\ttfamily\bfseries gaussian}}
+\newcommand{\exponential}{\text{\ttfamily\bfseries exponential}}
+\newcommand{\betafn}{\text{\ttfamily\bfseries beta}} % Use beta for the keyword
+\newcommand{\fstkw}{\text{\ttfamily\bfseries fst}}
+\newcommand{\sndkw}{\text{\ttfamily\bfseries snd}}
+\newcommand{\funkw}{\text{\ttfamily\bfseries fun}}
 \newcommand{\bool}{\text{\ttfamily\bfseries bool}}
 \newcommand{\intty}{\text{\ttfamily\bfseries int}}
 \newcommand{\float}{\text{\ttfamily\bfseries float}}
@@ -61,31 +67,47 @@ if x <= 1 then x <= 0 else y <= 0
 
 \section{Language}
 
-The syntax of the \CDice language is:
-%
+The syntax of the \CDice language is shown in Figure~\ref{fig:grammar}.
+
+\begin{figure}[h]
 \begin{align*}
 e ::= &\; x                               & \text{variable} \\
     | &\; \letkw \; x = e_1\; \inkw \; e_2  & \text{let binding} \\
-    | &\; \uniform(c_1, c_2)      & \text{uniform distribution (returns a float)} \\
+    | &\; \text{cdistr}                   & \text{continuous distribution (returns a float)} \\
     | &\; \discrete(p_0, \ldots, p_{n})      & \text{discrete distribution (returns an integer)} \\
-    | &\; e < c                           & \text{less-than test} \\
+    | &\; e < c                           & \text{less-than test (for floats)} \\
     | &\; e \leq i                           & \text{less-than-or-equal test (for integers)} \\
-    | &\; \ifkw \; e_1\; \thenkw \; e_2\; \elsekw \; e_3 & \text{conditional}
+    | &\; \ifkw \; e_1\; \thenkw \; e_2\; \elsekw \; e_3 & \text{conditional} \\
+    | &\; (e_1, e_2)                      & \text{pair construction} \\
+    | &\; \fstkw \; e                       & \text{first projection} \\
+    | &\; \sndkw \; e                       & \text{second projection} \\
+    | &\; \funkw \; x \; \rightarrow \; e    & \text{function abstraction} \\
+    | &\; e_1 \; e_2                      & \text{function application} \\
+    \\[1ex] % Add some space before cdistr definition
+\text{cdistr} ::= &\; \uniform(c_1, c_2)      & \text{uniform distribution} \\
+           | &\; \gaussian(c_1, c_2)   & \text{gaussian distribution (mean, stddev)} \\
+           | &\; \exponential(c)      & \text{exponential distribution (rate)} \\
+           | &\; \betafn(c_1, c_2)      & \text{beta distribution (alpha, beta)}
 \end{align*}
+\caption{Syntax of the \CDice language.}
+\label{fig:grammar}
+\end{figure}
 
-\noindent where $x$ ranges over variable names, $c$ ranges over floating point constants, $i$ ranges over integer constants, and $p_0, \ldots, p_n$ are probabilities that should sum to 1.
+\noindent where $x$ ranges over variable names, $c$, $c_1$, $c_2$ range over floating point constants, $i$ ranges over integer constants, and $p_0, \ldots, p_n$ are probabilities that should sum to 1.
 
-The uniform distribution $\uniform(c_1, c_2)$ represents a continuous random value in the range $[c_1, c_2)$. The discrete distribution $\discrete(p_0, \ldots, p_{n})$ represents a random integer value, returning a value $i \in \{0, \ldots, n\}$ with probability $p_i$.
+The uniform distribution $\uniform(c_1, c_2)$ represents a continuous random value in the range $[c_1, c_2)$. Other continuous distributions (\gaussian, \exponential, \betafn) are defined similarly according to their standard statistical definitions. The discrete distribution $\discrete(p_0, \ldots, p_{n})$ represents a random integer value, returning a value $i \in \{0, \ldots, n\}$ with probability $p_i$. The language also includes standard functional constructs: pairs, projections, lambda abstractions, and function application.
 
-When we discretize continuous programs, we convert expressions with uniform distributions into expressions with discrete distributions, and convert less-than comparisons into less-than-or-equal comparisons on the corresponding discrete intervals.
+When we discretize continuous programs, we convert expressions involving continuous distributions into expressions with discrete distributions, and convert less-than comparisons into less-than-or-equal comparisons on the corresponding discrete intervals.
 
 \section{Type System}
 
-We introduce a type system that analyzes the threshold points of each floating point expression. We have three types:
+We introduce a type system that analyzes the threshold points of each floating point expression. We have the following types:
 \begin{itemize}
     \item \bool: the expression is a boolean value (true or false)
     \item \intty: the expression is an integer value
     \item \float$\langle c_0, \ldots, c_n \rangle$: the expression is a floating point value that can only be compared with threshold tests $e < c_i$ for $i \in \{0, \ldots, n\}$.
+    \item $\tau_1 * \tau_2$: the expression is a pair with elements of type $\tau_1$ and $\tau_2$.
+    \item $\tau_1 \rightarrow \tau_2$: the expression is a function that takes an argument of type $\tau_1$ and returns a result of type $\tau_2$.
 \end{itemize}
 
 The typing rules are as follows:
@@ -96,9 +118,9 @@ The typing rules are as follows:
     {\Gamma, x: \tau \vdash x : \tau}
 
     \inferrule[\textsc{Let}]
-    {\Gamma, x: \tau \vdash e_1 : \tau' \\
-     \Gamma \vdash e_2 : \tau}
-    {\Gamma \vdash \letkw \; x = e_1 \; \inkw \; e_2 : \tau}
+    {\Gamma \vdash e_1 : \tau_1 \\
+     \Gamma, x: \tau_1 \vdash e_2 : \tau_2}
+    {\Gamma \vdash \letkw \; x = e_1 \; \inkw \; e_2 : \tau_2}
 
     \inferrule[\textsc{If}]
     {\Gamma \vdash e_1 : \bool \\
@@ -106,10 +128,10 @@ The typing rules are as follows:
      \Gamma \vdash e_3 : \tau}
     {\Gamma \vdash \ifkw \; e_1 \; \thenkw \; e_2 \; \elsekw \; e_3 : \tau}
 
-    \inferrule[\textsc{Uniform}]
+    \inferrule[\textsc{ContDist}]
     {\ }
-    {\Gamma \vdash \uniform(c_1, c_2) : \float\langle c'_0, \ldots, c'_n \rangle}
-    
+    {\Gamma \vdash cdistr : \float\langle c'_0, \ldots, c'_n \rangle}
+
     \inferrule[\textsc{Discrete}]
     {\ }
     {\Gamma \vdash \discrete(p_0, \ldots, p_n) : \intty}
@@ -117,28 +139,62 @@ The typing rules are as follows:
     \inferrule[\textsc{Less}]
     {\Gamma \vdash e : \float\langle c_0, \ldots, c_n \rangle}
     {\Gamma \vdash e < c_i : \bool}
-    
+
     \inferrule[\textsc{LessEq}]
     {\Gamma \vdash e : \intty}
     {\Gamma \vdash e \leq i : \bool}
+
+    \inferrule[\textsc{Pair}]
+    {\Gamma \vdash e_1 : \tau_1 \\
+     \Gamma \vdash e_2 : \tau_2}
+    {\Gamma \vdash (e_1, e_2) : \tau_1 * \tau_2}
+
+    \inferrule[\textsc{Fst}]
+    {\Gamma \vdash e : \tau_1 * \tau_2}
+    {\Gamma \vdash \fstkw \; e : \tau_1}
+
+    \inferrule[\textsc{Snd}]
+    {\Gamma \vdash e : \tau_1 * \tau_2}
+    {\Gamma \vdash \sndkw \; e : \tau_2}
+
+    \inferrule[\textsc{Fun}]
+    {\Gamma, x: \tau_1 \vdash e : \tau_2}
+    {\Gamma \vdash \funkw \; x \; \rightarrow \; e : \tau_1 \rightarrow \tau_2}
+
+    \inferrule[\textsc{App}]
+    {\Gamma \vdash e_1 : \tau_1 \rightarrow \tau_2 \\
+     \Gamma \vdash e_2 : \tau_1}
+    {\Gamma \vdash e_1 \; e_2 : \tau_2}
 \end{mathpar}
 
 \section{Type Inference}
 
-Type inference for \CDice aims to assign a type (either \bool{}, \intty, or \float$\langle c_0, \dots, c_n \rangle$) to every subexpression while simultaneously collecting all relevant comparison threshold points for each float expression. This process works by traversing the abstract syntax tree (AST) of the program and generating type constraints based on the structure of the code and the typing rules.
+Type inference for \CDice aims to assign a type (e.g., \bool{}, \intty, \float$\langle \dots \rangle$, $\tau_1 * \tau_2$, $\tau_1 \rightarrow \tau_2$) to every subexpression while simultaneously collecting all relevant comparison threshold points for each float expression. This process works by traversing the abstract syntax tree (AST) of the program and generating type constraints based on the structure of the code and the typing rules.
 
-Key constraints include:
+To manage the constraints on the threshold points associated with $\float\langle B \rangle$ types, we use a concept called ``bags''. Each expression inferred to have type $\float\langle B \rangle$ is associated with a bag $B$, which represents the set of constants $\{c_0, \dots, c_n\}$ it might be compared against. 
+
+We have two different kinds of constraints:
+\begin{description}
+    \item[Type constraints:] types $\tau=\tau'$ being equal.
+    \item[Bag constraints:] bags $B=B'$ being equal or $c \in B$ being a member of bag $B$.
+\end{description}
+
+Constraints are generated as follows:
 \begin{itemize}
     \item In an $\ifkw \; e_1\; \thenkw \; e_2\; \elsekw \; e_3$ expression, $e_1$ must have type \bool, and the types inferred for $e_2$ and $e_3$ must be compatible (unified).
     \item A comparison $e < c$ requires $e$ to have a $\float\langle B \rangle$ type. Furthermore, the constant $c$ becomes a relevant threshold point for the value computed by $e$, so we have the constraint $c \in B$.
     \item A comparison $e \leq i$ requires $e$ to have an $\intty$ type.
     \item A $\letkw \; x = e_1 \; \inkw \; e_2$ expression requires the type inferred for $e_1$ to be used for the variable $x$ when inferring the type of $e_2$.
-    \item A $\uniform(c_1, c_2)$ expression intrinsically has a $\float\langle B \rangle$ type, with unconstrained $B$.
+    \item A continuous distribution expression $cdistr$ intrinsically has a $\float\langle B \rangle$ type, with unconstrained $B$.
     \item A $\discrete(p_0, \ldots, p_n)$ expression has type $\intty$, representing an integer in the range $[0,n]$ with probability distribution given by the probabilities.
+    \item A pair $(e_1, e_2)$ has type $\tau_1 * \tau_2$ if $e_1$ has type $\tau_1$ and $e_2$ has type $\tau_2$.
+    \item For $\fstkw \; e$, $e$ must have a pair type $\tau_1 * \tau_2$, and the result has type $\tau_1$.
+    \item For $\sndkw \; e$, $e$ must have a pair type $\tau_1 * \tau_2$, and the result has type $\tau_2$.
+    \item For $\funkw \; x \; \rightarrow \; e$, if $e$ has type $\tau_2$ under the assumption that $x$ has type $\tau_1$, then the function has type $\tau_1 \rightarrow \tau_2$.
+    \item For $e_1 \; e_2$, $e_1$ must have a function type $\tau_1 \rightarrow \tau_2$, and $e_2$ must have type $\tau_1$. The result has type $\tau_2$.
 \end{itemize}
 
-To manage the constraints on the threshold points associated with $\float\langle B \rangle$ types, we use a concept called ``bags''. Each expression inferred to have type $\float\langle B \rangle$ is associated with a bag $B$, which represents the set of constants $\{c_0, \dots, c_n\}$ it might be compared against. These bags are implemented using a variant of the disjoint-set data structure, commonly known as union-find.
-
+Bag constraint solving is implemented using a variant of the disjoint-set data structure, commonly known as union-find.
 A union-find data structure maintains a collection of disjoint sets (our bags). Each bag is represented by a tree, where the root is the canonical representative of the set. It supports three main operations:
 \begin{itemize}
     \item \texttt{find(b)}: Returns the canonical representative (root) of the bag $b$, containing the set of threshold points currently known for $b$. Path compression is used for efficiency: during the traversal from $b$ to the root, all nodes encountered are made direct children of the root. This flattens the tree and speeds up future \texttt{find} operations.
@@ -151,38 +207,45 @@ Type constraints are solved using unification. When two types $t_1$ and $t_2$ mu
     \item If $t_1 = \bool$ and $t_2 = \bool$, unification succeeds.
     \item If $t_1 = \intty$ and $t_2 = \intty$, unification succeeds.
     \item If $t_1 = \float\langle B_1 \rangle$ and $t_2 = \float\langle B_2 \rangle$, where $B_1$ and $B_2$ are the underlying bags, we perform $\texttt{union}(B_1, B_2)$. This ensures both expressions now share the same bag (and thus the same combined set of threshold points).
-    \item If the types are incompatible (e.g., \bool{} and \float{}, or \intty{} and \float{}), a type error occurs.
+    \item If $t_1 = \tau_{1a} * \tau_{1b}$ and $t_2 = \tau_{2a} * \tau_{2b}$, unification succeeds if $\tau_{1a}$ unifies with $\tau_{2a}$ and $\tau_{1b}$ unifies with $\tau_{2b}$.
+    \item If $t_1 = \tau_{1a} \rightarrow \tau_{1b}$ and $t_2 = \tau_{2a} \rightarrow \tau_{2b}$, unification succeeds if $\tau_{1a}$ unifies with $\tau_{2a}$ and $\tau_{1b}$ unifies with $\tau_{2b}$.
+    \item If the types are incompatible (e.g., \bool{} and \float{}, \intty{} and \float{}, pair and function), a type error occurs. Meta-variables (placeholder types) are handled by instantiation during unification.
 \end{itemize}
 
 The inference algorithm recursively walks the expression AST. It maintains an environment mapping variables to their inferred types. At each node, it generates and solves constraints using unification and the bag operations. The final result is an AST annotated with types, where each $\float\langle B \rangle$ type carries a bag containing the complete set of relevant threshold points determined by the inference process.
 
 \section{Discretization}
 
-After type inference, we have a \CDice expression annotated with types, where each $\float\langle B \rangle$ type includes a bag $B$ containing all relevant threshold points $\{c_0, \dots, c_n\}$ (assumed sorted). The discretization process transforms continuous distributions in this typed expression into discrete distributions, replacing continuous uniform distributions and continuous comparisons with their discrete counterparts.
+After type inference, we have a \CDice expression annotated with types, where each $\float\langle B \rangle$ type includes a bag $B$ containing all relevant threshold points $\{c_0, \dots, c_n\}$ (assumed sorted). The discretization process transforms continuous distributions in this typed expression into discrete distributions, replacing continuous distributions and continuous comparisons with their discrete counterparts.
 
 The core idea is to map the continuous range of a float variable onto a finite set of integers, representing intervals defined by the threshold points in its bag. A comparison against a threshold constant $c_k$ becomes a comparison against the corresponding interval index $k$.
 
 Let $e$ be a subexpression with inferred type $t$ and associated bag $B = \{c_0, \dots, c_n\}$ (if $t$ is a float type). Let $\texttt{discretize}(e)$ be the corresponding discretized expression.
 
 \begin{itemize}
-    \item \textbf{Uniform Distribution}: If $e = \uniform(l, h)$ with type $\float\langle B \rangle$, where $B = \{c_0, \dots, c_n\}$ are the sorted threshold points. We define $n+2$ intervals based on these points: $I_0 = (-\infty, c_0)$, $I_1 = [c_0, c_1)$, \dots, $I_n = [c_{n-1}, c_n)$, $I_{n+1} = [c_n, +\infty)$. The discretization is $\texttt{discretize}(e) = \discrete(p_0, \dots, p_{n+1})$, where $p_i$ is the probability mass of the original $\uniform(l, h)$ distribution within the interval $I_i$. This is calculated as:
-    \[ p_i = \frac{\max(0, \min(h, \text{right}_i) - \max(l, \text{left}_i))}{h - l} \]
-    where $\text{left}_i$ and $\text{right}_i$ are the bounds of interval $I_i$ (using $-\infty$ and $+\infty$ appropriately). This \discrete{} distribution yields an integer $i$ with probability $p_i$, signifying that the original continuous value fell within interval $I_i$. (If $h = l$, then the calculation is done in a different way to avoid division by zero.)
+    \item \textbf{Continuous Distribution}: If $e = cdistr$ with type $\float\langle B \rangle$, where $B = \{c_0, \dots, c_n\}$ are the sorted threshold points. We define $n+1$ intervals based on these points: $I_0 = (-\infty, c_0)$, $I_1 = [c_0, c_1)$, \dots, $I_n = [c_{n-1}, c_n)$, $I_{n+1} = [c_n, +\infty)$. The discretization is $\texttt{discretize}(e) = \discrete(p_0, \dots, p_{n+1})$, where $p_i$ is the probability mass of the original continuous distribution $cdistr$ within the interval $I_i$. This is calculated using the Cumulative Distribution Function (CDF) of the specific distribution:
+    \[ p_i = \text{CDF}(\text{right}_i) - \text{CDF}(\text{left}_i) \]
+    where $\text{left}_i$ and $\text{right}_i$ are the bounds of interval $I_i$ (using $-\infty$ and $+\infty$ appropriately). This \discrete{} distribution yields an integer $i$ with probability $p_i$, signifying that the original continuous value fell within interval $I_i$. Special handling is needed for degenerate cases (e.g., zero-width intervals for uniform).
 
     \item \textbf{Discrete Distribution}: If $e = \discrete(p_0, \ldots, p_n)$ with type $\intty$, the discretization simply preserves the discrete distribution as is: $\texttt{discretize}(e) = \discrete(p_0, \ldots, p_n)$. This expression returns an integer value $i \in \{0, 1, \ldots, n\}$ with probability $p_i$.
-    
+
     \item \textbf{Less Than Comparison}: If $e = e' < c_k$, where $e'$ has type $\float\langle B \rangle$ and $c_k$ is the $k$-th smallest element in the sorted bag $B = \{c_0, \dots, c_n\}$ (i.e., the element at index $k$ if using 0-based indexing). The discretization is $\texttt{discretize}(e) = \texttt{discretize}(e') \leq k$. The discretized subexpression $\texttt{discretize}(e')$ evaluates to an integer $i$ representing an interval $I_i$. The comparison $i \leq k$ checks if the value falls into any of the intervals $I_0, \dots, I_k$. The union of these intervals is $(-\infty, c_k)$. Thus, the comparison correctly determines if the original value of $e'$ was less than $c_k$.
-    
+
     \item \textbf{Less Than or Equal Comparison}: If $e = e' \leq i$, where $e'$ has type $\intty$, the discretization preserves the comparison: $\texttt{discretize}(e) = \texttt{discretize}(e') \leq i$. This form is used for comparing integer values, particularly the results of discrete distributions.
 
-    \item \textbf{Variables, Let, If}: These constructs are translated recursively, preserving their structure:
+    \item \textbf{Variables, Let, If, Pairs, Projections, Functions, Application}: These constructs are translated recursively, preserving their structure:
     \begin{itemize}
         \item $\texttt{discretize}(x) = x$
         \item $\texttt{discretize}(\letkw \; x = e_1 \; \inkw \; e_2) = \letkw \; x = \texttt{discretize}(e_1) \; \inkw \; \texttt{discretize}(e_2)$
         \item $\texttt{discretize}(\ifkw \; e_1 \; \thenkw \; e_2 \; \elsekw \; e_3) = \ifkw \; \texttt{discretize}(e_1) \; \thenkw \; \texttt{discretize}(e_2) \; \elsekw \; \texttt{discretize}(e_3)$
+        \item $\texttt{discretize}((e_1, e_2)) = (\texttt{discretize}(e_1), \texttt{discretize}(e_2))$
+        \item $\texttt{discretize}(\fstkw \; e) = \fstkw \; (\texttt{discretize}(e))$
+        \item $\texttt{discretize}(\sndkw \; e) = \sndkw \; (\texttt{discretize}(e))$
+        \item $\texttt{discretize}(\funkw \; x \; \rightarrow \; e) = \funkw \; x \; \rightarrow \; (\texttt{discretize}(e))$
+        \item $\texttt{discretize}(e_1 \; e_2) = \texttt{discretize}(e_1) \; \texttt{discretize}(e_2)$
     \end{itemize}
 \end{itemize}
 
-This process effectively translates continuous uniform distributions into discrete distributions based on the thresholds used in the program, while preserving the original discrete distributions and program structure.
+This process effectively translates continuous distributions into discrete distributions based on the thresholds used in the program, while preserving the original discrete distributions and program structure, including functional and pair constructs.
 
 \end{document}

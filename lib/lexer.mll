@@ -34,6 +34,10 @@ rule token = parse
   | "exponential" { EXPONENTIAL }
   | "beta"    { BETA }
   | "discrete" { DISCRETE }
+  | "fst"     { FST }
+  | "snd"     { SND }
+  | "fun"     { FUN }
+  | "->"      { ARROW }
   | '<'       { LESS }
   | "<="      { LESSEQ }
   | '='       { EQUAL }

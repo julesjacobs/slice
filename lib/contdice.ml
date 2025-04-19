@@ -8,6 +8,11 @@ type expr = Types.expr =
   | Less   of expr * float
   | LessEq  of expr * int     (* less than or equal to; for comparing against integer outputs *)
   | If     of expr * expr * expr
+  | Pair   of expr * expr            (* Pair construction (e1, e2) *)
+  | First  of expr                   (* First projection: fst e *)
+  | Second of expr                   (* Second projection: snd e *)
+  | Fun    of string * expr          (* Function: fun x -> e *)
+  | App    of expr * expr            (* Function application: e1 e2 *)
 
 (* Parser for expressions *)
 let parse_expr (s : string) : expr =
@@ -76,6 +81,25 @@ let rec string_of_expr_indented ?(indent=0) = function
       Printf.sprintf "%sif%s %s %sthen%s\n%s%s\n%s%selse%s\n%s%s" 
         keyword_color reset_color e1_str keyword_color reset_color 
         next_indent_str e2_str indent_str keyword_color reset_color next_indent_str e3_str
+  | Pair (e1, e2) ->
+      let e1_str = string_of_expr_indented ~indent e1 in
+      let e2_str = string_of_expr_indented ~indent e2 in
+      Printf.sprintf "(%s, %s)" e1_str e2_str
+  | First e ->
+      let e_str = string_of_expr_indented ~indent e in
+      Printf.sprintf "(%sfst%s %s)" keyword_color reset_color e_str
+  | Second e ->
+      let e_str = string_of_expr_indented ~indent e in
+      Printf.sprintf "(%ssnd%s %s)" keyword_color reset_color e_str
+  | Fun (x, e) ->
+      let e_str = string_of_expr_indented ~indent:(indent+2) e in
+      Printf.sprintf "%sfun%s %s%s%s %s->%s %s" 
+        keyword_color reset_color variable_color x reset_color 
+        operator_color reset_color e_str
+  | App (e1, e2) ->
+      let e1_str = string_of_expr_indented ~indent e1 in
+      let e2_str = string_of_expr_indented ~indent e2 in
+      Printf.sprintf "(%s %s)" e1_str e2_str
 
 (* Wrapper for the indented pretty printer *)
 let string_of_expr expr =
@@ -142,6 +166,8 @@ type ty =
   | TFloat of bag
   | TInt
   | TMeta of ty option ref
+  | TPair of ty * ty      (* t1 * t2 *)
+  | TFun of ty * ty       (* t1 -> t2 *)
 
 (* 
 let new_meta () : ty =
@@ -156,17 +182,37 @@ let rec force t =
       | None -> t)
   | _ -> t
 
-let unify (t1 : ty) (t2 : ty) : unit =
+let rec unify (t1 : ty) (t2 : ty) : unit =
   match force t1, force t2 with
   | TBool,    TBool      -> ()
   | TFloat b1, TFloat b2 -> assert_eq b1 b2
   | TInt,     TInt       -> ()
+  | TPair(a1, b1), TPair(a2, b2) -> 
+      unify a1 a2; 
+      unify b1 b2
+  | TFun(a1, b1), TFun(a2, b2) -> 
+      unify a1 a2; 
+      unify b1 b2
   | TBool,    TFloat _   -> failwith "Type error: expected bool, got float"
   | TBool,    TInt       -> failwith "Type error: expected bool, got int"
+  | TBool,    TPair _    -> failwith "Type error: expected bool, got pair"
+  | TBool,    TFun _     -> failwith "Type error: expected bool, got function"
   | TFloat _, TBool      -> failwith "Type error: expected float, got bool"
   | TFloat _, TInt       -> failwith "Type error: expected float, got int"
+  | TFloat _, TPair _    -> failwith "Type error: expected float, got pair"
+  | TFloat _, TFun _     -> failwith "Type error: expected float, got function"
   | TInt,     TBool      -> failwith "Type error: expected int, got bool"
   | TInt,     TFloat _   -> failwith "Type error: expected int, got float"
+  | TInt,     TPair _    -> failwith "Type error: expected int, got pair"
+  | TInt,     TFun _     -> failwith "Type error: expected int, got function"
+  | TPair _,  TBool      -> failwith "Type error: expected pair, got bool"
+  | TPair _,  TFloat _   -> failwith "Type error: expected pair, got float"
+  | TPair _,  TInt       -> failwith "Type error: expected pair, got int"
+  | TPair _,  TFun _     -> failwith "Type error: expected pair, got function"
+  | TFun _,   TBool      -> failwith "Type error: expected function, got bool"
+  | TFun _,   TFloat _   -> failwith "Type error: expected function, got float"
+  | TFun _,   TInt       -> failwith "Type error: expected function, got int"
+  | TFun _,   TPair _    -> failwith "Type error: expected function, got pair"
   | TMeta r1, _   ->
       r1 := Some t2
   | _, TMeta r2   ->
@@ -183,6 +229,11 @@ and aexpr =
   | Less    of texpr * float
   | LessEq   of texpr * int
   | If      of texpr * texpr * texpr
+  | Pair    of texpr * texpr
+  | First   of texpr
+  | Second  of texpr
+  | Fun     of string * texpr
+  | App     of texpr * texpr
 
 (* Elaborator: expr -> (ty * aexpr), generating bag constraints *)
 let elab (e : expr) : texpr =
@@ -233,15 +284,41 @@ let elab (e : expr) : texpr =
       let t3, a3 = aux env e3 in
       unify t2 t3;
       (t2, If ((t1,a1), (t2,a2), (t3,a3)))
+      
+    | Pair (e1, e2) ->
+      let t1, a1 = aux env e1 in
+      let t2, a2 = aux env e2 in
+      (TPair (t1, t2), Pair ((t1, a1), (t2, a2)))
+      
+    | First e ->
+      let t, a = aux env e in
+      let t1 = TMeta (ref None) in
+      let t2 = TMeta (ref None) in
+      unify t (TPair (t1, t2));
+      (t1, First (t, a))
+      
+    | Second e ->
+      let t, a = aux env e in
+      let t1 = TMeta (ref None) in
+      let t2 = TMeta (ref None) in
+      unify t (TPair (t1, t2));
+      (t2, Second (t, a))
+      
+    | Fun (x, e) ->
+      let param_type = TMeta (ref None) in
+      let env' = StringMap.add x param_type env in
+      let return_type, a = aux env' e in
+      (TFun (param_type, return_type), Fun (x, (return_type, a)))
+      
+    | App (e1, e2) ->
+      let t1, a1 = aux env e1 in
+      let t2, a2 = aux env e2 in
+      let result_type = TMeta (ref None) in
+      unify t1 (TFun (t2, result_type));
+      (result_type, App ((t1, a1), (t2, a2)))
   in
 
   aux StringMap.empty e
-
-(* Function that does elab but insists that the return type is TBool *)
-let elab_bool (e : expr) : texpr =
-  let t, a = elab e in
-  if t != TBool then failwith "Type error: expected bool, got float";
-  (t, a)
 
 (* Pretty printer for types with colors *)
 let type_color = "\027[1;35m"    (* Bold Magenta *)
@@ -263,10 +340,23 @@ let rec string_of_ty = function
             Printf.sprintf "%sfloat%s%s<%s%s>%s" 
               type_color reset_color bracket_color str_elems bracket_color reset_color
       | Link _ -> failwith "Impossible: find returned a Link")
+    | TPair (t1, t2) ->
+        Printf.sprintf "%s(%s * %s)%s" 
+          bracket_color (string_of_ty t1) (string_of_ty t2) reset_color
+    | TFun (t1, t2) ->
+        Printf.sprintf "%s(%s -> %s)%s" 
+          bracket_color (string_of_ty t1) (string_of_ty t2) reset_color
     | TMeta r ->
         match !r with
         | Some t -> string_of_ty t
         | None -> "?"
+
+(* Function that does elab but insists that the return type is TBool *)
+let elab_bool (e : expr) : texpr =
+  let t, a = elab e in
+  match force t with
+  | TBool -> (t, a)
+  | _ -> failwith (Printf.sprintf "Type error: expected bool, got %s" (string_of_ty t))
 
 (* Pretty printer for typed expressions with indentation and colors *)
 let paren_color = "\027[1;37m"   (* Bold White *)
@@ -306,6 +396,25 @@ and string_of_aexpr_indented ?(indent=0) = function
       Printf.sprintf "%sif%s %s %sthen%s\n%s%s\n%s%selse%s\n%s%s" 
         keyword_color reset_color e1_str keyword_color reset_color 
         next_indent_str e2_str indent_str keyword_color reset_color next_indent_str e3_str
+  | Pair (e1, e2) ->
+      let e1_str = string_of_texpr_indented ~indent e1 in
+      let e2_str = string_of_texpr_indented ~indent e2 in
+      Printf.sprintf "(%s, %s)" e1_str e2_str
+  | First e ->
+      let e_str = string_of_texpr_indented ~indent e in
+      Printf.sprintf "%sfst%s %s" keyword_color reset_color e_str
+  | Second e ->
+      let e_str = string_of_texpr_indented ~indent e in
+      Printf.sprintf "%ssnd%s %s" keyword_color reset_color e_str
+  | Fun (x, e) ->
+      let e_str = string_of_texpr_indented ~indent:(indent+2) e in
+      Printf.sprintf "%sfun%s %s%s%s %s->%s %s" 
+        keyword_color reset_color variable_color x reset_color 
+        operator_color reset_color e_str
+  | App (e1, e2) ->
+      let e1_str = string_of_texpr_indented ~indent e1 in
+      let e2_str = string_of_texpr_indented ~indent e2 in
+      Printf.sprintf "%s %s" e1_str e2_str
 
 (* Wrappers for the indented pretty printers *)
 let string_of_texpr expr =
@@ -368,11 +477,12 @@ let discretize (e : texpr) : expr =
         let d_sub = aux (t_sub, ae_sub) in
         (* compute threshold index by counting all cut‑points < f *)
         let cuts =
-          match !(find (
-            match t_sub with TFloat b -> b | _ -> failwith "Less must be float"
-          )) with
-          | Root { elems } -> FloatSet.elements elems
-          | Link _         -> assert false
+          match force t_sub with 
+          | TFloat b -> 
+              (match !(find b) with
+              | Root { elems } -> FloatSet.elements elems
+              | Link _         -> assert false)
+          | _ -> failwith "Less must be float"
         in
         let idx = List.length (List.filter (fun x -> x < f) cuts) in
         LessEq (d_sub, idx)
@@ -384,5 +494,20 @@ let discretize (e : texpr) : expr =
 
     | If ((t1, ae1), (t2, ae2), (t3, ae3)) ->
         If (aux (t1, ae1), aux (t2, ae2), aux (t3, ae3))
+        
+    | Pair (te1, te2) ->
+        Pair (aux te1, aux te2)
+        
+    | First te ->
+        First (aux te)
+        
+    | Second te ->
+        Second (aux te)
+        
+    | Fun (x, te) ->
+        Fun (x, aux te)
+        
+    | App (te1, te2) ->
+        App (aux te1, aux te2)
   in
   aux e

@@ -11,6 +11,8 @@ open Types
 %token EXPONENTIAL
 %token BETA
 %token DISCRETE
+%token FST SND
+%token FUN ARROW
 %token LESS
 %token LESSEQ
 %token LPAREN RPAREN
@@ -24,6 +26,8 @@ open Types
 %nonassoc IF
 %right IN
 %left EQUAL
+%right ARROW
+%left APP
 
 %start <Types.expr> prog
 
@@ -43,6 +47,14 @@ expr:
     { Less (e, f) }
   | e = simple_expr LESSEQ n = FLOAT
     { LessEq (e, int_of_float n) }
+  | FUN x = IDENT ARROW e = expr 
+    { Fun (x, e) }
+  | e1 = simple_expr e2 = simple_expr %prec APP
+    { App (e1, e2) }
+  | FST e = simple_expr
+    { First e }
+  | SND e = simple_expr
+    { Second e }
   ;
 
 simple_expr:
@@ -60,4 +72,6 @@ simple_expr:
     { Discrete probs }
   | LPAREN e = expr RPAREN
     { e }
+  | LPAREN e1 = expr COMMA e2 = expr RPAREN
+    { Pair (e1, e2) }
   ;

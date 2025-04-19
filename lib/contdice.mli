@@ -8,6 +8,11 @@ type expr = Types.expr =
   | Less of expr * float
   | LessEq of expr * int
   | If of expr * expr * expr
+  | Pair of expr * expr        (* Pair construction (e1, e2) *)
+  | First of expr              (* First projection: fst e *)
+  | Second of expr             (* Second projection: snd e *)
+  | Fun of string * expr       (* Function: fun x -> e *)
+  | App of expr * expr         (* Function application: e1 e2 *)
 
 (* FloatSet module *)
 module FloatSet : Set.S with type elt = float
@@ -25,6 +30,8 @@ type ty =
   | TFloat of bag
   | TInt
   | TMeta of ty option ref
+  | TPair of ty * ty      (* t1 * t2 *)
+  | TFun of ty * ty       (* t1 -> t2 *)
 
 (* Typed expressions *)
 type texpr = ty * aexpr
@@ -36,6 +43,11 @@ and aexpr =
   | Less    of texpr * float
   | LessEq   of texpr * int
   | If      of texpr * texpr * texpr
+  | Pair    of texpr * texpr
+  | First   of texpr
+  | Second  of texpr
+  | Fun     of string * texpr
+  | App     of texpr * texpr
 
 (* Bag operations *)
 val new_bag : unit -> bag

@@ -1,0 +1,2 @@
+let p = (uniform(0,1), gaussian(0,2)) in
+(fst p) < 0.5

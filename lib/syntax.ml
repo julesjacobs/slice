@@ -9,6 +9,11 @@ type expr =
   | Less   of expr * float
   | LessEq  of expr * int
   | If     of expr * expr * expr
+  | Pair   of expr * expr            (* Pair construction (e1, e2) *)
+  | First  of expr                   (* First projection: fst e *)
+  | Second of expr                   (* Second projection: snd e *)
+  | Fun    of string * expr          (* Function: fun x -> e *)
+  | App    of expr * expr            (* Function application: e1 e2 *)
 
 (* ======== Bags as union‑find + FloatSet ======== *)
 
