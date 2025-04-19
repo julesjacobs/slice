@@ -1,0 +1,124 @@
+\documentclass[nonacm,anonymous]{acmart}
+
+\usepackage{listings}
+\usepackage[scaled=0.84]{beramono}
+\usepackage{mathpartir}
+\usepackage{xspace}
+\title{CDice: Discretizing Continuous Probabilistic Programs for BDD-based Inference}
+
+\lstdefinelanguage{CDice}{
+    morekeywords={let, in, if, then, else},
+    morekeywords=[2]{uniform, discrete},
+    morekeywords=[3]{bool, float},
+    basicstyle=\ttfamily,
+    keywordstyle=\bfseries,
+    commentstyle=\itshape,
+    stringstyle=\ttfamily,
+}
+
+% Macros for language keywords to be used in math mode
+\newcommand{\letkw}{\text{\ttfamily\bfseries let}}
+\newcommand{\inkw}{\text{\ttfamily\bfseries in}}
+\newcommand{\ifkw}{\text{\ttfamily\bfseries if}}
+\newcommand{\thenkw}{\text{\ttfamily\bfseries then}}
+\newcommand{\elsekw}{\text{\ttfamily\bfseries else}}
+\newcommand{\uniform}{\text{\ttfamily\bfseries uniform}}
+\newcommand{\discrete}{\text{\ttfamily\bfseries discrete}}
+\newcommand{\bool}{\text{\ttfamily\bfseries bool}}
+\newcommand{\float}{\text{\ttfamily\bfseries float}}
+
+% Macros for language names, use small caps
+\newcommand{\CDice}{\text{\scshape CDice}\xspace}
+\newcommand{\DDice}{\text{\scshape DDice}\xspace}
+
+% Set this as the default language for listings
+\lstset{language=CDice}
+
+\begin{document}
+
+\maketitle
+
+
+\section{Introduction}
+
+\begin{lstlisting}[language=CDice]
+let x = uniform(0, 1) in
+let y = uniform(0, 2) in
+if x < 0.5 then x < 0.1 else y < 0.1
+\end{lstlisting}
+
+\begin{lstlisting}[language=CDice]
+let x = discrete[0.1; 0.4; 0.5] in
+let y = discrete[0.05; 0.95] in
+if x <= 1 then x <= 0 else y <= 0
+\end{lstlisting}
+
+\section{Language}
+
+The syntax of the continuous language \CDice is:
+%
+\begin{align*}
+e ::= &\; x                               & \text{variable} \\
+    | &\; \letkw \; x = e_1\; \inkw \; e_2  & \text{let binding} \\
+    | &\; \uniform(c_1, c_2)      & \text{uniform distribution} \\
+    | &\; e < c                           & \text{threshold test} \\
+    | &\; \ifkw \; e_1\; \thenkw \; e_2\; \elsekw \; e_3 & \text{conditional}
+\end{align*}
+
+\noindent where $x$ ranges over variable names and $c$ ranges over floating point constants.
+
+The syntax of the discrete language \DDice is similar, but replaces uniform distributions with discrete distributions over a fixed set of points:
+%
+\begin{align*}
+e ::= &\; x                               & \text{variable} \\
+    | &\; \letkw \; x = e_1\; \inkw \; e_2  & \text{let binding} \\
+    | &\; \discrete[p_0; \ldots; p_{n}]      & \text{discrete distribution} \\
+    | &\; e \leq c                           & \text{threshold test} \\
+    | &\; \ifkw \; e_1\; \thenkw \; e_2\; \elsekw \; e_3 & \text{conditional}
+\end{align*}
+
+\noindent Note that threshold tests use $\leq$ in DDice rather than $<$ as in CDice.
+The discrete distribution $\discrete[p_0; \ldots; p_{n}]$ is a distribution over natural numbers $\{0, \ldots, n\}$, with $p_i$ being the probability of observing $i$.
+
+\section{Type System}
+
+We introduce a type system that analyzes the threshold points of each floating point expression. We have two types:
+\begin{itemize}
+    \item \bool: the expression is a boolean value (true or false)
+    \item \float$\langle c_0, \ldots, c_n \rangle$: the expression is a floating point value that can only be compared with threshold tests $e \leq c_i$ for $i \in \{0, \ldots, n\}$.
+\end{itemize}
+
+The typing rules are as follows:
+
+\begin{mathpar}
+    \inferrule[\textsc{Var}]
+    {\ }
+    {\Gamma, x: \tau \vdash x : \tau}
+
+    \inferrule[\textsc{Let}]
+    {\Gamma, x: \tau \vdash e_1 : \tau' \\
+     \Gamma \vdash e_2 : \tau}
+    {\Gamma \vdash \letkw \; x = e_1 \; \inkw \; e_2 : \tau}
+
+    \inferrule[\textsc{If}]
+    {\Gamma \vdash e_1 : \bool \\
+     \Gamma \vdash e_2 : \tau \\
+     \Gamma \vdash e_3 : \tau}
+    {\Gamma \vdash \ifkw \; e_1 \; \thenkw \; e_2 \; \elsekw \; e_3 : \tau}
+
+    \inferrule[\textsc{Uniform}]
+    {\ }
+    {\Gamma \vdash \uniform(c_1, c_2) : \float\langle c'_0, \ldots, c'_n \rangle}
+
+    \inferrule[\textsc{Threshold}]
+    {\Gamma \vdash e : \float\langle c_0, \ldots, c_n \rangle}
+    {\Gamma \vdash e \leq c_i : \bool}
+\end{mathpar}
+
+Note that the typing rule for $\uniform(c_1, c_2)$ allows \emph{any} threshold points $c'_0, \ldots, c'_n$, unrelated to the original $c_1, c_2$.
+
+\section{Inference}
+
+\section{Discretization}
+
+\end{document}

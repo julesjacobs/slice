@@ -18,9 +18,11 @@ let lower = ['a'-'z']
 let upper = ['A'-'Z']
 let alpha = lower | upper | '_'
 let ident = alpha (alpha | digit)*
+let comment = "(*" [^ '*']* "*)" | "(*" [^ '*']* "*" ([^ ')'] [^ '*']* "*")* ")"
 
 rule token = parse
   | white     { token lexbuf }
+  | comment   { token lexbuf }
   | "let"     { LET }
   | "in"      { IN }
   | "if"      { IF }

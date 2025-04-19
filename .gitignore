@@ -10,3 +10,10 @@ _build/
 *.cmxa
 *.install
 .merlin
+tex/contdice.synctex.gz
+tex/contdice.pdf
+tex/contdice.out
+tex/contdice.log
+tex/contdice.fls
+tex/contdice.fdb_latexmk
+tex/contdice.aux

@@ -281,6 +281,19 @@ let rec string_of_dexpr_indented ?(indent=0) = function
 let string_of_dexpr expr =
   string_of_dexpr_indented expr
 
+(* Function to compute the probability mass of a 
+   uniform distribution uniform(lo, hi) in an 
+   interval [left, right) *)
+let prob_uniform_interval (left : float) (right : float) (lo : float) (hi : float) : float =
+  if lo = hi then
+    if left <= lo && lo < right then 1.0 else 0.0
+  else
+    let range = hi -. lo in
+    (* Compute the interval intersection *)
+    let left' = max left lo in
+    let right' = min right hi in
+    let intersection_length = max 0.0 (right' -. left') in
+    intersection_length /. range
 
 (* 
 Compiler from typed expressions to discrete expressions.
@@ -312,26 +325,16 @@ let compile (e : texpr) : dexpr =
           | Root { elems } -> FloatSet.elements elems
           | Link _         -> assert false
         in
-    
-        if lo = hi then begin
-          (* Degenerate: build a one‑hot vector of length (n_cuts+1),
-            with the 1.0 in the bucket containing lo. *)
-          let n = List.length cuts in
-          let idx = List.length (List.filter (fun x -> x < lo) cuts) in
-          let vec = List.init (n+1) (fun i -> if i = idx then 1.0 else 0.0) in
-          Discrete vec
-        end
-        else begin
-          (* Non‑degenerate: slice [lo,hi] at the *local* cuts in [lo,hi] *)
-          let local = List.filter (fun x -> x >= lo && x <= hi) cuts in
-          let boundaries = lo :: (local @ [hi]) in
-          let range = hi -. lo in
-          let rec gaps = function
-            | x :: (y :: _ as rest) -> ((y -. x) /. range) :: gaps rest
-            | _ -> []
-          in
-          Discrete (gaps boundaries)
-        end
+        (* Compute set of intervals starting at -infty and ending at +infty *)
+        let intervals = List.init (List.length cuts + 1) (fun i ->
+          let left = if i = 0 then neg_infinity else List.nth cuts (i - 1) in
+          let right = if i = List.length cuts then infinity else List.nth cuts i in
+          (left, right)
+        ) in
+        let probs = List.map (fun (left, right) ->
+          prob_uniform_interval left right lo hi
+        ) intervals in
+        Discrete probs
 
     | Less ((t_sub, ae_sub), f) ->
         let d_sub = aux (t_sub, ae_sub) in

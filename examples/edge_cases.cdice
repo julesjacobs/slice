@@ -1,4 +1,5 @@
 let a = uniform(-3.0, 3.0) in
+(* This is a standalone comment *)
 let b = uniform(0.0, 0.0) in    (* degenerate constant *)
 let c =
   if a < -1.0 then
