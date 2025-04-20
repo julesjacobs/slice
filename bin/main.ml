@@ -1,5 +1,3 @@
-open Contdice
-
 (* Read a file and return its contents as a string *)
 let read_file filename =
   let ic = open_in filename in
@@ -16,16 +14,16 @@ let process_file filename =
     Printf.printf "Source:\n%s\n\n" content;
     
     (* Parse the expression *)
-    let expr = parse_expr content in
-    Printf.printf "Parsed AST:\n%s\n\n" (string_of_expr expr);
+    let expr = Contdice.Parse.parse_expr content in
+    Printf.printf "Parsed AST:\n%s\n\n" (Contdice.Pretty.string_of_expr expr);
     
     (* Type-check the expression *)
-    let texpr = elab_bool expr in
-    Printf.printf "Typed AST:\n%s\n\n" (string_of_texpr texpr);
+    let texpr = Contdice.elab_bool expr in
+    Printf.printf "Typed AST:\n%s\n\n" (Contdice.Pretty.string_of_texpr texpr);
     
     (* Discretize to discrete expressions *)
-    let discretized_expr = discretize texpr in
-    Printf.printf "Discretized Program:\n%s\n\n" (string_of_expr discretized_expr);
+    let discretized_expr = Contdice.discretize texpr in
+    Printf.printf "Discretized Program:\n%s\n\n" (Contdice.Pretty.string_of_expr discretized_expr);
     
     (* Print a nice separator *)
     print_endline (String.make 60 '-');

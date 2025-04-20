@@ -1,9 +1,7 @@
-open Contdice
-
 (* Simple test for parse_expr *)
 let test_parse () =
-  let expr = parse_expr "let x = uniform(0, 1) in if x < 0.5 then 0 else 1" in
-  let pretty = string_of_expr expr in
+  let expr = Contdice.Parse.parse_expr "let x = uniform(0, 1) in if x < 0.5 then 0 else 1" in
+  let pretty = Contdice.Pretty.string_of_expr expr in
   let expected = "let x = uniform(0, 1) in if x < 0.5 then 0 else 1" in
   
   Printf.printf "Parsed: %s\n" pretty;
@@ -16,8 +14,8 @@ let test_parse () =
 
 (* Test for pretty printing *)
 let test_pretty_print () =
-  let expr = parse_expr "let x = uniform(0, 1) in if x < 0.5 then 0 else 1" in
-  let pretty = string_of_expr expr in
+  let expr = Contdice.Parse.parse_expr "let x = uniform(0, 1) in if x < 0.5 then 0 else 1" in
+  let pretty = Contdice.Pretty.string_of_expr expr in
   let expected = "let x = uniform(0, 1) in if x < 0.5 then 0 else 1" in
   if pretty = expected then
     Printf.printf "Pretty print test passed!\n"
@@ -28,10 +26,10 @@ let test_pretty_print () =
 
 (* Test typechecking *)
 let test_typing () =
-  let expr = parse_expr "let x = uniform(0, 1) in if x < 0.5 then 0 else 1" in
+  let expr = Contdice.Parse.parse_expr "let x = uniform(0, 1) in if x < 0.5 then 0 else 1" in
   try
-    let texpr = elab expr in
-    let pretty = string_of_texpr texpr in
+    let texpr = Contdice.elab expr in
+    let pretty = Contdice.Pretty.string_of_texpr texpr in
     Printf.printf "Typed expression: %s\n" pretty;
     Printf.printf "Type check test passed!\n"
   with e -> 

@@ -8,7 +8,8 @@
  (synopsis "Continuous dice")
  (description "An implementation of continuous Dice")
  (depends
-  (ocaml (>= 4.13.0))
+  (ocaml (>= 4.08))
   (dune (>= 3.0.0))
   (menhir (>= 20210310))
-  (alcotest :with-test)))
+  (alcotest :with-test)
+  (cmdliner (>= 1.0))))
