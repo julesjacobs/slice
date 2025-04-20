@@ -70,6 +70,7 @@ rule token = parse
   | '('       { LPAREN }
   | ')'       { RPAREN }
   | ','       { COMMA }
+  | ':'       { COLON }
   | int as i   { try INT (int_of_string i)
                  with _ -> error lexbuf (Printf.sprintf "Invalid integer literal: %s" i) }
   | float as f { try FLOAT (float_of_string f)

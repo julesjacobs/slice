@@ -74,15 +74,26 @@ let elab (e : expr) : texpr =
       let consts_bag_ref = Bags.FloatBag.create Top in 
       (TFloat (bounds_bag_ref, consts_bag_ref), TAExprNode (CDistr dist))
       
-    | Discrete probs ->
+    | DistrCase cases ->
+      if cases = [] then failwith "DistrCase cannot be empty";
+      (* Check probabilities sum to 1 *) 
+      let probs = List.map snd cases in
       let sum = List.fold_left (+.) 0.0 probs in
       if abs_float (sum -. 1.0) > 0.0001 then
-        failwith (Printf.sprintf "Discrete distribution probabilities must sum to 1.0, got %f" sum);
-      (* Discrete results in TFloat: Create bag refs *) 
-      let bounds_bag_ref = Bags.BoundBag.create (Finite BoundSet.empty) in 
-      let const_values = List.init (List.length probs) float_of_int |> FloatSet.of_list in
-      let consts_bag_ref = Bags.FloatBag.create (Finite const_values) in
-      (TFloat (bounds_bag_ref, consts_bag_ref), TAExprNode (Discrete probs))
+        failwith (Printf.sprintf "DistrCase probabilities must sum to 1.0, got %f" sum);
+      
+      (* Type-check all expressions and unify their types *) 
+      let typed_cases = List.map (fun (e, p) -> (aux env e, p)) cases in
+      let first_ty, _ = fst (List.hd typed_cases) in
+      List.iter (fun ((ty, _), _) -> 
+        try unify first_ty ty
+        with Failure msg -> failwith ("Type error in DistrCase branches: " ^ msg)
+      ) (List.tl typed_cases);
+      
+      (* The result type is the unified type of the expressions *) 
+      let result_type = Types.force first_ty in 
+      let annotated_cases = List.map (fun (texpr, prob) -> (texpr, prob)) typed_cases in
+      (result_type, TAExprNode (DistrCase annotated_cases))
 
     | Less (e1, f) ->
       let t1, a1 = aux env e1 in
@@ -248,10 +259,16 @@ let discretize (e : texpr) : expr =
              let probs = List.map (fun (left, right) ->
                prob_cdistr_interval left right dist
              ) intervals in
-             ExprNode (Discrete probs))
+             (* Convert to DistrCase with Const expressions *) 
+             let cases = List.mapi (fun i prob -> (ExprNode (Const (float_of_int i)), prob)) probs in
+             ExprNode (DistrCase cases))
         
-    | Discrete probs ->
-        ExprNode (Discrete probs)
+    | DistrCase cases ->
+      (* Recursively discretize the expressions within the cases *) 
+      let discretized_cases = 
+        List.map (fun (texpr, prob) -> (aux texpr, prob)) cases 
+      in
+      ExprNode (DistrCase discretized_cases)
 
     | Less ((t_sub, _) as te_sub, f) ->
         let d_sub = aux te_sub in

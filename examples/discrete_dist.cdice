@@ -1,2 +1,5 @@
-let coin = discrete(0.5, 0.5) in
-coin <= 0  (* Check if coin is 0 (first outcome) *)
+(* let coin = discrete(0#2 : 0.5, 1#2 : 0.5) in *)
+(* let coin = discrete(0.5 : 0#2, 0.5 : 1#2) in *)
+let coin = discrete(0.5: 0#2, 0.5: 1#2) in
+(* coin <= 0 *)  (* Check if coin is 0 (first outcome) *)
+coin <=#2 0#2

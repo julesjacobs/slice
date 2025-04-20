@@ -22,6 +22,7 @@ open Types
 %token LPAREN RPAREN
 %token COMMA
 %token EQUAL
+%token COLON
 %token EOF
 
 %start <Types.expr> prog
@@ -29,6 +30,7 @@ open Types
 (* Define types for non-terminals *) 
 %type <Types.expr> expr cmp_expr app_expr atomic_expr
 %type <float> number
+%type <(Types.expr * float) list> distr_cases
 
 (* Precedence declarations removed - handled by grammar structure *)
 
@@ -89,12 +91,22 @@ atomic_expr:
     { ExprNode (CDistr (Exponential rate)) }
   | BETA LPAREN alpha = number COMMA beta = number RPAREN
     { ExprNode (CDistr (Beta (alpha, beta))) }
-  | DISCRETE LPAREN probs = separated_nonempty_list(COMMA, number) RPAREN
-    { ExprNode (Discrete probs) }
+  | DISCRETE LPAREN cases = distr_cases RPAREN
+    { ExprNode (DistrCase cases) }
   | LPAREN e = expr RPAREN /* Parenthesized expr */
     { e }
   | LPAREN e1 = expr COMMA e2 = expr RPAREN /* Pair constructor */
     { ExprNode (Pair (e1, e2)) }
+  ;
+
+/* Rule for parsing the (expr : number) pairs for DistrCase */ 
+distr_cases:
+  | /* empty */ { [] } 
+  | cases = separated_nonempty_list(COMMA, distr_case) { cases }
+  ;
+
+distr_case:
+  | p = number COLON e = expr { (e, p) }
   ;
 
 number:
