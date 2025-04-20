@@ -1,7 +1,7 @@
 (library
  (name contdice)
  (public_name contdice)
- (modules bag types stats lexer parser parse contdice pretty))
+ (modules bag bags types stats lexer parser parse contdice pretty))
 
 (ocamllex lexer)
 

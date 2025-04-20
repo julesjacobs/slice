@@ -1,5 +1,5 @@
 open Types
-open Bag
+open Bags (* Open Bags to get FloatSet *)
 
 (* ANSI color codes for syntax highlighting *)
 let keyword_color = "\027[1;34m"  (* Bold Blue *)
@@ -145,25 +145,27 @@ and string_of_ty = function
   | TBool -> Printf.sprintf "%sbool%s" type_color reset_color
   | TInt -> Printf.sprintf "%sint%s" type_color reset_color
   | TFloat bag ->
-      let root = Bag.find bag in
-      (match !root with
-      | Root { elems } ->
-          if FloatSet.is_empty elems then
+      let set_or_top_val = Bags.FloatBag.get bag in 
+      (match set_or_top_val with
+      | Top -> 
+          Printf.sprintf "%sfloat%s%s<Top>%s" 
+            type_color reset_color bracket_color reset_color
+      | Finite float_set -> 
+          if FloatSet.is_empty float_set then
             Printf.sprintf "%sfloat%s" type_color reset_color
           else
-            let elements = FloatSet.elements elems in
+            let elements = FloatSet.elements float_set in
             let str_elems = String.concat ", " 
               (List.map (fun f -> Printf.sprintf "%s%g%s" number_color f reset_color) elements) in
             Printf.sprintf "%sfloat%s%s<%s%s>%s" 
-              type_color reset_color bracket_color str_elems bracket_color reset_color
-      | Link _ -> failwith "Impossible: find returned a Link")
-    | TPair (t1, t2) ->
+              type_color reset_color bracket_color str_elems bracket_color reset_color)
+  | TPair (t1, t2) ->
         Printf.sprintf "%s(%s * %s)%s" 
           bracket_color (string_of_ty t1) (string_of_ty t2) reset_color
-    | TFun (t1, t2) ->
+  | TFun (t1, t2) ->
         Printf.sprintf "%s(%s -> %s)%s" 
           bracket_color (string_of_ty t1) (string_of_ty t2) reset_color
-    | TMeta r ->
+  | TMeta r ->
         match !r with
         | Some t -> string_of_ty t
         | None -> "?"

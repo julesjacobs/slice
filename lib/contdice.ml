@@ -1,7 +1,8 @@
 (* Main implementation of continuous dice *)
 
 open Types
-open Bag
+open Bags (* Open Bags to access FloatSet and FloatBag *)
+(* FloatBag is now defined in Bags module *)
 
 (* Re-export internal modules needed by executable/tests *)
 module Parse = Parse 
@@ -24,7 +25,7 @@ let rec force t =
 let rec unify (t1 : ty) (t2 : ty) : unit =
   match force t1, force t2 with
   | TBool,    TBool      -> ()
-  | TFloat b1, TFloat b2 -> Bag.assert_eq b1 b2
+  | TFloat b1, TFloat b2 -> Bags.FloatBag.union b1 b2
   | TInt,     TInt       -> ()
   | TPair(a1, b1), TPair(a2, b2) -> 
       unify a1 a2; 
@@ -77,7 +78,7 @@ let elab (e : expr) : texpr =
       (t2, TAExprNode (Let (x, (t1,a1), (t2,a2))))
 
     | CDistr dist ->
-      let b = Bag.new_bag () in
+      let b = Bags.FloatBag.create (Finite FloatSet.empty) in
       (TFloat b, TAExprNode (CDistr dist))
       
     | Discrete probs ->
@@ -88,9 +89,10 @@ let elab (e : expr) : texpr =
 
     | Less (e1, f) ->
       let t1, a1 = aux env e1 in
-      let b = Bag.new_bag () in
+      let b = Bags.FloatBag.create (Finite FloatSet.empty) in
       unify t1 (TFloat b);
-      Bag.assert_elem f b;
+      let singleton_bag = Bags.FloatBag.create (Finite (FloatSet.singleton f)) in
+      Bags.FloatBag.union b singleton_bag;
       (TBool, TAExprNode (Less ((t1,a1), f)))
       
     | LessEq (e1, n) ->
@@ -175,13 +177,15 @@ let discretize (e : texpr) : expr =
 
     | CDistr dist ->
         let b =
-          match ty with TFloat b -> b | _ -> failwith "Continuous distribution must be float"
+          match ty with TFloat b -> b | _ -> failwith "Internal error: CDistr not TFloat"
         in
-        let cuts =
-          match !(Bag.find b) with
-          | Root { elems } -> FloatSet.elements elems
-          | Link _         -> assert false
-        in
+        (* Get the set or top associated with the bag *) 
+        let set_or_top_val = Bags.FloatBag.get b in 
+        let cuts = 
+          match set_or_top_val with
+          | Top -> failwith "Cannot discretize a distribution compared with Top boundary" 
+          | Finite float_set -> FloatSet.elements float_set 
+        in 
         let intervals = List.init (List.length cuts + 1) (fun i ->
           let left = if i = 0 then neg_infinity else List.nth cuts (i - 1) in
           let right = if i = List.length cuts then infinity else List.nth cuts i in
@@ -200,10 +204,11 @@ let discretize (e : texpr) : expr =
         let cuts =
           match force t_sub with 
           | TFloat b -> 
-              (match !(Bag.find b) with
-              | Root { elems } -> FloatSet.elements elems
-              | Link _         -> assert false)
-          | _ -> failwith "Less must be float"
+              let set_or_top_val = Bags.FloatBag.get b in (* Get the set or top *)
+              (match set_or_top_val with
+               | Top -> failwith "Cannot perform Less comparison with Top boundary"
+               | Finite float_set -> FloatSet.elements float_set)
+          | _ -> failwith "Type error: Less expects float"
         in
         let idx = List.length (List.filter (fun x -> x < f) cuts) in
         ExprNode (LessEq (d_sub, idx))
