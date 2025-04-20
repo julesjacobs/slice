@@ -259,8 +259,10 @@ let discretize (e : texpr) : expr =
              let probs = List.map (fun (left, right) ->
                prob_cdistr_interval left right dist
              ) intervals in
-             (* Convert to DistrCase with Const expressions *) 
-             let cases = List.mapi (fun i prob -> (ExprNode (Const (float_of_int i)), prob)) probs in
+             (* Convert to DistrCase with FinConst expressions *) 
+             let n = List.length probs in (* Number of intervals = modulus *)
+             if n = 0 then failwith "Internal error: discretization resulted in zero intervals";
+             let cases = List.mapi (fun i prob -> (ExprNode (FinConst (i, n)), prob)) probs in
              ExprNode (DistrCase cases))
         
     | DistrCase cases ->
@@ -278,14 +280,16 @@ let discretize (e : texpr) : expr =
              (match set_or_top_val with
               | Top -> ExprNode (Less (d_sub, f)) (* Keep original Less if Top *) 
               | Finite bound_set -> 
-                  (* Discretize using cuts *) 
                   let cuts = 
                     BoundSet.elements bound_set 
                     |> List.map (function Bags.Less c -> c | Bags.LessEq c -> c)
                     |> List.sort_uniq compare
                   in
+                  let n = List.length cuts + 1 in (* Modulus *) 
+                  if n = 0 then failwith "Internal error: discretization resulted in zero intervals for Less";
                   let idx = List.length (List.filter (fun x -> x < f) cuts) in
-                  ExprNode (LessEq (d_sub, float_of_int idx)))
+                  (* Generate FinLt comparison *) 
+                  ExprNode (FinLt (d_sub, ExprNode (FinConst (idx, n)), n)))
          | _ -> failwith "Type error: Less expects float")
         
     | LessEq ((t_sub, _) as te_sub, f) -> 
@@ -296,14 +300,16 @@ let discretize (e : texpr) : expr =
              (match set_or_top_val with
               | Top -> ExprNode (LessEq (d_sub, f)) (* Keep original LessEq if Top *) 
               | Finite bound_set -> 
-                  (* Discretize using cuts *) 
                   let cuts = 
                     BoundSet.elements bound_set 
                     |> List.map (function Bags.Less c -> c | Bags.LessEq c -> c)
                     |> List.sort_uniq compare
                   in
+                  let n = List.length cuts + 1 in (* Modulus *) 
+                  if n = 0 then failwith "Internal error: discretization resulted in zero intervals for LessEq";
                   let idx = List.length (List.filter (fun x -> x <= f) cuts) in
-                  ExprNode (LessEq (d_sub, float_of_int idx)))
+                  (* Generate FinLeq comparison *) 
+                  ExprNode (FinLeq (d_sub, ExprNode (FinConst (idx, n)), n)))
          | _ -> failwith "Type error: LessEq expects float")
 
     | If (te1, te2, te3) ->
