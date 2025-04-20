@@ -25,7 +25,9 @@ let rec force t =
 let rec unify (t1 : ty) (t2 : ty) : unit =
   match force t1, force t2 with
   | TBool,    TBool      -> ()
-  | TFloat b1, TFloat b2 -> Bags.BoundBag.union b1 b2
+  | TFloat (b1, c1), TFloat (b2, c2) -> 
+      Bags.BoundBag.union b1 b2;
+      Bags.FloatBag.union c1 c2
   | TPair(a1, b1), TPair(a2, b2) -> 
       unify a1 a2; 
       unify b1 b2
@@ -56,9 +58,10 @@ let elab (e : expr) : texpr =
   let rec aux (env : ty StringMap.t) (ExprNode e_node : expr) : texpr =
     match e_node with
     | Const f -> 
-      (* Constant float has TFloat type with empty bag *) 
-      let b = Bags.BoundBag.create (Finite BoundSet.empty) in 
-      (TFloat b, TAExprNode (Const f))
+      (* Constant float: Create bag refs *) 
+      let bounds_bag_ref = Bags.BoundBag.create (Finite BoundSet.empty) in 
+      let consts_bag_ref = Bags.FloatBag.create (Finite (FloatSet.singleton f)) in
+      (TFloat (bounds_bag_ref, consts_bag_ref), TAExprNode (Const f))
     | Var x ->
       (try 
         let ty = StringMap.find x env in
@@ -73,36 +76,49 @@ let elab (e : expr) : texpr =
       (t2, TAExprNode (Let (x, (t1,a1), (t2,a2))))
 
     | CDistr dist ->
-      (* CDistr results in TFloat with an empty BoundBag *) 
-      let b = Bags.BoundBag.create (Finite BoundSet.empty) in 
-      (TFloat b, TAExprNode (CDistr dist))
+      (* CDistr results in TFloat: Create bag refs *) 
+      let bounds_bag_ref = Bags.BoundBag.create (Finite BoundSet.empty) in 
+      let consts_bag_ref = Bags.FloatBag.create Top in 
+      (TFloat (bounds_bag_ref, consts_bag_ref), TAExprNode (CDistr dist))
       
     | Discrete probs ->
       let sum = List.fold_left (+.) 0.0 probs in
       if abs_float (sum -. 1.0) > 0.0001 then
         failwith (Printf.sprintf "Discrete distribution probabilities must sum to 1.0, got %f" sum);
-      (* Discrete results in TFloat with an empty BoundBag *) 
-      let b = Bags.BoundBag.create (Finite BoundSet.empty) in 
-      (TFloat b, TAExprNode (Discrete probs))
+      (* Discrete results in TFloat: Create bag refs *) 
+      let bounds_bag_ref = Bags.BoundBag.create (Finite BoundSet.empty) in 
+      let const_values = List.init (List.length probs) float_of_int |> FloatSet.of_list in
+      let consts_bag_ref = Bags.FloatBag.create (Finite const_values) in
+      (TFloat (bounds_bag_ref, consts_bag_ref), TAExprNode (Discrete probs))
 
     | Less (e1, f) ->
       let t1, a1 = aux env e1 in
-      (* Enforce e1 : TFloat and add Less f bound to its bag *) 
-      let b = Bags.BoundBag.create (Finite BoundSet.empty) in 
-      unify t1 (TFloat b);
-      let bound_val = Bags.Less f in 
-      let bound_bag = Bags.BoundBag.create (Finite (BoundSet.singleton bound_val)) in 
-      Bags.BoundBag.union b bound_bag; 
+      (* Create fresh TFloat refs for unification *)
+      let fresh_bounds_bag_ref = Bags.BoundBag.create (Finite (BoundSet.singleton (Bags.Less f))) in
+      let fresh_consts_bag_ref = Bags.FloatBag.create (Finite FloatSet.empty) in
+      let target_type = TFloat (fresh_bounds_bag_ref, fresh_consts_bag_ref) in
+      unify t1 target_type;
+      (* Add the Less f bound by creating a temporary bag and unioning *)
+      (match force t1 with
+       | TFloat (b_ref, _) -> 
+           let new_bound_bag = Bags.BoundBag.create (Finite (BoundSet.singleton (Bags.Less f))) in
+           Bags.BoundBag.union b_ref new_bound_bag
+       | _ -> failwith "Internal error: unify should have ensured TFloat");
       (TBool, TAExprNode (Less ((t1,a1), f)))
       
     | LessEq (e1, f) ->
       let t1, a1 = aux env e1 in
-      (* Enforce e1 : TFloat and add LessEq f bound to its bag *) 
-      let b = Bags.BoundBag.create (Finite BoundSet.empty) in 
-      unify t1 (TFloat b);
-      let bound_val = Bags.LessEq f in 
-      let bound_bag = Bags.BoundBag.create (Finite (BoundSet.singleton bound_val)) in 
-      Bags.BoundBag.union b bound_bag; 
+      (* Create fresh TFloat refs for unification *)
+      let fresh_bounds_bag_ref = Bags.BoundBag.create (Finite (BoundSet.singleton (Bags.LessEq f))) in
+      let fresh_consts_bag_ref = Bags.FloatBag.create (Finite FloatSet.empty) in
+      let target_type = TFloat (fresh_bounds_bag_ref, fresh_consts_bag_ref) in
+      unify t1 target_type;
+      (* Add the LessEq f bound by creating a temporary bag and unioning *)
+      (match force t1 with
+       | TFloat (b_ref, _) -> 
+           let new_bound_bag = Bags.BoundBag.create (Finite (BoundSet.singleton (Bags.LessEq f))) in
+           Bags.BoundBag.union b_ref new_bound_bag
+       | _ -> failwith "Internal error: unify should have ensured TFloat");
       (TBool, TAExprNode (LessEq ((t1,a1), f)))
 
     | If (e1, e2, e3) ->
@@ -110,7 +126,7 @@ let elab (e : expr) : texpr =
       unify t1 TBool;
       let t2, a2 = aux env e2 in
       let t3, a3 = aux env e3 in
-      unify t2 t3;
+      unify t2 t3; (* This will unify the const bags if t2 and t3 are TFloats *)
       (t2, TAExprNode (If ((t1,a1), (t2,a2), (t3,a3))))
       
     | Pair (e1, e2) ->
@@ -183,10 +199,12 @@ let discretize (e : texpr) : expr =
         ExprNode (Let (x, aux te1, aux te2))
 
     | CDistr dist ->
-        let b =
-          match ty with TFloat b -> b | _ -> failwith "Internal error: CDistr not TFloat"
+        let bounds_bag =
+          match force ty with 
+          | TFloat (b, _) -> b (* Extract bounds bag *)
+          | _ -> failwith "Internal error: CDistr not TFloat"
         in
-        let set_or_top_val = Bags.BoundBag.get b in 
+        let set_or_top_val = Bags.BoundBag.get bounds_bag in 
         (match set_or_top_val with
          | Top -> ExprNode (CDistr dist) (* Keep original if Top *) 
          | Finite bound_set -> 
@@ -212,8 +230,8 @@ let discretize (e : texpr) : expr =
     | Less ((t_sub, _) as te_sub, f) ->
         let d_sub = aux te_sub in
         (match force t_sub with 
-         | TFloat b -> 
-             let set_or_top_val = Bags.BoundBag.get b in
+         | TFloat (bounds_bag, _) -> (* Extract bounds bag *) 
+             let set_or_top_val = Bags.BoundBag.get bounds_bag in
              (match set_or_top_val with
               | Top -> ExprNode (Less (d_sub, f)) (* Keep original Less if Top *) 
               | Finite bound_set -> 
@@ -230,8 +248,8 @@ let discretize (e : texpr) : expr =
     | LessEq ((t_sub, _) as te_sub, f) -> 
         let d_sub = aux te_sub in
         (match force t_sub with 
-         | TFloat b -> 
-             let set_or_top_val = Bags.BoundBag.get b in
+         | TFloat (bounds_bag, _) -> (* Extract bounds bag *) 
+             let set_or_top_val = Bags.BoundBag.get bounds_bag in
              (match set_or_top_val with
               | Top -> ExprNode (LessEq (d_sub, f)) (* Keep original LessEq if Top *) 
               | Finite bound_set -> 

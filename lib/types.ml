@@ -21,9 +21,11 @@ type expr = ExprNode of expr expr_generic
 
 (* Type definitions for the typed language *)
 
+open Bags
+
 type ty =
   | TBool
-  | TFloat of Bags.BoundBag.bag
+  | TFloat of BoundBag.bag * FloatBag.bag
   | TMeta of ty option ref
   | TPair of ty * ty      (* t1 * t2 *)
   | TFun of ty * ty       (* t1 -> t2 *)

@@ -147,25 +147,39 @@ and string_of_aexpr_node ?(indent=0) (TAExprNode ae_node) : string =
 (* Pretty printer for types *)
 and string_of_ty = function
   | TBool -> Printf.sprintf "%sbool%s" type_color reset_color
-  | TFloat bag ->
-      let set_or_top_val = Bags.BoundBag.get bag in
-      (match set_or_top_val with
-      | Top -> 
-          Printf.sprintf "%sfloat%s%s[Top]%s" 
-            type_color reset_color bracket_color reset_color
-      | Finite bound_set -> 
-          if BoundSet.is_empty bound_set then
-            Printf.sprintf "%sfloat%s" type_color reset_color
-          else
-            let elements = BoundSet.elements bound_set in
-            let string_of_bound = function 
-              | Bags.Less c -> Printf.sprintf "<%g" c 
-              | Bags.LessEq c -> Printf.sprintf "<=%g" c 
-            in
-            let str_elems = String.concat ", " 
-              (List.map (fun b -> Printf.sprintf "%s%s%s" number_color (string_of_bound b) reset_color) elements) in
-            Printf.sprintf "%sfloat%s%s[%s%s]%s" 
-              type_color reset_color bracket_color str_elems bracket_color reset_color)
+  | TFloat (bound_bag_ref, const_bag_ref) ->
+      let bounds_str = 
+        match BoundBag.get bound_bag_ref with
+        | Top -> "T"
+        | Finite bound_set ->
+            if BoundSet.is_empty bound_set then ""
+            else
+              let string_of_bound = function 
+                | Bags.Less c -> Printf.sprintf "<%g" c 
+                | Bags.LessEq c -> Printf.sprintf "<=%g" c 
+              in
+              let elements = BoundSet.elements bound_set in
+              (* Join with comma, no space *)
+              String.concat "," (List.map (fun b -> Printf.sprintf "%s%s%s" number_color (string_of_bound b) reset_color) elements)
+      in
+      let consts_str = 
+        match FloatBag.get const_bag_ref with
+        | Top -> "T"
+        | Finite float_set ->
+            if FloatSet.is_empty float_set then ""
+            else 
+              let elements = FloatSet.elements float_set in
+              (* Join with comma, no space *)
+              String.concat "," (List.map (fun f -> Printf.sprintf "%s%g%s" number_color f reset_color) elements)
+      in
+      let content_str = 
+        match bounds_str, consts_str with
+        | "", "" -> "" (* Just float *)
+        | b, "" -> Printf.sprintf "%s[%s]%s" bracket_color b reset_color
+        | "", c -> Printf.sprintf "%s[; %s]%s" bracket_color c reset_color (* Semicolon prefix for consts only *)
+        | b, c  -> Printf.sprintf "%s[%s; %s]%s" bracket_color b c reset_color (* Semicolon separator *)
+      in
+      Printf.sprintf "%sfloat%s%s" type_color reset_color content_str
   | TPair (t1, t2) ->
         Printf.sprintf "%s(%s * %s)%s" 
           bracket_color (string_of_ty t1) (string_of_ty t2) reset_color
