@@ -12,37 +12,79 @@ module Pretty = Pretty
 
 module StringMap = Map.Make(String)
 
-(* ======== Types and unification ======== *)
+(* ======== Occurs Check ======== *)
 
-let rec unify (t1 : ty) (t2 : ty) : unit =
-  match Types.force t1, Types.force t2 with
+(* Check if meta_ref_to_find physically occurs within ty_to_check *) 
+let rec occurs (meta_ref_to_find : ty option ref) (ty_to_check : ty) : bool =
+  match ty_to_check with
+  | TMeta inner_meta_ref ->
+      (* Check direct physical equality first *) 
+      if meta_ref_to_find == inner_meta_ref then
+        true
+      else
+        (* If not directly equal, check inside the meta if it's linked *) 
+        (match !inner_meta_ref with
+         | Some linked_ty -> occurs meta_ref_to_find linked_ty
+         | None -> false) (* Unlinked meta, not the one we're looking for *)
+  | TPair (t1, t2) -> occurs meta_ref_to_find t1 || occurs meta_ref_to_find t2
+  | TFun (t1, t2) -> occurs meta_ref_to_find t1 || occurs meta_ref_to_find t2
+  | TBool | TFloat (_, _) | TFin _ -> false (* Meta cannot occur here *) 
+
+(* ======== Types, Subtyping, and Unification ======== *)
+
+(* Enforce t_sub is a subtype of t_super - REVERTED STRUCTURE *)
+let rec sub_type (t_sub : ty) (t_super : ty) : unit =
+  match Types.force t_sub, Types.force t_super with
+  (* Base Cases *)
   | TBool,    TBool      -> ()
+  | TFin n1, TFin n2 when n1 = n2 -> () 
+  (* Structural Cases *)
   | TFloat (b1, c1), TFloat (b2, c2) -> 
-      Bags.BoundBag.eq b1 b2;
-      Bags.FloatBag.eq c1 c2
+      Bags.BoundBag.eq b1 b2;  (* Bounds must be consistent *) 
+      Bags.FloatBag.leq c1 c2  (* Constants flow sub -> super *) 
   | TPair(a1, b1), TPair(a2, b2) -> 
-      unify a1 a2; 
-      unify b1 b2
+      sub_type a1 a2; (* Covariant *) 
+      sub_type b1 b2  (* Covariant *) 
   | TFun(a1, b1), TFun(a2, b2) -> 
-      unify a1 a2; 
-      unify b1 b2
-  | TFin n1, TFin n2 when n1 = n2 -> () (* Unify TFin n only if n matches *)
-  | TMeta _, t2 when t1 == t2 -> () (* Avoid circular unification (ignore ref) *)
-  | t1, TMeta _ when t1 == t2 -> () (* Avoid circular unification (ignore ref) *)
+      sub_type a2 a1; (* Contravariant argument *) 
+      sub_type b1 b2  (* Covariant result *) 
+  (* Meta Variable Handling (Simplified: try linking, otherwise recurse) *) 
+  | TMeta _, _ when t_sub == t_super -> () (* Already same meta *) 
+  | _, TMeta _ when t_sub == t_super -> () (* Already same meta *) 
   | TMeta r1, _   ->
       (match !r1 with
-      | Some t1' -> unify t1' t2
-      | None -> r1 := Some t2)
+      | Some t1' -> sub_type t1' t_super (* Recurse on existing type *) 
+      | None -> 
+          if occurs r1 t_super then 
+            failwith (Printf.sprintf "Occurs check failed: cannot construct infinite type %s = %s"
+              (Pretty.string_of_ty (TMeta r1)) (Pretty.string_of_ty t_super));
+          r1 := Some t_super) (* Link sub-meta to super type *) 
   | _, TMeta r2   ->
       (match !r2 with
-      | Some t2' -> unify t1 t2'
-      | None -> r2 := Some t1)
+      | Some t2' -> sub_type t_sub t2' (* Recurse on existing type *) 
+      | None -> 
+          if occurs r2 t_sub then
+             failwith (Printf.sprintf "Occurs check failed: cannot construct infinite type %s = %s"
+              (Pretty.string_of_ty (TMeta r2)) (Pretty.string_of_ty t_sub));
+          r2 := Some t_sub) (* Link super-meta to sub type *) 
+  (* Error Case *) 
   | _, _ -> 
-      (* Improved error reporting *)
-      let msg = Printf.sprintf "Type mismatch: cannot unify %s and %s"
-        (Pretty.string_of_ty t1) (Pretty.string_of_ty t2)
+      let msg = Printf.sprintf "Type mismatch: cannot subtype %s <: %s"
+        (Pretty.string_of_ty t_sub) (Pretty.string_of_ty t_super)
       in
       failwith msg
+
+(* Unification: enforce t1 = t2 by bidirectional subtyping *) 
+let unify (t1 : ty) (t2 : ty) : unit =
+  try 
+    sub_type t1 t2; 
+    sub_type t2 t1
+  with Failure msg -> 
+    (* Provide a unification-specific error message *)
+    let unified_msg = Printf.sprintf "Type mismatch: cannot unify %s and %s\n(Subtyping error: %s)"
+      (Pretty.string_of_ty t1) (Pretty.string_of_ty t2) msg
+    in
+    failwith unified_msg
 
 (* ======== Annotated expressions ======== *)
 
@@ -82,60 +124,60 @@ let elab (e : expr) : texpr =
       if abs_float (sum -. 1.0) > 0.0001 then
         failwith (Printf.sprintf "DistrCase probabilities must sum to 1.0, got %f" sum);
       
-      (* Type-check all expressions and unify their types *) 
+      (* Type-check all expressions and subtype them into a fresh result type *) 
       let typed_cases = List.map (fun (e, p) -> (aux env e, p)) cases in
-      let first_ty, _ = fst (List.hd typed_cases) in
-      List.iter (fun ((ty, _), _) -> 
-        try unify first_ty ty
+      let result_ty = TMeta (ref None) in (* Fresh meta for the result *) 
+      List.iter (fun ((branch_ty, _), _) -> 
+        try sub_type branch_ty result_ty (* Enforce branch <: result *)
         with Failure msg -> failwith ("Type error in DistrCase branches: " ^ msg)
-      ) (List.tl typed_cases);
+      ) typed_cases;
       
-      (* The result type is the unified type of the expressions *) 
-      let result_type = Types.force first_ty in 
       let annotated_cases = List.map (fun (texpr, prob) -> (texpr, prob)) typed_cases in
-      (result_type, TAExprNode (DistrCase annotated_cases))
+      (result_ty, TAExprNode (DistrCase annotated_cases))
 
     | Less (e1, f) ->
       let t1, a1 = aux env e1 in
-      (* Create fresh TFloat refs for unification (bounds only contain the compared value) *)
       let fresh_bounds_bag_ref = Bags.BoundBag.create (Finite (BoundSet.singleton (Bags.Less f))) in
-      let fresh_consts_bag_ref = Bags.FloatBag.create (Finite FloatSet.empty) in
+      (* Note: Constants bag is Bottom (Finite empty) as Less doesn't provide constant info *) 
+      let fresh_consts_bag_ref = Bags.FloatBag.create (Finite FloatSet.empty) in 
       let target_type = TFloat (fresh_bounds_bag_ref, fresh_consts_bag_ref) in
-      (try unify t1 target_type
+      (try sub_type t1 target_type (* Check t1 is a subtype of the target float type *) 
        with Failure msg -> failwith (Printf.sprintf "Type error in Less (< %g): %s" f msg));
-      (* Add the Less f bound by creating a temporary bag and unioning *)
+      (* Add the Less f bound constraint *) 
       (match Types.force t1 with
        | TFloat (b_ref, _) -> 
            let new_bound_bag = Bags.BoundBag.create (Finite (BoundSet.singleton (Bags.Less f))) in
-           Bags.BoundBag.leq new_bound_bag b_ref
-       | _ -> failwith "Internal error: Less operand not TFloat after unification");
+           Bags.BoundBag.leq new_bound_bag b_ref (* Must still enforce the bound *) 
+       | _ -> failwith "Internal error: Less operand not TFloat after subtyping check");
       (TBool, TAExprNode (Less ((t1,a1), f)))
       
     | LessEq (e1, f) ->
       let t1, a1 = aux env e1 in
-      (* Create fresh TFloat refs for unification (bounds only contain the compared value) *)
       let fresh_bounds_bag_ref = Bags.BoundBag.create (Finite (BoundSet.singleton (Bags.LessEq f))) in
-      let fresh_consts_bag_ref = Bags.FloatBag.create (Finite FloatSet.empty) in
+      let fresh_consts_bag_ref = Bags.FloatBag.create (Finite FloatSet.empty) in 
       let target_type = TFloat (fresh_bounds_bag_ref, fresh_consts_bag_ref) in
-       (try unify t1 target_type
+       (try sub_type t1 target_type (* Check t1 is a subtype of the target float type *) 
        with Failure msg -> failwith (Printf.sprintf "Type error in LessEq (<= %g): %s" f msg));
-      (* Add the LessEq f bound by creating a temporary bag and unioning *)
+      (* Add the LessEq f bound constraint *) 
       (match Types.force t1 with
        | TFloat (b_ref, _) -> 
            let new_bound_bag = Bags.BoundBag.create (Finite (BoundSet.singleton (Bags.LessEq f))) in
-           Bags.BoundBag.leq new_bound_bag b_ref
-       | _ -> failwith "Internal error: LessEq operand not TFloat after unification");
+           Bags.BoundBag.leq new_bound_bag b_ref (* Must still enforce the bound *) 
+       | _ -> failwith "Internal error: LessEq operand not TFloat after subtyping check");
       (TBool, TAExprNode (LessEq ((t1,a1), f)))
 
     | If (e1, e2, e3) ->
       let t1, a1 = aux env e1 in
-      (try unify t1 TBool 
+      (try sub_type t1 TBool (* Condition must be bool *) 
        with Failure msg -> failwith ("Type error in If condition: " ^ msg));
       let t2, a2 = aux env e2 in
       let t3, a3 = aux env e3 in
-      (try unify t2 t3 
+      let result_ty = TMeta (ref None) in (* Fresh meta for the result *) 
+      (try 
+         sub_type t2 result_ty; (* Enforce true_branch <: result *) 
+         sub_type t3 result_ty  (* Enforce false_branch <: result *) 
        with Failure msg -> failwith ("Type error in If branches: " ^ msg)); 
-      (t2, TAExprNode (If ((t1,a1), (t2,a2), (t3,a3))))
+      (result_ty, TAExprNode (If ((t1,a1), (t2,a2), (t3,a3))))
       
     | Pair (e1, e2) ->
       let t1, a1 = aux env e1 in
@@ -165,12 +207,17 @@ let elab (e : expr) : texpr =
       (TFun (param_type, return_type), TAExprNode (Fun (x, (return_type, a))))
       
     | App (e1, e2) ->
-      let t1, a1 = aux env e1 in
-      let t2, a2 = aux env e2 in
-      let result_type = TMeta (ref None) in
-      (try unify t1 (TFun (t2, result_type))
-        with Failure msg -> failwith ("Type error in function application: " ^ msg));
-      (Types.force result_type, TAExprNode (App ((t1, a1), (t2, a2)))) (* Use Types.force *)
+      let t_fun, a_fun = aux env e1 in
+      let t_arg, a_arg = aux env e2 in
+      let param_ty_expected = TMeta (ref None) in (* Fresh meta for expected param type *) 
+      let result_ty = TMeta (ref None) in (* Fresh meta for result type *) 
+      (try 
+         (* Check t_fun is a function expecting param_ty_expected and returning result_ty *) 
+         sub_type t_fun (TFun (param_ty_expected, result_ty));
+         (* Check t_arg is a subtype of what the function expects *) 
+         sub_type t_arg param_ty_expected 
+       with Failure msg -> failwith ("Type error in function application: " ^ msg));
+      (result_ty, TAExprNode (App ((t_fun, a_fun), (t_arg, a_arg))))
       
     | FinConst (k, n) ->
       if k < 0 || k >= n then failwith (Printf.sprintf "Invalid FinConst value: %d#%d. k must be >= 0 and < n." k n);
@@ -181,9 +228,9 @@ let elab (e : expr) : texpr =
       let t1, a1 = aux env e1 in
       let t2, a2 = aux env e2 in
       let expected_type = TFin n in
-      (try unify t1 expected_type 
+      (try unify t1 expected_type (* Use unify for strict equality check *) 
        with Failure msg -> failwith (Printf.sprintf "Type error in FinLt (<#%d) left operand: %s" n msg));
-      (try unify t2 expected_type
+      (try unify t2 expected_type (* Use unify for strict equality check *) 
        with Failure msg -> failwith (Printf.sprintf "Type error in FinLt (<#%d) right operand: %s" n msg));
       (TBool, TAExprNode (FinLt ((t1, a1), (t2, a2), n)))
       
@@ -192,9 +239,9 @@ let elab (e : expr) : texpr =
       let t1, a1 = aux env e1 in
       let t2, a2 = aux env e2 in
       let expected_type = TFin n in
-      (try unify t1 expected_type
+      (try unify t1 expected_type (* Use unify for strict equality check *) 
        with Failure msg -> failwith (Printf.sprintf "Type error in FinLeq (<=#%d) left operand: %s" n msg));
-      (try unify t2 expected_type
+      (try unify t2 expected_type (* Use unify for strict equality check *) 
        with Failure msg -> failwith (Printf.sprintf "Type error in FinLeq (<=#%d) right operand: %s" n msg));
       (TBool, TAExprNode (FinLeq ((t1, a1), (t2, a2), n)))
 
