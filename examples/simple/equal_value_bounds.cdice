@@ -1,0 +1,13 @@
+(* Test discretization with < and <= bounds at the same value *)
+let x = uniform(0, 1) in
+let y = uniform(0, 1) in
+
+(* The comparisons below force x's bag to contain {<0.5, <=0.5} *)
+if x < 0.5 then
+  x < 0.2
+else (
+  if x <= 0.5 then
+    x < 0.5
+  else
+    x < 0.7
+) 

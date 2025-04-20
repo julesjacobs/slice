@@ -1,5 +1,5 @@
 open Types
-open Bags (* Open Bags to get FloatSet *)
+open Bags (* Open Bags to get FloatSet and access Set modules and Bound type *)
 
 (* ANSI color codes for syntax highlighting *)
 let keyword_color = "\027[1;34m"  (* Bold Blue *)
@@ -39,6 +39,8 @@ and string_of_texpr_indented ?(indent=0) ((ty, aexpr) : texpr) : string =
 (* Pretty printer for expr nodes *)
 and string_of_expr_node ?(indent=0) (ExprNode expr_node) : string =
   match expr_node with
+  | Const f -> 
+      Printf.sprintf "%s%g%s" number_color f reset_color
   | Var x -> Printf.sprintf "%s%s%s" variable_color x reset_color
   | Let (x, e1, e2) ->
       let indent_str = String.make indent ' ' in
@@ -91,6 +93,8 @@ and string_of_expr_node ?(indent=0) (ExprNode expr_node) : string =
 (* Pretty printer for aexpr nodes *)
 and string_of_aexpr_node ?(indent=0) (TAExprNode ae_node) : string =
  match ae_node with
+  | Const f -> 
+      Printf.sprintf "%s%g%s" number_color f reset_color
   | Var x -> Printf.sprintf "%s%s%s" variable_color x reset_color
   | Let (x, te1, te2) ->
       let indent_str = String.make indent ' ' in
@@ -144,19 +148,23 @@ and string_of_aexpr_node ?(indent=0) (TAExprNode ae_node) : string =
 and string_of_ty = function
   | TBool -> Printf.sprintf "%sbool%s" type_color reset_color
   | TFloat bag ->
-      let set_or_top_val = Bags.FloatBag.get bag in 
+      let set_or_top_val = Bags.BoundBag.get bag in
       (match set_or_top_val with
       | Top -> 
-          Printf.sprintf "%sfloat%s%s<Top>%s" 
+          Printf.sprintf "%sfloat%s%s[Top]%s" 
             type_color reset_color bracket_color reset_color
-      | Finite float_set -> 
-          if FloatSet.is_empty float_set then
+      | Finite bound_set -> 
+          if BoundSet.is_empty bound_set then
             Printf.sprintf "%sfloat%s" type_color reset_color
           else
-            let elements = FloatSet.elements float_set in
+            let elements = BoundSet.elements bound_set in
+            let string_of_bound = function 
+              | Bags.Less c -> Printf.sprintf "<%g" c 
+              | Bags.LessEq c -> Printf.sprintf "<=%g" c 
+            in
             let str_elems = String.concat ", " 
-              (List.map (fun f -> Printf.sprintf "%s%g%s" number_color f reset_color) elements) in
-            Printf.sprintf "%sfloat%s%s<%s%s>%s" 
+              (List.map (fun b -> Printf.sprintf "%s%s%s" number_color (string_of_bound b) reset_color) elements) in
+            Printf.sprintf "%sfloat%s%s[%s%s]%s" 
               type_color reset_color bracket_color str_elems bracket_color reset_color)
   | TPair (t1, t2) ->
         Printf.sprintf "%s(%s * %s)%s" 

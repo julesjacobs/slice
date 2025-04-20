@@ -3,6 +3,7 @@
 (* Base functor for expression structure *)
 type 'a expr_generic = 
   | Var    of string
+  | Const  of float
   | Let    of string * 'a * 'a
   | CDistr of Stats.cdistr          (* Continuous distribution *)
   | Discrete of float list    (* list of probabilities; i-th element is probability of float(i) *)
@@ -22,7 +23,7 @@ type expr = ExprNode of expr expr_generic
 
 type ty =
   | TBool
-  | TFloat of Bags.FloatBag.bag
+  | TFloat of Bags.BoundBag.bag
   | TMeta of ty option ref
   | TPair of ty * ty      (* t1 * t2 *)
   | TFun of ty * ty       (* t1 -> t2 *)

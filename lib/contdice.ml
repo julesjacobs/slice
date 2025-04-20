@@ -1,7 +1,7 @@
 (* Main implementation of continuous dice *)
 
 open Types
-open Bags (* Open Bags to access FloatSet and FloatBag *)
+open Bags (* Open Bags to access FloatSet, BoundSet, FloatBag, BoundBag etc. *)
 (* FloatBag is now defined in Bags module *)
 
 (* Re-export internal modules needed by executable/tests *)
@@ -25,7 +25,7 @@ let rec force t =
 let rec unify (t1 : ty) (t2 : ty) : unit =
   match force t1, force t2 with
   | TBool,    TBool      -> ()
-  | TFloat b1, TFloat b2 -> Bags.FloatBag.union b1 b2
+  | TFloat b1, TFloat b2 -> Bags.BoundBag.union b1 b2
   | TPair(a1, b1), TPair(a2, b2) -> 
       unify a1 a2; 
       unify b1 b2
@@ -55,6 +55,10 @@ let rec unify (t1 : ty) (t2 : ty) : unit =
 let elab (e : expr) : texpr =
   let rec aux (env : ty StringMap.t) (ExprNode e_node : expr) : texpr =
     match e_node with
+    | Const f -> 
+      (* Constant float has TFloat type with empty bag *) 
+      let b = Bags.BoundBag.create (Finite BoundSet.empty) in 
+      (TFloat b, TAExprNode (Const f))
     | Var x ->
       (try 
         let ty = StringMap.find x env in
@@ -69,30 +73,36 @@ let elab (e : expr) : texpr =
       (t2, TAExprNode (Let (x, (t1,a1), (t2,a2))))
 
     | CDistr dist ->
-      let b = Bags.FloatBag.create (Finite FloatSet.empty) in
+      (* CDistr results in TFloat with an empty BoundBag *) 
+      let b = Bags.BoundBag.create (Finite BoundSet.empty) in 
       (TFloat b, TAExprNode (CDistr dist))
       
     | Discrete probs ->
       let sum = List.fold_left (+.) 0.0 probs in
       if abs_float (sum -. 1.0) > 0.0001 then
         failwith (Printf.sprintf "Discrete distribution probabilities must sum to 1.0, got %f" sum);
-      let b = Bags.FloatBag.create (Finite FloatSet.empty) in 
+      (* Discrete results in TFloat with an empty BoundBag *) 
+      let b = Bags.BoundBag.create (Finite BoundSet.empty) in 
       (TFloat b, TAExprNode (Discrete probs))
 
     | Less (e1, f) ->
       let t1, a1 = aux env e1 in
-      let b = Bags.FloatBag.create (Finite FloatSet.empty) in
+      (* Enforce e1 : TFloat and add Less f bound to its bag *) 
+      let b = Bags.BoundBag.create (Finite BoundSet.empty) in 
       unify t1 (TFloat b);
-      let singleton_bag = Bags.FloatBag.create (Finite (FloatSet.singleton f)) in
-      Bags.FloatBag.union b singleton_bag;
+      let bound_val = Bags.Less f in 
+      let bound_bag = Bags.BoundBag.create (Finite (BoundSet.singleton bound_val)) in 
+      Bags.BoundBag.union b bound_bag; 
       (TBool, TAExprNode (Less ((t1,a1), f)))
       
     | LessEq (e1, f) ->
       let t1, a1 = aux env e1 in
-      let b = Bags.FloatBag.create (Finite FloatSet.empty) in
+      (* Enforce e1 : TFloat and add LessEq f bound to its bag *) 
+      let b = Bags.BoundBag.create (Finite BoundSet.empty) in 
       unify t1 (TFloat b);
-      let singleton_bag = Bags.FloatBag.create (Finite (FloatSet.singleton f)) in
-      Bags.FloatBag.union b singleton_bag;
+      let bound_val = Bags.LessEq f in 
+      let bound_bag = Bags.BoundBag.create (Finite (BoundSet.singleton bound_val)) in 
+      Bags.BoundBag.union b bound_bag; 
       (TBool, TAExprNode (LessEq ((t1,a1), f)))
 
     | If (e1, e2, e3) ->
@@ -164,6 +174,8 @@ against the discrete integer that represents the i-th float in the bag.
 let discretize (e : texpr) : expr =
   let rec aux ((ty, TAExprNode ae_node) : texpr) : expr =
     match ae_node with
+    | Const f -> 
+        ExprNode (Const f) (* Pass constant through *) 
     | Var x ->
         ExprNode (Var x)
 
@@ -174,55 +186,64 @@ let discretize (e : texpr) : expr =
         let b =
           match ty with TFloat b -> b | _ -> failwith "Internal error: CDistr not TFloat"
         in
-        (* Get the set or top associated with the bag *) 
-        let set_or_top_val = Bags.FloatBag.get b in 
-        let cuts = 
-          match set_or_top_val with
-          | Top -> failwith "Cannot discretize a distribution compared with Top boundary" 
-          | Finite float_set -> FloatSet.elements float_set 
-        in 
-        let intervals = List.init (List.length cuts + 1) (fun i ->
-          let left = if i = 0 then neg_infinity else List.nth cuts (i - 1) in
-          let right = if i = List.length cuts then infinity else List.nth cuts i in
-          (left, right)
-        ) in
-        let probs = List.map (fun (left, right) ->
-          prob_cdistr_interval left right dist
-        ) intervals in
-        ExprNode (Discrete probs)
+        let set_or_top_val = Bags.BoundBag.get b in 
+        (match set_or_top_val with
+         | Top -> ExprNode (CDistr dist) (* Keep original if Top *) 
+         | Finite bound_set -> 
+             (* Discretize using cuts *) 
+             let cuts = 
+               BoundSet.elements bound_set 
+               |> List.map (function Bags.Less c -> c | Bags.LessEq c -> c) 
+               |> List.sort_uniq compare
+             in 
+             let intervals = List.init (List.length cuts + 1) (fun i ->
+               let left = if i = 0 then neg_infinity else List.nth cuts (i - 1) in
+               let right = if i = List.length cuts then infinity else List.nth cuts i in
+               (left, right)
+             ) in
+             let probs = List.map (fun (left, right) ->
+               prob_cdistr_interval left right dist
+             ) intervals in
+             ExprNode (Discrete probs))
         
     | Discrete probs ->
         ExprNode (Discrete probs)
 
     | Less ((t_sub, _) as te_sub, f) ->
         let d_sub = aux te_sub in
-        let cuts =
-          match force t_sub with 
-          | TFloat b -> 
-              let set_or_top_val = Bags.FloatBag.get b in
-              (match set_or_top_val with
-               | Top -> failwith "Cannot perform Less comparison with Top boundary"
-               | Finite float_set -> FloatSet.elements float_set)
-          | _ -> failwith "Type error: Less expects float"
-        in
-        (* Index is count of elements < f *) 
-        let idx = List.length (List.filter (fun x -> x < f) cuts) in
-        ExprNode (LessEq (d_sub, float_of_int idx)) (* Discretized comparison is always LessEq index *)
+        (match force t_sub with 
+         | TFloat b -> 
+             let set_or_top_val = Bags.BoundBag.get b in
+             (match set_or_top_val with
+              | Top -> ExprNode (Less (d_sub, f)) (* Keep original Less if Top *) 
+              | Finite bound_set -> 
+                  (* Discretize using cuts *) 
+                  let cuts = 
+                    BoundSet.elements bound_set 
+                    |> List.map (function Bags.Less c -> c | Bags.LessEq c -> c)
+                    |> List.sort_uniq compare
+                  in
+                  let idx = List.length (List.filter (fun x -> x < f) cuts) in
+                  ExprNode (LessEq (d_sub, float_of_int idx)))
+         | _ -> failwith "Type error: Less expects float")
         
-    | LessEq ((t_sub, _) as te_sub, f) -> (* Now takes float f *) 
+    | LessEq ((t_sub, _) as te_sub, f) -> 
         let d_sub = aux te_sub in
-        let cuts = 
-          match force t_sub with 
-          | TFloat b -> 
-              let set_or_top_val = Bags.FloatBag.get b in
-              (match set_or_top_val with
-               | Top -> failwith "Cannot perform LessEq comparison with Top boundary"
-               | Finite float_set -> FloatSet.elements float_set)
-          | _ -> failwith "Type error: LessEq expects float"
-        in
-        (* Index is count of elements <= f *) 
-        let idx = List.length (List.filter (fun x -> x <= f) cuts) in
-        ExprNode (LessEq (d_sub, float_of_int idx)) (* Discretized comparison is always LessEq index *)
+        (match force t_sub with 
+         | TFloat b -> 
+             let set_or_top_val = Bags.BoundBag.get b in
+             (match set_or_top_val with
+              | Top -> ExprNode (LessEq (d_sub, f)) (* Keep original LessEq if Top *) 
+              | Finite bound_set -> 
+                  (* Discretize using cuts *) 
+                  let cuts = 
+                    BoundSet.elements bound_set 
+                    |> List.map (function Bags.Less c -> c | Bags.LessEq c -> c)
+                    |> List.sort_uniq compare
+                  in
+                  let idx = List.length (List.filter (fun x -> x <= f) cuts) in
+                  ExprNode (LessEq (d_sub, float_of_int idx)))
+         | _ -> failwith "Type error: LessEq expects float")
 
     | If (te1, te2, te3) ->
         ExprNode (If (aux te1, aux te2, aux te3))

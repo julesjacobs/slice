@@ -49,6 +49,8 @@ expr:
   ;
 
 simple_expr:
+  | f = FLOAT 
+    { ExprNode (Const f) }
   | x = IDENT 
     { ExprNode (Var x) }
   | UNIFORM LPAREN lo = FLOAT COMMA hi = FLOAT RPAREN
