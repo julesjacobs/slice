@@ -56,9 +56,9 @@ and string_of_expr_node ?(indent=0) (ExprNode expr_node) : string =
   | Less (e, f) ->
       Printf.sprintf "%s %s<%s %s%g%s"
         (string_of_expr_indented ~indent e) operator_color reset_color number_color f reset_color
-  | LessEq (e, n) ->
-      Printf.sprintf "%s %s<=%s %s%d%s"
-        (string_of_expr_indented ~indent e) operator_color reset_color number_color n reset_color
+  | LessEq (e, f) ->
+      Printf.sprintf "%s %s<=%s %s%g%s"
+        (string_of_expr_indented ~indent e) operator_color reset_color number_color f reset_color
   | If (e1, e2, e3) ->
       let indent_str = String.make indent ' ' in
       let next_indent_str = String.make (indent+2) ' ' in
@@ -108,9 +108,9 @@ and string_of_aexpr_node ?(indent=0) (TAExprNode ae_node) : string =
   | Less (te, f) ->
       Printf.sprintf "%s %s<%s %s%g%s"
         (string_of_texpr_indented ~indent te) operator_color reset_color number_color f reset_color
-  | LessEq (te, n) ->
-      Printf.sprintf "%s %s<=%s %s%d%s"
-        (string_of_texpr_indented ~indent te) operator_color reset_color number_color n reset_color
+  | LessEq (te, f) ->
+      Printf.sprintf "%s %s<=%s %s%g%s"
+        (string_of_texpr_indented ~indent te) operator_color reset_color number_color f reset_color
   | If (te1, te2, te3) ->
       let indent_str = String.make indent ' ' in
       let next_indent_str = String.make (indent+2) ' ' in
@@ -143,7 +143,6 @@ and string_of_aexpr_node ?(indent=0) (TAExprNode ae_node) : string =
 (* Pretty printer for types *)
 and string_of_ty = function
   | TBool -> Printf.sprintf "%sbool%s" type_color reset_color
-  | TInt -> Printf.sprintf "%sint%s" type_color reset_color
   | TFloat bag ->
       let set_or_top_val = Bags.FloatBag.get bag in 
       (match set_or_top_val with

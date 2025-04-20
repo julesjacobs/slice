@@ -37,7 +37,7 @@ expr:
   | e = simple_expr LESS f = FLOAT
     { ExprNode (Less (e, f)) }
   | e = simple_expr LESSEQ n = FLOAT
-    { ExprNode (LessEq (e, int_of_float n)) }
+    { ExprNode (LessEq (e, n)) }
   | FUN x = IDENT ARROW e = expr 
     { ExprNode (Fun (x, e)) }
   | e1 = simple_expr e2 = simple_expr

@@ -26,7 +26,6 @@ let rec unify (t1 : ty) (t2 : ty) : unit =
   match force t1, force t2 with
   | TBool,    TBool      -> ()
   | TFloat b1, TFloat b2 -> Bags.FloatBag.union b1 b2
-  | TInt,     TInt       -> ()
   | TPair(a1, b1), TPair(a2, b2) -> 
       unify a1 a2; 
       unify b1 b2
@@ -34,24 +33,16 @@ let rec unify (t1 : ty) (t2 : ty) : unit =
       unify a1 a2; 
       unify b1 b2
   | TBool,    TFloat _   -> failwith "Type error: expected bool, got float"
-  | TBool,    TInt       -> failwith "Type error: expected bool, got int"
   | TBool,    TPair _    -> failwith "Type error: expected bool, got pair"
   | TBool,    TFun _     -> failwith "Type error: expected bool, got function"
   | TFloat _, TBool      -> failwith "Type error: expected float, got bool"
-  | TFloat _, TInt       -> failwith "Type error: expected float, got int"
   | TFloat _, TPair _    -> failwith "Type error: expected float, got pair"
   | TFloat _, TFun _     -> failwith "Type error: expected float, got function"
-  | TInt,     TBool      -> failwith "Type error: expected int, got bool"
-  | TInt,     TFloat _   -> failwith "Type error: expected int, got float"
-  | TInt,     TPair _    -> failwith "Type error: expected int, got pair"
-  | TInt,     TFun _     -> failwith "Type error: expected int, got function"
   | TPair _,  TBool      -> failwith "Type error: expected pair, got bool"
   | TPair _,  TFloat _   -> failwith "Type error: expected pair, got float"
-  | TPair _,  TInt       -> failwith "Type error: expected pair, got int"
   | TPair _,  TFun _     -> failwith "Type error: expected pair, got function"
   | TFun _,   TBool      -> failwith "Type error: expected function, got bool"
   | TFun _,   TFloat _   -> failwith "Type error: expected function, got float"
-  | TFun _,   TInt       -> failwith "Type error: expected function, got int"
   | TFun _,   TPair _    -> failwith "Type error: expected function, got pair"
   | TMeta r1, _   ->
       r1 := Some t2
@@ -85,7 +76,8 @@ let elab (e : expr) : texpr =
       let sum = List.fold_left (+.) 0.0 probs in
       if abs_float (sum -. 1.0) > 0.0001 then
         failwith (Printf.sprintf "Discrete distribution probabilities must sum to 1.0, got %f" sum);
-      (TInt, TAExprNode (Discrete probs))
+      let b = Bags.FloatBag.create (Finite FloatSet.empty) in 
+      (TFloat b, TAExprNode (Discrete probs))
 
     | Less (e1, f) ->
       let t1, a1 = aux env e1 in
@@ -95,10 +87,13 @@ let elab (e : expr) : texpr =
       Bags.FloatBag.union b singleton_bag;
       (TBool, TAExprNode (Less ((t1,a1), f)))
       
-    | LessEq (e1, n) ->
+    | LessEq (e1, f) ->
       let t1, a1 = aux env e1 in
-      unify t1 TInt;
-      (TBool, TAExprNode (LessEq ((t1,a1), n)))
+      let b = Bags.FloatBag.create (Finite FloatSet.empty) in
+      unify t1 (TFloat b);
+      let singleton_bag = Bags.FloatBag.create (Finite (FloatSet.singleton f)) in
+      Bags.FloatBag.union b singleton_bag;
+      (TBool, TAExprNode (LessEq ((t1,a1), f)))
 
     | If (e1, e2, e3) ->
       let t1, a1 = aux env e1 in
@@ -204,18 +199,30 @@ let discretize (e : texpr) : expr =
         let cuts =
           match force t_sub with 
           | TFloat b -> 
-              let set_or_top_val = Bags.FloatBag.get b in (* Get the set or top *)
+              let set_or_top_val = Bags.FloatBag.get b in
               (match set_or_top_val with
                | Top -> failwith "Cannot perform Less comparison with Top boundary"
                | Finite float_set -> FloatSet.elements float_set)
           | _ -> failwith "Type error: Less expects float"
         in
+        (* Index is count of elements < f *) 
         let idx = List.length (List.filter (fun x -> x < f) cuts) in
-        ExprNode (LessEq (d_sub, idx))
+        ExprNode (LessEq (d_sub, float_of_int idx)) (* Discretized comparison is always LessEq index *)
         
-    | LessEq ((_, _) as te_sub, n) ->
+    | LessEq ((t_sub, _) as te_sub, f) -> (* Now takes float f *) 
         let d_sub = aux te_sub in
-        ExprNode (LessEq (d_sub, n))
+        let cuts = 
+          match force t_sub with 
+          | TFloat b -> 
+              let set_or_top_val = Bags.FloatBag.get b in
+              (match set_or_top_val with
+               | Top -> failwith "Cannot perform LessEq comparison with Top boundary"
+               | Finite float_set -> FloatSet.elements float_set)
+          | _ -> failwith "Type error: LessEq expects float"
+        in
+        (* Index is count of elements <= f *) 
+        let idx = List.length (List.filter (fun x -> x <= f) cuts) in
+        ExprNode (LessEq (d_sub, float_of_int idx)) (* Discretized comparison is always LessEq index *)
 
     | If (te1, te2, te3) ->
         ExprNode (If (aux te1, aux te2, aux te3))
