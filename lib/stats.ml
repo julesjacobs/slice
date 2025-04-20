@@ -64,12 +64,8 @@ let beta_cdf ~a ~b x =
     else if x <= 0.0 then 0.0 (* CDF is 0 at or below 0 *)
     else if x >= 1.0 then 1.0 (* CDF is 1 at or above 1 *)
     else
-        (* Placeholder: A full implementation is non-trivial. *)
-        (* You could return nan, 0.0, or raise an error depending on desired behavior. *)
-        (* Raising Failure clearly indicates it's not implemented. *)
-        failwith "beta_cdf: Not implemented (requires complex Incomplete Beta Function)"
-        (* Alternatively, return NaN to indicate computation failure: *)
-        (* nan *)
+        (* Placeholder: A full implementation requires the Incomplete Beta Function. *)
+        nan (* Return NaN for unimplemented function *)
 
 
 (** Calculate the Cumulative Distribution Function (CDF) for a given distribution and value *)

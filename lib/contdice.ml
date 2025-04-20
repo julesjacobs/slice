@@ -61,12 +61,12 @@ let rec unify (t1 : ty) (t2 : ty) : unit =
 
 (* Elaborator: expr -> (ty * aexpr), generating bag constraints *)
 let elab (e : expr) : texpr =
-  let rec aux (env : ty StringMap.t) (ExprNode e_node : expr) : texpr = (* Unwrap input expr *)
-    match e_node with (* Match on the unwrapped node *)
+  let rec aux (env : ty StringMap.t) (ExprNode e_node : expr) : texpr =
+    match e_node with
     | Var x ->
       (try 
         let ty = StringMap.find x env in
-        (ty, TAExprNode (Var x)) (* Wrap result aexpr *)
+        (ty, TAExprNode (Var x))
        with Not_found -> 
         failwith ("Unbound variable: " ^ x))
 
@@ -74,29 +74,29 @@ let elab (e : expr) : texpr =
       let t1, a1 = aux env e1 in
       let env' = StringMap.add x t1 env in
       let t2, a2 = aux env' e2 in
-      (t2, TAExprNode (Let (x, (t1,a1), (t2,a2)))) (* Wrap result aexpr *)
+      (t2, TAExprNode (Let (x, (t1,a1), (t2,a2))))
 
     | CDistr dist ->
       let b = Bag.new_bag () in
-      (TFloat b, TAExprNode (CDistr dist)) (* Wrap result aexpr *)
+      (TFloat b, TAExprNode (CDistr dist))
       
     | Discrete probs ->
       let sum = List.fold_left (+.) 0.0 probs in
       if abs_float (sum -. 1.0) > 0.0001 then
         failwith (Printf.sprintf "Discrete distribution probabilities must sum to 1.0, got %f" sum);
-      (TInt, TAExprNode (Discrete probs)) (* Wrap result aexpr *)
+      (TInt, TAExprNode (Discrete probs))
 
     | Less (e1, f) ->
       let t1, a1 = aux env e1 in
       let b = Bag.new_bag () in
       unify t1 (TFloat b);
       Bag.assert_elem f b;
-      (TBool, TAExprNode (Less ((t1,a1), f))) (* Wrap result aexpr *)
+      (TBool, TAExprNode (Less ((t1,a1), f)))
       
     | LessEq (e1, n) ->
       let t1, a1 = aux env e1 in
       unify t1 TInt;
-      (TBool, TAExprNode (LessEq ((t1,a1), n))) (* Wrap result aexpr *)
+      (TBool, TAExprNode (LessEq ((t1,a1), n)))
 
     | If (e1, e2, e3) ->
       let t1, a1 = aux env e1 in
@@ -104,39 +104,39 @@ let elab (e : expr) : texpr =
       let t2, a2 = aux env e2 in
       let t3, a3 = aux env e3 in
       unify t2 t3;
-      (t2, TAExprNode (If ((t1,a1), (t2,a2), (t3,a3)))) (* Wrap result aexpr *)
+      (t2, TAExprNode (If ((t1,a1), (t2,a2), (t3,a3))))
       
     | Pair (e1, e2) ->
       let t1, a1 = aux env e1 in
       let t2, a2 = aux env e2 in
-      (TPair (t1, t2), TAExprNode (Pair ((t1, a1), (t2, a2)))) (* Wrap result aexpr *)
+      (TPair (t1, t2), TAExprNode (Pair ((t1, a1), (t2, a2))))
       
     | First e1 ->
       let t, a = aux env e1 in
       let t1 = TMeta (ref None) in
       let t2 = TMeta (ref None) in
       unify t (TPair (t1, t2));
-      (t1, TAExprNode (First (t, a))) (* Wrap result aexpr *)
+      (t1, TAExprNode (First (t, a)))
       
     | Second e1 ->
       let t, a = aux env e1 in
       let t1 = TMeta (ref None) in
       let t2 = TMeta (ref None) in
       unify t (TPair (t1, t2));
-      (t2, TAExprNode (Second (t, a))) (* Wrap result aexpr *)
+      (t2, TAExprNode (Second (t, a)))
       
     | Fun (x, e1) ->
       let param_type = TMeta (ref None) in
       let env' = StringMap.add x param_type env in
       let return_type, a = aux env' e1 in
-      (TFun (param_type, return_type), TAExprNode (Fun (x, (return_type, a)))) (* Wrap result aexpr *)
+      (TFun (param_type, return_type), TAExprNode (Fun (x, (return_type, a))))
       
     | App (e1, e2) ->
       let t1, a1 = aux env e1 in
       let t2, a2 = aux env e2 in
       let result_type = TMeta (ref None) in
       unify t1 (TFun (t2, result_type));
-      (result_type, TAExprNode (App ((t1, a1), (t2, a2)))) (* Wrap result aexpr *)
+      (result_type, TAExprNode (App ((t1, a1), (t2, a2))))
   in
 
   aux StringMap.empty e
@@ -165,13 +165,13 @@ When doing a comparison against a float, we convert that to a comparison
 against the discrete integer that represents the i-th float in the bag.
 *)
 let discretize (e : texpr) : expr =
-  let rec aux ((ty, TAExprNode ae_node) : texpr) : expr = (* Unwrap input aexpr *)
-    match ae_node with (* Match on the unwrapped node *)
+  let rec aux ((ty, TAExprNode ae_node) : texpr) : expr =
+    match ae_node with
     | Var x ->
-        ExprNode (Var x) (* Wrap result expr *)
+        ExprNode (Var x)
 
     | Let (x, te1, te2) ->
-        ExprNode (Let (x, aux te1, aux te2)) (* Wrap result expr *)
+        ExprNode (Let (x, aux te1, aux te2))
 
     | CDistr dist ->
         let b =
@@ -190,13 +190,13 @@ let discretize (e : texpr) : expr =
         let probs = List.map (fun (left, right) ->
           prob_cdistr_interval left right dist
         ) intervals in
-        ExprNode (Discrete probs) (* Wrap result expr *)
+        ExprNode (Discrete probs)
         
     | Discrete probs ->
-        ExprNode (Discrete probs) (* Wrap result expr *)
+        ExprNode (Discrete probs)
 
-    | Less ((t_sub, _) as te_sub, f) -> (* Use _ for ae_sub as it's wrapped in te_sub *) 
-        let d_sub = aux te_sub (* d_sub is already wrapped expr *) in
+    | Less ((t_sub, _) as te_sub, f) ->
+        let d_sub = aux te_sub in
         let cuts =
           match force t_sub with 
           | TFloat b -> 
@@ -206,28 +206,28 @@ let discretize (e : texpr) : expr =
           | _ -> failwith "Less must be float"
         in
         let idx = List.length (List.filter (fun x -> x < f) cuts) in
-        ExprNode (LessEq (d_sub, idx)) (* Wrap result expr *)
+        ExprNode (LessEq (d_sub, idx))
         
-    | LessEq ((_, _) as te_sub, n) -> (* Use _ for t_sub and ae_sub *) 
-        let d_sub = aux te_sub (* d_sub is already wrapped expr *) in
-        ExprNode (LessEq (d_sub, n)) (* Wrap result expr *)
+    | LessEq ((_, _) as te_sub, n) ->
+        let d_sub = aux te_sub in
+        ExprNode (LessEq (d_sub, n))
 
     | If (te1, te2, te3) ->
-        ExprNode (If (aux te1, aux te2, aux te3)) (* Wrap result expr *)
+        ExprNode (If (aux te1, aux te2, aux te3))
         
     | Pair (te1, te2) ->
-        ExprNode (Pair (aux te1, aux te2)) (* Wrap result expr *)
+        ExprNode (Pair (aux te1, aux te2))
         
     | First te ->
-        ExprNode (First (aux te)) (* Wrap result expr *)
+        ExprNode (First (aux te))
         
     | Second te ->
-        ExprNode (Second (aux te)) (* Wrap result expr *)
+        ExprNode (Second (aux te))
         
     | Fun (x, te) ->
-        ExprNode (Fun (x, aux te)) (* Wrap result expr *)
+        ExprNode (Fun (x, aux te))
         
     | App (te1, te2) ->
-        ExprNode (App (aux te1, aux te2)) (* Wrap result expr *)
+        ExprNode (App (aux te1, aux te2))
   in
   aux e

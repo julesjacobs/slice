@@ -1,3 +1,5 @@
+open Cmdliner
+
 (* Read a file and return its contents as a string *)
 let read_file filename =
   let ic = open_in filename in
@@ -61,36 +63,56 @@ let rec process_directory path =
             let sub_count, sub_errors = process_directory full_path in
             process_entries (count + sub_count) (errors + sub_errors)
         | _ ->
+            (* Ignore other file types *) 
             process_entries count errors
-    with End_of_file ->
-      Unix.closedir dir;
-      count, errors
+    with 
+    | Unix.Unix_error (e, _, p) -> 
+        Printf.eprintf "Error processing %s: %s\n" p (Unix.error_message e); 
+        process_entries count (errors + 1)
+    | End_of_file -> 
+        Unix.closedir dir;
+        count, errors
   in
   process_entries 0 0
 
-(* Main function *)
-let () =
-  let argc = Array.length Sys.argv in
-  
-  if argc < 2 then
-    Printf.printf "Usage: %s <file.cdice | directory>\n" Sys.argv.(0)
-  else
-    let path = Sys.argv.(1) in
-    
-    try
-      let stats = Unix.stat path in
-      match stats.Unix.st_kind with
-      | Unix.S_REG ->
-          if has_cdice_extension path then
-            let _ = process_file path in
-            ()
-          else
-            Printf.printf "Error: File must have .cdice extension\n"
-      | Unix.S_DIR ->
-          let count, errors = process_directory path in
-          Printf.printf "Processed %d files with %d errors\n" count errors
-      | _ ->
-          Printf.printf "Error: Path is neither a regular file nor a directory\n"
-    with
-    | Unix.Unix_error(e, _, _) ->
-        Printf.printf "Error: %s\n" (Unix.error_message e)
+(* Main command execution logic *) 
+let run_contdice path =
+  try
+    let stats = Unix.stat path in
+    match stats.Unix.st_kind with
+    | Unix.S_REG ->
+        if has_cdice_extension path then
+          let _ = process_file path in
+          ()
+        else
+          Printf.eprintf "Error: File must have .cdice extension: %s\n" path
+    | Unix.S_DIR ->
+        let count, errors = process_directory path in
+        Printf.printf "Processed %d files with %d errors in directory %s\n" count errors path
+    | _ ->
+        Printf.eprintf "Error: Path is neither a regular file nor a directory: %s\n" path
+  with
+  | Unix.Unix_error(e, _, p) ->
+      Printf.eprintf "Error accessing path %s: %s\n" p (Unix.error_message e)
+  | e -> 
+      Printf.eprintf "An unexpected error occurred: %s\n" (Printexc.to_string e); 
+      Printexc.print_backtrace stderr
+
+(* Cmdliner term definition *) 
+let path_arg = 
+  let doc = "The .cdice file or directory to process." in
+  Arg.(required & pos 0 (some string) None & info [] ~docv:"PATH" ~doc)
+
+let contdice_t = Term.(const run_contdice $ path_arg)
+
+let cmd = 
+  let doc = "Process and analyze ContDice files." in
+  let man = [
+    `S Manpage.s_bugs;
+    `P "Report bugs to <your-bug-reporting-address>"; 
+  ] in
+  let info = Cmd.info "contdice_main" ~version:"%%VERSION%%" ~doc ~exits:Cmd.Exit.defaults ~man in
+  Cmd.v info contdice_t
+
+(* Main entry point *) 
+let () = exit (Cmd.eval cmd)

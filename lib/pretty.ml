@@ -42,8 +42,8 @@ and string_of_expr_node ?(indent=0) (ExprNode expr_node) : string =
   | Var x -> Printf.sprintf "%s%s%s" variable_color x reset_color
   | Let (x, e1, e2) ->
       let indent_str = String.make indent ' ' in
-      let e1_str = string_of_expr_indented ~indent:(indent+2) e1 in (* Recurse with expr *)
-      let e2_str = string_of_expr_indented ~indent:(indent+2) e2 in (* Recurse with expr *)
+      let e1_str = string_of_expr_indented ~indent:(indent+2) e1 in
+      let e2_str = string_of_expr_indented ~indent:(indent+2) e2 in
       Printf.sprintf "%slet%s %s%s%s = %s %sin%s\n%s%s"
         keyword_color reset_color variable_color x reset_color e1_str
         keyword_color reset_color indent_str e2_str
@@ -94,8 +94,8 @@ and string_of_aexpr_node ?(indent=0) (TAExprNode ae_node) : string =
   | Var x -> Printf.sprintf "%s%s%s" variable_color x reset_color
   | Let (x, te1, te2) ->
       let indent_str = String.make indent ' ' in
-      let e1_str = string_of_texpr_indented ~indent:(indent+2) te1 in (* Recurse with texpr *)
-      let e2_str = string_of_texpr_indented ~indent:(indent+2) te2 in (* Recurse with texpr *)
+      let e1_str = string_of_texpr_indented ~indent:(indent+2) te1 in
+      let e2_str = string_of_texpr_indented ~indent:(indent+2) te2 in
       Printf.sprintf "%slet%s %s%s%s = %s %sin%s\n%s%s"
         keyword_color reset_color variable_color x reset_color e1_str
         keyword_color reset_color indent_str e2_str
@@ -140,12 +140,12 @@ and string_of_aexpr_node ?(indent=0) (TAExprNode ae_node) : string =
       let e2_str = string_of_texpr_indented ~indent te2 in
       Printf.sprintf "(%s %s)" e1_str e2_str
 
-(* Pretty printer for types - Needs to be part of the recursive block *)
+(* Pretty printer for types *)
 and string_of_ty = function
   | TBool -> Printf.sprintf "%sbool%s" type_color reset_color
   | TInt -> Printf.sprintf "%sint%s" type_color reset_color
   | TFloat bag ->
-      let root = Bag.find bag in (* Use Bag.find *)
+      let root = Bag.find bag in
       (match !root with
       | Root { elems } ->
           if FloatSet.is_empty elems then

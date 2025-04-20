@@ -15,20 +15,20 @@ type 'a expr_generic =
   | Fun    of string * 'a          (* Function: fun x -> e *)
   | App    of 'a * 'a            (* Function application: e1 e2 *)
 
-(* The source language expression type - Wrapped *)
+(* The source language expression type *)
 type expr = ExprNode of expr expr_generic
 
 (* Type definitions for the typed language *)
 
 type ty =
   | TBool
-  | TFloat of Bag.bag (* Use Bag.bag *)
+  | TFloat of Bag.bag
   | TInt
   | TMeta of ty option ref
   | TPair of ty * ty      (* t1 * t2 *)
   | TFun of ty * ty       (* t1 -> t2 *)
 
-(* Typed expressions (recursive definition with aexpr) - Wrapped *)
+(* Typed expressions (recursive definition with aexpr) *)
 
 type texpr = ty * aexpr
-and aexpr = TAExprNode of texpr expr_generic (* Annotated expression uses texpr recursively, wrapped *)
+and aexpr = TAExprNode of texpr expr_generic

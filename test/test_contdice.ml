@@ -1,44 +1,36 @@
+open OUnit2
+
 (* Simple test for parse_expr *)
-let test_parse () =
+let test_parse _test_ctxt =
   let expr = Contdice.Parse.parse_expr "let x = uniform(0, 1) in if x < 0.5 then 0 else 1" in
   let pretty = Contdice.Pretty.string_of_expr expr in
   let expected = "let x = uniform(0, 1) in if x < 0.5 then 0 else 1" in
-  
-  Printf.printf "Parsed: %s\n" pretty;
-  if pretty = expected then
-    Printf.printf "Parse test passed!\n"
-  else begin
-    Printf.printf "Parse test failed!\nExpected: %s\nGot:      %s\n" expected pretty;
-    exit 1
-  end
+  assert_equal ~printer:(fun s -> s) expected pretty
 
 (* Test for pretty printing *)
-let test_pretty_print () =
+let test_pretty_print _test_ctxt =
   let expr = Contdice.Parse.parse_expr "let x = uniform(0, 1) in if x < 0.5 then 0 else 1" in
   let pretty = Contdice.Pretty.string_of_expr expr in
   let expected = "let x = uniform(0, 1) in if x < 0.5 then 0 else 1" in
-  if pretty = expected then
-    Printf.printf "Pretty print test passed!\n"
-  else begin
-    Printf.printf "Pretty print test failed!\nExpected: %s\nGot: %s\n" expected pretty;
-    exit 1
-  end
+  assert_equal ~printer:(fun s -> s) expected pretty
 
 (* Test typechecking *)
-let test_typing () =
+let test_typing _test_ctxt =
   let expr = Contdice.Parse.parse_expr "let x = uniform(0, 1) in if x < 0.5 then 0 else 1" in
   try
     let texpr = Contdice.elab expr in
-    let pretty = Contdice.Pretty.string_of_texpr texpr in
-    Printf.printf "Typed expression: %s\n" pretty;
-    Printf.printf "Type check test passed!\n"
+    ignore (Contdice.Pretty.string_of_texpr texpr)
   with e -> 
-    Printf.printf "Type check test failed: %s\n" (Printexc.to_string e);
-    exit 1
+    assert_failure ("Type check test failed: " ^ Printexc.to_string e)
 
-(* Main test function *)
-let () =
-  test_parse ();
-  test_pretty_print ();
-  test_typing ();
-  Printf.printf "All tests passed!\n"
+(* Test suite *) 
+let suite = 
+  "Contdice Tests" >:::
+    ["test_parse" >:: test_parse;
+     "test_pretty_print" >:: test_pretty_print;
+     "test_typing" >:: test_typing;
+    ]
+
+(* Main test runner *) 
+let () = 
+  run_test_tt_main suite
