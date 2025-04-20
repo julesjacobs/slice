@@ -1,5 +1,8 @@
 let mappair = fun f -> fun p -> (f (fst p), f (snd p)) in
-let f = fun x -> x < 2.3 in
-let p = (uniform(0,1), gaussian(0,2)) in
+let f = fun x -> x < 0.5 in
+let g = fun x -> x < 1.5 in
+let p = (uniform(0,2), gaussian(0,2)) in
 let q = (mappair f) p in
-if fst q then snd q else fst q
+let r = (mappair g) p in
+if fst q then snd q else 
+  if fst r then snd r else fst q
