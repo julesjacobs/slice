@@ -55,4 +55,8 @@ module Make (L : Lat) = struct
   let get (b : bag) : L.t = 
     !(b.content)
 
+  (* Register an external listener *) 
+  let listen (b : bag) (listener : unit -> unit) : unit =
+    b.listeners <- listener :: b.listeners
+
 end 

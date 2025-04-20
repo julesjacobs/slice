@@ -31,4 +31,7 @@ module Make (L : Lat) : sig
   (* Get the current lattice value associated with a bag. *)
   val get : bag -> L.t
 
+  (* Register a listener function to be called whenever the bag's value changes. *)
+  val listen : bag -> (unit -> unit) -> unit
+
 end 
