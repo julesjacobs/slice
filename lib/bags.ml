@@ -31,23 +31,35 @@ module BoundOrder = struct
 end
 module BoundSet = Set.Make(BoundOrder)
 
-(* == Adapters for BAG_CONTENTS == *)
-module FloatSetContents : BAG_CONTENTS with type t = (float, FloatSet.t) set_or_top = struct
+(* == Adapters for Lat == *)
+module FloatSetContents : Lat with type t = (float, FloatSet.t) set_or_top = struct
   type t = (float, FloatSet.t) set_or_top
   let union v1 v2 = 
     match v1, v2 with
     | Top, _ -> Top
     | _, Top -> Top
     | Finite s1, Finite s2 -> Finite (FloatSet.union s1 s2)
+
+  let equal v1 v2 = 
+    match v1, v2 with
+    | Top, Top -> true
+    | Finite s1, Finite s2 -> FloatSet.equal s1 s2
+    | _, _ -> false
 end
 
-module BoundSetContents : BAG_CONTENTS with type t = (bound, BoundSet.t) set_or_top = struct
+module BoundSetContents : Lat with type t = (bound, BoundSet.t) set_or_top = struct
   type t = (bound, BoundSet.t) set_or_top
   let union v1 v2 = 
     match v1, v2 with
     | Top, _ -> Top
     | _, Top -> Top
     | Finite s1, Finite s2 -> Finite (BoundSet.union s1 s2)
+
+  let equal v1 v2 =
+    match v1, v2 with
+    | Top, Top -> true
+    | Finite s1, Finite s2 -> BoundSet.equal s1 s2
+    | _, _ -> false
 end
 
 (* == Bag Instantiations == *)

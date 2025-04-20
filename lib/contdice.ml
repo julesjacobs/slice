@@ -18,8 +18,8 @@ let rec unify (t1 : ty) (t2 : ty) : unit =
   match Types.force t1, Types.force t2 with
   | TBool,    TBool      -> ()
   | TFloat (b1, c1), TFloat (b2, c2) -> 
-      Bags.BoundBag.union b1 b2;
-      Bags.FloatBag.union c1 c2
+      Bags.BoundBag.eq b1 b2;
+      Bags.FloatBag.eq c1 c2
   | TPair(a1, b1), TPair(a2, b2) -> 
       unify a1 a2; 
       unify b1 b2
@@ -107,7 +107,7 @@ let elab (e : expr) : texpr =
       (match Types.force t1 with
        | TFloat (b_ref, _) -> 
            let new_bound_bag = Bags.BoundBag.create (Finite (BoundSet.singleton (Bags.Less f))) in
-           Bags.BoundBag.union b_ref new_bound_bag
+           Bags.BoundBag.leq new_bound_bag b_ref
        | _ -> failwith "Internal error: Less operand not TFloat after unification");
       (TBool, TAExprNode (Less ((t1,a1), f)))
       
@@ -123,7 +123,7 @@ let elab (e : expr) : texpr =
       (match Types.force t1 with
        | TFloat (b_ref, _) -> 
            let new_bound_bag = Bags.BoundBag.create (Finite (BoundSet.singleton (Bags.LessEq f))) in
-           Bags.BoundBag.union b_ref new_bound_bag
+           Bags.BoundBag.leq new_bound_bag b_ref
        | _ -> failwith "Internal error: LessEq operand not TFloat after unification");
       (TBool, TAExprNode (LessEq ((t1,a1), f)))
 
