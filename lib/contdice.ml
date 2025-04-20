@@ -307,10 +307,13 @@ let discretize (e : texpr) : expr =
     | App (te1, te2) ->
         ExprNode (App (aux te1, aux te2))
 
-    | FinConst _ 
-    | FinLt _
-    | FinLeq _ -> 
-        failwith (Printf.sprintf "Discretization error: Cannot discretize expression of type %s" (Pretty.string_of_ty ty))
+    (* Fin types are already discrete, pass them through *) 
+    | FinConst (k, n) -> 
+        ExprNode (FinConst (k, n))
+    | FinLt (te1, te2, n) -> 
+        ExprNode (FinLt (aux te1, aux te2, n))
+    | FinLeq (te1, te2, n) -> 
+        ExprNode (FinLeq (aux te1, aux te2, n))
 
   in
   aux e
