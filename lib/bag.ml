@@ -35,18 +35,25 @@ module Make (L : Lat) = struct
   let create (initial_val : L.t) : bag =
     { content = ref initial_val; listeners = [] }
 
-  (* Enforce b1 <= b2. Updates b2 and adds b1 as a listener to propagate changes. *) 
-  let rec leq (b1 : bag) (b2 : bag) : unit =
-    let v1 = !(b1.content) in
-    let v2 = !(b2.content) in
-    let merged_v = L.union v1 v2 in
-    (* Update b2's value if necessary (atomic_update handles check & notification) *) 
-    atomic_update b2 merged_v;
-    (* Add a listener to b1: whenever b1 changes, re-enforce b1 <= b2 *) 
-    (* TODO: Consider preventing duplicate listeners for efficiency, maybe using a Set? *) 
-    b1.listeners <- (fun () -> leq b1 b2) :: b1.listeners
+  (* Register an external listener and call it once immediately *) 
+  let listen (b : bag) (listener : unit -> unit) : unit =
+    b.listeners <- listener :: b.listeners;
+    listener () (* Call listener immediately after registration *)
 
-  (* Enforce b1 = b2 by making them mutually leq *) 
+  (* Enforce b1 <= b2 using the listen mechanism. *)
+  let leq (b1 : bag) (b2 : bag) : unit =
+    (* Define the listener that updates b2 based on b1's value *)
+    let update_b2_from_b1 () =
+      let v1 = !(b1.content) in
+      let v2 = !(b2.content) in 
+      let merged_v = L.union v1 v2 in
+      atomic_update b2 merged_v
+    in
+    (* Register the listener on b1. It will be called immediately once,
+       and then again whenever b1's content changes. *)
+    listen b1 update_b2_from_b1
+
+  (* Enforce b1 = b2 by making them mutually leq *)
   let eq (b1 : bag) (b2 : bag) : unit =
     leq b1 b2;
     leq b2 b1
@@ -54,9 +61,5 @@ module Make (L : Lat) = struct
   (* Get the current value associated with a bag *) 
   let get (b : bag) : L.t = 
     !(b.content)
-
-  (* Register an external listener *) 
-  let listen (b : bag) (listener : unit -> unit) : unit =
-    b.listeners <- listener :: b.listeners
 
 end 
