@@ -15,12 +15,14 @@ open Types
 %token FUN ARROW
 %token LESS
 %token LESSEQ
+%token GREATER
+%token GREATEREQ
 %token LPAREN RPAREN
 %token COMMA
 %token EQUAL
 %token EOF
 
-%nonassoc LESS LESSEQ
+%nonassoc LESS LESSEQ GREATER GREATEREQ
 %nonassoc ELSE
 %nonassoc THEN
 %nonassoc IF
@@ -47,6 +49,10 @@ expr:
     { Less (e, f) }
   | e = simple_expr LESSEQ n = FLOAT
     { LessEq (e, int_of_float n) }
+  | e = simple_expr GREATER f = FLOAT
+    { Greater (e, f) }
+  | e = simple_expr GREATEREQ n = FLOAT
+    { GreaterEq (e, int_of_float n) }
   | FUN x = IDENT ARROW e = expr 
     { Fun (x, e) }
   | e1 = simple_expr e2 = simple_expr %prec APP

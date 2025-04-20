@@ -8,6 +8,8 @@ type expr =
   | Discrete of float list
   | Less of expr * float
   | LessEq of expr * int
+  | Greater of expr * float
+  | GreaterEq of expr * int
   | If of expr * expr * expr
 
 module FloatSet : Set.S with type elt = float
@@ -29,6 +31,7 @@ and aexpr =
   | Let     of string * texpr * texpr
   | Uniform of float * float
   | Less    of texpr * float
+  | Greater    of texpr * float
   | If      of texpr * texpr * texpr
 
 (* Bag operations *)

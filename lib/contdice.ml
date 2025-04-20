@@ -7,6 +7,8 @@ type expr = Types.expr =
   | Discrete of float list    (* list of probabilities, sum should be 1; i-th element is probability of i; returns an integer *)
   | Less   of expr * float
   | LessEq  of expr * int     (* less than or equal to; for comparing against integer outputs *)
+  | Greater   of expr * float
+  | GreaterEq  of expr * int     (* greater than or equal to; for comparing against integer outputs *)
   | If     of expr * expr * expr
   | Pair   of expr * expr            (* Pair construction (e1, e2) *)
   | First  of expr                   (* First projection: fst e *)
@@ -72,6 +74,12 @@ let rec string_of_expr_indented ?(indent=0) = function
   | LessEq (e, n) -> 
       Printf.sprintf "%s %s<=%s %s%d%s" 
         (string_of_expr_indented ~indent e) operator_color reset_color number_color n reset_color
+  | Greater (e, f) -> 
+    Printf.sprintf "%s %s>%s %s%g%s" 
+      (string_of_expr_indented ~indent e) operator_color reset_color number_color f reset_color
+  | GreaterEq (e, n) -> 
+    Printf.sprintf "%s %s>=%s %s%d%s" 
+      (string_of_expr_indented ~indent e) operator_color reset_color number_color n reset_color
   | If (e1, e2, e3) -> 
       let indent_str = String.make indent ' ' in
       let next_indent_str = String.make (indent+2) ' ' in
@@ -228,6 +236,8 @@ and aexpr =
   | Discrete of float list
   | Less    of texpr * float
   | LessEq   of texpr * int
+  | Greater    of texpr * float
+  | GreaterEq   of texpr * int
   | If      of texpr * texpr * texpr
   | Pair    of texpr * texpr
   | First   of texpr
@@ -276,6 +286,20 @@ let elab (e : expr) : texpr =
       (* For LessEq, the expression must be of integer type *)
       unify t1 TInt;
       (TBool, LessEq ((t1,a1), n))
+
+    | Greater (e1, f) ->
+      let t1, a1 = aux env e1 in
+      (* enforce e1 : float and record f ∈ its bag *)
+      let b = new_bag () in
+      unify t1 (TFloat b);
+      assert_elem f b;
+      (TBool, Greater ((t1,a1), f))
+      
+    | GreaterEq (e1, n) ->
+      let t1, a1 = aux env e1 in
+      (* For GreaterEq, the expression must be of integer type *)
+      unify t1 TInt;
+      (TBool, GreaterEq ((t1,a1), n))
 
     | If (e1, e2, e3) ->
       let t1, a1 = aux env e1 in
@@ -387,6 +411,12 @@ and string_of_aexpr_indented ?(indent=0) = function
   | LessEq (e, n) -> 
       Printf.sprintf "%s %s<=%s %s%d%s" 
         (string_of_texpr_indented ~indent e) operator_color reset_color number_color n reset_color
+  | Greater (e, f) -> 
+    Printf.sprintf "%s %s>%s %s%g%s" 
+      (string_of_texpr_indented ~indent e) operator_color reset_color number_color f reset_color
+  | GreaterEq (e, n) -> 
+    Printf.sprintf "%s %s>=%s %s%d%s" 
+      (string_of_texpr_indented ~indent e) operator_color reset_color number_color n reset_color
   | If (e1, e2, e3) -> 
       let indent_str = String.make indent ' ' in
       let next_indent_str = String.make (indent+2) ' ' in
@@ -491,6 +521,25 @@ let discretize (e : texpr) : expr =
         let d_sub = aux (t_sub, ae_sub) in
         (* For integer LessEq comparisons, we pass them through unchanged *)
         LessEq (d_sub, n)
+
+    | Greater ((t_sub, ae_sub), f) ->
+      let d_sub = aux (t_sub, ae_sub) in
+      (* compute threshold index by counting all cut‑points > f *)
+      let cuts =
+        match force t_sub with 
+        | TFloat b -> 
+            (match !(find b) with
+            | Root { elems } -> FloatSet.elements elems
+            | Link _         -> assert false)
+        | _ -> failwith "Greater must be float"
+      in
+      let idx = List.length (List.filter (fun x -> x > f) cuts) in
+      GreaterEq (d_sub, (List.length cuts) - idx)
+      
+    | GreaterEq ((t_sub, ae_sub), n) ->
+      let d_sub = aux (t_sub, ae_sub) in
+      (* For integer GreaterEq comparisons, we pass them through unchanged *)
+      GreaterEq (d_sub, n)
 
     | If ((t1, ae1), (t2, ae2), (t3, ae3)) ->
         If (aux (t1, ae1), aux (t2, ae2), aux (t3, ae3))

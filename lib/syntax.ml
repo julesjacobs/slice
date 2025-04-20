@@ -8,6 +8,8 @@ type expr =
   | Discrete of float list  (* list of probabilities, sum should be 1; i-th element is probability of i *)
   | Less   of expr * float
   | LessEq  of expr * int
+  | Greater   of expr * float
+  | GreaterEq  of expr * int
   | If     of expr * expr * expr
   | Pair   of expr * expr            (* Pair construction (e1, e2) *)
   | First  of expr                   (* First projection: fst e *)
@@ -88,4 +90,5 @@ and aexpr =
   | Let     of string * texpr * texpr
   | Uniform of float * float
   | Less    of texpr * float
+  | Greater of texpr * float
   | If      of texpr * texpr * texpr

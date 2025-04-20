@@ -7,6 +7,8 @@ type expr = Types.expr =
   | Discrete of float list    (* list of probabilities, sum should be 1; i-th element is probability of i *)
   | Less of expr * float
   | LessEq of expr * int
+  | Greater of expr * float
+  | GreaterEq of expr * int
   | If of expr * expr * expr
   | Pair of expr * expr        (* Pair construction (e1, e2) *)
   | First of expr              (* First projection: fst e *)
@@ -42,6 +44,8 @@ and aexpr =
   | Discrete of float list
   | Less    of texpr * float
   | LessEq   of texpr * int
+  | Greater    of texpr * float
+  | GreaterEq   of texpr * int
   | If      of texpr * texpr * texpr
   | Pair    of texpr * texpr
   | First   of texpr

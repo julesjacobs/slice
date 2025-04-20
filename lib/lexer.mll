@@ -40,6 +40,8 @@ rule token = parse
   | "->"      { ARROW }
   | '<'       { LESS }
   | "<="      { LESSEQ }
+  | '>'       { GREATER }
+  | ">="      { GREATEREQ }
   | '='       { EQUAL }
   | '('       { LPAREN }
   | ')'       { RPAREN }
