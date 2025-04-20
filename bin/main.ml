@@ -17,15 +17,15 @@ let process_file filename =
     
     (* Parse the expression *)
     let expr = Contdice.Parse.parse_expr content in
-    Printf.printf "Parsed AST:\n%s\n\n" (Contdice.Pretty.string_of_expr expr);
+    Printf.printf "Parsed AST (Pretty):\n%s\n\n" (Contdice.Pretty.string_of_expr expr);
     
     (* Type-check the expression *)
     let texpr = Contdice.elab_bool expr in
-    Printf.printf "Typed AST:\n%s\n\n" (Contdice.Pretty.string_of_texpr texpr);
+    Printf.printf "Typed AST (Pretty):\n%s\n\n" (Contdice.Pretty.string_of_texpr texpr);
     
     (* Discretize to discrete expressions *)
     let discretized_expr = Contdice.discretize texpr in
-    Printf.printf "Discretized Program:\n%s\n\n" (Contdice.Pretty.string_of_expr discretized_expr);
+    Printf.printf "Discretized Program (Pretty):\n%s\n\n" (Contdice.Pretty.string_of_expr discretized_expr);
     
     (* Print a nice separator *)
     print_endline (String.make 60 '-');

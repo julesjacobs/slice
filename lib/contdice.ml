@@ -14,16 +14,8 @@ module StringMap = Map.Make(String)
 
 (* ======== Types and unification ======== *)
 
-let rec force t =
-  match t with
-  | TMeta r ->
-      (match !r with
-      | Some t -> force t
-      | None -> t)
-  | _ -> t
-
 let rec unify (t1 : ty) (t2 : ty) : unit =
-  match force t1, force t2 with
+  match Types.force t1, Types.force t2 with
   | TBool,    TBool      -> ()
   | TFloat (b1, c1), TFloat (b2, c2) -> 
       Bags.BoundBag.union b1 b2;
@@ -34,26 +26,27 @@ let rec unify (t1 : ty) (t2 : ty) : unit =
   | TFun(a1, b1), TFun(a2, b2) -> 
       unify a1 a2; 
       unify b1 b2
-  | TBool,    TFloat _   -> failwith "Type error: expected bool, got float"
-  | TBool,    TPair _    -> failwith "Type error: expected bool, got pair"
-  | TBool,    TFun _     -> failwith "Type error: expected bool, got function"
-  | TFloat _, TBool      -> failwith "Type error: expected float, got bool"
-  | TFloat _, TPair _    -> failwith "Type error: expected float, got pair"
-  | TFloat _, TFun _     -> failwith "Type error: expected float, got function"
-  | TPair _,  TBool      -> failwith "Type error: expected pair, got bool"
-  | TPair _,  TFloat _   -> failwith "Type error: expected pair, got float"
-  | TPair _,  TFun _     -> failwith "Type error: expected pair, got function"
-  | TFun _,   TBool      -> failwith "Type error: expected function, got bool"
-  | TFun _,   TFloat _   -> failwith "Type error: expected function, got float"
-  | TFun _,   TPair _    -> failwith "Type error: expected function, got pair"
+  | TFin n1, TFin n2 when n1 = n2 -> () (* Unify TFin n only if n matches *)
+  | TMeta _, t2 when t1 == t2 -> () (* Avoid circular unification (ignore ref) *)
+  | t1, TMeta _ when t1 == t2 -> () (* Avoid circular unification (ignore ref) *)
   | TMeta r1, _   ->
-      r1 := Some t2
+      (match !r1 with
+      | Some t1' -> unify t1' t2
+      | None -> r1 := Some t2)
   | _, TMeta r2   ->
-      r2 := Some t1
+      (match !r2 with
+      | Some t2' -> unify t1 t2'
+      | None -> r2 := Some t1)
+  | _, _ -> 
+      (* Improved error reporting *)
+      let msg = Printf.sprintf "Type mismatch: cannot unify %s and %s"
+        (Pretty.string_of_ty t1) (Pretty.string_of_ty t2)
+      in
+      failwith msg
 
 (* ======== Annotated expressions ======== *)
 
-(* Elaborator: expr -> (ty * aexpr), generating bag constraints *)
+(* Elaborator: expr -> texpr, generating bag constraints and performing type checking *)
 let elab (e : expr) : texpr =
   let rec aux (env : ty StringMap.t) (ExprNode e_node : expr) : texpr =
     match e_node with
@@ -93,40 +86,44 @@ let elab (e : expr) : texpr =
 
     | Less (e1, f) ->
       let t1, a1 = aux env e1 in
-      (* Create fresh TFloat refs for unification *)
+      (* Create fresh TFloat refs for unification (bounds only contain the compared value) *)
       let fresh_bounds_bag_ref = Bags.BoundBag.create (Finite (BoundSet.singleton (Bags.Less f))) in
       let fresh_consts_bag_ref = Bags.FloatBag.create (Finite FloatSet.empty) in
       let target_type = TFloat (fresh_bounds_bag_ref, fresh_consts_bag_ref) in
-      unify t1 target_type;
+      (try unify t1 target_type
+       with Failure msg -> failwith (Printf.sprintf "Type error in Less (< %g): %s" f msg));
       (* Add the Less f bound by creating a temporary bag and unioning *)
-      (match force t1 with
+      (match Types.force t1 with
        | TFloat (b_ref, _) -> 
            let new_bound_bag = Bags.BoundBag.create (Finite (BoundSet.singleton (Bags.Less f))) in
            Bags.BoundBag.union b_ref new_bound_bag
-       | _ -> failwith "Internal error: unify should have ensured TFloat");
+       | _ -> failwith "Internal error: Less operand not TFloat after unification");
       (TBool, TAExprNode (Less ((t1,a1), f)))
       
     | LessEq (e1, f) ->
       let t1, a1 = aux env e1 in
-      (* Create fresh TFloat refs for unification *)
+      (* Create fresh TFloat refs for unification (bounds only contain the compared value) *)
       let fresh_bounds_bag_ref = Bags.BoundBag.create (Finite (BoundSet.singleton (Bags.LessEq f))) in
       let fresh_consts_bag_ref = Bags.FloatBag.create (Finite FloatSet.empty) in
       let target_type = TFloat (fresh_bounds_bag_ref, fresh_consts_bag_ref) in
-      unify t1 target_type;
+       (try unify t1 target_type
+       with Failure msg -> failwith (Printf.sprintf "Type error in LessEq (<= %g): %s" f msg));
       (* Add the LessEq f bound by creating a temporary bag and unioning *)
-      (match force t1 with
+      (match Types.force t1 with
        | TFloat (b_ref, _) -> 
            let new_bound_bag = Bags.BoundBag.create (Finite (BoundSet.singleton (Bags.LessEq f))) in
            Bags.BoundBag.union b_ref new_bound_bag
-       | _ -> failwith "Internal error: unify should have ensured TFloat");
+       | _ -> failwith "Internal error: LessEq operand not TFloat after unification");
       (TBool, TAExprNode (LessEq ((t1,a1), f)))
 
     | If (e1, e2, e3) ->
       let t1, a1 = aux env e1 in
-      unify t1 TBool;
+      (try unify t1 TBool 
+       with Failure msg -> failwith ("Type error in If condition: " ^ msg));
       let t2, a2 = aux env e2 in
       let t3, a3 = aux env e3 in
-      unify t2 t3; (* This will unify the const bags if t2 and t3 are TFloats *)
+      (try unify t2 t3 
+       with Failure msg -> failwith ("Type error in If branches: " ^ msg)); 
       (t2, TAExprNode (If ((t1,a1), (t2,a2), (t3,a3))))
       
     | Pair (e1, e2) ->
@@ -136,17 +133,19 @@ let elab (e : expr) : texpr =
       
     | First e1 ->
       let t, a = aux env e1 in
-      let t1 = TMeta (ref None) in
-      let t2 = TMeta (ref None) in
-      unify t (TPair (t1, t2));
-      (t1, TAExprNode (First (t, a)))
+      let t1_meta = TMeta (ref None) in
+      let t2_meta = TMeta (ref None) in
+      (try unify t (TPair (t1_meta, t2_meta))
+       with Failure msg -> failwith ("Type error in First (fst): " ^ msg));
+      (Types.force t1_meta, TAExprNode (First (t, a))) (* Use Types.force *)
       
     | Second e1 ->
       let t, a = aux env e1 in
-      let t1 = TMeta (ref None) in
-      let t2 = TMeta (ref None) in
-      unify t (TPair (t1, t2));
-      (t2, TAExprNode (Second (t, a)))
+      let t1_meta = TMeta (ref None) in
+      let t2_meta = TMeta (ref None) in
+      (try unify t (TPair (t1_meta, t2_meta))
+       with Failure msg -> failwith ("Type error in Second (snd): " ^ msg));
+      (Types.force t2_meta, TAExprNode (Second (t, a))) (* Use Types.force *)
       
     | Fun (x, e1) ->
       let param_type = TMeta (ref None) in
@@ -158,16 +157,43 @@ let elab (e : expr) : texpr =
       let t1, a1 = aux env e1 in
       let t2, a2 = aux env e2 in
       let result_type = TMeta (ref None) in
-      unify t1 (TFun (t2, result_type));
-      (result_type, TAExprNode (App ((t1, a1), (t2, a2))))
-  in
+      (try unify t1 (TFun (t2, result_type))
+        with Failure msg -> failwith ("Type error in function application: " ^ msg));
+      (Types.force result_type, TAExprNode (App ((t1, a1), (t2, a2)))) (* Use Types.force *)
+      
+    | FinConst (k, n) ->
+      if k < 0 || k >= n then failwith (Printf.sprintf "Invalid FinConst value: %d#%d. k must be >= 0 and < n." k n);
+      (TFin n, TAExprNode (FinConst (k, n)))
 
+    | FinLt (e1, e2, n) ->
+      if n <= 0 then failwith (Printf.sprintf "Invalid FinLt modulus: <#%d. n must be > 0." n);
+      let t1, a1 = aux env e1 in
+      let t2, a2 = aux env e2 in
+      let expected_type = TFin n in
+      (try unify t1 expected_type 
+       with Failure msg -> failwith (Printf.sprintf "Type error in FinLt (<#%d) left operand: %s" n msg));
+      (try unify t2 expected_type
+       with Failure msg -> failwith (Printf.sprintf "Type error in FinLt (<#%d) right operand: %s" n msg));
+      (TBool, TAExprNode (FinLt ((t1, a1), (t2, a2), n)))
+      
+    | FinLeq (e1, e2, n) ->
+      if n <= 0 then failwith (Printf.sprintf "Invalid FinLeq modulus: <=#%d. n must be > 0." n);
+      let t1, a1 = aux env e1 in
+      let t2, a2 = aux env e2 in
+      let expected_type = TFin n in
+      (try unify t1 expected_type
+       with Failure msg -> failwith (Printf.sprintf "Type error in FinLeq (<=#%d) left operand: %s" n msg));
+      (try unify t2 expected_type
+       with Failure msg -> failwith (Printf.sprintf "Type error in FinLeq (<=#%d) right operand: %s" n msg));
+      (TBool, TAExprNode (FinLeq ((t1, a1), (t2, a2), n)))
+
+  in
   aux StringMap.empty e
 
 (* Function that does elab but insists that the return type is TBool *)
 let elab_bool (e : expr) : texpr =
   let t, a = elab e in
-  match force t with
+  match Types.force t with
   | TBool -> (t, a)
   | _ -> failwith "Type error: expected bool, got something else"
 
@@ -200,7 +226,7 @@ let discretize (e : texpr) : expr =
 
     | CDistr dist ->
         let bounds_bag =
-          match force ty with 
+          match Types.force ty with 
           | TFloat (b, _) -> b (* Extract bounds bag *)
           | _ -> failwith "Internal error: CDistr not TFloat"
         in
@@ -229,7 +255,7 @@ let discretize (e : texpr) : expr =
 
     | Less ((t_sub, _) as te_sub, f) ->
         let d_sub = aux te_sub in
-        (match force t_sub with 
+        (match Types.force t_sub with 
          | TFloat (bounds_bag, _) -> (* Extract bounds bag *) 
              let set_or_top_val = Bags.BoundBag.get bounds_bag in
              (match set_or_top_val with
@@ -247,7 +273,7 @@ let discretize (e : texpr) : expr =
         
     | LessEq ((t_sub, _) as te_sub, f) -> 
         let d_sub = aux te_sub in
-        (match force t_sub with 
+        (match Types.force t_sub with 
          | TFloat (bounds_bag, _) -> (* Extract bounds bag *) 
              let set_or_top_val = Bags.BoundBag.get bounds_bag in
              (match set_or_top_val with
@@ -280,5 +306,11 @@ let discretize (e : texpr) : expr =
         
     | App (te1, te2) ->
         ExprNode (App (aux te1, aux te2))
+
+    | FinConst _ 
+    | FinLt _
+    | FinLeq _ -> 
+        failwith (Printf.sprintf "Discretization error: Cannot discretize expression of type %s" (Pretty.string_of_ty ty))
+
   in
   aux e
