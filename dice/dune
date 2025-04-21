@@ -1,0 +1,6 @@
+(data_only_dirs benchmarks rsdd)
+
+
+(env
+  (dev
+    (flags (:standard -warn-error -A))))

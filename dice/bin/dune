@@ -1,0 +1,9 @@
+(executable
+ (libraries core core_unix.command_unix cudd sexplib menhirLib diceLib yojson bignum)
+ (name dice)
+ (preprocess (pps ppx_jane)))
+
+
+(install
+ (section bin)
+ (files (dice.exe as dice)))
