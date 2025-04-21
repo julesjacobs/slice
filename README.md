@@ -5,16 +5,20 @@ ContDice is a language for probabilistic programming with continuous distributio
 ## Features
 
 - Uniform distribution: `uniform(lo, hi)`
-- Discrete distribution: `discrete(p1, p2, ..., pn)` where p1+p2+...+pn = 1.0
+- Discrete distribution: `discrete(prob1: <expr1>, prob2: <expr2>, ..., probN: <exprN>)` where `prob1 + prob2 + ... + probN` should ideally be 1.0. The values returned are the results of evaluating the corresponding `<expr>`.
 - Conditionals: `if <condition> then <expr> else <expr>`
 - Variables: `let x = <expr> in <expr>`
-- Comparison operators: `<` and `<=`
+- Functions: `fun x -> <expr>`
+- Comparison operators: Simple comparison `<` (e.g., `x < 0.5`), and comparisons on finite types `<#type`, `<=#type`, `==#type` (e.g., `y <=#2 0#2`). Both operands must be of the same finite type `#type`.
+- Comments: OCaml-style comments `(* ... *)`.
+
+The implementation can attempt to discretize continuous distributions into discrete ones.
 
 ## Building
 
 ```bash
-# Install dependencies
-opam install menhir
+# Install dependencies (if not already installed via opam)
+# opam install base stdio dune ppx_jane menhir
 
 # Build the project
 dune build
@@ -22,59 +26,48 @@ dune build
 
 ## Running
 
+The main executable is `bin/main.exe`.
+
 ```bash
 # Run on a single file
-dune exec -- contdice examples/coin_flip.cdice
+dune exec -- bin/main.exe examples/coin_flip.cdice
 
 # Run on a directory (processes all .cdice files recursively)
-dune exec -- contdice examples
+dune exec -- bin/main.exe examples
+```
+
+Alternatively, use the provided helper script:
+
+```bash
+# Run all examples
+./run.sh
+
+# Run a specific example (e.g., coin.cdice)
+./run.sh coin.cdice
 ```
 
 ## Examples
 
-Check the `examples/` directory for sample programs.
+Check the `examples/` directory for more sample programs.
 
-### Basic Coin Flip (Uniform)
+### Coin Flip Example
 
-```
-let x = uniform(0, 1) in
-if x < 0.5 then 0 else 1
-```
-
-### Basic Coin Flip (Discrete)
-
-```
-let coin = discrete(0.5, 0.5) in
-if coin < 0.5 then 0 else 1
-```
-
-### Rolling a Die (Uniform)
-
-```
-let roll = uniform(1, 7) in
-if roll < 2 then 1 else
-if roll < 3 then 2 else
-if roll < 4 then 3 else
-if roll < 5 then 4 else
-if roll < 6 then 5 else 6
+```ocaml
+(* examples/coin.cdice *)
+let coin = discrete(0.5: 0#2, 0.5: 1#2) in  (* Returns 0 or 1 with equal probability *)
+let u = uniform(0.0, 1.0) in
+if coin <=#2 0#2 then
+  u < 0.2  (* If coin is 0, check if u < 0.2 *)
+else
+  u < 0.8  (* If coin is 1, check if u < 0.8 *)
 ```
 
 ### Rolling a Die (Discrete)
 
-```
-let roll = discrete(1.0/6.0, 1.0/6.0, 1.0/6.0, 1.0/6.0, 1.0/6.0, 1.0/6.0) in
+```ocaml
+(* examples/dice.cdice *)
+let roll = discrete(0.166666: 1#1, 0.166666: 2#1, 0.166666: 3#1, 0.166666: 4#1, 0.166666: 5#1, 0.166666: 6#1) in
 roll
-```
-
-### Mixing Distribution Types
-
-```
-let coin = discrete(0.5, 0.5) in
-let u = uniform(0.0, 1.0) in
-if coin < 0.5 then
-  u < 0.2
-else
-  u < 0.8
 ```
 
 ## Syntax
@@ -82,12 +75,16 @@ else
 The language has a simple ML-inspired syntax:
 
 ```
-<expr> ::= <identifier>
-         | let <identifier> = <expr> in <expr>
-         | uniform(<float>, <float>)
-         | discrete(<float>, <float>, ...)
-         | <expr> < <float>
-         | <expr> <= <int>
-         | if <expr> then <expr> else <expr>
-         | (<expr>)
+e ::= x
+    | let x = e1 in e2
+    | uniform(f1, f2)
+    | discrete(f1: e1, f2: e2, ...)
+    | e < f
+    | e <= f
+    | e <#n f
+    | e <=#n f
+    | if e1 then e2 else e3
+    | fun x -> e
+    | (e)
+    | k#n      (* Finite type literal, e.g., 0#2, 1#2 *)
 ```
