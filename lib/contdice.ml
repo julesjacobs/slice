@@ -240,7 +240,7 @@ let elab (e : expr) : texpr =
         Bags.FloatBag.listen c_meta1 listener;
         Bags.FloatBag.listen c_meta2 listener;
 
-        (TBool, TAExprNode (Less ((t1,a1), (t2,a2)))) (* Result is TBool *)
+        (TBool, TAExprNode (LessEq ((t1,a1), (t2,a2)))) (* Result is TBool *)
 
     | If (e1, e2, e3) ->
       let t1, a1 = aux env e1 in
@@ -359,13 +359,13 @@ let discretize (e : texpr) : expr =
          | Finite bound_set ->
               let cuts = BoundSet.elements bound_set in
               let bound_matches_float b x = match b with
-                | Bags.Less c -> c < x
-                | Bags.LessEq c -> c <= x
+                | Bags.Less c -> x < c
+                | Bags.LessEq c -> x <= c
               in
               (* Find the index of the float in the bag *)
-              let idx = List.length (List.filter (fun x -> bound_matches_float x f) cuts) in
+              let idx = List.length (List.filter (fun x -> not (bound_matches_float x f)) cuts) in
               (* Generate FinConst expression *)
-              ExprNode (FinConst (1+idx, List.length cuts)))
+              ExprNode (FinConst (idx, 1+List.length cuts)))
 
     | Var x ->
         ExprNode (Var x)
