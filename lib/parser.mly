@@ -53,9 +53,9 @@ expr:
 
 /* Comparison level */
 cmp_expr:
-  | cmp_expr LESS number
+  | cmp_expr LESS app_expr
     { ExprNode (Less ($1, $3)) }
-  | cmp_expr LESSEQ number
+  | cmp_expr LESSEQ app_expr
     { ExprNode (LessEq ($1, $3)) }
   | app_expr LT_HASH INT app_expr    (* FinLt/Leq compare two app_expr level things *) 
     { ExprNode (FinLt ($1, $4, $3)) }

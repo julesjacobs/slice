@@ -33,8 +33,13 @@ and string_of_aexpr_indented ?(indent=0) ae =
   string_of_aexpr_node ~indent ae
 and string_of_texpr_indented ?(indent=0) ((ty, aexpr) : texpr) : string =
   let aexpr_str = string_of_aexpr_indented ~indent aexpr in
-  Printf.sprintf "%s(%s%s : %s%s)%s"
-    paren_color reset_color aexpr_str (string_of_ty ty) paren_color reset_color
+  (* Check if the expression is FinConst *)
+  match aexpr with
+  | TAExprNode (FinConst (_, _)) -> aexpr_str (* Just print the constant *)
+  | _ -> 
+      (* Default behavior: print expression with type *)
+      Printf.sprintf "%s(%s%s : %s%s)%s"
+        paren_color reset_color aexpr_str (string_of_ty ty) paren_color reset_color
 
 (* Pretty printer for expr nodes *)
 and string_of_expr_node ?(indent=0) (ExprNode expr_node) : string =
@@ -59,12 +64,12 @@ and string_of_expr_node ?(indent=0) (ExprNode expr_node) : string =
         keyword_color reset_color paren_color
         (String.concat ", " (List.map format_case cases))
         reset_color
-  | Less (e, f) ->
-      Printf.sprintf "%s %s<%s %s%g%s"
-        (string_of_expr_indented ~indent e) operator_color reset_color number_color f reset_color
-  | LessEq (e, f) ->
-      Printf.sprintf "%s %s<=%s %s%g%s"
-        (string_of_expr_indented ~indent e) operator_color reset_color number_color f reset_color
+  | Less (e1, e2) ->
+      Printf.sprintf "%s %s<%s %s"
+        (string_of_expr_indented ~indent e1) operator_color reset_color (string_of_expr_indented ~indent e2)
+  | LessEq (e1, e2) ->
+      Printf.sprintf "%s %s<=%s %s"
+        (string_of_expr_indented ~indent e1) operator_color reset_color (string_of_expr_indented ~indent e2)
   | If (e1, e2, e3) ->
       let indent_str = String.make indent ' ' in
       let next_indent_str = String.make (indent+2) ' ' in
@@ -129,12 +134,12 @@ and string_of_aexpr_node ?(indent=0) (TAExprNode ae_node) : string =
         keyword_color reset_color paren_color
         (String.concat ", " (List.map format_case cases))
         reset_color
-  | Less (te, f) ->
-      Printf.sprintf "%s %s<%s %s%g%s"
-        (string_of_texpr_indented ~indent te) operator_color reset_color number_color f reset_color
-  | LessEq (te, f) ->
-      Printf.sprintf "%s %s<=%s %s%g%s"
-        (string_of_texpr_indented ~indent te) operator_color reset_color number_color f reset_color
+  | Less (te1, te2) ->
+      Printf.sprintf "%s %s<%s %s"
+        (string_of_texpr_indented ~indent te1) operator_color reset_color (string_of_texpr_indented ~indent te2)
+  | LessEq (te1, te2) ->
+      Printf.sprintf "%s %s<=%s %s"
+        (string_of_texpr_indented ~indent te1) operator_color reset_color (string_of_texpr_indented ~indent te2)
   | If (te1, te2, te3) ->
       let indent_str = String.make indent ' ' in
       let next_indent_str = String.make (indent+2) ' ' in

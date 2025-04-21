@@ -120,36 +120,29 @@ let elab (e : expr) : texpr =
       let annotated_cases = List.map (fun (texpr, prob) -> (texpr, prob)) typed_cases in
       (result_ty, TAExprNode (DistrCase annotated_cases))
 
-    | Less (e1, f) ->
-      let t1, a1 = aux env e1 in
-      let fresh_bounds_bag_ref = Bags.BoundBag.create (Finite (BoundSet.singleton (Bags.Less f))) in
-      (* Note: Constants bag is Bottom (Finite empty) as Less doesn't provide constant info *) 
-      let fresh_consts_bag_ref = Bags.FloatBag.create (Finite FloatSet.empty) in 
-      let target_type = TFloat (fresh_bounds_bag_ref, fresh_consts_bag_ref) in
-      (try sub_type t1 target_type (* Check t1 is a subtype of the target float type *) 
-       with Failure msg -> failwith (Printf.sprintf "Type error in Less (< %g): %s" f msg));
-      (* Add the Less f bound constraint *) 
-      (match Types.force t1 with
-       | TFloat (b_ref, _) -> 
-           let new_bound_bag = Bags.BoundBag.create (Finite (BoundSet.singleton (Bags.Less f))) in
-           Bags.BoundBag.leq new_bound_bag b_ref (* Must still enforce the bound *) 
-       | _ -> failwith "Internal error: Less operand not TFloat after subtyping check");
-      (TBool, TAExprNode (Less ((t1,a1), f)))
+    | Less (e1, e2) ->
+        let t1, a1 = aux env e1 in
+        let t2, a2 = aux env e2 in
+        let b_meta = Bags.fresh_bound_bag () in (* Shared bound bag for unification *)
+        let c_meta1 = Bags.fresh_float_bag () in
+        let c_meta2 = Bags.fresh_float_bag () in
+        (try unify t1 (TFloat (b_meta, c_meta1)) (* Unify t1 with TFloat(b_meta, c1) *)
+         with Failure msg -> failwith (Printf.sprintf "Type error in Less (<) left operand: %s" msg));
+        (try unify t2 (TFloat (b_meta, c_meta2)) (* Unify t2 with TFloat(b_meta, c2) *)
+         with Failure msg -> failwith (Printf.sprintf "Type error in Less (<) right operand: %s" msg));
+        (TBool, TAExprNode (Less ((t1,a1), (t2,a2)))) (* Result is TBool *)
       
-    | LessEq (e1, f) ->
-      let t1, a1 = aux env e1 in
-      let fresh_bounds_bag_ref = Bags.BoundBag.create (Finite (BoundSet.singleton (Bags.LessEq f))) in
-      let fresh_consts_bag_ref = Bags.FloatBag.create (Finite FloatSet.empty) in 
-      let target_type = TFloat (fresh_bounds_bag_ref, fresh_consts_bag_ref) in
-       (try sub_type t1 target_type (* Check t1 is a subtype of the target float type *) 
-       with Failure msg -> failwith (Printf.sprintf "Type error in LessEq (<= %g): %s" f msg));
-      (* Add the LessEq f bound constraint *) 
-      (match Types.force t1 with
-       | TFloat (b_ref, _) -> 
-           let new_bound_bag = Bags.BoundBag.create (Finite (BoundSet.singleton (Bags.LessEq f))) in
-           Bags.BoundBag.leq new_bound_bag b_ref (* Must still enforce the bound *) 
-       | _ -> failwith "Internal error: LessEq operand not TFloat after subtyping check");
-      (TBool, TAExprNode (LessEq ((t1,a1), f)))
+    | LessEq (e1, e2) ->
+        let t1, a1 = aux env e1 in
+        let t2, a2 = aux env e2 in
+        let b_meta = Bags.fresh_bound_bag () in (* Shared bound bag for unification *)
+        let c_meta1 = Bags.fresh_float_bag () in
+        let c_meta2 = Bags.fresh_float_bag () in
+        (try unify t1 (TFloat (b_meta, c_meta1)) (* Unify t1 with TFloat(b_meta, c1) *)
+         with Failure msg -> failwith (Printf.sprintf "Type error in LessEq (<=) left operand: %s" msg));
+        (try unify t2 (TFloat (b_meta, c_meta2)) (* Unify t2 with TFloat(b_meta, c2) *)
+         with Failure msg -> failwith (Printf.sprintf "Type error in LessEq (<=) right operand: %s" msg));
+        (TBool, TAExprNode (LessEq ((t1,a1), (t2,a2)))) (* Result is TBool *)
 
     | If (e1, e2, e3) ->
       let t1, a1 = aux env e1 in
@@ -259,7 +252,23 @@ let discretize (e : texpr) : expr =
   let rec aux ((ty, TAExprNode ae_node) : texpr) : expr =
     match ae_node with
     | Const f -> 
-        ExprNode (Const f) (* Pass constant through *) 
+        let bounds_bag = (match Types.force ty with
+          | TFloat (b, _) -> b (* Extract bounds bag *)
+          | _ -> failwith "Type error: Const expects float") in
+        let set_or_top_val = Bags.BoundBag.get bounds_bag in
+        (match set_or_top_val with
+         | Top -> ExprNode (Const f) (* Keep original if Top *)
+         | Finite bound_set ->
+              let cuts = BoundSet.elements bound_set in
+              let bound_matches_float b x = match b with
+                | Bags.Less c -> c < x
+                | Bags.LessEq c -> c <= x
+              in
+              (* Find the index of the float in the bag *)
+              let idx = List.length (List.filter (fun x -> not (bound_matches_float x f)) cuts) in
+              (* Generate FinConst expression *)
+              ExprNode (FinConst (idx, List.length cuts)))
+
     | Var x ->
         ExprNode (Var x)
 
@@ -303,45 +312,75 @@ let discretize (e : texpr) : expr =
       in
       ExprNode (DistrCase discretized_cases)
 
-    | Less ((t_sub, _) as te_sub, f) ->
-        let d_sub = aux te_sub in
-        (match Types.force t_sub with 
-         | TFloat (bounds_bag, _) -> (* Extract bounds bag *) 
-             let set_or_top_val = Bags.BoundBag.get bounds_bag in
-             (match set_or_top_val with
-              | Top -> ExprNode (Less (d_sub, f)) (* Keep original Less if Top *) 
-              | Finite bound_set -> 
-                  let cuts = 
-                    BoundSet.elements bound_set 
-                    |> List.map (function Bags.Less c -> c | Bags.LessEq c -> c)
-                    |> List.sort_uniq compare
-                  in
-                  let n = List.length cuts + 1 in (* Modulus *) 
-                  if n = 0 then failwith "Internal error: discretization resulted in zero intervals for Less";
-                  let idx = List.length (List.filter (fun x -> x < f) cuts) in
-                  (* Generate FinLt comparison *) 
-                  ExprNode (FinLt (d_sub, ExprNode (FinConst (idx, n)), n)))
-         | _ -> failwith "Type error: Less expects float")
+    | Less (te1, te2) -> (* Match the typed expressions te1, te2 *) 
+        let t1 = fst te1 in (* Extract type t1 *) 
+        let t2 = fst te2 in (* Extract type t2 *)
+        let b1 = (match Types.force t1 with (* Get bound bag b1 from t1 *)
+          | TFloat (b, _) -> b 
+          | _ -> failwith "Type error: Less expects float on left operand") 
+        in
+        let b2 = (match Types.force t2 with (* Get bound bag b2 from t2 *)
+          | TFloat (b, _) -> b
+          | _ -> failwith "Type error: Less expects float on right operand")
+        in
+        (* Get bag values and compare using BoundSetContents.equal *) 
+        let val1 = Bags.BoundBag.get b1 in
+        let val2 = Bags.BoundBag.get b2 in
+        if not (Bags.BoundSetContents.equal val1 val2) then 
+          failwith "Internal error: Less operands have different bound bag values despite elaboration";
+
+        (* Use val1 (since val1 = val2) *) 
+        (match val1 with 
+          | Top -> 
+              (* If bounds are Top, don't discretize, keep original Less structure *) 
+              ExprNode (Less (aux te1, aux te2)) 
+          | Finite bound_set -> 
+              (* Discretize based on shared bounds *) 
+              let cuts = 
+                BoundSet.elements bound_set 
+                |> List.map (function Bags.Less c -> c | Bags.LessEq c -> c)
+                |> List.sort_uniq compare
+              in
+              let n = List.length cuts + 1 in (* Modulus *) 
+              if n <= 0 then failwith "Internal error: discretization resulted in zero or negative intervals for Less";
+              let d1 = aux te1 in (* Discretize operands *)
+              let d2 = aux te2 in 
+              ExprNode (FinLt (d1, d2, n))) (* Generate FinLt *) 
         
-    | LessEq ((t_sub, _) as te_sub, f) -> 
-        let d_sub = aux te_sub in
-        (match Types.force t_sub with 
-         | TFloat (bounds_bag, _) -> (* Extract bounds bag *) 
-             let set_or_top_val = Bags.BoundBag.get bounds_bag in
-             (match set_or_top_val with
-              | Top -> ExprNode (LessEq (d_sub, f)) (* Keep original LessEq if Top *) 
-              | Finite bound_set -> 
-                  let cuts = 
-                    BoundSet.elements bound_set 
-                    |> List.map (function Bags.Less c -> c | Bags.LessEq c -> c)
-                    |> List.sort_uniq compare
-                  in
-                  let n = List.length cuts + 1 in (* Modulus *) 
-                  if n = 0 then failwith "Internal error: discretization resulted in zero intervals for LessEq";
-                  let idx = List.length (List.filter (fun x -> x <= f) cuts) in
-                  (* Generate FinLeq comparison *) 
-                  ExprNode (FinLeq (d_sub, ExprNode (FinConst (idx, n)), n)))
-         | _ -> failwith "Type error: LessEq expects float")
+    | LessEq (te1, te2) -> (* Match the typed expressions te1, te2 *) 
+        let t1 = fst te1 in (* Extract type t1 *) 
+        let t2 = fst te2 in (* Extract type t2 *) 
+        let b1 = (match Types.force t1 with (* Get bound bag b1 from t1 *)
+          | TFloat (b, _) -> b 
+          | _ -> failwith "Type error: LessEq expects float on left operand") 
+        in
+        let b2 = (match Types.force t2 with (* Get bound bag b2 from t2 *)
+          | TFloat (b, _) -> b
+          | _ -> failwith "Type error: LessEq expects float on right operand")
+        in
+        (* Get bag values and compare using BoundSetContents.equal *) 
+        let val1 = Bags.BoundBag.get b1 in
+        let val2 = Bags.BoundBag.get b2 in
+        if not (Bags.BoundSetContents.equal val1 val2) then 
+          failwith "Internal error: LessEq operands have different bound bag values despite elaboration";
+        
+        (* Use val1 (since val1 = val2) *) 
+        (match val1 with 
+          | Top -> 
+              (* If bounds are Top, don't discretize, keep original LessEq structure *) 
+              ExprNode (LessEq (aux te1, aux te2))
+          | Finite bound_set -> 
+              (* Discretize based on shared bounds *) 
+              let cuts = 
+                BoundSet.elements bound_set 
+                |> List.map (function Bags.Less c -> c | Bags.LessEq c -> c)
+                |> List.sort_uniq compare
+              in
+              let n = List.length cuts + 1 in (* Modulus *) 
+              if n <= 0 then failwith "Internal error: discretization resulted in zero or negative intervals for LessEq";
+              let d1 = aux te1 in (* Discretize operands *)
+              let d2 = aux te2 in 
+              ExprNode (FinLeq (d1, d2, n))) (* Generate FinLeq *) 
 
     | If (te1, te2, te3) ->
         ExprNode (If (aux te1, aux te2, aux te3))

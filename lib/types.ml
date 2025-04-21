@@ -8,8 +8,8 @@ type 'a expr_generic =
   | CDistr of Stats.cdistr          (* Continuous distribution *)
   (* | Discrete of float list    (* list of probabilities; i-th element is probability of float(i) *) *)
   | DistrCase of ('a * float) list (* General discrete distribution: (expr * prob) list *)
-  | Less   of 'a * float
-  | LessEq  of 'a * float
+  | Less   of 'a * 'a
+  | LessEq of 'a * 'a
   | If     of 'a * 'a * 'a
   | Pair   of 'a * 'a            (* Pair construction (e1, e2) *)
   | First  of 'a                   (* First projection: fst e *)
