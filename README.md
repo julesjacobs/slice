@@ -14,11 +14,11 @@ $ ./run.sh <full_path_of_example_cdice_program>
 ```bash
 $ cd cdice
 $ dune build
-$ dune exec -- bin/main.exe [-print-all] <example_cdice_program>
+$ dune exec -- bin/main.exe [--print-all] <example_cdice_program>
 ```
 Options:
 
--print-all: prints the intermediate steps in the cdice workflow up to the discretized program, i.e.:
+--print-all: prints the intermediate steps in the cdice workflow up to the discretized program, i.e.:
 
 ```bash
 $ dune exec -- bin/main.exe examples/coin_flip.cdice 
