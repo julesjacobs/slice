@@ -22,15 +22,14 @@ let rec eval (env : env) (ExprNode e_node : expr) : value =
       eval ((x, v1) :: env) e2
 
   | CDistr dist -> 
-      (* Handle continuous distributions by sampling *)
-      (match dist with
-       | Stats.Uniform (a, b) -> 
-           if b < a then raise (RuntimeError (Printf.sprintf "Invalid Uniform parameters: lower bound %f > upper bound %f" a b));
-           VFloat (a +. Random.float (b -. a))
-       | _ -> 
-           raise (RuntimeError "Interpreter error: only uniform distributions are supported")
-       (* Add cases for other distributions here *)
-      )
+      (* Handle continuous distributions by sampling using the stats library function *)
+      begin
+        try
+          VFloat (Stats.cdistr_sample dist)
+        with 
+        | Invalid_argument msg -> raise (RuntimeError (Printf.sprintf "Invalid distribution parameters: %s" msg))
+        | Failure msg -> raise (RuntimeError (Printf.sprintf "Sampling error: %s" msg)) (* Catch unimplemented cases *)
+      end
 
   | DistrCase cases ->
       (* Check probabilities sum close to 1.0 (optional, should be checked by elab) *)

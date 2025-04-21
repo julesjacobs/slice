@@ -75,3 +75,26 @@ let cdistr_cdf (dist : cdistr) (x : float) : float =
     | Gaussian (mean, std) -> gaussian_cdf ~mu:mean ~sigma:std x
     | Exponential rate -> exponential_cdf ~lambda:rate x
     | Beta (alpha, beta) -> beta_cdf ~a:alpha ~b:beta x
+
+(** Sample from a continuous distribution *)
+let cdistr_sample (dist : cdistr) : float =
+    match dist with
+    | Uniform (lo, hi) ->
+        if lo > hi then invalid_arg "cdistr_sample: Uniform lo must be less than hi"
+        else if lo = hi then lo (* Degenerate case *)
+        else Random.float (hi -. lo) +. lo
+    | Gaussian (mu, sigma) ->
+        if sigma <= 0.0 then invalid_arg "cdistr_sample: Gaussian sigma must be positive";
+        (* Box-Muller transform *)
+        let u1 = ref 0.0 in
+        let u2 = ref 0.0 in
+        (* Ensure u1 is not 0 to avoid log(0) *)
+        while !u1 = 0.0 do
+          u1 := Random.float 1.0
+        done;
+        u2 := Random.float 1.0;
+        let z0 = sqrt (-2.0 *. log !u1) *. cos (2.0 *. Float.pi *. !u2) in
+        (* We only need one sample, z0 *)
+        mu +. sigma *. z0
+    | Exponential _ -> failwith "cdistr_sample: Exponential sampling not implemented"
+    | Beta _ -> failwith "cdistr_sample: Beta sampling not implemented"

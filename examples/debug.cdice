@@ -1,2 +1,0 @@
-let x = uniform(0.0,0.0) in
-x < 0.0
