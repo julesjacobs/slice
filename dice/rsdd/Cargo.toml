@@ -1,0 +1,60 @@
+[package]
+name = "rsdd"
+version = "0.1.0"
+edition = "2018"
+authors = ["Steven Holtzen <sholtzen@gmail.com>"]
+
+
+[dependencies]
+fnv = "1.0.3"
+rand = "0.8.5"
+twox-hash = "1.1.0"
+dimacs = "0.2.0"
+im = "15.1.0"
+primal = "0.3.0"
+pretty = "0.3.3"
+num = "0.1.41"
+maplit = "1.0.1"
+libc = "0.2"
+quickcheck = "1.0.3"
+time-test = "0.2.2"
+serde = { version = "1.0", features = ["derive"] }
+clap = { version = "3.2.14", features = ["derive"] }
+criterion = "0.3"
+rayon = "1.5.3"
+serde_json = "1.0.81"
+bit-set = "0.5.3"
+segment-tree = "2.0.0"
+dot = "0.1.4"
+petgraph = "0.6.2"
+rsgm = { git = "https://github.com/pmall-neu/rsgm", rev = "9edf93ef996a1e57d65c3b3701df1a2ba5a34af0" }
+
+
+[lib]
+name = "rsdd"
+path = "src/lib.rs"
+crate-type = ["staticlib", "rlib", "dylib"]
+
+
+[build]
+rustflags = ["-C", "link-args=-Wl,-undefined,dynamic_lookup,-export-dynamic"]
+
+
+[[bench]]
+name = "rsdd_benchmark"
+harness = false
+
+[profile.release]
+debug = true
+
+[[bin]]
+name = "one_shot_benchmark"
+path = "bin/one_shot_benchmark.rs"
+
+[[bin]]
+name = "bayesian_network_compiler"
+path = "bin/bayesian_network_compiler.rs"
+
+[[bin]]
+name = "compare_canonicalize"
+path = "bin/compare_canonicalize.rs"

@@ -104,16 +104,21 @@ let process_file filename : ( ((int * int) * (int * int)) option, string) result
     let expr = Contdice.Parse.parse_expr content in
     Printf.printf "Parsed AST (Pretty):\n%s\n\n" (Contdice.Pretty.string_of_expr expr);
     
-    let texpr = Contdice.elab expr in
+    let texpr = Contdice.elab_bool expr in 
     Printf.printf "Typed AST (Pretty):\n%s\n\n" (Contdice.Pretty.string_of_texpr texpr);
     
     let discretized_expr = Contdice.discretize texpr in
     Printf.printf "Discretized Program (Pretty):\n%s\n\n" (Contdice.Pretty.string_of_expr discretized_expr);
 
-    (* Feed to result to dice *)
     let discretized_expr_text = Contdice.discretize texpr in
     Printf.printf "Discretized Program (Plaintext):\n%s\n\n" (Contdice.Util.string_of_expr discretized_expr_text);
 
+    (* Run the discretized expression through dice *)
+    Printf.printf "Running dice on discretized expression...\n";
+    let expr_str = Contdice.Util.string_of_expr discretized_expr_text in
+    let program = Printf.sprintf "dune exec dice %s" (Filename.quote expr_str) in
+    let status = Sys.command program in
+    Printf.printf "Exit status: %d\n" status;
 
     let n_runs = 1000000 in 
     match run_interp_and_summarize "Discretized" discretized_expr n_runs with
