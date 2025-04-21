@@ -1,0 +1,13 @@
+let u1 = uniform(0, 1) in
+let u2 = if u1 < 0.5 then
+           uniform(0, 0.5) (* If u1 small, u2 is small *)
+         else
+           uniform(0.5, 1) (* If u1 large, u2 is large *)
+         in
+(* Now use u2 in another check *)
+let u3 = if u2 < 0.7 then
+           uniform(0, 0.7)
+         else
+           uniform(0.7, 1)
+         in
+u3 < 0.2 

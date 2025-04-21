@@ -1,0 +1,33 @@
+(* Adversarial Example 5: Distribution-Dependent Function Choice *)
+
+(* Process a pair: true if both elements < 0.5 (using nested if) *)
+let process_pair_logic = fun p ->
+  if fst p < 0.5 then
+    snd p < 0.5
+  else
+    1 < 0 (* Use comparison for false *)
+in
+
+(* Different logic: true if 0.2 < first or 0.8 < second (using nested if) *)
+let process_pair_other_logic = fun p ->
+  if 0.2 < fst p then
+    0 < 1 (* Use comparison for true *)
+  else
+    0.8 < snd p
+in
+
+(* Decide which function to use based on a uniform draw *)
+let decide = uniform(0, 1) in
+
+(* The pair to process *)
+let the_pair = (uniform(0, 1), uniform(0, 1)) in
+
+(* Select the function *)
+let chosen_processor = if decide < 0.4 then
+                         process_pair_logic
+                       else
+                         process_pair_other_logic
+                       in
+
+(* Apply the chosen function to the pair *)
+chosen_processor the_pair (* Final result is boolean *) 

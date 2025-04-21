@@ -1,0 +1,55 @@
+(* Adversarial Example 7: The Kitchen Sink - Modified with Variable Constants *)
+
+(* Comparison Logic 1: (data.fst < thresh.fst) AND (data.snd < thresh.snd) *)
+let compare_complex = fun threshold_pair -> fun data_pair ->
+  if fst data_pair < fst threshold_pair then
+    snd data_pair < snd threshold_pair
+  else
+    1 < 0 (* false *)
+in
+
+(* Comparison Logic 2: (data.fst < thresh.fst) OR (data.snd < variable) *)
+let compare_simple = fun threshold_pair -> fun data_pair ->
+  if fst data_pair < fst threshold_pair then
+    0 < 1 (* true *)
+  else
+    let comparison_level = if uniform(0,1) < 0.6 then 0.1 else 0.15 in
+    snd data_pair < comparison_level
+in
+
+(* Generates a pair of thresholds, ensuring at most one gaussian *)
+(* And avoiding gaussian vs gaussian comparison with data_pair *)
+let threshold_maker = fun u ->
+  if u < 0.5 then
+    let first_thresh = discrete(0.5: 0.1, 0.5: 0.12) in
+    (first_thresh, gaussian(0.5, 0.1)) (* (Discrete, Gaussian) *)
+  else
+    (-0.6, 0.9) (* (Constant, Constant) *)
+in
+
+(* Chooses which comparison function to use *)
+let choose_comparator = fun u ->
+  if u < 0.3 then
+    compare_complex
+  else
+    compare_simple
+in
+
+(* ---- Main Program ---- *)
+
+(* Generate initial data - Ensure only one continuous value, make const discrete *)
+let data_const = discrete(0.5: 0.2, 0.5: 0.7) in (* Choose 0.2 or 0.7 *)
+let data_pair = (gaussian(0, 1), data_const) (* (Gaussian, Discrete) *) in
+
+(* Generate control variables *)
+let u_threshold = uniform(0, 1) in
+let u_choice = uniform(0, 1) in
+
+(* Generate thresholds based on u_threshold *)
+let thresholds = threshold_maker u_threshold in
+
+(* Select comparator based on u_choice *)
+let comparator = choose_comparator u_choice in
+
+(* Apply the chosen comparator to the thresholds and data *)
+comparator thresholds data_pair 

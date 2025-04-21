@@ -1,0 +1,8 @@
+let u = uniform(0, 1) in
+let sensitive_check = u < 0.5000001 in
+let x = if sensitive_check then
+          uniform(0, 0.1) (* Narrow range if u is low *)
+        else
+          uniform(0.9, 1.0) (* Narrow range if u is high *)
+        in
+x < 0.05 (* Check if x falls into the very low range *) 

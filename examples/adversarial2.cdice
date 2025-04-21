@@ -1,0 +1,4 @@
+let u1 = uniform(0, 1) in
+let u2 = uniform(0, 1) in
+let check_val = if u1 < 0.5 then 0.1 else 0.9 in
+u2 < check_val 

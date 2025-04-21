@@ -1,0 +1,26 @@
+(* Adversarial Example 4: Conditional Higher-Order Application *)
+
+(* Function that applies 'f' to 'val' only if uniform() < threshold *)
+(* Otherwise, it returns whether 0.8 < 'val' *)
+let apply_if_small = fun f -> fun threshold -> fun val ->
+  let current_val = val in
+  if uniform(0, 1) < threshold then
+    f current_val
+  else
+    0.8 < current_val
+in
+
+(* A simple function to apply: checks if 1.0 < value *)
+let check_gt_one = fun x ->
+  let current_x = x in
+  1.0 < current_x
+in
+
+(* A value from a distribution *)
+let g = gaussian(0, 2) in
+
+(* Apply 'check_gt_one' to 'g' if uniform() < 0.3 *)
+(* Otherwise check if 0.8 < g *)
+let result = (apply_if_small check_gt_one) 0.3 g in
+
+result (* Final result is boolean *) 

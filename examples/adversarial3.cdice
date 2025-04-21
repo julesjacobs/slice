@@ -1,0 +1,4 @@
+let g = gaussian(0, 1) in (* Mean 0, StdDev 1 *)
+let check = g < 0.1 in (* Threshold slightly above the mean *)
+let x = if check then uniform(0, 0.2) else uniform(0.8, 1.0) in
+x < 0.15 
