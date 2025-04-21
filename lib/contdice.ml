@@ -236,9 +236,8 @@ let elab (e : expr) : texpr =
 (* Function that does elab but insists that the return type is TBool *)
 let elab_bool (e : expr) : texpr =
   let t, a = elab e in
-  match Types.force t with
-  | TBool -> (t, a)
-  | _ -> failwith "Type error: expected bool, got something else"
+  sub_type t TBool;
+  (t, a)
 
 (* Calculate probability for a given distribution in an interval *)
 let prob_cdistr_interval (left : float) (right : float) (dist : Stats.cdistr) : float =
