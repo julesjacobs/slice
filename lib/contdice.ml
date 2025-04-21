@@ -130,6 +130,55 @@ let elab (e : expr) : texpr =
          with Failure msg -> failwith (Printf.sprintf "Type error in Less (<) left operand: %s" msg));
         (try unify t2 (TFloat (b_meta, c_meta2)) (* Unify t2 with TFloat(b_meta, c2) *)
          with Failure msg -> failwith (Printf.sprintf "Type error in Less (<) right operand: %s" msg));
+
+        (* Nested listener logic for Less *) 
+        let listener () = (* Listener takes unit *)
+          let v1 = Bags.FloatBag.get c_meta1 in (* Get value inside listener *)
+          let v2 = Bags.FloatBag.get c_meta2 in (* Get value inside listener *)
+          match v1, v2 with
+          | Top, Top ->
+              (* Both Top -> BoundBag should be Top *) 
+              Bags.BoundBag.leq (Bags.BoundBag.create Top) b_meta
+          | _, _ ->
+              (* At least one is not Top. Add bounds from Finite bags. *)
+              (* Temporarily store bounds to add *) 
+              let bounds_to_add = ref Bags.BoundSet.empty in
+
+              (* Collect bounds from right bag (c_meta2) - LessEq *) 
+              (match v2 with
+               | Finite s2 ->
+                   FloatSet.iter (fun f -> 
+                     bounds_to_add := Bags.BoundSet.add (Bags.Less f) !bounds_to_add
+                   ) s2
+               | Top -> ()
+              );
+
+              (* Collect bounds from left bag (c_meta1) - Less *) 
+              (match v1 with
+               | Finite s1 ->
+                   FloatSet.iter (fun f -> 
+                     bounds_to_add := Bags.BoundSet.add (Bags.LessEq f) !bounds_to_add
+                   ) s1
+               | Top -> ()
+              );
+
+              (* Apply collected bounds to b_meta *) 
+              if not (Bags.BoundSet.is_empty !bounds_to_add) then
+                let current_bound_val = Bags.BoundBag.get b_meta in
+                match current_bound_val with
+                | Top -> () (* Cannot add to Top *) 
+                | Finite current_set ->
+                    let new_set = Bags.BoundSet.union current_set !bounds_to_add in
+                    if not (Bags.BoundSet.equal current_set new_set) then (
+                       (* Update using temporary bag and leq *) 
+                       let temp_finite_bag = Bags.BoundBag.create (Finite new_set) in
+                       Bags.BoundBag.leq temp_finite_bag b_meta
+                    )
+        in
+        (* Register the combined listener on both float bags *) 
+        Bags.FloatBag.listen c_meta1 listener;
+        Bags.FloatBag.listen c_meta2 listener;
+
         (TBool, TAExprNode (Less ((t1,a1), (t2,a2)))) (* Result is TBool *)
       
     | LessEq (e1, e2) ->
@@ -139,10 +188,59 @@ let elab (e : expr) : texpr =
         let c_meta1 = Bags.fresh_float_bag () in
         let c_meta2 = Bags.fresh_float_bag () in
         (try unify t1 (TFloat (b_meta, c_meta1)) (* Unify t1 with TFloat(b_meta, c1) *)
-         with Failure msg -> failwith (Printf.sprintf "Type error in LessEq (<=) left operand: %s" msg));
+         with Failure msg -> failwith (Printf.sprintf "Type error in Less (<) left operand: %s" msg));
         (try unify t2 (TFloat (b_meta, c_meta2)) (* Unify t2 with TFloat(b_meta, c2) *)
-         with Failure msg -> failwith (Printf.sprintf "Type error in LessEq (<=) right operand: %s" msg));
-        (TBool, TAExprNode (LessEq ((t1,a1), (t2,a2)))) (* Result is TBool *)
+         with Failure msg -> failwith (Printf.sprintf "Type error in Less (<) right operand: %s" msg));
+
+        (* Nested listener logic for LessEq *) 
+        let listener () = (* Listener takes unit *)
+          let v1 = Bags.FloatBag.get c_meta1 in (* Get value inside listener *)
+          let v2 = Bags.FloatBag.get c_meta2 in (* Get value inside listener *)
+          match v1, v2 with
+          | Top, Top ->
+              (* Both Top -> BoundBag should be Top *) 
+              Bags.BoundBag.leq (Bags.BoundBag.create Top) b_meta
+          | _, _ ->
+              (* At least one is not Top. Add bounds from Finite bags. *)
+              (* Temporarily store bounds to add *) 
+              let bounds_to_add = ref Bags.BoundSet.empty in
+
+              (* Collect bounds from right bag (c_meta2) - LessEq *) 
+              (match v2 with
+               | Finite s2 ->
+                   FloatSet.iter (fun f -> 
+                     bounds_to_add := Bags.BoundSet.add (Bags.LessEq f) !bounds_to_add
+                   ) s2
+               | Top -> ()
+              );
+
+              (* Collect bounds from left bag (c_meta1) - Less *) 
+              (match v1 with
+               | Finite s1 ->
+                   FloatSet.iter (fun f -> 
+                     bounds_to_add := Bags.BoundSet.add (Bags.Less f) !bounds_to_add
+                   ) s1
+               | Top -> ()
+              );
+
+              (* Apply collected bounds to b_meta *) 
+              if not (Bags.BoundSet.is_empty !bounds_to_add) then
+                let current_bound_val = Bags.BoundBag.get b_meta in
+                match current_bound_val with
+                | Top -> () (* Cannot add to Top *) 
+                | Finite current_set ->
+                    let new_set = Bags.BoundSet.union current_set !bounds_to_add in
+                    if not (Bags.BoundSet.equal current_set new_set) then (
+                       (* Update using temporary bag and leq *) 
+                       let temp_finite_bag = Bags.BoundBag.create (Finite new_set) in
+                       Bags.BoundBag.leq temp_finite_bag b_meta
+                    )
+        in
+        (* Register the combined listener on both float bags *) 
+        Bags.FloatBag.listen c_meta1 listener;
+        Bags.FloatBag.listen c_meta2 listener;
+
+        (TBool, TAExprNode (Less ((t1,a1), (t2,a2)))) (* Result is TBool *)
 
     | If (e1, e2, e3) ->
       let t1, a1 = aux env e1 in
@@ -265,9 +363,9 @@ let discretize (e : texpr) : expr =
                 | Bags.LessEq c -> c <= x
               in
               (* Find the index of the float in the bag *)
-              let idx = List.length (List.filter (fun x -> not (bound_matches_float x f)) cuts) in
+              let idx = List.length (List.filter (fun x -> bound_matches_float x f) cuts) in
               (* Generate FinConst expression *)
-              ExprNode (FinConst (idx, List.length cuts)))
+              ExprNode (FinConst (1+idx, List.length cuts)))
 
     | Var x ->
         ExprNode (Var x)
