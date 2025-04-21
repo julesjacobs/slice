@@ -46,6 +46,8 @@ and string_of_expr_node ?(indent=0) (ExprNode expr_node) : string =
   match expr_node with
   | Const f -> 
       Printf.sprintf "%s%g%s" number_color f reset_color
+  | BoolConst b -> 
+      Printf.sprintf "%s%b%s" keyword_color b reset_color
   | Var x -> Printf.sprintf "%s%s%s" variable_color x reset_color
   | Let (x, e1, e2) ->
       let indent_str = String.make indent ' ' in
@@ -70,6 +72,15 @@ and string_of_expr_node ?(indent=0) (ExprNode expr_node) : string =
   | LessEq (e1, e2) ->
       Printf.sprintf "%s %s<=%s %s"
         (string_of_expr_indented ~indent e1) operator_color reset_color (string_of_expr_indented ~indent e2)
+  | And (e1, e2) ->
+      Printf.sprintf "%s %s&&%s %s"
+        (string_of_expr_indented ~indent e1) operator_color reset_color (string_of_expr_indented ~indent e2)
+  | Or (e1, e2) ->
+      Printf.sprintf "%s %s||%s %s"
+        (string_of_expr_indented ~indent e1) operator_color reset_color (string_of_expr_indented ~indent e2)
+  | Not e1 ->
+      Printf.sprintf "(%snot%s %s)"
+        operator_color reset_color (string_of_expr_indented ~indent e1)
   | If (e1, e2, e3) ->
       let indent_str = String.make indent ' ' in
       let next_indent_str = String.make (indent+2) ' ' in
@@ -116,6 +127,8 @@ and string_of_aexpr_node ?(indent=0) (TAExprNode ae_node) : string =
  match ae_node with
   | Const f -> 
       Printf.sprintf "%s%g%s" number_color f reset_color
+  | BoolConst b -> 
+      Printf.sprintf "%s%b%s" keyword_color b reset_color
   | Var x -> Printf.sprintf "%s%s%s" variable_color x reset_color
   | Let (x, te1, te2) ->
       let indent_str = String.make indent ' ' in
@@ -140,6 +153,15 @@ and string_of_aexpr_node ?(indent=0) (TAExprNode ae_node) : string =
   | LessEq (te1, te2) ->
       Printf.sprintf "%s %s<=%s %s"
         (string_of_texpr_indented ~indent te1) operator_color reset_color (string_of_texpr_indented ~indent te2)
+  | And (te1, te2) ->
+      Printf.sprintf "%s %s&&%s %s"
+        (string_of_texpr_indented ~indent te1) operator_color reset_color (string_of_texpr_indented ~indent te2)
+  | Or (te1, te2) ->
+      Printf.sprintf "%s %s||%s %s"
+        (string_of_texpr_indented ~indent te1) operator_color reset_color (string_of_texpr_indented ~indent te2)
+  | Not te1 ->
+      Printf.sprintf "(%snot%s %s)"
+        operator_color reset_color (string_of_texpr_indented ~indent te1)
   | If (te1, te2, te3) ->
       let indent_str = String.make indent ' ' in
       let next_indent_str = String.make (indent+2) ' ' in

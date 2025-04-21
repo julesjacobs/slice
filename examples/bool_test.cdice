@@ -1,0 +1,20 @@
+(* Test basic boolean constants and operations *)
+let t = true in
+let f = false in
+let test_and = t && f in (* Should be false *)
+let test_or = t || f in  (* Should be true *)
+let test_not_t = not t in (* Should be false *)
+let test_not_f = not f in (* Should be true *)
+
+(* Test precedence and short-circuiting *)
+let short_circuit_and = false && (1 < 0) in (* Should be false, 1 < 0 shouldn't eval *)
+let short_circuit_or = true || (0 < 1) in (* Should be true, 0 < 1 shouldn't eval *)
+let precedence_test = true || false && false in (* Should be true (|| lower than &&) *)
+let precedence_test2 = (true || false) && false in (* Should be false *)
+let precedence_test3 = not false && true in (* Should be true (not higher than &&) *)
+
+(* Test with if statements, sequenced with let *)
+let _res1 = if test_and then 10 else 20 in (* Should evaluate to 20, discarded *)
+let _res2 = if test_or then 30 else 40 in  (* Should evaluate to 30, discarded *)
+let final_result = if precedence_test3 then (if short_circuit_or then 100 else 200) else 300 in (* Should evaluate to 100 *)
+if final_result < 150 then true else false (* Convert final result to bool for runner script *) 

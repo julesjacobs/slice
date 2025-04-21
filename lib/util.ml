@@ -28,6 +28,7 @@ and string_of_texpr_indented ?(indent=0) ((ty, aexpr) : texpr) : string =
 and string_of_expr_node ?(indent=0) (ExprNode expr_node) : string =
   match expr_node with
   | Const f -> Printf.sprintf "%g" f
+  | BoolConst b -> string_of_bool b
   | Var x -> x
   | Let (x, e1, e2) ->
       let indent_str = String.make indent ' ' in
@@ -44,6 +45,12 @@ and string_of_expr_node ?(indent=0) (ExprNode expr_node) : string =
       Printf.sprintf "%s < %s" (string_of_expr_indented ~indent e1) (string_of_expr_indented ~indent e2)
   | LessEq (e1, e2) ->
       Printf.sprintf "%s <= %s" (string_of_expr_indented ~indent e1) (string_of_expr_indented ~indent e2)
+  | And (e1, e2) ->
+      Printf.sprintf "%s && %s" (string_of_expr_indented ~indent e1) (string_of_expr_indented ~indent e2)
+  | Or (e1, e2) ->
+      Printf.sprintf "%s || %s" (string_of_expr_indented ~indent e1) (string_of_expr_indented ~indent e2)
+  | Not e1 ->
+      Printf.sprintf "not %s" (string_of_expr_indented ~indent e1)
   | If (e1, e2, e3) ->
       let indent_str = String.make indent ' ' in
       let next_indent_str = String.make (indent+2) ' ' in
@@ -65,6 +72,7 @@ and string_of_expr_node ?(indent=0) (ExprNode expr_node) : string =
 and string_of_aexpr_node ?(indent=0) (TAExprNode ae_node) : string =
   match ae_node with
   | Const f -> Printf.sprintf "%g" f
+  | BoolConst b -> string_of_bool b
   | Var x -> x
   | Let (x, te1, te2) ->
       let indent_str = String.make indent ' ' in
@@ -79,6 +87,12 @@ and string_of_aexpr_node ?(indent=0) (TAExprNode ae_node) : string =
       Printf.sprintf "discrete(%s)" (String.concat ", " (List.map format_case cases))
   | Less (te1, te2) -> Printf.sprintf "%s < %s" (string_of_texpr_indented ~indent te1) (string_of_texpr_indented ~indent te2)
   | LessEq (te1, te2) -> Printf.sprintf "%s <= %s" (string_of_texpr_indented ~indent te1) (string_of_texpr_indented ~indent te2)
+  | And (te1, te2) ->
+      Printf.sprintf "%s && %s" (string_of_texpr_indented ~indent te1) (string_of_texpr_indented ~indent te2)
+  | Or (te1, te2) ->
+      Printf.sprintf "%s || %s" (string_of_texpr_indented ~indent te1) (string_of_texpr_indented ~indent te2)
+  | Not te1 ->
+      Printf.sprintf "not %s" (string_of_texpr_indented ~indent te1)
   | If (te1, te2, te3) ->
       let indent_str = String.make indent ' ' in
       let next_indent_str = String.make (indent+2) ' ' in

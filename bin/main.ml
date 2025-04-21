@@ -104,7 +104,7 @@ let process_file filename : ( ((int * int) * (int * int)) option, string) result
     let expr = Contdice.Parse.parse_expr content in
     Printf.printf "Parsed AST (Pretty):\n%s\n\n" (Contdice.Pretty.string_of_expr expr);
     
-    let texpr = Contdice.elab_bool expr in 
+    let texpr = Contdice.elab expr in
     Printf.printf "Typed AST (Pretty):\n%s\n\n" (Contdice.Pretty.string_of_texpr texpr);
     
     let discretized_expr = Contdice.discretize texpr in

@@ -54,6 +54,11 @@ rule token = parse
   | "if"      { IF }
   | "then"    { THEN }
   | "else"    { ELSE }
+  | "true"    { TRUE }
+  | "false"   { FALSE }
+  | "&&"      { AND }
+  | "||"      { OR }
+  | "not"     { NOT }
   | "uniform" { UNIFORM }
   | "gaussian" { GAUSSIAN }
   | "normal"  { GAUSSIAN }  (* Alias for gaussian *)

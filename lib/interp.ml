@@ -15,6 +15,7 @@ let rec lookup x env =
 let rec eval (env : env) (ExprNode e_node : expr) : value = 
   match e_node with
   | Const f -> VFloat f
+  | BoolConst b -> VBool b
   | Var x -> lookup x env
 
   | Let (x, e1, e2) ->
@@ -61,6 +62,34 @@ let rec eval (env : env) (ExprNode e_node : expr) : value =
       (match v1, v2 with
        | VFloat f1, VFloat f2 -> VBool (f1 <= f2)
        | _ -> raise (RuntimeError "Type error during evaluation: LessEq expects floats"))
+
+  | And (e1, e2) ->
+      let v1 = eval env e1 in
+      (match v1 with
+       | VBool false -> VBool false
+       | VBool true -> 
+           let v2 = eval env e2 in
+           (match v2 with
+            | VBool b -> VBool b
+            | _ -> raise (RuntimeError "Type error during evaluation: And (&&) expects booleans"))
+       | _ -> raise (RuntimeError "Type error during evaluation: And (&&) expects booleans"))
+
+  | Or (e1, e2) ->
+      let v1 = eval env e1 in
+      (match v1 with
+       | VBool true -> VBool true
+       | VBool false -> 
+           let v2 = eval env e2 in
+           (match v2 with
+            | VBool b -> VBool b
+            | _ -> raise (RuntimeError "Type error during evaluation: Or (||) expects booleans"))
+       | _ -> raise (RuntimeError "Type error during evaluation: Or (||) expects booleans"))
+
+  | Not e1 ->
+      let v1 = eval env e1 in
+      (match v1 with
+       | VBool b -> VBool (not b)
+       | _ -> raise (RuntimeError "Type error during evaluation: Not expects a boolean"))
 
   | If (e_cond, e_then, e_else) ->
       let v_cond = eval env e_cond in

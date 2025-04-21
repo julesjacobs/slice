@@ -87,6 +87,8 @@ let elab (e : expr) : texpr =
       let bounds_bag_ref = Bags.BoundBag.create (Finite BoundSet.empty) in 
       let consts_bag_ref = Bags.FloatBag.create (Finite (FloatSet.singleton f)) in
       (TFloat (bounds_bag_ref, consts_bag_ref), TAExprNode (Const f))
+    | BoolConst b ->
+      (TBool, TAExprNode (BoolConst b)) (* New: Bool constants are TBool *)
     | Var x ->
       (try 
         let ty = StringMap.find x env in
@@ -332,6 +334,30 @@ let elab (e : expr) : texpr =
        with Failure msg -> failwith (Printf.sprintf "Type error in FinLeq (<=#%d) right operand: %s" n msg));
       (Types.TBool, TAExprNode (FinLeq ((t1, a1), (t2, a2), n)))
 
+    | And (e1, e2) ->
+      let t1, a1 = aux env e1 in
+      let t2, a2 = aux env e2 in
+      (try sub_type t1 Types.TBool
+       with Failure msg -> failwith ("Type error in And (&&) left operand: " ^ msg));
+      (try sub_type t2 Types.TBool
+       with Failure msg -> failwith ("Type error in And (&&) right operand: " ^ msg));
+      (TBool, TAExprNode (And ((t1, a1), (t2, a2))))
+      
+    | Or (e1, e2) ->
+      let t1, a1 = aux env e1 in
+      let t2, a2 = aux env e2 in
+      (try sub_type t1 Types.TBool
+       with Failure msg -> failwith ("Type error in Or (||) left operand: " ^ msg));
+      (try sub_type t2 Types.TBool
+       with Failure msg -> failwith ("Type error in Or (||) right operand: " ^ msg));
+      (TBool, TAExprNode (Or ((t1, a1), (t2, a2))))
+
+    | Not e1 ->
+      let t1, a1 = aux env e1 in
+      (try sub_type t1 Types.TBool
+       with Failure msg -> failwith ("Type error in Not operand: " ^ msg));
+      (TBool, TAExprNode (Not (t1, a1)))
+
   in
   aux StringMap.empty e
 
@@ -377,6 +403,8 @@ let discretize (e : texpr) : expr =
               let idx = List.length (List.filter (fun x -> not (bound_matches_float x f)) cuts) in
               (* Generate FinConst expression *)
               ExprNode (FinConst (idx, 1+List.length cuts)))
+
+    | BoolConst b -> ExprNode (BoolConst b) (* New: Pass through *) 
 
     | Var x ->
         ExprNode (Var x)
@@ -508,6 +536,15 @@ let discretize (e : texpr) : expr =
         ExprNode (FinLt (aux te1, aux te2, n))
     | FinLeq (te1, te2, n) -> 
         ExprNode (FinLeq (aux te1, aux te2, n))
+
+    | And (te1, te2) -> (* New: Recurse *) 
+        ExprNode (And (aux te1, aux te2))
+        
+    | Or (te1, te2) -> (* New: Recurse *) 
+        ExprNode (Or (aux te1, aux te2))
+        
+    | Not te1 -> (* New: Recurse *) 
+        ExprNode (Not (aux te1))
 
   in
   aux e
