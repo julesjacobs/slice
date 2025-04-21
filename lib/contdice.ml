@@ -12,27 +12,9 @@ module Pretty = Pretty
 
 module StringMap = Map.Make(String)
 
-(* ======== Occurs Check ======== *)
-
-(* Check if meta_ref_to_find physically occurs within ty_to_check *) 
-let rec occurs (meta_ref_to_find : ty option ref) (ty_to_check : ty) : bool =
-  match ty_to_check with
-  | TMeta inner_meta_ref ->
-      (* Check direct physical equality first *) 
-      if meta_ref_to_find == inner_meta_ref then
-        true
-      else
-        (* If not directly equal, check inside the meta if it's linked *) 
-        (match !inner_meta_ref with
-         | Some linked_ty -> occurs meta_ref_to_find linked_ty
-         | None -> false) (* Unlinked meta, not the one we're looking for *)
-  | TPair (t1, t2) -> occurs meta_ref_to_find t1 || occurs meta_ref_to_find t2
-  | TFun (t1, t2) -> occurs meta_ref_to_find t1 || occurs meta_ref_to_find t2
-  | TBool | TFloat (_, _) | TFin _ -> false (* Meta cannot occur here *) 
-
 (* ======== Types, Subtyping, and Unification ======== *)
 
-(* Enforce t_sub is a subtype of t_super - REVERTED STRUCTURE *)
+(* Enforce t_sub is a subtype of t_super *)
 let rec sub_type (t_sub : ty) (t_super : ty) : unit =
   match Types.force t_sub, Types.force t_super with
   (* Base Cases *)
@@ -48,25 +30,28 @@ let rec sub_type (t_sub : ty) (t_super : ty) : unit =
   | TFun(a1, b1), TFun(a2, b2) -> 
       sub_type a2 a1; (* Contravariant argument *) 
       sub_type b1 b2  (* Covariant result *) 
-  (* Meta Variable Handling (Simplified: try linking, otherwise recurse) *) 
-  | TMeta _, _ when t_sub == t_super -> () (* Already same meta *) 
-  | _, TMeta _ when t_sub == t_super -> () (* Already same meta *) 
-  | TMeta r1, _   ->
-      (match !r1 with
-      | Some t1' -> sub_type t1' t_super (* Recurse on existing type *) 
-      | None -> 
-          if occurs r1 t_super then 
-            failwith (Printf.sprintf "Occurs check failed: cannot construct infinite type %s = %s"
-              (Pretty.string_of_ty (TMeta r1)) (Pretty.string_of_ty t_super));
-          r1 := Some t_super) (* Link sub-meta to super type *) 
-  | _, TMeta r2   ->
-      (match !r2 with
-      | Some t2' -> sub_type t_sub t2' (* Recurse on existing type *) 
-      | None -> 
-          if occurs r2 t_sub then
-             failwith (Printf.sprintf "Occurs check failed: cannot construct infinite type %s = %s"
-              (Pretty.string_of_ty (TMeta r2)) (Pretty.string_of_ty t_sub));
-          r2 := Some t_sub) (* Link super-meta to sub type *) 
+  | TMeta r, _ ->
+    (match t_super with
+    | TMeta r' -> (Types.listen r (fun t -> sub_type t t_super); Types.listen r' (fun t' -> sub_type t_sub t'))
+    | TBool -> Types.assign r TBool
+    | TFin n -> Types.assign r (TFin n)
+    | TPair (_, _) -> let a_meta = Types.fresh_meta () in let b_meta = Types.fresh_meta () in
+      Types.assign r (TPair (a_meta, b_meta)); sub_type t_sub t_super
+    | TFun (_, _) -> let a_meta = Types.fresh_meta () in let b_meta = Types.fresh_meta () in
+      Types.assign r (TFun (a_meta, b_meta)); sub_type t_sub t_super
+    | TFloat (_, _) -> let b_bag = Bags.fresh_bound_bag () in let c_bag = Bags.fresh_float_bag () in
+      Types.assign r (TFloat (b_bag, c_bag)); sub_type t_sub t_super)
+  | _, TMeta r ->
+    (match t_sub with
+    | TMeta r' -> (Types.listen r (fun t -> sub_type t_sub t); Types.listen r' (fun t' -> sub_type t_sub t'))
+    | TBool -> Types.assign r TBool
+    | TFin n -> Types.assign r (TFin n)
+    | TPair (_, _) -> let a_meta = Types.fresh_meta () in let b_meta = Types.fresh_meta () in
+      Types.assign r (TPair (a_meta, b_meta)); sub_type t_sub t_super
+    | TFun (_, _) -> let a_meta = Types.fresh_meta () in let b_meta = Types.fresh_meta () in
+      Types.assign r (TFun (a_meta, b_meta)); sub_type t_sub t_super
+    | TFloat (_, _) -> let b_bag = Bags.fresh_bound_bag () in let c_bag = Bags.fresh_float_bag () in
+      Types.assign r (TFloat (b_bag, c_bag)); sub_type t_sub t_super)
   (* Error Case *) 
   | _, _ -> 
       let msg = Printf.sprintf "Type mismatch: cannot subtype %s <: %s"
@@ -126,7 +111,7 @@ let elab (e : expr) : texpr =
       
       (* Type-check all expressions and subtype them into a fresh result type *) 
       let typed_cases = List.map (fun (e, p) -> (aux env e, p)) cases in
-      let result_ty = TMeta (ref None) in (* Fresh meta for the result *) 
+      let result_ty = Types.fresh_meta () in (* Fresh meta for the result *) 
       List.iter (fun ((branch_ty, _), _) -> 
         try sub_type branch_ty result_ty (* Enforce branch <: result *)
         with Failure msg -> failwith ("Type error in DistrCase branches: " ^ msg)
@@ -172,7 +157,7 @@ let elab (e : expr) : texpr =
        with Failure msg -> failwith ("Type error in If condition: " ^ msg));
       let t2, a2 = aux env e2 in
       let t3, a3 = aux env e3 in
-      let result_ty = TMeta (ref None) in (* Fresh meta for the result *) 
+      let result_ty = Types.fresh_meta () in (* Fresh meta for the result *) 
       (try 
          sub_type t2 result_ty; (* Enforce true_branch <: result *) 
          sub_type t3 result_ty  (* Enforce false_branch <: result *) 
@@ -186,22 +171,22 @@ let elab (e : expr) : texpr =
       
     | First e1 ->
       let t, a = aux env e1 in
-      let t1_meta = TMeta (ref None) in
-      let t2_meta = TMeta (ref None) in
-      (try unify t (TPair (t1_meta, t2_meta))
+      let t1_meta = Types.fresh_meta () in
+      let t2_meta = Types.fresh_meta () in
+      (try sub_type t (TPair (t1_meta, t2_meta))
        with Failure msg -> failwith ("Type error in First (fst): " ^ msg));
       (Types.force t1_meta, TAExprNode (First (t, a))) (* Use Types.force *)
       
     | Second e1 ->
       let t, a = aux env e1 in
-      let t1_meta = TMeta (ref None) in
-      let t2_meta = TMeta (ref None) in
-      (try unify t (TPair (t1_meta, t2_meta))
+      let t1_meta = Types.fresh_meta () in
+      let t2_meta = Types.fresh_meta () in
+      (try sub_type t (TPair (t1_meta, t2_meta))
        with Failure msg -> failwith ("Type error in Second (snd): " ^ msg));
       (Types.force t2_meta, TAExprNode (Second (t, a))) (* Use Types.force *)
       
     | Fun (x, e1) ->
-      let param_type = TMeta (ref None) in
+      let param_type = Types.fresh_meta () in
       let env' = StringMap.add x param_type env in
       let return_type, a = aux env' e1 in
       (TFun (param_type, return_type), TAExprNode (Fun (x, (return_type, a))))
@@ -209,8 +194,8 @@ let elab (e : expr) : texpr =
     | App (e1, e2) ->
       let t_fun, a_fun = aux env e1 in
       let t_arg, a_arg = aux env e2 in
-      let param_ty_expected = TMeta (ref None) in (* Fresh meta for expected param type *) 
-      let result_ty = TMeta (ref None) in (* Fresh meta for result type *) 
+      let param_ty_expected = Types.fresh_meta () in (* Fresh meta for expected param type *) 
+      let result_ty = Types.fresh_meta () in (* Fresh meta for result type *) 
       (try 
          (* Check t_fun is a function expecting param_ty_expected and returning result_ty *) 
          sub_type t_fun (TFun (param_ty_expected, result_ty));
@@ -228,9 +213,9 @@ let elab (e : expr) : texpr =
       let t1, a1 = aux env e1 in
       let t2, a2 = aux env e2 in
       let expected_type = TFin n in
-      (try unify t1 expected_type (* Use unify for strict equality check *) 
+      (try sub_type t1 expected_type
        with Failure msg -> failwith (Printf.sprintf "Type error in FinLt (<#%d) left operand: %s" n msg));
-      (try unify t2 expected_type (* Use unify for strict equality check *) 
+      (try sub_type t2 expected_type
        with Failure msg -> failwith (Printf.sprintf "Type error in FinLt (<#%d) right operand: %s" n msg));
       (TBool, TAExprNode (FinLt ((t1, a1), (t2, a2), n)))
       
@@ -239,9 +224,9 @@ let elab (e : expr) : texpr =
       let t1, a1 = aux env e1 in
       let t2, a2 = aux env e2 in
       let expected_type = TFin n in
-      (try unify t1 expected_type (* Use unify for strict equality check *) 
+      (try sub_type t1 expected_type
        with Failure msg -> failwith (Printf.sprintf "Type error in FinLeq (<=#%d) left operand: %s" n msg));
-      (try unify t2 expected_type (* Use unify for strict equality check *) 
+      (try sub_type t2 expected_type
        with Failure msg -> failwith (Printf.sprintf "Type error in FinLeq (<=#%d) right operand: %s" n msg));
       (TBool, TAExprNode (FinLeq ((t1, a1), (t2, a2), n)))
 

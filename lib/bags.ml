@@ -65,3 +65,9 @@ end
 (* == Bag Instantiations == *)
 module FloatBag = Make(FloatSetContents)
 module BoundBag = Make(BoundSetContents)
+
+let fresh_bound_bag () : BoundBag.bag =
+  BoundBag.create (Finite BoundSet.empty)
+
+let fresh_float_bag () : FloatBag.bag =
+  FloatBag.create (Finite FloatSet.empty)

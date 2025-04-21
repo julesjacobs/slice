@@ -223,8 +223,8 @@ and string_of_ty = function
         Printf.sprintf "%s#%d%s" type_color n reset_color
   | TMeta r ->
         match !r with
-        | Some t -> string_of_ty t
-        | None -> "?"
+        | Known t -> string_of_ty t
+        | Unknown _ -> "?"
 
 (* Wrappers *)
 let string_of_expr expr =

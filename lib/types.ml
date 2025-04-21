@@ -27,22 +27,38 @@ type expr = ExprNode of expr expr_generic
 
 open Bags
 
-type ty =
+type meta =
+  | Unknown of (ty -> unit) list
+  | Known of ty
+and meta_ref = meta ref
+and ty =
   | TBool
   | TFloat of BoundBag.bag * FloatBag.bag (* Store bag REFERENCES, not contents *)
   | TPair of ty * ty      (* t1 * t2 *)
   | TFun of ty * ty       (* t1 -> t2 *)
   | TFin of int (* Represents Z_n, integers modulo n *)
-  | TMeta of ty option ref (* Type variable for unification *)
+  | TMeta of meta_ref (* Type variable for unification *)
 
 (* Function to recursively dereference type variables *)
 let rec force t =
   match t with
   | TMeta r ->
       (match !r with
-      | Some t' -> force t' (* Recursively force the resolved type *)
-      | None -> t (* Return the TMeta itself if it's unresolved *))
+      | Known t' -> force t' (* Recursively force the resolved type *)
+      | Unknown _ -> t (* Return the TMeta itself if it's unresolved *))
   | _ -> t (* Return the type if it's not a TMeta *)
+
+let listen (m : meta_ref) (f : ty -> unit) : unit =
+  match !m with
+  | Known t -> f t
+  | Unknown fs -> m := Unknown (f :: fs)
+
+let fresh_meta () : ty = TMeta (ref (Unknown []))
+
+let assign (m : meta_ref) (t : ty) : unit =
+  match !m with
+  | Known _ -> failwith "Cannot assign to a known type"
+  | Unknown fs -> m := Known t; List.iter (fun f -> f t) fs
 
 (* Typed expressions (recursive definition with aexpr) *)
 
