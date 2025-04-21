@@ -62,14 +62,6 @@ else
   u < 0.8  (* If coin is 1, check if u < 0.8 *)
 ```
 
-### Rolling a Die (Discrete)
-
-```ocaml
-(* examples/dice.cdice *)
-let roll = discrete(0.166666: 0#6, 0.166666: 1#6, 0.166666: 2#6, 0.166666: 3#6, 0.166666: 4#6, 0.166666: 5#6) in
-roll
-```
-
 ## Syntax
 
 The language has a simple ML-inspired syntax:
