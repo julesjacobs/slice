@@ -100,6 +100,12 @@ let elab (e : expr) : texpr =
       (t2, TAExprNode (Let (x, (t1,a1), (t2,a2))))
 
     | CDistr dist ->
+        (* Check for degenerate uniform distribution *) 
+        (match dist with
+         | Stats.Uniform (a, b) when a = b -> 
+             failwith (Printf.sprintf "Degenerate uniform distribution uniform(%f, %f) is not allowed." a b)
+         | _ -> ()); (* Allow other distributions or valid uniforms *)
+
       (* CDistr results in TFloat: Create bag refs *) 
       let bounds_bag_ref = Bags.BoundBag.create (Finite BoundSet.empty) in 
       let consts_bag_ref = Bags.FloatBag.create Top in 
@@ -387,7 +393,7 @@ let discretize (e : texpr) : expr =
         (match set_or_top_val with
          | Bags.Top -> ExprNode (CDistr dist) (* Keep original if Top *) 
          | Bags.Finite bound_set -> 
-             (* Discretize using cuts *) 
+             (* Discretize using cuts - Reverted Logic *) 
              let cuts = 
                Bags.BoundSet.elements bound_set 
                |> List.map (function Bags.Less c -> c | Bags.LessEq c -> c) 

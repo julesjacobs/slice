@@ -1,0 +1,2 @@
+let b = uniform(0.0, 0.0) in
+b < 0.0
