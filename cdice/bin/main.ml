@@ -114,11 +114,11 @@ let process_file filename : ( ((int * int) * (int * int)) option, string) result
     Printf.printf "Discretized Program (Plaintext):\n%s\n\n" (Contdice.Util.string_of_expr discretized_expr_text);
 
     (* Run the discretized expression through dice *)
-    Printf.printf "Running dice on discretized expression...\n";
+    (* Printf.printf "Running dice on discretized expression...\n";
     let expr_str = Contdice.Util.string_of_expr discretized_expr_text in
     let program = Printf.sprintf "dune exec dice %s" (Filename.quote expr_str) in
     let status = Sys.command program in
-    Printf.printf "Exit status: %d\n" status;
+    Printf.printf "Exit status: %d\n" status; *)
 
     let n_runs = 1000000 in 
     match run_interp_and_summarize "Discretized" discretized_expr n_runs with

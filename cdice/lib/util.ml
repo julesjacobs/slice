@@ -14,6 +14,16 @@ let string_of_cdistr = function
 | Stats.Beta (alpha, beta) -> 
     Printf.sprintf "beta(%g, %g)" alpha beta
 
+let bit_length n =
+  if n < 0 then invalid_arg "bit_length: only non-negative integers allowed"
+  else if n = 0 then 1
+  else
+    let rec aux n acc =
+      if n = 0 then acc
+      else aux (n lsr 1) (acc + 1)
+    in
+    aux n 0
+
 (* Forward declarations *)
 let rec string_of_expr_indented ?(indent=0) e =
   string_of_expr_node ~indent e
@@ -65,7 +75,7 @@ and string_of_expr_node ?(indent=0) (ExprNode expr_node) : string =
       let e_str = string_of_expr_indented ~indent:(indent+2) e in
       Printf.sprintf "fun %s -> %s" x e_str
   | App (e1, e2) -> Printf.sprintf "(%s %s)" (string_of_expr_indented ~indent e1) (string_of_expr_indented ~indent e2)
-  | FinConst (k, _) -> Printf.sprintf "%d" k
+  | FinConst (k, _) -> Printf.sprintf "int(%d,%d)" (bit_length k) k
   | FinLt (e1, e2, _) -> Printf.sprintf "%s < %s" (string_of_expr_indented ~indent e1) (string_of_expr_indented ~indent e2)
   | FinLeq (e1, e2, _) -> Printf.sprintf "%s <= %s" (string_of_expr_indented ~indent e1) (string_of_expr_indented ~indent e2)
 
