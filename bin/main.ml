@@ -22,19 +22,16 @@ let run_interp_and_summarize label expr n_runs : ((int * int), string) result =
         | other_val -> 
             let msg = Printf.sprintf "Warning (%s): Expected VBool, got %s after %d runs. Aborting run."
                           label (Contdice.Types.string_of_value other_val) (i-1) in
-            Printf.eprintf "%s\n" msg;
             raise (Failure msg) (* Use Failure to propagate msg *)
       with 
       | Contdice.Interp.RuntimeError rt_msg -> 
           let msg = Printf.sprintf "Runtime Error during %s run after %d runs: %s. Aborting run."
                           label (i-1) rt_msg in
-          Printf.eprintf "%s\n" msg;
           raise (Failure msg) (* Use Failure to propagate msg *)
       | Failure msg -> raise (Failure msg) (* Re-raise to outer handler *)
       | e -> 
           let msg = Printf.sprintf "Unexpected Error during %s run after %d runs: %s. Aborting run."
                           label (i-1) (Printexc.to_string e) in
-          Printf.eprintf "%s\n" msg;
           raise (Failure msg) (* Use Failure to propagate msg *)
     done;
     (* If loop completes without error *) 
@@ -131,12 +128,10 @@ let process_file filename : ( ((int * int) * (int * int)) option, string) result
   with
   | Failure msg -> 
       let err_msg = Printf.sprintf "Error processing file '%s': %s" filename msg in
-      Printf.printf "%s\n\n" err_msg;
       print_endline (String.make 60 '-');
       Error err_msg (* Return Error on Failure *)
   | e -> 
       let err_msg = Printf.sprintf "Unexpected error processing file '%s': %s" filename (Printexc.to_string e) in
-      Printf.printf "%s\n\n" err_msg;
       print_endline (String.make 60 '-');
       Error err_msg (* Return Error on other exceptions *)
 
@@ -201,8 +196,8 @@ let run_contdice path =
                | None ->
                    Printf.printf "\n*** No statistically significant difference detected for this file. ***\n"
               )
-          | Error _ -> (* Error message already printed by process_file *) 
-              Printf.printf "\n*** File processing failed. ***\n"
+          | Error msg -> 
+              Printf.printf "\n*** Error processing file: %s ***\n" msg
         ) else
           Printf.eprintf "Error: File must have .cdice extension: %s\n" path
     | Unix.S_DIR ->
