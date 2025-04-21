@@ -7,6 +7,10 @@ open Bags (* Open Bags to access FloatSet, BoundSet, FloatBag, BoundBag etc. *)
 (* Re-export internal modules needed by executable/tests *)
 module Parse = Parse 
 module Pretty = Pretty
+module Interp = Interp
+module Types = Types (* Explicitly alias Types here *)
+module Stats = Stats (* Also alias Stats if needed elsewhere *)
+module Bags = Bags   (* And Bags *)
 (* We might need others like Types, Bag, Stats depending on usage, 
    but let's start with these two. *)
 
@@ -126,9 +130,9 @@ let elab (e : expr) : texpr =
         let b_meta = Bags.fresh_bound_bag () in (* Shared bound bag for unification *)
         let c_meta1 = Bags.fresh_float_bag () in
         let c_meta2 = Bags.fresh_float_bag () in
-        (try unify t1 (TFloat (b_meta, c_meta1)) (* Unify t1 with TFloat(b_meta, c1) *)
+        (try unify t1 (Types.TFloat (b_meta, c_meta1)) (* Unify t1 with TFloat(b_meta, c1) *)
          with Failure msg -> failwith (Printf.sprintf "Type error in Less (<) left operand: %s" msg));
-        (try unify t2 (TFloat (b_meta, c_meta2)) (* Unify t2 with TFloat(b_meta, c2) *)
+        (try unify t2 (Types.TFloat (b_meta, c_meta2)) (* Unify t2 with TFloat(b_meta, c2) *)
          with Failure msg -> failwith (Printf.sprintf "Type error in Less (<) right operand: %s" msg));
 
         (* Nested listener logic for Less *) 
@@ -187,9 +191,9 @@ let elab (e : expr) : texpr =
         let b_meta = Bags.fresh_bound_bag () in (* Shared bound bag for unification *)
         let c_meta1 = Bags.fresh_float_bag () in
         let c_meta2 = Bags.fresh_float_bag () in
-        (try unify t1 (TFloat (b_meta, c_meta1)) (* Unify t1 with TFloat(b_meta, c1) *)
+        (try unify t1 (Types.TFloat (b_meta, c_meta1)) (* Unify t1 with TFloat(b_meta, c1) *)
          with Failure msg -> failwith (Printf.sprintf "Type error in Less (<) left operand: %s" msg));
-        (try unify t2 (TFloat (b_meta, c_meta2)) (* Unify t2 with TFloat(b_meta, c2) *)
+        (try unify t2 (Types.TFloat (b_meta, c_meta2)) (* Unify t2 with TFloat(b_meta, c2) *)
          with Failure msg -> failwith (Printf.sprintf "Type error in Less (<) right operand: %s" msg));
 
         (* Nested listener logic for LessEq *) 
@@ -244,7 +248,7 @@ let elab (e : expr) : texpr =
 
     | If (e1, e2, e3) ->
       let t1, a1 = aux env e1 in
-      (try sub_type t1 TBool (* Condition must be bool *) 
+      (try sub_type t1 Types.TBool (* Condition must be bool *) 
        with Failure msg -> failwith ("Type error in If condition: " ^ msg));
       let t2, a2 = aux env e2 in
       let t3, a3 = aux env e3 in
@@ -280,7 +284,7 @@ let elab (e : expr) : texpr =
       let param_type = Types.fresh_meta () in
       let env' = StringMap.add x param_type env in
       let return_type, a = aux env' e1 in
-      (TFun (param_type, return_type), TAExprNode (Fun (x, (return_type, a))))
+      (Types.TFun (param_type, return_type), TAExprNode (Fun (x, (return_type, a))))
       
     | App (e1, e2) ->
       let t_fun, a_fun = aux env e1 in
@@ -289,7 +293,7 @@ let elab (e : expr) : texpr =
       let result_ty = Types.fresh_meta () in (* Fresh meta for result type *) 
       (try 
          (* Check t_fun is a function expecting param_ty_expected and returning result_ty *) 
-         sub_type t_fun (TFun (param_ty_expected, result_ty));
+         sub_type t_fun (Types.TFun (param_ty_expected, result_ty));
          (* Check t_arg is a subtype of what the function expects *) 
          sub_type t_arg param_ty_expected 
        with Failure msg -> failwith ("Type error in function application: " ^ msg));
@@ -297,29 +301,29 @@ let elab (e : expr) : texpr =
       
     | FinConst (k, n) ->
       if k < 0 || k >= n then failwith (Printf.sprintf "Invalid FinConst value: %d#%d. k must be >= 0 and < n." k n);
-      (TFin n, TAExprNode (FinConst (k, n)))
+      (Types.TFin n, TAExprNode (FinConst (k, n)))
 
     | FinLt (e1, e2, n) ->
       if n <= 0 then failwith (Printf.sprintf "Invalid FinLt modulus: <#%d. n must be > 0." n);
       let t1, a1 = aux env e1 in
       let t2, a2 = aux env e2 in
-      let expected_type = TFin n in
+      let expected_type = Types.TFin n in
       (try sub_type t1 expected_type
        with Failure msg -> failwith (Printf.sprintf "Type error in FinLt (<#%d) left operand: %s" n msg));
       (try sub_type t2 expected_type
        with Failure msg -> failwith (Printf.sprintf "Type error in FinLt (<#%d) right operand: %s" n msg));
-      (TBool, TAExprNode (FinLt ((t1, a1), (t2, a2), n)))
+      (Types.TBool, TAExprNode (FinLt ((t1, a1), (t2, a2), n)))
       
     | FinLeq (e1, e2, n) ->
       if n <= 0 then failwith (Printf.sprintf "Invalid FinLeq modulus: <=#%d. n must be > 0." n);
       let t1, a1 = aux env e1 in
       let t2, a2 = aux env e2 in
-      let expected_type = TFin n in
+      let expected_type = Types.TFin n in
       (try sub_type t1 expected_type
        with Failure msg -> failwith (Printf.sprintf "Type error in FinLeq (<=#%d) left operand: %s" n msg));
       (try sub_type t2 expected_type
        with Failure msg -> failwith (Printf.sprintf "Type error in FinLeq (<=#%d) right operand: %s" n msg));
-      (TBool, TAExprNode (FinLeq ((t1, a1), (t2, a2), n)))
+      (Types.TBool, TAExprNode (FinLeq ((t1, a1), (t2, a2), n)))
 
   in
   aux StringMap.empty e
@@ -327,7 +331,7 @@ let elab (e : expr) : texpr =
 (* Function that does elab but insists that the return type is TBool *)
 let elab_bool (e : expr) : texpr =
   let t, a = elab e in
-  sub_type t TBool;
+  sub_type t Types.TBool;
   (t, a)
 
 (* Calculate probability for a given distribution in an interval *)
@@ -351,13 +355,13 @@ let discretize (e : texpr) : expr =
     match ae_node with
     | Const f -> 
         let bounds_bag = (match Types.force ty with
-          | TFloat (b, _) -> b (* Extract bounds bag *)
+          | Types.TFloat (b, _) -> b (* Extract bounds bag *)
           | _ -> failwith "Type error: Const expects float") in
         let set_or_top_val = Bags.BoundBag.get bounds_bag in
         (match set_or_top_val with
-         | Top -> ExprNode (Const f) (* Keep original if Top *)
-         | Finite bound_set ->
-              let cuts = BoundSet.elements bound_set in
+         | Bags.Top -> ExprNode (Const f) (* Keep original if Top *)
+         | Bags.Finite bound_set ->
+              let cuts = Bags.BoundSet.elements bound_set in
               let bound_matches_float b x = match b with
                 | Bags.Less c -> x < c
                 | Bags.LessEq c -> x <= c
@@ -376,16 +380,16 @@ let discretize (e : texpr) : expr =
     | CDistr dist ->
         let bounds_bag =
           match Types.force ty with 
-          | TFloat (b, _) -> b (* Extract bounds bag *)
+          | Types.TFloat (b, _) -> b (* Extract bounds bag *)
           | _ -> failwith "Internal error: CDistr not TFloat"
         in
         let set_or_top_val = Bags.BoundBag.get bounds_bag in 
         (match set_or_top_val with
-         | Top -> ExprNode (CDistr dist) (* Keep original if Top *) 
-         | Finite bound_set -> 
+         | Bags.Top -> ExprNode (CDistr dist) (* Keep original if Top *) 
+         | Bags.Finite bound_set -> 
              (* Discretize using cuts *) 
              let cuts = 
-               BoundSet.elements bound_set 
+               Bags.BoundSet.elements bound_set 
                |> List.map (function Bags.Less c -> c | Bags.LessEq c -> c) 
                |> List.sort_uniq compare
              in 
@@ -414,11 +418,11 @@ let discretize (e : texpr) : expr =
         let t1 = fst te1 in (* Extract type t1 *) 
         let t2 = fst te2 in (* Extract type t2 *)
         let b1 = (match Types.force t1 with (* Get bound bag b1 from t1 *)
-          | TFloat (b, _) -> b 
+          | Types.TFloat (b, _) -> b 
           | _ -> failwith "Type error: Less expects float on left operand") 
         in
         let b2 = (match Types.force t2 with (* Get bound bag b2 from t2 *)
-          | TFloat (b, _) -> b
+          | Types.TFloat (b, _) -> b
           | _ -> failwith "Type error: Less expects float on right operand")
         in
         (* Get bag values and compare using BoundSetContents.equal *) 
@@ -429,13 +433,13 @@ let discretize (e : texpr) : expr =
 
         (* Use val1 (since val1 = val2) *) 
         (match val1 with 
-          | Top -> 
+          | Bags.Top -> 
               (* If bounds are Top, don't discretize, keep original Less structure *) 
               ExprNode (Less (aux te1, aux te2)) 
-          | Finite bound_set -> 
+          | Bags.Finite bound_set -> 
               (* Discretize based on shared bounds *) 
               let cuts = 
-                BoundSet.elements bound_set 
+                Bags.BoundSet.elements bound_set 
                 |> List.map (function Bags.Less c -> c | Bags.LessEq c -> c)
                 |> List.sort_uniq compare
               in
@@ -449,11 +453,11 @@ let discretize (e : texpr) : expr =
         let t1 = fst te1 in (* Extract type t1 *) 
         let t2 = fst te2 in (* Extract type t2 *) 
         let b1 = (match Types.force t1 with (* Get bound bag b1 from t1 *)
-          | TFloat (b, _) -> b 
+          | Types.TFloat (b, _) -> b 
           | _ -> failwith "Type error: LessEq expects float on left operand") 
         in
         let b2 = (match Types.force t2 with (* Get bound bag b2 from t2 *)
-          | TFloat (b, _) -> b
+          | Types.TFloat (b, _) -> b
           | _ -> failwith "Type error: LessEq expects float on right operand")
         in
         (* Get bag values and compare using BoundSetContents.equal *) 
@@ -464,13 +468,13 @@ let discretize (e : texpr) : expr =
         
         (* Use val1 (since val1 = val2) *) 
         (match val1 with 
-          | Top -> 
+          | Bags.Top -> 
               (* If bounds are Top, don't discretize, keep original LessEq structure *) 
               ExprNode (LessEq (aux te1, aux te2))
-          | Finite bound_set -> 
+          | Bags.Finite bound_set -> 
               (* Discretize based on shared bounds *) 
               let cuts = 
-                BoundSet.elements bound_set 
+                Bags.BoundSet.elements bound_set 
                 |> List.map (function Bags.Less c -> c | Bags.LessEq c -> c)
                 |> List.sort_uniq compare
               in

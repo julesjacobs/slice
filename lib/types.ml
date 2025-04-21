@@ -80,3 +80,20 @@ type aexpr_node =
 and aexpr = TAExprNode of aexpr_node
 and texpr = ty * aexpr (* Type-annotated expression *)
 *)
+
+(* Runtime values *)
+type value =
+  | VBool of bool
+  | VFloat of float
+  | VPair of value * value
+  | VFin of int * int (* value k, modulus n *)
+  | VClosure of string * expr * env
+and env = (string * value) list (* Simple association list for environment *)
+
+(* Helper for pretty printing values *)
+let rec string_of_value = function
+  | VBool b -> string_of_bool b
+  | VFloat f -> string_of_float f
+  | VPair (v1, v2) -> Printf.sprintf "(%s, %s)" (string_of_value v1) (string_of_value v2)
+  | VFin (k, n) -> Printf.sprintf "%d#%d" k n
+  | VClosure (x, _, _) -> Printf.sprintf "<fun %s>" x

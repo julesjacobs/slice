@@ -1,0 +1,118 @@
+open Types
+
+(* Ensure Random is initialized *)
+let () = Random.self_init ()
+
+exception RuntimeError of string
+
+(* Look up a variable in the environment *)
+let rec lookup x env = 
+  match env with
+  | [] -> raise (RuntimeError ("Unbound variable: " ^ x))
+  | (y, v)::rest -> if x = y then v else lookup x rest
+
+(* Main evaluation function *)
+let rec eval (env : env) (ExprNode e_node : expr) : value = 
+  match e_node with
+  | Const f -> VFloat f
+  | Var x -> lookup x env
+
+  | Let (x, e1, e2) ->
+      let v1 = eval env e1 in
+      eval ((x, v1) :: env) e2
+
+  | CDistr dist -> 
+      (* Handle continuous distributions by sampling *)
+      (match dist with
+       | Stats.Uniform (a, b) -> 
+           if b < a then raise (RuntimeError (Printf.sprintf "Invalid Uniform parameters: lower bound %f > upper bound %f" a b));
+           VFloat (a +. Random.float (b -. a))
+       | _ -> 
+           raise (RuntimeError "Interpreter error: only uniform distributions are supported")
+       (* Add cases for other distributions here *)
+      )
+
+  | DistrCase cases ->
+      (* Check probabilities sum close to 1.0 (optional, should be checked by elab) *)
+      (* let total_prob = List.fold_left (fun acc (_, p) -> acc +. p) 0.0 cases in *)
+      (* if abs_float (total_prob -. 1.0) > 0.0001 then 
+         raise (RuntimeError "DistrCase probabilities do not sum to 1.0"); *)
+      
+      let r = Random.float 1.0 in
+      let rec find_case cumulative_prob case_list =
+        match case_list with
+        | [] -> raise (RuntimeError "DistrCase: Random value exceeded total probability (should not happen)")
+        | (e, p) :: rest -> 
+            let next_cumulative_prob = cumulative_prob +. p in
+            if r <= next_cumulative_prob then eval env e
+            else find_case next_cumulative_prob rest
+      in
+      find_case 0.0 cases
+
+  | Less (e1, e2) ->
+      let v1 = eval env e1 in
+      let v2 = eval env e2 in
+      (match v1, v2 with
+       | VFloat f1, VFloat f2 -> VBool (f1 < f2)
+       | _ -> raise (RuntimeError "Type error during evaluation: Less expects floats"))
+
+  | LessEq (e1, e2) ->
+      let v1 = eval env e1 in
+      let v2 = eval env e2 in
+      (match v1, v2 with
+       | VFloat f1, VFloat f2 -> VBool (f1 <= f2)
+       | _ -> raise (RuntimeError "Type error during evaluation: LessEq expects floats"))
+
+  | If (e_cond, e_then, e_else) ->
+      let v_cond = eval env e_cond in
+      (match v_cond with
+       | VBool true -> eval env e_then
+       | VBool false -> eval env e_else
+       | _ -> raise (RuntimeError "Type error during evaluation: If condition expects a boolean"))
+
+  | Pair (e1, e2) ->
+      let v1 = eval env e1 in
+      let v2 = eval env e2 in
+      VPair (v1, v2)
+
+  | First e ->
+      let v = eval env e in
+      (match v with
+       | VPair (v1, _) -> v1
+       | _ -> raise (RuntimeError "Type error during evaluation: First expects a pair"))
+
+  | Second e ->
+      let v = eval env e in
+      (match v with
+       | VPair (_, v2) -> v2
+       | _ -> raise (RuntimeError "Type error during evaluation: Second expects a pair"))
+
+  | Fun (x, body) ->
+      VClosure (x, body, env) (* Capture current environment *)
+
+  | App (e_fun, e_arg) ->
+      let v_fun = eval env e_fun in
+      let v_arg = eval env e_arg in
+      (match v_fun with
+       | VClosure (x, body, captured_env) ->
+           eval ((x, v_arg) :: captured_env) body (* Use captured env, add arg binding *)
+       | _ -> raise (RuntimeError "Type error during evaluation: Application expects a function"))
+
+  | FinConst (k, n) -> VFin (k, n)
+
+  | FinLt (e1, e2, n) ->
+      let v1 = eval env e1 in
+      let v2 = eval env e2 in
+      (match v1, v2 with
+       | VFin (k1, n1), VFin (k2, n2) when n1 = n && n2 = n -> VBool (k1 < k2)
+       | _ -> raise (RuntimeError (Printf.sprintf "Type error during evaluation: FinLt expects Fin(%d)" n)))
+
+  | FinLeq (e1, e2, n) ->
+      let v1 = eval env e1 in
+      let v2 = eval env e2 in
+      (match v1, v2 with
+       | VFin (k1, n1), VFin (k2, n2) when n1 = n && n2 = n -> VBool (k1 <= k2)
+       | _ -> raise (RuntimeError (Printf.sprintf "Type error during evaluation: FinLeq expects Fin(%d)" n)))
+
+(* Entry point for evaluation with an empty environment *)
+let run e = eval [] e 
