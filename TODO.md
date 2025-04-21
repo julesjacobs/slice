@@ -1,0 +1,6 @@
+- Change 'not' in pretty print to '!' to be compatible with dice
+- Add 0. to fill the empty spaces for mismatching discrete distributions
+- Change discrete(0, 1) and discrete(1, 0) distributions to discrete(0., 1.) and discrete(1., 0.) respectively
+- Take max size of all int sizes
+- Take care of higher-order functions (not supported in dice but supported in cdice)
+- Install SPPL, create benchmark script
