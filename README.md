@@ -78,13 +78,16 @@ The language has a simple ML-inspired syntax:
 e ::= x
     | let x = e1 in e2
     | uniform(f1, f2)
+    | gaussian(f1, f2)
     | discrete(f1: e1, f2: e2, ...)
-    | e < f
-    | e <= f
-    | e <#n f
-    | e <=#n f
+    | e < e'
+    | e <= e'
+    | e <#n e'
+    | e <=#n e'
     | if e1 then e2 else e3
     | fun x -> e
     | (e)
-    | k#n      (* Finite type literal, e.g., 0#2, 1#2 *)
+    | x          (* variable *)
+    | f           (* float literal* )
+    | k#n      (* finite type literal, e.g., 0#2, 1#2 *)
 ```
