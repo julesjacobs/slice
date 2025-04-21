@@ -7,6 +7,7 @@ open Bags (* Open Bags to access FloatSet, BoundSet, FloatBag, BoundBag etc. *)
 (* Re-export internal modules needed by executable/tests *)
 module Parse = Parse 
 module Pretty = Pretty
+module Util = Util 
 module Interp = Interp
 module Types = Types (* Explicitly alias Types here *)
 module Stats = Stats (* Also alias Stats if needed elsewhere *)
