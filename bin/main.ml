@@ -111,7 +111,7 @@ let process_file filename : ( ((int * int) * (int * int)) option, string) result
     Printf.printf "Discretized Program (Pretty):\n%s\n\n" (Contdice.Pretty.string_of_expr discretized_expr);
 
     let discretized_expr_text = Contdice.discretize texpr in
-    Printf.printf "Discretized Program (Pretty):\n%s\n\n" (Contdice.Pretty.string_of_expr discretized_expr_text);
+    Printf.printf "Discretized Program (Plaintext):\n%s\n\n" (Contdice.Util.string_of_expr discretized_expr_text);
 
     (* Run the discretized expression through dice *)
     Printf.printf "Running dice on discretized expression...\n";
