@@ -397,7 +397,7 @@ let discretize (e : texpr) : expr =
              let cuts = 
                Bags.BoundSet.elements bound_set 
                |> List.map (function Bags.Less c -> c | Bags.LessEq c -> c) 
-               |> List.sort_uniq compare
+               |> List.sort compare
              in 
              let intervals = List.init (List.length cuts + 1) (fun i ->
                let left = if i = 0 then neg_infinity else List.nth cuts (i - 1) in
@@ -444,11 +444,7 @@ let discretize (e : texpr) : expr =
               ExprNode (Less (aux te1, aux te2)) 
           | Bags.Finite bound_set -> 
               (* Discretize based on shared bounds *) 
-              let cuts = 
-                Bags.BoundSet.elements bound_set 
-                |> List.map (function Bags.Less c -> c | Bags.LessEq c -> c)
-                |> List.sort_uniq compare
-              in
+              let cuts = Bags.BoundSet.elements bound_set in
               let n = List.length cuts + 1 in (* Modulus *) 
               if n <= 0 then failwith "Internal error: discretization resulted in zero or negative intervals for Less";
               let d1 = aux te1 in (* Discretize operands *)
@@ -479,11 +475,7 @@ let discretize (e : texpr) : expr =
               ExprNode (LessEq (aux te1, aux te2))
           | Bags.Finite bound_set -> 
               (* Discretize based on shared bounds *) 
-              let cuts = 
-                Bags.BoundSet.elements bound_set 
-                |> List.map (function Bags.Less c -> c | Bags.LessEq c -> c)
-                |> List.sort_uniq compare
-              in
+              let cuts = Bags.BoundSet.elements bound_set in
               let n = List.length cuts + 1 in (* Modulus *) 
               if n <= 0 then failwith "Internal error: discretization resulted in zero or negative intervals for LessEq";
               let d1 = aux te1 in (* Discretize operands *)
