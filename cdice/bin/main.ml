@@ -108,12 +108,13 @@ let process_file ~print_all filename : ( ((int * int) * (int * int)) option, str
     let texpr = Contdice.elab_bool expr in 
     if print_all then Printf.printf "Typed AST (Pretty):\n%s\n\n" (Contdice.Pretty.string_of_texpr texpr);
     
-    let discretized_expr = Contdice.discretize texpr in
+    let (discretized_expr, max_params_discr_dist) = Contdice.discretize texpr in
     if print_all then (
       Printf.printf "Discretized Program (Pretty):\n%s\n\n" (Contdice.Pretty.string_of_expr discretized_expr);
-      Printf.printf "Discretized Program (Plaintext):\n%s\n\n" (Contdice.Util.string_of_expr discretized_expr)
+      Printf.printf "Max number of parameters in discrete distr: %d\n" max_params_discr_dist;
+      Printf.printf "Discretized Program (Plaintext):\n%s\n\n" (Contdice.Util.string_of_expr discretized_expr (* max_params_discr_dist *))
     ) else (
-      Printf.printf "%s\n" (Contdice.Util.string_of_expr discretized_expr)
+      Printf.printf "%s\n" (Contdice.Util.string_of_expr discretized_expr (* max_params_discr_dist *))
     );
 
     let n_runs = 1000000 in 

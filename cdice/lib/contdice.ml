@@ -383,6 +383,202 @@ probabilities of the interval between two floats.
 When doing a comparison against a float, we convert that to a comparison 
 against the discrete integer that represents the i-th float in the bag.
 *)
+let discretize (e : texpr) : expr * int =
+  let rec aux ((ty, TAExprNode ae_node) : texpr) : expr * int =
+    match ae_node with
+    | Const f -> 
+        let bounds_bag = (match Types.force ty with
+          | Types.TFloat (b, _) -> b (* Extract bounds bag *)
+          | _ -> failwith "Type error: Const expects float") in
+        let set_or_top_val = Bags.BoundBag.get bounds_bag in
+        (match set_or_top_val with
+         | Bags.Top -> (ExprNode (Const f), 0) (* Keep original if Top *)
+         | Bags.Finite bound_set ->
+              let cuts = Bags.BoundSet.elements bound_set in
+              let bound_matches_float b x = match b with
+                | Bags.Less c -> x < c
+                | Bags.LessEq c -> x <= c
+              in
+              (* Find the index of the float in the bag *)
+              let idx = List.length (List.filter (fun x -> not (bound_matches_float x f)) cuts) in
+              let n = 1 + List.length cuts in
+              (* Generate FinConst expression *)
+              (ExprNode (FinConst (idx, n)), n))
+
+    | BoolConst b -> (ExprNode (BoolConst b), 0) (* Boolean constants don't affect max *)
+
+    | Var x ->
+        (ExprNode (Var x), 0) (* Variables don't affect max *)
+
+    | Let (x, te1, te2) ->
+        let e1, max1 = aux te1 in
+        let e2, max2 = aux te2 in
+        (ExprNode (Let (x, e1, e2)), max max1 max2)
+
+    | CDistr dist ->
+        let bounds_bag =
+          match Types.force ty with 
+          | Types.TFloat (b, _) -> b (* Extract bounds bag *)
+          | _ -> failwith "Internal error: CDistr not TFloat"
+        in
+        let set_or_top_val = Bags.BoundBag.get bounds_bag in 
+        (match set_or_top_val with
+         | Bags.Top -> (ExprNode (CDistr dist), 0) (* Keep original if Top *) 
+         | Bags.Finite bound_set -> 
+             (* Discretize using cuts - Reverted Logic *) 
+             let cuts = 
+               Bags.BoundSet.elements bound_set 
+               |> List.map (function Bags.Less c -> c | Bags.LessEq c -> c) 
+               |> List.sort compare
+             in 
+             let intervals = List.init (List.length cuts + 1) (fun i ->
+               let left = if i = 0 then neg_infinity else List.nth cuts (i - 1) in
+               let right = if i = List.length cuts then infinity else List.nth cuts i in
+               (left, right)
+             ) in
+             let probs = List.map (fun (left, right) ->
+               prob_cdistr_interval left right dist
+             ) intervals in
+             (* Convert to DistrCase with FinConst expressions *) 
+             let n = List.length probs in (* Number of intervals = modulus *)
+             if n = 0 then failwith "Internal error: discretization resulted in zero intervals";
+             let cases = List.mapi (fun i prob -> (ExprNode (FinConst (i, n)), prob)) probs in
+             (ExprNode (DistrCase cases), n))
+        
+    | DistrCase cases ->
+      (* Recursively discretize the expressions within the cases *) 
+      let discretized_cases, max_intervals = 
+        List.fold_left (fun (acc_cases, acc_max) (texpr, prob) ->
+          let expr, max_n = aux texpr in
+          ((expr, prob) :: acc_cases, max acc_max max_n)
+        ) ([], 0) cases
+      in
+      (ExprNode (DistrCase (List.rev discretized_cases)), max_intervals)
+
+    | Less (te1, te2) ->
+        let t1 = fst te1 in (* Extract type t1 *) 
+        let t2 = fst te2 in (* Extract type t2 *)
+        let b1 = (match Types.force t1 with (* Get bound bag b1 from t1 *)
+          | Types.TFloat (b, _) -> b 
+          | _ -> failwith "Type error: Less expects float on left operand") 
+        in
+        let b2 = (match Types.force t2 with (* Get bound bag b2 from t2 *)
+          | Types.TFloat (b, _) -> b
+          | _ -> failwith "Type error: Less expects float on right operand")
+        in
+        (* Get bag values and compare using BoundSetContents.equal *) 
+        let val1 = Bags.BoundBag.get b1 in
+        let val2 = Bags.BoundBag.get b2 in
+        if not (Bags.BoundSetContents.equal val1 val2) then 
+          failwith "Internal error: Less operands have different bound bag values despite elaboration";
+
+        (* Use val1 (since val1 = val2) *) 
+        (match val1 with 
+          | Bags.Top -> 
+              (* If bounds are Top, don't discretize, keep original Less structure *) 
+              let e1, max1 = aux te1 in
+              let e2, max2 = aux te2 in
+              (ExprNode (Less (e1, e2)), max max1 max2) 
+          | Bags.Finite bound_set -> 
+              (* Discretize based on shared bounds *) 
+              let cuts = Bags.BoundSet.elements bound_set in
+              let n = List.length cuts + 1 in (* Modulus *) 
+              if n <= 0 then failwith "Internal error: discretization resulted in zero or negative intervals for Less";
+              let d1, max1 = aux te1 in (* Discretize operands *)
+              let d2, max2 = aux te2 in 
+              (ExprNode (FinLt (d1, d2, n)), max n (max max1 max2))) 
+        
+    | LessEq (te1, te2) ->
+        let t1 = fst te1 in (* Extract type t1 *) 
+        let t2 = fst te2 in (* Extract type t2 *) 
+        let b1 = (match Types.force t1 with (* Get bound bag b1 from t1 *)
+          | Types.TFloat (b, _) -> b 
+          | _ -> failwith "Type error: LessEq expects float on left operand") 
+        in
+        let b2 = (match Types.force t2 with (* Get bound bag b2 from t2 *)
+          | Types.TFloat (b, _) -> b
+          | _ -> failwith "Type error: LessEq expects float on right operand")
+        in
+        (* Get bag values and compare using BoundSetContents.equal *) 
+        let val1 = Bags.BoundBag.get b1 in
+        let val2 = Bags.BoundBag.get b2 in
+        if not (Bags.BoundSetContents.equal val1 val2) then 
+          failwith "Internal error: LessEq operands have different bound bag values despite elaboration";
+        
+        (* Use val1 (since val1 = val2) *) 
+        (match val1 with 
+          | Bags.Top -> 
+              (* If bounds are Top, don't discretize, keep original LessEq structure *) 
+              let e1, max1 = aux te1 in
+              let e2, max2 = aux te2 in
+              (ExprNode (LessEq (e1, e2)), max max1 max2)
+          | Bags.Finite bound_set -> 
+              (* Discretize based on shared bounds *) 
+              let cuts = Bags.BoundSet.elements bound_set in
+              let n = List.length cuts + 1 in (* Modulus *) 
+              if n <= 0 then failwith "Internal error: discretization resulted in zero or negative intervals for LessEq";
+              let d1, max1 = aux te1 in (* Discretize operands *)
+              let d2, max2 = aux te2 in 
+              (ExprNode (FinLeq (d1, d2, n)), max n (max max1 max2)))
+
+    | If (te1, te2, te3) ->
+        let e1, max1 = aux te1 in
+        let e2, max2 = aux te2 in
+        let e3, max3 = aux te3 in
+        (ExprNode (If (e1, e2, e3)), max max1 (max max2 max3))
+        
+    | Pair (te1, te2) ->
+        let e1, max1 = aux te1 in
+        let e2, max2 = aux te2 in
+        (ExprNode (Pair (e1, e2)), max max1 max2)
+        
+    | First te ->
+        let e, max_n = aux te in
+        (ExprNode (First e), max_n)
+        
+    | Second te ->
+        let e, max_n = aux te in
+        (ExprNode (Second e), max_n)
+        
+    | Fun (x, te) ->
+        let e, max_n = aux te in
+        (ExprNode (Fun (x, e)), max_n)
+        
+    | App (te1, te2) ->
+        let e1, max1 = aux te1 in
+        let e2, max2 = aux te2 in
+        (ExprNode (App (e1, e2)), max max1 max2)
+
+    (* Fin types are already discrete, pass them through *) 
+    | FinConst (k, n) -> 
+        (ExprNode (FinConst (k, n)), n)
+    | FinLt (te1, te2, n) -> 
+        let e1, max1 = aux te1 in
+        let e2, max2 = aux te2 in
+        (ExprNode (FinLt (e1, e2, n)), max n (max max1 max2))
+    | FinLeq (te1, te2, n) -> 
+        let e1, max1 = aux te1 in
+        let e2, max2 = aux te2 in
+        (ExprNode (FinLeq (e1, e2, n)), max n (max max1 max2))
+
+    | And (te1, te2) ->
+        let e1, max1 = aux te1 in
+        let e2, max2 = aux te2 in
+        (ExprNode (And (e1, e2)), max max1 max2)
+        
+    | Or (te1, te2) ->
+        let e1, max1 = aux te1 in
+        let e2, max2 = aux te2 in
+        (ExprNode (Or (e1, e2)), max max1 max2)
+        
+    | Not te1 ->
+        let e1, max_n = aux te1 in
+        (ExprNode (Not e1), max_n)
+
+  in
+  aux e
+
+(*
 let discretize (e : texpr) : expr =
   let rec aux ((ty, TAExprNode ae_node) : texpr) : expr =
     match ae_node with
@@ -548,3 +744,4 @@ let discretize (e : texpr) : expr =
 
   in
   aux e
+  *)
