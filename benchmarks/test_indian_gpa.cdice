@@ -1,0 +1,7 @@
+let nationality = discrete(0.5: 0#2, 0.5: 1#2) in
+let perfect = discrete(0.01: 0#2, 0.99: 1#2) in
+let gpa = if nationality <=#2 0#2 then 
+    if perfect <=#2 0#2 then uniform(0,10) else 10.0
+    else
+    if perfect <=#2 0#2 then uniform(0,4) else 4.0
+in gpa < 4.0
