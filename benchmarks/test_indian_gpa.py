@@ -25,30 +25,6 @@ Nationality = Id('Nationality')
 Perfect     = Id('Perfect')
 GPA         = Id('GPA')
 
-def model_perfect_nested_compiled():
-    compiler = SPPL_Compiler('''
-Nationality   ~= choice({'India': 0.5, 'USA': 0.5})
-if (Nationality == 'India'):
-    Perfect       ~= choice({'True': 0.01, 'False': 0.99})
-    if (Perfect == 'False'):
-        GPA ~= uniform(loc=0, scale=10)
-    else:
-        GPA ~= atomic(loc=10)
-elif (Nationality == 'USA'):
-    Perfect       ~= choice({'True': 0.01, 'False': 0.99})
-    if (Perfect == 'False'):
-        GPA ~= uniform(loc=0, scale=4)
-    else:
-        GPA ~= atomic(loc=4)
-    ''')
-    namespace = compiler.execute_module()
-    return namespace.model
-
-
-
-
-
-
 def model_no_latents():
     return \
         0.5 * ( # American student
@@ -227,8 +203,55 @@ elif (Nationality == 'USA'):
     namespace = compiler.execute_module()
     return namespace.model
 
-model = model_perfect_nested_compiled()
-GPA = Id('GPA')
-model_condition = model.condition(GPA >= 0)
-result = model.prob(GPA << {4})
+
+def test_prior(get_model):
+    model = get_model()
+    GPA = Id('GPA')
+    assert allclose(model.prob(GPA << {10}), 0.5*0.01)
+    assert allclose(model.prob(GPA << {4}), 0.5*0.01)
+    assert allclose(model.prob(GPA << {5}), 0)
+    assert allclose(model.prob(GPA << {1}), 0)
+
+    assert allclose(model.prob((2 < GPA) < 4),
+        0.5*0.99*0.5 + 0.5*0.99*0.2)
+    assert allclose(model.prob((2 <= GPA) < 4),
+        0.5*0.99*0.5 + 0.5*0.99*0.2)
+    assert allclose(model.prob((2 < GPA) <= 4),
+        0.5*(0.99*0.5 + 0.01) + 0.5*0.99*0.2)
+    assert allclose(model.prob((2 < GPA) <= 8),
+        0.5*(0.99*0.5 + 0.01) + 0.5*0.99*0.6)
+    assert allclose(model.prob((2 < GPA) < 10),
+        0.5*(0.99*0.5 + 0.01) + 0.5*0.99*0.8)
+    assert allclose(model.prob((2 < GPA) <= 10),
+        0.5*(0.99*0.5 + 0.01) + 0.5*(0.99*0.8 + 0.01))
+
+    assert allclose(model.prob(((2 <= GPA) < 4) | (7 < GPA)),
+        (0.5*0.99*0.5 + 0.5*0.99*0.2) + (0.5*(0.99*0.3 + 0.01)))
+
+    assert allclose(model.prob(((2 <= GPA) < 4) & (7 < GPA)), 0)
+
+def test_condition():
+    model = model_no_latents()
+    GPA = Id('GPA')
+    model_condition = model.condition(GPA << {4} | GPA << {10})
+    assert len(model_condition.children) == 2
+    assert model_condition.children[0].support == Interval.Ropen(4, 5)
+    assert model_condition.children[1].support == Interval.Ropen(10, 11)
+
+    model_condition = model.condition((0 < GPA < 4))
+    assert len(model_condition.children) == 2
+    assert model_condition.children[0].support \
+        == model_condition.children[1].support
+    assert allclose(
+        model_condition.children[0].logprob(GPA < 1),
+        model_condition.children[1].logprob(GPA < 1))
+
+def test_logpdf():
+    model = model_no_latents()
+    assert allclose(0.005, model.pdf({GPA: 4}))
+    assert allclose(0.005, model.pdf({GPA: 10}))
+    
+model = model_ifelse_exhuastive_compiled()
+result = model.prob(GPA < 1)
 print(result)
+    
