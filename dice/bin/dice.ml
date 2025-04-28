@@ -155,6 +155,7 @@ let parse_and_print ~print_parsed ~print_internal ~print_size ~skip_table
    *   res *)
   with Compiler.Syntax_error(s) -> [ErrorRes(s)]
 
+(*
 let run_dice_program program =
   let lexbuf = Lexing.from_string program in
   let r = (parse_and_print ~print_parsed:false ~print_internal:false ~sample_amount:None
@@ -164,6 +165,7 @@ let run_dice_program program =
              ~recursion_limit:None ~max_list_length:None ~eager_eval:false ~wmc_type:0
              lexbuf) in
   List.iter r ~f:print_res
+*)
 
 let command =
   Command.basic
@@ -195,7 +197,12 @@ let command =
      (* and print_marginals = flag "-show-marginals" no_arg ~doc:" print the marginal probabilities of a tuple in depth-first order" *)
      and json = flag "-json" no_arg ~doc:" print output as JSON"
      in fun () ->
-       let lexbuf = Lexing.from_string program in
+        let program_contents = 
+          match Sys_unix.file_exists program with
+          | `Yes -> In_channel.read_all program
+          | `No | `Unknown -> program
+        in
+       let lexbuf = Lexing.from_string program_contents in
        let r = (parse_and_print ~print_parsed ~print_internal ~sample_amount
                   ~print_size ~inline_functions ~skip_table ~flip_lifting
                   ~branch_elimination ~determinism:(not no_determinism) ~show_recursive_calls ~print_state_bdd

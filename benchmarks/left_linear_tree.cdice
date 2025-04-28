@@ -1,0 +1,157 @@
+let a = uniform(0, 1) in
+let b = uniform(0, 2) in
+let c = uniform(0, 3) in
+let d = uniform(0, 4) in
+let e = uniform(0, 5) in
+let f = uniform(0, 6) in
+let g = uniform(0, 7) in
+let h = uniform(0, 8) in
+let i = uniform(0, 9) in
+let j = uniform(0, 10) in
+let k = uniform(0, 11) in
+let l = uniform(0, 12) in
+let m = uniform(0, 13) in
+let n = uniform(0, 14) in
+let o = uniform(0, 15) in
+let p = uniform(0, 16) in
+let q = uniform(0, 17) in
+let r = uniform(0, 18) in
+let s = uniform(0, 19) in
+let t = uniform(0, 20) in
+let u = uniform(0, 21) in
+let v = uniform(0, 22) in
+let w = uniform(0, 23) in
+let x = uniform(0, 24) in
+let y = uniform(0, 25) in
+let z = uniform(0, 26) in
+let aa = uniform(0, 27) in
+let bb = uniform(0, 28) in
+let cc = uniform(0, 29) in
+let dd = uniform(0, 30) in
+let ee = uniform(0, 31) in
+let ff = uniform(0, 32) in
+let gg = uniform(0, 33) in
+let hh = uniform(0, 34) in
+let ii = uniform(0, 35) in
+let jj = uniform(0, 36) in
+let kk = uniform(0, 37) in
+let ll = uniform(0, 38) in
+let mm = uniform(0, 39) in
+let nn = uniform(0, 40) in
+let oo = uniform(0, 41) in
+let pp = uniform(0, 42) in
+let qq = uniform(0, 43) in
+let rr = uniform(0, 44) in
+let ss = uniform(0, 45) in
+let tt = uniform(0, 46) in
+let uu = uniform(0, 47) in
+let vv = uniform(0, 48) in
+let ww = uniform(0, 49) in
+let xx = uniform(0, 50) in
+let yy = uniform(0, 51) in
+
+let zz =
+  if a < 0.5 then
+    if b < 0.5 then
+      if c < 0.5 then
+        if d < 0.5 then
+          if e < 0.5 then
+            if f < 0.5 then
+              if g < 0.5 then
+                if h < 0.5 then
+                  if i < 0.5 then
+                    if j < 0.5 then
+                      if k < 0.5 then
+                        if l < 0.5 then
+                          if m < 0.5 then
+                            if n < 0.5 then
+                              if o < 0.5 then
+                                if p < 0.5 then
+                                  if q < 0.5 then
+                                    if r < 0.5 then
+                                      if s < 0.5 then
+                                        if t < 0.5 then
+                                          if u < 0.5 then
+                                            if v < 0.5 then
+                                              if w < 0.5 then
+                                                if x < 0.5 then
+                                                  if y < 0.5 then
+                                                    if z < 0.5 then
+                                                      if aa < 0.5 then
+                                                        if bb < 0.5 then
+                                                          if cc < 0.5 then
+                                                            if dd < 0.5 then
+                                                              if ee < 0.5 then
+                                                                if ff < 0.5 then
+                                                                  if gg < 0.5 then
+                                                                    if hh < 0.5 then
+                                                                      if ii < 0.5 then
+                                                                        if jj < 0.5 then
+                                                                          if kk < 0.5 then
+                                                                            if ll < 0.5 then
+                                                                              if mm < 0.5 then
+                                                                                if nn < 0.5 then
+                                                                                  if oo < 0.5 then
+                                                                                    if pp < 0.5 then
+                                                                                      if qq < 0.5 then
+                                                                                        if rr < 0.5 then
+                                                                                          if ss < 0.5 then
+                                                                                            if tt < 0.5 then
+                                                                                              if uu < 0.5 then
+                                                                                                if vv < 0.5 then
+                                                                                                  if ww < 0.5 then
+                                                                                                    if xx < 0.5 then
+                                                                                                      if yy < 0.5 then 
+                                                                                                      uniform(0, 1)
+                                                                                                      else uniform(0, 2)
+                                                                                                    else uniform(0, 3)
+                                                                                                  else uniform(0, 4)
+                                                                                                else uniform(0, 5)
+                                                                                              else uniform(0, 6)
+                                                                                            else uniform(0, 7)
+                                                                                          else uniform(0, 8)
+                                                                                        else uniform(0, 9)
+                                                                                      else uniform(0, 10)
+                                                                                    else uniform(0, 11)
+                                                                                  else uniform(0, 12)
+                                                                                else uniform(0, 13)
+                                                                              else uniform(0, 14)
+                                                                            else uniform(0, 15)
+                                                                          else uniform(0, 16)
+                                                                        else uniform(0, 17)
+                                                                      else uniform(0, 18)
+                                                                    else uniform(0, 19)
+                                                                  else uniform(0, 20)
+                                                                else uniform(0, 21)
+                                                              else uniform(0, 22)
+                                                            else uniform(0, 23)
+                                                          else uniform(0, 24)
+                                                        else uniform(0, 25)
+                                                      else uniform(0, 26)
+                                                    else uniform(0, 27)
+                                                  else uniform(0, 28)
+                                                else uniform(0, 29)
+                                              else uniform(0, 30)
+                                            else uniform(0, 31)
+                                          else uniform(0, 32)
+                                        else uniform(0, 33)
+                                      else uniform(0, 34)
+                                    else uniform(0, 35)
+                                  else uniform(0, 36)
+                                else uniform(0, 37)
+                              else uniform(0, 38)
+                            else uniform(0, 39)
+                          else uniform(0, 40)
+                        else uniform(0, 41)
+                      else uniform(0, 42)
+                    else uniform(0, 43)
+                  else uniform(0, 44)
+                else uniform(0, 45)
+              else uniform(0, 46)
+            else uniform(0, 47)
+          else uniform(0, 48)
+        else uniform(0, 49)
+      else uniform(0, 50)
+    else uniform(0, 51)
+  else uniform(0, 52)
+in zz < 0.5

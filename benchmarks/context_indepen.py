@@ -7,32 +7,8 @@ from sppl.distributions import bernoulli
 from sppl.distributions import uniform
 from sppl.compilers.sppl_to_python import SPPL_Compiler
 
-a    = Id('a')
-b  = Id('b')
-c      = Id('c')
-d    = Id('d')
-e  = Id('e')
-f      = Id('f')
-g    = Id('g')
-h  = Id('h')
-i      = Id('i')
-j    = Id('j')
-k  = Id('k')
-l      = Id('l')
-m      = Id('m')
-n      = Id('n')
-o      = Id('o')
-p      = Id('p')
-q     = Id('q')
-r      = Id('r')
-s      = Id('s')
-t      = Id('t')
-u      = Id('u')
-v      = Id('v')
-w      = Id('w')
-x      = Id('x')
-y      = Id('y')
-z      = Id('z')
+import argparse
+import sys
 
 compiler = SPPL_Compiler('''
 a   ~= uniform(loc=0, scale=1)
@@ -136,7 +112,152 @@ if (y < 0.5):
     z ~= uniform(loc=0, scale=50)
 else:
     z ~= uniform(loc=0, scale=51)
-                           ''')
+if (z < 0.5):
+ a1 ~= uniform(loc=0, scale=52)
+else:
+ a1 ~= uniform(loc=0, scale=53)
+if (a1 < 0.5):
+ b1 ~= uniform(loc=0, scale=54)
+else:
+ b1 ~= uniform(loc=0, scale=55)
+if (b1 < 0.5):
+ c1 ~= uniform(loc=0, scale=56)
+else:
+ c1 ~= uniform(loc=0, scale=57)
+if (c1 < 0.5):
+ d1 ~= uniform(loc=0, scale=58)
+else:
+ d1 ~= uniform(loc=0, scale=59)
+if (d1 < 0.5):
+ e1 ~= uniform(loc=0, scale=60)
+else:
+ e1 ~= uniform(loc=0, scale=61)
+if (e1 < 0.5):
+ f1 ~= uniform(loc=0, scale=62)
+else:
+ f1 ~= uniform(loc=0, scale=63)
+if (f1 < 0.5):
+ g1 ~= uniform(loc=0, scale=64)
+else:
+ g1 ~= uniform(loc=0, scale=65)
+if (g1 < 0.5):
+ h1 ~= uniform(loc=0, scale=66)
+else:
+ h1 ~= uniform(loc=0, scale=67)
+if (h1 < 0.5):
+ i1 ~= uniform(loc=0, scale=68)
+else:
+ i1 ~= uniform(loc=0, scale=69)
+if (i1 < 0.5):
+ j1 ~= uniform(loc=0, scale=70)
+else:
+ j1 ~= uniform(loc=0, scale=71)
+if (j1 < 0.5):
+ k1 ~= uniform(loc=0, scale=72)
+else:
+ k1 ~= uniform(loc=0, scale=73)
+if (k1 < 0.5):
+ l1 ~= uniform(loc=0, scale=74)
+else:
+ l1 ~= uniform(loc=0, scale=75)
+if (l1 < 0.5):
+ m1 ~= uniform(loc=0, scale=76)
+else:
+ m1 ~= uniform(loc=0, scale=77)
+if (m1 < 0.5):
+ n1 ~= uniform(loc=0, scale=78)
+else:
+ n1 ~= uniform(loc=0, scale=79)
+if (n1 < 0.5):
+ o1 ~= uniform(loc=0, scale=80)
+else:
+ o1 ~= uniform(loc=0, scale=81)
+if (o1 < 0.5):
+ p1 ~= uniform(loc=0, scale=82)
+else:
+ p1 ~= uniform(loc=0, scale=83)
+if (p1 < 0.5):
+ q1 ~= uniform(loc=0, scale=84)
+else:
+ q1 ~= uniform(loc=0, scale=85)
+if (q1 < 0.5):
+ r1 ~= uniform(loc=0, scale=86)
+else:
+ r1 ~= uniform(loc=0, scale=87)
+if (r1 < 0.5):
+ s1 ~= uniform(loc=0, scale=88)
+else:
+ s1 ~= uniform(loc=0, scale=89)
+if (s1 < 0.5):
+ t1 ~= uniform(loc=0, scale=90)
+else:
+ t1 ~= uniform(loc=0, scale=91)
+if (t1 < 0.5):
+ u1 ~= uniform(loc=0, scale=92)
+else:
+ u1 ~= uniform(loc=0, scale=93)
+if (u1 < 0.5):
+ v1 ~= uniform(loc=0, scale=94)
+else:
+ v1 ~= uniform(loc=0, scale=95)
+if (v1 < 0.5):
+ w1 ~= uniform(loc=0, scale=96)
+else:
+ w1 ~= uniform(loc=0, scale=97)
+if (w1 < 0.5):
+ x1 ~= uniform(loc=0, scale=98)
+else:
+ x1 ~= uniform(loc=0, scale=99)
+if (x1 < 0.5):
+ y1 ~= uniform(loc=0, scale=100)
+else:
+ y1 ~= uniform(loc=0, scale=101)
+if (y1 < 0.5):
+ z1 ~= uniform(loc=0, scale=102)
+else:
+ z1 ~= uniform(loc=0, scale=103)
+                        ''')
 namespace = compiler.execute_module()
-event = (n.z << {0.5})
+z1      = Id('z1')
+event = (z1 < 0.5)
 print(namespace.model.prob(event))
+    
+    
+# Could be useful down the line?
+def generate_sppl_program(n):
+    """
+    Generate SPPL program with n variables and conditional distributions.
+    Args:
+        n: Number of variables to generate
+    Returns:
+        Generated SPPL program as a string
+    """
+    var_names = []
+    for i in range(min(26, n)):
+        var_names.append(chr(97 + i)) 
+    
+    # For n > 26, use v0, v1, v2, etc. for the remaining variables
+    for i in range(26, n):
+        var_names.append(f"v{i-26}")
+    
+    id_declarations = []
+    for var in var_names:
+        id_declarations.append(f"{var} = Id('{var}')")
+    
+    sppl_program = []
+    sppl_program.append(f"{var_names[0]} ~= uniform(loc=0, scale=1)")
+    
+    for i in range(1, n):
+        prev_var = var_names[i-1]
+        curr_var = var_names[i]
+        scale1 = 2 * i
+        scale2 = 2 * i + 1
+        
+        sppl_program.append(f"if ({prev_var} < 0.5):")
+        sppl_program.append(f" {curr_var} ~= uniform(loc=0, scale={scale1})")
+        sppl_program.append(f"else:")
+        sppl_program.append(f" {curr_var} ~= uniform(loc=0, scale={scale2})")
+    
+    return sppl_program, var_names[-1]
+
+

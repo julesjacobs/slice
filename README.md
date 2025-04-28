@@ -4,21 +4,27 @@ ContDice is a language for probabilistic programming with continuous distributio
 
 # Usage
 
-run.sh illustrates the workflow of the inference steps: first cdice is run on a continuous program, outputting a discretized program, then dice is run on the discretized program, outputting the final probability distribution.
+`run_contdice.sh` outlines the inference workflow: first cdice is run on a continuous program outputting a discretized program, then dice is run on the discretized program outputting the final probability distribution.
 
 ```bash
-$ ./run.sh <full_path_of_example_cdice_program>
+$ ./run_contdice.sh <example-cdice-program>
 ```
 
 ## Running cdice alone
 ```bash
 $ cd cdice
 $ dune build
-$ dune exec -- bin/main.exe [--print-all] <example_cdice_program>
+$ dune exec -- bin/main.exe [--print-all] <example-cdice-program>
+```
+Alternatively, can use the run script:
+
+```bash
+$ cd cdice
+$ ./run_cdice.sh [--print-all] <example-cdice-program>
 ```
 Options:
 
---print-all: prints the intermediate steps in the cdice workflow up to the discretized program, i.e.:
+--print-all: prints to stdout the intermediate steps in the contdice workflow up to the discretized program, and performs a statistical verification test to determine equivalence between the discretized output and the sampled original using a Z-test, i.e.:
 
 ```bash
 $ dune exec -- bin/main.exe examples/coin_flip.cdice 
@@ -43,5 +49,31 @@ x <#2 1#2
 Discretized Program (Plaintext):
 let x = discrete(0.5, 0.5) in
 x < int(1,1)
+
+Running Discretized version 1000000 times...
+Summary (Discretized): True: 500014, False: 499986
+Running Original (Sampling) version 1000000 times...
+Summary (Original (Sampling)): True: 499965, False: 500035
+
+--- Statistical Comparison ---
+Proportion True (Discretized): 0.5000
+Proportion True (Original):   0.5000
+Pooled Proportion:            0.5000
+Z-score: 0.0693
+Conclusion: No statistically significant difference found (alpha=0.01).
+------------------------------------------------------------
+
+*** No statistically significant difference detected for this file. ***
 ```
 
+## Running dice alone
+```bash
+$ cd dice
+$ dune build
+$ dune exec dice <example-dice-program> # string
+```
+Alternatively, can use the run script:
+```bash
+$ cd dice
+$ ./run_dice <example-dice-program> # file or string
+```

@@ -18,6 +18,7 @@ The implementation can attempt to discretize continuous distributions into discr
 
 ```bash
 # Install dependencies (if not already installed via opam)
+
 # opam install base stdio dune ppx_jane menhir
 
 # Build the project

@@ -116,6 +116,7 @@ let process_file ~print_all filename : ( ((int * int) * (int * int)) option, str
       Printf.printf "%s\n" (Contdice.Util.string_of_expr discretized_expr)
     );
 
+    if not print_all then Ok None else
     let n_runs = 1000000 in 
     match run_interp_and_summarize ~print_all "Discretized" discretized_expr n_runs with
     | Error msg -> Error msg
