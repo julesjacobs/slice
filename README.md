@@ -70,7 +70,7 @@ Conclusion: No statistically significant difference found (alpha=0.01).
 ```bash
 $ cd dice
 $ dune build
-$ dune exec dice <example-dice-program> # string
+$ dune exec dice <example-dice-program> # file or string
 ```
 Alternatively, can use the run script:
 ```bash

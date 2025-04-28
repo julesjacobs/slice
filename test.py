@@ -11,10 +11,11 @@ from pathlib import Path
 Usage:
 $ python3 test.py: runs all benchmarks using ./run_contdice.sh
 $ python3 test.py --run-as-separate: runs all benchmarks separating cdice (cdice/run_cdice.sh) from dice (dice/run_dice.sh)
-$ python3 test.py --print-outputs: runs all benchmarks printing outputs for contdice and sppl for accuracy
+$ python3 test.py --print-outputs: runs all benchmarks printing outputs for contdice and sppl
 '''
 def run(command, shell=False):
     result = subprocess.run(command, shell=shell, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    return result
 
 def run_and_time(description, command, shell=False):
     print(f"Running {description}...")
@@ -24,7 +25,6 @@ def run_and_time(description, command, shell=False):
     print(f"time {duration}")
     output = result.stdout.decode('utf-8')
     return output
-    
     
 def main():
     print("Running the tests in benchmarks...\n")
