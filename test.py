@@ -7,7 +7,12 @@ import sys
 import os
 from pathlib import Path
 
-
+'''
+Usage:
+$ python3 test.py: runs all benchmarks using ./run_contdice.sh
+$ python3 test.py --run-as-separate: runs all benchmarks separating cdice (cdice/run_cdice.sh) from dice (dice/run_dice.sh)
+$ python3 test.py --print-outputs: runs all benchmarks printing outputs for contdice and sppl for accuracy
+'''
 def run(command, shell=False):
     result = subprocess.run(command, shell=shell, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
@@ -50,8 +55,8 @@ def main():
                     os.chdir(original_dir)
                     # Change to dice directory and run dice component
                     os.chdir("./dice")
-                    run(["./run_dice.sh", "./output.dice"])
-                    result_contdice = run_and_time(f"contdice -- dice: {path}", ["./run_dice.sh", "./output.dice"])
+                    run(["./run_dice.sh", "../output.dice"])
+                    result_contdice = run_and_time(f"contdice -- dice: {path}", ["./run_dice.sh", "../output.dice"])
                     if print_outputs: print(result_contdice)
                 finally:
                     # Ensure we return to the original directory even if an error occurs
