@@ -7,66 +7,6 @@ from sppl.distributions import bernoulli
 from sppl.distributions import uniform
 from sppl.compilers.sppl_to_python import SPPL_Compiler
 
-# Script for generating such a context dependent program
-# ===== for SPPL =====
-# vars = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j'] # Adjust the variables if necessary
-# counter = 1
-
-def build_context_dependent_sppl(depth):
-    global counter
-    if depth == len(vars):
-        print(f"{'  ' * depth}k ~= uniform(loc=0,scale={counter})")
-        counter += 1
-        return
-    var = vars[depth]
-    print(f"{'  ' * depth}if ({var} < 0.5):")
-    build_context_dependent_sppl(depth + 1)
-    print(f"{'  ' * depth}else:")
-    build_context_dependent_sppl(depth + 1)
-    
-# ===== for CONTDICE =====
-def build_context_dependent_contdice(variables):
-    # variables = ["a", "b", "c", ..., "j"]
-    code = []
-    # Step 1: Variable bindings
-    for idx, var in enumerate(variables):
-        code.append(f"let {var} = uniform(0,{idx + 1}) in")
-    code.append("let k =")  # Result variable
-    # Step 2: Build nested if-else structure
-    indent = 2  # Starting indent (one more after `let k =`)
-    counter = [1]  # Using list for mutable integer inside inner function
-
-    def build(depth):
-        if depth == len(variables):
-            # Leaf node: pick the uniform(0, n)
-            code.append(" " * indent + f"uniform(0,{counter[0]})")
-            counter[0] += 1
-            return
-        var = variables[depth]
-        code.append(" " * indent + f"if {var} < 0.5 then")
-        indent_increase()
-        build(depth + 1)
-        indent_decrease()
-        code.append(" " * indent + "else")
-        indent_increase()
-        build(depth + 1)
-        indent_decrease()
-
-    def indent_increase():
-        nonlocal indent
-        indent += 2
-
-    def indent_decrease():
-        nonlocal indent
-        indent -= 2
-
-    build(0)
-    return "\n".join(code)
-
-# variables = [chr(c) for c in range(ord('a'), ord('k'))]  # 'a' to 'j'
-# program = build_context_dependent_contdice(variables)
-
-
 compiler = SPPL_Compiler('''
 a ~= uniform(loc=0,scale=1)
 b ~= uniform(loc=0,scale=2)

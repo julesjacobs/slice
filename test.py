@@ -37,6 +37,10 @@ def main():
         return
     
     for path in sorted(benchmark_dir.glob("**/*")):
+        # Run everything under benchmarks/ recursively
+        if not path.is_file():
+            continue
+        
         if run_as_separate:
             # Time contdice as separate cdice and dice components
             if path.suffix == ".py":
