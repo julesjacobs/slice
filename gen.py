@@ -103,5 +103,5 @@ def build_conditional_independent_sppl(vars):
         counter += 1
     return "\n".join(lines)
 
-program = build_conditional_dependent_contdice(['a','b','c','d'])
+program = build_conditional_dependent_contdice(['a', 'b','c'])
 print(program)

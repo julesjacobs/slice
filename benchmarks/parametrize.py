@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 
 
 # ===== for SPPL =====
-def build_context_dependent_sppl(vars):
+def build_conditional_dependent_sppl(vars):
     lines = []
     counter = [1]
 
@@ -37,8 +37,27 @@ def build_context_dependent_sppl(vars):
     return "\n".join(lines)
 
 
+def build_conditional_independent_sppl(vars):
+    lines = []
+    counter = 1
+    first_var = vars[0]
+    lines.append(f"{first_var} ~= uniform(loc=0, scale={counter})")
+    counter += 1
+    
+    for i in range(1, len(vars)):
+        prev = vars[i - 1]
+        curr = vars[i]
+        lines.append(f"if ({prev} < 0.5):")
+        lines.append(f"    {curr} ~= uniform(loc=0, scale={counter})")
+        counter += 1
+        lines.append("else:")
+        lines.append(f"    {curr} ~= uniform(loc=0, scale={counter})")
+        counter += 1
+    return "\n".join(lines)
+
+
 # ===== for CONTDICE =====
-def build_context_dependent_contdice(variables):
+def build_conditional_dependent_contdice(variables):
     code = []
     # Variable bindings
     for idx, var in enumerate(variables):
@@ -83,11 +102,29 @@ def build_context_dependent_contdice(variables):
     return "\n".join(code)
 
 
+def build_conditional_independent_contdice(variables):
+    code = []
+    counter = 1
+
+    for idx, var in enumerate(variables):
+        if idx == 0:
+            code.append(f"let {var} = uniform(0,{counter}) in")
+            counter += 1
+        else:
+            prev = variables[idx - 1]
+            code.append(f"let {var} = if {prev} < 0.5 then uniform(0,{counter}) else uniform(0,{counter + 1}) in")
+            counter += 2
+
+    last_var = variables[-1]
+    code.append(f"{last_var} < 0.5")
+    return "\n".join(code)
+
+
 # ===== Parametrize =====
-# program = build_context_dependent_contdice(['a', 'b', 'c'])
+# program = build_conditional_dependent_contdice(['a', 'b', 'c'])
 # print(program)
 
-# program = build_context_dependent_sppl(['a','b','c','d'])
+# program = build_conditional_dependent_sppl(['a','b','c','d'])
 # print(program)
 
 def generate_variable_list_up_to(end_letter):
@@ -99,18 +136,19 @@ def main():
     contdice_times = []
     num_vars = []
 
-    end_letter = 'm'
+    end_letter = 'y'
     for c in range(ord('a'), ord(end_letter) + 1):
         var_list = generate_variable_list_up_to(chr(c))
         num_vars.append(len(var_list))  # Track how many variables
 
         # --- SPPL ---
-        program_sppl = build_context_dependent_sppl(var_list)
+        program_sppl = build_conditional_independent_sppl(var_list)
         start = time.time()
         compiler = SPPL_Compiler(f'''{program_sppl}''')
         namespace = compiler.execute_module()
         last_var = var_list[-1]
-        result_var = Id(chr(ord(last_var) + 1))
+        # result_var = Id(chr(ord(last_var) + 1))
+        result_var = Id(last_var)
         event = (result_var < 0.5)  
         output = namespace.model.prob(event)
         duration = time.time() - start
@@ -118,7 +156,7 @@ def main():
         print(f"sppl time {duration}")
 
         # --- CONTDICE ---
-        program_contdice = build_context_dependent_contdice(var_list)
+        program_contdice = build_conditional_independent_contdice(var_list)
         path = Path("parametrize.cdice")
         path.write_text(program_contdice)
         command = ["./run_contdice.sh", str(path)]
