@@ -24,4 +24,4 @@ echo "$OUTPUT" > output.dice
 
 # Go into dice directory and run the command
 cd dice || exit 1
-dune exec dice "../output.dice"
+dune exec -- dice "../output.dice" -show-size -flip-lifting
