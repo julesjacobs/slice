@@ -19,4 +19,5 @@ INPUT_ABS=$(realpath "$INPUT")
 # fi
 
 # Now run dune exec dice
-dune exec dice "$INPUT_ABS"
+# dune exec dice "$INPUT_ABS" # build-step included
+./_build/default/bin/dice.exe "../output.dice" # directly run the executable

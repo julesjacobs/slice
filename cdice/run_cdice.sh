@@ -23,7 +23,9 @@ INPUT=$1
 INPUT_ABS=$(realpath "$INPUT")
 
 if [ "$PRINT_ALL" = true ]; then
-  dune exec -- bin/main.exe --print-all "$INPUT_ABS" | tee ../output.dice
+  # dune exec -- bin/main.exe --print-all "$INPUT_ABS" | tee ../output.dice # build-step included
+  ./_build/default/bin/main.exe --print-all "$INPUT_ABS" | tee ../output.dice # directly run the executable
 else
-  dune exec -- bin/main.exe "$INPUT_ABS" | tee ../output.dice
+  # dune exec -- bin/main.exe "$INPUT_ABS" | tee ../output.dice # build-step included
+  ./_build/default/bin/main.exe "$INPUT_ABS" | tee ../output.dice # directly run the executable
 fi

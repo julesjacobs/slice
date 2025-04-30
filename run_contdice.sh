@@ -16,7 +16,8 @@ EXAMPLE_ABS=$(realpath "$EXAMPLE")
 
 # Go into cdice directory and run the command
 cd cdice || exit 1
-OUTPUT=$(dune exec -- bin/main.exe "$EXAMPLE_ABS")
+# OUTPUT=$(dune exec -- bin/main.exe "$EXAMPLE_ABS") # build-step included
+OUTPUT=$(./_build/default/bin/main.exe "$EXAMPLE_ABS") # directly run the executable
 
 # ================[ DICE ]================
 cd ..
@@ -24,4 +25,6 @@ echo "$OUTPUT" > output.dice
 
 # Go into dice directory and run the command
 cd dice || exit 1
-dune exec -- dice "../output.dice" -show-size -flip-lifting
+# dune exec -- dice "../output.dice" -show-size -flip-lifting # build-step included
+./_build/default/bin/dice.exe "../output.dice" -show-size -flip-lifting # directly run the executable
+
