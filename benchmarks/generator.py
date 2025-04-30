@@ -45,10 +45,11 @@ def gen_expr(depth, prev_vars = []):
             return g.uniform(0, 1)
         else:
             return random.choice(prev_vars[-5:])
-    if random.random() < 0.5 or len(prev_vars) == 0:
-        quantity =  g.uniform(0, random.randint(1, 10))
+    
+    if prev_vars == []:
+        quantity = g.uniform(0, random.randint(1, 10))
     else:
-        quantity = g.ite(g.lt(random.choice(prev_vars[-5:]), g.const(0.5)), random.choice(prev_vars[-5:]), random.choice(prev_vars[-5:]))
+        quantity = g.ite(g.lt(g.uniform(0, random.randint(1, 10)), g.const(0.5)), random.choice(prev_vars[-5:]), random.choice(prev_vars[-5:]))
     return g.let(quantity, lambda x: gen_expr(depth - 1, prev_vars + [x]))
 
 print(gen_expr(50))
