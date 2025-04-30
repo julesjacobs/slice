@@ -46,7 +46,7 @@ def prev_var_or_uniform(prev_vars):
     
 def gen_expr(depth, prev_vars = []):
     if depth == 0:
-        return prev_var_or_uniform(prev_vars)
+        return g.lt(prev_var_or_uniform(prev_vars), g.const(0.5))
     
     if prev_vars == []:
         quantity = g.uniform(0, random.randint(1, 10))
