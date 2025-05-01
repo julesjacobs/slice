@@ -1,3 +1,5 @@
+import random
+
 def build_conditional_dependent_contdice(variables):
     code = []
     # Variable bindings
@@ -103,5 +105,26 @@ def build_conditional_independent_sppl(vars):
         counter += 1
     return "\n".join(lines)
 
-program = build_conditional_dependent_contdice(['a', 'b','c'])
+
+def build_conditional_random_dependent_contdice(variables):
+    code = []
+    counter = 1
+
+    for idx, var in enumerate(variables):
+        if idx == 0:
+            code.append(f"let {var} = uniform(0,{counter}) in")
+            counter += 1
+        else:
+            # Choose a random previous variable index
+            rand_idx = random.randint(0, idx - 1)
+            prev = variables[rand_idx]
+            code.append(f"let {var} = if {prev} < 0.5 then uniform(0,{counter}) else uniform(0,{counter + 1}) in")
+            counter += 2
+
+    last_var = variables[-1]
+    code.append(f"{last_var} < 0.5")
+    return "\n".join(code)
+
+
+program = build_conditional_random_dependent_contdice(['a', 'b','c','d','e'])
 print(program)

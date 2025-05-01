@@ -6,10 +6,12 @@ from sppl.compilers.sppl_to_python import SPPL_Compiler
 
 from pathlib import Path
 import time
+import os
 import subprocess
+import string
 import matplotlib.pyplot as plt
 
-from generator import gen_expr
+from generator import *
 
 
 # ===== for SPPL =====
@@ -121,6 +123,25 @@ def build_conditional_independent_contdice(variables):
     code.append(f"{last_var} < 0.5")
     return "\n".join(code)
 
+def build_conditional_random_dependent_contdice(variables):
+    code = []
+    counter = 1
+
+    for idx, var in enumerate(variables):
+        if idx == 0:
+            code.append(f"let {var} = uniform(0,{counter}) in")
+            counter += 1
+        else:
+            # Choose a random previous variable index
+            rand_idx = random.randint(0, idx - 1)
+            prev = variables[rand_idx]
+            code.append(f"let {var} = if {prev} < 0.5 then uniform(0,{counter}) else uniform(0,{counter + 1}) in")
+            counter += 2
+
+    last_var = variables[-1]
+    code.append(f"{last_var} < 0.5")
+    return "\n".join(code)
+
 
 # ===== Parametrize =====
 # program = build_conditional_dependent_contdice(['a', 'b', 'c'])
@@ -129,18 +150,34 @@ def build_conditional_independent_contdice(variables):
 # program = build_conditional_dependent_sppl(['a','b','c','d'])
 # print(program)
 
-def generate_variable_list_up_to(end_letter):
-    return [chr(c) for c in range(ord('a'), ord(end_letter) + 1)]
+# def generate_variable_list_up_to(end_letter):
+#     return [chr(c) for c in range(ord('a'), ord(end_letter) + 1)]
+
+def generate_variable_list_up_to(n):
+    letters = string.ascii_lowercase
+    result = []
+    i = 0
+    while len(result) < n:
+        for ch in letters:
+            result.append(ch * (i + 1))
+            if len(result) == n:
+                break
+        i += 1
+    return result
 
 def main():
     # Lists to collect timings  
     sppl_times = []
     contdice_times = []
     num_vars = []
+    original_dir = os.getcwd()
 
-    for i in range(1, 100):
+    for i in range(1, 35):
+        var_list = generate_variable_list_up_to(i)
+        num_vars.append(len(var_list))  # Track how many variables
+        
         # --- CONTDICE ---
-        program_contdice = gen_expr(i)
+        program_contdice = build_conditional_random_dependent_contdice(var_list)
         path = Path("parametrize.cdice")
         path.write_text(program_contdice)
         command = ["./run_contdice.sh", str(path)]
@@ -150,6 +187,26 @@ def main():
         contdice_times.append(duration)
         print(f"contdice time {duration}")
         output = result.stdout.decode('utf-8')
+        print(output)
+        
+        # --- SPPL ---
+        os.chdir("./cdice")
+        command = ["dune", "exec", "--", "bin/main.exe", "--to-sppl", "../parametrize.cdice"]
+        result = subprocess.run(command, shell=False, check=True, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
+        output = result.stdout.decode('utf-8')
+        os.chdir(original_dir)
+        start = time.time()
+        compiler = SPPL_Compiler(f'''{output}''')
+        namespace = compiler.execute_module()
+        var = f"v{len(var_list)}"
+        result_var = Id(var)
+        event = (result_var < 0.5)  
+        output = namespace.model.prob(event)
+        duration = time.time() - start
+        sppl_times.append(duration)
+        print(f"sppl time {duration}")
+        print(output)
+        
         
     '''
     end_letter = 'y'
@@ -183,6 +240,7 @@ def main():
         contdice_times.append(duration)
         print(f"contdice time {duration}")
         output = result.stdout.decode('utf-8')
+    '''
 
     # --- Plotting ---
     plt.plot(num_vars, sppl_times, label="SPPL", color="red", marker="o")
@@ -195,7 +253,6 @@ def main():
     plt.grid(True)
     plt.savefig("timings.png", dpi=300, bbox_inches="tight")
     plt.show()
-    '''
 
 if __name__ == "__main__":
     main()
