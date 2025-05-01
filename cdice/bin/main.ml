@@ -96,43 +96,49 @@ let perform_two_proportion_z_test ~print_all (t_disc, f_disc, e_disc) (t_orig, f
       )
 
 (* Process a single .cdice file *)
-let process_file ~print_all filename : ( ((int * int) * (int * int)) option, string) result =
+let process_file ~print_all ~to_sppl filename : ( ((int * int) * (int * int)) option, string) result =
   if print_all then Printf.printf "Processing file: %s\n" filename;
   try
     let content = read_file filename in
-    if print_all then Printf.printf "Source:\n%s\n\n" content;
-    
     let expr = Contdice.Parse.parse_expr content in
-    if print_all then Printf.printf "Parsed AST (Pretty):\n%s\n\n" (Contdice.Pretty.string_of_expr expr);
     
-    let texpr = Contdice.elab_bool expr in 
-    if print_all then Printf.printf "Typed AST (Pretty):\n%s\n\n" (Contdice.Pretty.string_of_texpr texpr);
-    
-    let discretized_expr = Contdice.discretize texpr in
-    if print_all then (
-      Printf.printf "Discretized Program (Pretty):\n%s\n\n" (Contdice.Pretty.string_of_expr discretized_expr);
-      Printf.printf "Discretized Program (Plaintext):\n%s\n\n" (Contdice.Util.string_of_expr discretized_expr)
+    if to_sppl then (
+      let sppl_code = Contdice.Pretty.cdice_expr_to_sppl_prog expr in (* Call Pretty module *)
+      print_endline sppl_code;
+      Ok None (* Indicate success, no diff details *) 
     ) else (
-      Printf.printf "%s\n" (Contdice.Util.string_of_expr discretized_expr)
-    );
+      (* Original logic: pretty print, elab, discretize, compare *)
+      if print_all then Printf.printf "Source:\n%s\n\n" content;
+      
+      let texpr = Contdice.elab_bool expr in 
+      if print_all then Printf.printf "Typed AST (Pretty):\n%s\n\n" (Contdice.Pretty.string_of_texpr texpr);
+      
+      let discretized_expr = Contdice.discretize texpr in
+      if print_all then (
+        Printf.printf "Discretized Program (Pretty):\n%s\n\n" (Contdice.Pretty.string_of_expr discretized_expr);
+        Printf.printf "Discretized Program (Plaintext):\n%s\n\n" (Contdice.Util.string_of_expr discretized_expr)
+      ) else (
+        Printf.printf "%s\n" (Contdice.Util.string_of_expr discretized_expr)
+      );
 
-    if not print_all then Ok None else
-    let n_runs = 1000000 in 
-    match run_interp_and_summarize ~print_all "Discretized" discretized_expr n_runs with
-    | Error msg -> Error msg
-    | Ok (t_disc, f_disc) -> 
-        match run_interp_and_summarize ~print_all "Original (Sampling)" expr n_runs with
-        | Error msg -> Error msg
-        | Ok (t_orig, f_orig) ->
-            let significant_difference = 
-              perform_two_proportion_z_test ~print_all (t_disc, f_disc, 0) (t_orig, f_orig, 0) n_runs 
-            in 
-            if print_all then print_endline (String.make 60 '-');
-            let diff_details = 
-              if significant_difference then Some ((t_disc, f_disc), (t_orig, f_orig))
-              else None
-            in
-            Ok diff_details
+      if not print_all then Ok None else
+      let n_runs = 1000000 in 
+      match run_interp_and_summarize ~print_all "Discretized" discretized_expr n_runs with
+      | Error msg -> Error msg
+      | Ok (t_disc, f_disc) -> 
+          match run_interp_and_summarize ~print_all "Original (Sampling)" expr n_runs with
+          | Error msg -> Error msg
+          | Ok (t_orig, f_orig) ->
+              let significant_difference = 
+                perform_two_proportion_z_test ~print_all (t_disc, f_disc, 0) (t_orig, f_orig, 0) n_runs 
+              in 
+              if print_all then print_endline (String.make 60 '-');
+              let diff_details = 
+                if significant_difference then Some ((t_disc, f_disc), (t_orig, f_orig))
+                else None
+              in
+              Ok diff_details
+    )
   with
   | Failure msg -> 
       let err_msg = Printf.sprintf "Error processing file '%s': %s" filename msg in
@@ -148,7 +154,7 @@ let has_cdice_extension filename =
   Filename.check_suffix filename ".cdice"
 
 (* Process a directory, finding all .cdice files recursively *)
-let rec process_directory ~print_all path : (int * (string * string) list * (string * (int * int) * (int * int)) list) =
+let rec process_directory ~print_all ~to_sppl path : (int * (string * string) list * (string * (int * int) * (int * int)) list) =
   let dir = Unix.opendir path in
   let rec process_entries count errors_list diff_details_list =
     try
@@ -160,7 +166,7 @@ let rec process_directory ~print_all path : (int * (string * string) list * (str
         let stats = Unix.stat full_path in
         match stats.Unix.st_kind with
         | Unix.S_REG when has_cdice_extension full_path ->
-            (match process_file ~print_all full_path with
+            (match process_file ~print_all ~to_sppl full_path with
              | Ok diff_details_opt ->
                  let new_diff_details_list = 
                    match diff_details_opt with
@@ -172,7 +178,7 @@ let rec process_directory ~print_all path : (int * (string * string) list * (str
                  process_entries (count + 1) ((full_path, msg) :: errors_list) diff_details_list
             )
         | Unix.S_DIR ->
-            let sub_count, sub_errors_list, sub_diff_details_list = process_directory ~print_all full_path in
+            let sub_count, sub_errors_list, sub_diff_details_list = process_directory ~print_all ~to_sppl full_path in
             process_entries (count + sub_count) (sub_errors_list @ errors_list) (sub_diff_details_list @ diff_details_list)
         | _ ->
             process_entries count errors_list diff_details_list
@@ -188,15 +194,15 @@ let rec process_directory ~print_all path : (int * (string * string) list * (str
   process_entries 0 [] []
 
 (* Main command execution logic *) 
-let run_contdice path print_all =
+let run_contdice path print_all to_sppl =
   try
     let stats = Unix.stat path in
     match stats.Unix.st_kind with
     | Unix.S_REG ->
         if has_cdice_extension path then (
-          match process_file ~print_all path with
+          match process_file ~print_all ~to_sppl path with
           | Ok diff_details_opt ->
-              if print_all then (
+              if not to_sppl && print_all then (
                 match diff_details_opt with
                 | Some ((t_disc, f_disc), (t_orig, f_orig)) ->
                     Printf.printf "\n*** Statistically significant difference detected for this file. ***\n";
@@ -210,7 +216,7 @@ let run_contdice path print_all =
         ) else
           Printf.eprintf "Error: File must have .cdice extension: %s\n" path
     | Unix.S_DIR ->
-        let count, errors_list, diff_details_list = process_directory ~print_all path in
+        let count, errors_list, diff_details_list = process_directory ~print_all ~to_sppl path in
         if print_all then (
           Printf.printf "\n=== Directory Processing Summary ===\n";
           Printf.printf "Processed %d files.\n" count;
@@ -250,7 +256,11 @@ let print_all_arg =
   let doc = "Print detailed output including statistics and intermediate representations." in
   Arg.(value & flag & info ["print-all"] ~doc)
 
-let contdice_t = Term.(const run_contdice $ path_arg $ print_all_arg)
+let to_sppl_arg =
+  let doc = "Convert the input program to SPPL and print it, skipping other processing." in
+  Arg.(value & flag & info ["to-sppl"] ~doc)
+
+let contdice_t = Term.(const run_contdice $ path_arg $ print_all_arg $ to_sppl_arg)
 
 let cmd = 
   let doc = "Process and analyze ContDice files." in

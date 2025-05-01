@@ -262,3 +262,172 @@ let string_of_texpr texpr =
 
 let string_of_aexpr aexpr =
   string_of_aexpr_indented aexpr 
+
+(* ===================================================== *)
+(* SPPL Conversion Logic (Integrated into Pretty module) *)
+(* ===================================================== *)
+
+(* State for generating unique variable names for SPPL *)
+type sppl_state = {
+  mutable next_var : int;
+}
+
+let fresh_sppl_var state =
+  state.next_var <- state.next_var + 1;
+  Printf.sprintf "v%d" state.next_var
+
+(* Helper to check if a string represents a simple SPPL variable (e.g., "v12") *)
+let is_simple_var s =
+  String.length s > 0 && s.[0] = 'v' &&
+  try ignore (int_of_string (String.sub s 1 (String.length s - 1))); true
+  with Failure _ -> false
+
+(* Main translation function with target variable optimization *)
+let rec translate_to_sppl (env : (string * string) list) ?(target_var:string option=None) (expr : Types.expr) (state : sppl_state) : (string list * string) =
+  match expr with
+  (* Base Cases: Assign directly if target_var is Some *) 
+  | Types.ExprNode(Const f) ->
+      let val_str = string_of_float f in
+      (match target_var with
+       | Some name -> ([Printf.sprintf "%s = %s" name val_str], name)
+       | None -> ([], val_str))
+  | Types.ExprNode(BoolConst b) ->
+      let val_str = string_of_bool b |> String.capitalize_ascii in
+      (match target_var with
+       | Some name -> ([Printf.sprintf "%s = %s" name val_str], name)
+       | None -> ([], val_str))
+  | Types.ExprNode(Var x) ->
+      let var_name = 
+        try List.assoc x env 
+        with Not_found -> failwith ("Unbound variable during SPPL translation: " ^ x)
+      in
+      (match target_var with
+        | Some name when name <> var_name -> ([Printf.sprintf "%s = %s" name var_name], name)
+        | Some name (* when name = var_name *) -> ([], name) (* Target is already the right var *)
+        | None -> ([], var_name) (* No target, just return the var name *))
+
+  (* Sampling Cases: Must assign to a variable *) 
+  | Types.ExprNode(CDistr d) ->
+      let assign_var = match target_var with Some name -> name | None -> fresh_sppl_var state in
+      let stmt = match d with
+        | Stats.Uniform (a, b) ->
+            Printf.sprintf "%s ~= uniform(loc=%f, scale=%f)" assign_var a (b -. a)
+        | Stats.Gaussian (mu, sigma) ->
+            Printf.sprintf "%s ~= normal(loc=%f, scale=%f)" assign_var mu sigma
+        | _ -> failwith "Unsupported CDistr distribution for SPPL translation (in pretty.ml)"
+      in
+      ([stmt], assign_var)
+  | Types.ExprNode(DistrCase cases) ->
+      let assign_var = match target_var with Some name -> name | None -> fresh_sppl_var state in
+      (* Translate sub-expressions first (target=None for them) *) 
+      let (prereq_stmts, dict_items) =
+        List.fold_left_map (fun acc (sub_expr, prob) ->
+          let (sub_stmts, sub_res_expr) = translate_to_sppl env ~target_var:None sub_expr state in
+          let key_str =
+            match sub_expr with
+            | Types.ExprNode(Const _) -> sub_res_expr
+            | Types.ExprNode(BoolConst _) -> sub_res_expr 
+            | _ -> failwith "DistrCase expects constant expressions for SPPL choice keys (in pretty.ml)"
+          in
+          (acc @ sub_stmts, Printf.sprintf "%s: %f" key_str prob)
+        ) [] cases
+      in
+      let choice_dict = "{" ^ (String.concat ", " dict_items) ^ "}" in
+      let sample_stmt = Printf.sprintf "%s ~= choice(%s)" assign_var choice_dict in
+      (prereq_stmts @ [sample_stmt], assign_var)
+
+  (* Expression Cases: Assign only if target_var is Some *) 
+  | Types.ExprNode(Less(e1, e2)) ->
+      let (stmts1, res1) = translate_to_sppl env ~target_var:None e1 state in
+      let (stmts2, res2) = translate_to_sppl env ~target_var:None e2 state in
+      let expr_str = Printf.sprintf "(%s < %s)" res1 res2 in
+      (match target_var with 
+       | Some name -> (stmts1 @ stmts2 @ [Printf.sprintf "%s = %s" name expr_str], name)
+       | None -> (stmts1 @ stmts2, expr_str))
+  | Types.ExprNode(LessEq(e1, e2)) ->
+      let (stmts1, res1) = translate_to_sppl env ~target_var:None e1 state in
+      let (stmts2, res2) = translate_to_sppl env ~target_var:None e2 state in
+      let expr_str = Printf.sprintf "(%s <= %s)" res1 res2 in
+      (match target_var with
+       | Some name -> (stmts1 @ stmts2 @ [Printf.sprintf "%s = %s" name expr_str], name)
+       | None -> (stmts1 @ stmts2, expr_str))
+  | Types.ExprNode(And(e1, e2)) ->
+      let (stmts1, res1) = translate_to_sppl env ~target_var:None e1 state in
+      let (stmts2, res2) = translate_to_sppl env ~target_var:None e2 state in
+      let expr_str = Printf.sprintf "(%s) & (%s)" res1 res2 in
+      (match target_var with
+       | Some name -> (stmts1 @ stmts2 @ [Printf.sprintf "%s = %s" name expr_str], name)
+       | None -> (stmts1 @ stmts2, expr_str))
+  | Types.ExprNode(Or(e1, e2)) ->
+      let (stmts1, res1) = translate_to_sppl env ~target_var:None e1 state in
+      let (stmts2, res2) = translate_to_sppl env ~target_var:None e2 state in
+      let expr_str = Printf.sprintf "(%s) | (%s)" res1 res2 in
+      (match target_var with
+       | Some name -> (stmts1 @ stmts2 @ [Printf.sprintf "%s = %s" name expr_str], name)
+       | None -> (stmts1 @ stmts2, expr_str))
+  | Types.ExprNode(Not e) ->
+      let (stmts1, res1) = translate_to_sppl env ~target_var:None e state in
+      let expr_str = Printf.sprintf "not (%s)" res1 in
+      (match target_var with
+       | Some name -> (stmts1 @ [Printf.sprintf "%s = %s" name expr_str], name)
+       | None -> (stmts1, expr_str))
+
+  (* Let Case: Optimize variable assignment *) 
+  | Types.ExprNode(Let(x, e1, e2)) ->
+      let (stmts1, res1_expr) = translate_to_sppl env ~target_var:None e1 state in
+      let (final_stmts1, x_var_name) =
+        if is_simple_var res1_expr then
+          (stmts1, res1_expr) (* Use the existing variable directly *)
+        else
+          (* Assign complex expression or constant to a temp var *) 
+          let tmp_x = fresh_sppl_var state in
+          (stmts1 @ [Printf.sprintf "%s = %s" tmp_x res1_expr], tmp_x)
+      in
+      let new_env = (x, x_var_name) :: env in
+      (* Pass the original target_var down to the body *) 
+      let (stmts2, res2_expr) = translate_to_sppl new_env ~target_var:target_var e2 state in 
+      (final_stmts1 @ stmts2, res2_expr)
+
+  (* If Case: Result must be assigned - Attempting target propagation *) 
+  | Types.ExprNode(If(cond_e, then_e, else_e)) ->
+      let (cond_stmts, cond_expr) = translate_to_sppl env ~target_var:None cond_e state in
+      let final_res_var = match target_var with Some name -> name | None -> fresh_sppl_var state in
+      (* Translate branches, forcing result into final_res_var *) 
+      let (then_stmts, _) = translate_to_sppl env ~target_var:(Some final_res_var) then_e state in
+      let (else_stmts, _) = translate_to_sppl env ~target_var:(Some final_res_var) else_e state in
+      
+      (* Indent statements generated *by the branches* *) 
+      let indent s = "    " ^ s in
+      let full_then_block = List.map indent then_stmts in
+      let full_else_block = List.map indent else_stmts in
+      
+      let final_stmts =
+        cond_stmts @
+        [Printf.sprintf "if %s:" cond_expr] @
+        full_then_block @
+        ["else:"] @
+        full_else_block
+      in
+      (final_stmts, final_res_var) (* Result is always the value in final_res_var *)
+
+  (* Fail on unsupported features *) 
+  | Types.ExprNode(Pair _) | Types.ExprNode(First _) | Types.ExprNode(Second _)
+  | Types.ExprNode(Fun _) | Types.ExprNode(App _)
+  | Types.ExprNode(FinConst _) | Types.ExprNode(FinLt _) | Types.ExprNode(FinLeq _) ->
+      let err_msg = Printf.sprintf
+        "Encountered an unsupported expression type (%s) during SPPL translation (in pretty.ml)."
+        (match expr with
+         | Types.ExprNode(Pair _) -> "Pair" | Types.ExprNode(First _) -> "First" | Types.ExprNode(Second _) -> "Second"
+         | Types.ExprNode(Fun _) -> "Fun" | Types.ExprNode(App _) -> "App"
+         | Types.ExprNode(FinConst _) -> "FinConst" | Types.ExprNode(FinLt _) -> "FinLt" | Types.ExprNode(FinLeq _) -> "FinLeq"
+         | _ -> "Other Unsupported")
+      in
+      failwith err_msg
+
+(* Top-level function: call translate with target 'model' *) 
+let cdice_expr_to_sppl_prog (expr : Types.expr) : string =
+  let state = { next_var = 0 } in
+  (* Pass target_var = Some "model" to the top-level call *) 
+  let (stmts, _final_res_name) = translate_to_sppl [] ~target_var:(Some "model") expr state in
+  (* No need for the extra assignment at the end now *) 
+  String.concat "\n" stmts 
