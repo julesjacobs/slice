@@ -9,6 +9,8 @@ import time
 import subprocess
 import matplotlib.pyplot as plt
 
+from generator import gen_expr
+
 
 # ===== for SPPL =====
 def build_conditional_dependent_sppl(vars):
@@ -131,11 +133,25 @@ def generate_variable_list_up_to(end_letter):
     return [chr(c) for c in range(ord('a'), ord(end_letter) + 1)]
 
 def main():
-    # Lists to collect timings
+    # Lists to collect timings  
     sppl_times = []
     contdice_times = []
     num_vars = []
 
+    for i in range(1, 100):
+        # --- CONTDICE ---
+        program_contdice = gen_expr(i)
+        path = Path("parametrize.cdice")
+        path.write_text(program_contdice)
+        command = ["./run_contdice.sh", str(path)]
+        start = time.time()
+        result = subprocess.run(command, shell=False, check=True, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
+        duration = time.time() - start
+        contdice_times.append(duration)
+        print(f"contdice time {duration}")
+        output = result.stdout.decode('utf-8')
+        
+    '''
     end_letter = 'y'
     for c in range(ord('a'), ord(end_letter) + 1):
         var_list = generate_variable_list_up_to(chr(c))
@@ -144,7 +160,7 @@ def main():
         # --- SPPL ---
         program_sppl = build_conditional_independent_sppl(var_list)
         start = time.time()
-        compiler = SPPL_Compiler(f'''{program_sppl}''')
+        compiler = SPPL_Compiler(f{program_sppl})
         namespace = compiler.execute_module()
         last_var = var_list[-1]
         # result_var = Id(chr(ord(last_var) + 1))
@@ -179,7 +195,7 @@ def main():
     plt.grid(True)
     plt.savefig("timings.png", dpi=300, bbox_inches="tight")
     plt.show()
-
+    '''
 
 if __name__ == "__main__":
     main()
