@@ -126,10 +126,11 @@ def build_conditional_random_independent_contdice_2(depth):
             elseb_expr = prev_var_or_uniform(prev_vars)
             
             if not valid_flag[0]:
-                # Keep regenerating thenb_expr until it's a uniform distribution
+                # First if-else block must have uniform distribution in the thenb block
                 while elseb_expr.startswith("uniform"):
                     elseb_expr = prev_var_or_uniform(prev_vars)
-                valid_flag[0] = True
+                if thenb_expr.startswith("uniform"):
+                    valid_flag[0] = True
                         
             quantity = g.ite(
                 g.lt(guard_expr, g.const(0.5)),
@@ -162,11 +163,36 @@ def build_conditional_random_independent_contdice_2(depth):
         
     return program, adjusted_last
 
+def build_unused_fragments(depth):
+    pass
+
+def build_alternating_guard_contdice(comparison_count, guard_span):
+    code = []
+    counter = 1
+    variables = [f"x{n}" for n in range(1, comparison_count + 1)]
+
+    for idx in range(comparison_count):
+        var = variables[idx]
+        if idx == 0:
+            code.append(f"let {var} = uniform(0,{counter}) in")
+            counter += 1
+        else:
+            guard_idx = (idx - 1) % guard_span
+            guard_var = variables[guard_idx]
+            code.append(
+                f"let {var} = if {guard_var} < 0.5 then uniform(0,{counter}) else uniform(0,{counter + 1}) in"
+            )
+            counter += 2
+
+    last_var = variables[-1]
+    code.append(f"{last_var} < 0.5")
+    return "\n".join(code), last_var
+
 
 def main():
-    program, last_var = build_conditional_random_independent_contdice_2(4)
+    program, last_var = build_alternating_guard_contdice(7, 4)
     print(program)
-    print(last_var)
+    # print(last_var)
 
 if __name__ == "__main__":
     main()
