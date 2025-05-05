@@ -144,7 +144,7 @@ def test_asymptotic_scaling():
     
     # Generate programs of increasing size, linearly
     for i in range(1, 11):
-        prog_size = i
+        prog_size = i*5
         
         # --- CONTDICE ---
         program_contdice, last_var = build_alternating_guard_contdice(i*5, i)
@@ -249,7 +249,7 @@ def generate_line_graphs(benchmark_results, output_path):
     plt.plot(prog_size, sppl_times, label="SPPL", color="red", marker="o")
     plt.plot(prog_size, contdice_times, label="ContDice", color="blue", marker="o")
 
-    plt.xlabel("Number of Variables")
+    plt.xlabel("Program Size")
     plt.ylabel("Execution Time (seconds)")
     plt.title("Sppl vs Contdice Execution Time")
     plt.legend()
