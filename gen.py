@@ -104,6 +104,7 @@ def build_conditional_random_independent_contdice_2(depth):
     g = CDiceGenerator()
     last_comparison_var = [None]  # To keep track of the last variable used in comparison
     guard_info = {i: 0 for i in range(1, depth + 1)} # Eventually to map to the correct last variable used in SPPL
+    valid_flag = [False]
     
     def prev_var_or_uniform(prev_vars):
         if not prev_vars or random.random() < 0.5:
@@ -121,10 +122,19 @@ def build_conditional_random_independent_contdice_2(depth):
             quantity = g.uniform(0, random.randint(1, 10))
         else:
             guard_expr = prev_var_or_uniform(prev_vars)
+            thenb_expr = prev_var_or_uniform(prev_vars)
+            elseb_expr = prev_var_or_uniform(prev_vars)
+            
+            if not valid_flag[0]:
+                # Keep regenerating thenb_expr until it's a uniform distribution
+                while elseb_expr.startswith("uniform"):
+                    elseb_expr = prev_var_or_uniform(prev_vars)
+                valid_flag[0] = True
+                        
             quantity = g.ite(
                 g.lt(guard_expr, g.const(0.5)),
-                prev_var_or_uniform(prev_vars),
-                prev_var_or_uniform(prev_vars)
+                thenb_expr,
+                elseb_expr
             )
             # Update count on how many uniform guards there are up to the current variable
             if guard_expr.startswith("uniform"):
@@ -154,7 +164,7 @@ def build_conditional_random_independent_contdice_2(depth):
 
 
 def main():
-    program, last_var = build_conditional_random_independent_contdice_2(6)
+    program, last_var = build_conditional_random_independent_contdice_2(4)
     print(program)
     print(last_var)
 
