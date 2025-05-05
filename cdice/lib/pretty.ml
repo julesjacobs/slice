@@ -274,11 +274,11 @@ type sppl_state = {
 
 let fresh_sppl_var state =
   state.next_var <- state.next_var + 1;
-  Printf.sprintf "v%d" state.next_var
+  Printf.sprintf "x%d" state.next_var
 
-(* Helper to check if a string represents a simple SPPL variable (e.g., "v12") *)
+(* Helper to check if a string represents a simple SPPL variable (e.g., "x12") *)
 let is_simple_var s =
-  String.length s > 0 && s.[0] = 'v' &&
+  String.length s > 0 && s.[0] = 'x' &&
   try ignore (int_of_string (String.sub s 1 (String.length s - 1))); true
   with Failure _ -> false
 

@@ -10,6 +10,8 @@ _build/
 *.cmxa
 *.install
 .merlin
+__pycache__/
+benchmarks/__pycache__
 tex/contdice.synctex.gz
 tex/contdice.pdf
 tex/contdice.out
