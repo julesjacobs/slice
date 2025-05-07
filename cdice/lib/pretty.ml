@@ -428,6 +428,6 @@ let rec translate_to_sppl (env : (string * string) list) ?(target_var:string opt
 let cdice_expr_to_sppl_prog (expr : Types.expr) : string =
   let state = { next_var = 0 } in
   (* Pass target_var = Some "model" to the top-level call *) 
-  let (stmts, _final_res_name) = translate_to_sppl [] (* ~target_var:(Some "model") *) expr state in
+  let (stmts, _final_res_name) = translate_to_sppl [] ~target_var:(Some "model") expr state in
   (* No need for the extra assignment at the end now *) 
   String.concat "\n" stmts 

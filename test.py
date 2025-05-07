@@ -160,7 +160,6 @@ def test_asymptotic_scaling_as_one():
         
         # --- CONTDICE ---
         program_contdice, last_var = build_alternating_guard_contdice_3(i*5, i)
-        print(program_contdice)
         path = Path("parametrize.cdice")
         path.write_text(program_contdice)
         command = ["./run_contdice.sh", str(path)]
@@ -188,7 +187,8 @@ def test_asymptotic_scaling_as_one():
             start = time.time()
             compiler = SPPL_Compiler(f'''{output}''')
             namespace = compiler.execute_module()
-            event = (Id(last_var) < 0.5)  
+            model = Id('model')
+            event = (model >= 1.0)
             output = namespace.model.prob(event)
             duration = time.time() - start
             total_sppl_time += duration
@@ -208,11 +208,11 @@ def test_asymptotic_scaling_as_separate():
     original_dir = os.getcwd()
     
     # Generate programs of increasing size, linearly
-    for i in range(1, 12):
-        prog_size = i
+    for i in range(1, 11):
+        prog_size = i*5
         
         # --- CONTDICE ---
-        program_contdice, last_var = build_conditional_independent_contdice(i)
+        program_contdice, last_var = build_alternating_guard_contdice_3(i*5, i)
         path = Path("parametrize.cdice").resolve()
         path.write_text(program_contdice)
         # Run cdice component
@@ -257,7 +257,8 @@ def test_asymptotic_scaling_as_separate():
             start = time.time()
             compiler = SPPL_Compiler(f'''{output}''')
             namespace = compiler.execute_module()
-            event = (Id(last_var) < 0.5)  
+            model = Id('model')
+            event = (model >= 1.0)
             output = namespace.model.prob(event)
             duration = time.time() - start
             total_sppl_time += duration
