@@ -167,6 +167,7 @@ def build_unused_fragments(depth):
     pass
 
 def build_alternating_guard_contdice(comparison_count, guard_span):
+    # Generates a unique uniform distribution for each line
     code = []
     counter = 1
     variables = [f"x{n}" for n in range(1, comparison_count + 1)]
@@ -183,6 +184,27 @@ def build_alternating_guard_contdice(comparison_count, guard_span):
                 f"let {var} = if {guard_var} < 0.5 then uniform(0,{counter}) else uniform(0,{counter + 1}) in"
             )
             counter += 2
+
+    last_var = variables[-1]
+    code.append(f"{last_var} < 0.5")
+    return "\n".join(code), last_var
+
+
+def build_random_alternating_guard_contdice(comparison_count, guard_span):
+    # Generates a random uniform distribution for each line
+    code = []
+    variables = [f"x{n}" for n in range(1, comparison_count + 1)]
+
+    for idx in range(comparison_count):
+        var = variables[idx]
+        if idx == 0:
+            code.append(f"let {var} = uniform(0,{random.randint(1, 10)}) in")
+        else:
+            guard_idx = (idx - 1) % guard_span
+            guard_var = variables[guard_idx]
+            code.append(
+                f"let {var} = if {guard_var} < 0.5 then uniform(0,{random.randint(1, 10)}) else uniform(0,{random.randint(1, 10)}) in"
+            )
 
     last_var = variables[-1]
     code.append(f"{last_var} < 0.5")
