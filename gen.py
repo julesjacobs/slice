@@ -1,13 +1,13 @@
 '''
 A library of Python functions that generate variants of probabilistic programs, 
 parametrized by the number of comparison tests (i.e. <).
-Note: only generates linearly sized programs.
+Note: only generates programs that grow linearly in size.
 '''
 
 import random
 
+### Generate programs with conditional independence ###
 '''
-Generate programs with conditional independence. 
 Each variable in the if-else guard depends on its immediate predecessor.
 '''
 def build_conditional_independent_contdice(comparison_count):
@@ -31,6 +31,7 @@ def build_conditional_independent_contdice(comparison_count):
 
 
 def build_conditional_independent_sppl(comparison_count):
+    # Can alternatively use the --to-sppl flag from cdice to generate these programs
     lines = []
     counter = 1
     variables = [f"x{n}" for n in range(1, comparison_count + 1)]
@@ -76,8 +77,12 @@ def build_conditional_random_independent_contdice_1(comparison_count):
     return "\n".join(code), last_var
 
 
+'''
+Each variable in the if-else guard depends on any previous variable chosen at random.
+Uses more randomization than build_conditional_random_independent_contdice_1.
+May lead to unused fragments.
+'''
 def build_conditional_random_independent_contdice_2(depth):
-    # Uses more randomization than build_conditional_random_independent_contdice_1
     counter = [0]
     def gen_var():
         counter[0] += 1
@@ -163,11 +168,14 @@ def build_conditional_random_independent_contdice_2(depth):
         
     return program, adjusted_last
 
-def build_unused_fragments(depth):
-    pass
 
-def build_alternating_guard_contdice(comparison_count, guard_span):
-    # Generates a unique uniform distribution for each line
+### Generate programs with alternating if-else guards ###
+'''
+Variables in the if-else guard alternate depending on guard_span, e.g. guards alternate between x1, x2, x3 if guard_span = 3 
+Generates unique uniform distributions for each let
+May lead to unused fragments.
+'''
+def build_alternating_guard_contdice_1(comparison_count, guard_span):
     code = []
     counter = 1
     variables = [f"x{n}" for n in range(1, comparison_count + 1)]
@@ -190,8 +198,75 @@ def build_alternating_guard_contdice(comparison_count, guard_span):
     return "\n".join(code), last_var
 
 
+'''
+Variables in the if-else guard alternate depending on guard_span, e.g. guards alternate between x1, x2, x3 if guard_span = 3 
+Generates unique uniform distributions for each let, but else body will depend on immediate predecessor variable
+'''
+def build_alternating_guard_contdice_2(comparison_count, guard_span):
+    code = []
+    counter = 1
+    variables = [f"x{n}" for n in range(1, comparison_count + 1)]
+
+    for idx in range(comparison_count):
+        var = variables[idx]
+        if idx == 0:
+            code.append(f"let {var} = uniform(0,{counter}) in")
+            counter += 1
+        else:
+            guard_idx = (idx - 1) % guard_span
+            guard_var = variables[guard_idx]
+            prev_var = variables[idx - 1]
+            code.append(
+                f"let {var} = if {guard_var} < 0.5 then uniform(0,{counter}) else {prev_var} in"
+            )
+            counter += 2
+
+    last_var = variables[-1]
+    code.append(f"{last_var} < 0.5")
+    return "\n".join(code), last_var
+
+
+'''
+Variables in the if-else guard alternate depending on guard_span, e.g. guards alternate between x1, x2, x3 if guard_span = 3 
+Generates unique uniform distributions for each let, but then body will depend on immediate predecessor variable
+'''
+def build_alternating_guard_contdice_3(comparison_count, guard_span):
+    code = []
+    counter = 1
+    variables = [f"x{n}" for n in range(1, comparison_count + 1)]
+
+    for idx in range(comparison_count):
+        var = variables[idx]
+        if idx == 0:
+            code.append(f"let {var} = uniform(0,{counter}) in")
+            counter += 1
+        elif idx == 1:
+            # Special case for x2
+            prev_var = variables[idx - 1]
+            code.append(
+                f"let {var} = if {prev_var} < 0.5 then uniform(0,{counter}) else uniform(0,{counter + 1}) in"
+            )
+            counter += 2
+        else:
+            guard_idx = (idx - 1) % guard_span
+            guard_var = variables[guard_idx]
+            prev_var = variables[idx - 1]
+            code.append(
+                f"let {var} = if {guard_var} < 0.5 then {prev_var} else uniform(0,{counter}) in"
+            )
+            counter += 2
+
+    last_var = variables[-1]
+    code.append(f"{last_var} < 0.5")
+    return "\n".join(code), last_var
+
+
+'''
+Variables in the if-else guard alternate depending on guard_span, e.g. guards alternate between x1, x2, x3 if guard_span = 3 
+Generates random uniform distributions for each let, different from build_alternating_guard_contdice_1
+May lead to unused fragments
+'''
 def build_random_alternating_guard_contdice(comparison_count, guard_span):
-    # Generates a random uniform distribution for each line
     code = []
     variables = [f"x{n}" for n in range(1, comparison_count + 1)]
 
@@ -212,7 +287,7 @@ def build_random_alternating_guard_contdice(comparison_count, guard_span):
 
 
 def main():
-    program, last_var = build_alternating_guard_contdice(7, 4)
+    program, last_var = build_alternating_guard_contdice_3(10,3)
     print(program)
     # print(last_var)
 

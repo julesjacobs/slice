@@ -155,11 +155,11 @@ def test_asymptotic_scaling_as_one():
     original_dir = os.getcwd()
     
     # Generate programs of increasing size, linearly
-    for i in range(1, 16):
+    for i in range(1, 21):
         prog_size = i*5
         
         # --- CONTDICE ---
-        program_contdice, last_var = build_alternating_guard_contdice(i*5, i)
+        program_contdice, last_var = build_alternating_guard_contdice_3(i*5, i)
         print(program_contdice)
         path = Path("parametrize.cdice")
         path.write_text(program_contdice)
