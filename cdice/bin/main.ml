@@ -1,6 +1,7 @@
 open Cmdliner
 open Contdice (* Open Contdice to access its modules like Interp *)
-exception ObserveFailure = Contdice.Interp.ObserveFailure (* Explicit alias for the exception *)
+module Types = Contdice.Types
+exception ObserveFailure = Contdice.Interp.ObserveFailure
 
 (* Read a file and return its contents as a string *)
 let read_file filename =

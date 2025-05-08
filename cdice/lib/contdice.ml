@@ -47,7 +47,7 @@ let rec sub_type (t_sub : ty) (t_super : ty) : unit =
       Types.assign r (TFun (a_meta, b_meta)); sub_type t_sub t_super
     | TFloat (_, _) -> let b_bag = Bags.fresh_bound_bag () in let c_bag = Bags.fresh_float_bag () in
       Types.assign r (TFloat (b_bag, c_bag)); sub_type t_sub t_super
-    | TUnit -> Types.assign r Types.TUnit (* Handle TUnit for t_super *)
+    | TUnit -> Types.assign r TUnit (* Handle TUnit for t_super *)
     )
   | _, TMeta r ->
     (match Types.force t_sub with (* Ensure t_sub is forced *)
@@ -60,7 +60,7 @@ let rec sub_type (t_sub : ty) (t_super : ty) : unit =
       Types.assign r (TFun (a_meta, b_meta)); sub_type t_sub t_super
     | TFloat (_, _) -> let b_bag = Bags.fresh_bound_bag () in let c_bag = Bags.fresh_float_bag () in
       Types.assign r (TFloat (b_bag, c_bag)); sub_type t_sub t_super
-    | TUnit -> Types.assign r Types.TUnit (* Handle TUnit for t_sub *)
+    | TUnit -> Types.assign r TUnit (* Handle TUnit for t_sub *)
     )
   (* Error Case *) 
   | _, _ -> 
@@ -365,9 +365,19 @@ let elab (e : expr) : texpr =
 
     | Observe e1 ->
       let t1, a1 = aux env e1 in
-      (try sub_type t1 Types.TBool (* Argument must be TBool *)
+      (try sub_type t1 TBool (* Argument must be TBool *)
        with Failure msg -> failwith ("Type error in Observe argument: " ^ msg));
-      (Types.TUnit, TAExprNode (Observe (t1, a1))) (* Result is TUnit *)
+      (TUnit, TAExprNode (Observe (t1, a1))) (* Result is TUnit *)
+
+    | Fix (f, x, e_body) -> 
+      let fun_type_itself = Types.fresh_meta () in (* Type of f *)
+      let param_type = Types.fresh_meta () in      (* Type of x *)
+      let env_body = StringMap.add x param_type (StringMap.add f fun_type_itself env) in
+      let body_texpr = aux env_body e_body in
+      let body_ret_type = fst body_texpr in
+      let actual_fun_type = Types.TFun (param_type, body_ret_type) in
+      unify fun_type_itself actual_fun_type;
+      (fun_type_itself, TAExprNode (Fix (f, x, body_texpr)))
 
   in
   aux StringMap.empty e
@@ -559,6 +569,9 @@ let discretize (e : texpr) : expr =
 
     | Observe te1 ->
         ExprNode (Observe (aux te1))
+
+    | Fix (f, x, te_body) -> 
+        ExprNode (Fix (f, x, aux te_body))
 
   in
   aux e

@@ -28,6 +28,8 @@ open Types
 %token COLON
 %token EOF
 %token OBSERVE
+%token FIX
+%token COLON_EQUAL
 
 %start <Types.expr> prog
 
@@ -53,6 +55,8 @@ expr:
     { ExprNode (Fun (x, e)) }
   | OBSERVE e = expr
     { ExprNode (Observe e) }
+  | FIX f = IDENT x = IDENT COLON_EQUAL e = expr 
+    { ExprNode (Fix (f, x, e)) }
   | or_expr { $1 } /* Fallthrough */
   ;
 

@@ -143,12 +143,16 @@ let rec eval (env : env) (ExprNode e_node : expr) : value =
        | VFin (k1, n1), VFin (k2, n2) when n1 = n && n2 = n -> VBool (k1 <= k2)
        | _ -> raise (RuntimeError (Printf.sprintf "Type error during evaluation: FinLeq expects Fin(%d)" n)))
 
-  | Observe e1 -> (* New: Handle Observe *)
+  | Observe e1 -> 
       let v1 = eval env e1 in
       (match v1 with
        | VBool true -> VUnit (* Observation consistent, return Unit *)
        | VBool false -> raise ObserveFailure (* Raise custom exception *)
        | _ -> raise (RuntimeError "Type error during evaluation: Observe expects a boolean"))
+
+  | Fix (f, x, body) -> 
+      let rec closure_val = VClosure (x, body, (f, closure_val) :: env) in 
+      closure_val
 
 (* Entry point for evaluation with an empty environment *)
 let run e = eval [] e 

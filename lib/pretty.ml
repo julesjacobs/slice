@@ -444,7 +444,7 @@ let rec translate_to_sppl (env : (string * string) list) ?(target_var:string opt
       let observe_stmt = Printf.sprintf "condition(%s)" cond_expr in
       (cond_stmts @ [observe_stmt], "") (* Observe returns unit, effectively no result name for SPPL value assignment *)
 
-  | Types.ExprNode(Fix (f,x,_)) -> 
+  | Types.ExprNode(Fix (f,x,_)) -> (* MODIFIED: e to _ for unused variable *)
       failwith (Printf.sprintf "Recursive functions (fix %s %s := ...) are not supported in SPPL translation." f x)
 
   (* Fail on unsupported features *) 
@@ -467,4 +467,9 @@ let cdice_expr_to_sppl_prog (expr : Types.expr) : string =
   (* Pass target_var = Some "model" to the top-level call *) 
   let (stmts, _final_res_name) = translate_to_sppl [] ~target_var:(Some "model") expr state in
   (* No need for the extra assignment at the end now *) 
-  String.concat "\n" stmts 
+  String.concat "\n" stmts
+
+| Types.ExprNode(Fix (f,x,_)) -> (* New: Handle Fix for SPPL translation, e is unused *)
+failwith (Printf.sprintf "Recursive functions (fix %s %s := ...) are not supported in SPPL translation." f x)
+
+(* Fail on unsupported features *) 

@@ -24,6 +24,7 @@ type 'a expr_generic =
   | FinLt of 'a * 'a * int (* e1 <#n e2 *)
   | FinLeq of 'a * 'a * int (* e1 <=#n e2 *)
   | Observe of 'a 
+  | Fix of string * string * 'a
 
 (* The source language expression type *)
 type expr = ExprNode of expr expr_generic
