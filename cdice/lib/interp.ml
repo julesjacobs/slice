@@ -154,5 +154,21 @@ let rec eval (env : env) (ExprNode e_node : expr) : value =
       let rec closure_val = VClosure (x, body, (f, closure_val) :: env) in 
       closure_val
 
+  | Nil -> VNil
+
+  | Cons (e_hd, e_tl) -> 
+      let v_hd = eval env e_hd in
+      let v_tl = eval env e_tl in
+      VCons (v_hd, v_tl)
+
+  | MatchList (e_match, e_nil, y, ys, e_cons) ->
+      let v_match = eval env e_match in
+      (match v_match with
+       | VNil -> eval env e_nil
+       | VCons (v_hd, v_tl) -> 
+           let env_cons = (y, v_hd) :: (ys, v_tl) :: env in
+           eval env_cons e_cons
+       | _ -> raise (RuntimeError "Type error during evaluation: MatchList expects a list"))
+
 (* Entry point for evaluation with an empty environment *)
 let run e = eval [] e 

@@ -87,6 +87,19 @@ and string_of_expr_node ?(indent=0) (ExprNode expr_node) : string =
   | Fix (f, x, e) -> 
       let e_str = string_of_expr_indented ~indent:(indent+2) e in
       Printf.sprintf "fix %s %s := %s" f x e_str
+  | Nil -> "nil"
+  | Cons (e1, e2) -> 
+      Printf.sprintf "%s :: %s"
+        (string_of_expr_indented ~indent e1) (string_of_expr_indented ~indent e2)
+  | MatchList (e1, e_nil, y, ys, e_cons) ->
+      let e1_str = string_of_expr_indented ~indent:(indent+2) e1 in
+      let e_nil_str = string_of_expr_indented ~indent:(indent+2) e_nil in
+      let e_cons_str = string_of_expr_indented ~indent:(indent+4) e_cons in
+      Printf.sprintf "match %s with\n%s  | nil -> %s\n%s  | %s :: %s -> %s\n%send"
+        e1_str 
+        (String.make indent ' ') e_nil_str
+        (String.make indent ' ') y ys e_cons_str
+        (String.make indent ' ')
 
 and string_of_aexpr_node ?(indent=0) (TAExprNode ae_node) : string =
   match ae_node with
@@ -136,6 +149,19 @@ and string_of_aexpr_node ?(indent=0) (TAExprNode ae_node) : string =
   | Fix (f, x, te) -> 
       let te_str = string_of_texpr_indented ~indent:(indent+2) te in
       Printf.sprintf "fix %s %s := %s" f x te_str
+  | Nil -> "nil"
+  | Cons (te1, te2) -> 
+      Printf.sprintf "%s :: %s"
+        (string_of_texpr_indented ~indent te1) (string_of_texpr_indented ~indent te2)
+  | MatchList (te1, te_nil, y, ys, te_cons) ->
+      let te1_str = string_of_texpr_indented ~indent:(indent+2) te1 in
+      let te_nil_str = string_of_texpr_indented ~indent:(indent+2) te_nil in
+      let te_cons_str = string_of_texpr_indented ~indent:(indent+4) te_cons in
+      Printf.sprintf "match %s with\n%s  | nil -> %s\n%s  | %s :: %s -> %s\n%send"
+        te1_str 
+        (String.make indent ' ') te_nil_str
+        (String.make indent ' ') y ys te_cons_str
+        (String.make indent ' ')
 
 and string_of_ty = function
   | TBool -> "bool"
@@ -171,6 +197,7 @@ and string_of_ty = function
   | TFun (t1, t2) -> Printf.sprintf "(%s -> %s)" (string_of_ty t1) (string_of_ty t2)
   | TFin _ -> Printf.sprintf "" 
   | TUnit -> "unit"
+  | TList t -> Printf.sprintf "list %s" (string_of_ty t)
   | TMeta r -> (match !r with Known t -> string_of_ty t | Unknown _ -> "?")
 
 let string_of_expr expr = string_of_expr_indented expr 

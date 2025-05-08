@@ -30,11 +30,22 @@ open Types
 %token OBSERVE
 %token FIX
 %token COLON_EQUAL
+%token NIL          
+%token CONS         
+%token MATCH WITH END BAR
+
+(* Precedence and associativity *)
+%right CONS        
+%nonassoc LESS LESSEQ LT_HASH LEQ_HASH 
+%left AND OR       
+%nonassoc NOT       
+%nonassoc LET IN IF THEN ELSE FUN FIX MATCH
 
 %start <Types.expr> prog
 
 (* Define types for non-terminals *) 
-%type <Types.expr> expr or_expr and_expr not_expr cmp_expr app_expr atomic_expr
+%type <Types.expr> expr cons_expr cmp_expr app_expr atomic_expr
+%type <unit> opt_bar
 %type <float> number
 %type <(Types.expr * float) list> distr_cases
 
@@ -42,22 +53,27 @@ open Types
 
 prog: e = expr EOF { e };
 
-/* Lowest precedence: LET, IF, FUN (handled implicitly by grammar structure now) */
+/* Lowest precedence: LET, IF, FUN, FIX, MATCH */
 expr:
   | LET x = IDENT EQUAL e1 = expr IN e2 = expr
     { ExprNode (Let (x, e1, e2)) }
   | IF cond = expr THEN e1 = expr ELSE e2 = expr
     { ExprNode (If (cond, e1, e2)) }
-  (* Removed the unsupported IF without ELSE rule to avoid ambiguity for now *)
-  (* | IF cond = expr THEN e1 = expr
-    { let _ = cond in let _ = e1 in failwith "If without else is not supported" } *)
   | FUN x = IDENT ARROW e = expr
     { ExprNode (Fun (x, e)) }
   | OBSERVE e = expr
     { ExprNode (Observe e) }
   | FIX f = IDENT x = IDENT COLON_EQUAL e = expr 
     { ExprNode (Fix (f, x, e)) }
+  | MATCH e1 = expr WITH opt_bar NIL ARROW e_nil = expr BAR y = IDENT CONS ys = IDENT ARROW e_cons = expr END 
+    { ExprNode (MatchList (e1, e_nil, y, ys, e_cons)) }
   | or_expr { $1 } /* Fallthrough */
+  ;
+
+/* Optional bar rule */
+opt_bar:
+  | /* empty */ { () }
+  | BAR         { () }
   ;
 
 /* OR Level */
@@ -80,11 +96,17 @@ not_expr:
 
 /* Comparison level */
 cmp_expr:
-  | cmp_expr LESS app_expr     { ExprNode (Less ($1, $3)) }
-  | cmp_expr LESSEQ app_expr   { ExprNode (LessEq ($1, $3)) }
-  | app_expr LT_HASH INT app_expr { ExprNode (FinLt ($1, $4, $3)) }
-  | app_expr LEQ_HASH INT app_expr { ExprNode (FinLeq ($1, $4, $3)) }
-  | app_expr { $1 }            /* Fallthrough */
+  | cmp_expr LESS cons_expr     { ExprNode (Less ($1, $3)) }
+  | cmp_expr LESSEQ cons_expr   { ExprNode (LessEq ($1, $3)) }
+  | cons_expr LT_HASH INT cons_expr { ExprNode (FinLt ($1, $4, $3)) } 
+  | cons_expr LEQ_HASH INT cons_expr { ExprNode (FinLeq ($1, $4, $3)) } 
+  | cons_expr { $1 }            /* Fallthrough to cons_expr */
+  ;
+
+/* Cons level (right-associative) */
+cons_expr:
+  | app_expr CONS cons_expr   { ExprNode (Cons ($1, $3)) }
+  | app_expr { $1 }           /* Fallthrough to app_expr */
   ;
 
 /* Application Level */
@@ -95,11 +117,12 @@ app_expr:
   | atomic_expr { $1 }        /* Fallthrough */
   ;
 
-/* Atomic expressions (variables, constants, parens, tuples, distributions) */ 
+/* Atomic expressions (variables, constants, parens, tuples, distributions, nil) */ 
 atomic_expr:
   | n = number                { ExprNode (Const n) }
   | TRUE                      { ExprNode (BoolConst true) }
   | FALSE                     { ExprNode (BoolConst false) }
+  | NIL                       { ExprNode Nil }
   | k = INT HASH n = INT
     { if k < 0 || k >= n then failwith (Printf.sprintf "Invalid FinConst: %d#%d" k n) else ExprNode (FinConst (k, n)) }
   | x = IDENT                 { ExprNode (Var x) }

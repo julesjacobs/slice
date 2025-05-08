@@ -25,6 +25,9 @@ type 'a expr_generic =
   | FinLeq of 'a * 'a * int (* e1 <=#n e2 *)
   | Observe of 'a 
   | Fix of string * string * 'a
+  | Nil  (* nil *)
+  | Cons of 'a * 'a (* e1 :: e2 *)
+  | MatchList of 'a * 'a * string * string * 'a (* match e1 with nil -> e_nil | y::ys -> e_cons end *)
 
 (* The source language expression type *)
 type expr = ExprNode of expr expr_generic
@@ -45,6 +48,7 @@ and ty =
   | TFin of int (* Represents Z_n, integers modulo n *)
   | TMeta of meta_ref (* Type variable for unification *)
   | TUnit 
+  | TList of ty (* list t *)
 
 (* Function to recursively dereference type variables *)
 let rec force t =
@@ -96,6 +100,8 @@ type value =
   | VFin of int * int (* value k, modulus n *)
   | VClosure of string * expr * env
   | VUnit 
+  | VNil (* Runtime value for nil *)
+  | VCons of value * value (* Runtime value for cons *)
 and env = (string * value) list (* Simple association list for environment *)
 
 (* Helper for pretty printing values *)
@@ -105,4 +111,7 @@ let rec string_of_value = function
   | VPair (v1, v2) -> Printf.sprintf "(%s, %s)" (string_of_value v1) (string_of_value v2)
   | VFin (k, n) -> Printf.sprintf "%d#%d" k n
   | VClosure (x, _, _) -> Printf.sprintf "<fun %s>" x
-  | VUnit -> "()" 
+  | VUnit -> "()"
+  | VNil -> "[]"
+  | VCons (v_hd, VNil) -> Printf.sprintf "[%s]" (string_of_value v_hd) (* Special case for single-element list *)
+  | VCons (v_hd, v_tl) -> Printf.sprintf "%s :: %s" (string_of_value v_hd) (string_of_value v_tl) (* General cons - avoid infinite loop by not trying to fully format *) 

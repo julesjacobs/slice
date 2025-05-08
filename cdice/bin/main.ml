@@ -1,5 +1,5 @@
 open Cmdliner
-open Contdice (* Open Contdice to access its modules like Interp *)
+open Contdice
 module Types = Contdice.Types
 exception ObserveFailure = Contdice.Interp.ObserveFailure
 
@@ -126,7 +126,8 @@ let process_file ~print_all ~to_sppl filename : ( ((int * int * int) * (int * in
       (* Original logic: pretty print, elab, discretize, compare *)
       if print_all then Printf.printf "Source:\n%s\n\n" content;
       
-      let texpr = Contdice.elab_bool expr in 
+      let texpr = Contdice.elab expr in 
+      let final_type = fst texpr in 
       if print_all then Printf.printf "Typed AST (Pretty):\n%s\n\n" (Contdice.Pretty.string_of_texpr texpr);
       
       let discretized_expr = Contdice.discretize texpr in
@@ -137,23 +138,28 @@ let process_file ~print_all ~to_sppl filename : ( ((int * int * int) * (int * in
         Printf.printf "%s\n" (Contdice.Util.string_of_expr discretized_expr)
       );
 
-      if not print_all then Ok None else
-      let n_runs = 1000000 in 
-      match run_interp_and_summarize ~print_all "Discretized" discretized_expr n_runs with
-      | Error msg -> Error msg
-      | Ok (t_disc, f_disc, o_disc) -> 
-          match run_interp_and_summarize ~print_all "Original (Sampling)" expr n_runs with
+      (* Only run simulations if the result type is bool and print_all is true *)
+      match Types.force final_type with 
+      | Types.TBool when print_all -> 
+          let n_runs = 1000000 in 
+          (match run_interp_and_summarize ~print_all "Discretized" discretized_expr n_runs with
           | Error msg -> Error msg
-          | Ok (t_orig, f_orig, o_orig) ->
-              let significant_difference = 
-                perform_two_proportion_z_test ~print_all (t_disc, f_disc, 0, o_disc) (t_orig, f_orig, 0, o_orig) n_runs 
-              in 
-              if print_all then print_endline (String.make 60 '-');
-              let diff_details = 
-                if significant_difference then Some (((t_disc, f_disc, o_disc), (t_orig, f_orig, o_orig)))
-                else None
-              in
-              Ok diff_details
+          | Ok (t_disc, f_disc, o_disc) -> 
+              (match run_interp_and_summarize ~print_all "Original (Sampling)" expr n_runs with
+              | Error msg -> Error msg
+              | Ok (t_orig, f_orig, o_orig) ->
+                  let significant_difference = 
+                    perform_two_proportion_z_test ~print_all (t_disc, f_disc, 0, o_disc) (t_orig, f_orig, 0, o_orig) n_runs 
+                  in 
+                  if print_all then print_endline (String.make 60 '-');
+                  let diff_details = 
+                    if significant_difference then Some (((t_disc, f_disc, o_disc), (t_orig, f_orig, o_orig)))
+                    else None
+                  in
+                  Ok diff_details
+              )
+          )
+      | _ -> Ok None (* For non-bool types or when not printing all, just report success *)
     )
   with
   | Failure msg -> 

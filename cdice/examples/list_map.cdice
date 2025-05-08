@@ -1,0 +1,20 @@
+(* Example using fix and lists to implement map (curried) *)
+
+let map = fun f ->
+  fix loop l :=
+    match l with
+    | nil -> nil
+    | head :: tail -> (f head) :: (loop tail) (* Recursive call is loop *)
+  end
+in
+
+(* Function to check if a float is < 1.0 *)
+let is_lt_one = fun x -> x < 1.0 in
+
+(* Create a list of two samples *)
+let my_list = uniform(0.0, 2.0) :: uniform(0.0, 2.0) :: nil in
+
+(* Apply map: map takes f, returns a function, which is then applied to my_list *)
+(map is_lt_one) my_list
+
+(* Expected output: A list of two booleans, e.g. true :: false :: nil *) 

@@ -133,6 +133,19 @@ and string_of_expr_node ?(indent=0) (ExprNode expr_node) : string =
       let e1_str = string_of_expr_indented ~indent e1 in
       Printf.sprintf "%sobserve%s (%s)"
         keyword_color reset_color e1_str
+  | Nil -> Printf.sprintf "%snil%s" keyword_color reset_color
+  | Cons (e1, e2) -> 
+      Printf.sprintf "%s %s::%s %s"
+        (string_of_expr_indented ~indent e1) operator_color reset_color (string_of_expr_indented ~indent e2)
+  | MatchList (e1, e_nil, y, ys, e_cons) ->
+      let e1_str = string_of_expr_indented ~indent:(indent+2) e1 in
+      let e_nil_str = string_of_expr_indented ~indent:(indent+2) e_nil in
+      let e_cons_str = string_of_expr_indented ~indent:(indent+4) e_cons in
+      Printf.sprintf "%smatch%s %s %swith%s\n%s  | %snil%s %s->%s %s\n%s  | %s%s%s %s::%s %s%s%s %s->%s %s\n%s%send%s"
+        keyword_color reset_color e1_str keyword_color reset_color
+        (String.make indent ' ') keyword_color reset_color operator_color reset_color e_nil_str
+        (String.make indent ' ') variable_color y reset_color operator_color reset_color variable_color ys reset_color operator_color reset_color e_cons_str
+        (String.make indent ' ') keyword_color reset_color
 
 (* Pretty printer for aexpr nodes *)
 and string_of_aexpr_node ?(indent=0) (TAExprNode ae_node) : string =
@@ -223,6 +236,19 @@ and string_of_aexpr_node ?(indent=0) (TAExprNode ae_node) : string =
       let e1_str = string_of_texpr_indented ~indent te1 in
       Printf.sprintf "%sobserve%s (%s)"
         keyword_color reset_color e1_str
+  | Nil -> Printf.sprintf "%snil%s" keyword_color reset_color
+  | Cons (te1, te2) -> 
+      Printf.sprintf "%s %s::%s %s"
+        (string_of_texpr_indented ~indent te1) operator_color reset_color (string_of_texpr_indented ~indent te2)
+  | MatchList (te1, te_nil, y, ys, te_cons) ->
+      let te1_str = string_of_texpr_indented ~indent:(indent+2) te1 in
+      let te_nil_str = string_of_texpr_indented ~indent:(indent+2) te_nil in
+      let te_cons_str = string_of_texpr_indented ~indent:(indent+4) te_cons in
+      Printf.sprintf "%smatch%s %s %swith%s\n%s  | %snil%s %s->%s %s\n%s  | %s%s%s %s::%s %s%s%s %s->%s %s\n%s%send%s"
+        keyword_color reset_color te1_str keyword_color reset_color
+        (String.make indent ' ') keyword_color reset_color operator_color reset_color te_nil_str
+        (String.make indent ' ') variable_color y reset_color operator_color reset_color variable_color ys reset_color operator_color reset_color te_cons_str
+        (String.make indent ' ') keyword_color reset_color
 
 (* Pretty printer for types *)
 and string_of_ty = function
@@ -270,6 +296,7 @@ and string_of_ty = function
   | TFin n -> 
         Printf.sprintf "%s#%d%s" type_color n reset_color
   | TUnit -> Printf.sprintf "%sunit%s" type_color reset_color
+  | TList t -> Printf.sprintf "%slist%s %s" type_color reset_color (string_of_ty t)
   | TMeta r ->
         match !r with
         | Known t -> string_of_ty t
@@ -444,7 +471,7 @@ let rec translate_to_sppl (env : (string * string) list) ?(target_var:string opt
       let observe_stmt = Printf.sprintf "condition(%s)" cond_expr in
       (cond_stmts @ [observe_stmt], "") (* Observe returns unit, effectively no result name for SPPL value assignment *)
 
-  | Types.ExprNode(Fix (f,x,_)) -> 
+  | Types.ExprNode(Fix (f,x,_)) -> (* SPPL does not support recursive functions *)
       failwith (Printf.sprintf "Recursive functions (fix %s %s := ...) are not supported in SPPL translation." f x)
 
   (* Fail on unsupported features *) 
@@ -460,6 +487,9 @@ let rec translate_to_sppl (env : (string * string) list) ?(target_var:string opt
          | _ -> "Other Unsupported")
       in
       failwith err_msg
+
+  | Types.ExprNode(Nil) | Types.ExprNode(Cons _) | Types.ExprNode(MatchList _) ->
+      failwith "List constructs (nil, ::, match) are not supported in SPPL translation."
 
 (* Top-level function: call translate with target 'model' *) 
 let cdice_expr_to_sppl_prog (expr : Types.expr) : string =

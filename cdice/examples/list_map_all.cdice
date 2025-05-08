@@ -1,0 +1,42 @@
+(* Example using fix, lists, map, and all *)
+
+(* Define map (curried) *)
+let map = fun f ->
+  fix loop l :=
+    match l with
+    | nil -> nil
+    | head :: tail -> (f head) :: (loop tail)
+  end
+in
+
+(* Define all (recursive function for boolean lists) *)
+let all = fix all_rec bool_list :=
+  match bool_list with
+  | nil -> true (* All elements of an empty list are true *)
+  | head :: tail -> 
+      if head then 
+        all_rec tail (* Check the rest if head is true *)
+      else 
+        false (* Return false immediately if head is false *)
+  end
+in
+
+(* Function to check if a float is < 1.0 *)
+let is_lt_one = fun x -> x < 1.0 in
+
+(* Create a list of two samples *)
+let my_list = uniform(0.0, 2.0) :: uniform(0.0, 2.0) :: nil in
+
+(* Map the function over the list *)
+let bool_result_list = (map is_lt_one) my_list in
+
+(* Check if all elements in the resulting boolean list are true *)
+all bool_result_list
+
+(* 
+Expected output: A single boolean. 
+Since the list contains uniform(0,2) < 1.0, which is true with prob 0.5,
+the list bool_result_list could be [true::true::nil], [true::false::nil], 
+[false::true::nil], or [false::false::nil]. 
+The 'all' function will return true only if the list is [true::true::nil] (prob 0.25).
+*) 

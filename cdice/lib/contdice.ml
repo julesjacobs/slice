@@ -36,6 +36,7 @@ let rec sub_type (t_sub : ty) (t_super : ty) : unit =
   | TFun(a1, b1), TFun(a2, b2) -> 
       sub_type a2 a1; (* Contravariant argument *) 
       sub_type b1 b2  (* Covariant result *) 
+  | TList t1, TList t2 -> sub_type t1 t2 (* Covariant *) 
   | TMeta r, _ ->
     (match Types.force t_super with (* Ensure t_super is forced *)
     | TMeta r' -> (Types.listen r (fun t -> sub_type t t_super); Types.listen r' (fun t' -> sub_type t_sub t'))
@@ -48,6 +49,8 @@ let rec sub_type (t_sub : ty) (t_super : ty) : unit =
     | TFloat (_, _) -> let b_bag = Bags.fresh_bound_bag () in let c_bag = Bags.fresh_float_bag () in
       Types.assign r (TFloat (b_bag, c_bag)); sub_type t_sub t_super
     | TUnit -> Types.assign r TUnit (* Handle TUnit for t_super *)
+    | TList _ -> let elem_meta = Types.fresh_meta () in 
+                 Types.assign r (TList elem_meta); sub_type t_sub t_super
     )
   | _, TMeta r ->
     (match Types.force t_sub with (* Ensure t_sub is forced *)
@@ -61,6 +64,8 @@ let rec sub_type (t_sub : ty) (t_super : ty) : unit =
     | TFloat (_, _) -> let b_bag = Bags.fresh_bound_bag () in let c_bag = Bags.fresh_float_bag () in
       Types.assign r (TFloat (b_bag, c_bag)); sub_type t_sub t_super
     | TUnit -> Types.assign r TUnit (* Handle TUnit for t_sub *)
+    | TList _ -> let elem_meta = Types.fresh_meta () in 
+                 Types.assign r (TList elem_meta); sub_type t_sub t_super
     )
   (* Error Case *) 
   | _, _ -> 
@@ -379,6 +384,35 @@ let elab (e : expr) : texpr =
       unify fun_type_itself actual_fun_type;
       (fun_type_itself, TAExprNode (Fix (f, x, body_texpr)))
 
+    | Nil -> 
+      let elem_ty = Types.fresh_meta () in
+      (TList elem_ty, TAExprNode Nil) 
+
+    | Cons (e_hd, e_tl) ->
+      let t_hd, a_hd = aux env e_hd in
+      let t_tl, a_tl = aux env e_tl in
+      (try unify t_tl (TList t_hd) 
+       with Failure msg -> failwith ("Type error in list construction (::): " ^ msg));
+      (t_tl, TAExprNode (Cons ((t_hd, a_hd), (t_tl, a_tl))))
+
+    | MatchList (e_match, e_nil, y, ys, e_cons) ->
+      let t_match, a_match = aux env e_match in
+      let elem_ty = Types.fresh_meta () in
+      (try unify t_match (TList elem_ty)
+       with Failure msg -> failwith ("Type error in match expression (expected list type): " ^ msg));
+      (* Type check nil branch *) 
+      let t_nil, a_nil = aux env e_nil in
+      (* Type check cons branch *) 
+      let env_cons = StringMap.add y elem_ty (StringMap.add ys t_match env) in
+      let t_cons, a_cons = aux env_cons e_cons in
+      (* Unify branch types *) 
+      let result_ty = Types.fresh_meta () in
+      (try 
+         sub_type t_nil result_ty;
+         sub_type t_cons result_ty
+       with Failure msg -> failwith ("Type error in match branches: " ^ msg));
+      (result_ty, TAExprNode (MatchList ((t_match, a_match), (t_nil, a_nil), y, ys, (t_cons, a_cons))))
+
   in
   aux StringMap.empty e
 
@@ -572,6 +606,14 @@ let discretize (e : texpr) : expr =
 
     | Fix (f, x, te_body) -> 
         ExprNode (Fix (f, x, aux te_body))
+
+    | Nil -> ExprNode Nil
+
+    | Cons (te_hd, te_tl) -> 
+        ExprNode (Cons (aux te_hd, aux te_tl))
+
+    | MatchList (te_match, te_nil, y, ys, te_cons) ->
+        ExprNode (MatchList (aux te_match, aux te_nil, y, ys, aux te_cons))
 
   in
   aux e

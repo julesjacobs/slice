@@ -34,6 +34,10 @@ let keywords = [
   ("fun", FUN);
   ("lognormal", LOGNORMAL);
   ("fix", FIX);
+  ("nil", NIL);
+  ("match", MATCH);
+  ("with", WITH);
+  ("end", END);
 ]
 }
 
@@ -81,6 +85,8 @@ rule token = parse
   | ','       { COMMA }
   | ':'       { COLON }
   | ":="      { COLON_EQUAL }
+  | "::"      { CONS }
+  | "|"       { BAR }
   | int as i   { try INT (int_of_string i)
                  with _ -> error lexbuf (Printf.sprintf "Invalid integer literal: %s" i) }
   | float as f { try FLOAT (float_of_string f)
