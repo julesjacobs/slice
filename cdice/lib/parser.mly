@@ -13,6 +13,7 @@ open Types
 %token GAUSSIAN
 %token EXPONENTIAL
 %token BETA
+%token LOGNORMAL
 %token DISCRETE
 %token FST SND
 %token FUN ARROW
@@ -115,6 +116,8 @@ atomic_expr:
     { ExprNode (CDistr (Exponential rate)) }
   | BETA LPAREN alpha = number COMMA beta = number RPAREN
     { ExprNode (CDistr (Beta (alpha, beta))) }
+  | LOGNORMAL LPAREN mu = number COMMA sigma = number RPAREN
+    { ExprNode (CDistr (LogNormal (mu, sigma))) }
   | DISCRETE LPAREN cases = distr_cases RPAREN
     { ExprNode (DistrCase cases) }
   | LPAREN e = expr RPAREN      { e }

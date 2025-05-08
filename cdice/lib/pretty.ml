@@ -25,6 +25,9 @@ let string_of_cdistr = function
 | Stats.Beta (alpha, beta) -> 
     Printf.sprintf "%sbeta%s(%s%g%s, %s%g%s)" 
         keyword_color reset_color number_color alpha reset_color number_color beta reset_color
+| Stats.LogNormal (mu, sigma) ->
+    Printf.sprintf "%slognormal%s(%s%g%s, %s%g%s)" 
+        keyword_color reset_color number_color mu reset_color number_color sigma reset_color
 
 (* Forward declarations *)
 let rec string_of_expr_indented ?(indent=0) e =
@@ -323,7 +326,13 @@ let rec translate_to_sppl (env : (string * string) list) ?(target_var:string opt
             Printf.sprintf "%s ~= uniform(loc=%f, scale=%f)" assign_var a (b -. a)
         | Stats.Gaussian (mu, sigma) ->
             Printf.sprintf "%s ~= normal(loc=%f, scale=%f)" assign_var mu sigma
-        | _ -> failwith "Unsupported CDistr distribution for SPPL translation (in pretty.ml)"
+        | Stats.Exponential rate -> (* Assuming SPPL uses rate for exponential *) 
+            Printf.sprintf "%s ~= exponential(scale=%f)" assign_var (1.0 /. rate) (* SPPL scale = 1/rate *)
+        | Stats.Beta (alpha, beta) -> (* Assuming SPPL names match *) 
+            Printf.sprintf "%s ~= beta(a=%f, b=%f)" assign_var alpha beta
+        | Stats.LogNormal (mu, sigma) -> (* Assuming SPPL names match *) 
+            Printf.sprintf "%s ~= lognormal(mu=%f, sigma=%f)" assign_var mu sigma
+       (* Note: Removed a catch-all here, assuming all cdistr variants are now handled *)
       in
       ([stmt], assign_var)
   | Types.ExprNode(DistrCase cases) ->

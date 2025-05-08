@@ -13,6 +13,8 @@ let string_of_cdistr = function
     Printf.sprintf "exponential(%g)" rate
 | Stats.Beta (alpha, beta) -> 
     Printf.sprintf "beta(%g, %g)" alpha beta
+| Stats.LogNormal (mu, sigma) -> 
+    Printf.sprintf "lognormal(%g, %g)" mu sigma
 
 let bit_length n =
   if n < 0 then invalid_arg "bit_length: only non-negative integers allowed"

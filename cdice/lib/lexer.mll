@@ -32,6 +32,7 @@ let keywords = [
   ("fst", FST);
   ("snd", SND);
   ("fun", FUN);
+  ("lognormal", LOGNORMAL);
 ]
 }
 
@@ -65,6 +66,7 @@ rule token = parse
   | "normal"  { GAUSSIAN }  (* Alias for gaussian *)
   | "exponential" { EXPONENTIAL }
   | "beta"    { BETA }
+  | "lognormal" { LOGNORMAL }
   | "discrete" { DISCRETE }
   | "fst"     { FST }
   | "snd"     { SND }
