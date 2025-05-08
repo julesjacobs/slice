@@ -121,6 +121,10 @@ and string_of_expr_node ?(indent=0) (ExprNode expr_node) : string =
       let e2_str = string_of_expr_indented ~indent e2 in
       Printf.sprintf "%s %s<=%s%s#%d%s %s"
         e1_str operator_color reset_color type_color n reset_color e2_str
+  | Observe e1 ->
+      let e1_str = string_of_expr_indented ~indent e1 in
+      Printf.sprintf "%sobserve%s (%s)"
+        keyword_color reset_color e1_str
 
 (* Pretty printer for aexpr nodes *)
 and string_of_aexpr_node ?(indent=0) (TAExprNode ae_node) : string =
@@ -202,6 +206,10 @@ and string_of_aexpr_node ?(indent=0) (TAExprNode ae_node) : string =
       let e2_str = string_of_texpr_indented ~indent te2 in
       Printf.sprintf "%s %s<=%s%s#%d%s %s"
         e1_str operator_color reset_color type_color n reset_color e2_str
+  | Observe te1 ->
+      let e1_str = string_of_texpr_indented ~indent te1 in
+      Printf.sprintf "%sobserve%s (%s)"
+        keyword_color reset_color e1_str
 
 (* Pretty printer for types *)
 and string_of_ty = function
@@ -248,6 +256,7 @@ and string_of_ty = function
           bracket_color (string_of_ty t1) (string_of_ty t2) reset_color
   | TFin n -> 
         Printf.sprintf "%s#%d%s" type_color n reset_color
+  | TUnit -> Printf.sprintf "%sunit%s" type_color reset_color
   | TMeta r ->
         match !r with
         | Known t -> string_of_ty t
@@ -409,6 +418,12 @@ let rec translate_to_sppl (env : (string * string) list) ?(target_var:string opt
         full_else_block
       in
       (final_stmts, final_res_var) (* Result is always the value in final_res_var *)
+
+  (* Observe Case: Handle Observe for SPPL *)
+  | Types.ExprNode(Observe e) ->
+      let (cond_stmts, cond_expr) = translate_to_sppl env ~target_var:None e state in
+      let observe_stmt = Printf.sprintf "condition(%s)" cond_expr in
+      (cond_stmts @ [observe_stmt], "") (* Observe returns unit, effectively no result name for SPPL value assignment *)
 
   (* Fail on unsupported features *) 
   | Types.ExprNode(Pair _) | Types.ExprNode(First _) | Types.ExprNode(Second _)

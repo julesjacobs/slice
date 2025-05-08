@@ -26,6 +26,7 @@ open Types
 %token EQUAL
 %token COLON
 %token EOF
+%token OBSERVE
 
 %start <Types.expr> prog
 
@@ -58,6 +59,8 @@ expr:
     { let _ = cond in let _ = e1 in failwith "If without else is not supported" } *)
   | FUN x = IDENT ARROW e = expr
     { ExprNode (Fun (x, e)) }
+  | OBSERVE e = expr
+    { ExprNode (Observe e) }
   | or_expr { $1 } /* Fallthrough */
   ;
 

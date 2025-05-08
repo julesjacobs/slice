@@ -4,16 +4,16 @@
 type 'a expr_generic = 
   | Var    of string
   | Const  of float
-  | BoolConst of bool            (* New: Boolean constant *)
+  | BoolConst of bool            
   | Let    of string * 'a * 'a
   | CDistr of Stats.cdistr          (* Continuous distribution *)
   (* | Discrete of float list    (* list of probabilities; i-th element is probability of float(i) *) *)
   | DistrCase of ('a * float) list (* General discrete distribution: (expr * prob) list *)
   | Less   of 'a * 'a
   | LessEq of 'a * 'a
-  | And    of 'a * 'a            (* New: Logical AND *)
-  | Or     of 'a * 'a            (* New: Logical OR *)
-  | Not    of 'a                   (* New: Logical NOT *)
+  | And    of 'a * 'a            
+  | Or     of 'a * 'a            
+  | Not    of 'a                   
   | If     of 'a * 'a * 'a
   | Pair   of 'a * 'a            (* Pair construction (e1, e2) *)
   | First  of 'a                   (* First projection: fst e *)
@@ -23,6 +23,7 @@ type 'a expr_generic =
   | FinConst of int * int (* k, n for k#n *)
   | FinLt of 'a * 'a * int (* e1 <#n e2 *)
   | FinLeq of 'a * 'a * int (* e1 <=#n e2 *)
+  | Observe of 'a 
 
 (* The source language expression type *)
 type expr = ExprNode of expr expr_generic
@@ -42,6 +43,7 @@ and ty =
   | TFun of ty * ty       (* t1 -> t2 *)
   | TFin of int (* Represents Z_n, integers modulo n *)
   | TMeta of meta_ref (* Type variable for unification *)
+  | TUnit 
 
 (* Function to recursively dereference type variables *)
 let rec force t =
@@ -92,6 +94,7 @@ type value =
   | VPair of value * value
   | VFin of int * int (* value k, modulus n *)
   | VClosure of string * expr * env
+  | VUnit 
 and env = (string * value) list (* Simple association list for environment *)
 
 (* Helper for pretty printing values *)
@@ -101,3 +104,4 @@ let rec string_of_value = function
   | VPair (v1, v2) -> Printf.sprintf "(%s, %s)" (string_of_value v1) (string_of_value v2)
   | VFin (k, n) -> Printf.sprintf "%d#%d" k n
   | VClosure (x, _, _) -> Printf.sprintf "<fun %s>" x
+  | VUnit -> "()" 

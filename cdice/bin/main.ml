@@ -1,4 +1,6 @@
 open Cmdliner
+open Contdice (* Open Contdice to access its modules like Interp *)
+exception ObserveFailure = Contdice.Interp.ObserveFailure (* Explicit alias for the exception *)
 
 (* Read a file and return its contents as a string *)
 let read_file filename =
@@ -9,22 +11,25 @@ let read_file filename =
   content
 
 (* Helper function to run interpreter N times and summarize *)
-let run_interp_and_summarize ~print_all label expr n_runs : ((int * int), string) result =
+let run_interp_and_summarize ~print_all label expr n_runs : ((int * int * int), string) result =
   if print_all then Printf.printf "Running %s version %d times...\n" label n_runs;
   let true_count = ref 0 in
   let false_count = ref 0 in
+  let observe_failures = ref 0 in
   try
     for i = 1 to n_runs do
       try 
-        match Contdice.Interp.run expr with
-        | Contdice.Types.VBool true -> incr true_count
-        | Contdice.Types.VBool false -> incr false_count
+        match Interp.run expr with
+        | Types.VBool true -> incr true_count
+        | Types.VBool false -> incr false_count
+        | Types.VUnit -> ()
         | other_val -> 
-            let msg = Printf.sprintf "Warning (%s): Expected VBool, got %s after %d runs. Aborting run."
-                          label (Contdice.Types.string_of_value other_val) (i-1) in
+            let msg = Printf.sprintf "Warning (%s): Expected VBool or VUnit, got %s after %d runs. Aborting run."
+                          label (Types.string_of_value other_val) (i-1) in
             raise (Failure msg)
       with 
-      | Contdice.Interp.RuntimeError rt_msg -> 
+      | ObserveFailure -> incr observe_failures
+      | Interp.RuntimeError rt_msg -> 
           let msg = Printf.sprintf "Runtime Error during %s run after %d runs: %s. Aborting run."
                           label (i-1) rt_msg in
           raise (Failure msg)
@@ -35,16 +40,26 @@ let run_interp_and_summarize ~print_all label expr n_runs : ((int * int), string
           raise (Failure msg)
     done;
     if print_all then 
-      Printf.printf "Summary (%s): True: %d, False: %d\n" label !true_count !false_count;
-    Ok (!true_count, !false_count)
+      Printf.printf "Summary (%s): True: %d, False: %d, Observe Failures: %d\n" label !true_count !false_count !observe_failures;
+    Ok (!true_count, !false_count, !observe_failures)
   with 
   | Failure final_msg -> Error final_msg
 
 (* Perform a two-proportion z-test *)
-let perform_two_proportion_z_test ~print_all (t_disc, f_disc, e_disc) (t_orig, f_orig, e_orig) _n_runs : bool =
+(* Note: e_disc and e_orig are for other errors, o_disc and o_orig for observe failures *)
+let perform_two_proportion_z_test ~print_all (t_disc, f_disc, e_disc, o_disc) (t_orig, f_orig, e_orig, o_orig) _n_runs : bool =
   if print_all then Printf.printf "\n--- Statistical Comparison ---\n";
+
+  (* If observe failures occurred, print a note. This doesn't skip the test. *)
+  if print_all && (o_disc > 0 || o_orig > 0) then (
+    Printf.printf "Note: Observe failures occurred and were filtered out before statistical comparison.\n";
+    Printf.printf "  Discretized: %d observe failures out of %d total attempts (True: %d, False: %d, OFail: %d)\n" o_disc (t_disc + f_disc + o_disc) t_disc f_disc o_disc;
+    Printf.printf "  Original:    %d observe failures out of %d total attempts (True: %d, False: %d, OFail: %d)\n" o_orig (t_orig + f_orig + o_orig) t_orig f_orig o_orig;
+  );
+
+  (* Skip test if any (non-observe) runtime errors occurred *)
   if e_disc > 0 || e_orig > 0 then (
-    if print_all then Printf.printf "Test skipped: Errors occurred during one or both simulation runs.\n";
+    if print_all then Printf.printf "Test skipped: Runtime errors occurred during one or both simulation runs.\n";
     false
   )
   else
@@ -96,7 +111,7 @@ let perform_two_proportion_z_test ~print_all (t_disc, f_disc, e_disc) (t_orig, f
       )
 
 (* Process a single .cdice file *)
-let process_file ~print_all ~to_sppl filename : ( ((int * int) * (int * int)) option, string) result =
+let process_file ~print_all ~to_sppl filename : ( ((int * int * int) * (int * int * int)) option, string) result =
   if print_all then Printf.printf "Processing file: %s\n" filename;
   try
     let content = read_file filename in
@@ -125,16 +140,16 @@ let process_file ~print_all ~to_sppl filename : ( ((int * int) * (int * int)) op
       let n_runs = 1000000 in 
       match run_interp_and_summarize ~print_all "Discretized" discretized_expr n_runs with
       | Error msg -> Error msg
-      | Ok (t_disc, f_disc) -> 
+      | Ok (t_disc, f_disc, o_disc) -> 
           match run_interp_and_summarize ~print_all "Original (Sampling)" expr n_runs with
           | Error msg -> Error msg
-          | Ok (t_orig, f_orig) ->
+          | Ok (t_orig, f_orig, o_orig) ->
               let significant_difference = 
-                perform_two_proportion_z_test ~print_all (t_disc, f_disc, 0) (t_orig, f_orig, 0) n_runs 
+                perform_two_proportion_z_test ~print_all (t_disc, f_disc, 0, o_disc) (t_orig, f_orig, 0, o_orig) n_runs 
               in 
               if print_all then print_endline (String.make 60 '-');
               let diff_details = 
-                if significant_difference then Some ((t_disc, f_disc), (t_orig, f_orig))
+                if significant_difference then Some (((t_disc, f_disc, o_disc), (t_orig, f_orig, o_orig)))
                 else None
               in
               Ok diff_details
@@ -154,7 +169,7 @@ let has_cdice_extension filename =
   Filename.check_suffix filename ".cdice"
 
 (* Process a directory, finding all .cdice files recursively *)
-let rec process_directory ~print_all ~to_sppl path : (int * (string * string) list * (string * (int * int) * (int * int)) list) =
+let rec process_directory ~print_all ~to_sppl path : (int * (string * string) list * (string * (int * int * int) * (int * int * int)) list) =
   let dir = Unix.opendir path in
   let rec process_entries count errors_list diff_details_list =
     try
@@ -170,7 +185,8 @@ let rec process_directory ~print_all ~to_sppl path : (int * (string * string) li
              | Ok diff_details_opt ->
                  let new_diff_details_list = 
                    match diff_details_opt with
-                   | Some ((t_d, f_d), (t_o, f_o)) -> (full_path, (t_d, f_d), (t_o, f_o)) :: diff_details_list
+                   | Some ((t_d, f_d, o_d), (t_o, f_o, o_o)) -> 
+                       (full_path, (t_d, f_d, o_d), (t_o, f_o, o_o)) :: diff_details_list
                    | None -> diff_details_list
                  in
                  process_entries (count + 1) errors_list new_diff_details_list
@@ -204,10 +220,10 @@ let run_contdice path print_all to_sppl =
           | Ok diff_details_opt ->
               if not to_sppl && print_all then (
                 match diff_details_opt with
-                | Some ((t_disc, f_disc), (t_orig, f_orig)) ->
+                | Some ((t_disc, f_disc, o_disc), (t_orig, f_orig, o_orig)) ->
                     Printf.printf "\n*** Statistically significant difference detected for this file. ***\n";
-                    Printf.printf "    Discretized: True=%d, False=%d\n" t_disc f_disc;
-                    Printf.printf "    Original:    True=%d, False=%d\n" t_orig f_orig
+                    Printf.printf "    Discretized: True=%d, False=%d, ObserveFailures=%d\n" t_disc f_disc o_disc;
+                    Printf.printf "    Original:    True=%d, False=%d, ObserveFailures=%d\n" t_orig f_orig o_orig;
                 | None ->
                     Printf.printf "\n*** No statistically significant difference detected for this file. ***\n"
               )
@@ -231,21 +247,20 @@ let run_contdice path print_all to_sppl =
           if diff_details_list <> [] then (
             Printf.printf "Statistically significant differences detected in the following files:\n";
             List.iter 
-              (fun (filename, (t_disc, f_disc), (t_orig, f_orig)) ->
-                Printf.printf "- %s (Disc: T=%d F=%d; Orig: T=%d F=%d)\n" 
-                             filename t_disc f_disc t_orig f_orig
+              (fun (filename, (t_disc, f_disc, o_disc), (t_orig, f_orig, o_orig)) ->
+                Printf.printf "- %s (Disc: T=%d F=%d OFail=%d; Orig: T=%d F=%d OFail=%d)\n" 
+                             filename t_disc f_disc o_disc t_orig f_orig o_orig
               ) 
               (List.rev diff_details_list) 
           )
         )
-    | _ ->
-        Printf.eprintf "Error: Path is neither a regular file nor a directory: %s\n" path
+    | _ -> (* Catch-all for other file types *)
+        Printf.eprintf "Error: Path is not a regular file or a directory: %s\n" path
   with
-  | Unix.Unix_error(e, _, p) ->
-      Printf.eprintf "Error accessing path %s: %s\n" p (Unix.error_message e)
+  | Failure msg -> 
+      Printf.eprintf "Error: %s\n" msg
   | e -> 
-      Printf.eprintf "An unexpected error occurred while processing path: %s\n" (Printexc.to_string e); 
-      Printexc.print_backtrace stderr
+      Printf.eprintf "Unexpected error: %s\n" (Printexc.to_string e)
 
 (* Cmdliner term definition *) 
 let path_arg = 

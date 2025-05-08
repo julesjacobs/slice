@@ -1,0 +1,18 @@
+(* cdice/examples/observe_test.cdice *)
+(*
+  1. Sample x from uniform(0.0, 1.0)
+  2. Observe that x < 0.5
+     - If x >= 0.5 (50% chance), this causes an ObserveFailure.
+  3. If observe passes (x < 0.5), return the boolean (x < 0.2)
+     - Given x is in [0, 0.5), P(x < 0.2) is 0.2/0.5 = 0.4.
+     - So, 40% of non-failing runs should be true.
+     - And 60% of non-failing runs should be false.
+
+  Overall for N runs:
+  - ~0.5 * N ObserveFailures
+  - ~0.5 * N * 0.4 = 0.2 * N True results
+  - ~0.5 * N * 0.6 = 0.3 * N False results
+*)
+let x = uniform(0.0, 1.0) in
+  (let _ = observe (x < 0.5) in
+   (x < 0.2)) 

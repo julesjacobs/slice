@@ -59,6 +59,7 @@ rule token = parse
   | "&&"      { AND }
   | "||"      { OR }
   | "not"     { NOT }
+  | "observe" { OBSERVE }
   | "uniform" { UNIFORM }
   | "gaussian" { GAUSSIAN }
   | "normal"  { GAUSSIAN }  (* Alias for gaussian *)

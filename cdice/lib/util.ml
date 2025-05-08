@@ -81,6 +81,7 @@ and string_of_expr_node ?(indent=0) (ExprNode expr_node) : string =
   | FinConst (k, n) -> Printf.sprintf "int(%d,%d)" (bit_length (n-1)) k
   | FinLt (e1, e2, _) -> Printf.sprintf "%s < %s" (string_of_expr_indented ~indent e1) (string_of_expr_indented ~indent e2)
   | FinLeq (e1, e2, _) -> Printf.sprintf "%s <= %s" (string_of_expr_indented ~indent e1) (string_of_expr_indented ~indent e2)
+  | Observe e1 -> Printf.sprintf "observe (%s)" (string_of_expr_indented ~indent e1)
 
 and string_of_aexpr_node ?(indent=0) (TAExprNode ae_node) : string =
   match ae_node with
@@ -126,6 +127,7 @@ and string_of_aexpr_node ?(indent=0) (TAExprNode ae_node) : string =
   | FinConst (k, n) -> Printf.sprintf "int(%d,%d)" (bit_length (n-1)) k
   | FinLt (te1, te2, _) -> Printf.sprintf "%s < %s" (string_of_texpr_indented ~indent te1) (string_of_texpr_indented ~indent te2)
   | FinLeq (te1, te2, _) -> Printf.sprintf "%s <= %s" (string_of_texpr_indented ~indent te1) (string_of_texpr_indented ~indent te2)
+  | Observe te1 -> Printf.sprintf "observe (%s)" (string_of_texpr_indented ~indent te1)
 
 and string_of_ty = function
   | TBool -> "bool"
@@ -160,6 +162,7 @@ and string_of_ty = function
   | TPair (t1, t2) -> Printf.sprintf "(%s * %s)" (string_of_ty t1) (string_of_ty t2)
   | TFun (t1, t2) -> Printf.sprintf "(%s -> %s)" (string_of_ty t1) (string_of_ty t2)
   | TFin _ -> Printf.sprintf "" 
+  | TUnit -> "unit"
   | TMeta r -> (match !r with Known t -> string_of_ty t | Unknown _ -> "?")
 
 let string_of_expr expr = string_of_expr_indented expr 

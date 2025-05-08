@@ -25,6 +25,7 @@ let rec sub_type (t_sub : ty) (t_super : ty) : unit =
   (* Base Cases *)
   | TBool,    TBool      -> ()
   | TFin n1, TFin n2 when n1 = n2 -> () 
+  | TUnit, TUnit -> () (* New: Unit is a subtype of Unit *)
   (* Structural Cases *)
   | TFloat (b1, c1), TFloat (b2, c2) -> 
       Bags.BoundBag.eq b1 b2;  (* Bounds must be consistent *) 
@@ -36,7 +37,7 @@ let rec sub_type (t_sub : ty) (t_super : ty) : unit =
       sub_type a2 a1; (* Contravariant argument *) 
       sub_type b1 b2  (* Covariant result *) 
   | TMeta r, _ ->
-    (match t_super with
+    (match Types.force t_super with (* Ensure t_super is forced *)
     | TMeta r' -> (Types.listen r (fun t -> sub_type t t_super); Types.listen r' (fun t' -> sub_type t_sub t'))
     | TBool -> Types.assign r TBool
     | TFin n -> Types.assign r (TFin n)
@@ -45,9 +46,11 @@ let rec sub_type (t_sub : ty) (t_super : ty) : unit =
     | TFun (_, _) -> let a_meta = Types.fresh_meta () in let b_meta = Types.fresh_meta () in
       Types.assign r (TFun (a_meta, b_meta)); sub_type t_sub t_super
     | TFloat (_, _) -> let b_bag = Bags.fresh_bound_bag () in let c_bag = Bags.fresh_float_bag () in
-      Types.assign r (TFloat (b_bag, c_bag)); sub_type t_sub t_super)
+      Types.assign r (TFloat (b_bag, c_bag)); sub_type t_sub t_super
+    | TUnit -> Types.assign r Types.TUnit (* Handle TUnit for t_super *)
+    )
   | _, TMeta r ->
-    (match t_sub with
+    (match Types.force t_sub with (* Ensure t_sub is forced *)
     | TMeta r' -> (Types.listen r (fun t -> sub_type t_sub t); Types.listen r' (fun t' -> sub_type t_sub t'))
     | TBool -> Types.assign r TBool
     | TFin n -> Types.assign r (TFin n)
@@ -56,7 +59,9 @@ let rec sub_type (t_sub : ty) (t_super : ty) : unit =
     | TFun (_, _) -> let a_meta = Types.fresh_meta () in let b_meta = Types.fresh_meta () in
       Types.assign r (TFun (a_meta, b_meta)); sub_type t_sub t_super
     | TFloat (_, _) -> let b_bag = Bags.fresh_bound_bag () in let c_bag = Bags.fresh_float_bag () in
-      Types.assign r (TFloat (b_bag, c_bag)); sub_type t_sub t_super)
+      Types.assign r (TFloat (b_bag, c_bag)); sub_type t_sub t_super
+    | TUnit -> Types.assign r Types.TUnit (* Handle TUnit for t_sub *)
+    )
   (* Error Case *) 
   | _, _ -> 
       let msg = Printf.sprintf "Type mismatch: cannot subtype %s <: %s"
@@ -358,6 +363,12 @@ let elab (e : expr) : texpr =
        with Failure msg -> failwith ("Type error in Not operand: " ^ msg));
       (TBool, TAExprNode (Not (t1, a1)))
 
+    | Observe e1 -> (* New: Handle Observe *)
+      let t1, a1 = aux env e1 in
+      (try sub_type t1 Types.TBool (* Argument must be TBool *)
+       with Failure msg -> failwith ("Type error in Observe argument: " ^ msg));
+      (Types.TUnit, TAExprNode (Observe (t1, a1))) (* Result is TUnit *)
+
   in
   aux StringMap.empty e
 
@@ -545,6 +556,9 @@ let discretize (e : texpr) : expr =
         
     | Not te1 -> (* New: Recurse *) 
         ExprNode (Not (aux te1))
+
+    | Observe te1 -> (* New: Handle Observe *)
+        ExprNode (Observe (aux te1)) (* Recursively discretize the argument *)
 
   in
   aux e
