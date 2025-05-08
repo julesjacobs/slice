@@ -170,5 +170,28 @@ let rec eval (env : env) (ExprNode e_node : expr) : value =
            eval env_cons e_cons
        | _ -> raise (RuntimeError "Type error during evaluation: MatchList expects a list"))
 
+  | Ref e -> 
+      let v = eval env e in
+      VRef (ref v) (* Create a new OCaml reference *)
+
+  | Deref e ->
+      let v = eval env e in
+      (match v with
+       | VRef r -> !r (* Dereference the OCaml reference *)
+       | _ -> raise (RuntimeError "Type error during evaluation: Deref expects a reference"))
+
+  | Assign (e_ref, e_val) ->
+      let v_ref = eval env e_ref in
+      let v_val = eval env e_val in
+      (match v_ref with
+       | VRef r -> 
+           r := v_val; (* Assign using OCaml reference assignment *)
+           VUnit       (* Assignment returns unit *)
+       | _ -> raise (RuntimeError "Type error during evaluation: Assignment expects a reference on the left"))
+
+  | Seq (e1, e2) ->
+      let _ = eval env e1 in (* Evaluate e1 for side effects, discard result *)
+      eval env e2 (* Evaluate e2 and return its result *)
+
 (* Entry point for evaluation with an empty environment *)
 let run e = eval [] e 

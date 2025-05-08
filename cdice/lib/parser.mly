@@ -29,22 +29,22 @@ open Types
 %token EOF
 %token OBSERVE
 %token FIX
-%token COLON_EQUAL
+%token COLON_EQUAL (* := *)
 %token NIL          
-%token CONS         
+%token CONS         (* :: *)
 %token MATCH WITH END BAR
+%token REF          (* ref *)
+%token BANG         (* ! *)
+%token SEMICOLON    (* ; *)
 
 (* Precedence and associativity *)
-%right CONS        
-%nonassoc LESS LESSEQ LT_HASH LEQ_HASH 
-%left AND OR       
-%nonassoc NOT       
-%nonassoc LET IN IF THEN ELSE FUN FIX MATCH
+%left SEMICOLON
+
 
 %start <Types.expr> prog
 
 (* Define types for non-terminals *) 
-%type <Types.expr> expr cons_expr cmp_expr app_expr atomic_expr
+%type <Types.expr> expr assign_expr cons_expr cmp_expr app_expr atomic_expr prefix_expr
 %type <unit> opt_bar
 %type <float> number
 %type <(Types.expr * float) list> distr_cases
@@ -53,8 +53,11 @@ open Types
 
 prog: e = expr EOF { e };
 
-/* Lowest precedence: LET, IF, FUN, FIX, MATCH */
+/* Lowest precedence: LET, IF, FUN, FIX, MATCH (handled by structure) 
+   then SEMICOLON, then assign_expr and higher operators */
 expr:
+    expr SEMICOLON expr 
+    { ExprNode (Seq ($1, $3)) }
   | LET x = IDENT EQUAL e1 = expr IN e2 = expr
     { ExprNode (Let (x, e1, e2)) }
   | IF cond = expr THEN e1 = expr ELSE e2 = expr
@@ -66,14 +69,14 @@ expr:
   | FIX f = IDENT x = IDENT COLON_EQUAL e = expr 
     { ExprNode (Fix (f, x, e)) }
   | MATCH e1 = expr WITH opt_bar NIL ARROW e_nil = expr BAR y = IDENT CONS ys = IDENT ARROW e_cons = expr END 
-    { ExprNode (MatchList (e1, e_nil, y, ys, e_cons)) }
-  | or_expr { $1 } /* Fallthrough */
+    { ExprNode (MatchList (e1, e_nil, y, ys, e_cons)) } 
+  | assign_expr { $1 } /* Fallthrough to higher precedence expression forms */
   ;
 
-/* Optional bar rule */
-opt_bar:
-  | /* empty */ { () }
-  | BAR         { () }
+/* Assignment level */
+assign_expr:
+  | prefix_expr COLON_EQUAL assign_expr { ExprNode (Assign ($1, $3)) }
+  | or_expr { $1 } /* Fallthrough */
   ;
 
 /* OR Level */
@@ -105,8 +108,15 @@ cmp_expr:
 
 /* Cons level (right-associative) */
 cons_expr:
-  | app_expr CONS cons_expr   { ExprNode (Cons ($1, $3)) }
-  | app_expr { $1 }           /* Fallthrough to app_expr */
+  | prefix_expr CONS cons_expr   { ExprNode (Cons ($1, $3)) } (* Use prefix_expr here *) 
+  | prefix_expr { $1 }           /* Fallthrough to prefix_expr */
+  ;
+
+/* Prefix operators level */
+prefix_expr:                  (* New level for prefix ops like ! and ref *)
+  | BANG prefix_expr          { ExprNode (Deref $2) }
+  | REF prefix_expr           { ExprNode (Ref $2) }
+  | app_expr { $1 }           /* Fallthrough to application */
   ;
 
 /* Application Level */
@@ -142,6 +152,12 @@ atomic_expr:
   | LPAREN e1 = expr COMMA e2 = expr RPAREN { ExprNode (Pair (e1, e2)) }
   ;
 
+/* Optional bar rule */
+opt_bar:
+  | /* empty */ { () }
+  | BAR         { () }
+  ;
+
 /* Rule for parsing the (expr : number) pairs for DistrCase */ 
 distr_cases:
   | /* empty */ { [] } 
@@ -155,4 +171,5 @@ distr_case:
 number:
   | f = FLOAT { f }
   | i = INT   { float_of_int i }
-  ;
+
+%% (* This %% should mark the end of rules and precede any OCaml code if present *)

@@ -37,6 +37,7 @@ let rec sub_type (t_sub : ty) (t_super : ty) : unit =
       sub_type a2 a1; (* Contravariant argument *) 
       sub_type b1 b2  (* Covariant result *) 
   | TList t1, TList t2 -> sub_type t1 t2 (* Covariant *) 
+  | TRef t1, TRef t2 -> unify t1 t2 (* Invariant *)
   | TMeta r, _ ->
     (match Types.force t_super with (* Ensure t_super is forced *)
     | TMeta r' -> (Types.listen r (fun t -> sub_type t t_super); Types.listen r' (fun t' -> sub_type t_sub t'))
@@ -51,6 +52,8 @@ let rec sub_type (t_sub : ty) (t_super : ty) : unit =
     | TUnit -> Types.assign r TUnit (* Handle TUnit for t_super *)
     | TList _ -> let elem_meta = Types.fresh_meta () in 
                  Types.assign r (TList elem_meta); sub_type t_sub t_super
+    | TRef _ -> let ref_meta = Types.fresh_meta () in
+                Types.assign r (TRef ref_meta); sub_type t_sub t_super
     )
   | _, TMeta r ->
     (match Types.force t_sub with (* Ensure t_sub is forced *)
@@ -66,6 +69,8 @@ let rec sub_type (t_sub : ty) (t_super : ty) : unit =
     | TUnit -> Types.assign r TUnit (* Handle TUnit for t_sub *)
     | TList _ -> let elem_meta = Types.fresh_meta () in 
                  Types.assign r (TList elem_meta); sub_type t_sub t_super
+    | TRef _ -> let ref_meta = Types.fresh_meta () in
+                Types.assign r (TRef ref_meta); sub_type t_sub t_super
     )
   (* Error Case *) 
   | _, _ -> 
@@ -75,7 +80,7 @@ let rec sub_type (t_sub : ty) (t_super : ty) : unit =
       failwith msg
 
 (* Unification: enforce t1 = t2 by bidirectional subtyping *) 
-let unify (t1 : ty) (t2 : ty) : unit =
+and unify (t1 : ty) (t2 : ty) : unit =
   try 
     sub_type t1 t2; 
     sub_type t2 t1
@@ -413,6 +418,32 @@ let elab (e : expr) : texpr =
        with Failure msg -> failwith ("Type error in match branches: " ^ msg));
       (result_ty, TAExprNode (MatchList ((t_match, a_match), (t_nil, a_nil), y, ys, (t_cons, a_cons))))
 
+    | Ref e1 ->
+      let t1, a1 = aux env e1 in
+      (TRef t1, TAExprNode (Ref (t1, a1)))
+
+    | Deref e1 ->
+      let t1, a1 = aux env e1 in
+      let val_ty = Types.fresh_meta () in
+      (try unify t1 (TRef val_ty)
+       with Failure msg -> failwith ("Type error in dereference (!): " ^ msg));
+      (Types.force val_ty, TAExprNode (Deref (t1, a1)))
+
+    | Assign (e1, e2) ->
+      let t1, a1 = aux env e1 in
+      let t2, a2 = aux env e2 in
+      let val_ty = Types.fresh_meta () in
+      (try 
+         unify t1 (TRef val_ty);
+         sub_type t2 (Types.force val_ty)
+       with Failure msg -> failwith ("Type error in assignment (:=): " ^ msg));
+      (TUnit, TAExprNode (Assign ((t1, a1), (t2, a2))))
+
+    | Seq (e1, e2) ->
+      let t1, a1 = aux env e1 in
+      let t2, a2 = aux env e2 in
+      (t2, TAExprNode (Seq ((t1, a1), (t2, a2)))) (* Type of sequence is type of e2 *)
+
   in
   aux StringMap.empty e
 
@@ -614,6 +645,16 @@ let discretize (e : texpr) : expr =
 
     | MatchList (te_match, te_nil, y, ys, te_cons) ->
         ExprNode (MatchList (aux te_match, aux te_nil, y, ys, aux te_cons))
+
+    | Ref te1 -> 
+        ExprNode (Ref (aux te1))
+    | Deref te1 -> 
+        ExprNode (Deref (aux te1))
+    | Assign (te1, te2) -> 
+        ExprNode (Assign (aux te1, aux te2))
+
+    | Seq (te1, te2) ->
+        ExprNode (Seq (aux te1, aux te2))
 
   in
   aux e

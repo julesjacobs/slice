@@ -146,6 +146,18 @@ and string_of_expr_node ?(indent=0) (ExprNode expr_node) : string =
         (String.make indent ' ') keyword_color reset_color operator_color reset_color e_nil_str
         (String.make indent ' ') variable_color y reset_color operator_color reset_color variable_color ys reset_color operator_color reset_color e_cons_str
         (String.make indent ' ') keyword_color reset_color
+  | Ref e1 -> 
+      Printf.sprintf "%sref%s %s" 
+        keyword_color reset_color (string_of_expr_indented ~indent e1)
+  | Deref e1 -> 
+      Printf.sprintf "%s!%s%s" 
+        operator_color reset_color (string_of_expr_indented ~indent e1)
+  | Assign (e1, e2) -> 
+      Printf.sprintf "%s %s:=%s %s" 
+        (string_of_expr_indented ~indent e1) operator_color reset_color (string_of_expr_indented ~indent e2)
+  | Seq (e1, e2) -> 
+      Printf.sprintf "%s %s;%s %s" 
+        (string_of_expr_indented ~indent e1) operator_color reset_color (string_of_expr_indented ~indent e2)
 
 (* Pretty printer for aexpr nodes *)
 and string_of_aexpr_node ?(indent=0) (TAExprNode ae_node) : string =
@@ -249,6 +261,18 @@ and string_of_aexpr_node ?(indent=0) (TAExprNode ae_node) : string =
         (String.make indent ' ') keyword_color reset_color operator_color reset_color te_nil_str
         (String.make indent ' ') variable_color y reset_color operator_color reset_color variable_color ys reset_color operator_color reset_color te_cons_str
         (String.make indent ' ') keyword_color reset_color
+  | Ref te1 -> 
+      Printf.sprintf "%sref%s %s" 
+        keyword_color reset_color (string_of_texpr_indented ~indent te1)
+  | Deref te1 -> 
+      Printf.sprintf "%s!%s%s" 
+        operator_color reset_color (string_of_texpr_indented ~indent te1)
+  | Assign (te1, te2) -> 
+      Printf.sprintf "%s %s:=%s %s" 
+        (string_of_texpr_indented ~indent te1) operator_color reset_color (string_of_texpr_indented ~indent te2)
+  | Seq (te1, te2) -> 
+      Printf.sprintf "%s %s;%s %s" 
+        (string_of_texpr_indented ~indent te1) operator_color reset_color (string_of_texpr_indented ~indent te2)
 
 (* Pretty printer for types *)
 and string_of_ty = function
@@ -297,6 +321,7 @@ and string_of_ty = function
         Printf.sprintf "%s#%d%s" type_color n reset_color
   | TUnit -> Printf.sprintf "%sunit%s" type_color reset_color
   | TList t -> Printf.sprintf "%slist%s %s" type_color reset_color (string_of_ty t)
+  | TRef t -> Printf.sprintf "%s%s ref%s" type_color (string_of_ty t) reset_color
   | TMeta r ->
         match !r with
         | Known t -> string_of_ty t
@@ -490,6 +515,12 @@ let rec translate_to_sppl (env : (string * string) list) ?(target_var:string opt
 
   | Types.ExprNode(Nil) | Types.ExprNode(Cons _) | Types.ExprNode(MatchList _) ->
       failwith "List constructs (nil, ::, match) are not supported in SPPL translation."
+
+  | Types.ExprNode(Ref _) | Types.ExprNode(Deref _) | Types.ExprNode(Assign (_,_)) ->
+      failwith "References (ref, !, :=) are not supported in SPPL translation."
+
+  | Types.ExprNode(Seq (_,_)) -> (* This is the correct place *) 
+      failwith "Sequences (e1; e2) are not supported in SPPL translation."
 
 (* Top-level function: call translate with target 'model' *) 
 let cdice_expr_to_sppl_prog (expr : Types.expr) : string =

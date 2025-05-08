@@ -1,0 +1,12 @@
+let flip_mut = fun r -> fun p ->
+  let v = uniform(0.0, 1.0) in
+  if v < p then
+    r := not !r
+  else
+    r := !r (* No-op assignment, type unit *)
+in
+
+let my_ref = ref false in
+flip_mut my_ref 0.7; (* Call flip_mut with 70% chance to flip *)
+flip_mut my_ref 0.7; (* Call flip_mut again with 70% chance to flip *)
+!my_ref             (* Return the final state of the reference *) 

@@ -100,6 +100,10 @@ and string_of_expr_node ?(indent=0) (ExprNode expr_node) : string =
         (String.make indent ' ') e_nil_str
         (String.make indent ' ') y ys e_cons_str
         (String.make indent ' ')
+  | Ref e1 -> Printf.sprintf "(ref %s)" (string_of_expr_indented ~indent e1)
+  | Deref e1 -> Printf.sprintf "(!%s)" (string_of_expr_indented ~indent e1)
+  | Assign (e1, e2) -> Printf.sprintf "(%s := %s)" (string_of_expr_indented ~indent e1) (string_of_expr_indented ~indent e2)
+  | Seq (e1, e2) -> Printf.sprintf "%s; %s" (string_of_expr_indented ~indent e1) (string_of_expr_indented ~indent e2)
 
 and string_of_aexpr_node ?(indent=0) (TAExprNode ae_node) : string =
   match ae_node with
@@ -162,6 +166,10 @@ and string_of_aexpr_node ?(indent=0) (TAExprNode ae_node) : string =
         (String.make indent ' ') te_nil_str
         (String.make indent ' ') y ys te_cons_str
         (String.make indent ' ')
+  | Ref te1 -> Printf.sprintf "(ref %s)" (string_of_texpr_indented ~indent te1)
+  | Deref te1 -> Printf.sprintf "(!%s)" (string_of_texpr_indented ~indent te1)
+  | Assign (te1, te2) -> Printf.sprintf "(%s := %s)" (string_of_texpr_indented ~indent te1) (string_of_texpr_indented ~indent te2)
+  | Seq (te1, te2) -> Printf.sprintf "%s; %s" (string_of_texpr_indented ~indent te1) (string_of_texpr_indented ~indent te2)
 
 and string_of_ty = function
   | TBool -> "bool"
@@ -198,6 +206,7 @@ and string_of_ty = function
   | TFin _ -> Printf.sprintf "" 
   | TUnit -> "unit"
   | TList t -> Printf.sprintf "list %s" (string_of_ty t)
+  | TRef t -> Printf.sprintf "%s ref" (string_of_ty t)
   | TMeta r -> (match !r with Known t -> string_of_ty t | Unknown _ -> "?")
 
 let string_of_expr expr = string_of_expr_indented expr 
