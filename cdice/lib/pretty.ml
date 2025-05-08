@@ -13,19 +13,19 @@ let bracket_color = "\027[1;36m" (* Bold Cyan *)
 
 (* Pretty printer for continuous distributions *)
 let string_of_cdistr = function
-| Stats.Uniform (lo, hi) -> 
+| Distributions.Uniform (lo, hi) -> 
     Printf.sprintf "%suniform%s(%s%g%s, %s%g%s)" 
         keyword_color reset_color number_color lo reset_color number_color hi reset_color
-| Stats.Gaussian (mean, std) -> 
+| Distributions.Gaussian (mean, std) -> 
     Printf.sprintf "%sgaussian%s(%s%g%s, %s%g%s)" 
         keyword_color reset_color number_color mean reset_color number_color std reset_color
-| Stats.Exponential rate -> 
+| Distributions.Exponential rate -> 
     Printf.sprintf "%sexponential%s(%s%g%s)" 
         keyword_color reset_color number_color rate reset_color
-| Stats.Beta (alpha, beta) -> 
+| Distributions.Beta (alpha, beta) -> 
     Printf.sprintf "%sbeta%s(%s%g%s, %s%g%s)" 
         keyword_color reset_color number_color alpha reset_color number_color beta reset_color
-| Stats.LogNormal (mu, sigma) ->
+| Distributions.LogNormal (mu, sigma) ->
     Printf.sprintf "%slognormal%s(%s%g%s, %s%g%s)" 
         keyword_color reset_color number_color mu reset_color number_color sigma reset_color
 
@@ -322,15 +322,15 @@ let rec translate_to_sppl (env : (string * string) list) ?(target_var:string opt
   | Types.ExprNode(CDistr d) ->
       let assign_var = match target_var with Some name -> name | None -> fresh_sppl_var state in
       let stmt = match d with
-        | Stats.Uniform (a, b) ->
+        | Distributions.Uniform (a, b) ->
             Printf.sprintf "%s ~= uniform(loc=%f, scale=%f)" assign_var a (b -. a)
-        | Stats.Gaussian (mu, sigma) ->
+        | Distributions.Gaussian (mu, sigma) ->
             Printf.sprintf "%s ~= normal(loc=%f, scale=%f)" assign_var mu sigma
-        | Stats.Exponential rate -> (* Assuming SPPL uses rate for exponential *) 
+        | Distributions.Exponential rate -> (* Assuming SPPL uses rate for exponential *) 
             Printf.sprintf "%s ~= exponential(scale=%f)" assign_var (1.0 /. rate) (* SPPL scale = 1/rate *)
-        | Stats.Beta (alpha, beta) -> (* Assuming SPPL names match *) 
+        | Distributions.Beta (alpha, beta) -> (* Assuming SPPL names match *) 
             Printf.sprintf "%s ~= beta(a=%f, b=%f)" assign_var alpha beta
-        | Stats.LogNormal (mu, sigma) -> (* Assuming SPPL names match *) 
+        | Distributions.LogNormal (mu, sigma) -> (* Assuming SPPL names match *) 
             Printf.sprintf "%s ~= lognormal(mu=%f, sigma=%f)" assign_var mu sigma
        (* Note: Removed a catch-all here, assuming all cdistr variants are now handled *)
       in

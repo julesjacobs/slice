@@ -10,7 +10,7 @@ module Pretty = Pretty
 module Util = Util 
 module Interp = Interp
 module Types = Types (* Explicitly alias Types here *)
-module Stats = Stats (* Also alias Stats if needed elsewhere *)
+module Distributions = Distributions (* Explicitly alias Distributions here *)
 module Bags = Bags   (* And Bags *)
 (* We might need others like Types, Bag, Stats depending on usage, 
    but let's start with these two. *)
@@ -25,7 +25,7 @@ let rec sub_type (t_sub : ty) (t_super : ty) : unit =
   (* Base Cases *)
   | TBool,    TBool      -> ()
   | TFin n1, TFin n2 when n1 = n2 -> () 
-  | TUnit, TUnit -> () (* New: Unit is a subtype of Unit *)
+  | TUnit, TUnit -> ()
   (* Structural Cases *)
   | TFloat (b1, c1), TFloat (b2, c2) -> 
       Bags.BoundBag.eq b1 b2;  (* Bounds must be consistent *) 
@@ -93,7 +93,7 @@ let elab (e : expr) : texpr =
       let consts_bag_ref = Bags.FloatBag.create (Finite (FloatSet.singleton f)) in
       (TFloat (bounds_bag_ref, consts_bag_ref), TAExprNode (Const f))
     | BoolConst b ->
-      (TBool, TAExprNode (BoolConst b)) (* New: Bool constants are TBool *)
+      (TBool, TAExprNode (BoolConst b))
     | Var x ->
       (try 
         let ty = StringMap.find x env in
@@ -110,7 +110,7 @@ let elab (e : expr) : texpr =
     | CDistr dist ->
         (* Check for degenerate uniform distribution *) 
         (match dist with
-         | Stats.Uniform (a, b) when a = b -> 
+         | Distributions.Uniform (a, b) when a = b -> 
              failwith (Printf.sprintf "Degenerate uniform distribution uniform(%f, %f) is not allowed." a b)
          | _ -> ()); (* Allow other distributions or valid uniforms *)
 
@@ -363,7 +363,7 @@ let elab (e : expr) : texpr =
        with Failure msg -> failwith ("Type error in Not operand: " ^ msg));
       (TBool, TAExprNode (Not (t1, a1)))
 
-    | Observe e1 -> (* New: Handle Observe *)
+    | Observe e1 ->
       let t1, a1 = aux env e1 in
       (try sub_type t1 Types.TBool (* Argument must be TBool *)
        with Failure msg -> failwith ("Type error in Observe argument: " ^ msg));
@@ -379,8 +379,8 @@ let elab_bool (e : expr) : texpr =
   (t, a)
 
 (* Calculate probability for a given distribution in an interval *)
-let prob_cdistr_interval (left : float) (right : float) (dist : Stats.cdistr) : float =
-  let cdf = Stats.cdistr_cdf dist in
+let prob_cdistr_interval (left : float) (right : float) (dist : Distributions.cdistr) : float =
+  let cdf = Distributions.cdistr_cdf dist in
   cdf right -. cdf left
 
 (* 
@@ -415,7 +415,7 @@ let discretize (e : texpr) : expr =
               (* Generate FinConst expression *)
               ExprNode (FinConst (idx, 1+List.length cuts)))
 
-    | BoolConst b -> ExprNode (BoolConst b) (* New: Pass through *) 
+    | BoolConst b -> ExprNode (BoolConst b)
 
     | Var x ->
         ExprNode (Var x)
@@ -548,17 +548,17 @@ let discretize (e : texpr) : expr =
     | FinLeq (te1, te2, n) -> 
         ExprNode (FinLeq (aux te1, aux te2, n))
 
-    | And (te1, te2) -> (* New: Recurse *) 
+    | And (te1, te2) ->
         ExprNode (And (aux te1, aux te2))
         
-    | Or (te1, te2) -> (* New: Recurse *) 
+    | Or (te1, te2) ->
         ExprNode (Or (aux te1, aux te2))
         
-    | Not te1 -> (* New: Recurse *) 
+    | Not te1 ->
         ExprNode (Not (aux te1))
 
-    | Observe te1 -> (* New: Handle Observe *)
-        ExprNode (Observe (aux te1)) (* Recursively discretize the argument *)
+    | Observe te1 ->
+        ExprNode (Observe (aux te1))
 
   in
   aux e

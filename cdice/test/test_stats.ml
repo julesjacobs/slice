@@ -1,5 +1,5 @@
 open OUnit2
-open Contdice.Stats
+open Contdice.Distributions
 
 (** Numerical differentiation using central difference *)
 let numerical_derivative ?(h=1e-6) f x =

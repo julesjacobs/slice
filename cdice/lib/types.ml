@@ -6,7 +6,7 @@ type 'a expr_generic =
   | Const  of float
   | BoolConst of bool            
   | Let    of string * 'a * 'a
-  | CDistr of Stats.cdistr          (* Continuous distribution *)
+  | CDistr of Distributions.cdistr          (* Continuous distribution *)
   (* | Discrete of float list    (* list of probabilities; i-th element is probability of float(i) *) *)
   | DistrCase of ('a * float) list (* General discrete distribution: (expr * prob) list *)
   | Less   of 'a * 'a

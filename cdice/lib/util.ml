@@ -5,15 +5,15 @@ open Bags (* Open Bags to get FloatSet and access Set modules and Bound type *)
 
 (* Pretty printer for continuous distributions *)
 let string_of_cdistr = function
-| Stats.Uniform (lo, hi) -> 
+| Distributions.Uniform (lo, hi) -> 
     Printf.sprintf "uniform(%g, %g)" lo hi
-| Stats.Gaussian (mean, std) -> 
+| Distributions.Gaussian (mean, std) -> 
     Printf.sprintf "gaussian(%g, %g)" mean std
-| Stats.Exponential rate -> 
+| Distributions.Exponential rate -> 
     Printf.sprintf "exponential(%g)" rate
-| Stats.Beta (alpha, beta) -> 
+| Distributions.Beta (alpha, beta) -> 
     Printf.sprintf "beta(%g, %g)" alpha beta
-| Stats.LogNormal (mu, sigma) -> 
+| Distributions.LogNormal (mu, sigma) -> 
     Printf.sprintf "lognormal(%g, %g)" mu sigma
 
 let bit_length n =

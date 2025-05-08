@@ -27,7 +27,7 @@ let rec eval (env : env) (ExprNode e_node : expr) : value =
       (* Handle continuous distributions by sampling using the stats library function *)
       begin
         try
-          VFloat (Stats.cdistr_sample dist)
+          VFloat (Distributions.cdistr_sample dist)
         with 
         | Invalid_argument msg -> raise (RuntimeError (Printf.sprintf "Invalid distribution parameters: %s" msg))
         | Failure msg -> raise (RuntimeError (Printf.sprintf "Sampling error: %s" msg)) (* Catch unimplemented cases *)
