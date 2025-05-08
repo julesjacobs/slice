@@ -36,15 +36,6 @@ open Types
 %type <float> number
 %type <(Types.expr * float) list> distr_cases
 
-(* Operator precedence and associativity *)
-%left ARROW             (* Function type arrow *)
-%left OR                (* OR has lower precedence than AND *)
-%left AND               (* AND has lower precedence than NOT/comparison *)
-%right NOT              (* Unary NOT has high precedence *)
-%nonassoc LESS LESSEQ LT_HASH LEQ_HASH (* Comparison operators *)
-(* Application (juxtaposition) has higher precedence - handled by grammar structure *)
-(* FST, SND have high precedence - handled by grammar structure *)
-
 %% 
 
 prog: e = expr EOF { e };
