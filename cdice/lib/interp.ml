@@ -193,5 +193,7 @@ let rec eval (env : env) (ExprNode e_node : expr) : value =
       let _ = eval env e1 in (* Evaluate e1 for side effects, discard result *)
       eval env e2 (* Evaluate e2 and return its result *)
 
+  | Unit -> VUnit
+
 (* Entry point for evaluation with an empty environment *)
 let run e = eval [] e 

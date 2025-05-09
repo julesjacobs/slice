@@ -36,15 +36,23 @@ open Types
 %token REF          (* ref *)
 %token BANG         (* ! *)
 %token SEMICOLON    (* ; *)
+%token GAMMA
+%token LAPLACE
+%token CAUCHY
+%token WEIBULL
+%token TDIST
+%token CHI2
+%token LOGISTIC
 
 (* Precedence and associativity *)
 %left SEMICOLON
+%right COMMA
 
 
 %start <Types.expr> prog
 
 (* Define types for non-terminals *) 
-%type <Types.expr> expr assign_expr cons_expr cmp_expr app_expr atomic_expr prefix_expr
+%type <Types.expr> expr assign_expr cons_expr cmp_expr app_expr atomic_expr prefix_expr comma_expr
 %type <unit> opt_bar
 %type <float> number
 %type <(Types.expr * float) list> distr_cases
@@ -76,7 +84,7 @@ expr:
 /* Assignment level */
 assign_expr:
   | prefix_expr COLON_EQUAL assign_expr { ExprNode (Assign ($1, $3)) }
-  | or_expr { $1 } /* Fallthrough */
+  | comma_expr { $1 }
   ;
 
 /* OR Level */
@@ -149,7 +157,21 @@ atomic_expr:
   | DISCRETE LPAREN cases = distr_cases RPAREN
     { ExprNode (DistrCase cases) }
   | LPAREN e = expr RPAREN      { e }
-  | LPAREN e1 = expr COMMA e2 = expr RPAREN { ExprNode (Pair (e1, e2)) }
+  | GAMMA LPAREN shape = number COMMA scale = number RPAREN
+    { ExprNode (CDistr (Gamma (shape, scale))) }
+  | LAPLACE LPAREN scale = number RPAREN
+    { ExprNode (CDistr (Laplace (scale))) }
+  | CAUCHY LPAREN scale = number RPAREN
+    { ExprNode (CDistr (Cauchy (scale))) }
+  | WEIBULL LPAREN a = number COMMA b = number RPAREN
+    { ExprNode (CDistr (Weibull (a, b))) }
+  | TDIST LPAREN nu = number RPAREN
+    { ExprNode (CDistr (TDist (nu))) }
+  | CHI2 LPAREN nu = number RPAREN
+    { ExprNode (CDistr (Chi2 (nu))) }
+  | LOGISTIC LPAREN scale = number RPAREN
+    { ExprNode (CDistr (Logistic (scale))) }
+  | LPAREN RPAREN { ExprNode Unit }
   ;
 
 /* Optional bar rule */
@@ -171,5 +193,10 @@ distr_case:
 number:
   | f = FLOAT { f }
   | i = INT   { float_of_int i }
+
+comma_expr:
+  | comma_expr COMMA cmp_expr { ExprNode (Pair ($1, $3)) }
+  | cmp_expr { $1 }
+  ;
 
 %% (* This %% should mark the end of rules and precede any OCaml code if present *)

@@ -15,6 +15,7 @@ let string_of_cdistr = function
     Printf.sprintf "beta(%g, %g)" alpha beta
 | Distributions.LogNormal (mu, sigma) -> 
     Printf.sprintf "lognormal(%g, %g)" mu sigma
+| _ -> "<unsupported distribution>"
 
 let bit_length n =
   if n < 0 then invalid_arg "bit_length: only non-negative integers allowed"
@@ -104,6 +105,7 @@ and string_of_expr_node ?(indent=0) (ExprNode expr_node) : string =
   | Deref e1 -> Printf.sprintf "(!%s)" (string_of_expr_indented ~indent e1)
   | Assign (e1, e2) -> Printf.sprintf "(%s := %s)" (string_of_expr_indented ~indent e1) (string_of_expr_indented ~indent e2)
   | Seq (e1, e2) -> Printf.sprintf "%s; %s" (string_of_expr_indented ~indent e1) (string_of_expr_indented ~indent e2)
+  | Unit -> "()"
 
 and string_of_aexpr_node ?(indent=0) (TAExprNode ae_node) : string =
   match ae_node with
@@ -170,6 +172,7 @@ and string_of_aexpr_node ?(indent=0) (TAExprNode ae_node) : string =
   | Deref te1 -> Printf.sprintf "(!%s)" (string_of_texpr_indented ~indent te1)
   | Assign (te1, te2) -> Printf.sprintf "(%s := %s)" (string_of_texpr_indented ~indent te1) (string_of_texpr_indented ~indent te2)
   | Seq (te1, te2) -> Printf.sprintf "%s; %s" (string_of_texpr_indented ~indent te1) (string_of_texpr_indented ~indent te2)
+  | Unit -> "()"
 
 and string_of_ty = function
   | TBool -> "bool"

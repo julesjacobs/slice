@@ -32,6 +32,7 @@ type 'a expr_generic =
   | Deref of 'a (* !e *)
   | Assign of 'a * 'a (* e1 := e2 *)
   | Seq of 'a * 'a (* e1 ; e2 *)
+  | Unit
 
 (* The source language expression type *)
 type expr = ExprNode of expr expr_generic

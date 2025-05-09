@@ -28,6 +28,28 @@ let string_of_cdistr = function
 | Distributions.LogNormal (mu, sigma) ->
     Printf.sprintf "%slognormal%s(%s%g%s, %s%g%s)" 
         keyword_color reset_color number_color mu reset_color number_color sigma reset_color
+| Distributions.Gamma (shape, scale) ->
+    Printf.sprintf "%sgamma%s(%s%g%s, %s%g%s)" 
+        keyword_color reset_color number_color shape reset_color number_color scale reset_color
+| Distributions.Laplace scale ->
+    Printf.sprintf "%slaplace%s(%s%g%s)" 
+        keyword_color reset_color number_color scale reset_color
+| Distributions.Cauchy scale ->
+    Printf.sprintf "%scauchy%s(%s%g%s)" 
+        keyword_color reset_color number_color scale reset_color
+| Distributions.Weibull (a, b) ->
+    Printf.sprintf "%sweibull%s(%s%g%s, %s%g%s)" 
+        keyword_color reset_color number_color a reset_color number_color b reset_color
+| Distributions.TDist nu ->
+    Printf.sprintf "%stdist%s(%s%g%s)" 
+        keyword_color reset_color number_color nu reset_color
+| Distributions.Chi2 nu ->
+    Printf.sprintf "%schi2%s(%s%g%s)" 
+        keyword_color reset_color number_color nu reset_color
+| Distributions.Logistic scale ->
+    Printf.sprintf "%slogistic%s(%s%g%s)" 
+        keyword_color reset_color number_color scale reset_color
+| _ -> "<unsupported distribution>"
 
 (* Forward declarations *)
 let rec string_of_expr_indented ?(indent=0) e =
@@ -158,6 +180,7 @@ and string_of_expr_node ?(indent=0) (ExprNode expr_node) : string =
   | Seq (e1, e2) -> 
       Printf.sprintf "%s %s;%s %s" 
         (string_of_expr_indented ~indent e1) operator_color reset_color (string_of_expr_indented ~indent e2)
+  | Unit -> Printf.sprintf "%s()%s" keyword_color reset_color
 
 (* Pretty printer for aexpr nodes *)
 and string_of_aexpr_node ?(indent=0) (TAExprNode ae_node) : string =
@@ -273,6 +296,7 @@ and string_of_aexpr_node ?(indent=0) (TAExprNode ae_node) : string =
   | Seq (te1, te2) -> 
       Printf.sprintf "%s %s;%s %s" 
         (string_of_texpr_indented ~indent te1) operator_color reset_color (string_of_texpr_indented ~indent te2)
+  | Unit -> Printf.sprintf "%s()%s" keyword_color reset_color
 
 (* Pretty printer for types *)
 and string_of_ty = function
@@ -394,7 +418,21 @@ let rec translate_to_sppl (env : (string * string) list) ?(target_var:string opt
             Printf.sprintf "%s ~= beta(a=%f, b=%f)" assign_var alpha beta
         | Distributions.LogNormal (mu, sigma) -> (* Assuming SPPL names match *) 
             Printf.sprintf "%s ~= lognormal(mu=%f, sigma=%f)" assign_var mu sigma
-       (* Note: Removed a catch-all here, assuming all cdistr variants are now handled *)
+        | Distributions.Gamma (shape, scale) ->
+            Printf.sprintf "%s ~= gamma(shape=%f, scale=%f)" assign_var shape scale
+        | Distributions.Laplace scale ->
+            Printf.sprintf "%s ~= laplace(scale=%f)" assign_var scale
+        | Distributions.Cauchy scale ->
+            Printf.sprintf "%s ~= cauchy(scale=%f)" assign_var scale
+        | Distributions.Weibull (a, b) ->
+            Printf.sprintf "%s ~= weibull(shape=%f, scale=%f)" assign_var a b
+        | Distributions.TDist nu ->
+            Printf.sprintf "%s ~= tdist(nu=%f)" assign_var nu
+        | Distributions.Chi2 nu ->
+            Printf.sprintf "%s ~= chi2(nu=%f)" assign_var nu
+        | Distributions.Logistic scale ->
+            Printf.sprintf "%s ~= logistic(scale=%f)" assign_var scale
+        | _ -> Printf.sprintf "%s ~= <unsupported distribution>" assign_var
       in
       ([stmt], assign_var)
   | Types.ExprNode(DistrCase cases) ->
@@ -521,6 +559,9 @@ let rec translate_to_sppl (env : (string * string) list) ?(target_var:string opt
 
   | Types.ExprNode(Seq (_,_)) -> (* This is the correct place *) 
       failwith "Sequences (e1; e2) are not supported in SPPL translation."
+
+  | Types.ExprNode(Unit) ->
+      ([], "None")
 
 (* Top-level function: call translate with target 'model' *) 
 let cdice_expr_to_sppl_prog (expr : Types.expr) : string =

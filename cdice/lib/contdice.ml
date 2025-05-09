@@ -444,6 +444,8 @@ let elab (e : expr) : texpr =
       let t2, a2 = aux env e2 in
       (t2, TAExprNode (Seq ((t1, a1), (t2, a2)))) (* Type of sequence is type of e2 *)
 
+    | Unit -> (Types.TUnit, TAExprNode Unit)
+
   in
   aux StringMap.empty e
 
@@ -655,6 +657,8 @@ let discretize (e : texpr) : expr =
 
     | Seq (te1, te2) ->
         ExprNode (Seq (aux te1, aux te2))
+
+    | Unit -> ExprNode Unit
 
   in
   aux e
