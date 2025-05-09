@@ -81,22 +81,6 @@ let assign (m : meta_ref) (t : ty) : unit =
 type texpr = ty * aexpr
 and aexpr = TAExprNode of texpr expr_generic
 
-(* Remove the duplicated definitions below *)
-(*
-(* Abstract syntax tree for expressions *)
-type expr_node =
-  | Const of float
-  ...
-and expr = ExprNode of expr_node
-
-(* Annotated (typed) expressions *)
-type aexpr_node =
-  | Const of float
-  ...
-and aexpr = TAExprNode of aexpr_node
-and texpr = ty * aexpr (* Type-annotated expression *)
-*)
-
 (* Runtime values *)
 type value =
   | VBool of bool
