@@ -28,7 +28,10 @@ type cdistr =
 let rng = Gsl.Rng.make (Gsl.Rng.default ())
 
 let cdistr_cdf dist x =
-  match dist with
+  if x = neg_infinity then 0.0
+  else if x = infinity then 1.0
+  else
+    match dist with
   | Uniform (lo, hi)        ->
       if lo > hi then invalid_arg "Uniform CDF: lo must be ≤ hi"
       else Gsl.Cdf.flat_P ~x:x ~a:lo ~b:hi
