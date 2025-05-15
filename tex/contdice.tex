@@ -16,6 +16,8 @@
     stringstyle=\ttfamily,
 }
 
+\newcommand{\jules}[1]{{\color{blue}\textbf{Jules:} #1}}
+
 
 % Macros for language keywords to be used in math mode
 \newcommand{\letkw}{\text{\ttfamily\bfseries let}}
@@ -263,6 +265,8 @@ The majority of widely-used PPLs treat \emph{continuous} distributions as first-
 
 \paragraph{Universal languages supporting both regimes}  
 Universal or ``hybrid'' languages aim for expressiveness by embedding probabilistic primitives into general-purpose hosts. \emph{Anglican} (Clojure), \emph{WebPPL} (JavaScript), \emph{Figaro} (Scala) and \emph{Infer.NET} (C\#) permit arbitrary mixtures of discrete and continuous variables with inference based on importance sampling, Gibbs, expectation propagation, or lightweight MCMC~\cite{Tolpin2016Anglican,Goodman2014WebPPL,Pfeffer2009Figaro,Minka2018InferNET}. More recently, Julia-based systems such as \emph{Turing.jl} and \emph{Gen.jl} expose programmable inference interfaces, while \emph{Bean Machine} offers a declarative syntax atop PyTorch~\cite{Ge2018Turing,CusumanoTowner2019Gen,Tehrani2020BeanMachine}. Classic languages like \emph{Church} pioneered the ``evaluation-as-sampling'' view that underlies many of these systems~\cite{Goodman2008Church}. Discretization transformations are left entirely to the user and are not integrated with the inference engine.
+
+\jules{Talk about Steven's abstract interpretation work here}
 
 \paragraph{Positioning of our work}  
 Our contribution lies precisely at the intersection left open by the above lines of research. We propose a \emph{language-level transformation} that automatically discretises continuous sub-programs while preserving the semantics required for exact Bayesian reasoning in the discrete fragment. When discretization successfully translates all continuous distributions, we can translate the program into the finite domain accepted by Dice (or Roulette, or ProbLog), and inherit their fast exact inference without sacrificing the modelling convenience of continuous distributions. 
