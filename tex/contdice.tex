@@ -275,6 +275,9 @@ Empirically, our approach of discretizing programs and running them through Dice
 \medskip  
 In summary, existing discrete PPLs excel at exactness but lack continuous support, symbolic languages like SPPL require restrictive structure and are slower than model counting approaches, and continuous or hybrid frameworks favour approximate inference. To our knowledge none of these systems automates the conversion of continuous programs into a discrete representation amenable to exact inference; our work addresses precisely that missing piece.
 
+In the future, we would like to extend our work to symbolically integrate tractable combinations of continous distributions beyond the cumulative distribution function.
+We would also like to improve mixed continuous-discrete inference by partial discretization, summing out the discrete variables using weighted model counting techniques, and running the remaining continuous inference using standard continuous inference techniques.
+
 \bibliographystyle{ACM-Reference-Format}
 \bibliography{refs}
 
