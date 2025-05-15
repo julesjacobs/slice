@@ -63,7 +63,6 @@ open Types
 %type <unit> opt_bar
 %type <float> number
 %type <(Types.expr * float) list> distr_cases
-%type <float> arith_expr
 
 %% 
 
@@ -205,16 +204,12 @@ distr_case:
 number:
   | f = FLOAT { f }
   | i = INT   { float_of_int i }
-  | arith_expr { $1 }           /* Fallthrough to application */
-  ;
-
-/* Arithmetic expressions */
-arith_expr:
-  | f = FLOAT { f }
-  | e1 = arith_expr PLUS e2 = arith_expr { e1 +. e2 }
-  | e1 = arith_expr MINUS e2 = arith_expr { e1 -. e2 }
-  | e1 = arith_expr TIMES e2 = arith_expr { e1 *. e2 }
-  | e1 = arith_expr DIVIDE e2 = arith_expr { e1 /. e2 }
+  /* Arithmetic expressions */
+  | e1 = number PLUS e2 = number { e1 +. e2 }
+  | e1 = number MINUS e2 = number { e1 -. e2 }
+  | e1 = number TIMES e2 = number { e1 *. e2 }
+  | e1 = number DIVIDE e2 = number { e1 /. e2 }
+  | LPAREN e = number RPAREN { e }
 
 comma_expr:
   | comma_expr COMMA cmp_expr { ExprNode (Pair ($1, $3)) }

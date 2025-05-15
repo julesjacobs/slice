@@ -97,6 +97,15 @@ rule token = parse
   | "tdist"   { TDIST }
   | "chi2"    { CHI2 }
   | "logistic" { LOGISTIC }
+  | '+'       { PLUS }
+  | '-'       { MINUS }
+  | '*'       { TIMES }
+  | '/'       { DIVIDE }
+  (* 
+  | "for"    { FOR }
+  | "to"     { TO }
+  | "do"     { DO }
+  *)
   | int as i   { try INT (int_of_string i)
                  with _ -> error lexbuf (Printf.sprintf "Invalid integer literal: %s" i) }
   | float as f { try FLOAT (float_of_string f)
