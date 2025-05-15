@@ -43,9 +43,16 @@ open Types
 %token TDIST
 %token CHI2
 %token LOGISTIC
+%token PLUS
+%token MINUS
+%token TIMES
+%token DIVIDE
+(* %token FOR TO DO *)
 
 (* Precedence and associativity *)
 %left SEMICOLON
+%left PLUS MINUS
+%left TIMES DIVIDE
 %right COMMA
 
 
@@ -56,6 +63,7 @@ open Types
 %type <unit> opt_bar
 %type <float> number
 %type <(Types.expr * float) list> distr_cases
+%type <float> arith_expr
 
 %% 
 
@@ -78,6 +86,10 @@ expr:
     { ExprNode (Fix (f, x, e)) }
   | MATCH e1 = expr WITH opt_bar NIL ARROW e_nil = expr BAR y = IDENT CONS ys = IDENT ARROW e_cons = expr END 
     { ExprNode (MatchList (e1, e_nil, y, ys, e_cons)) } 
+  (*
+  | FOR i = IDENT EQUAL n1 = expr TO n2 = expr DO body = expr
+    { ExprNode (For (i, n1, n2, body)) }
+  *)
   | assign_expr { $1 } /* Fallthrough to higher precedence expression forms */
   ;
 
@@ -193,6 +205,16 @@ distr_case:
 number:
   | f = FLOAT { f }
   | i = INT   { float_of_int i }
+  | arith_expr { $1 }           /* Fallthrough to application */
+  ;
+
+/* Arithmetic expressions */
+arith_expr:
+  | f = FLOAT { f }
+  | e1 = arith_expr PLUS e2 = arith_expr { e1 +. e2 }
+  | e1 = arith_expr MINUS e2 = arith_expr { e1 -. e2 }
+  | e1 = arith_expr TIMES e2 = arith_expr { e1 *. e2 }
+  | e1 = arith_expr DIVIDE e2 = arith_expr { e1 /. e2 }
 
 comma_expr:
   | comma_expr COMMA cmp_expr { ExprNode (Pair ($1, $3)) }
