@@ -21,3 +21,5 @@ tex/contdice.fdb_latexmk
 tex/contdice.aux
 output.dice
 parametrize.cdice
+tex/contdice.bbl
+tex/contdice.blg

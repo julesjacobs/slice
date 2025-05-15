@@ -16,6 +16,7 @@
     stringstyle=\ttfamily,
 }
 
+
 % Macros for language keywords to be used in math mode
 \newcommand{\letkw}{\text{\ttfamily\bfseries let}}
 \newcommand{\inkw}{\text{\ttfamily\bfseries in}}
@@ -247,5 +248,32 @@ Let $e$ be a subexpression with inferred type $t$ and associated bag $B = \{c_0,
 \end{itemize}
 
 This process effectively translates continuous distributions into discrete distributions based on the thresholds used in the program, while preserving the original discrete distributions and program structure, including functional and pair constructs.
+
+\section{Related Work}
+\label{sec:related}
+
+\paragraph{Discrete-only probabilistic languages}  
+Several recent systems achieve \emph{exact inference} by restricting models to finite, discrete random variables. \emph{Roulette} extends Racket with first-class support for finitely-supported distributions and leverages symbolic evaluation to compile queries into weighted model-counting problems, enabling scalable exact conditioning on complex programs~\cite{Moy2025Roulette}. \emph{Dice} follows a similar philosophy in an OCaml DSL, compiling discrete programs to weighted model counting to perform exact Bayesian updates even on thousands of Boolean and finite-categorical variables~\cite{Holtzen2020Dice}. Earlier work in probabilistic logic programming, most prominently \emph{ProbLog}, annotates Prolog facts with probabilities and reduces inference to weighted Boolean formulas that can likewise be solved exactly~\cite{DeRaedt2007ProbLog}. These languages demonstrate the power of exact reasoning, but by construction they \emph{cannot express continuous random quantities}; consequently they offer no built-in path for analysing models that naturally mix real-valued and discrete structure.  
+
+\paragraph{Symbolic treatment of mixed models}  
+\emph{SPPL} occupies an intermediate point on the design spectrum. By enforcing syntactic restrictions that guarantee every program can be translated into a finite \emph{sum-product expression}, SPPL supports models with both discrete and continuous components while still admitting \emph{symbolic} exact inference~\cite{Saad2021SPPL}. Rather than discretising the continuous parts, SPPL derives closed-form integrals when possible; exactness is retained for a narrow class of models. There is no mechanism for turning the remaining continuous structure into a discrete program that could reuse the powerful inference back-ends of Dice, Roulette, or ProbLog.
+
+\paragraph{Continuous and hybrid PPLs with approximate inference}  
+The majority of widely-used PPLs treat \emph{continuous} distributions as first-class and rely on approximate inference. Systems such as \emph{Stan} (C++), \emph{PyMC} (Python), \emph{Pyro} (Python on PyTorch), \emph{TensorFlow Probability} and its precursor \emph{Edward} expose rich continuous distributions and obtain posteriors with Hamiltonian Monte Carlo, variational inference, or sequential Monte Carlo~\cite{Carpenter2017Stan,Salvatier2016PyMC3,Bingham2019Pyro,Dillon2017TFP,Tran2016Edward}. These frameworks deliver high accuracy for differentiable densities but can struggle with discrete latent structure or discontinuities that arise after naïve discretisation. Crucially, none of them offers an automated pathway to convert continuous sub-expressions into discrete replacements that would make exact inference feasible.
+
+\paragraph{Universal languages supporting both regimes}  
+Universal or ``hybrid'' languages aim for expressiveness by embedding probabilistic primitives into general-purpose hosts. \emph{Anglican} (Clojure), \emph{WebPPL} (JavaScript), \emph{Figaro} (Scala) and \emph{Infer.NET} (C\#) permit arbitrary mixtures of discrete and continuous variables with inference based on importance sampling, Gibbs, expectation propagation, or lightweight MCMC~\cite{Tolpin2016Anglican,Goodman2014WebPPL,Pfeffer2009Figaro,Minka2018InferNET}. More recently, Julia-based systems such as \emph{Turing.jl} and \emph{Gen.jl} expose programmable inference interfaces, while \emph{Bean Machine} offers a declarative syntax atop PyTorch~\cite{Ge2018Turing,CusumanoTowner2019Gen,Tehrani2020BeanMachine}. Classic languages like \emph{Church} pioneered the ``evaluation-as-sampling'' view that underlies many of these systems~\cite{Goodman2008Church}. Discretization transformations are left entirely to the user and are not integrated with the inference engine.
+
+\paragraph{Positioning of our work}  
+Our contribution lies precisely at the intersection left open by the above lines of research. We propose a \emph{language-level transformation} that automatically discretises continuous sub-programs while preserving the semantics required for exact Bayesian reasoning in the discrete fragment. When discretization successfully translates all continuous distributions, we can translate the program into the finite domain accepted by Dice (or Roulette, or ProbLog), and inherit their fast exact inference without sacrificing the modelling convenience of continuous distributions. 
+Empirically, our approach of discretizing programs and running them through Dice's inference engine achieves significantly faster runtimes compared to SPPL's symbolic methods, while maintaining exactness. Unlike continuous PPLs that settle for stochastic approximations, our approach bridges the gap between expressive modelling and fast exact computation. Partial discretization is also possible, and could be used to speed up inference without sacrificing expressiveness.
+
+\medskip  
+In summary, existing discrete PPLs excel at exactness but lack continuous support, symbolic languages like SPPL require restrictive structure and are slower than model counting approaches, and continuous or hybrid frameworks favour approximate inference. To our knowledge none of these systems automates the conversion of continuous programs into a discrete representation amenable to exact inference; our work addresses precisely that missing piece.
+
+\bibliographystyle{ACM-Reference-Format}
+\bibliography{refs}
+
+
 
 \end{document}
