@@ -134,35 +134,66 @@ let elab (e : expr) : texpr =
       let bounds_bag_ref = Bags.BoundBag.create (Finite BoundSet.empty) in 
       let consts_bag_ref = Bags.FloatBag.create Top in 
       (match dist_exp with
-      | Uniform (a, b) ->
-        (* Recursively translate a and b *)
-        let t1, a1 = aux env a in
-        let t2, a2 = aux env b in
-        let t1_bag1 = Bags.fresh_bound_bag () in
-        let t1_bag2 = Bags.fresh_float_bag () in
-        let t2_bag1 = Bags.fresh_bound_bag () in
-        let t2_bag2 = Bags.fresh_float_bag () in
-        (try unify t1 (Types.TFloat (t1_bag1, t1_bag2))
-         with Failure msg -> failwith (Printf.sprintf "Type error in Sample (uniform) left operand: %s" msg));
-        (try unify t2 (Types.TFloat (t2_bag1, t2_bag2))
-         with Failure msg -> failwith (Printf.sprintf "Type error in Sample (uniform) right operand: %s" msg));
-        (* Add listener logic for uniform distribution *)
-        (* We want to make the output non-discretizable if the input isn't discrete *)
-        (* We thus listen to the two input bags and if any of them are non-discrete, we make the output non-discrete *)
-        (* We also want to add the floats in the floatbag of the input to the boundbag of the input *)
-        (* Let's do that first *)
+      | Distr1 (dist_kind, arg_e) ->
+          let t_arg, a_arg = aux env arg_e in
+          let t_arg_bound_bag = Bags.fresh_bound_bag () in
+          let t_arg_float_bag = Bags.fresh_float_bag () in
+          (try unify t_arg (Types.TFloat (t_arg_bound_bag, t_arg_float_bag))
+           with Failure msg -> 
+            let kind_str = Pretty.string_of_expr_indented (ExprNode (Sample (Distr1 (dist_kind, arg_e)))) in (* Get a string for the kind *)
+            failwith (Printf.sprintf "Type error in Sample (%s) argument: %s" kind_str msg));
+          
+          let add_floats_to_boundbag (float_bag : FloatBag.bag) (bound_bag : BoundBag.bag) =
+            let listener () =
+              let v = Bags.FloatBag.get float_bag in
+              (match v with
+              | Finite s -> Bags.BoundBag.add_all s bound_bag
+              | Top -> Bags.BoundBag.leq (Bags.BoundBag.create Top) bound_bag)
+            in
+            Bags.FloatBag.listen float_bag listener in
+          add_floats_to_boundbag t_arg_float_bag t_arg_bound_bag;
+
+          let make_output_top_if_input_boundbag_is_top input_bound_bag =
+            let listener () =
+              let v = Bags.BoundBag.get input_bound_bag in
+              (match v with
+              | Top -> Bags.BoundBag.leq (Bags.BoundBag.create Top) bounds_bag_ref
+              | _ -> ())
+            in
+            Bags.BoundBag.listen input_bound_bag listener in
+          make_output_top_if_input_boundbag_is_top t_arg_bound_bag;
+
+          let dist_exp' = Distr1 (dist_kind, (t_arg, a_arg)) in
+          (TFloat (bounds_bag_ref, consts_bag_ref), TAExprNode (Sample dist_exp'))
+
+      | Distr2 (dist_kind, arg1_e, arg2_e) ->
+        let t1, a1 = aux env arg1_e in
+        let t2, a2 = aux env arg2_e in
+        let t1_bound_bag = Bags.fresh_bound_bag () in
+        let t1_float_bag = Bags.fresh_float_bag () in
+        let t2_bound_bag = Bags.fresh_bound_bag () in
+        let t2_float_bag = Bags.fresh_float_bag () in
+
+        (try unify t1 (Types.TFloat (t1_bound_bag, t1_float_bag))
+         with Failure msg -> 
+          let kind_str = Pretty.string_of_expr_indented (ExprNode (Sample (Distr2 (dist_kind, arg1_e, arg2_e)))) in
+          failwith (Printf.sprintf "Type error in Sample (%s) first argument: %s" kind_str msg));
+        (try unify t2 (Types.TFloat (t2_bound_bag, t2_float_bag))
+         with Failure msg -> 
+          let kind_str = Pretty.string_of_expr_indented (ExprNode (Sample (Distr2 (dist_kind, arg1_e, arg2_e)))) in
+          failwith (Printf.sprintf "Type error in Sample (%s) second argument: %s" kind_str msg));
+        
         let add_floats_to_boundbag (float_bag : FloatBag.bag) (bound_bag : BoundBag.bag) =
           let listener () =
             let v = Bags.FloatBag.get float_bag in
             (match v with
             | Finite s -> Bags.BoundBag.add_all s bound_bag
-            | Top -> (* Make it top if it's top *)
-              Bags.BoundBag.leq (Bags.BoundBag.create Top) bound_bag)
+            | Top -> Bags.BoundBag.leq (Bags.BoundBag.create Top) bound_bag)
           in
           Bags.FloatBag.listen float_bag listener in
-        add_floats_to_boundbag t1_bag2 t1_bag1;
-        add_floats_to_boundbag t2_bag2 t2_bag1;
-        (* Now we want to make the output non-discretizable if the input isn't discrete *)
+        add_floats_to_boundbag t1_float_bag t1_bound_bag;
+        add_floats_to_boundbag t2_float_bag t2_bound_bag;
+
         let make_output_top_if_input_boundbag_is_top input_bound_bag =
           let listener () =
             let v = Bags.BoundBag.get input_bound_bag in
@@ -171,12 +202,12 @@ let elab (e : expr) : texpr =
             | _ -> ())
           in
           Bags.BoundBag.listen input_bound_bag listener in
-        make_output_top_if_input_boundbag_is_top t1_bag1;
-        make_output_top_if_input_boundbag_is_top t2_bag1;
+        make_output_top_if_input_boundbag_is_top t1_bound_bag;
+        make_output_top_if_input_boundbag_is_top t2_bound_bag;
         
-        let dist_exp' = Uniform ((t1, a1), (t2, a2)) in
+        let dist_exp' = Distr2 (dist_kind, (t1, a1), (t2, a2)) in
         (TFloat (bounds_bag_ref, consts_bag_ref), TAExprNode (Sample dist_exp'))
-      | _ -> failwith "Only uniform distributions are supported for elab in CDice")
+      )
       
     | DistrCase cases ->
       if cases = [] then failwith "DistrCase cannot be empty";
@@ -553,9 +584,8 @@ let discretize (e : texpr) : expr =
         (match set_or_top_val with
         | Bags.Top -> (* If outer Sample's bounds are Top, fallback to simple recursive discretization of params *)
           (match dist_exp with 
-          | Uniform (texpr_a, texpr_b) -> ExprNode (Sample (Uniform (aux texpr_a, aux texpr_b)))
-          | Gaussian (texpr_mu, texpr_sigma) -> ExprNode (Sample (Gaussian (aux texpr_mu, aux texpr_sigma)))
-          | Exponential (texpr_lambda) -> ExprNode (Sample (Exponential (aux texpr_lambda)))
+          | Distr1 (kind, texpr_arg) -> ExprNode (Sample (Distr1 (kind, aux texpr_arg)))
+          | Distr2 (kind, texpr_arg1, texpr_arg2) -> ExprNode (Sample (Distr2 (kind, aux texpr_arg1, aux texpr_arg2)))
           )
         | Bags.Finite outer_bound_set -> 
           (* Outer Sample's bounds are Finite, proceed with interval-based discretization *)
@@ -586,8 +616,6 @@ let discretize (e : texpr) : expr =
                 failwith ("Internal error: generated probabilities are invalid: " ^ Pretty.string_of_float_list probs ^ " for distribution " ^ Pretty.string_of_cdistr concrete_distr ^ Printf.sprintf " with %d outer bounds." (List.length outer_cuts_as_bounds));
             let sum_probs = List.fold_left (+.) 0.0 probs in
             if abs_float (sum_probs -. 1.0) > 0.001 then
-               (* Printf.eprintf "Warning: Probabilities sum to %f (target 1.0) for %s with cuts %s\n" 
-                  sum_probs (Distributions.string_of_cdistr concrete_distr) (Pretty.string_of_float_list outer_cuts_as_floats); *)
                (); 
             
             let distr_cases = List.mapi (fun i prob -> (ExprNode (FinConst (i, overall_modulus)), max 0.0 (min 1.0 prob) )) probs in (* Clamp probabilities *)
@@ -596,9 +624,8 @@ let discretize (e : texpr) : expr =
 
           let default_branch_expr = 
             match dist_exp with
-            | Uniform (texpr_a, texpr_b) -> ExprNode (Sample (Uniform (aux texpr_a, aux texpr_b)))
-            | Gaussian (texpr_mu, texpr_sigma) -> ExprNode (Sample (Gaussian (aux texpr_mu, aux texpr_sigma)))
-            | Exponential (texpr_lambda) -> ExprNode (Sample (Exponential (aux texpr_lambda)))
+            | Distr1 (kind, texpr_arg) -> ExprNode (Sample (Distr1 (kind, aux texpr_arg)))
+            | Distr2 (kind, texpr_arg1, texpr_arg2) -> ExprNode (Sample (Distr2 (kind, aux texpr_arg1, aux texpr_arg2)))
           in
 
           let get_possible_floats_from_param (param_texpr : texpr) : float list option =
@@ -668,38 +695,198 @@ let discretize (e : texpr) : expr =
           in
 
           match dist_exp with
-          | Uniform (texpr_a, texpr_b) ->
+          | Distr1 (DExponential, texpr_lambda) ->
+              generate_runtime_match_for_param texpr_lambda "lambda"
+                (fun val_lambda ->
+                  if val_lambda <= 0.0 then
+                    failwith "Discretization error: Exponential lambda must be positive"
+                  else
+                    final_expr_producer (Distributions.Exponential val_lambda)
+                )
+                default_branch_expr
+          | Distr1 (DLaplace, texpr_scale) ->
+              generate_runtime_match_for_param texpr_scale "scale"
+                (fun val_scale ->
+                  if val_scale <= 0.0 then
+                    failwith "Discretization error: Laplace scale must be positive"
+                  else
+                    final_expr_producer (Distributions.Laplace val_scale)
+                )
+                default_branch_expr
+          | Distr1 (DCauchy, texpr_scale) ->
+              generate_runtime_match_for_param texpr_scale "scale"
+                (fun val_scale ->
+                  if val_scale <= 0.0 then
+                    failwith "Discretization error: Cauchy scale must be positive"
+                  else
+                    final_expr_producer (Distributions.Cauchy val_scale)
+                )
+                default_branch_expr
+          | Distr1 (DTDist, texpr_nu) ->
+              generate_runtime_match_for_param texpr_nu "nu"
+                (fun val_nu ->
+                  if val_nu <= 0.0 then
+                    failwith "Discretization error: TDist nu must be positive"
+                  else
+                    final_expr_producer (Distributions.TDist val_nu)
+                )
+                default_branch_expr
+          | Distr1 (DChi2, texpr_nu) ->
+              generate_runtime_match_for_param texpr_nu "nu"
+                (fun val_nu ->
+                  if val_nu <= 0.0 then
+                    failwith "Discretization error: Chi2 nu must be positive"
+                  else
+                    final_expr_producer (Distributions.Chi2 val_nu)
+                )
+                default_branch_expr
+          | Distr1 (DLogistic, texpr_scale) ->
+              generate_runtime_match_for_param texpr_scale "scale"
+                (fun val_scale ->
+                  if val_scale <= 0.0 then
+                    failwith "Discretization error: Logistic scale must be positive"
+                  else
+                    final_expr_producer (Distributions.Logistic val_scale)
+                )
+                default_branch_expr
+          | Distr1 (DRayleigh, texpr_sigma) ->
+              generate_runtime_match_for_param texpr_sigma "sigma"
+                (fun val_sigma ->
+                  if val_sigma <= 0.0 then
+                    failwith "Discretization error: Rayleigh sigma must be positive"
+                  else
+                    final_expr_producer (Distributions.Rayleigh val_sigma)
+                )
+                default_branch_expr
+          
+          | Distr2 (DUniform, texpr_a, texpr_b) ->
               generate_runtime_match_for_param texpr_a "a"
                 (fun val_a -> 
                   generate_runtime_match_for_param texpr_b "b"
                     (fun val_b -> 
-                      final_expr_producer (Distributions.Uniform (val_a, val_b))
+                      if val_a > val_b then
+                        failwith "Discretization error: Uniform low > high"
+                      else
+                        final_expr_producer (Distributions.Uniform (val_a, val_b))
                     )
                     default_branch_expr 
                 )
                 default_branch_expr 
-
-          | Gaussian (texpr_mu, texpr_sigma) ->
+          | Distr2 (DGaussian, texpr_mu, texpr_sigma) ->
               generate_runtime_match_for_param texpr_mu "mu"
                 (fun val_mu ->
                   generate_runtime_match_for_param texpr_sigma "sigma"
                     (fun val_sigma ->
                       if val_sigma <= 0.0 then
-                        failwith "Discretization error: Gaussian sigma must be positive when generating match cases"
+                        failwith "Discretization error: Gaussian sigma must be positive"
                       else
                         final_expr_producer (Distributions.Gaussian (val_mu, val_sigma))
                     )
                     default_branch_expr
                 )
                 default_branch_expr
-
-          | Exponential (texpr_lambda) ->
-              generate_runtime_match_for_param texpr_lambda "lambda"
-                (fun val_lambda ->
-                  if val_lambda <= 0.0 then
-                    failwith "Discretization error: Exponential lambda must be positive when generating match cases"
-                  else
-                    final_expr_producer (Distributions.Exponential val_lambda)
+          | Distr2 (DBeta, texpr_alpha, texpr_beta_param) ->
+              generate_runtime_match_for_param texpr_alpha "alpha"
+                (fun val_alpha ->
+                  generate_runtime_match_for_param texpr_beta_param "beta_param"
+                    (fun val_beta_param ->
+                      if val_alpha <= 0.0 || val_beta_param <= 0.0 then
+                        failwith "Discretization error: Beta alpha and beta_param must be positive"
+                      else
+                        final_expr_producer (Distributions.Beta (val_alpha, val_beta_param))
+                    )
+                    default_branch_expr
+                )
+                default_branch_expr
+          | Distr2 (DLogNormal, texpr_mu, texpr_sigma) ->
+              generate_runtime_match_for_param texpr_mu "mu"
+                (fun val_mu ->
+                  generate_runtime_match_for_param texpr_sigma "sigma"
+                    (fun val_sigma ->
+                      if val_sigma <= 0.0 then
+                        failwith "Discretization error: LogNormal sigma must be positive"
+                      else
+                        final_expr_producer (Distributions.LogNormal (val_mu, val_sigma))
+                    )
+                    default_branch_expr
+                )
+                default_branch_expr
+          | Distr2 (DGamma, texpr_shape, texpr_scale) ->
+              generate_runtime_match_for_param texpr_shape "shape"
+                (fun val_shape ->
+                  generate_runtime_match_for_param texpr_scale "scale"
+                    (fun val_scale ->
+                      if val_shape <= 0.0 || val_scale <= 0.0 then
+                        failwith "Discretization error: Gamma shape and scale must be positive"
+                      else
+                        final_expr_producer (Distributions.Gamma (val_shape, val_scale))
+                    )
+                    default_branch_expr
+                )
+                default_branch_expr
+          | Distr2 (DPareto, texpr_a, texpr_b) ->
+              generate_runtime_match_for_param texpr_a "a"
+                (fun val_a ->
+                  generate_runtime_match_for_param texpr_b "b"
+                    (fun val_b ->
+                      if val_a <= 0.0 || val_b <= 0.0 then
+                        failwith "Discretization error: Pareto a and b must be positive"
+                      else
+                        final_expr_producer (Distributions.Pareto (val_a, val_b))
+                    )
+                    default_branch_expr
+                )
+                default_branch_expr
+          | Distr2 (DWeibull, texpr_a, texpr_b) ->
+              generate_runtime_match_for_param texpr_a "a"
+                (fun val_a ->
+                  generate_runtime_match_for_param texpr_b "b"
+                    (fun val_b ->
+                      if val_a <= 0.0 || val_b <= 0.0 then
+                        failwith "Discretization error: Weibull a and b must be positive"
+                      else
+                        final_expr_producer (Distributions.Weibull (val_a, val_b))
+                    )
+                    default_branch_expr
+                )
+                default_branch_expr
+          | Distr2 (DGumbel1, texpr_a, texpr_b) ->
+              generate_runtime_match_for_param texpr_a "a"
+                (fun val_a ->
+                  generate_runtime_match_for_param texpr_b "b"
+                    (fun val_b ->
+                      if val_b <= 0.0 then (* Gumbel1 constraint is on b *)
+                        failwith "Discretization error: Gumbel1 b must be positive"
+                      else
+                        final_expr_producer (Distributions.Gumbel1 (val_a, val_b))
+                    )
+                    default_branch_expr
+                )
+                default_branch_expr
+          | Distr2 (DGumbel2, texpr_a, texpr_b) ->
+              generate_runtime_match_for_param texpr_a "a"
+                (fun val_a ->
+                  generate_runtime_match_for_param texpr_b "b"
+                    (fun val_b ->
+                      if val_b <= 0.0 then (* Gumbel2 constraint is on b *)
+                        failwith "Discretization error: Gumbel2 b must be positive"
+                      else
+                        final_expr_producer (Distributions.Gumbel2 (val_a, val_b))
+                    )
+                    default_branch_expr
+                )
+                default_branch_expr
+          | Distr2 (DExppow, texpr_a, texpr_b) ->
+              generate_runtime_match_for_param texpr_a "a"
+                (fun val_a ->
+                  generate_runtime_match_for_param texpr_b "b"
+                    (fun val_b ->
+                      if val_a <= 0.0 || val_b <= 0.0 then
+                        failwith "Discretization error: Exppow a and b must be positive"
+                      else
+                        final_expr_producer (Distributions.Exppow (val_a, val_b))
+                    )
+                    default_branch_expr
                 )
                 default_branch_expr
         )

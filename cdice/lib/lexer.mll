@@ -97,6 +97,11 @@ rule token = parse
   | "tdist"   { TDIST }
   | "chi2"    { CHI2 }
   | "logistic" { LOGISTIC }
+  | "rayleigh" { RAYLEIGH }
+  | "pareto" { PARETO }
+  | "gumbel1" { GUMBELONE }
+  | "gumbel2" { GUMBELTWO }
+  | "exppow" { EXPPOW }
   | '+'       { PLUS }
   | '-'       { MINUS }
   | '*'       { TIMES }

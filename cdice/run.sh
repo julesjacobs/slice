@@ -28,10 +28,18 @@ elif [ "$COMMAND_OR_FILE" = "interp" ]; then
   fi
   FILE_PATH=$2
   echo "Interpreting (verbose): $FILE_PATH"
-  dune exec -- bin/main.exe --print-all "$FILE_PATH"
+  ABSOLUTE_FILE_PATH=$(realpath "$FILE_PATH")
+  dune exec -- bin/main.exe --print-all "$ABSOLUTE_FILE_PATH"
 else
   # Default: assume first arg is filename (or no args for help from main.exe)
   # Pass all original args, include --print-all
   echo "Executing bin/main.exe with arguments: --print-all $@"
-  dune exec -- bin/main.exe --print-all "$@"
+  FIRST_ARG=$1
+  REST_ARGS=${@:2}
+  if [ -f "$FIRST_ARG" ]; then
+    ABSOLUTE_FILE_PATH=$(realpath "$FIRST_ARG")
+    dune exec -- bin/main.exe --print-all "$ABSOLUTE_FILE_PATH" $REST_ARGS
+  else
+    dune exec -- bin/main.exe --print-all "$@"
+  fi
 fi

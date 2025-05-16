@@ -198,23 +198,36 @@ let rec eval (env : env) (ExprNode e_node : expr) : value =
 
 and eval_dist env dist_exp = 
   match dist_exp with
-  | Uniform (e1, e2) -> 
-      let v1 = eval env e1 in
-      let v2 = eval env e2 in
-      (match v1, v2 with
-       | VFloat f1, VFloat f2 -> Distributions.Uniform (f1, f2)
-       | _ -> raise (RuntimeError "Type error during evaluation: Uniform expects floats"))
-  | Gaussian (e1, e2) -> 
-      let v1 = eval env e1 in
-      let v2 = eval env e2 in
-      (match v1, v2 with
-       | VFloat f1, VFloat f2 -> Distributions.Gaussian (f1, f2)
-       | _ -> raise (RuntimeError "Type error during evaluation: Gaussian expects floats"))
-  | Exponential e1 -> 
+  | Distr1 (kind, e1) ->
       let v1 = eval env e1 in
       (match v1 with
-       | VFloat f1 -> Distributions.Exponential f1
-       | _ -> raise (RuntimeError "Type error during evaluation: Exponential expects a float"))
+       | VFloat f1 -> 
+         (match kind with
+          | DExponential -> Distributions.Exponential f1
+          | DLaplace     -> Distributions.Laplace f1
+          | DCauchy      -> Distributions.Cauchy f1
+          | DTDist       -> Distributions.TDist f1
+          | DChi2        -> Distributions.Chi2 f1
+          | DLogistic    -> Distributions.Logistic f1
+          | DRayleigh    -> Distributions.Rayleigh f1)
+       | _ -> raise (RuntimeError "Type error: single-argument distribution expects a float for cdistr conversion"))
+  | Distr2 (kind, e1, e2) -> 
+      let v1 = eval env e1 in
+      let v2 = eval env e2 in
+      (match v1, v2 with
+       | VFloat f1, VFloat f2 -> 
+         (match kind with
+          | DUniform     -> Distributions.Uniform (f1, f2)
+          | DGaussian    -> Distributions.Gaussian (f1, f2)
+          | DBeta        -> Distributions.Beta (f1, f2)
+          | DLogNormal   -> Distributions.LogNormal (f1, f2)
+          | DGamma       -> Distributions.Gamma (f1, f2)
+          | DPareto      -> Distributions.Pareto (f1, f2)
+          | DWeibull     -> Distributions.Weibull (f1, f2)
+          | DGumbel1     -> Distributions.Gumbel1 (f1, f2)
+          | DGumbel2     -> Distributions.Gumbel2 (f1, f2)
+          | DExppow      -> Distributions.Exppow (f1, f2))
+       | _ -> raise (RuntimeError "Type error: two-argument distribution expects floats for cdistr conversion"))
 
 (* Entry point for evaluation with an empty environment *)
 let run e = eval [] e 

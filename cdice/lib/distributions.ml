@@ -156,3 +156,51 @@ let cdistr_sample dist =
       if a <= 0.0 || b <= 0.0 then invalid_arg "Exppow sample: a and b must be > 0";
       Gsl.Randist.exppow rng ~a ~b
 
+(* --- New Helper Functions --- *)
+
+let cdistr_sample_single_arg (kind: Types.single_arg_dist_kind) (arg1: float) : float =
+  match kind with
+  | Types.DExponential -> cdistr_sample (Exponential arg1)
+  | Types.DLaplace    -> cdistr_sample (Laplace arg1)
+  | Types.DCauchy     -> cdistr_sample (Cauchy arg1)
+  | Types.DTDist      -> cdistr_sample (TDist arg1)
+  | Types.DChi2       -> cdistr_sample (Chi2 arg1)
+  | Types.DLogistic   -> cdistr_sample (Logistic arg1)
+  | Types.DRayleigh   -> cdistr_sample (Rayleigh arg1)
+
+let cdistr_sample_two_arg (kind: Types.two_arg_dist_kind) (arg1: float) (arg2: float) : float =
+  match kind with
+  | Types.DUniform    -> cdistr_sample (Uniform (arg1, arg2))
+  | Types.DGaussian   -> cdistr_sample (Gaussian (arg1, arg2))
+  | Types.DBeta       -> cdistr_sample (Beta (arg1, arg2))
+  | Types.DLogNormal  -> cdistr_sample (LogNormal (arg1, arg2))
+  | Types.DGamma      -> cdistr_sample (Gamma (arg1, arg2))
+  | Types.DPareto     -> cdistr_sample (Pareto (arg1, arg2))
+  | Types.DWeibull    -> cdistr_sample (Weibull (arg1, arg2))
+  | Types.DGumbel1    -> cdistr_sample (Gumbel1 (arg1, arg2))
+  | Types.DGumbel2    -> cdistr_sample (Gumbel2 (arg1, arg2))
+  | Types.DExppow     -> cdistr_sample (Exppow (arg1, arg2))
+
+let cdistr_cdf_single_arg (kind: Types.single_arg_dist_kind) (arg1: float) (x: float) : float =
+  match kind with
+  | Types.DExponential -> cdistr_cdf (Exponential arg1) x
+  | Types.DLaplace    -> cdistr_cdf (Laplace arg1) x
+  | Types.DCauchy     -> cdistr_cdf (Cauchy arg1) x
+  | Types.DTDist      -> cdistr_cdf (TDist arg1) x
+  | Types.DChi2       -> cdistr_cdf (Chi2 arg1) x
+  | Types.DLogistic   -> cdistr_cdf (Logistic arg1) x
+  | Types.DRayleigh   -> cdistr_cdf (Rayleigh arg1) x
+
+let cdistr_cdf_two_arg (kind: Types.two_arg_dist_kind) (arg1: float) (arg2: float) (x: float) : float =
+  match kind with
+  | Types.DUniform    -> cdistr_cdf (Uniform (arg1, arg2)) x
+  | Types.DGaussian   -> cdistr_cdf (Gaussian (arg1, arg2)) x
+  | Types.DBeta       -> cdistr_cdf (Beta (arg1, arg2)) x
+  | Types.DLogNormal  -> cdistr_cdf (LogNormal (arg1, arg2)) x
+  | Types.DGamma      -> cdistr_cdf (Gamma (arg1, arg2)) x
+  | Types.DPareto     -> cdistr_cdf (Pareto (arg1, arg2)) x
+  | Types.DWeibull    -> cdistr_cdf (Weibull (arg1, arg2)) x
+  | Types.DGumbel1    -> cdistr_cdf (Gumbel1 (arg1, arg2)) x
+  | Types.DGumbel2    -> cdistr_cdf (Gumbel2 (arg1, arg2)) x
+  | Types.DExppow     -> cdistr_cdf (Exppow (arg1, arg2)) x
+

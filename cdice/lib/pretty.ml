@@ -184,9 +184,40 @@ and string_of_expr_node ?(indent=0) (ExprNode expr_node) : string =
 
 and string_of_sample ?(indent=0) dist_exp = 
   match dist_exp with
-  | Uniform (e1, e2) -> Printf.sprintf "uniform(%s, %s)" (string_of_expr_indented ~indent e1) (string_of_expr_indented ~indent e2)
-  | Gaussian (e1, e2) -> Printf.sprintf "gaussian(%s, %s)" (string_of_expr_indented ~indent e1) (string_of_expr_indented ~indent e2)
-  | Exponential e1 -> Printf.sprintf "exponential(%s)" (string_of_expr_indented ~indent e1)
+  | Distr2 (DUniform, e1, e2) -> 
+      Printf.sprintf "uniform(%s, %s)" (string_of_expr_indented ~indent e1) (string_of_expr_indented ~indent e2)
+  | Distr2 (DGaussian, e1, e2) -> 
+      Printf.sprintf "gaussian(%s, %s)" (string_of_expr_indented ~indent e1) (string_of_expr_indented ~indent e2)
+  | Distr1 (DExponential, e1) -> 
+      Printf.sprintf "exponential(%s)" (string_of_expr_indented ~indent e1)
+  | Distr2 (DBeta, e1, e2) -> 
+      Printf.sprintf "beta(%s, %s)" (string_of_expr_indented ~indent e1) (string_of_expr_indented ~indent e2)
+  | Distr2 (DLogNormal, e1, e2) -> 
+      Printf.sprintf "lognormal(%s, %s)" (string_of_expr_indented ~indent e1) (string_of_expr_indented ~indent e2)
+  | Distr2 (DGamma, e1, e2) -> 
+      Printf.sprintf "gamma(%s, %s)" (string_of_expr_indented ~indent e1) (string_of_expr_indented ~indent e2)
+  | Distr1 (DLaplace, e1) -> 
+      Printf.sprintf "laplace(%s)" (string_of_expr_indented ~indent e1)
+  | Distr1 (DCauchy, e1) -> 
+      Printf.sprintf "cauchy(%s)" (string_of_expr_indented ~indent e1)
+  | Distr1 (DTDist, e1) -> 
+      Printf.sprintf "tdist(%s)" (string_of_expr_indented ~indent e1)
+  | Distr1 (DChi2, e1) -> 
+      Printf.sprintf "chi2(%s)" (string_of_expr_indented ~indent e1)
+  | Distr1 (DLogistic, e1) -> 
+      Printf.sprintf "logistic(%s)" (string_of_expr_indented ~indent e1)
+  | Distr1 (DRayleigh, e1) -> 
+      Printf.sprintf "rayleigh(%s)" (string_of_expr_indented ~indent e1)
+  | Distr2 (DWeibull, e1, e2) -> 
+      Printf.sprintf "weibull(%s, %s)" (string_of_expr_indented ~indent e1) (string_of_expr_indented ~indent e2)
+  | Distr2 (DPareto, e1, e2) -> 
+      Printf.sprintf "pareto(%s, %s)" (string_of_expr_indented ~indent e1) (string_of_expr_indented ~indent e2)
+  | Distr2 (DGumbel1, e1, e2) -> 
+      Printf.sprintf "gumbel1(%s, %s)" (string_of_expr_indented ~indent e1) (string_of_expr_indented ~indent e2)
+  | Distr2 (DGumbel2, e1, e2) -> 
+      Printf.sprintf "gumbel2(%s, %s)" (string_of_expr_indented ~indent e1) (string_of_expr_indented ~indent e2)
+  | Distr2 (DExppow, e1, e2) -> 
+      Printf.sprintf "exppow(%s, %s)" (string_of_expr_indented ~indent e1) (string_of_expr_indented ~indent e2)
 
 (* Pretty printer for aexpr nodes *)
 and string_of_aexpr_node ?(indent=0) (TAExprNode ae_node) : string =
@@ -358,9 +389,40 @@ and string_of_ty = function
         | Unknown _ -> "?"
 and string_of_asample ?(indent=0) dist_exp = 
   match dist_exp with
-  | Uniform (e1, e2) -> Printf.sprintf "uniform(%s, %s)" (string_of_texpr_indented ~indent e1) (string_of_texpr_indented ~indent e2)
-  | Gaussian (e1, e2) -> Printf.sprintf "gaussian(%s, %s)" (string_of_texpr_indented ~indent e1) (string_of_texpr_indented ~indent e2)
-  | Exponential e1 -> Printf.sprintf "exponential(%s)" (string_of_texpr_indented ~indent e1)
+  | Distr2 (DUniform, e1, e2) -> 
+      Printf.sprintf "uniform(%s, %s)" (string_of_texpr_indented ~indent e1) (string_of_texpr_indented ~indent e2)
+  | Distr2 (DGaussian, e1, e2) -> 
+      Printf.sprintf "gaussian(%s, %s)" (string_of_texpr_indented ~indent e1) (string_of_texpr_indented ~indent e2)
+  | Distr1 (DExponential, e1) -> 
+      Printf.sprintf "exponential(%s)" (string_of_texpr_indented ~indent e1)
+  | Distr2 (DBeta, e1, e2) -> 
+      Printf.sprintf "beta(%s, %s)" (string_of_texpr_indented ~indent e1) (string_of_texpr_indented ~indent e2)
+  | Distr2 (DLogNormal, e1, e2) -> 
+      Printf.sprintf "lognormal(%s, %s)" (string_of_texpr_indented ~indent e1) (string_of_texpr_indented ~indent e2)
+  | Distr2 (DGamma, e1, e2) -> 
+      Printf.sprintf "gamma(%s, %s)" (string_of_texpr_indented ~indent e1) (string_of_texpr_indented ~indent e2)
+  | Distr1 (DLaplace, e1) -> 
+      Printf.sprintf "laplace(%s)" (string_of_texpr_indented ~indent e1)
+  | Distr1 (DCauchy, e1) -> 
+      Printf.sprintf "cauchy(%s)" (string_of_texpr_indented ~indent e1)
+  | Distr1 (DTDist, e1) -> 
+      Printf.sprintf "tdist(%s)" (string_of_texpr_indented ~indent e1)
+  | Distr1 (DChi2, e1) -> 
+      Printf.sprintf "chi2(%s)" (string_of_texpr_indented ~indent e1)
+  | Distr1 (DLogistic, e1) -> 
+      Printf.sprintf "logistic(%s)" (string_of_texpr_indented ~indent e1)
+  | Distr1 (DRayleigh, e1) -> 
+      Printf.sprintf "rayleigh(%s)" (string_of_texpr_indented ~indent e1)
+  | Distr2 (DWeibull, e1, e2) -> 
+      Printf.sprintf "weibull(%s, %s)" (string_of_texpr_indented ~indent e1) (string_of_texpr_indented ~indent e2)
+  | Distr2 (DPareto, e1, e2) -> 
+      Printf.sprintf "pareto(%s, %s)" (string_of_texpr_indented ~indent e1) (string_of_texpr_indented ~indent e2)
+  | Distr2 (DGumbel1, e1, e2) -> 
+      Printf.sprintf "gumbel1(%s, %s)" (string_of_texpr_indented ~indent e1) (string_of_texpr_indented ~indent e2)
+  | Distr2 (DGumbel2, e1, e2) -> 
+      Printf.sprintf "gumbel2(%s, %s)" (string_of_texpr_indented ~indent e1) (string_of_texpr_indented ~indent e2)
+  | Distr2 (DExppow, e1, e2) -> 
+      Printf.sprintf "exppow(%s, %s)" (string_of_texpr_indented ~indent e1) (string_of_texpr_indented ~indent e2)
 
 (* Wrappers *)
 let string_of_expr expr =
@@ -427,38 +489,67 @@ let rec translate_to_sppl (env : (string * string) list) ?(target_var:string opt
         | _ -> failwith "Expected a constant expression for SPPL translation because SPPL does not support non-constant expressions in sampling (in pretty.ml)"
       in
       let stmt = match d with
-        | Types.Uniform (a, b) ->
+        | Distr2 (DUniform, a, b) ->
             let a = assert_float_const a in
             let b = assert_float_const b in
             Printf.sprintf "%s ~= uniform(loc=%f, scale=%f)" assign_var a (b -. a)
-        | Types.Gaussian (mu, sigma) ->
+        | Distr2 (DGaussian, mu, sigma) ->
             let mu = assert_float_const mu in
             let sigma = assert_float_const sigma in
             Printf.sprintf "%s ~= normal(loc=%f, scale=%f)" assign_var mu sigma
-        | Types.Exponential rate -> (* Assuming SPPL uses rate for exponential *) 
+        | Distr1 (DExponential, rate) -> 
             let rate = assert_float_const rate in
             Printf.sprintf "%s ~= exponential(scale=%f)" assign_var (1.0 /. rate) (* SPPL scale = 1/rate *)
-        (*
-        | Types.Beta (alpha, beta) -> (* Assuming SPPL names match *) 
-            Printf.sprintf "%s ~= beta(a=%f, b=%f)" assign_var alpha beta
-        | Types.LogNormal (mu, sigma) -> (* Assuming SPPL names match *) 
+        | Distr2 (DBeta, alpha, beta_param) -> 
+            let alpha = assert_float_const alpha in
+            let beta_val = assert_float_const beta_param in
+            Printf.sprintf "%s ~= beta(a=%f, b=%f)" assign_var alpha beta_val
+        | Distr2 (DLogNormal, mu, sigma) -> 
+            let mu = assert_float_const mu in
+            let sigma = assert_float_const sigma in
             Printf.sprintf "%s ~= lognormal(mu=%f, sigma=%f)" assign_var mu sigma
-        | Types.Gamma (shape, scale) ->
+        | Distr2 (DGamma, shape, scale) ->
+            let shape = assert_float_const shape in
+            let scale = assert_float_const scale in
             Printf.sprintf "%s ~= gamma(shape=%f, scale=%f)" assign_var shape scale
-        | Types.Laplace scale ->
-            Printf.sprintf "%s ~= laplace(scale=%f)" assign_var scale
-        | Types.Cauchy scale ->
-            Printf.sprintf "%s ~= cauchy(scale=%f)" assign_var scale
-        | Types.Weibull (a, b) ->
-            Printf.sprintf "%s ~= weibull(shape=%f, scale=%f)" assign_var a b
-        | Types.TDist nu ->
-            Printf.sprintf "%s ~= tdist(nu=%f)" assign_var nu
-        | Types.Chi2 nu ->
-            Printf.sprintf "%s ~= chi2(nu=%f)" assign_var nu
-        | Types.Logistic scale ->
-            Printf.sprintf "%s ~= logistic(scale=%f)" assign_var scale
-        | _ -> Printf.sprintf "%s ~= <unsupported distribution>" assign_var
-        *)
+        | Distr1 (DLaplace, scale) ->
+            let scale = assert_float_const scale in
+            Printf.sprintf "%s ~= laplace(loc=0, scale=%f)" assign_var scale (* Assuming loc=0 if not specified *)
+        | Distr1 (DCauchy, scale) ->
+            let scale = assert_float_const scale in
+            Printf.sprintf "%s ~= cauchy(loc=0, scale=%f)" assign_var scale (* Assuming loc=0 *)
+        | Distr1 (DTDist, nu) ->
+            let nu = assert_float_const nu in
+            Printf.sprintf "%s ~= t(df=%f)" assign_var nu
+        | Distr1 (DChi2, nu) ->
+            let nu = assert_float_const nu in
+            Printf.sprintf "%s ~= chi2(df=%f)" assign_var nu
+        | Distr1 (DLogistic, scale) ->
+            let scale = assert_float_const scale in
+            Printf.sprintf "%s ~= logistic(loc=0, scale=%f)" assign_var scale (* Assuming loc=0 *)
+        | Distr1 (DRayleigh, sigma) ->
+            let sigma = assert_float_const sigma in
+            Printf.sprintf "%s ~= rayleigh(scale=%f)" assign_var sigma
+        | Distr2 (DWeibull, a, b) ->
+            let a_val = assert_float_const a in
+            let b_val = assert_float_const b in
+            Printf.sprintf "%s ~= weibull(c=%f, scale=%f)" assign_var a_val b_val (* Assuming a is shape c, b is scale *)
+        | Distr2 (DPareto, xm, alpha) ->
+            let xm_val = assert_float_const xm in
+            let alpha_val = assert_float_const alpha in
+            Printf.sprintf "%s ~= pareto(b=%f, scale=%f)" assign_var alpha_val xm_val (* SPPL uses b for shape *)
+        | Distr2 (DGumbel1, mu, beta_param) ->
+            let mu_val = assert_float_const mu in
+            let beta_val = assert_float_const beta_param in
+            Printf.sprintf "%s ~= gumbel_r(loc=%f, scale=%f)" assign_var mu_val beta_val (* gumbel_r for Type I max *)
+        | Distr2 (DGumbel2, mu, beta_param) ->
+            let mu_val = assert_float_const mu in
+            let beta_val = assert_float_const beta_param in
+            Printf.sprintf "%s ~= gumbel_l(loc=%f, scale=%f)" assign_var mu_val beta_val (* gumbel_l for Type I min *)
+        | Distr2 (DExppow, arg1, arg2) -> 
+            let val1 = assert_float_const arg1 in
+            let val2 = assert_float_const arg2 in
+            Printf.sprintf "%s ~= exponpow(b=%f, scale=%f)" assign_var val1 val2 (* Assuming arg1=shape_b, arg2=scale *)
       in
       ([stmt], assign_var)
   | Types.ExprNode(DistrCase cases) ->

@@ -33,10 +33,17 @@ type 'a expr_generic =
   | Assign of 'a * 'a (* e1 := e2 *)
   | Seq of 'a * 'a (* e1 ; e2 *)
   | Unit
+
+and single_arg_dist_kind =
+  | DExponential | DLaplace | DCauchy | DTDist | DChi2 | DLogistic | DRayleigh
+
+and two_arg_dist_kind =
+  | DUniform | DGaussian | DBeta | DLogNormal | DGamma | DPareto | DWeibull 
+  | DGumbel1 | DGumbel2 | DExppow
+
 and 'a sample = 
-  | Uniform of 'a * 'a
-  | Gaussian of 'a * 'a
-  | Exponential of 'a
+  | Distr1 of single_arg_dist_kind * 'a
+  | Distr2 of two_arg_dist_kind * 'a * 'a
   
 
 (* The source language expression type *)

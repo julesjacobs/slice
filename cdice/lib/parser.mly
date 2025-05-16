@@ -47,6 +47,11 @@ open Types
 %token MINUS
 %token TIMES
 %token DIVIDE
+%token RAYLEIGH
+%token PARETO
+%token GUMBELONE
+%token GUMBELTWO
+%token EXPPOW
 (* %token FOR TO DO *)
 
 (* Precedence and associativity *)
@@ -163,31 +168,39 @@ atomic_expr:
   | DISCRETE LPAREN cases = distr_cases RPAREN
     { ExprNode (DistrCase cases) }
   | UNIFORM LPAREN lo = app_expr COMMA hi = app_expr RPAREN
-    { ExprNode (Sample (Uniform (lo, hi))) }
+    { ExprNode (Sample (Distr2 (DUniform, lo, hi))) }
   | GAUSSIAN LPAREN mean = app_expr COMMA std = app_expr RPAREN
-    { ExprNode (Sample (Gaussian (mean, std))) }
+    { ExprNode (Sample (Distr2 (DGaussian, mean, std))) }
   | EXPONENTIAL LPAREN rate = app_expr RPAREN
-    { ExprNode (Sample (Exponential rate)) }
-(*
-  | BETA LPAREN alpha = expr COMMA beta = expr RPAREN
-    { ExprNode (Sample (Beta (alpha, beta))) }
-  | LOGNORMAL LPAREN mu = expr COMMA sigma = expr RPAREN
-    { ExprNode (Sample (LogNormal (mu, sigma))) }
-  | GAMMA LPAREN shape = expr COMMA scale = expr RPAREN
-    { ExprNode (Sample (Gamma (shape, scale))) }
-  | LAPLACE LPAREN scale = expr RPAREN
-    { ExprNode (Sample (Laplace (scale))) }
-  | CAUCHY LPAREN scale = expr RPAREN
-    { ExprNode (Sample (Cauchy (scale))) }
-  | WEIBULL LPAREN a = expr COMMA b = expr RPAREN
-    { ExprNode (Sample (Weibull (a, b))) }
-  | TDIST LPAREN nu = expr RPAREN
-    { ExprNode (Sample (TDist (nu))) }
-  | CHI2 LPAREN nu = expr RPAREN
-    { ExprNode (Sample (Chi2 (nu))) }
-  | LOGISTIC LPAREN scale = expr RPAREN
-    { ExprNode (Sample (Logistic (scale))) }
-*)
+    { ExprNode (Sample (Distr1 (DExponential, rate))) }
+  | BETA LPAREN alpha = app_expr COMMA beta = app_expr RPAREN
+    { ExprNode (Sample (Distr2 (DBeta, alpha, beta))) }
+  | LOGNORMAL LPAREN mu = app_expr COMMA sigma = app_expr RPAREN
+    { ExprNode (Sample (Distr2 (DLogNormal, mu, sigma))) }
+  | GAMMA LPAREN shape = app_expr COMMA scale = app_expr RPAREN
+    { ExprNode (Sample (Distr2 (DGamma, shape, scale))) }
+  | LAPLACE LPAREN scale = app_expr RPAREN
+    { ExprNode (Sample (Distr1 (DLaplace, scale))) }
+  | CAUCHY LPAREN scale = app_expr RPAREN
+    { ExprNode (Sample (Distr1 (DCauchy, scale))) }
+  | WEIBULL LPAREN a = app_expr COMMA b = app_expr RPAREN
+    { ExprNode (Sample (Distr2 (DWeibull, a, b))) }
+  | TDIST LPAREN nu = app_expr RPAREN
+    { ExprNode (Sample (Distr1 (DTDist, nu))) }
+  | CHI2 LPAREN nu = app_expr RPAREN
+    { ExprNode (Sample (Distr1 (DChi2, nu))) }
+  | LOGISTIC LPAREN scale = app_expr RPAREN
+    { ExprNode (Sample (Distr1 (DLogistic, scale))) }
+  | RAYLEIGH LPAREN sigma = app_expr RPAREN
+    { ExprNode (Sample (Distr1 (DRayleigh, sigma))) }
+  | PARETO LPAREN xm = app_expr COMMA alpha = app_expr RPAREN
+    { ExprNode (Sample (Distr2 (DPareto, xm, alpha))) }
+  | GUMBELONE LPAREN mu = app_expr COMMA beta_param = app_expr RPAREN
+    { ExprNode (Sample (Distr2 (DGumbel1, mu, beta_param))) }
+  | GUMBELTWO LPAREN mu = app_expr COMMA beta_param = app_expr RPAREN
+    { ExprNode (Sample (Distr2 (DGumbel2, mu, beta_param))) }
+  | EXPPOW LPAREN arg1 = app_expr COMMA arg2 = app_expr RPAREN
+    { ExprNode (Sample (Distr2 (DExppow, arg1, arg2))) }
   | LPAREN e = expr RPAREN      { e }
   | LPAREN RPAREN { ExprNode Unit }
   ;

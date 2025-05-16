@@ -121,9 +121,13 @@ and string_of_expr_node ?(indent=0) (ExprNode expr_node) : string =
   | Unit -> "()"
 and string_of_sample ?(indent=0) dist_exp = 
   match dist_exp with
-  | Uniform (e1, e2) -> Printf.sprintf "uniform(%s, %s)" (string_of_expr_indented ~indent e1) (string_of_expr_indented ~indent e2)
-  | Gaussian (e1, e2) -> Printf.sprintf "gaussian(%s, %s)" (string_of_expr_indented ~indent e1) (string_of_expr_indented ~indent e2)
-  | Exponential e1 -> Printf.sprintf "exponential(%s)" (string_of_expr_indented ~indent e1)
+  | Distr2 (DUniform, e1, e2) -> Printf.sprintf "uniform(%s, %s)" (string_of_expr_indented ~indent e1) (string_of_expr_indented ~indent e2)
+  | Distr2 (DGaussian, e1, e2) -> Printf.sprintf "gaussian(%s, %s)" (string_of_expr_indented ~indent e1) (string_of_expr_indented ~indent e2)
+  | Distr1 (DExponential, e1) -> Printf.sprintf "exponential(%s)" (string_of_expr_indented ~indent e1)
+  | Distr2 (DBeta, e1, e2) -> Printf.sprintf "beta(%s, %s)" (string_of_expr_indented ~indent e1) (string_of_expr_indented ~indent e2)
+  | Distr2 (DLogNormal, e1, e2) -> Printf.sprintf "lognormal(%s, %s)" (string_of_expr_indented ~indent e1) (string_of_expr_indented ~indent e2)
+  | Distr2 (DGamma, e1, e2) -> Printf.sprintf "gamma(%s, %s)" (string_of_expr_indented ~indent e1) (string_of_expr_indented ~indent e2)
+  | _ -> "<other distribution>"
 
 and string_of_aexpr_node ?(indent=0) (TAExprNode ae_node) : string =
   match ae_node with
@@ -194,9 +198,13 @@ and string_of_aexpr_node ?(indent=0) (TAExprNode ae_node) : string =
 
 and string_of_asample ?(indent=0) dist_exp =
   match dist_exp with
-  | Uniform (e1, e2) -> Printf.sprintf "uniform(%s, %s)" (string_of_texpr_indented ~indent e1) (string_of_texpr_indented ~indent e2)
-  | Gaussian (e1, e2) -> Printf.sprintf "gaussian(%s, %s)" (string_of_texpr_indented ~indent e1) (string_of_texpr_indented ~indent e2)
-  | Exponential e1 -> Printf.sprintf "exponential(%s)" (string_of_texpr_indented ~indent e1)
+  | Distr2 (DUniform, e1, e2) -> Printf.sprintf "uniform(%s, %s)" (string_of_texpr_indented ~indent e1) (string_of_texpr_indented ~indent e2)
+  | Distr2 (DGaussian, e1, e2) -> Printf.sprintf "gaussian(%s, %s)" (string_of_texpr_indented ~indent e1) (string_of_texpr_indented ~indent e2)
+  | Distr1 (DExponential, e1) -> Printf.sprintf "exponential(%s)" (string_of_texpr_indented ~indent e1)
+  | Distr2 (DBeta, e1, e2) -> Printf.sprintf "beta(%s, %s)" (string_of_texpr_indented ~indent e1) (string_of_texpr_indented ~indent e2)
+  | Distr2 (DLogNormal, e1, e2) -> Printf.sprintf "lognormal(%s, %s)" (string_of_texpr_indented ~indent e1) (string_of_texpr_indented ~indent e2)
+  | Distr2 (DGamma, e1, e2) -> Printf.sprintf "gamma(%s, %s)" (string_of_texpr_indented ~indent e1) (string_of_texpr_indented ~indent e2)
+  | _ -> "<other distribution>"
 
 and string_of_ty = function
   | TBool -> "bool"
