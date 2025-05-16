@@ -537,59 +537,162 @@ let discretize (e : texpr) : expr =
         ExprNode (Let (x, aux te1, aux te2))
 
     | Sample dist_exp ->
-
-          let bounds_bag =
-            match Types.force ty with 
-            | Types.TFloat (b, _) -> b (* Extract bounds bag *)
-            | _ -> failwith "Internal error: Sample not TFloat"
-          in
-          let set_or_top_val = Bags.BoundBag.get bounds_bag in 
-          (match set_or_top_val with
-          | Bags.Top -> (* Keep original if Top *) 
-            (match dist_exp with 
-            | Uniform (texpr_a, texpr_b) ->
-                let a = aux texpr_a in
-                let b = aux texpr_b in
-                ExprNode (Sample (Uniform (a, b)))
-            | Gaussian (texpr_mu, texpr_sigma) ->
-                let mu = aux texpr_mu in
-                let sigma = aux texpr_sigma in
-                ExprNode (Sample (Gaussian (mu, sigma)))
-            | Exponential (texpr_lambda) ->
-                let lambda = aux texpr_lambda in
-                ExprNode (Sample (Exponential (lambda)))
-            | _ -> failwith "Internal error: Sample not Uniform, Gaussian, or Exponential")
-          | Bags.Finite bound_set -> 
-            (* 
-              case_on_dist_exp is a function that takes a dist_exp (distribution expression),
-              and checks if its parameters have a finite number of possibilities (bounds bag isn't Top).
-              If bounds_bag is Top, returns the default case (Sample dist_exp).
-              If bounds_bag is Finite, discretizes the distribution using the cuts, 
-              looking up the exact value in each interval in the floats bag,
-              and calls the function with that distribution.
-              Below, we then discretize that distribution.
-            *)
-            case_on_dist_exp dist_exp ~default:(Sample dist_exp) ~cases:(fun distr -> 
-              (* Discretize using cuts *) 
-              let cuts = 
-                Bags.BoundSet.elements bound_set 
-                |> List.map (function Bags.Less c -> c | Bags.LessEq c -> c) 
-                |> List.sort compare
-              in 
-              let intervals = List.init (List.length cuts + 1) (fun i ->
-                let left = if i = 0 then neg_infinity else List.nth cuts (i - 1) in
-                let right = if i = List.length cuts then infinity else List.nth cuts i in
-                (left, right)
-              ) in
-              let probs = List.map (fun (left, right) ->
-                prob_cdistr_interval left right dist
-              ) intervals in
-              (* Convert to DistrCase with FinConst expressions *) 
-              let n = List.length probs in (* Number of intervals = modulus *)
-              if n = 0 then failwith "Internal error: discretization resulted in zero intervals";
-              let cases = List.mapi (fun i prob -> (ExprNode (FinConst (i, n)), prob)) probs in
-              ExprNode (DistrCase cases)))
+        let outer_sample_ty = ty in (* Type of the Sample expression itself *)
+        let bounds_bag_of_outer_sample =
+          match Types.force outer_sample_ty with
+          | Types.TFloat (b, _) -> b
+          | _ -> failwith "Internal error: Sample expression's type is not TFloat during discretize"
+        in
+        let set_or_top_val = Bags.BoundBag.get bounds_bag_of_outer_sample in
         
+        (match set_or_top_val with
+        | Bags.Top -> (* If outer Sample's bounds are Top, fallback to simple recursive discretization of params *)
+          (match dist_exp with 
+          | Uniform (texpr_a, texpr_b) -> ExprNode (Sample (Uniform (aux texpr_a, aux texpr_b)))
+          | Gaussian (texpr_mu, texpr_sigma) -> ExprNode (Sample (Gaussian (aux texpr_mu, aux texpr_sigma)))
+          | Exponential (texpr_lambda) -> ExprNode (Sample (Exponential (aux texpr_lambda)))
+          )
+        | Bags.Finite outer_bound_set -> 
+          (* Outer Sample's bounds are Finite, proceed with interval-based discretization *)
+          let outer_cuts_as_bounds = Bags.BoundSet.elements outer_bound_set in
+          let outer_cuts_as_floats = 
+            outer_cuts_as_bounds
+            |> List.map (function Bags.Less c -> c | Bags.LessEq c -> c) 
+            |> List.sort_uniq compare
+          in
+          let overall_modulus = (List.length outer_cuts_as_floats) + 1 in
+          if overall_modulus <= 0 then failwith "Internal error: discretization modulus must be positive for Sample";
+
+          let final_expr_producer (concrete_distr : Distributions.cdistr) : expr =
+            let intervals = List.init overall_modulus (fun i ->
+              let left = if i = 0 then neg_infinity else List.nth outer_cuts_as_floats (i - 1) in
+              let right = if i = overall_modulus - 1 then infinity else List.nth outer_cuts_as_floats i in
+              (left, right)
+            ) in
+            let probs = List.map (fun (left, right) -> prob_cdistr_interval left right concrete_distr) intervals in
+            if List.exists (fun p -> p < -0.0001 || p > 1.0001) probs then (* Add tolerance for float precision issues *)
+                failwith ("Internal error: generated probabilities are invalid: " ^ Pretty.string_of_float_list probs ^ " for distribution " ^ Distributions.string_of_cdistr concrete_distr ^ " with cuts " ^ Pretty.string_of_float_list outer_cuts_as_floats);
+            let sum_probs = List.fold_left (+.) 0.0 probs in
+            if abs_float (sum_probs -. 1.0) > 0.001 then
+               (* Printf.eprintf "Warning: Probabilities sum to %f (target 1.0) for %s with cuts %s\n" 
+                  sum_probs (Distributions.string_of_cdistr concrete_distr) (Pretty.string_of_float_list outer_cuts_as_floats); *)
+               (); 
+            
+            let distr_cases = List.mapi (fun i prob -> (ExprNode (FinConst (i, overall_modulus)), max 0.0 (min 1.0 prob) )) probs in (* Clamp probabilities *)
+            ExprNode (DistrCase distr_cases)
+          in
+
+          let default_branch_expr = 
+            match dist_exp with
+            | Uniform (texpr_a, texpr_b) -> ExprNode (Sample (Uniform (aux texpr_a, aux texpr_b)))
+            | Gaussian (texpr_mu, texpr_sigma) -> ExprNode (Sample (Gaussian (aux texpr_mu, aux texpr_sigma)))
+            | Exponential (texpr_lambda) -> ExprNode (Sample (Exponential (aux texpr_lambda)))
+          in
+
+          let get_possible_floats_from_param (param_texpr : texpr) : float list option =
+            let param_ty, _ = param_texpr in
+            match Types.force param_ty with
+            | Types.TFloat (_, consts_bag_ref) ->
+              (match Bags.FloatBag.get consts_bag_ref with
+               | Bags.Finite float_set -> 
+                 if Bags.FloatSet.is_empty float_set then None 
+                 else Some (Bags.FloatSet.elements float_set |> List.sort_uniq compare)
+               | Bags.Top -> None)
+            | _ -> None
+          in
+
+          let get_param_modulus_and_cuts (param_texpr : texpr) : (int * Bags.bound list) option =
+            let param_ty, _ = param_texpr in
+            match Types.force param_ty with
+            | TFloat (b_bag, _) -> 
+              (match Bags.BoundBag.get b_bag with
+               | Top -> None 
+               | Finite bs_set -> 
+                 let cuts = Bags.BoundSet.elements bs_set in 
+                 let modulus = (List.length (List.map (function Bags.Less c->c | Bags.LessEq c->c) cuts |> List.sort_uniq compare)) + 1 in
+                 if modulus <= 0 then None else Some (modulus, cuts))
+            | _ -> None
+          in
+          
+          let rec build_nested_ifs (val_var_name: string) (param_modulus: int) (arms: (expr * expr) list) (else_expr: expr) : expr =
+            match arms with 
+            | [] -> else_expr
+            | (target_finconst_expr, body_expr) :: rest_arms ->
+              let current_val_expr = ExprNode (Var val_var_name) in
+              let condition =
+                ExprNode(And(
+                  FinLeq(current_val_expr, target_finconst_expr, param_modulus),
+                  FinLeq(target_finconst_expr, current_val_expr, param_modulus)
+                ))
+              in
+              ExprNode (If (condition, body_expr, build_nested_ifs val_var_name param_modulus rest_arms else_expr))
+          in
+
+          let generate_runtime_match_for_param 
+              (param_texpr : texpr) 
+              (param_name_str : string) 
+              (build_body_fn : float -> expr) 
+              (default_expr_for_this_param : expr) : expr =
+
+            match get_possible_floats_from_param param_texpr, get_param_modulus_and_cuts param_texpr with
+            | Some possible_floats, Some (param_modulus, param_actual_bound_cuts_as_bounds) ->
+                if List.length possible_floats = 0 then default_expr_for_this_param
+                else if List.length possible_floats = 1 then 
+                  build_body_fn (List.hd possible_floats)
+                else
+                  let actual_discretized_param_expr = aux param_texpr in
+                  let match_arms = List.map (fun f_val ->
+                    let param_consts_bag_for_f = Bags.FloatBag.create (Finite (FloatSet.singleton f_val)) in
+                    let param_bounds_bag_for_f = Bags.BoundBag.create (Finite (Bags.BoundSet.of_list param_actual_bound_cuts_as_bounds)) in
+                    let texpr_const_f_val = (TFloat(param_bounds_bag_for_f, param_consts_bag_for_f), TAExprNode (Const f_val)) in
+                    let target_finconst_expr = aux texpr_const_f_val in
+                    let body = build_body_fn f_val in
+                    (target_finconst_expr, body)
+                  ) possible_floats in
+                  
+                  let let_var_name = Util.fresh_var ("_disc_" ^ param_name_str) in
+                  ExprNode (Let (let_var_name, actual_discretized_param_expr, 
+                               build_nested_ifs let_var_name param_modulus match_arms default_expr_for_this_param))
+            | _ -> default_expr_for_this_param
+          in
+
+          match dist_exp with
+          | Uniform (texpr_a, texpr_b) ->
+              generate_runtime_match_for_param texpr_a "a"
+                (fun val_a -> 
+                  generate_runtime_match_for_param texpr_b "b"
+                    (fun val_b -> 
+                      final_expr_producer (Distributions.Uniform (val_a, val_b))
+                    )
+                    default_branch_expr 
+                )
+                default_branch_expr 
+
+          | Gaussian (texpr_mu, texpr_sigma) ->
+              generate_runtime_match_for_param texpr_mu "mu"
+                (fun val_mu ->
+                  generate_runtime_match_for_param texpr_sigma "sigma"
+                    (fun val_sigma ->
+                      if val_sigma <= 0.0 then
+                        failwith "Discretization error: Gaussian sigma must be positive when generating match cases"
+                      else
+                        final_expr_producer (Distributions.Gaussian (val_mu, val_sigma))
+                    )
+                    default_branch_expr
+                )
+                default_branch_expr
+
+          | Exponential (texpr_lambda) ->
+              generate_runtime_match_for_param texpr_lambda "lambda"
+                (fun val_lambda ->
+                  if val_lambda <= 0.0 then
+                    failwith "Discretization error: Exponential lambda must be positive when generating match cases"
+                  else
+                    final_expr_producer (Distributions.Exponential val_lambda)
+                )
+                default_branch_expr
+        )
+
     | DistrCase cases ->
       (* Recursively discretize the expressions within the cases *) 
       let discretized_cases = 
