@@ -6,7 +6,7 @@ type 'a expr_generic =
   | Const  of float
   | BoolConst of bool            
   | Let    of string * 'a * 'a
-  | CDistr of Distributions.cdistr          (* Continuous distribution *)
+  | Sample of 'a sample          (* Continuous distribution *)
   (* | Discrete of float list    (* list of probabilities; i-th element is probability of float(i) *) *)
   | DistrCase of ('a * float) list (* General discrete distribution: (expr * prob) list *)
   | Less   of 'a * 'a
@@ -33,6 +33,11 @@ type 'a expr_generic =
   | Assign of 'a * 'a (* e1 := e2 *)
   | Seq of 'a * 'a (* e1 ; e2 *)
   | Unit
+and 'a sample = 
+  | Uniform of 'a * 'a
+  | Gaussian of 'a * 'a
+  | Exponential of 'a
+  
 
 (* The source language expression type *)
 type expr = ExprNode of expr expr_generic

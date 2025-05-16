@@ -117,17 +117,53 @@ let elab (e : expr) : texpr =
       let t2, a2 = aux env' e2 in
       (t2, TAExprNode (Let (x, (t1,a1), (t2,a2))))
 
-    | CDistr dist ->
-        (* Check for degenerate uniform distribution *) 
-        (match dist with
-         | Distributions.Uniform (a, b) when a = b -> 
-             failwith (Printf.sprintf "Degenerate uniform distribution uniform(%f, %f) is not allowed." a b)
-         | _ -> ()); (* Allow other distributions or valid uniforms *)
-
-      (* CDistr results in TFloat: Create bag refs *) 
+    | Sample dist_exp ->
       let bounds_bag_ref = Bags.BoundBag.create (Finite BoundSet.empty) in 
       let consts_bag_ref = Bags.FloatBag.create Top in 
-      (TFloat (bounds_bag_ref, consts_bag_ref), TAExprNode (CDistr dist))
+      (match dist_exp with
+      | Uniform (a, b) ->
+        (* Recursively translate a and b *)
+        let t1, a1 = aux env a in
+        let t2, a2 = aux env b in
+        let t1_bag1 = Bags.fresh_bound_bag () in
+        let t1_bag2 = Bags.fresh_float_bag () in
+        let t2_bag1 = Bags.fresh_bound_bag () in
+        let t2_bag2 = Bags.fresh_float_bag () in
+        (try unify t1 (Types.TFloat (t1_bag1, t1_bag2))
+         with Failure msg -> failwith (Printf.sprintf "Type error in Sample (uniform) left operand: %s" msg));
+        (try unify t2 (Types.TFloat (t2_bag1, t2_bag2))
+         with Failure msg -> failwith (Printf.sprintf "Type error in Sample (uniform) right operand: %s" msg));
+        (* Add listener logic for uniform distribution *)
+        (* We want to make the output non-discretizable if the input isn't discrete *)
+        (* We thus listen to the two input bags and if any of them are non-discrete, we make the output non-discrete *)
+        (* We also want to add the floats in the floatbag of the input to the boundbag of the input *)
+        (* Let's do that first *)
+        let add_floats_to_boundbag (float_bag : FloatBag.bag) (bound_bag : BoundBag.bag) =
+          let listener () =
+            let v = Bags.FloatBag.get float_bag in
+            (match v with
+            | Finite s -> Bags.BoundBag.add_all s bound_bag
+            | Top -> (* Make it top if it's top *)
+              Bags.BoundBag.leq (Bags.BoundBag.create Top) bound_bag)
+          in
+          Bags.FloatBag.listen float_bag listener in
+        add_floats_to_boundbag t1_bag2 bounds_bag_ref;
+        add_floats_to_boundbag t2_bag2 bounds_bag_ref;
+        (* Now we want to make the output non-discretizable if the input isn't discrete *)
+        let make_output_top_if_input_boundbag_is_top input_bound_bag =
+          let listener () =
+            let v = Bags.BoundBag.get input_bound_bag in
+            (match v with
+            | Top -> Bags.BoundBag.leq (Bags.BoundBag.create Top) bounds_bag_ref
+            | _ -> ())
+          in
+          Bags.BoundBag.listen input_bound_bag listener in
+        make_output_top_if_input_boundbag_is_top t1_bag1;
+        make_output_top_if_input_boundbag_is_top t2_bag1;
+        
+        let dist_exp' = Uniform ((t1, a1), (t2, a2)) in
+        (TFloat (bounds_bag_ref, consts_bag_ref), TAExprNode (Sample dist_exp'))
+      | _ -> failwith "Only uniform distributions are supported for elab in CDice")
       
     | DistrCase cases ->
       if cases = [] then failwith "DistrCase cannot be empty";
@@ -500,35 +536,59 @@ let discretize (e : texpr) : expr =
     | Let (x, te1, te2) ->
         ExprNode (Let (x, aux te1, aux te2))
 
-    | CDistr dist ->
-        let bounds_bag =
-          match Types.force ty with 
-          | Types.TFloat (b, _) -> b (* Extract bounds bag *)
-          | _ -> failwith "Internal error: CDistr not TFloat"
-        in
-        let set_or_top_val = Bags.BoundBag.get bounds_bag in 
-        (match set_or_top_val with
-         | Bags.Top -> ExprNode (CDistr dist) (* Keep original if Top *) 
-         | Bags.Finite bound_set -> 
-             (* Discretize using cuts - Reverted Logic *) 
-             let cuts = 
-               Bags.BoundSet.elements bound_set 
-               |> List.map (function Bags.Less c -> c | Bags.LessEq c -> c) 
-               |> List.sort compare
-             in 
-             let intervals = List.init (List.length cuts + 1) (fun i ->
-               let left = if i = 0 then neg_infinity else List.nth cuts (i - 1) in
-               let right = if i = List.length cuts then infinity else List.nth cuts i in
-               (left, right)
-             ) in
-             let probs = List.map (fun (left, right) ->
-               prob_cdistr_interval left right dist
-             ) intervals in
-             (* Convert to DistrCase with FinConst expressions *) 
-             let n = List.length probs in (* Number of intervals = modulus *)
-             if n = 0 then failwith "Internal error: discretization resulted in zero intervals";
-             let cases = List.mapi (fun i prob -> (ExprNode (FinConst (i, n)), prob)) probs in
-             ExprNode (DistrCase cases))
+    | Sample dist_exp ->
+
+          let bounds_bag =
+            match Types.force ty with 
+            | Types.TFloat (b, _) -> b (* Extract bounds bag *)
+            | _ -> failwith "Internal error: Sample not TFloat"
+          in
+          let set_or_top_val = Bags.BoundBag.get bounds_bag in 
+          (match set_or_top_val with
+          | Bags.Top -> (* Keep original if Top *) 
+            (match dist_exp with 
+            | Uniform (texpr_a, texpr_b) ->
+                let a = aux texpr_a in
+                let b = aux texpr_b in
+                ExprNode (Sample (Uniform (a, b)))
+            | Gaussian (texpr_mu, texpr_sigma) ->
+                let mu = aux texpr_mu in
+                let sigma = aux texpr_sigma in
+                ExprNode (Sample (Gaussian (mu, sigma)))
+            | Exponential (texpr_lambda) ->
+                let lambda = aux texpr_lambda in
+                ExprNode (Sample (Exponential (lambda)))
+            | _ -> failwith "Internal error: Sample not Uniform, Gaussian, or Exponential")
+          | Bags.Finite bound_set -> 
+            (* 
+              case_on_dist_exp is a function that takes a dist_exp (distribution expression),
+              and checks if its parameters have a finite number of possibilities (bounds bag isn't Top).
+              If bounds_bag is Top, returns the default case (Sample dist_exp).
+              If bounds_bag is Finite, discretizes the distribution using the cuts, 
+              looking up the exact value in each interval in the floats bag,
+              and calls the function with that distribution.
+              Below, we then discretize that distribution.
+            *)
+            case_on_dist_exp dist_exp ~default:(Sample dist_exp) ~cases:(fun distr -> 
+              (* Discretize using cuts *) 
+              let cuts = 
+                Bags.BoundSet.elements bound_set 
+                |> List.map (function Bags.Less c -> c | Bags.LessEq c -> c) 
+                |> List.sort compare
+              in 
+              let intervals = List.init (List.length cuts + 1) (fun i ->
+                let left = if i = 0 then neg_infinity else List.nth cuts (i - 1) in
+                let right = if i = List.length cuts then infinity else List.nth cuts i in
+                (left, right)
+              ) in
+              let probs = List.map (fun (left, right) ->
+                prob_cdistr_interval left right dist
+              ) intervals in
+              (* Convert to DistrCase with FinConst expressions *) 
+              let n = List.length probs in (* Number of intervals = modulus *)
+              if n = 0 then failwith "Internal error: discretization resulted in zero intervals";
+              let cases = List.mapi (fun i prob -> (ExprNode (FinConst (i, n)), prob)) probs in
+              ExprNode (DistrCase cases)))
         
     | DistrCase cases ->
       (* Recursively discretize the expressions within the cases *) 

@@ -48,7 +48,7 @@ and string_of_expr_node ?(indent=0) (ExprNode expr_node) : string =
       let e1_str = string_of_expr_indented ~indent:(indent+2) e1 in
       let e2_str = string_of_expr_indented ~indent:(indent+2) e2 in
       Printf.sprintf "let %s = %s in\n%s%s" x e1_str indent_str e2_str
-  | CDistr dist -> string_of_cdistr dist
+  | Sample dist_exp -> string_of_sample ~indent dist_exp
   | DistrCase cases ->
     let format_case (_, prob) =
       match prob with
@@ -106,6 +106,11 @@ and string_of_expr_node ?(indent=0) (ExprNode expr_node) : string =
   | Assign (e1, e2) -> Printf.sprintf "(%s := %s)" (string_of_expr_indented ~indent e1) (string_of_expr_indented ~indent e2)
   | Seq (e1, e2) -> Printf.sprintf "%s; %s" (string_of_expr_indented ~indent e1) (string_of_expr_indented ~indent e2)
   | Unit -> "()"
+and string_of_sample ?(indent=0) dist_exp = 
+  match dist_exp with
+  | Uniform (e1, e2) -> Printf.sprintf "uniform(%s, %s)" (string_of_expr_indented ~indent e1) (string_of_expr_indented ~indent e2)
+  | Gaussian (e1, e2) -> Printf.sprintf "gaussian(%s, %s)" (string_of_expr_indented ~indent e1) (string_of_expr_indented ~indent e2)
+  | Exponential e1 -> Printf.sprintf "exponential(%s)" (string_of_expr_indented ~indent e1)
 
 and string_of_aexpr_node ?(indent=0) (TAExprNode ae_node) : string =
   match ae_node with
@@ -117,7 +122,7 @@ and string_of_aexpr_node ?(indent=0) (TAExprNode ae_node) : string =
       let e1_str = string_of_texpr_indented ~indent:(indent+2) te1 in
       let e2_str = string_of_texpr_indented ~indent:(indent+2) te2 in
       Printf.sprintf "let %s = %s in\n%s%s" x e1_str indent_str e2_str
-  | CDistr dist -> string_of_cdistr dist 
+  | Sample dist_exp -> string_of_asample dist_exp 
   | DistrCase cases ->
     let format_case (_, prob) =
       match prob with
@@ -173,6 +178,12 @@ and string_of_aexpr_node ?(indent=0) (TAExprNode ae_node) : string =
   | Assign (te1, te2) -> Printf.sprintf "(%s := %s)" (string_of_texpr_indented ~indent te1) (string_of_texpr_indented ~indent te2)
   | Seq (te1, te2) -> Printf.sprintf "%s; %s" (string_of_texpr_indented ~indent te1) (string_of_texpr_indented ~indent te2)
   | Unit -> "()"
+
+and string_of_asample ?(indent=0) dist_exp =
+  match dist_exp with
+  | Uniform (e1, e2) -> Printf.sprintf "uniform(%s, %s)" (string_of_texpr_indented ~indent e1) (string_of_texpr_indented ~indent e2)
+  | Gaussian (e1, e2) -> Printf.sprintf "gaussian(%s, %s)" (string_of_texpr_indented ~indent e1) (string_of_texpr_indented ~indent e2)
+  | Exponential e1 -> Printf.sprintf "exponential(%s)" (string_of_texpr_indented ~indent e1)
 
 and string_of_ty = function
   | TBool -> "bool"

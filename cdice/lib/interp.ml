@@ -23,7 +23,8 @@ let rec eval (env : env) (ExprNode e_node : expr) : value =
       let v1 = eval env e1 in
       eval ((x, v1) :: env) e2
 
-  | CDistr dist -> 
+  | Sample dist_exp -> 
+      let dist = eval_dist env dist_exp in
       (* Handle continuous distributions by sampling using the stats library function *)
       begin
         try
@@ -194,6 +195,26 @@ let rec eval (env : env) (ExprNode e_node : expr) : value =
       eval env e2 (* Evaluate e2 and return its result *)
 
   | Unit -> VUnit
+
+and eval_dist env dist_exp = 
+  match dist_exp with
+  | Uniform (e1, e2) -> 
+      let v1 = eval env e1 in
+      let v2 = eval env e2 in
+      (match v1, v2 with
+       | VFloat f1, VFloat f2 -> Distributions.Uniform (f1, f2)
+       | _ -> raise (RuntimeError "Type error during evaluation: Uniform expects floats"))
+  | Gaussian (e1, e2) -> 
+      let v1 = eval env e1 in
+      let v2 = eval env e2 in
+      (match v1, v2 with
+       | VFloat f1, VFloat f2 -> Distributions.Gaussian (f1, f2)
+       | _ -> raise (RuntimeError "Type error during evaluation: Gaussian expects floats"))
+  | Exponential e1 -> 
+      let v1 = eval env e1 in
+      (match v1 with
+       | VFloat f1 -> Distributions.Exponential f1
+       | _ -> raise (RuntimeError "Type error during evaluation: Exponential expects a float"))
 
 (* Entry point for evaluation with an empty environment *)
 let run e = eval [] e 

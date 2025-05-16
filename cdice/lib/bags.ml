@@ -64,7 +64,32 @@ end
 
 (* == Bag Instantiations == *)
 module FloatBag = Make(FloatSetContents)
-module BoundBag = Make(BoundSetContents)
+
+(* Original BoundBag module *)
+module OriginalBoundBag = Make(BoundSetContents)
+
+(* Extended BoundBag module to include add_all *)
+module BoundBag = struct
+  include OriginalBoundBag (* Include all existing functionality *)
+
+  (* Function to add all floats from a FloatSet as LessEq bounds to a BoundBag *)
+  let add_all (float_s : FloatSet.t) (b_bag : bag) : unit =
+    let current_content = get b_bag in
+    match current_content with
+    | Top -> () (* If the bag is already Top, no change or cannot add *)
+    | Finite current_bound_set ->
+        (* Create a set of new bounds from the float set *)
+        let new_bounds_to_add = 
+          FloatSet.fold (fun f acc_set -> BoundSet.add (LessEq f) acc_set) float_s BoundSet.empty 
+        in
+        (* The potential new state of the bound set *)
+        let potentially_updated_bound_set = BoundSet.union current_bound_set new_bounds_to_add in
+        (* Only update if there's an actual change *)
+        if not (BoundSet.equal current_bound_set potentially_updated_bound_set) then
+          (* Use leq with a temporary bag to ensure listeners are triggered *)
+          let temp_bag_with_new_state = create (Finite potentially_updated_bound_set) in
+          leq temp_bag_with_new_state b_bag
+end
 
 let fresh_bound_bag () : BoundBag.bag =
   BoundBag.create (Finite BoundSet.empty)

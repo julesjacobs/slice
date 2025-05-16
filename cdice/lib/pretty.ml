@@ -81,7 +81,7 @@ and string_of_expr_node ?(indent=0) (ExprNode expr_node) : string =
       Printf.sprintf "%slet%s %s%s%s = %s %sin%s\n%s%s"
         keyword_color reset_color variable_color x reset_color e1_str
         keyword_color reset_color indent_str e2_str
-  | CDistr dist -> string_of_cdistr dist
+  | Sample dist_exp -> string_of_sample ~indent dist_exp
   | DistrCase cases ->
       let format_case (expr, prob) =
         Printf.sprintf "%s%g%s: %s"
@@ -182,6 +182,12 @@ and string_of_expr_node ?(indent=0) (ExprNode expr_node) : string =
         (string_of_expr_indented ~indent e1) operator_color reset_color (string_of_expr_indented ~indent e2)
   | Unit -> Printf.sprintf "%s()%s" keyword_color reset_color
 
+and string_of_sample ?(indent=0) dist_exp = 
+  match dist_exp with
+  | Uniform (e1, e2) -> Printf.sprintf "uniform(%s, %s)" (string_of_expr_indented ~indent e1) (string_of_expr_indented ~indent e2)
+  | Gaussian (e1, e2) -> Printf.sprintf "gaussian(%s, %s)" (string_of_expr_indented ~indent e1) (string_of_expr_indented ~indent e2)
+  | Exponential e1 -> Printf.sprintf "exponential(%s)" (string_of_expr_indented ~indent e1)
+
 (* Pretty printer for aexpr nodes *)
 and string_of_aexpr_node ?(indent=0) (TAExprNode ae_node) : string =
  match ae_node with
@@ -197,7 +203,7 @@ and string_of_aexpr_node ?(indent=0) (TAExprNode ae_node) : string =
       Printf.sprintf "%slet%s %s%s%s = %s %sin%s\n%s%s"
         keyword_color reset_color variable_color x reset_color e1_str
         keyword_color reset_color indent_str e2_str
-  | CDistr dist -> string_of_cdistr dist
+  | Sample dist_exp -> string_of_asample dist_exp
   | DistrCase cases ->
       let format_case (texpr, prob) =
         Printf.sprintf "%s%g%s: %s"
@@ -350,6 +356,11 @@ and string_of_ty = function
         match !r with
         | Known t -> string_of_ty t
         | Unknown _ -> "?"
+and string_of_asample ?(indent=0) dist_exp = 
+  match dist_exp with
+  | Uniform (e1, e2) -> Printf.sprintf "uniform(%s, %s)" (string_of_texpr_indented ~indent e1) (string_of_texpr_indented ~indent e2)
+  | Gaussian (e1, e2) -> Printf.sprintf "gaussian(%s, %s)" (string_of_texpr_indented ~indent e1) (string_of_texpr_indented ~indent e2)
+  | Exponential e1 -> Printf.sprintf "exponential(%s)" (string_of_texpr_indented ~indent e1)
 
 (* Wrappers *)
 let string_of_expr expr =
@@ -405,34 +416,46 @@ let rec translate_to_sppl (env : (string * string) list) ?(target_var:string opt
         | None -> ([], var_name) (* No target, just return the var name *))
 
   (* Sampling Cases: Must assign to a variable *) 
-  | Types.ExprNode(CDistr d) ->
+  | Types.ExprNode(Sample d) ->
       let assign_var = match target_var with Some name -> name | None -> fresh_sppl_var state in
+      let assert_float_const e = 
+        match e with
+        | Types.ExprNode(Const f) -> f
+        | _ -> failwith "Expected a constant expression for SPPL translation because SPPL does not support non-constant expressions in sampling (in pretty.ml)"
+      in
       let stmt = match d with
-        | Distributions.Uniform (a, b) ->
+        | Types.Uniform (a, b) ->
+            let a = assert_float_const a in
+            let b = assert_float_const b in
             Printf.sprintf "%s ~= uniform(loc=%f, scale=%f)" assign_var a (b -. a)
-        | Distributions.Gaussian (mu, sigma) ->
+        | Types.Gaussian (mu, sigma) ->
+            let mu = assert_float_const mu in
+            let sigma = assert_float_const sigma in
             Printf.sprintf "%s ~= normal(loc=%f, scale=%f)" assign_var mu sigma
-        | Distributions.Exponential rate -> (* Assuming SPPL uses rate for exponential *) 
+        | Types.Exponential rate -> (* Assuming SPPL uses rate for exponential *) 
+            let rate = assert_float_const rate in
             Printf.sprintf "%s ~= exponential(scale=%f)" assign_var (1.0 /. rate) (* SPPL scale = 1/rate *)
-        | Distributions.Beta (alpha, beta) -> (* Assuming SPPL names match *) 
+        (*
+        | Types.Beta (alpha, beta) -> (* Assuming SPPL names match *) 
             Printf.sprintf "%s ~= beta(a=%f, b=%f)" assign_var alpha beta
-        | Distributions.LogNormal (mu, sigma) -> (* Assuming SPPL names match *) 
+        | Types.LogNormal (mu, sigma) -> (* Assuming SPPL names match *) 
             Printf.sprintf "%s ~= lognormal(mu=%f, sigma=%f)" assign_var mu sigma
-        | Distributions.Gamma (shape, scale) ->
+        | Types.Gamma (shape, scale) ->
             Printf.sprintf "%s ~= gamma(shape=%f, scale=%f)" assign_var shape scale
-        | Distributions.Laplace scale ->
+        | Types.Laplace scale ->
             Printf.sprintf "%s ~= laplace(scale=%f)" assign_var scale
-        | Distributions.Cauchy scale ->
+        | Types.Cauchy scale ->
             Printf.sprintf "%s ~= cauchy(scale=%f)" assign_var scale
-        | Distributions.Weibull (a, b) ->
+        | Types.Weibull (a, b) ->
             Printf.sprintf "%s ~= weibull(shape=%f, scale=%f)" assign_var a b
-        | Distributions.TDist nu ->
+        | Types.TDist nu ->
             Printf.sprintf "%s ~= tdist(nu=%f)" assign_var nu
-        | Distributions.Chi2 nu ->
+        | Types.Chi2 nu ->
             Printf.sprintf "%s ~= chi2(nu=%f)" assign_var nu
-        | Distributions.Logistic scale ->
+        | Types.Logistic scale ->
             Printf.sprintf "%s ~= logistic(scale=%f)" assign_var scale
         | _ -> Printf.sprintf "%s ~= <unsupported distribution>" assign_var
+        *)
       in
       ([stmt], assign_var)
   | Types.ExprNode(DistrCase cases) ->

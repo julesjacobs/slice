@@ -98,6 +98,11 @@ assign_expr:
   | comma_expr { $1 }
   ;
 
+comma_expr:
+  | comma_expr COMMA or_expr { ExprNode (Pair ($1, $3)) }
+  | or_expr { $1 }
+  ;
+
 /* OR Level */
 or_expr:
   | or_expr OR and_expr  { ExprNode (Or ($1, $3)) }
@@ -155,33 +160,35 @@ atomic_expr:
   | k = INT HASH n = INT
     { if k < 0 || k >= n then failwith (Printf.sprintf "Invalid FinConst: %d#%d" k n) else ExprNode (FinConst (k, n)) }
   | x = IDENT                 { ExprNode (Var x) }
-  | UNIFORM LPAREN lo = number COMMA hi = number RPAREN
-    { ExprNode (CDistr (Uniform (lo, hi))) }
-  | GAUSSIAN LPAREN mean = number COMMA std = number RPAREN
-    { ExprNode (CDistr (Gaussian (mean, std))) }
-  | EXPONENTIAL LPAREN rate = number RPAREN
-    { ExprNode (CDistr (Exponential rate)) }
-  | BETA LPAREN alpha = number COMMA beta = number RPAREN
-    { ExprNode (CDistr (Beta (alpha, beta))) }
-  | LOGNORMAL LPAREN mu = number COMMA sigma = number RPAREN
-    { ExprNode (CDistr (LogNormal (mu, sigma))) }
   | DISCRETE LPAREN cases = distr_cases RPAREN
     { ExprNode (DistrCase cases) }
+  | UNIFORM LPAREN lo = expr COMMA hi = expr RPAREN
+    { ExprNode (Sample (Uniform (lo, hi))) }
+  | GAUSSIAN LPAREN mean = expr COMMA std = expr RPAREN
+    { ExprNode (Sample (Gaussian (mean, std))) }
+  | EXPONENTIAL LPAREN rate = expr RPAREN
+    { ExprNode (Sample (Exponential rate)) }
+(*
+  | BETA LPAREN alpha = expr COMMA beta = expr RPAREN
+    { ExprNode (Sample (Beta (alpha, beta))) }
+  | LOGNORMAL LPAREN mu = expr COMMA sigma = expr RPAREN
+    { ExprNode (Sample (LogNormal (mu, sigma))) }
+  | GAMMA LPAREN shape = expr COMMA scale = expr RPAREN
+    { ExprNode (Sample (Gamma (shape, scale))) }
+  | LAPLACE LPAREN scale = expr RPAREN
+    { ExprNode (Sample (Laplace (scale))) }
+  | CAUCHY LPAREN scale = expr RPAREN
+    { ExprNode (Sample (Cauchy (scale))) }
+  | WEIBULL LPAREN a = expr COMMA b = expr RPAREN
+    { ExprNode (Sample (Weibull (a, b))) }
+  | TDIST LPAREN nu = expr RPAREN
+    { ExprNode (Sample (TDist (nu))) }
+  | CHI2 LPAREN nu = expr RPAREN
+    { ExprNode (Sample (Chi2 (nu))) }
+  | LOGISTIC LPAREN scale = expr RPAREN
+    { ExprNode (Sample (Logistic (scale))) }
+*)
   | LPAREN e = expr RPAREN      { e }
-  | GAMMA LPAREN shape = number COMMA scale = number RPAREN
-    { ExprNode (CDistr (Gamma (shape, scale))) }
-  | LAPLACE LPAREN scale = number RPAREN
-    { ExprNode (CDistr (Laplace (scale))) }
-  | CAUCHY LPAREN scale = number RPAREN
-    { ExprNode (CDistr (Cauchy (scale))) }
-  | WEIBULL LPAREN a = number COMMA b = number RPAREN
-    { ExprNode (CDistr (Weibull (a, b))) }
-  | TDIST LPAREN nu = number RPAREN
-    { ExprNode (CDistr (TDist (nu))) }
-  | CHI2 LPAREN nu = number RPAREN
-    { ExprNode (CDistr (Chi2 (nu))) }
-  | LOGISTIC LPAREN scale = number RPAREN
-    { ExprNode (CDistr (Logistic (scale))) }
   | LPAREN RPAREN { ExprNode Unit }
   ;
 
@@ -210,10 +217,5 @@ number:
   | e1 = number TIMES e2 = number { e1 *. e2 }
   | e1 = number DIVIDE e2 = number { e1 /. e2 }
   | LPAREN e = number RPAREN { e }
-
-comma_expr:
-  | comma_expr COMMA cmp_expr { ExprNode (Pair ($1, $3)) }
-  | cmp_expr { $1 }
-  ;
 
 %% (* This %% should mark the end of rules and precede any OCaml code if present *)
