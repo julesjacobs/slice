@@ -143,28 +143,28 @@ let elab (e : expr) : texpr =
             let kind_str = Pretty.string_of_expr_indented (ExprNode (Sample (Distr1 (dist_kind, arg_e)))) in (* Get a string for the kind *)
             failwith (Printf.sprintf "Type error in Sample (%s) argument: %s" kind_str msg));
           
-          let add_floats_to_boundbag (float_bag : FloatBag.bag) (bound_bag : BoundBag.bag) =
-            let listener () =
-              let v = Bags.FloatBag.get float_bag in
-              (match v with
-              | Finite s -> Bags.BoundBag.add_all s bound_bag
+        let add_floats_to_boundbag (float_bag : FloatBag.bag) (bound_bag : BoundBag.bag) =
+          let listener () =
+            let v = Bags.FloatBag.get float_bag in
+            (match v with
+            | Finite s -> Bags.BoundBag.add_all s bound_bag
               | Top -> Bags.BoundBag.leq (Bags.BoundBag.create Top) bound_bag)
-            in
-            Bags.FloatBag.listen float_bag listener in
+          in
+          Bags.FloatBag.listen float_bag listener in
           add_floats_to_boundbag t_arg_float_bag t_arg_bound_bag;
 
-          let make_output_top_if_input_boundbag_is_top input_bound_bag =
-            let listener () =
-              let v = Bags.BoundBag.get input_bound_bag in
-              (match v with
-              | Top -> Bags.BoundBag.leq (Bags.BoundBag.create Top) bounds_bag_ref
-              | _ -> ())
-            in
-            Bags.BoundBag.listen input_bound_bag listener in
+        let make_output_top_if_input_boundbag_is_top input_bound_bag =
+          let listener () =
+            let v = Bags.BoundBag.get input_bound_bag in
+            (match v with
+            | Top -> Bags.BoundBag.leq (Bags.BoundBag.create Top) bounds_bag_ref
+            | _ -> ())
+          in
+          Bags.BoundBag.listen input_bound_bag listener in
           make_output_top_if_input_boundbag_is_top t_arg_bound_bag;
-
+        
           let dist_exp' = Distr1 (dist_kind, (t_arg, a_arg)) in
-          (TFloat (bounds_bag_ref, consts_bag_ref), TAExprNode (Sample dist_exp'))
+        (TFloat (bounds_bag_ref, consts_bag_ref), TAExprNode (Sample dist_exp'))
 
       | Distr2 (dist_kind, arg1_e, arg2_e) ->
         let t1, a1 = aux env arg1_e in
@@ -581,9 +581,9 @@ let discretize (e : texpr) : expr =
         in
         let set_or_top_val = Bags.BoundBag.get bounds_bag_of_outer_sample in
         
-        (match set_or_top_val with
+          (match set_or_top_val with
         | Bags.Top -> (* If outer Sample's bounds are Top, fallback to simple recursive discretization of params *)
-          (match dist_exp with 
+            (match dist_exp with 
           | Distr1 (kind, texpr_arg) -> ExprNode (Sample (Distr1 (kind, aux texpr_arg)))
           | Distr2 (kind, texpr_arg1, texpr_arg2) -> ExprNode (Sample (Distr2 (kind, aux texpr_arg1, aux texpr_arg2)))
           )
@@ -890,7 +890,7 @@ let discretize (e : texpr) : expr =
                 )
                 default_branch_expr
         )
-
+        
     | DistrCase cases ->
       (* Recursively discretize the expressions within the cases *) 
       let discretized_cases = 
@@ -921,7 +921,7 @@ let discretize (e : texpr) : expr =
               (* If bounds are Top, don't discretize, keep original Less structure *) 
               ExprNode (Less (aux te1, aux te2)) 
           | Bags.Finite bound_set -> 
-              (* Discretize based on shared bounds *)
+              (* Discretize based on shared bounds *) 
               let n = 1 + List.length (Bags.BoundSet.elements bound_set) in
               let d1 = aux te1 in (* Discretize operands *)
               let d2 = aux te2 in 
@@ -952,7 +952,7 @@ let discretize (e : texpr) : expr =
           | Bags.Finite bound_set -> 
               (* Discretize based on shared bounds *) 
               let n = 1 + List.length (Bags.BoundSet.elements bound_set) in
-              let d1 = aux te1 in (* Discretize operands *) 
+              let d1 = aux te1 in (* Discretize operands *)
               let d2 = aux te2 in 
               ExprNode (FinLeq (d1, d2, n))) (* Generate FinLeq *) 
 

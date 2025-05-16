@@ -58,14 +58,21 @@ open Types
 
 (* Define types for non-terminals *) 
 %type <Types.expr> expr assign_expr cons_expr cmp_expr app_expr atomic_expr prefix_expr
+%type <Types.expr list> expr_comma_list (* New type for list of expressions *)
 %type <unit> opt_bar
 %type <float> number
 %type <(Types.expr * float) list> distr_cases
 
-(* Operator precedence and associativity *)
+(* Operator precedence and associativity from commit 23e2e6c *)
 %left ARROW             (* Function type arrow *)
 %left SEMICOLON
+%left PLUS MINUS
+%left TIMES DIVIDE
+%left OR                (* OR has lower precedence than AND *)
+%left AND               (* AND has lower precedence than NOT/comparison *)
+%right NOT              (* Unary NOT has high precedence *)
 %right COMMA
+%nonassoc LESS LESSEQ LT_HASH LEQ_HASH (* Comparison operators *)
 
 %% 
 
@@ -98,12 +105,7 @@ expr:
 /* Assignment level */
 assign_expr:
   | prefix_expr COLON_EQUAL assign_expr { ExprNode (Assign ($1, $3)) }
-  | comma_expr { $1 } /* Fallthrough to comma_expr */
-  ;
-
-comma_expr:
-  | comma_expr COMMA or_expr { ExprNode (Pair ($1, $3)) } (* This creates right-associative pairs for e1, e2, e3 -> (e1, (e2, e3)) *)
-  | or_expr { $1 }
+  | or_expr { $1 } /* Fallthrough to or_expr, as per diff */
   ;
 
 /* OR Level */
@@ -199,9 +201,18 @@ atomic_expr:
     { ExprNode (Sample (Distr2 (DGumbel2, mu, beta_param))) }
   | EXPPOW LPAREN arg1 = app_expr COMMA arg2 = app_expr RPAREN
     { ExprNode (Sample (Distr2 (DExppow, arg1, arg2))) }
-  | LPAREN e = expr RPAREN      { e }
-  | LPAREN RPAREN { ExprNode Unit }
-  | LPAREN e1 = expr COMMA e2 = expr RPAREN { ExprNode (Pair (e1, e2)) }
+  | LPAREN RPAREN { ExprNode Unit } 
+  | LPAREN el = expr_comma_list RPAREN (* New rule for (e1), (e1,e2), (e1,e2,e3), etc. *)
+    { 
+      let rec build_pairs_from_list expr_list =
+        match expr_list with
+        | [] -> failwith "Impossible: empty list in tuple construction - expr_comma_list should be non-empty"
+        | [single_e] -> single_e (* Parsed (e), not a pair *)
+        | first_e :: second_e :: rest_of_list -> (* Parsed (e1, e2, ...), create Pair(e1, rec_parse(e2,...)) *)
+            ExprNode (Pair (first_e, build_pairs_from_list (second_e :: rest_of_list)))
+      in
+      build_pairs_from_list el
+    }
   ;
 
 /* Optional bar rule */
@@ -229,6 +240,11 @@ number:
   | e1 = number TIMES e2 = number { e1 *. e2 }
   | e1 = number DIVIDE e2 = number { e1 /. e2 }
   | LPAREN e = number RPAREN { e }
+  ;
+
+expr_comma_list: (* Definition for comma-separated list of expressions *)
+    e = expr                         { [e] }
+  | e = expr COMMA rest = expr_comma_list { e :: rest }
   ;
 
 %% (* This %% should mark the end of rules and precede any OCaml code if present *)
