@@ -4,6 +4,7 @@
 \usepackage[scaled=0.84]{beramono}
 \usepackage{mathpartir}
 \usepackage{xspace}
+\usepackage{todonotes}
 \title{CDice: Type-Directed Discretization of Continuous Probabilistic Programs}
 
 \lstdefinelanguage{Dice}{
@@ -67,6 +68,68 @@ let x = discrete(0.1, 0.4, 0.5) in
 let y = discrete(0.05, 0.95) in
 if x <= 1 then x <= 0 else y <= 0
 \end{lstlisting}
+
+\section{Overview}
+This section illustrates the workflow of Contdice through two simple examples. First, we present the Indian GPA problem, a well-known example using of mixed-type random variables taking on both continuous and discrete values. 
+
+\subsection{Specifying the Prior}
+
+\begin{lstlisting}
+    let nationality = discrete(0.5: 0#2, 0.5: 1#2) in
+    let perfect = discrete(0.01: 0#2, 0.99: 1#2) in
+    let gpa = if nationality <=#2 0#2 then 
+        if perfect <=#2 0#2 then 10.0 else uniform(0,10)
+        else
+        if perfect <=#2 0#2 then 4.0 else uniform(0,4) 
+    in gpa < 1.0
+\end{lstlisting}
+
+The figure above illustrates the example using Contdice syntax. In this scenario, a student's GPA depends on their nationality and whether they have a perfect record, both of which are modeled as discrete random variables. The nationality variable is binary, representing an equal chance of a student from India (0\#2) or USA (1\#2). Similarly, the perfect variable encodes whether the student has a perfect GPA with a small prior probability, 0.01 for yes and 0.99 for no. Depending on these discrete inputs, the gpa is assigned deterministically, e.g. 10.0 for a perfect Indian student, or sampled from a continuous uniform distribution, e.g. uniform(0,10) or uniform(0,4) depending on nationality. We finally perform a query to determine the probability that a student's GPA falls below 1.0.
+
+\subsection{Type-based Inference}
+\begin{lstlisting}
+(let nationality = (discrete(0.5: 0#2, 0.5: 1#2) : #2) in
+(let perfect = (discrete(0.01: 0#2, 0.99: 1#2) : #2) in
+(let gpa = (if ((nationality : #2) <=#2 0#2 : bool) then
+    (if ((perfect : #2) <=#2 0#2 : bool) then (10 : float[<1; 10])
+    else (uniform((0 : float[<=0; 0]), (10 : float[<=10; 10])) : float[<1; T]) : float[<1; T])
+      else
+        (if ((perfect : #2) <=#2 0#2 : bool) then
+          (4 : float[<1; 4])
+        else
+    (uniform((0 : float[<=0; 0]), (4 : float[<=4; 4])) : float[<1; T]) : float[<1; T]) : float[<1; T]) in
+    ((gpa : float[<1; T]) < (1 : float[<1; 1]) : bool) : bool) : bool) : bool)
+\end{lstlisting}
+
+A type is assigned to every subexpression, and specifically for the float subexpressions, all relevant comparison threshold points are collected in what we denote as a bag $B$. Most notably, since we query gpa $< 1$, and a $\textbf{uniform}(c_1,c_2)$ expression intrinsically has a $\textbf{float}\langle B \rangle$ type, we make sure to collect the 1 in the bags belonging to the $\textbf{uniform}(c_1,c_2)$ distributions corresponding to the gpa variable.
+
+
+\subsection{Discretization}
+\begin{lstlisting}
+    let nationality = discrete(0.5: 0#2, 0.5: 1#2) in
+let perfect = discrete(0.01: 0#2, 0.99: 1#2) in
+  let gpa = if nationality <=#2 0#2 then
+        if perfect <=#2 0#2 then
+          1#2
+        else
+          discrete(0.1: 0#2, 0.9: 1#2)
+      else
+        if perfect <=#2 0#2 then
+          1#2
+        else
+          discrete(0.25: 0#2, 0.75: 1#2) in
+    gpa <#2 1#2
+\end{lstlisting}
+
+After type inference, the discretization process transforms cdice into a discretized program based on the bags containing all relevant threshold points for the float types. The continuous range of float variables are mapped onto a finite set of integers representing intervals defined by the threshold points in its corresponding bag. Notably, $\textbf{uniform}(0,10)$ is transformed to $\textbf{discrete}(0.1: 0\#2 0.9: 1\#2)$ due to its threshold point 1 partitioning the continuous distribution into two intervals, from which we calculate the probabilities of the intervals using the uniform cdf. CDice now becomes a comparison against the corresponding interval index, in this case 1, in the discretized program.
+
+
+\subsection{Exact Inference}
+The final step is a post-processing step of converting the discretized program into a discrete program compatible with a backend discrete exact inference solver, such as Dice or Roulette.
+
+\section{Motivating Examples}
+\todo[inline]{Give some motivating examples...
+i.e. multimodality. What are some continuous programs that are challenging for exact inference (i.e. difficult for sampling based methods due to accuracy), but that we can support fast (more efficient than approximate methods like bit blasting)? Might want to merge this section in with the previous one.}
 
 \section{Language}
 
