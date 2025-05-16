@@ -690,18 +690,30 @@ let discretize (e : texpr) : expr =
             | _ -> None
           in
           
-          let rec build_nested_ifs (val_var_name: string) (param_modulus: int) (arms: (expr * expr) list) (else_expr: expr) : expr =
+          let rec build_nested_ifs (val_var_name: string) (param_modulus: int) (arms: (expr * expr) list) (default_expr_if_all_fail: expr) : expr =
             match arms with 
-            | [] -> else_expr
+            | [] -> 
+                (* This case should ideally not be reached if `generate_runtime_match_for_param` 
+                   ensures `arms` (derived from `possible_floats`) is non-empty when calling this.
+                   If `possible_floats` is empty, `default_expr_if_all_fail` is returned directly by the caller.
+                   If it *is* reached, it means something unexpected happened or initial arms list was empty. *) 
+                failwith "build_nested_ifs: Reached empty arms list, this should be handled by caller or indicates an issue."
+            | [(_target_finconst_expr, body_expr)] -> 
+                (* This is the last arm. If all previous conditions were false, this one is effectively the 'else'.
+                   The assumption is that val_var_name *must* match one of the targets if possible_floats was exhaustive.
+                   So, the condition FinEq(ExprNode (Var val_var_name), target_finconst_expr, param_modulus) is implicitly true here.
+                *)
+                body_expr
             | (target_finconst_expr, body_expr) :: rest_arms ->
               let current_val_expr = ExprNode (Var val_var_name) in
               let condition =
-                ExprNode(FinEq(current_val_expr, target_finconst_expr, param_modulus)) (* Use FinEq here *)
+                ExprNode(FinEq(current_val_expr, target_finconst_expr, param_modulus))
               in
-              ExprNode (If (condition, body_expr, build_nested_ifs val_var_name param_modulus rest_arms else_expr))
+              ExprNode (If (condition, body_expr, build_nested_ifs val_var_name param_modulus rest_arms default_expr_if_all_fail))
           in
 
           let generate_runtime_match_for_param 
+              ?(already_discretized_expr : expr option = None)
               (param_texpr : texpr) 
               (param_name_str : string) 
               (build_body_fn : float -> expr) 
@@ -713,7 +725,11 @@ let discretize (e : texpr) : expr =
                 else if List.length possible_floats = 1 then 
                   build_body_fn (List.hd possible_floats)
                 else
-                  let actual_discretized_param_expr = aux param_texpr in
+                  let actual_discretized_param_expr = 
+                    match already_discretized_expr with
+                    | Some ade -> ade
+                    | None -> aux param_texpr
+                  in
                   let match_arms = List.map (fun f_val ->
                     let param_consts_bag_for_f = Bags.FloatBag.create (Finite (FloatSet.singleton f_val)) in
                     let param_bounds_bag_for_f = Bags.BoundBag.create (Finite (Bags.BoundSet.of_list param_actual_bound_cuts_as_bounds)) in
@@ -794,135 +810,244 @@ let discretize (e : texpr) : expr =
                 default_branch_expr
           
           | Distr2 (DUniform, texpr_a, texpr_b) ->
-              generate_runtime_match_for_param texpr_a "a"
-                (fun val_a -> 
-                  generate_runtime_match_for_param texpr_b "b"
-                    (fun val_b -> 
-                      if val_a > val_b then
-                        failwith "Discretization error: Uniform low > high"
-                      else
-                        final_expr_producer (Distributions.Uniform (val_a, val_b))
-                    )
-                    default_branch_expr 
-                )
-                default_branch_expr 
+              let discretized_b_expr = aux texpr_b in
+              let core_logic (eff_discretized_b_expr : expr) =
+                generate_runtime_match_for_param texpr_a "a"
+                  (fun val_a -> 
+                    generate_runtime_match_for_param ~already_discretized_expr:(Some eff_discretized_b_expr) texpr_b "b"
+                      (fun val_b -> 
+                        if val_a > val_b then
+                          failwith "Discretization error: Uniform low > high"
+                        else
+                          final_expr_producer (Distributions.Uniform (val_a, val_b))
+                      )
+                      default_branch_expr 
+                  )
+                  default_branch_expr
+              in
+              (match discretized_b_expr with
+               | ExprNode (Var _) | ExprNode (Const _) | ExprNode (BoolConst _) | ExprNode (FinConst _) ->
+                   core_logic discretized_b_expr
+               | _ ->
+                   Util.gen_let "_h_b" discretized_b_expr (fun hoisted_b_var ->
+                     core_logic (ExprNode (Var hoisted_b_var))
+                   ))
+
           | Distr2 (DGaussian, texpr_mu, texpr_sigma) ->
-              generate_runtime_match_for_param texpr_mu "mu"
-                (fun val_mu ->
-                  generate_runtime_match_for_param texpr_sigma "sigma"
-                    (fun val_sigma ->
-                      if val_sigma <= 0.0 then
-                        failwith "Discretization error: Gaussian sigma must be positive"
-                      else
-                        final_expr_producer (Distributions.Gaussian (val_mu, val_sigma))
-                    )
-                    default_branch_expr
-                )
-                default_branch_expr
+              let discretized_sigma_expr = aux texpr_sigma in
+              let core_logic (eff_discretized_sigma_expr : expr) =
+                generate_runtime_match_for_param texpr_mu "mu"
+                  (fun val_mu ->
+                    generate_runtime_match_for_param ~already_discretized_expr:(Some eff_discretized_sigma_expr) texpr_sigma "sigma"
+                      (fun val_sigma ->
+                        if val_sigma <= 0.0 then
+                          failwith "Discretization error: Gaussian sigma must be positive"
+                        else
+                          final_expr_producer (Distributions.Gaussian (val_mu, val_sigma))
+                      )
+                      default_branch_expr
+                  )
+                  default_branch_expr
+              in
+              (match discretized_sigma_expr with
+               | ExprNode (Var _) | ExprNode (Const _) | ExprNode (BoolConst _) | ExprNode (FinConst _) ->
+                   core_logic discretized_sigma_expr
+               | _ ->
+                   Util.gen_let "_h_sigma" discretized_sigma_expr (fun hoisted_var ->
+                     core_logic (ExprNode (Var hoisted_var))
+                   ))
+
           | Distr2 (DBeta, texpr_alpha, texpr_beta_param) ->
-              generate_runtime_match_for_param texpr_alpha "alpha"
-                (fun val_alpha ->
-                  generate_runtime_match_for_param texpr_beta_param "beta_param"
-                    (fun val_beta_param ->
-                      if val_alpha <= 0.0 || val_beta_param <= 0.0 then
-                        failwith "Discretization error: Beta alpha and beta_param must be positive"
-                      else
-                        final_expr_producer (Distributions.Beta (val_alpha, val_beta_param))
-                    )
-                    default_branch_expr
-                )
-                default_branch_expr
+              let discretized_beta_param_expr = aux texpr_beta_param in
+              let core_logic (eff_discretized_beta_param_expr : expr) =
+                generate_runtime_match_for_param texpr_alpha "alpha"
+                  (fun val_alpha ->
+                    generate_runtime_match_for_param ~already_discretized_expr:(Some eff_discretized_beta_param_expr) texpr_beta_param "beta_param"
+                      (fun val_beta_param ->
+                        if val_alpha <= 0.0 || val_beta_param <= 0.0 then
+                          failwith "Discretization error: Beta alpha and beta_param must be positive"
+                        else
+                          final_expr_producer (Distributions.Beta (val_alpha, val_beta_param))
+                      )
+                      default_branch_expr
+                  )
+                  default_branch_expr
+              in
+              (match discretized_beta_param_expr with
+               | ExprNode (Var _) | ExprNode (Const _) | ExprNode (BoolConst _) | ExprNode (FinConst _) ->
+                   core_logic discretized_beta_param_expr
+               | _ ->
+                   Util.gen_let "_h_beta_p" discretized_beta_param_expr (fun hoisted_var ->
+                     core_logic (ExprNode (Var hoisted_var))
+                   ))
+
           | Distr2 (DLogNormal, texpr_mu, texpr_sigma) ->
-              generate_runtime_match_for_param texpr_mu "mu"
-                (fun val_mu ->
-                  generate_runtime_match_for_param texpr_sigma "sigma"
-                    (fun val_sigma ->
-                      if val_sigma <= 0.0 then
-                        failwith "Discretization error: LogNormal sigma must be positive"
-                      else
-                        final_expr_producer (Distributions.LogNormal (val_mu, val_sigma))
-                    )
-                    default_branch_expr
-                )
-                default_branch_expr
+              let discretized_sigma_expr = aux texpr_sigma in
+              let core_logic (eff_discretized_sigma_expr : expr) =
+                generate_runtime_match_for_param texpr_mu "mu"
+                  (fun val_mu ->
+                    generate_runtime_match_for_param ~already_discretized_expr:(Some eff_discretized_sigma_expr) texpr_sigma "sigma"
+                      (fun val_sigma ->
+                        if val_sigma <= 0.0 then
+                          failwith "Discretization error: LogNormal sigma must be positive"
+                        else
+                          final_expr_producer (Distributions.LogNormal (val_mu, val_sigma))
+                      )
+                      default_branch_expr
+                  )
+                  default_branch_expr
+              in
+              (match discretized_sigma_expr with
+               | ExprNode (Var _) | ExprNode (Const _) | ExprNode (BoolConst _) | ExprNode (FinConst _) ->
+                   core_logic discretized_sigma_expr
+               | _ ->
+                   Util.gen_let "_h_sigma_ln" discretized_sigma_expr (fun hoisted_var ->
+                     core_logic (ExprNode (Var hoisted_var))
+                   ))
+
           | Distr2 (DGamma, texpr_shape, texpr_scale) ->
-              generate_runtime_match_for_param texpr_shape "shape"
-                (fun val_shape ->
-                  generate_runtime_match_for_param texpr_scale "scale"
-                    (fun val_scale ->
-                      if val_shape <= 0.0 || val_scale <= 0.0 then
-                        failwith "Discretization error: Gamma shape and scale must be positive"
-                      else
-                        final_expr_producer (Distributions.Gamma (val_shape, val_scale))
-                    )
-                    default_branch_expr
-                )
-                default_branch_expr
+              let discretized_scale_expr = aux texpr_scale in
+              let core_logic (eff_discretized_scale_expr : expr) =
+                generate_runtime_match_for_param texpr_shape "shape"
+                  (fun val_shape ->
+                    generate_runtime_match_for_param ~already_discretized_expr:(Some eff_discretized_scale_expr) texpr_scale "scale"
+                      (fun val_scale ->
+                        if val_shape <= 0.0 || val_scale <= 0.0 then
+                          failwith "Discretization error: Gamma shape and scale must be positive"
+                        else
+                          final_expr_producer (Distributions.Gamma (val_shape, val_scale))
+                      )
+                      default_branch_expr
+                  )
+                  default_branch_expr
+              in
+              (match discretized_scale_expr with
+               | ExprNode (Var _) | ExprNode (Const _) | ExprNode (BoolConst _) | ExprNode (FinConst _) ->
+                   core_logic discretized_scale_expr
+               | _ ->
+                   Util.gen_let "_h_scale_g" discretized_scale_expr (fun hoisted_var ->
+                     core_logic (ExprNode (Var hoisted_var))
+                   ))
+
           | Distr2 (DPareto, texpr_a, texpr_b) ->
-              generate_runtime_match_for_param texpr_a "a"
-                (fun val_a ->
-                  generate_runtime_match_for_param texpr_b "b"
-                    (fun val_b ->
-                      if val_a <= 0.0 || val_b <= 0.0 then
-                        failwith "Discretization error: Pareto a and b must be positive"
-                      else
-                        final_expr_producer (Distributions.Pareto (val_a, val_b))
-                    )
-                    default_branch_expr
-                )
-                default_branch_expr
+              let discretized_b_expr = aux texpr_b in
+              let core_logic (eff_discretized_b_expr : expr) =
+                generate_runtime_match_for_param texpr_a "a"
+                  (fun val_a ->
+                    generate_runtime_match_for_param ~already_discretized_expr:(Some eff_discretized_b_expr) texpr_b "b"
+                      (fun val_b ->
+                        if val_a <= 0.0 || val_b <= 0.0 then
+                          failwith "Discretization error: Pareto a and b must be positive"
+                        else
+                          final_expr_producer (Distributions.Pareto (val_a, val_b))
+                      )
+                      default_branch_expr
+                  )
+                  default_branch_expr
+              in
+              (match discretized_b_expr with
+               | ExprNode (Var _) | ExprNode (Const _) | ExprNode (BoolConst _) | ExprNode (FinConst _) ->
+                   core_logic discretized_b_expr
+               | _ ->
+                   Util.gen_let "_h_b_p" discretized_b_expr (fun hoisted_var ->
+                     core_logic (ExprNode (Var hoisted_var))
+                   ))
+
           | Distr2 (DWeibull, texpr_a, texpr_b) ->
-              generate_runtime_match_for_param texpr_a "a"
-                (fun val_a ->
-                  generate_runtime_match_for_param texpr_b "b"
-                    (fun val_b ->
-                      if val_a <= 0.0 || val_b <= 0.0 then
-                        failwith "Discretization error: Weibull a and b must be positive"
-                      else
-                        final_expr_producer (Distributions.Weibull (val_a, val_b))
-                    )
-                    default_branch_expr
-                )
-                default_branch_expr
+              let discretized_b_expr = aux texpr_b in
+              let core_logic (eff_discretized_b_expr : expr) =
+                generate_runtime_match_for_param texpr_a "a"
+                  (fun val_a ->
+                    generate_runtime_match_for_param ~already_discretized_expr:(Some eff_discretized_b_expr) texpr_b "b"
+                      (fun val_b ->
+                        if val_a <= 0.0 || val_b <= 0.0 then
+                          failwith "Discretization error: Weibull a and b must be positive"
+                        else
+                          final_expr_producer (Distributions.Weibull (val_a, val_b))
+                      )
+                      default_branch_expr
+                  )
+                  default_branch_expr
+              in
+              (match discretized_b_expr with
+               | ExprNode (Var _) | ExprNode (Const _) | ExprNode (BoolConst _) | ExprNode (FinConst _) ->
+                   core_logic discretized_b_expr
+               | _ ->
+                   Util.gen_let "_h_b_w" discretized_b_expr (fun hoisted_var ->
+                     core_logic (ExprNode (Var hoisted_var))
+                   ))
+
           | Distr2 (DGumbel1, texpr_a, texpr_b) ->
-              generate_runtime_match_for_param texpr_a "a"
-                (fun val_a ->
-                  generate_runtime_match_for_param texpr_b "b"
-                    (fun val_b ->
-                      if val_b <= 0.0 then (* Gumbel1 constraint is on b *)
-                        failwith "Discretization error: Gumbel1 b must be positive"
-                      else
-                        final_expr_producer (Distributions.Gumbel1 (val_a, val_b))
-                    )
-                    default_branch_expr
-                )
-                default_branch_expr
+              let discretized_b_expr = aux texpr_b in
+              let core_logic (eff_discretized_b_expr : expr) =
+                generate_runtime_match_for_param texpr_a "a"
+                  (fun val_a ->
+                    generate_runtime_match_for_param ~already_discretized_expr:(Some eff_discretized_b_expr) texpr_b "b"
+                      (fun val_b ->
+                        if val_b <= 0.0 then (* Gumbel1 constraint is on b *)
+                          failwith "Discretization error: Gumbel1 b must be positive"
+                        else
+                          final_expr_producer (Distributions.Gumbel1 (val_a, val_b))
+                      )
+                      default_branch_expr
+                  )
+                  default_branch_expr
+              in
+              (match discretized_b_expr with
+               | ExprNode (Var _) | ExprNode (Const _) | ExprNode (BoolConst _) | ExprNode (FinConst _) ->
+                   core_logic discretized_b_expr
+               | _ ->
+                   Util.gen_let "_h_b_g1" discretized_b_expr (fun hoisted_var ->
+                     core_logic (ExprNode (Var hoisted_var))
+                   ))
+
           | Distr2 (DGumbel2, texpr_a, texpr_b) ->
-              generate_runtime_match_for_param texpr_a "a"
-                (fun val_a ->
-                  generate_runtime_match_for_param texpr_b "b"
-                    (fun val_b ->
-                      if val_b <= 0.0 then (* Gumbel2 constraint is on b *)
-                        failwith "Discretization error: Gumbel2 b must be positive"
-                      else
-                        final_expr_producer (Distributions.Gumbel2 (val_a, val_b))
-                    )
-                    default_branch_expr
-                )
-                default_branch_expr
+              let discretized_b_expr = aux texpr_b in
+              let core_logic (eff_discretized_b_expr : expr) =
+                generate_runtime_match_for_param texpr_a "a"
+                  (fun val_a ->
+                    generate_runtime_match_for_param ~already_discretized_expr:(Some eff_discretized_b_expr) texpr_b "b"
+                      (fun val_b ->
+                        if val_b <= 0.0 then (* Gumbel2 constraint is on b *)
+                          failwith "Discretization error: Gumbel2 b must be positive"
+                        else
+                          final_expr_producer (Distributions.Gumbel2 (val_a, val_b))
+                      )
+                      default_branch_expr
+                  )
+                  default_branch_expr
+              in
+              (match discretized_b_expr with
+               | ExprNode (Var _) | ExprNode (Const _) | ExprNode (BoolConst _) | ExprNode (FinConst _) ->
+                   core_logic discretized_b_expr
+               | _ ->
+                   Util.gen_let "_h_b_g2" discretized_b_expr (fun hoisted_var ->
+                     core_logic (ExprNode (Var hoisted_var))
+                   ))
+
           | Distr2 (DExppow, texpr_a, texpr_b) ->
-              generate_runtime_match_for_param texpr_a "a"
-                (fun val_a ->
-                  generate_runtime_match_for_param texpr_b "b"
-                    (fun val_b ->
-                      if val_a <= 0.0 || val_b <= 0.0 then
-                        failwith "Discretization error: Exppow a and b must be positive"
-                      else
-                        final_expr_producer (Distributions.Exppow (val_a, val_b))
-                    )
-                    default_branch_expr
-                )
-                default_branch_expr
+              let discretized_b_expr = aux texpr_b in
+              let core_logic (eff_discretized_b_expr : expr) =
+                generate_runtime_match_for_param texpr_a "a"
+                  (fun val_a ->
+                    generate_runtime_match_for_param ~already_discretized_expr:(Some eff_discretized_b_expr) texpr_b "b"
+                      (fun val_b ->
+                        if val_a <= 0.0 || val_b <= 0.0 then
+                          failwith "Discretization error: Exppow a and b must be positive"
+                        else
+                          final_expr_producer (Distributions.Exppow (val_a, val_b))
+                      )
+                      default_branch_expr
+                  )
+                  default_branch_expr
+              in
+              (match discretized_b_expr with
+               | ExprNode (Var _) | ExprNode (Const _) | ExprNode (BoolConst _) | ExprNode (FinConst _) ->
+                   core_logic discretized_b_expr
+               | _ ->
+                   Util.gen_let "_h_b_ep" discretized_b_expr (fun hoisted_var ->
+                     core_logic (ExprNode (Var hoisted_var))
+                   ))
         )
         
     | DistrCase cases ->
@@ -937,7 +1062,7 @@ let discretize (e : texpr) : expr =
         let t2 = fst te2 in (* Extract type t2 *)
         let b1 = (match Types.force t1 with (* Get bound bag b1 from t1 *)
           | Types.TFloat (b, _) -> b 
-          | _ -> failwith "Type error: Less expects float on left operand") 
+          | _ -> failwith "Type error: Less expects float") 
         in
         let b2 = (match Types.force t2 with (* Get bound bag b2 from t2 *)
           | Types.TFloat (b, _) -> b
