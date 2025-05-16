@@ -17,13 +17,20 @@ module Bags = Bags   (* And Bags *)
 
 module StringMap = Map.Make(String)
 
+let find_index pred lst =
+  let rec loop i = function
+    | [] -> None
+    | x::xs -> if pred x then Some i else loop (i+1) xs
+  in
+  loop 0 lst
+
 (* ======== Helper for Constant Discretization ======== *)
 
 let get_const_idx_and_modulus (f : float) (bound_set_from_context : BoundSet.t) : int * int =
   let cuts_as_bounds = BoundSet.elements bound_set_from_context in
   let modulus = 1 + List.length cuts_as_bounds in
   (* The index of the float is equal to the index of the first bound that is satisfied *)
-  let idx = List.find_index (fun bound -> Bags.satisfies_bound f bound) cuts_as_bounds in
+  let idx = find_index (fun bound -> Bags.satisfies_bound f bound) cuts_as_bounds in
   let idx = match idx with
     | Some i -> i 
     | None -> modulus - 1 (* If no bound is satisfied, we're in the last interval *)
