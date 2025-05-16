@@ -23,3 +23,4 @@ output.dice
 parametrize.cdice
 tex/contdice.bbl
 tex/contdice.blg
+cdice/.DS_Store
