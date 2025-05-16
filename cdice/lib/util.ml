@@ -6,6 +6,14 @@ let fresh_var (prefix : string) : string =
   incr var_counter;
   prefix ^ string_of_int !var_counter
 
+let gen_let (base_name_hint : string) (rhs_expr : Types.expr) (body_fn : string -> Types.expr) : Types.expr =
+  match rhs_expr with
+  | Types.ExprNode (Types.Var existing_var_name) ->
+      body_fn existing_var_name (* Use existing variable name directly in the body *)
+  | _ ->
+      let new_var_name = fresh_var base_name_hint in (* Use the existing fresh_var from Util.ml *)
+      Types.ExprNode (Types.Let (new_var_name, rhs_expr, body_fn new_var_name))
+
 (* Eventually refactor this so that all print functions go in one file, with an optional argument to specify pretty print *)
 
 (* Pretty printer for continuous distributions *)

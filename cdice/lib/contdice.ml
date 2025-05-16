@@ -650,9 +650,8 @@ let discretize (e : texpr) : expr =
                     (target_finconst_expr, body)
                   ) possible_floats in
                   
-                  let let_var_name = Util.fresh_var ("_disc_" ^ param_name_str) in
-                  ExprNode (Let (let_var_name, actual_discretized_param_expr, 
-                               build_nested_ifs let_var_name param_modulus match_arms default_expr_for_this_param))
+                  Util.gen_let ("_disc_" ^ param_name_str) actual_discretized_param_expr 
+                    (fun let_var_name -> build_nested_ifs let_var_name param_modulus match_arms default_expr_for_this_param)
             | _ -> default_expr_for_this_param
           in
 
