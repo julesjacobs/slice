@@ -161,9 +161,19 @@ let elab (e : expr) : texpr =
             | _ -> ())
           in
           Bags.BoundBag.listen input_bound_bag listener in
-          make_output_top_if_input_boundbag_is_top t_arg_bound_bag;
-        
-          let dist_exp' = Distr1 (dist_kind, (t_arg, a_arg)) in
+        make_output_top_if_input_boundbag_is_top t_arg_bound_bag;
+
+        let make_input_top_if_output_boundbag_is_top input_bound_bag output_bound_bag =
+          let listener () =
+            let v = Bags.BoundBag.get output_bound_bag in
+            (match v with
+            | Top -> Bags.BoundBag.leq (Bags.BoundBag.create Top) input_bound_bag
+            | _ -> ())
+          in
+          Bags.BoundBag.listen output_bound_bag listener in
+        make_input_top_if_output_boundbag_is_top t_arg_bound_bag bounds_bag_ref;
+
+        let dist_exp' = Distr1 (dist_kind, (t_arg, a_arg)) in
         (TFloat (bounds_bag_ref, consts_bag_ref), TAExprNode (Sample dist_exp'))
 
       | Distr2 (dist_kind, arg1_e, arg2_e) ->
@@ -204,7 +214,18 @@ let elab (e : expr) : texpr =
           Bags.BoundBag.listen input_bound_bag listener in
         make_output_top_if_input_boundbag_is_top t1_bound_bag;
         make_output_top_if_input_boundbag_is_top t2_bound_bag;
-        
+
+        let make_input_top_if_output_boundbag_is_top input_bound_bag output_bound_bag =
+          let listener () =
+            let v = Bags.BoundBag.get output_bound_bag in
+            (match v with
+            | Top -> Bags.BoundBag.leq (Bags.BoundBag.create Top) input_bound_bag
+            | _ -> ())
+          in
+          Bags.BoundBag.listen output_bound_bag listener in
+        make_input_top_if_output_boundbag_is_top t1_bound_bag bounds_bag_ref;
+        make_input_top_if_output_boundbag_is_top t2_bound_bag bounds_bag_ref;
+
         let dist_exp' = Distr2 (dist_kind, (t1, a1), (t2, a2)) in
         (TFloat (bounds_bag_ref, consts_bag_ref), TAExprNode (Sample dist_exp'))
       )
@@ -584,8 +605,13 @@ let discretize (e : texpr) : expr =
           (match set_or_top_val with
         | Bags.Top -> (* If outer Sample's bounds are Top, fallback to simple recursive discretization of params *)
             (match dist_exp with 
-          | Distr1 (kind, texpr_arg) -> ExprNode (Sample (Distr1 (kind, aux texpr_arg)))
-          | Distr2 (kind, texpr_arg1, texpr_arg2) -> ExprNode (Sample (Distr2 (kind, aux texpr_arg1, aux texpr_arg2)))
+          | Distr1 (kind, texpr_arg) -> 
+            let texpr_arg_discretized = aux texpr_arg in
+            ExprNode (Sample (Distr1 (kind, texpr_arg_discretized)))
+          | Distr2 (kind, texpr_arg1, texpr_arg2) -> 
+            let texpr_arg1_discretized = aux texpr_arg1 in
+            let texpr_arg2_discretized = aux texpr_arg2 in
+            ExprNode (Sample (Distr2 (kind, texpr_arg1_discretized, texpr_arg2_discretized)))
           )
         | Bags.Finite outer_bound_set -> 
           (* Outer Sample's bounds are Finite, proceed with interval-based discretization *)
