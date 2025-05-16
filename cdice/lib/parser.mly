@@ -54,20 +54,18 @@ open Types
 %token EXPPOW
 (* %token FOR TO DO *)
 
-(* Precedence and associativity *)
-%left SEMICOLON
-%left PLUS MINUS
-%left TIMES DIVIDE
-%right COMMA
-
-
 %start <Types.expr> prog
 
 (* Define types for non-terminals *) 
-%type <Types.expr> expr assign_expr cons_expr cmp_expr app_expr atomic_expr prefix_expr comma_expr
+%type <Types.expr> expr assign_expr cons_expr cmp_expr app_expr atomic_expr prefix_expr
 %type <unit> opt_bar
 %type <float> number
 %type <(Types.expr * float) list> distr_cases
+
+(* Operator precedence and associativity *)
+%left ARROW             (* Function type arrow *)
+%left SEMICOLON
+%right COMMA
 
 %% 
 
@@ -94,36 +92,36 @@ expr:
   | FOR i = IDENT EQUAL n1 = expr TO n2 = expr DO body = expr
     { ExprNode (For (i, n1, n2, body)) }
   *)
-  | assign_expr { $1 } /* Fallthrough to higher precedence expression forms */
+  | assign_expr { $1 } /* Fallthrough to assign_expr */
   ;
 
 /* Assignment level */
 assign_expr:
   | prefix_expr COLON_EQUAL assign_expr { ExprNode (Assign ($1, $3)) }
-  | comma_expr { $1 }
+  | comma_expr { $1 } /* Fallthrough to comma_expr */
   ;
 
 comma_expr:
-  | comma_expr COMMA or_expr { ExprNode (Pair ($1, $3)) }
+  | comma_expr COMMA or_expr { ExprNode (Pair ($1, $3)) } (* This creates right-associative pairs for e1, e2, e3 -> (e1, (e2, e3)) *)
   | or_expr { $1 }
   ;
 
 /* OR Level */
 or_expr:
   | or_expr OR and_expr  { ExprNode (Or ($1, $3)) }
-  | and_expr { $1 }     /* Fallthrough */
+  | and_expr { $1 }     /* Fallthrough to and_expr */
   ;
 
 /* AND Level */
 and_expr:
   | and_expr AND not_expr { ExprNode (And ($1, $3)) }
-  | not_expr { $1 }      /* Fallthrough */
+  | not_expr { $1 }      /* Fallthrough to not_expr */
   ;
 
 /* NOT Level */
 not_expr:
   | NOT not_expr          { ExprNode (Not $2) }
-  | cmp_expr { $1 }       /* Fallthrough */
+  | cmp_expr { $1 }       /* Fallthrough to cmp_expr */
   ;
 
 /* Comparison level */
@@ -145,7 +143,7 @@ cons_expr:
 prefix_expr:                  (* New level for prefix ops like ! and ref *)
   | BANG prefix_expr          { ExprNode (Deref $2) }
   | REF prefix_expr           { ExprNode (Ref $2) }
-  | app_expr { $1 }           /* Fallthrough to application */
+  | app_expr { $1 }           /* Fallthrough to app_expr */
   ;
 
 /* Application Level */
@@ -153,7 +151,7 @@ app_expr:
   | app_expr atomic_expr      { ExprNode (App ($1, $2)) }
   | FST atomic_expr           { ExprNode (First $2) }
   | SND atomic_expr           { ExprNode (Second $2) }
-  | atomic_expr { $1 }        /* Fallthrough */
+  | atomic_expr { $1 }        /* Fallthrough to atomic_expr */
   ;
 
 /* Atomic expressions (variables, constants, parens, tuples, distributions, nil) */ 
@@ -203,6 +201,7 @@ atomic_expr:
     { ExprNode (Sample (Distr2 (DExppow, arg1, arg2))) }
   | LPAREN e = expr RPAREN      { e }
   | LPAREN RPAREN { ExprNode Unit }
+  | LPAREN e1 = expr COMMA e2 = expr RPAREN { ExprNode (Pair (e1, e2)) }
   ;
 
 /* Optional bar rule */
@@ -230,5 +229,6 @@ number:
   | e1 = number TIMES e2 = number { e1 *. e2 }
   | e1 = number DIVIDE e2 = number { e1 /. e2 }
   | LPAREN e = number RPAREN { e }
+  ;
 
 %% (* This %% should mark the end of rules and precede any OCaml code if present *)

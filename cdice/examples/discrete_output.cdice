@@ -1,0 +1,7 @@
+let x = uniform(0,1) in
+let y = uniform(0,2) in
+let z = if x < 0.5 then 
+            if y < 0.25 then 1#8 else 3#8
+        else
+            if y < 0.25 then 4#8 else 2#8
+in z
