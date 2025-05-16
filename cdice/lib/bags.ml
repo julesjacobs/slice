@@ -24,6 +24,11 @@ let compare_bound b1 b2 =
       let cmp = compare c1 c2 in
       if cmp = 0 then 1 else cmp
 
+let satisfies_bound f bound =
+  match bound with
+  | Less c -> f < c
+  | LessEq c -> f <= c
+
 (* == Bound Set == *)
 module BoundOrder = struct
   type t = bound

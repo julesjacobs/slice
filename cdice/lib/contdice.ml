@@ -17,6 +17,19 @@ module Bags = Bags   (* And Bags *)
 
 module StringMap = Map.Make(String)
 
+(* ======== Helper for Constant Discretization ======== *)
+
+let get_const_idx_and_modulus (f : float) (bound_set_from_context : BoundSet.t) : int * int =
+  let cuts_as_bounds = BoundSet.elements bound_set_from_context in
+  let modulus = 1 + List.length cuts_as_bounds in
+  (* The index of the float is equal to the index of the first bound that is satisfied *)
+  let idx = List.find_index (fun bound -> Bags.satisfies_bound f bound) cuts_as_bounds in
+  let idx = match idx with
+    | Some i -> i 
+    | None -> modulus - 1 (* If no bound is satisfied, we're in the last interval *)
+  in
+  (idx, modulus)
+
 (* ======== Types, Subtyping, and Unification ======== *)
 
 (* Enforce t_sub is a subtype of t_super *)
@@ -511,22 +524,14 @@ let discretize (e : texpr) : expr =
   let rec aux ((ty, TAExprNode ae_node) : texpr) : expr =
     match ae_node with
     | Const f -> 
-        let bounds_bag = (match Types.force ty with
+        let bounds_bag_ref = (match Types.force ty with
           | Types.TFloat (b, _) -> b (* Extract bounds bag *)
           | _ -> failwith "Type error: Const expects float") in
-        let set_or_top_val = Bags.BoundBag.get bounds_bag in
-        (match set_or_top_val with
+        (match Bags.BoundBag.get bounds_bag_ref with
          | Bags.Top -> ExprNode (Const f) (* Keep original if Top *)
-         | Bags.Finite bound_set ->
-              let cuts = Bags.BoundSet.elements bound_set in
-              let bound_matches_float b x = match b with
-                | Bags.Less c -> x < c
-                | Bags.LessEq c -> x <= c
-              in
-              (* Find the index of the float in the bag *)
-              let idx = List.length (List.filter (fun x -> not (bound_matches_float x f)) cuts) in
-              (* Generate FinConst expression *)
-              ExprNode (FinConst (idx, 1+List.length cuts)))
+         | Bags.Finite bound_set_from_context ->
+              let idx, modulus = get_const_idx_and_modulus f bound_set_from_context in
+              ExprNode (FinConst (idx, modulus)))
 
     | BoolConst b -> ExprNode (BoolConst b)
 
@@ -722,10 +727,8 @@ let discretize (e : texpr) : expr =
               (* If bounds are Top, don't discretize, keep original Less structure *) 
               ExprNode (Less (aux te1, aux te2)) 
           | Bags.Finite bound_set -> 
-              (* Discretize based on shared bounds *) 
-              let cuts = Bags.BoundSet.elements bound_set in
-              let n = List.length cuts + 1 in (* Modulus *) 
-              if n <= 0 then failwith "Internal error: discretization resulted in zero or negative intervals for Less";
+              (* Discretize based on shared bounds *)
+              let n = 1 + List.length (Bags.BoundSet.elements bound_set) in
               let d1 = aux te1 in (* Discretize operands *)
               let d2 = aux te2 in 
               ExprNode (FinLt (d1, d2, n))) (* Generate FinLt *) 
@@ -754,10 +757,8 @@ let discretize (e : texpr) : expr =
               ExprNode (LessEq (aux te1, aux te2))
           | Bags.Finite bound_set -> 
               (* Discretize based on shared bounds *) 
-              let cuts = Bags.BoundSet.elements bound_set in
-              let n = List.length cuts + 1 in (* Modulus *) 
-              if n <= 0 then failwith "Internal error: discretization resulted in zero or negative intervals for LessEq";
-              let d1 = aux te1 in (* Discretize operands *)
+              let n = 1 + List.length (Bags.BoundSet.elements bound_set) in
+              let d1 = aux te1 in (* Discretize operands *) 
               let d2 = aux te2 in 
               ExprNode (FinLeq (d1, d2, n))) (* Generate FinLeq *) 
 

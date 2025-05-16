@@ -1,0 +1,2 @@
+let r = uniform(0.1, 0.4) in
+r <= 0.2
