@@ -560,23 +560,30 @@ let discretize (e : texpr) : expr =
         | Bags.Finite outer_bound_set -> 
           (* Outer Sample's bounds are Finite, proceed with interval-based discretization *)
           let outer_cuts_as_bounds = Bags.BoundSet.elements outer_bound_set in
-          let outer_cuts_as_floats = 
-            outer_cuts_as_bounds
-            |> List.map (function Bags.Less c -> c | Bags.LessEq c -> c) 
-            |> List.sort_uniq compare
-          in
-          let overall_modulus = (List.length outer_cuts_as_floats) + 1 in
-          if overall_modulus <= 0 then failwith "Internal error: discretization modulus must be positive for Sample";
+          let overall_modulus = 1 + List.length outer_cuts_as_bounds in 
+          if overall_modulus <= 0 then failwith "Internal error: Sample modulus must be positive";
 
           let final_expr_producer (concrete_distr : Distributions.cdistr) : expr =
-            let intervals = List.init overall_modulus (fun i ->
-              let left = if i = 0 then neg_infinity else List.nth outer_cuts_as_floats (i - 1) in
-              let right = if i = overall_modulus - 1 then infinity else List.nth outer_cuts_as_floats i in
-              (left, right)
+            let get_float_val_from_bound (b: Bags.bound) : float = 
+              match b with Bags.Less f -> f | Bags.LessEq f -> f 
+            in
+
+            let intervals_for_probs = List.init overall_modulus (fun k_idx ->
+              (* k_idx is the discrete outcome index, from 0 to overall_modulus - 1 *)
+              let left_for_cdf = 
+                if k_idx = 0 then neg_infinity
+                else get_float_val_from_bound (List.nth outer_cuts_as_bounds (k_idx - 1))
+              in
+              let right_for_cdf =
+                if k_idx = overall_modulus - 1 then infinity
+                else get_float_val_from_bound (List.nth outer_cuts_as_bounds k_idx)
+              in
+              (* Ensure left <= right. If bounds imply same float val, interval is [v,v] -> prob should be 0 by CDF diff *)
+              (min left_for_cdf right_for_cdf, max left_for_cdf right_for_cdf)
             ) in
-            let probs = List.map (fun (left, right) -> prob_cdistr_interval left right concrete_distr) intervals in
-            if List.exists (fun p -> p < -0.0001 || p > 1.0001) probs then (* Add tolerance for float precision issues *)
-                failwith ("Internal error: generated probabilities are invalid: " ^ Pretty.string_of_float_list probs ^ " for distribution " ^ Pretty.string_of_cdistr concrete_distr ^ " with cuts " ^ Pretty.string_of_float_list outer_cuts_as_floats);
+            let probs = List.map (fun (l,r) -> prob_cdistr_interval l r concrete_distr) intervals_for_probs in
+            if List.exists (fun p -> p < -0.0001 || p > 1.0001) probs then
+                failwith ("Internal error: generated probabilities are invalid: " ^ Pretty.string_of_float_list probs ^ " for distribution " ^ Pretty.string_of_cdistr concrete_distr ^ Printf.sprintf " with %d outer bounds." (List.length outer_cuts_as_bounds));
             let sum_probs = List.fold_left (+.) 0.0 probs in
             if abs_float (sum_probs -. 1.0) > 0.001 then
                (* Printf.eprintf "Warning: Probabilities sum to %f (target 1.0) for %s with cuts %s\n" 
@@ -614,7 +621,7 @@ let discretize (e : texpr) : expr =
                | Top -> None 
                | Finite bs_set -> 
                  let cuts = Bags.BoundSet.elements bs_set in 
-                 let modulus = (List.length (List.map (function Bags.Less c->c | Bags.LessEq c->c) cuts |> List.sort_uniq compare)) + 1 in
+                 let modulus = 1 + List.length cuts in
                  if modulus <= 0 then None else Some (modulus, cuts))
             | _ -> None
           in
