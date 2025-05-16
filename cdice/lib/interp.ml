@@ -144,6 +144,13 @@ let rec eval (env : env) (ExprNode e_node : expr) : value =
        | VFin (k1, n1), VFin (k2, n2) when n1 = n && n2 = n -> VBool (k1 <= k2)
        | _ -> raise (RuntimeError (Printf.sprintf "Type error during evaluation: FinLeq expects Fin(%d)" n)))
 
+  | FinEq (e1, e2, n) -> (* New case for FinEq *)
+      let v1 = eval env e1 in
+      let v2 = eval env e2 in
+      (match v1, v2 with
+       | VFin (k1, n1), VFin (k2, n2) when n1 = n && n2 = n -> VBool (k1 = k2)
+       | _ -> raise (RuntimeError (Printf.sprintf "Type error during evaluation: FinEq expects Fin(%d)" n)))
+
   | Observe e1 -> 
       let v1 = eval env e1 in
       (match v1 with

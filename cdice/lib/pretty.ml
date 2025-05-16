@@ -151,6 +151,11 @@ and string_of_expr_node ?(indent=0) (ExprNode expr_node) : string =
       let e2_str = string_of_expr_indented ~indent e2 in
       Printf.sprintf "%s %s<=%s%s#%d%s %s"
         e1_str operator_color reset_color type_color n reset_color e2_str
+  | FinEq (e1, e2, n) ->
+      let e1_str = string_of_expr_indented ~indent e1 in
+      let e2_str = string_of_expr_indented ~indent e2 in
+      Printf.sprintf "%s %s==#%s%s#%d%s %s"
+        e1_str operator_color reset_color type_color n reset_color e2_str
   | Observe e1 ->
       let e1_str = string_of_expr_indented ~indent e1 in
       Printf.sprintf "%sobserve%s (%s)"
@@ -303,6 +308,11 @@ and string_of_aexpr_node ?(indent=0) (TAExprNode ae_node) : string =
       let e1_str = string_of_texpr_indented ~indent te1 in
       let e2_str = string_of_texpr_indented ~indent te2 in
       Printf.sprintf "%s %s<=%s%s#%d%s %s"
+        e1_str operator_color reset_color type_color n reset_color e2_str
+  | FinEq (te1, te2, n) ->
+      let e1_str = string_of_texpr_indented ~indent te1 in
+      let e2_str = string_of_texpr_indented ~indent te2 in
+      Printf.sprintf "%s %s==#%s%s#%d%s %s"
         e1_str operator_color reset_color type_color n reset_color e2_str
   | Observe te1 ->
       let e1_str = string_of_texpr_indented ~indent te1 in
@@ -679,6 +689,10 @@ let rec translate_to_sppl (env : (string * string) list) ?(target_var:string opt
 
   | Types.ExprNode(Unit) ->
       ([], "None")
+
+  | Types.ExprNode(FinEq (e1, e2, n)) ->
+      failwith (Printf.sprintf "FinEq (%s ==#%d %s) is not directly supported in SPPL translation." 
+        (string_of_expr_indented e1) n (string_of_expr_indented e2))
 
 (* Top-level function: call translate with target 'model' *) 
 let cdice_expr_to_sppl_prog (expr : Types.expr) : string =

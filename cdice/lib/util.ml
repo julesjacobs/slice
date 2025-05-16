@@ -97,6 +97,7 @@ and string_of_expr_node ?(indent=0) (ExprNode expr_node) : string =
   | FinConst (k, n) -> Printf.sprintf "int(%d,%d)" (bit_length (n-1)) k
   | FinLt (e1, e2, _) -> Printf.sprintf "%s < %s" (string_of_expr_indented ~indent e1) (string_of_expr_indented ~indent e2)
   | FinLeq (e1, e2, _) -> Printf.sprintf "%s <= %s" (string_of_expr_indented ~indent e1) (string_of_expr_indented ~indent e2)
+  | FinEq (e1, e2, _) -> Printf.sprintf "%s ==# %s" (string_of_expr_indented ~indent e1) (string_of_expr_indented ~indent e2)
   | Observe e1 -> Printf.sprintf "observe (%s)" (string_of_expr_indented ~indent e1)
   | Fix (f, x, e) -> 
       let e_str = string_of_expr_indented ~indent:(indent+2) e in
@@ -173,6 +174,7 @@ and string_of_aexpr_node ?(indent=0) (TAExprNode ae_node) : string =
   | FinConst (k, n) -> Printf.sprintf "int(%d,%d)" (bit_length (n-1)) k
   | FinLt (te1, te2, _) -> Printf.sprintf "%s < %s" (string_of_texpr_indented ~indent te1) (string_of_texpr_indented ~indent te2)
   | FinLeq (te1, te2, _) -> Printf.sprintf "%s <= %s" (string_of_texpr_indented ~indent te1) (string_of_texpr_indented ~indent te2)
+  | FinEq (te1, te2, _) -> Printf.sprintf "%s ==# %s" (string_of_texpr_indented ~indent te1) (string_of_texpr_indented ~indent te2)
   | Observe te1 -> Printf.sprintf "observe (%s)" (string_of_texpr_indented ~indent te1)
   | Fix (f, x, te) -> 
       let te_str = string_of_texpr_indented ~indent:(indent+2) te in

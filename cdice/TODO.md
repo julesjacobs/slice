@@ -16,3 +16,7 @@ This framework would support more flexible comparisons e1 < e2 and e1 <= e2, as 
     let c = (b < a + a') in ...
 
 This would be fine because `a + a'` takes on only finitely many different values. So in a comparison e1 < e2 or e1 <= e2, either e1 or e2 must take on finitely many different values, and the other must be comparable to that set of values.
+
+## TODOs
+
+- Avoid duplicating expressions in discretization

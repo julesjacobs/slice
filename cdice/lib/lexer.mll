@@ -118,6 +118,7 @@ rule token = parse
   | ident as s { try List.assoc s keywords with Not_found -> IDENT s }
   | "<=" "#"   { LEQ_HASH }
   | "<" "#"    { LT_HASH }
+  | "==" "#"   { EQ_HASH }
   | "#"        { HASH }
   | eof       { EOF }
   | _ as c    { error lexbuf (Printf.sprintf "Unexpected character: %c" c) }

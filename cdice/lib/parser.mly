@@ -22,6 +22,7 @@ open Types
 %token HASH
 %token LT_HASH
 %token LEQ_HASH
+%token EQ_HASH
 %token LPAREN RPAREN
 %token COMMA
 %token EQUAL
@@ -72,7 +73,7 @@ open Types
 %left AND               (* AND has lower precedence than NOT/comparison *)
 %right NOT              (* Unary NOT has high precedence *)
 %right COMMA
-%nonassoc LESS LESSEQ LT_HASH LEQ_HASH (* Comparison operators *)
+%nonassoc LESS LESSEQ LT_HASH LEQ_HASH EQ_HASH (* Comparison operators *)
 
 %% 
 
@@ -132,6 +133,7 @@ cmp_expr:
   | cmp_expr LESSEQ cons_expr   { ExprNode (LessEq ($1, $3)) }
   | cons_expr LT_HASH INT cons_expr { ExprNode (FinLt ($1, $4, $3)) } 
   | cons_expr LEQ_HASH INT cons_expr { ExprNode (FinLeq ($1, $4, $3)) } 
+  | cons_expr EQ_HASH INT cons_expr { ExprNode (FinEq ($1, $4, $3)) }
   | cons_expr { $1 }            /* Fallthrough to cons_expr */
   ;
 

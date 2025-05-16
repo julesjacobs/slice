@@ -450,6 +450,17 @@ let elab (e : expr) : texpr =
        with Failure msg -> failwith (Printf.sprintf "Type error in FinLeq (<=#%d) right operand: %s" n msg));
       (Types.TBool, TAExprNode (FinLeq ((t1, a1), (t2, a2), n)))
 
+    | FinEq (e1, e2, n) -> (* New case for FinEq in elab *)
+      if n <= 0 then failwith (Printf.sprintf "Invalid FinEq modulus: ==#%d. n must be > 0." n);
+      let t1, a1 = aux env e1 in
+      let t2, a2 = aux env e2 in
+      let expected_type = Types.TFin n in
+      (try sub_type t1 expected_type
+       with Failure msg -> failwith (Printf.sprintf "Type error in FinEq (==#%d) left operand: %s" n msg));
+      (try sub_type t2 expected_type
+       with Failure msg -> failwith (Printf.sprintf "Type error in FinEq (==#%d) right operand: %s" n msg));
+      (Types.TBool, TAExprNode (FinEq ((t1, a1), (t2, a2), n)))
+
     | And (e1, e2) ->
       let t1, a1 = aux env e1 in
       let t2, a2 = aux env e2 in
@@ -685,10 +696,7 @@ let discretize (e : texpr) : expr =
             | (target_finconst_expr, body_expr) :: rest_arms ->
               let current_val_expr = ExprNode (Var val_var_name) in
               let condition =
-                ExprNode(And(
-                  ExprNode(FinLeq(current_val_expr, target_finconst_expr, param_modulus)),
-                  ExprNode(FinLeq(target_finconst_expr, current_val_expr, param_modulus))
-                ))
+                ExprNode(FinEq(current_val_expr, target_finconst_expr, param_modulus)) (* Use FinEq here *)
               in
               ExprNode (If (condition, body_expr, build_nested_ifs val_var_name param_modulus rest_arms else_expr))
           in
@@ -1007,6 +1015,8 @@ let discretize (e : texpr) : expr =
         ExprNode (FinLt (aux te1, aux te2, n))
     | FinLeq (te1, te2, n) -> 
         ExprNode (FinLeq (aux te1, aux te2, n))
+    | FinEq (te1, te2, n) -> (* New case for FinEq in discretize *)
+        ExprNode (FinEq (aux te1, aux te2, n))
 
     | And (te1, te2) ->
         ExprNode (And (aux te1, aux te2))

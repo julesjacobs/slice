@@ -23,6 +23,7 @@ type 'a expr_generic =
   | FinConst of int * int (* k, n for k#n *)
   | FinLt of 'a * 'a * int (* e1 <#n e2 *)
   | FinLeq of 'a * 'a * int (* e1 <=#n e2 *)
+  | FinEq of 'a * 'a * int (* e1 ==#n e2 *)
   | Observe of 'a 
   | Fix of string * string * 'a
   | Nil  (* nil *)
