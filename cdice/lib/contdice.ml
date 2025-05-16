@@ -147,8 +147,8 @@ let elab (e : expr) : texpr =
               Bags.BoundBag.leq (Bags.BoundBag.create Top) bound_bag)
           in
           Bags.FloatBag.listen float_bag listener in
-        add_floats_to_boundbag t1_bag2 bounds_bag_ref;
-        add_floats_to_boundbag t2_bag2 bounds_bag_ref;
+        add_floats_to_boundbag t1_bag2 t1_bag1;
+        add_floats_to_boundbag t2_bag2 t2_bag1;
         (* Now we want to make the output non-discretizable if the input isn't discrete *)
         let make_output_top_if_input_boundbag_is_top input_bound_bag =
           let listener () =
@@ -571,7 +571,7 @@ let discretize (e : texpr) : expr =
             ) in
             let probs = List.map (fun (left, right) -> prob_cdistr_interval left right concrete_distr) intervals in
             if List.exists (fun p -> p < -0.0001 || p > 1.0001) probs then (* Add tolerance for float precision issues *)
-                failwith ("Internal error: generated probabilities are invalid: " ^ Pretty.string_of_float_list probs ^ " for distribution " ^ Distributions.string_of_cdistr concrete_distr ^ " with cuts " ^ Pretty.string_of_float_list outer_cuts_as_floats);
+                failwith ("Internal error: generated probabilities are invalid: " ^ Pretty.string_of_float_list probs ^ " for distribution " ^ Pretty.string_of_cdistr concrete_distr ^ " with cuts " ^ Pretty.string_of_float_list outer_cuts_as_floats);
             let sum_probs = List.fold_left (+.) 0.0 probs in
             if abs_float (sum_probs -. 1.0) > 0.001 then
                (* Printf.eprintf "Warning: Probabilities sum to %f (target 1.0) for %s with cuts %s\n" 
@@ -621,8 +621,8 @@ let discretize (e : texpr) : expr =
               let current_val_expr = ExprNode (Var val_var_name) in
               let condition =
                 ExprNode(And(
-                  FinLeq(current_val_expr, target_finconst_expr, param_modulus),
-                  FinLeq(target_finconst_expr, current_val_expr, param_modulus)
+                  ExprNode(FinLeq(current_val_expr, target_finconst_expr, param_modulus)),
+                  ExprNode(FinLeq(target_finconst_expr, current_val_expr, param_modulus))
                 ))
               in
               ExprNode (If (condition, body_expr, build_nested_ifs val_var_name param_modulus rest_arms else_expr))

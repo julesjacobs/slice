@@ -162,11 +162,11 @@ atomic_expr:
   | x = IDENT                 { ExprNode (Var x) }
   | DISCRETE LPAREN cases = distr_cases RPAREN
     { ExprNode (DistrCase cases) }
-  | UNIFORM LPAREN lo = expr COMMA hi = expr RPAREN
+  | UNIFORM LPAREN lo = app_expr COMMA hi = app_expr RPAREN
     { ExprNode (Sample (Uniform (lo, hi))) }
-  | GAUSSIAN LPAREN mean = expr COMMA std = expr RPAREN
+  | GAUSSIAN LPAREN mean = app_expr COMMA std = app_expr RPAREN
     { ExprNode (Sample (Gaussian (mean, std))) }
-  | EXPONENTIAL LPAREN rate = expr RPAREN
+  | EXPONENTIAL LPAREN rate = app_expr RPAREN
     { ExprNode (Sample (Exponential rate)) }
 (*
   | BETA LPAREN alpha = expr COMMA beta = expr RPAREN

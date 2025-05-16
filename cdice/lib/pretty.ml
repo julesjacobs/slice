@@ -372,6 +372,9 @@ let string_of_texpr texpr =
 let string_of_aexpr aexpr =
   string_of_aexpr_indented aexpr 
 
+let string_of_float_list (l : float list) : string =
+  "[" ^ (String.concat "; " (List.map (Printf.sprintf "%g") l)) ^ "]"
+
 (* ===================================================== *)
 (* SPPL Conversion Logic (Integrated into Pretty module) *)
 (* ===================================================== *)

@@ -1,6 +1,11 @@
 open Types
 open Bags (* Open Bags to get FloatSet and access Set modules and Bound type *)
 
+let var_counter = ref 0
+let fresh_var (prefix : string) : string =
+  incr var_counter;
+  prefix ^ string_of_int !var_counter
+
 (* Eventually refactor this so that all print functions go in one file, with an optional argument to specify pretty print *)
 
 (* Pretty printer for continuous distributions *)

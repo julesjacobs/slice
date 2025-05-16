@@ -1,0 +1,2 @@
+let p_val = if uniform(0,1)<0.5 then 0.2 else 0.7 in
+uniform(0, p_val) < 0.1 
