@@ -1,0 +1,18 @@
+(* test_uniform_discretization_precision.cdice *)
+(* Create many small intervals by comparing a variable with several constants *)
+let a = 0.0 in
+let _c1 = a < 0.1 in
+let _c2 = a < 0.2 in
+let _c3 = a < 0.3 in
+let _c4 = a < 0.4 in
+let _c5 = a < 0.5 in
+let _c6 = a < 0.6 in
+let _c7 = a < 0.7 in
+let _c8 = a < 0.8 in
+let _c9 = a < 0.9 in
+
+(* A uniform distribution that will be discretized using these intervals *)
+let x = uniform(0.0, 1.0) in
+
+(* Check if x falls into the first half. Expected P(true) = 0.5 *)
+x < 0.5 

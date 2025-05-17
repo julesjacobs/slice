@@ -1,0 +1,8 @@
+(* Test references holding distribution parameters - simplified *)
+
+let r_val = ref 1.0 in
+let _assign1 = r_val := 2.0 in
+let actual_val = !r_val in
+let x = gaussian(0.0, actual_val) in
+let _comparison = x < 0.5 in (* This should make x's bounds Finite, and actual_val's bounds Finite too *)
+0.0 < x 

@@ -1,0 +1,16 @@
+(* Test finite domain operations and DistrCase *)
+
+let x = 0#3 in (* FinConst *)
+let y = 1#3 in
+
+let comparison_result = x <#3 y in (* FinLt *)
+
+let z =
+  if comparison_result then
+    discrete(0.5 : 0#2, 0.5 : 1#2) (* DistrCase yielding FinConst *)
+  else
+    1#2 (* A simple FinConst *)
+in
+
+let final_check = z ==#2 0#2 in (* FinEq *)
+final_check 

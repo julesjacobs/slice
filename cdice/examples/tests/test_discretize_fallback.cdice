@@ -1,0 +1,14 @@
+(* Test if discretize for a Finite-bounded Sample incorrectly yields Sample not DistrCase *)
+(* Expect p_outer's discretization in run.sh output to be sample(...) not discrete(...) *)
+
+let p_inner = exponential(1.0) in (* p_inner is symbolic, not a direct constant *)
+
+(* p_outer uses p_inner. Its type will get Finite bounds due to _comparison. *)
+let p_outer = uniform(0.0, p_inner) in
+
+(* This comparison forces p_outer's type to have a Finite BoundSet. *)
+(* Therefore, discretize(p_outer_texpr) should produce a DistrCase. *)
+let _comparison = p_outer < 0.5 in
+
+(* The final expression involving p_outer. *)
+0.1 < p_outer 

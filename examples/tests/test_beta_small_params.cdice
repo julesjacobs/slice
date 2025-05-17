@@ -1,0 +1,12 @@
+(* Test Beta distribution with very small positive parameters *)
+let alpha_val = 0.0000001 in (* very small positive alpha *)
+let beta_val = 0.0000001 in  (* very small positive beta *)
+
+(* Define the beta distribution *)
+let x = beta(alpha_val, beta_val) in
+
+(* Perform a comparison.
+   The focus is on whether the small parameters cause issues during
+   discretization (CDF calculation) or sampling (interpreter).
+   Expected behavior is that it runs, but we're probing for crashes or NaNs. *)
+x < 0.5 

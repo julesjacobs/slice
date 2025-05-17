@@ -1,0 +1,3 @@
+let neg_rate = -1.0 in
+let x = exponential(neg_rate) in
+x < 10.0 

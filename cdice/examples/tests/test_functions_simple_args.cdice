@@ -1,0 +1,18 @@
+(* Test function application with constant and sampled arguments *)
+
+let create_gaussian_from_mean = (fun mean_val -> gaussian(mean_val, 1.0)) in
+
+  (* Scenario 1: Call with a constant argument *)
+  let g1 = create_gaussian_from_mean 5.0 in
+  let _comp_g1 = g1 < 5.5 in (* Influence g1's bounds *)
+
+  (* Scenario 2: Call with a sampled argument *)
+  let sampled_mean = uniform(0.0, 1.0) in
+  let _comp_sampled_mean = sampled_mean < 0.5 in (* Influence sampled_mean's bounds *)
+
+  let g2 = create_gaussian_from_mean sampled_mean in
+  let _comp_g2 = g2 < 0.7 in (* Influence g2's bounds *)
+
+  (* Return a pair to observe their discretized forms.
+     The actual boolean result isn't the primary focus here. *)
+  (g1 < 5.2, g2 < 0.2) 

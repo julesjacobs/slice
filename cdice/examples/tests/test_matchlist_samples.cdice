@@ -1,0 +1,11 @@
+(* Test MatchList - simplified further *)
+let my_list =
+  if uniform(0.0, 1.0) < 0.3 then
+    nil
+  else
+    gaussian(5.0, 1.0) :: nil
+in
+  match my_list with
+  | nil -> 0.0 < 0.1
+  | head :: tail -> head < 6.0
+  end 

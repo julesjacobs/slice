@@ -1,0 +1,17 @@
+(* Test Pairs with Sampled Components and Discretization *)
+
+let s1 = gaussian(0.0, 1.0) in
+  let s2 = uniform(10.0, 11.0) in
+    let my_pair = (s1, s2) in (* Create a pair of two Sample nodes *)
+      let first_val = fst my_pair in
+        let second_val = snd my_pair in
+          (* Comparisons to make the components' BoundBags Finite.
+             These should influence the BoundBags of s1 and s2 implicitly via
+             first_val and second_val. *)
+          let _comp1 = first_val < 0.5 in
+            let _comp2 = second_val < 10.5 in
+              (* Final expression using these values *)
+              if first_val < 0.0 then (* s1 compared against 0.0, 0.5 *)
+                second_val < 10.2 (* s2 compared against 10.2, 10.5, 10.8 *)
+              else
+                10.8 < second_val (* s2 compared against 10.2, 10.5, 10.8 *) 

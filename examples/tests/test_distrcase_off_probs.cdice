@@ -1,0 +1,7 @@
+(* Test DistrCase with probabilities slightly off 1.0 *)
+let x = discrete (
+  0.3333333333333333 : true, (* 1/3 *)
+  0.3333333333333333 : false,
+  0.3333333333333334 : true   (* Slightly more to make sum > 1 *)
+) in
+x (* Result isn't important, just whether it elaborates and interprets *) 

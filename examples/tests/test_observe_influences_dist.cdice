@@ -1,0 +1,13 @@
+(* Test Observe influencing which distribution is chosen *)
+
+let condition_param = uniform(0.0, 1.0) in
+let flag = condition_param < 0.5 in
+let _obs = observe flag in (* Observe the flag *)
+
+let result =
+  if flag then
+    gaussian(0.0, 1.0)  (* If flag was true (and observed) *)
+  else
+    uniform(-1.0, 1.0) (* If flag was false (and observed) *)
+in
+0.0 < result 

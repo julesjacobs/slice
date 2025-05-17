@@ -1,0 +1,20 @@
+(* Test for logic bug in nested discretization and already_discretized_expr *)
+
+(* p_inner will be a parameter to p_outer.
+   p_inner itself does not have direct finite bounds from comparisons. *)
+let p_inner = gaussian(0.0, 1.0) in
+
+(* p_outer uses p_inner.
+   p_outer WILL have finite bounds due to the comparison below. *)
+let p_outer = uniform(0.0, p_inner) in (* Using p_inner as the second parameter *)
+
+(* This comparison forces p_outer's bounds bag to be Finite.
+   This triggers the 'Bags.Finite' path in discretize for p_outer. *)
+let _comparison = p_outer < 0.5 in
+
+(* The final expression to evaluate.
+   If the logic bug exists, evaluating p_outer here will cause a runtime
+   type error when FinEq in build_nested_ifs receives a float sample
+   from p_inner instead of an expected FinConst.
+*)
+0.1 < p_outer 

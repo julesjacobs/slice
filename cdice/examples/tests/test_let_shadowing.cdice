@@ -1,0 +1,22 @@
+(* Test let binding shadowing and its effect on type inference and discretization *)
+
+let x = gaussian(0.0, 1.0) in (* Outer x, a sample *)
+  let _comp_outer_x = x < 0.0 in (* Outer x's bounds influenced: {<0.0} *)
+
+  let result1 = (* Result based on outer x *)
+    if x < -0.5 then (* Outer x, discretized by {<0.0, <-0.5} *)
+      true
+    else
+      false
+  in
+
+  let x = 10.0 in (* Inner x, a constant, shadows outer x. Type: float[T; 10.0] *)
+    let _comp_inner_x = x < 10.5 in (* Inner x's bounds: {<10.5}. This affects its BoundBag. *)
+
+    let result2 = (* Result based on inner x *)
+      if x < 10.2 then (* Inner x, discretized by {<10.5, <10.2} *)
+        true
+      else
+        false
+    in
+      (result1, result2) (* Return a pair of booleans *) 
