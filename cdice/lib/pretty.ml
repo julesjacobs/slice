@@ -186,6 +186,7 @@ and string_of_expr_node ?(indent=0) (ExprNode expr_node) : string =
       Printf.sprintf "%s %s;%s %s" 
         (string_of_expr_indented ~indent e1) operator_color reset_color (string_of_expr_indented ~indent e2)
   | Unit -> Printf.sprintf "%s()%s" keyword_color reset_color
+  | RuntimeError s -> Printf.sprintf "%sRUNTIME_ERROR%s(\"%s%s%s\")" operator_color reset_color variable_color s reset_color
 
 and string_of_sample ?(indent=0) dist_exp = 
   match dist_exp with
@@ -316,6 +317,7 @@ and string_of_aexpr_node ?(indent=0) (TAExprNode ae_node) : string =
       Printf.sprintf "%s %s;%s %s" 
         (string_of_texpr_indented ~indent te1) operator_color reset_color (string_of_texpr_indented ~indent te2)
   | Unit -> Printf.sprintf "%s()%s" keyword_color reset_color
+  | RuntimeError s -> Printf.sprintf "%sRUNTIME_ERROR%s(\"%s%s%s\")" operator_color reset_color variable_color s reset_color
 
 (* Pretty printer for types *)
 and string_of_ty = function
@@ -637,6 +639,10 @@ let rec translate_to_sppl (env : (string * string) list) ?(target_var:string opt
   | Types.ExprNode(FinEq (e1, e2, n)) ->
       failwith (Printf.sprintf "FinEq (%s ==#%d %s) is not directly supported in SPPL translation." 
         (string_of_expr_indented e1) n (string_of_expr_indented e2))
+
+  | Types.ExprNode(RuntimeError s) ->
+      let err_msg = Printf.sprintf "RUNTIME_ERROR(\"%s%s%s\")" variable_color s reset_color in
+      ([err_msg], "")
 
 (* Top-level function: call translate with target 'model' *) 
 let cdice_expr_to_sppl_prog (expr : Types.expr) : string =

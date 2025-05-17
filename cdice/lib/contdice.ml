@@ -547,6 +547,8 @@ let elab (e : expr) : texpr =
 
     | Unit -> (Types.TUnit, TAExprNode Unit)
 
+    | RuntimeError s -> (Types.fresh_meta (), TAExprNode (RuntimeError s))
+
   in
   aux StringMap.empty e
 
@@ -738,7 +740,7 @@ let discretize (e : texpr) : expr =
               generate_runtime_match_for_param texpr_lambda "lambda"
                 (fun val_lambda ->
                   if val_lambda <= 0.0 then
-                    failwith "Discretization error: Exponential lambda must be positive"
+                    ExprNode (RuntimeError "Exponential lambda must be positive")
                   else
                     final_expr_producer (Distributions.Exponential val_lambda)
                 )
@@ -747,7 +749,7 @@ let discretize (e : texpr) : expr =
               generate_runtime_match_for_param texpr_scale "scale"
                 (fun val_scale ->
                   if val_scale <= 0.0 then
-                    failwith "Discretization error: Laplace scale must be positive"
+                    ExprNode (RuntimeError "Laplace scale must be positive")
                   else
                     final_expr_producer (Distributions.Laplace val_scale)
                 )
@@ -756,7 +758,7 @@ let discretize (e : texpr) : expr =
               generate_runtime_match_for_param texpr_scale "scale"
                 (fun val_scale ->
                   if val_scale <= 0.0 then
-                    failwith "Discretization error: Cauchy scale must be positive"
+                    ExprNode (RuntimeError "Cauchy scale must be positive")
                   else
                     final_expr_producer (Distributions.Cauchy val_scale)
                 )
@@ -765,7 +767,7 @@ let discretize (e : texpr) : expr =
               generate_runtime_match_for_param texpr_nu "nu"
                 (fun val_nu ->
                   if val_nu <= 0.0 then
-                    failwith "Discretization error: TDist nu must be positive"
+                    ExprNode (RuntimeError "TDist nu must be positive")
                   else
                     final_expr_producer (Distributions.TDist val_nu)
                 )
@@ -774,7 +776,7 @@ let discretize (e : texpr) : expr =
               generate_runtime_match_for_param texpr_nu "nu"
                 (fun val_nu ->
                   if val_nu <= 0.0 then
-                    failwith "Discretization error: Chi2 nu must be positive"
+                    ExprNode (RuntimeError "Chi2 nu must be positive")
                   else
                     final_expr_producer (Distributions.Chi2 val_nu)
                 )
@@ -783,7 +785,7 @@ let discretize (e : texpr) : expr =
               generate_runtime_match_for_param texpr_scale "scale"
                 (fun val_scale ->
                   if val_scale <= 0.0 then
-                    failwith "Discretization error: Logistic scale must be positive"
+                    ExprNode (RuntimeError "Logistic scale must be positive")
                   else
                     final_expr_producer (Distributions.Logistic val_scale)
                 )
@@ -792,7 +794,7 @@ let discretize (e : texpr) : expr =
               generate_runtime_match_for_param texpr_sigma "sigma"
                 (fun val_sigma ->
                   if val_sigma <= 0.0 then
-                    failwith "Discretization error: Rayleigh sigma must be positive"
+                    ExprNode (RuntimeError "Rayleigh sigma must be positive")
                   else
                     final_expr_producer (Distributions.Rayleigh val_sigma)
                 )
@@ -806,7 +808,7 @@ let discretize (e : texpr) : expr =
                     generate_runtime_match_for_param ~already_discretized_expr:(Some eff_discretized_b_expr) texpr_b "b"
                       (fun val_b -> 
                         if val_a > val_b then
-                          failwith "Discretization error: Uniform low > high"
+                          ExprNode (RuntimeError "Uniform low > high")
                         else
                           final_expr_producer (Distributions.Uniform (val_a, val_b))
                       )
@@ -830,7 +832,7 @@ let discretize (e : texpr) : expr =
                     generate_runtime_match_for_param ~already_discretized_expr:(Some eff_discretized_sigma_expr) texpr_sigma "sigma"
                       (fun val_sigma ->
                         if val_sigma <= 0.0 then
-                          failwith "Discretization error: Gaussian sigma must be positive"
+                          ExprNode (RuntimeError "Gaussian sigma must be positive")
                         else
                           final_expr_producer (Distributions.Gaussian (val_mu, val_sigma))
                       )
@@ -854,7 +856,7 @@ let discretize (e : texpr) : expr =
                     generate_runtime_match_for_param ~already_discretized_expr:(Some eff_discretized_beta_param_expr) texpr_beta_param "beta_param"
                       (fun val_beta_param ->
                         if val_alpha <= 0.0 || val_beta_param <= 0.0 then
-                          failwith "Discretization error: Beta alpha and beta_param must be positive"
+                          ExprNode (RuntimeError "Beta alpha and beta_param must be positive")
                         else
                           final_expr_producer (Distributions.Beta (val_alpha, val_beta_param))
                       )
@@ -878,7 +880,7 @@ let discretize (e : texpr) : expr =
                     generate_runtime_match_for_param ~already_discretized_expr:(Some eff_discretized_sigma_expr) texpr_sigma "sigma"
                       (fun val_sigma ->
                         if val_sigma <= 0.0 then
-                          failwith "Discretization error: LogNormal sigma must be positive"
+                          ExprNode (RuntimeError "LogNormal sigma must be positive")
                         else
                           final_expr_producer (Distributions.LogNormal (val_mu, val_sigma))
                       )
@@ -902,7 +904,7 @@ let discretize (e : texpr) : expr =
                     generate_runtime_match_for_param ~already_discretized_expr:(Some eff_discretized_scale_expr) texpr_scale "scale"
                       (fun val_scale ->
                         if val_shape <= 0.0 || val_scale <= 0.0 then
-                          failwith "Discretization error: Gamma shape and scale must be positive"
+                          ExprNode (RuntimeError "Gamma shape and scale must be positive")
                         else
                           final_expr_producer (Distributions.Gamma (val_shape, val_scale))
                       )
@@ -926,7 +928,7 @@ let discretize (e : texpr) : expr =
                     generate_runtime_match_for_param ~already_discretized_expr:(Some eff_discretized_b_expr) texpr_b "b"
                       (fun val_b ->
                         if val_a <= 0.0 || val_b <= 0.0 then
-                          failwith "Discretization error: Pareto a and b must be positive"
+                          ExprNode (RuntimeError "Pareto a and b must be positive")
                         else
                           final_expr_producer (Distributions.Pareto (val_a, val_b))
                       )
@@ -950,7 +952,7 @@ let discretize (e : texpr) : expr =
                     generate_runtime_match_for_param ~already_discretized_expr:(Some eff_discretized_b_expr) texpr_b "b"
                       (fun val_b ->
                         if val_a <= 0.0 || val_b <= 0.0 then
-                          failwith "Discretization error: Weibull a and b must be positive"
+                          ExprNode (RuntimeError "Weibull a and b must be positive")
                         else
                           final_expr_producer (Distributions.Weibull (val_a, val_b))
                       )
@@ -974,7 +976,7 @@ let discretize (e : texpr) : expr =
                     generate_runtime_match_for_param ~already_discretized_expr:(Some eff_discretized_b_expr) texpr_b "b"
                       (fun val_b ->
                         if val_b <= 0.0 then (* Gumbel1 constraint is on b *)
-                          failwith "Discretization error: Gumbel1 b must be positive"
+                          ExprNode (RuntimeError "Gumbel1 b must be positive")
                         else
                           final_expr_producer (Distributions.Gumbel1 (val_a, val_b))
                       )
@@ -998,7 +1000,7 @@ let discretize (e : texpr) : expr =
                     generate_runtime_match_for_param ~already_discretized_expr:(Some eff_discretized_b_expr) texpr_b "b"
                       (fun val_b ->
                         if val_b <= 0.0 then (* Gumbel2 constraint is on b *)
-                          failwith "Discretization error: Gumbel2 b must be positive"
+                          ExprNode (RuntimeError "Gumbel2 b must be positive")
                         else
                           final_expr_producer (Distributions.Gumbel2 (val_a, val_b))
                       )
@@ -1022,7 +1024,7 @@ let discretize (e : texpr) : expr =
                     generate_runtime_match_for_param ~already_discretized_expr:(Some eff_discretized_b_expr) texpr_b "b"
                       (fun val_b ->
                         if val_a <= 0.0 || val_b <= 0.0 then
-                          failwith "Discretization error: Exppow a and b must be positive"
+                          ExprNode (RuntimeError "Exppow a and b must be positive")
                         else
                           final_expr_producer (Distributions.Exppow (val_a, val_b))
                       )
@@ -1157,6 +1159,8 @@ let discretize (e : texpr) : expr =
         ExprNode (Seq (aux te1, aux te2))
 
     | Unit -> ExprNode Unit
+
+    | RuntimeError s -> ExprNode (RuntimeError s)
 
   in
   aux e
