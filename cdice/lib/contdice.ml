@@ -140,6 +140,40 @@ let elab (e : expr) : texpr =
     | Sample dist_exp ->
       let bounds_bag_ref = Bags.BoundBag.create (Finite BoundSet.empty) in 
       let consts_bag_ref = Bags.FloatBag.create Top in 
+
+      (* Helper to propagate float constants from an argument to its own bound bag *)
+      let add_floats_to_boundbag (float_bag : FloatBag.bag) (bound_bag : BoundBag.bag) =
+        let listener () =
+          let v = Bags.FloatBag.get float_bag in
+          (match v with
+          | Finite s -> Bags.BoundBag.add_all s bound_bag
+            | Top -> Bags.BoundBag.leq (Bags.BoundBag.create Top) bound_bag)
+        in
+        Bags.FloatBag.listen float_bag listener
+      in
+
+      (* Helper to make the output distribution's bound bag Top if any input's bound bag becomes Top *)
+      let make_output_top_if_input_boundbag_is_top input_bound_bag =
+        let listener () =
+          let v = Bags.BoundBag.get input_bound_bag in
+          (match v with
+          | Top -> Bags.BoundBag.leq (Bags.BoundBag.create Top) bounds_bag_ref (* bounds_bag_ref is from Sample scope *)
+          | _ -> ())
+        in
+        Bags.BoundBag.listen input_bound_bag listener
+      in
+
+      (* Helper to make an input's bound bag Top if the output distribution's bound bag becomes Top *)
+      let make_input_top_if_output_boundbag_is_top input_bound_bag output_bound_bag =
+        let listener () =
+          let v = Bags.BoundBag.get output_bound_bag in
+          (match v with
+          | Top -> Bags.BoundBag.leq (Bags.BoundBag.create Top) input_bound_bag
+          | _ -> ())
+        in
+        Bags.BoundBag.listen output_bound_bag listener
+      in
+
       (match dist_exp with
       | Distr1 (dist_kind, arg_e) ->
           let t_arg, a_arg = aux env arg_e in
@@ -150,38 +184,12 @@ let elab (e : expr) : texpr =
             let kind_str = Pretty.string_of_expr_indented (ExprNode (Sample (Distr1 (dist_kind, arg_e)))) in (* Get a string for the kind *)
             failwith (Printf.sprintf "Type error in Sample (%s) argument: %s" kind_str msg));
           
-        let add_floats_to_boundbag (float_bag : FloatBag.bag) (bound_bag : BoundBag.bag) =
-          let listener () =
-            let v = Bags.FloatBag.get float_bag in
-            (match v with
-            | Finite s -> Bags.BoundBag.add_all s bound_bag
-              | Top -> Bags.BoundBag.leq (Bags.BoundBag.create Top) bound_bag)
-          in
-          Bags.FloatBag.listen float_bag listener in
           add_floats_to_boundbag t_arg_float_bag t_arg_bound_bag;
+          make_output_top_if_input_boundbag_is_top t_arg_bound_bag;
+          make_input_top_if_output_boundbag_is_top t_arg_bound_bag bounds_bag_ref;
 
-        let make_output_top_if_input_boundbag_is_top input_bound_bag =
-          let listener () =
-            let v = Bags.BoundBag.get input_bound_bag in
-            (match v with
-            | Top -> Bags.BoundBag.leq (Bags.BoundBag.create Top) bounds_bag_ref
-            | _ -> ())
-          in
-          Bags.BoundBag.listen input_bound_bag listener in
-        make_output_top_if_input_boundbag_is_top t_arg_bound_bag;
-
-        let make_input_top_if_output_boundbag_is_top input_bound_bag output_bound_bag =
-          let listener () =
-            let v = Bags.BoundBag.get output_bound_bag in
-            (match v with
-            | Top -> Bags.BoundBag.leq (Bags.BoundBag.create Top) input_bound_bag
-            | _ -> ())
-          in
-          Bags.BoundBag.listen output_bound_bag listener in
-        make_input_top_if_output_boundbag_is_top t_arg_bound_bag bounds_bag_ref;
-
-        let dist_exp' = Distr1 (dist_kind, (t_arg, a_arg)) in
-        (TFloat (bounds_bag_ref, consts_bag_ref), TAExprNode (Sample dist_exp'))
+          let dist_exp' = Distr1 (dist_kind, (t_arg, a_arg)) in
+          (TFloat (bounds_bag_ref, consts_bag_ref), TAExprNode (Sample dist_exp'))
 
       | Distr2 (dist_kind, arg1_e, arg2_e) ->
         let t1, a1 = aux env arg1_e in
@@ -200,36 +208,12 @@ let elab (e : expr) : texpr =
           let kind_str = Pretty.string_of_expr_indented (ExprNode (Sample (Distr2 (dist_kind, arg1_e, arg2_e)))) in
           failwith (Printf.sprintf "Type error in Sample (%s) second argument: %s" kind_str msg));
         
-        let add_floats_to_boundbag (float_bag : FloatBag.bag) (bound_bag : BoundBag.bag) =
-          let listener () =
-            let v = Bags.FloatBag.get float_bag in
-            (match v with
-            | Finite s -> Bags.BoundBag.add_all s bound_bag
-            | Top -> Bags.BoundBag.leq (Bags.BoundBag.create Top) bound_bag)
-          in
-          Bags.FloatBag.listen float_bag listener in
         add_floats_to_boundbag t1_float_bag t1_bound_bag;
         add_floats_to_boundbag t2_float_bag t2_bound_bag;
 
-        let make_output_top_if_input_boundbag_is_top input_bound_bag =
-          let listener () =
-            let v = Bags.BoundBag.get input_bound_bag in
-            (match v with
-            | Top -> Bags.BoundBag.leq (Bags.BoundBag.create Top) bounds_bag_ref
-            | _ -> ())
-          in
-          Bags.BoundBag.listen input_bound_bag listener in
         make_output_top_if_input_boundbag_is_top t1_bound_bag;
         make_output_top_if_input_boundbag_is_top t2_bound_bag;
 
-        let make_input_top_if_output_boundbag_is_top input_bound_bag output_bound_bag =
-          let listener () =
-            let v = Bags.BoundBag.get output_bound_bag in
-            (match v with
-            | Top -> Bags.BoundBag.leq (Bags.BoundBag.create Top) input_bound_bag
-            | _ -> ())
-          in
-          Bags.BoundBag.listen output_bound_bag listener in
         make_input_top_if_output_boundbag_is_top t1_bound_bag bounds_bag_ref;
         make_input_top_if_output_boundbag_is_top t2_bound_bag bounds_bag_ref;
 
@@ -662,7 +646,7 @@ let discretize (e : texpr) : expr =
             if abs_float (sum_probs -. 1.0) > 0.001 then
                (); 
             
-            let distr_cases = List.mapi (fun i prob -> (ExprNode (FinConst (i, overall_modulus)), max 0.0 (min 1.0 prob) )) probs in (* Clamp probabilities *)
+            let distr_cases = List.mapi (fun i prob -> (ExprNode (FinConst (i, overall_modulus)), max 0.0 (min 1.0 prob) )) probs in
             ExprNode (DistrCase distr_cases)
           in
 
@@ -1064,63 +1048,55 @@ let discretize (e : texpr) : expr =
       in
       ExprNode (DistrCase discretized_cases)
 
-    | Less (te1, te2) -> (* Match the typed expressions te1, te2 *) 
-        let t1 = fst te1 in (* Extract type t1 *) 
-        let t2 = fst te2 in (* Extract type t2 *)
-        let b1 = (match Types.force t1 with (* Get bound bag b1 from t1 *)
+    | Less (te1, te2) ->
+        let t1 = fst te1 in
+        let t2 = fst te2 in
+        let b1 = (match Types.force t1 with
           | Types.TFloat (b, _) -> b 
           | _ -> failwith "Type error: Less expects float") 
         in
-        let b2 = (match Types.force t2 with (* Get bound bag b2 from t2 *)
+        let b2 = (match Types.force t2 with
           | Types.TFloat (b, _) -> b
           | _ -> failwith "Type error: Less expects float on right operand")
         in
-        (* Get bag values and compare using BoundSetContents.equal *) 
         let val1 = Bags.BoundBag.get b1 in
         let val2 = Bags.BoundBag.get b2 in
         if not (Bags.BoundSetContents.equal val1 val2) then 
           failwith "Internal error: Less operands have different bound bag values despite elaboration";
 
-        (* Use val1 (since val1 = val2) *) 
         (match val1 with 
           | Bags.Top -> 
-              (* If bounds are Top, don't discretize, keep original Less structure *) 
               ExprNode (Less (aux te1, aux te2)) 
           | Bags.Finite bound_set -> 
-              (* Discretize based on shared bounds *) 
               let n = 1 + List.length (Bags.BoundSet.elements bound_set) in
-              let d1 = aux te1 in (* Discretize operands *)
+              let d1 = aux te1 in
               let d2 = aux te2 in 
-              ExprNode (FinLt (d1, d2, n))) (* Generate FinLt *) 
+              ExprNode (FinLt (d1, d2, n)))
         
-    | LessEq (te1, te2) -> (* Match the typed expressions te1, te2 *) 
-        let t1 = fst te1 in (* Extract type t1 *) 
-        let t2 = fst te2 in (* Extract type t2 *) 
-        let b1 = (match Types.force t1 with (* Get bound bag b1 from t1 *)
+    | LessEq (te1, te2) -> 
+        let t1 = fst te1 in
+        let t2 = fst te2 in
+        let b1 = (match Types.force t1 with
           | Types.TFloat (b, _) -> b 
           | _ -> failwith "Type error: LessEq expects float on left operand") 
         in
-        let b2 = (match Types.force t2 with (* Get bound bag b2 from t2 *)
+        let b2 = (match Types.force t2 with
           | Types.TFloat (b, _) -> b
           | _ -> failwith "Type error: LessEq expects float on right operand")
         in
-        (* Get bag values and compare using BoundSetContents.equal *) 
         let val1 = Bags.BoundBag.get b1 in
         let val2 = Bags.BoundBag.get b2 in
         if not (Bags.BoundSetContents.equal val1 val2) then 
           failwith "Internal error: LessEq operands have different bound bag values despite elaboration";
         
-        (* Use val1 (since val1 = val2) *) 
         (match val1 with 
           | Bags.Top -> 
-              (* If bounds are Top, don't discretize, keep original LessEq structure *) 
               ExprNode (LessEq (aux te1, aux te2))
           | Bags.Finite bound_set -> 
-              (* Discretize based on shared bounds *) 
               let n = 1 + List.length (Bags.BoundSet.elements bound_set) in
-              let d1 = aux te1 in (* Discretize operands *)
+              let d1 = aux te1 in
               let d2 = aux te2 in 
-              ExprNode (FinLeq (d1, d2, n))) (* Generate FinLeq *) 
+              ExprNode (FinLeq (d1, d2, n)))
 
     | If (te1, te2, te3) ->
         ExprNode (If (aux te1, aux te2, aux te3))
@@ -1140,14 +1116,13 @@ let discretize (e : texpr) : expr =
     | App (te1, te2) ->
         ExprNode (App (aux te1, aux te2))
 
-    (* Fin types are already discrete, pass them through *) 
     | FinConst (k, n) -> 
         ExprNode (FinConst (k, n))
     | FinLt (te1, te2, n) -> 
         ExprNode (FinLt (aux te1, aux te2, n))
     | FinLeq (te1, te2, n) -> 
         ExprNode (FinLeq (aux te1, aux te2, n))
-    | FinEq (te1, te2, n) -> (* New case for FinEq in discretize *)
+    | FinEq (te1, te2, n) ->
         ExprNode (FinEq (aux te1, aux te2, n))
 
     | And (te1, te2) ->
@@ -1187,3 +1162,6 @@ let discretize (e : texpr) : expr =
 
   in
   aux e
+
+let discretize_top (e : texpr) : expr =
+  discretize e

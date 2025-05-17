@@ -189,40 +189,12 @@ and string_of_expr_node ?(indent=0) (ExprNode expr_node) : string =
 
 and string_of_sample ?(indent=0) dist_exp = 
   match dist_exp with
-  | Distr2 (DUniform, e1, e2) -> 
-      Printf.sprintf "uniform(%s, %s)" (string_of_expr_indented ~indent e1) (string_of_expr_indented ~indent e2)
-  | Distr2 (DGaussian, e1, e2) -> 
-      Printf.sprintf "gaussian(%s, %s)" (string_of_expr_indented ~indent e1) (string_of_expr_indented ~indent e2)
-  | Distr1 (DExponential, e1) -> 
-      Printf.sprintf "exponential(%s)" (string_of_expr_indented ~indent e1)
-  | Distr2 (DBeta, e1, e2) -> 
-      Printf.sprintf "beta(%s, %s)" (string_of_expr_indented ~indent e1) (string_of_expr_indented ~indent e2)
-  | Distr2 (DLogNormal, e1, e2) -> 
-      Printf.sprintf "lognormal(%s, %s)" (string_of_expr_indented ~indent e1) (string_of_expr_indented ~indent e2)
-  | Distr2 (DGamma, e1, e2) -> 
-      Printf.sprintf "gamma(%s, %s)" (string_of_expr_indented ~indent e1) (string_of_expr_indented ~indent e2)
-  | Distr1 (DLaplace, e1) -> 
-      Printf.sprintf "laplace(%s)" (string_of_expr_indented ~indent e1)
-  | Distr1 (DCauchy, e1) -> 
-      Printf.sprintf "cauchy(%s)" (string_of_expr_indented ~indent e1)
-  | Distr1 (DTDist, e1) -> 
-      Printf.sprintf "tdist(%s)" (string_of_expr_indented ~indent e1)
-  | Distr1 (DChi2, e1) -> 
-      Printf.sprintf "chi2(%s)" (string_of_expr_indented ~indent e1)
-  | Distr1 (DLogistic, e1) -> 
-      Printf.sprintf "logistic(%s)" (string_of_expr_indented ~indent e1)
-  | Distr1 (DRayleigh, e1) -> 
-      Printf.sprintf "rayleigh(%s)" (string_of_expr_indented ~indent e1)
-  | Distr2 (DWeibull, e1, e2) -> 
-      Printf.sprintf "weibull(%s, %s)" (string_of_expr_indented ~indent e1) (string_of_expr_indented ~indent e2)
-  | Distr2 (DPareto, e1, e2) -> 
-      Printf.sprintf "pareto(%s, %s)" (string_of_expr_indented ~indent e1) (string_of_expr_indented ~indent e2)
-  | Distr2 (DGumbel1, e1, e2) -> 
-      Printf.sprintf "gumbel1(%s, %s)" (string_of_expr_indented ~indent e1) (string_of_expr_indented ~indent e2)
-  | Distr2 (DGumbel2, e1, e2) -> 
-      Printf.sprintf "gumbel2(%s, %s)" (string_of_expr_indented ~indent e1) (string_of_expr_indented ~indent e2)
-  | Distr2 (DExppow, e1, e2) -> 
-      Printf.sprintf "exppow(%s, %s)" (string_of_expr_indented ~indent e1) (string_of_expr_indented ~indent e2)
+  | Distr1 (kind, e1) -> 
+      Printf.sprintf "%s%s%s(%s)" 
+        keyword_color (Distributions.string_of_single_arg_dist_kind kind) reset_color (string_of_expr_indented ~indent e1)
+  | Distr2 (kind, e1, e2) -> 
+      Printf.sprintf "%s%s%s(%s, %s)" 
+        keyword_color (Distributions.string_of_two_arg_dist_kind kind) reset_color (string_of_expr_indented ~indent e1) (string_of_expr_indented ~indent e2)
 
 (* Pretty printer for aexpr nodes *)
 and string_of_aexpr_node ?(indent=0) (TAExprNode ae_node) : string =
@@ -239,7 +211,7 @@ and string_of_aexpr_node ?(indent=0) (TAExprNode ae_node) : string =
       Printf.sprintf "%slet%s %s%s%s = %s %sin%s\n%s%s"
         keyword_color reset_color variable_color x reset_color e1_str
         keyword_color reset_color indent_str e2_str
-  | Sample dist_exp -> string_of_asample dist_exp
+  | Sample dist_exp -> string_of_asample ~indent dist_exp
   | DistrCase cases ->
       let format_case (texpr, prob) =
         Printf.sprintf "%s%g%s: %s"
@@ -397,42 +369,14 @@ and string_of_ty = function
         match !r with
         | Known t -> string_of_ty t
         | Unknown _ -> "?"
-and string_of_asample ?(indent=0) dist_exp = 
+and string_of_asample ?(indent=0) dist_exp =
   match dist_exp with
-  | Distr2 (DUniform, e1, e2) -> 
-      Printf.sprintf "uniform(%s, %s)" (string_of_texpr_indented ~indent e1) (string_of_texpr_indented ~indent e2)
-  | Distr2 (DGaussian, e1, e2) -> 
-      Printf.sprintf "gaussian(%s, %s)" (string_of_texpr_indented ~indent e1) (string_of_texpr_indented ~indent e2)
-  | Distr1 (DExponential, e1) -> 
-      Printf.sprintf "exponential(%s)" (string_of_texpr_indented ~indent e1)
-  | Distr2 (DBeta, e1, e2) -> 
-      Printf.sprintf "beta(%s, %s)" (string_of_texpr_indented ~indent e1) (string_of_texpr_indented ~indent e2)
-  | Distr2 (DLogNormal, e1, e2) -> 
-      Printf.sprintf "lognormal(%s, %s)" (string_of_texpr_indented ~indent e1) (string_of_texpr_indented ~indent e2)
-  | Distr2 (DGamma, e1, e2) -> 
-      Printf.sprintf "gamma(%s, %s)" (string_of_texpr_indented ~indent e1) (string_of_texpr_indented ~indent e2)
-  | Distr1 (DLaplace, e1) -> 
-      Printf.sprintf "laplace(%s)" (string_of_texpr_indented ~indent e1)
-  | Distr1 (DCauchy, e1) -> 
-      Printf.sprintf "cauchy(%s)" (string_of_texpr_indented ~indent e1)
-  | Distr1 (DTDist, e1) -> 
-      Printf.sprintf "tdist(%s)" (string_of_texpr_indented ~indent e1)
-  | Distr1 (DChi2, e1) -> 
-      Printf.sprintf "chi2(%s)" (string_of_texpr_indented ~indent e1)
-  | Distr1 (DLogistic, e1) -> 
-      Printf.sprintf "logistic(%s)" (string_of_texpr_indented ~indent e1)
-  | Distr1 (DRayleigh, e1) -> 
-      Printf.sprintf "rayleigh(%s)" (string_of_texpr_indented ~indent e1)
-  | Distr2 (DWeibull, e1, e2) -> 
-      Printf.sprintf "weibull(%s, %s)" (string_of_texpr_indented ~indent e1) (string_of_texpr_indented ~indent e2)
-  | Distr2 (DPareto, e1, e2) -> 
-      Printf.sprintf "pareto(%s, %s)" (string_of_texpr_indented ~indent e1) (string_of_texpr_indented ~indent e2)
-  | Distr2 (DGumbel1, e1, e2) -> 
-      Printf.sprintf "gumbel1(%s, %s)" (string_of_texpr_indented ~indent e1) (string_of_texpr_indented ~indent e2)
-  | Distr2 (DGumbel2, e1, e2) -> 
-      Printf.sprintf "gumbel2(%s, %s)" (string_of_texpr_indented ~indent e1) (string_of_texpr_indented ~indent e2)
-  | Distr2 (DExppow, e1, e2) -> 
-      Printf.sprintf "exppow(%s, %s)" (string_of_texpr_indented ~indent e1) (string_of_texpr_indented ~indent e2)
+  | Distr1 (kind, te1) -> 
+      Printf.sprintf "%s%s%s(%s)" 
+        keyword_color (Distributions.string_of_single_arg_dist_kind kind) reset_color (string_of_texpr_indented ~indent te1)
+  | Distr2 (kind, te1, te2) -> 
+      Printf.sprintf "%s%s%s(%s, %s)" 
+        keyword_color (Distributions.string_of_two_arg_dist_kind kind) reset_color (string_of_texpr_indented ~indent te1) (string_of_texpr_indented ~indent te2)
 
 (* Wrappers *)
 let string_of_expr expr =

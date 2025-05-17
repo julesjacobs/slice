@@ -1,5 +1,5 @@
 open Types
-open Bags (* Open Bags to get FloatSet and access Set modules and Bound type *)
+open Bags
 
 let var_counter = ref 0
 let fresh_var (prefix : string) : string =
@@ -9,26 +9,10 @@ let fresh_var (prefix : string) : string =
 let gen_let (base_name_hint : string) (rhs_expr : Types.expr) (body_fn : string -> Types.expr) : Types.expr =
   match rhs_expr with
   | Types.ExprNode (Types.Var existing_var_name) ->
-      body_fn existing_var_name (* Use existing variable name directly in the body *)
+      body_fn existing_var_name
   | _ ->
-      let new_var_name = fresh_var base_name_hint in (* Use the existing fresh_var from Util.ml *)
+      let new_var_name = fresh_var base_name_hint in
       Types.ExprNode (Types.Let (new_var_name, rhs_expr, body_fn new_var_name))
-
-(* Eventually refactor this so that all print functions go in one file, with an optional argument to specify pretty print *)
-
-(* Pretty printer for continuous distributions *)
-let string_of_cdistr = function
-| Distributions.Uniform (lo, hi) -> 
-    Printf.sprintf "uniform(%g, %g)" lo hi
-| Distributions.Gaussian (mean, std) -> 
-    Printf.sprintf "gaussian(%g, %g)" mean std
-| Distributions.Exponential rate -> 
-    Printf.sprintf "exponential(%g)" rate
-| Distributions.Beta (alpha, beta) -> 
-    Printf.sprintf "beta(%g, %g)" alpha beta
-| Distributions.LogNormal (mu, sigma) -> 
-    Printf.sprintf "lognormal(%g, %g)" mu sigma
-| _ -> "<unsupported distribution>"
 
 let bit_length n =
   if n < 0 then invalid_arg "bit_length: only non-negative integers allowed"
@@ -40,7 +24,7 @@ let bit_length n =
     in
     aux n 0
 
-(* Forward declarations *)
+(* Forward declarations for mutually recursive pretty-printing functions *)
 let rec string_of_expr_indented ?(indent=0) e =
   string_of_expr_node ~indent e
 and string_of_aexpr_indented ?(indent=0) ae =

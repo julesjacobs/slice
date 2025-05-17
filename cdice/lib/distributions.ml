@@ -99,10 +99,10 @@ let cdistr_sample dist =
       if lambda <= 0.0 then invalid_arg "Exponential sample: lambda must be > 0";
       Gsl.Randist.exponential rng ~mu:(1.0 /. lambda)
 
-  | Beta (alpha, beta_param) -> (* Renamed beta to beta_param *)
+  | Beta (alpha, beta_param) ->
       if alpha <= 0.0 || beta_param <= 0.0 then
         invalid_arg "Beta sample: α and β must be > 0";
-      Gsl.Randist.beta rng ~a:alpha ~b:beta_param (* GSL can sample Beta *)
+      Gsl.Randist.beta rng ~a:alpha ~b:beta_param
 
   | LogNormal (mu, sigma) ->
       if sigma <= 0.0 then invalid_arg "LogNormal sample: σ must be > 0";
@@ -158,49 +158,61 @@ let cdistr_sample dist =
 
 (* --- New Helper Functions --- *)
 
-let cdistr_sample_single_arg (kind: Types.single_arg_dist_kind) (arg1: float) : float =
+let string_of_single_arg_dist_kind (kind: Types.single_arg_dist_kind) : string =
   match kind with
-  | Types.DExponential -> cdistr_sample (Exponential arg1)
-  | Types.DLaplace    -> cdistr_sample (Laplace arg1)
-  | Types.DCauchy     -> cdistr_sample (Cauchy arg1)
-  | Types.DTDist      -> cdistr_sample (TDist arg1)
-  | Types.DChi2       -> cdistr_sample (Chi2 arg1)
-  | Types.DLogistic   -> cdistr_sample (Logistic arg1)
-  | Types.DRayleigh   -> cdistr_sample (Rayleigh arg1)
+  | Types.DExponential -> "exponential"
+  | Types.DLaplace     -> "laplace"
+  | Types.DCauchy      -> "cauchy"
+  | Types.DTDist       -> "tdist"
+  | Types.DChi2        -> "chi2"
+  | Types.DLogistic    -> "logistic"
+  | Types.DRayleigh    -> "rayleigh"
+
+let string_of_two_arg_dist_kind (kind: Types.two_arg_dist_kind) : string =
+  match kind with
+  | Types.DUniform     -> "uniform"
+  | Types.DGaussian    -> "gaussian"
+  | Types.DBeta        -> "beta"
+  | Types.DLogNormal   -> "lognormal"
+  | Types.DGamma       -> "gamma"
+  | Types.DPareto      -> "pareto"
+  | Types.DWeibull     -> "weibull"
+  | Types.DGumbel1     -> "gumbel1"
+  | Types.DGumbel2     -> "gumbel2"
+  | Types.DExppow      -> "exppow"
+
+let get_cdistr_from_single_arg_kind (kind: Types.single_arg_dist_kind) (arg1: float) : cdistr =
+  match kind with
+  | Types.DExponential -> Exponential arg1
+  | Types.DLaplace     -> Laplace arg1
+  | Types.DCauchy      -> Cauchy arg1
+  | Types.DTDist       -> TDist arg1
+  | Types.DChi2        -> Chi2 arg1
+  | Types.DLogistic    -> Logistic arg1
+  | Types.DRayleigh    -> Rayleigh arg1
+
+let get_cdistr_from_two_arg_kind (kind: Types.two_arg_dist_kind) (arg1: float) (arg2: float) : cdistr =
+  match kind with
+  | Types.DUniform     -> Uniform (arg1, arg2)
+  | Types.DGaussian    -> Gaussian (arg1, arg2)
+  | Types.DBeta        -> Beta (arg1, arg2)
+  | Types.DLogNormal   -> LogNormal (arg1, arg2)
+  | Types.DGamma       -> Gamma (arg1, arg2)
+  | Types.DPareto      -> Pareto (arg1, arg2)
+  | Types.DWeibull     -> Weibull (arg1, arg2)
+  | Types.DGumbel1     -> Gumbel1 (arg1, arg2)
+  | Types.DGumbel2     -> Gumbel2 (arg1, arg2)
+  | Types.DExppow      -> Exppow (arg1, arg2)
+
+let cdistr_sample_single_arg (kind: Types.single_arg_dist_kind) (arg1: float) : float =
+  cdistr_sample (get_cdistr_from_single_arg_kind kind arg1)
 
 let cdistr_sample_two_arg (kind: Types.two_arg_dist_kind) (arg1: float) (arg2: float) : float =
-  match kind with
-  | Types.DUniform    -> cdistr_sample (Uniform (arg1, arg2))
-  | Types.DGaussian   -> cdistr_sample (Gaussian (arg1, arg2))
-  | Types.DBeta       -> cdistr_sample (Beta (arg1, arg2))
-  | Types.DLogNormal  -> cdistr_sample (LogNormal (arg1, arg2))
-  | Types.DGamma      -> cdistr_sample (Gamma (arg1, arg2))
-  | Types.DPareto     -> cdistr_sample (Pareto (arg1, arg2))
-  | Types.DWeibull    -> cdistr_sample (Weibull (arg1, arg2))
-  | Types.DGumbel1    -> cdistr_sample (Gumbel1 (arg1, arg2))
-  | Types.DGumbel2    -> cdistr_sample (Gumbel2 (arg1, arg2))
-  | Types.DExppow     -> cdistr_sample (Exppow (arg1, arg2))
+  cdistr_sample (get_cdistr_from_two_arg_kind kind arg1 arg2)
 
 let cdistr_cdf_single_arg (kind: Types.single_arg_dist_kind) (arg1: float) (x: float) : float =
-  match kind with
-  | Types.DExponential -> cdistr_cdf (Exponential arg1) x
-  | Types.DLaplace    -> cdistr_cdf (Laplace arg1) x
-  | Types.DCauchy     -> cdistr_cdf (Cauchy arg1) x
-  | Types.DTDist      -> cdistr_cdf (TDist arg1) x
-  | Types.DChi2       -> cdistr_cdf (Chi2 arg1) x
-  | Types.DLogistic   -> cdistr_cdf (Logistic arg1) x
-  | Types.DRayleigh   -> cdistr_cdf (Rayleigh arg1) x
+  cdistr_cdf (get_cdistr_from_single_arg_kind kind arg1) x
 
 let cdistr_cdf_two_arg (kind: Types.two_arg_dist_kind) (arg1: float) (arg2: float) (x: float) : float =
-  match kind with
-  | Types.DUniform    -> cdistr_cdf (Uniform (arg1, arg2)) x
-  | Types.DGaussian   -> cdistr_cdf (Gaussian (arg1, arg2)) x
-  | Types.DBeta       -> cdistr_cdf (Beta (arg1, arg2)) x
-  | Types.DLogNormal  -> cdistr_cdf (LogNormal (arg1, arg2)) x
-  | Types.DGamma      -> cdistr_cdf (Gamma (arg1, arg2)) x
-  | Types.DPareto     -> cdistr_cdf (Pareto (arg1, arg2)) x
-  | Types.DWeibull    -> cdistr_cdf (Weibull (arg1, arg2)) x
-  | Types.DGumbel1    -> cdistr_cdf (Gumbel1 (arg1, arg2)) x
-  | Types.DGumbel2    -> cdistr_cdf (Gumbel2 (arg1, arg2)) x
-  | Types.DExppow     -> cdistr_cdf (Exppow (arg1, arg2)) x
+  cdistr_cdf (get_cdistr_from_two_arg_kind kind arg1 arg2) x
 
