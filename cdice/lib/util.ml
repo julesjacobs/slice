@@ -20,5 +20,3 @@ let bit_length n =
       else aux (n lsr 1) (acc + 1)
     in
     aux n 0
-
-(* Pretty printing functions have been moved to Pretty.ml *)

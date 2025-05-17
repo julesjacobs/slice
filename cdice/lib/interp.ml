@@ -203,7 +203,7 @@ let rec eval (env : env) (ExprNode e_node : expr) : value =
 
   | Unit -> VUnit
 
-  | RuntimeError s -> raise (RuntimeError s) (* Handle the new AST node *)
+  | RuntimeError s -> raise (RuntimeError s)
 
 and eval_dist env dist_exp = 
   match dist_exp with

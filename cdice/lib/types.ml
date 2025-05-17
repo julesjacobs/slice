@@ -34,7 +34,7 @@ type 'a expr_generic =
   | Assign of 'a * 'a (* e1 := e2 *)
   | Seq of 'a * 'a (* e1 ; e2 *)
   | Unit
-  | RuntimeError of string (* New AST node for runtime errors *)
+  | RuntimeError of string
 
 and single_arg_dist_kind =
   | DExponential | DLaplace | DCauchy | DTDist | DChi2 | DLogistic | DRayleigh
