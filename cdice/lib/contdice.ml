@@ -12,8 +12,6 @@ module Interp = Interp
 module Types = Types (* Explicitly alias Types here *)
 module Distributions = Distributions (* Explicitly alias Distributions here *)
 module Bags = Bags   (* And Bags *)
-(* We might need others like Types, Bag, Stats depending on usage, 
-   but let's start with these two. *)
 
 module StringMap = Map.Make(String)
 
