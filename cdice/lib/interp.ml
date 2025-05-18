@@ -128,6 +128,14 @@ let rec eval (env : env) (ExprNode e_node : expr) : value =
            eval ((x, v_arg) :: captured_env) body (* Use captured env, add arg binding *)
        | _ -> raise (RuntimeError "Type error during evaluation: Application expects a function"))
 
+  | LoopApp (e_fun, e_arg, _) ->
+        let v_fun = eval env e_fun in
+        let v_arg = eval env e_arg in
+        (match v_fun with
+            | VClosure (x, body, captured_env) ->
+                eval ((x, v_arg) :: captured_env) body (* Use captured env, add arg binding *)
+            | _ -> raise (RuntimeError "Type error during evaluation: Application expects a loop"))
+    
   | FinConst (k, n) -> VFin (k, n)
 
   | FinLt (e1, e2, n) ->

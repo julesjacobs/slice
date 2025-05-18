@@ -1,0 +1,7 @@
+(* Unlike fix_reaches_zero.cdice, iterates for a fixed, predetermined number of times *)
+
+let prob_loop = fix loop arg :=
+    let res_1 = if arg < 0.5 then uniform(0,2) else uniform(0,8) in 
+    let res_2 = if res_1 < 0.5 then uniform(0,4) else uniform(0,10) in res_2
+in
+let c = prob_loop uniform(0,1) 3 in c < 0.4

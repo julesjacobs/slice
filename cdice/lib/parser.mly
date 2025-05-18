@@ -152,10 +152,11 @@ prefix_expr:                  (* New level for prefix ops like ! and ref *)
 
 /* Application Level */
 app_expr:
-  | app_expr atomic_expr      { ExprNode (App ($1, $2)) }
-  | FST atomic_expr           { ExprNode (First $2) }
-  | SND atomic_expr           { ExprNode (Second $2) }
-  | atomic_expr { $1 }        /* Fallthrough to atomic_expr */
+  | app_expr atomic_expr            { ExprNode (App ($1, $2)) }
+  | app_expr atomic_expr n = INT     { ExprNode (LoopApp ($1, $2, n)) }
+  | FST atomic_expr                 { ExprNode (First $2) }
+  | SND atomic_expr                 { ExprNode (Second $2) }
+  | atomic_expr                     { $1 }        /* Fallthrough to atomic_expr */
   ;
 
 /* Atomic expressions (variables, constants, parens, tuples, distributions, nil) */ 

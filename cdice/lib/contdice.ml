@@ -7,7 +7,8 @@ open Bags (* Open Bags to access FloatSet, BoundSet, FloatBag, BoundBag etc. *)
 (* Re-export internal modules needed by executable/tests *)
 module Parse = Parse 
 module Pretty = Pretty
-module Util = Util 
+module Util = Util
+module To_dice = To_dice
 module Interp = Interp
 module Types = Types (* Explicitly alias Types here *)
 module Distributions = Distributions (* Explicitly alias Distributions here *)
@@ -413,6 +414,20 @@ let elab (e : expr) : texpr =
        with Failure msg -> failwith ("Type error in function application: " ^ msg));
       (result_ty, TAExprNode (App ((t_fun, a_fun), (t_arg, a_arg))))
       
+    | LoopApp (e1, e2, e3) ->
+      let t_fun, a_fun = aux env e1 in
+      let t_arg, a_arg = aux env e2 in
+      (* Third argument is just a number *)
+      let param_ty_expected = Types.fresh_meta () in (* Fresh meta for expected param type *) 
+      let result_ty = Types.fresh_meta () in (* Fresh meta for result type *) 
+      (try 
+          (* Check t_fun is a function expecting param_ty_expected and returning result_ty *) 
+          sub_type t_fun (Types.TFun (param_ty_expected, result_ty));
+          (* Check t_arg is a subtype of what the function expects *) 
+          sub_type t_arg param_ty_expected 
+        with Failure msg -> failwith ("Type error in loop application: " ^ msg));
+      (result_ty, TAExprNode (LoopApp ((t_fun, a_fun), (t_arg, a_arg), e3)))
+       
     | FinConst (k, n) ->
       if k < 0 || k >= n then failwith (Printf.sprintf "Invalid FinConst value: %d#%d. k must be >= 0 and < n." k n);
       (Types.TFin n, TAExprNode (FinConst (k, n)))
@@ -1115,6 +1130,9 @@ let discretize (e : texpr) : expr =
         
     | App (te1, te2) ->
         ExprNode (App (aux te1, aux te2))
+
+    | LoopApp (te1, te2, te3) ->
+        ExprNode (LoopApp (aux te1, aux te2, te3))
 
     | FinConst (k, n) -> 
         ExprNode (FinConst (k, n))

@@ -134,6 +134,10 @@ and string_of_expr_node ?(indent=0) (ExprNode expr_node) : string =
       let e1_str = string_of_expr_indented ~indent e1 in
       let e2_str = string_of_expr_indented ~indent e2 in
       Printf.sprintf "(%s %s)" e1_str e2_str
+  | LoopApp (e1, e2, n) ->
+      let e1_str = string_of_expr_indented ~indent e1 in
+      let e2_str = string_of_expr_indented ~indent e2 in
+      Printf.sprintf "(%s %s %d)" e1_str e2_str n
   | Fix (f, x, e) ->
       let e_str = string_of_expr_indented ~indent:(indent+2) e in
       Printf.sprintf "%sfix%s %s%s%s %s%s%s %s:=%s %s"
@@ -265,6 +269,10 @@ and string_of_aexpr_node ?(indent=0) (TAExprNode ae_node) : string =
       let e1_str = string_of_texpr_indented ~indent te1 in
       let e2_str = string_of_texpr_indented ~indent te2 in
       Printf.sprintf "(%s %s)" e1_str e2_str
+  | LoopApp (te1, te2, n) ->
+      let e1_str = string_of_texpr_indented ~indent te1 in
+      let e2_str = string_of_texpr_indented ~indent te2 in
+      Printf.sprintf "(%s %s %d)" e1_str e2_str n
   | Fix (f, x, te) ->
       let te_str = string_of_texpr_indented ~indent:(indent+2) te in
       Printf.sprintf "%sfix%s %s%s%s %s%s%s %s:=%s %s"
@@ -612,13 +620,13 @@ let rec translate_to_sppl (env : (string * string) list) ?(target_var:string opt
 
   (* Fail on unsupported features *) 
   | Types.ExprNode(Pair _) | Types.ExprNode(First _) | Types.ExprNode(Second _)
-  | Types.ExprNode(Fun _) | Types.ExprNode(App _)
+  | Types.ExprNode(Fun _) | Types.ExprNode(App _) | Types.ExprNode(LoopApp _)
   | Types.ExprNode(FinConst _) | Types.ExprNode(FinLt _) | Types.ExprNode(FinLeq _) ->
       let err_msg = Printf.sprintf
         "Encountered an unsupported expression type (%s) during SPPL translation (in pretty.ml)."
         (match expr with
          | Types.ExprNode(Pair _) -> "Pair" | Types.ExprNode(First _) -> "First" | Types.ExprNode(Second _) -> "Second"
-         | Types.ExprNode(Fun _) -> "Fun" | Types.ExprNode(App _) -> "App"
+         | Types.ExprNode(Fun _) -> "Fun" | Types.ExprNode(App _) -> "App" | Types.ExprNode(LoopApp _) -> "LoopApp" 
          | Types.ExprNode(FinConst _) -> "FinConst" | Types.ExprNode(FinLt _) -> "FinLt" | Types.ExprNode(FinLeq _) -> "FinLeq"
          | _ -> "Other Unsupported")
       in

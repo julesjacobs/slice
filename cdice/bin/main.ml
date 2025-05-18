@@ -3,6 +3,7 @@ open Contdice
 module Types = Contdice.Types
 exception ObserveFailure = Contdice.Interp.ObserveFailure
 
+(* Read a file and return its contents as a string *)
 let read_file filename =
   let ic = open_in filename in
   let len = in_channel_length ic in
@@ -10,6 +11,7 @@ let read_file filename =
   close_in ic;
   content
 
+(* Helper function to run interpreter N times and summarize *)
 let run_interp_and_summarize ~print_all label expr n_runs : ((int * int * int), string) result =
   if print_all then Printf.printf "Running %s version %d times...\n" label n_runs;
   let true_count = ref 0 in
@@ -44,15 +46,19 @@ let run_interp_and_summarize ~print_all label expr n_runs : ((int * int * int), 
   with 
   | Failure final_msg -> Error final_msg
 
+(* Perform a two-proportion z-test *)
+(* Note: e_disc and e_orig are for other errors, o_disc and o_orig for observe failures *)
 let perform_two_proportion_z_test ~print_all (t_disc, f_disc, e_disc, o_disc) (t_orig, f_orig, e_orig, o_orig) _n_runs : bool =
   if print_all then Printf.printf "\n--- Statistical Comparison ---\n";
 
+  (* If observe failures occurred, print a note. This doesn't skip the test. *)
   if print_all && (o_disc > 0 || o_orig > 0) then (
     Printf.printf "Note: Observe failures occurred and were filtered out before statistical comparison.\n";
     Printf.printf "  Discretized: %d observe failures out of %d total attempts (True: %d, False: %d, OFail: %d)\n" o_disc (t_disc + f_disc + o_disc) t_disc f_disc o_disc;
     Printf.printf "  Original:    %d observe failures out of %d total attempts (True: %d, False: %d, OFail: %d)\n" o_orig (t_orig + f_orig + o_orig) t_orig f_orig o_orig;
   );
 
+  (* Skip test if any (non-observe) runtime errors occurred *)
   if e_disc > 0 || e_orig > 0 then (
     if print_all then Printf.printf "Test skipped: Runtime errors occurred during one or both simulation runs.\n";
     false
@@ -105,6 +111,7 @@ let perform_two_proportion_z_test ~print_all (t_disc, f_disc, e_disc, o_disc) (t
         abs_float z_score > critical_z
       )
 
+(* Process a single .cdice file *)
 let process_file ~print_all ~to_sppl filename : ( ((int * int * int) * (int * int * int)) option, string) result =
   if print_all then Printf.printf "Processing file: %s\n" filename;
   try
@@ -112,10 +119,11 @@ let process_file ~print_all ~to_sppl filename : ( ((int * int * int) * (int * in
     let expr = Contdice.Parse.parse_expr content in
     
     if to_sppl then (
-      let sppl_code = Contdice.Pretty.cdice_expr_to_sppl_prog expr in
+      let sppl_code = Contdice.Pretty.cdice_expr_to_sppl_prog expr in (* Call Pretty module *)
       print_endline sppl_code;
-      Ok None
+      Ok None (* Indicate success, no diff details *) 
     ) else (
+      (* Original logic: pretty print, elab, discretize, compare *)
       if print_all then Printf.printf "Source:\n%s\n\n" content;
       
       let texpr = Contdice.elab expr in 
@@ -124,11 +132,13 @@ let process_file ~print_all ~to_sppl filename : ( ((int * int * int) * (int * in
       
       let discretized_expr = Contdice.discretize texpr in
       if print_all then (
-        Printf.printf "Discretized Program (Pretty):\n%s\n\n" (Contdice.Pretty.string_of_expr discretized_expr)
+        Printf.printf "Discretized Program (Pretty):\n%s\n\n" (Contdice.Pretty.string_of_expr discretized_expr);
+        Printf.printf "Dice Program (Plaintext):\n%s\n\n" (Contdice.To_dice.string_of_expr discretized_expr)
       ) else (
-        Printf.printf "%s\n" (Contdice.Pretty.string_of_expr_indented discretized_expr)
+        Printf.printf "%s\n" (Contdice.To_dice.string_of_expr discretized_expr)
       );
 
+      (* Only run simulations if the result type is bool and print_all is true *)
       match Types.force final_type with 
       | Types.TBool when print_all -> 
           let n_runs = 1000000 in 
@@ -149,7 +159,7 @@ let process_file ~print_all ~to_sppl filename : ( ((int * int * int) * (int * in
                   Ok diff_details
               )
           )
-      | _ -> Ok None
+      | _ -> Ok None (* For non-bool types or when not printing all, just report success *)
     )
   with
   | Failure msg -> 
@@ -161,9 +171,11 @@ let process_file ~print_all ~to_sppl filename : ( ((int * int * int) * (int * in
       if print_all then print_endline (String.make 60 '-');
       Error err_msg
 
+(* Check if a filename has .cdice extension *)
 let has_cdice_extension filename =
   Filename.check_suffix filename ".cdice"
 
+(* Process a directory, finding all .cdice files recursively *)
 let rec process_directory ~print_all ~to_sppl path : (int * (string * string) list * (string * (int * int * int) * (int * int * int)) list) =
   let dir = Unix.opendir path in
   let rec process_entries count errors_list diff_details_list =
@@ -204,6 +216,7 @@ let rec process_directory ~print_all ~to_sppl path : (int * (string * string) li
   in
   process_entries 0 [] []
 
+(* Main command execution logic *) 
 let run_contdice path print_all to_sppl =
   try
     let stats = Unix.stat path in
@@ -248,7 +261,7 @@ let run_contdice path print_all to_sppl =
               (List.rev diff_details_list) 
           )
         )
-    | _ ->
+    | _ -> (* Catch-all for other file types *)
         Printf.eprintf "Error: Path is not a regular file or a directory: %s\n" path
   with
   | Failure msg -> 
@@ -256,6 +269,7 @@ let run_contdice path print_all to_sppl =
   | e -> 
       Printf.eprintf "Unexpected error: %s\n" (Printexc.to_string e)
 
+(* Cmdliner term definition *) 
 let path_arg = 
   let doc = "The .cdice file or directory to process." in
   Arg.(required & pos 0 (some string) None & info [] ~docv:"PATH" ~doc)
@@ -279,4 +293,5 @@ let cmd =
   let info = Cmd.info "contdice_main" ~version:"%%VERSION%%" ~doc ~exits:Cmd.Exit.defaults ~man in
   Cmd.v info contdice_t
 
+(* Main entry point *) 
 let () = exit (Cmd.eval cmd)

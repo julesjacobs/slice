@@ -2,7 +2,7 @@
  (name contdice)
  (public_name contdice)
  (libraries gsl)
- (modules bag bags types distributions lexer parser parse contdice pretty interp util))
+ (modules bag bags types distributions lexer parser parse contdice pretty interp util to_dice))
 
 (ocamllex lexer)
 
