@@ -71,6 +71,8 @@ and string_of_expr_node ?(indent=0) (ExprNode expr_node) : string =
           (match e with
           | ExprNode (LoopApp (ExprNode (Var f), arg_expr, _)) when f = x ->
               Some arg_expr
+          | ExprNode (FuncApp (ExprNode (Var f), arg_expr)) when f = x ->
+              Some arg_expr
           | ExprNode (Let (_, e1', e2')) ->
             (match find_loopapp_arg e1' with
               | Some _ as res -> res
@@ -122,7 +124,7 @@ and string_of_expr_node ?(indent=0) (ExprNode expr_node) : string =
   | Fun (x, e) ->
       let e_str = string_of_expr_indented ~indent:(indent+2) e in
       Printf.sprintf "fun %s -> %s" x e_str
-  | App (e1, e2) -> Printf.sprintf "%s(%s)" (string_of_expr_indented ~indent e1) (string_of_expr_indented ~indent e2)
+  | FuncApp (e1, e2) -> Printf.sprintf "%s(%s)" (string_of_expr_indented ~indent e1) (string_of_expr_indented ~indent e2)
   | LoopApp (e1, e2, n) -> Printf.sprintf "iterate(%s,%s,%d)" (string_of_expr_indented ~indent e1) (string_of_expr_indented ~indent e2) n
   | FinConst (k, n) -> Printf.sprintf "int(%d,%d)" (bit_length (n-1)) k
   | FinLt (e1, e2, _) -> Printf.sprintf "%s < %s" (string_of_expr_indented ~indent e1) (string_of_expr_indented ~indent e2)
@@ -168,14 +170,9 @@ and string_of_aexpr_node ?(indent=0) (TAExprNode ae_node) : string =
   | Var x -> x
   | Let (x, te1, te2) ->
     let indent_str = String.make indent ' ' in
-    (match te1 with
-     | _, TAExprNode (Fix (f, x, te)) ->
-          let te_str = string_of_texpr_indented ~indent:(indent+2) te in
-          Printf.sprintf "fix %s %s := %s" f x te_str
-     | _ ->
-         let e1_str = string_of_texpr_indented ~indent:(indent+2) te1 in
-         let e2_str = string_of_texpr_indented ~indent:(indent+2) te2 in
-         Printf.sprintf "let %s = %s in\n%s%s" x e1_str indent_str e2_str)
+    let e1_str = string_of_texpr_indented ~indent:(indent+2) te1 in
+    let e2_str = string_of_texpr_indented ~indent:(indent+2) te2 in
+    Printf.sprintf "let %s = %s in\n%s%s" x e1_str indent_str e2_str
   | Sample dist_exp -> string_of_asample dist_exp 
   | DistrCase cases ->
     let format_case (_, prob) =
@@ -206,15 +203,16 @@ and string_of_aexpr_node ?(indent=0) (TAExprNode ae_node) : string =
   | Fun (x, te) ->
       let e_str = string_of_texpr_indented ~indent:(indent+2) te in
       Printf.sprintf "fun %s -> %s" x e_str
-  | App (te1, te2) -> Printf.sprintf "(%s %s)" (string_of_texpr_indented ~indent te1) (string_of_texpr_indented ~indent te2)
+  | FuncApp (te1, te2) -> Printf.sprintf "%s(%s)" (string_of_texpr_indented ~indent te1) (string_of_texpr_indented ~indent te2)
   | LoopApp (te1, te2, _) -> Printf.sprintf "(%s %s)" (string_of_texpr_indented ~indent te1) (string_of_texpr_indented ~indent te2)
   | FinConst (k, n) -> Printf.sprintf "int(%d,%d)" (bit_length (n-1)) k
   | FinLt (te1, te2, _) -> Printf.sprintf "%s < %s" (string_of_texpr_indented ~indent te1) (string_of_texpr_indented ~indent te2)
   | FinLeq (te1, te2, _) -> Printf.sprintf "%s <= %s" (string_of_texpr_indented ~indent te1) (string_of_texpr_indented ~indent te2)
   | FinEq (te1, te2, _) -> Printf.sprintf "%s ==# %s" (string_of_texpr_indented ~indent te1) (string_of_texpr_indented ~indent te2)
   | Observe te1 -> Printf.sprintf "observe (%s)" (string_of_texpr_indented ~indent te1)
-  | Fix (_, _, _) -> 
-      Printf.sprintf ""
+  | Fix (f, x, te) ->
+    let te_str = string_of_texpr_indented ~indent:(indent+2) te in
+    Printf.sprintf "fix %s %s := %s" f x te_str
   | Nil -> "nil"
   | Cons (te1, te2) -> 
       Printf.sprintf "%s :: %s"

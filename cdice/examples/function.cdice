@@ -1,5 +1,5 @@
 (* Example file for testing functions *)
 
-let f = fun x -> x < 0.5 in
-let coin = uniform(0, 1) in
-f coin
+let f = fun x -> 
+if x < 0.5 then uniform(0,1) else uniform(0,2) in
+let coin = f uniform(0,1) in coin < 0.5

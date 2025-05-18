@@ -108,7 +108,7 @@ and string_of_expr_node ?(indent=0) (ExprNode expr_node) : string =
       Printf.sprintf "%sfun%s %s%s%s %s->%s %s"
         keyword_color reset_color variable_color x reset_color
         operator_color reset_color e_str
-  | App (e1, e2) ->
+  | FuncApp (e1, e2) ->
       let e1_str = string_of_expr_indented ~indent e1 in
       let e2_str = string_of_expr_indented ~indent e2 in
       Printf.sprintf "(%s %s)" e1_str e2_str
@@ -198,7 +198,7 @@ and string_of_aexpr_node ?(indent=0) (TAExprNode ae_node) : string =
       Printf.sprintf "%sfun%s %s%s%s %s->%s %s"
         keyword_color reset_color variable_color x reset_color
         operator_color reset_color e_str
-  | App (te1, te2) ->
+  | FuncApp (te1, te2) ->
       let e1_str = string_of_texpr_indented ~indent te1 in
       let e2_str = string_of_texpr_indented ~indent te2 in
       Printf.sprintf "(%s %s)" e1_str e2_str
@@ -449,13 +449,13 @@ let rec translate_to_sppl (env : (string * string) list) ?(target_var:string opt
 
   (* Fail on unsupported features *) 
   | Types.ExprNode(Pair _) | Types.ExprNode(First _) | Types.ExprNode(Second _)
-  | Types.ExprNode(Fun _) | Types.ExprNode(App _)
+  | Types.ExprNode(Fun _) | Types.ExprNode(FuncApp _)
   | Types.ExprNode(FinConst _) | Types.ExprNode(FinLt _) | Types.ExprNode(FinLeq _) ->
       let err_msg = Printf.sprintf
         "Encountered an unsupported expression type (%s) during SPPL translation (in pretty.ml)."
         (match expr with
          | Types.ExprNode(Pair _) -> "Pair" | Types.ExprNode(First _) -> "First" | Types.ExprNode(Second _) -> "Second"
-         | Types.ExprNode(Fun _) -> "Fun" | Types.ExprNode(App _) -> "App"
+         | Types.ExprNode(Fun _) -> "Fun" | Types.ExprNode(FuncApp _) -> "App"
          | Types.ExprNode(FinConst _) -> "FinConst" | Types.ExprNode(FinLt _) -> "FinLt" | Types.ExprNode(FinLeq _) -> "FinLeq"
          | _ -> "Other Unsupported")
       in

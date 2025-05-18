@@ -120,7 +120,7 @@ let rec eval (env : env) (ExprNode e_node : expr) : value =
   | Fun (x, body) ->
       VClosure (x, body, env) (* Capture current environment *)
 
-  | App (e_fun, e_arg) ->
+  | FuncApp (e_fun, e_arg) ->
       let v_fun = eval env e_fun in
       let v_arg = eval env e_arg in
       (match v_fun with

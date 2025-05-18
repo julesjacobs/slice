@@ -19,7 +19,7 @@ type 'a expr_generic =
   | First  of 'a                   (* First projection: fst e *)
   | Second of 'a                   (* Second projection: snd e *)
   | Fun    of string * 'a          (* Function: fun x -> e *)
-  | App    of 'a * 'a            (* Function application: e1 e2 *)
+  | FuncApp    of 'a * 'a            (* Function application: e1 e2 *)
   | LoopApp    of 'a * 'a * int           (* Loop application: e1 e2 int *)
   | FinConst of int * int (* k, n for k#n *)
   | FinLt of 'a * 'a * int (* e1 <#n e2 *)

@@ -401,7 +401,7 @@ let elab (e : expr) : texpr =
       let return_type, a = aux env' e1 in
       (Types.TFun (param_type, return_type), TAExprNode (Fun (x, (return_type, a))))
       
-    | App (e1, e2) ->
+    | FuncApp (e1, e2) ->
       let t_fun, a_fun = aux env e1 in
       let t_arg, a_arg = aux env e2 in
       let param_ty_expected = Types.fresh_meta () in (* Fresh meta for expected param type *) 
@@ -412,7 +412,7 @@ let elab (e : expr) : texpr =
          (* Check t_arg is a subtype of what the function expects *) 
          sub_type t_arg param_ty_expected 
        with Failure msg -> failwith ("Type error in function application: " ^ msg));
-      (result_ty, TAExprNode (App ((t_fun, a_fun), (t_arg, a_arg))))
+      (result_ty, TAExprNode (FuncApp ((t_fun, a_fun), (t_arg, a_arg))))
       
     | LoopApp (e1, e2, e3) ->
       let t_fun, a_fun = aux env e1 in
@@ -1128,8 +1128,8 @@ let discretize (e : texpr) : expr =
     | Fun (x, te) ->
         ExprNode (Fun (x, aux te))
         
-    | App (te1, te2) ->
-        ExprNode (App (aux te1, aux te2))
+    | FuncApp (te1, te2) ->
+        ExprNode (FuncApp (aux te1, aux te2))
 
     | LoopApp (te1, te2, te3) ->
         ExprNode (LoopApp (aux te1, aux te2, te3))
