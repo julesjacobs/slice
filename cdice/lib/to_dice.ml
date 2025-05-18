@@ -65,8 +65,8 @@ and string_of_expr_node ?(indent=0) (ExprNode expr_node) : string =
   | Let (x, e1, e2) ->
     let indent_str = String.make indent ' ' in
     (match e1 with
-    | ExprNode (Fix (_f, param, body)) ->
-        (* Try to extract #k from LoopApp inside e2 *)
+    | ExprNode (Fun (param, body)) ->
+        (* Try to extract int size k from #k from LoopApp inside e2 *)
         let rec find_loopapp_arg e =
           (match e with
           | ExprNode (LoopApp (ExprNode (Var f), arg_expr, _)) when f = x ->
@@ -122,7 +122,7 @@ and string_of_expr_node ?(indent=0) (ExprNode expr_node) : string =
   | Fun (x, e) ->
       let e_str = string_of_expr_indented ~indent:(indent+2) e in
       Printf.sprintf "fun %s -> %s" x e_str
-  | App (e1, e2) -> Printf.sprintf "(%s %s)" (string_of_expr_indented ~indent e1) (string_of_expr_indented ~indent e2)
+  | App (e1, e2) -> Printf.sprintf "%s(%s)" (string_of_expr_indented ~indent e1) (string_of_expr_indented ~indent e2)
   | LoopApp (e1, e2, n) -> Printf.sprintf "iterate(%s,%s,%d)" (string_of_expr_indented ~indent e1) (string_of_expr_indented ~indent e2) n
   | FinConst (k, n) -> Printf.sprintf "int(%d,%d)" (bit_length (n-1)) k
   | FinLt (e1, e2, _) -> Printf.sprintf "%s < %s" (string_of_expr_indented ~indent e1) (string_of_expr_indented ~indent e2)
