@@ -599,7 +599,12 @@ let discretize (e : texpr) : expr =
         (match Bags.BoundBag.get bounds_bag_ref with
          | Bags.Top -> ExprNode (Const f) (* Keep original if Top *)
          | Bags.Finite bound_set_from_context ->
-              let idx, modulus = get_const_idx_and_modulus f bound_set_from_context in
+            let idx, modulus = get_const_idx_and_modulus f bound_set_from_context in
+            if idx = 0 then (
+              if modulus = 1 then (
+                let sz = (Util.bit_length (int_of_float f)) in if sz > !Util.curr_max_int_sz then Util.curr_max_int_sz := sz); (* Discrete leaf *)
+              ExprNode (FinConst (int_of_float f, modulus))) (* Keep original const if idx is zero *)
+            else
               ExprNode (FinConst (idx, modulus)))
 
     | BoolConst b -> ExprNode (BoolConst b)

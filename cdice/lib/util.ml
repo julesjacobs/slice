@@ -20,3 +20,6 @@ let bit_length n =
       else aux (n lsr 1) (acc + 1)
     in
     aux n 0
+
+(* For getting the correct int size in the to_dice conversion *)
+let curr_max_int_sz = ref 0

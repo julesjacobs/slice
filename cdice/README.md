@@ -9,6 +9,9 @@ ContDice is a language for probabilistic programming with continuous distributio
 - Conditionals: `if <condition> then <expr> else <expr>`
 - Variables: `let x = <expr> in <expr>`
 - Functions: `fun x -> <expr>`
+- Loops: `iterate`
+- Recursive functions: `fix`
+- Pairs: `(fst, snd)`
 - Comparison operators: Simple comparison `<` (e.g., `x < 0.5`), and comparisons on finite types `<#type`, `<=#type`, `==#type` (e.g., `y <=#2 0#2`). Both operands must be of the same finite type `#type`.
 - Comments: OCaml-style comments `(* ... *)`.
 

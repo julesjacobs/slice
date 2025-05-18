@@ -1,44 +1,6 @@
 open Types
 open Bags (* Open Bags to get FloatSet and access Set modules and Bound type *)
-
-let var_counter = ref 0
-let fresh_var (prefix : string) : string =
-  incr var_counter;
-  prefix ^ string_of_int !var_counter
-
-let gen_let (base_name_hint : string) (rhs_expr : Types.expr) (body_fn : string -> Types.expr) : Types.expr =
-  match rhs_expr with
-  | Types.ExprNode (Types.Var existing_var_name) ->
-      body_fn existing_var_name (* Use existing variable name directly in the body *)
-  | _ ->
-      let new_var_name = fresh_var base_name_hint in (* Use the existing fresh_var from Util.ml *)
-      Types.ExprNode (Types.Let (new_var_name, rhs_expr, body_fn new_var_name))
-
-(* Eventually refactor this so that all print functions go in one file, with an optional argument to specify pretty print *)
-
-(* Pretty printer for continuous distributions *)
-let string_of_cdistr = function
-| Distributions.Uniform (lo, hi) -> 
-    Printf.sprintf "uniform(%g, %g)" lo hi
-| Distributions.Gaussian (mean, std) -> 
-    Printf.sprintf "gaussian(%g, %g)" mean std
-| Distributions.Exponential rate -> 
-    Printf.sprintf "exponential(%g)" rate
-| Distributions.Beta (alpha, beta) -> 
-    Printf.sprintf "beta(%g, %g)" alpha beta
-| Distributions.LogNormal (mu, sigma) -> 
-    Printf.sprintf "lognormal(%g, %g)" mu sigma
-| _ -> "<unsupported distribution>"
-
-let bit_length n =
-  if n < 0 then invalid_arg "bit_length: only non-negative integers allowed"
-  else if n = 0 then 1
-  else
-    let rec aux n acc =
-      if n = 0 then acc
-      else aux (n lsr 1) (acc + 1)
-    in
-    aux n 0
+module Util = Util
 
 let extract_fin_modulus (ExprNode e) : int option =
   match e with
@@ -81,7 +43,7 @@ and string_of_expr_node ?(indent=0) (ExprNode expr_node) : string =
         in
         let k_opt = Option.bind (find_loopapp_arg e2) extract_fin_modulus in
         let annotation = match k_opt with
-          | Some k -> Printf.sprintf ": int(%d)" (bit_length (k-1))
+          | Some k -> Printf.sprintf ": int(%d)" (Util.bit_length (k-1))
           | None -> ""
         in
         let fun_body_str = string_of_expr_indented ~indent:(indent+2) body in
@@ -126,7 +88,12 @@ and string_of_expr_node ?(indent=0) (ExprNode expr_node) : string =
       Printf.sprintf "fun %s -> %s" x e_str
   | FuncApp (e1, e2) -> Printf.sprintf "%s(%s)" (string_of_expr_indented ~indent e1) (string_of_expr_indented ~indent e2)
   | LoopApp (e1, e2, n) -> Printf.sprintf "iterate(%s,%s,%d)" (string_of_expr_indented ~indent e1) (string_of_expr_indented ~indent e2) n
-  | FinConst (k, n) -> Printf.sprintf "int(%d,%d)" (bit_length (n-1)) k
+  | FinConst (k, n) -> 
+    if n=1 then (
+      Printf.sprintf "int(%d,%d)" !Util.curr_max_int_sz k
+    ) else (Printf.sprintf "int(%d,%d)" (Util.bit_length (n-1)) k)
+
+    (* Printf.sprintf "int(%d,%d)" (Util.bit_length (n-1)) k *)
   | FinLt (e1, e2, _) -> Printf.sprintf "%s < %s" (string_of_expr_indented ~indent e1) (string_of_expr_indented ~indent e2)
   | FinLeq (e1, e2, _) -> Printf.sprintf "%s <= %s" (string_of_expr_indented ~indent e1) (string_of_expr_indented ~indent e2)
   | FinEq (e1, e2, _) -> Printf.sprintf "%s ==# %s" (string_of_expr_indented ~indent e1) (string_of_expr_indented ~indent e2)
@@ -205,7 +172,7 @@ and string_of_aexpr_node ?(indent=0) (TAExprNode ae_node) : string =
       Printf.sprintf "fun %s -> %s" x e_str
   | FuncApp (te1, te2) -> Printf.sprintf "%s(%s)" (string_of_texpr_indented ~indent te1) (string_of_texpr_indented ~indent te2)
   | LoopApp (te1, te2, _) -> Printf.sprintf "(%s %s)" (string_of_texpr_indented ~indent te1) (string_of_texpr_indented ~indent te2)
-  | FinConst (k, n) -> Printf.sprintf "int(%d,%d)" (bit_length (n-1)) k
+  | FinConst (k, n) -> Printf.sprintf "int(%d,%d)" (Util.bit_length (n-1)) k
   | FinLt (te1, te2, _) -> Printf.sprintf "%s < %s" (string_of_texpr_indented ~indent te1) (string_of_texpr_indented ~indent te2)
   | FinLeq (te1, te2, _) -> Printf.sprintf "%s <= %s" (string_of_texpr_indented ~indent te1) (string_of_texpr_indented ~indent te2)
   | FinEq (te1, te2, _) -> Printf.sprintf "%s ==# %s" (string_of_texpr_indented ~indent te1) (string_of_texpr_indented ~indent te2)
