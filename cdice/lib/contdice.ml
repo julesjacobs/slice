@@ -258,8 +258,28 @@ let elab (e : expr) : texpr =
           | Top, Top ->
               (* Both Top -> BoundBag should be Top *) 
               Bags.BoundBag.leq (Bags.BoundBag.create Top) b_meta
+          | Finite _, Finite s2 ->
+              (* Both are not Top. This means that e2 is being compared to a discrete distribution. *)
+              (* Only collect the bounds from the right bag, the constant itself *)
+              (* Temporarily store bounds to add *)
+              let bounds_to_add = ref Bags.BoundSet.empty in
+
+              FloatSet.iter (fun f -> 
+                bounds_to_add := Bags.BoundSet.add (Bags.Less f) !bounds_to_add
+              ) s2;
+
+              (* Apply collected bounds to b_meta *) 
+              (match Bags.BoundBag.get b_meta with
+              | Top -> ()  (* Cannot add to Top *) 
+              | Finite current_set ->
+                  let new_set = Bags.BoundSet.union current_set !bounds_to_add in
+                  if not (Bags.BoundSet.equal current_set new_set) then
+                    let temp_finite_bag = Bags.BoundBag.create (Finite new_set) in
+                    Bags.BoundBag.leq temp_finite_bag b_meta
+              )
           | _, _ ->
-              (* At least one is not Top. Add bounds from Finite bags. *)
+              (* Only one is Top. This means that e2 is being compared to a continuous distribution. *)
+              (* Add bounds from Finite bags. *)
               (* Temporarily store bounds to add *) 
               let bounds_to_add = ref Bags.BoundSet.empty in
 
@@ -319,8 +339,28 @@ let elab (e : expr) : texpr =
           | Top, Top ->
               (* Both Top -> BoundBag should be Top *) 
               Bags.BoundBag.leq (Bags.BoundBag.create Top) b_meta
+          | Finite _, Finite s2 ->
+              (* Both are not Top. This means that e2 is being compared to a discrete distribution. *)
+              (* Only collect the bounds from the right bag, the constant itself *)
+              (* Temporarily store bounds to add *)
+              let bounds_to_add = ref Bags.BoundSet.empty in
+
+              FloatSet.iter (fun f -> 
+                bounds_to_add := Bags.BoundSet.add (Bags.LessEq f) !bounds_to_add
+              ) s2;
+
+              (* Apply collected bounds to b_meta *) 
+              (match Bags.BoundBag.get b_meta with
+              | Top -> ()  (* Cannot add to Top *) 
+              | Finite current_set ->
+                  let new_set = Bags.BoundSet.union current_set !bounds_to_add in
+                  if not (Bags.BoundSet.equal current_set new_set) then
+                    let temp_finite_bag = Bags.BoundBag.create (Finite new_set) in
+                    Bags.BoundBag.leq temp_finite_bag b_meta
+              )
           | _, _ ->
-              (* At least one is not Top. Add bounds from Finite bags. *)
+              (* Only one is Top. This means that e2 is being compared to a continuous distribution. *)
+              (* Add bounds from Finite bags. *)
               (* Temporarily store bounds to add *) 
               let bounds_to_add = ref Bags.BoundSet.empty in
 
