@@ -1,0 +1,23 @@
+let sex = discrete(0.3307: 0#2, 0.6693: 1#2) in
+let capital_gain = 
+  if sex <#2 1#2 then 
+    gaussian(568.4105, 24248365.5428)
+  else 
+    gaussian(1329.3700, 69327473.1006) in
+let age = 
+  if sex <#2 1#2 then
+    if capital_gain < 7298.0 then 
+      gaussian(38.4208, 184.9151)
+    else 
+      gaussian(38.8125, 193.4918)
+  else
+    if capital_gain < 5178.0 then 
+      gaussian(38.6361, 187.2435)
+    else 
+      gaussian(38.2668, 187.2747) in
+
+let t = if capital_gain <= 7073.5 then 
+        if age < 20.0 then 1.0 else 0.0 
+    else
+        1.0
+in t
