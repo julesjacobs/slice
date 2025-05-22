@@ -67,6 +67,10 @@ and string_of_expr_node ?(indent=0) (ExprNode expr_node) : string =
       Printf.sprintf "%s < %s" (string_of_expr_indented ~indent e1) (string_of_expr_indented ~indent e2)
   | LessEq (e1, e2) ->
       Printf.sprintf "%s <= %s" (string_of_expr_indented ~indent e1) (string_of_expr_indented ~indent e2)
+  | Greater (e1, e2) ->
+      Printf.sprintf "%s > %s" (string_of_expr_indented ~indent e1) (string_of_expr_indented ~indent e2)
+  | GreaterEq (e1, e2) ->
+      Printf.sprintf "%s >= %s" (string_of_expr_indented ~indent e1) (string_of_expr_indented ~indent e2)
   | And (e1, e2) ->
       Printf.sprintf "%s && %s" (string_of_expr_indented ~indent e1) (string_of_expr_indented ~indent e2)
   | Or (e1, e2) ->
@@ -96,6 +100,8 @@ and string_of_expr_node ?(indent=0) (ExprNode expr_node) : string =
     (* Printf.sprintf "int(%d,%d)" (Util.bit_length (n-1)) k *)
   | FinLt (e1, e2, _) -> Printf.sprintf "%s < %s" (string_of_expr_indented ~indent e1) (string_of_expr_indented ~indent e2)
   | FinLeq (e1, e2, _) -> Printf.sprintf "%s <= %s" (string_of_expr_indented ~indent e1) (string_of_expr_indented ~indent e2)
+  | FinGt (e1, e2, _) -> Printf.sprintf "%s >= %s" (string_of_expr_indented ~indent e1) (string_of_expr_indented ~indent e2)
+  | FinGeq (e1, e2, _) -> Printf.sprintf "%s >= %s" (string_of_expr_indented ~indent e1) (string_of_expr_indented ~indent e2)
   | FinEq (e1, e2, _) -> Printf.sprintf "%s == %s" (string_of_expr_indented ~indent e1) (string_of_expr_indented ~indent e2)
   | Observe e1 -> Printf.sprintf "observe (%s)" (string_of_expr_indented ~indent e1)
   | Fix (f, x, e) -> 
@@ -151,6 +157,8 @@ and string_of_aexpr_node ?(indent=0) (TAExprNode ae_node) : string =
     Printf.sprintf "discrete(%s)" (String.concat ", " (List.map format_case cases))
   | Less (te1, te2) -> Printf.sprintf "%s < %s" (string_of_texpr_indented ~indent te1) (string_of_texpr_indented ~indent te2)
   | LessEq (te1, te2) -> Printf.sprintf "%s <= %s" (string_of_texpr_indented ~indent te1) (string_of_texpr_indented ~indent te2)
+  | Greater (te1, te2) -> Printf.sprintf "%s > %s" (string_of_texpr_indented ~indent te1) (string_of_texpr_indented ~indent te2)
+  | GreaterEq (te1, te2) -> Printf.sprintf "%s >= %s" (string_of_texpr_indented ~indent te1) (string_of_texpr_indented ~indent te2)
   | And (te1, te2) ->
       Printf.sprintf "%s && %s" (string_of_texpr_indented ~indent te1) (string_of_texpr_indented ~indent te2)
   | Or (te1, te2) ->
@@ -175,6 +183,8 @@ and string_of_aexpr_node ?(indent=0) (TAExprNode ae_node) : string =
   | FinConst (k, n) -> Printf.sprintf "int(%d,%d)" (Util.bit_length (n-1)) k
   | FinLt (te1, te2, _) -> Printf.sprintf "%s < %s" (string_of_texpr_indented ~indent te1) (string_of_texpr_indented ~indent te2)
   | FinLeq (te1, te2, _) -> Printf.sprintf "%s <= %s" (string_of_texpr_indented ~indent te1) (string_of_texpr_indented ~indent te2)
+  | FinGt (te1, te2, _) -> Printf.sprintf "%s >= %s" (string_of_texpr_indented ~indent te1) (string_of_texpr_indented ~indent te2)
+  | FinGeq (te1, te2, _) -> Printf.sprintf "%s >= %s" (string_of_texpr_indented ~indent te1) (string_of_texpr_indented ~indent te2)
   | FinEq (te1, te2, _) -> Printf.sprintf "%s == %s" (string_of_texpr_indented ~indent te1) (string_of_texpr_indented ~indent te2)
   | Observe te1 -> Printf.sprintf "observe (%s)" (string_of_texpr_indented ~indent te1)
   | Fix (f, x, te) ->
@@ -222,6 +232,8 @@ and string_of_ty = function
               let string_of_bound = function 
                 | Bags.Less c -> Printf.sprintf "<%g" c 
                 | Bags.LessEq c -> Printf.sprintf "<=%g" c 
+                | Bags.Greater c -> Printf.sprintf ">%g" c 
+                | Bags.GreaterEq c -> Printf.sprintf ">=%g" c
               in
               String.concat "," (List.map string_of_bound (BoundSet.elements bound_set))
       in

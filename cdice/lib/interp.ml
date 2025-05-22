@@ -65,6 +65,20 @@ let rec eval (env : env) (ExprNode e_node : expr) : value =
        | VFloat f1, VFloat f2 -> VBool (f1 <= f2)
        | _ -> raise (RuntimeError "Type error during evaluation: LessEq expects floats"))
 
+  | Greater (e1, e2) ->
+        let v1 = eval env e1 in
+        let v2 = eval env e2 in
+        (match v1, v2 with
+         | VFloat f1, VFloat f2 -> VBool (f1 > f2)
+         | _ -> raise (RuntimeError "Type error during evaluation: Greater expects floats"))
+  
+  | GreaterEq (e1, e2) ->
+        let v1 = eval env e1 in
+        let v2 = eval env e2 in
+        (match v1, v2 with
+         | VFloat f1, VFloat f2 -> VBool (f1 >= f2)
+         | _ -> raise (RuntimeError "Type error during evaluation: GreaterEq expects floats"))
+
   | And (e1, e2) ->
       let v1 = eval env e1 in
       (match v1 with
@@ -151,6 +165,20 @@ let rec eval (env : env) (ExprNode e_node : expr) : value =
       (match v1, v2 with
        | VFin (k1, n1), VFin (k2, n2) when n1 = n && n2 = n -> VBool (k1 <= k2)
        | _ -> raise (RuntimeError (Printf.sprintf "Type error during evaluation: FinLeq expects Fin(%d)" n)))
+
+  | FinGt (e1, e2, n) ->
+        let v1 = eval env e1 in
+        let v2 = eval env e2 in
+        (match v1, v2 with
+         | VFin (k1, n1), VFin (k2, n2) when n1 = n && n2 = n -> VBool (k1 > k2)
+         | _ -> raise (RuntimeError (Printf.sprintf "Type error during evaluation: FinGt expects Fin(%d)" n)))
+  
+  | FinGeq (e1, e2, n) ->
+        let v1 = eval env e1 in
+        let v2 = eval env e2 in
+        (match v1, v2 with
+         | VFin (k1, n1), VFin (k2, n2) when n1 = n && n2 = n -> VBool (k1 >= k2)
+         | _ -> raise (RuntimeError (Printf.sprintf "Type error during evaluation: FinGeq expects Fin(%d)" n)))
 
   | FinEq (e1, e2, n) -> (* New case for FinEq *)
       let v1 = eval env e1 in

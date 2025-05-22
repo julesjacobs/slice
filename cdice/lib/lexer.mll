@@ -80,6 +80,8 @@ rule token = parse
   | "->"      { ARROW }
   | '<'       { LESS }
   | "<="      { LESSEQ }
+  | '>'       { GREATER }
+  | ">="      { GREATEREQ }
   | '='       { EQUAL }
   | '('       { LPAREN }
   | ')'       { RPAREN }
@@ -114,6 +116,8 @@ rule token = parse
   | ident as s { try List.assoc s keywords with Not_found -> IDENT s }
   | "<=" "#"   { LEQ_HASH }
   | "<" "#"    { LT_HASH }
+  | ">=" "#"   { GEQ_HASH }
+  | ">" "#"    { GT_HASH }
   | "==" "#"   { EQ_HASH }
   | "#"        { HASH }
   | eof       { EOF }

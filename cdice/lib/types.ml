@@ -11,6 +11,8 @@ type 'a expr_generic =
   | DistrCase of ('a * float) list (* General discrete distribution: (expr * prob) list *)
   | Less   of 'a * 'a
   | LessEq of 'a * 'a
+  | Greater   of 'a * 'a
+  | GreaterEq of 'a * 'a
   | And    of 'a * 'a            
   | Or     of 'a * 'a            
   | Not    of 'a                   
@@ -24,6 +26,8 @@ type 'a expr_generic =
   | FinConst of int * int (* k, n for k#n *)
   | FinLt of 'a * 'a * int (* e1 <#n e2 *)
   | FinLeq of 'a * 'a * int (* e1 <=#n e2 *)
+  | FinGt of 'a * 'a * int (* e1 >#n e2 *)
+  | FinGeq of 'a * 'a * int (* e1 >=#n e2 *)
   | FinEq of 'a * 'a * int (* e1 ==#n e2 *)
   | Observe of 'a 
   | Fix of string * string * 'a

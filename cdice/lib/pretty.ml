@@ -97,6 +97,12 @@ and string_of_expr_node ?(indent=0) (ExprNode expr_node) : string =
   | LessEq (e1, e2) ->
       Printf.sprintf "%s %s<=%s %s"
         (string_of_expr_indented ~indent e1) operator_color reset_color (string_of_expr_indented ~indent e2)
+  | Greater (e1, e2) ->
+      Printf.sprintf "%s %s>%s %s"
+        (string_of_expr_indented ~indent e1) operator_color reset_color (string_of_expr_indented ~indent e2)
+  | GreaterEq (e1, e2) ->
+      Printf.sprintf "%s %s>=%s %s"
+        (string_of_expr_indented ~indent e1) operator_color reset_color (string_of_expr_indented ~indent e2)
   | And (e1, e2) ->
       Printf.sprintf "%s %s&&%s %s"
         (string_of_expr_indented ~indent e1) operator_color reset_color (string_of_expr_indented ~indent e2)
@@ -154,6 +160,16 @@ and string_of_expr_node ?(indent=0) (ExprNode expr_node) : string =
       let e1_str = string_of_expr_indented ~indent e1 in
       let e2_str = string_of_expr_indented ~indent e2 in
       Printf.sprintf "%s %s<=%s%s#%d%s %s"
+        e1_str operator_color reset_color type_color n reset_color e2_str
+  | FinGt (e1, e2, n) ->
+      let e1_str = string_of_expr_indented ~indent e1 in
+      let e2_str = string_of_expr_indented ~indent e2 in
+      Printf.sprintf "%s %s>=%s%s#%d%s %s"
+        e1_str operator_color reset_color type_color n reset_color e2_str
+  | FinGeq (e1, e2, n) ->
+      let e1_str = string_of_expr_indented ~indent e1 in
+      let e2_str = string_of_expr_indented ~indent e2 in
+      Printf.sprintf "%s %s>=%s%s#%d%s %s"
         e1_str operator_color reset_color type_color n reset_color e2_str
   | FinEq (e1, e2, n) ->
       let e1_str = string_of_expr_indented ~indent e1 in
@@ -232,6 +248,12 @@ and string_of_aexpr_node ?(indent=0) (TAExprNode ae_node) : string =
   | LessEq (te1, te2) ->
       Printf.sprintf "%s %s<=%s %s"
         (string_of_texpr_indented ~indent te1) operator_color reset_color (string_of_texpr_indented ~indent te2)
+  | Greater (te1, te2) ->
+      Printf.sprintf "%s %s>%s %s"
+        (string_of_texpr_indented ~indent te1) operator_color reset_color (string_of_texpr_indented ~indent te2)
+  | GreaterEq (te1, te2) ->
+      Printf.sprintf "%s %s>=%s %s"
+        (string_of_texpr_indented ~indent te1) operator_color reset_color (string_of_texpr_indented ~indent te2)
   | And (te1, te2) ->
       Printf.sprintf "%s %s&&%s %s"
         (string_of_texpr_indented ~indent te1) operator_color reset_color (string_of_texpr_indented ~indent te2)
@@ -290,6 +312,16 @@ and string_of_aexpr_node ?(indent=0) (TAExprNode ae_node) : string =
       let e2_str = string_of_texpr_indented ~indent te2 in
       Printf.sprintf "%s %s<=%s%s#%d%s %s"
         e1_str operator_color reset_color type_color n reset_color e2_str
+  | FinGt (te1, te2, n) ->
+      let e1_str = string_of_texpr_indented ~indent te1 in
+      let e2_str = string_of_texpr_indented ~indent te2 in
+      Printf.sprintf "%s %s>=%s%s#%d%s %s"
+        e1_str operator_color reset_color type_color n reset_color e2_str
+  | FinGeq (te1, te2, n) ->
+      let e1_str = string_of_texpr_indented ~indent te1 in
+      let e2_str = string_of_texpr_indented ~indent te2 in
+      Printf.sprintf "%s %s>=%s%s#%d%s %s"
+        e1_str operator_color reset_color type_color n reset_color e2_str
   | FinEq (te1, te2, n) ->
       let e1_str = string_of_texpr_indented ~indent te1 in
       let e2_str = string_of_texpr_indented ~indent te2 in
@@ -340,6 +372,8 @@ and string_of_ty = function
               let string_of_bound = function 
                 | Bags.Less c -> Printf.sprintf "<%g" c 
                 | Bags.LessEq c -> Printf.sprintf "<=%g" c 
+                | Bags.Greater c -> Printf.sprintf ">%g" c 
+                | Bags.GreaterEq c -> Printf.sprintf ">=%g" c 
               in
               let elements = BoundSet.elements bound_set in
               (* Join with comma, no space. Removed internal colors *)
@@ -550,6 +584,20 @@ let rec translate_to_sppl (env : (string * string) list) ?(target_var:string opt
       (match target_var with
        | Some name -> (stmts1 @ stmts2 @ [Printf.sprintf "%s = %s" name expr_str], name)
        | None -> (stmts1 @ stmts2, expr_str))
+  | Types.ExprNode(Greater(e1, e2)) ->
+      let (stmts1, res1) = translate_to_sppl env ~target_var:None e1 state in
+      let (stmts2, res2) = translate_to_sppl env ~target_var:None e2 state in
+      let expr_str = Printf.sprintf "(%s > %s)" res1 res2 in
+      (match target_var with 
+        | Some name -> (stmts1 @ stmts2 @ [Printf.sprintf "%s = %s" name expr_str], name)
+        | None -> (stmts1 @ stmts2, expr_str))
+  | Types.ExprNode(GreaterEq(e1, e2)) ->
+      let (stmts1, res1) = translate_to_sppl env ~target_var:None e1 state in
+      let (stmts2, res2) = translate_to_sppl env ~target_var:None e2 state in
+      let expr_str = Printf.sprintf "(%s >= %s)" res1 res2 in
+      (match target_var with
+        | Some name -> (stmts1 @ stmts2 @ [Printf.sprintf "%s = %s" name expr_str], name)
+        | None -> (stmts1 @ stmts2, expr_str))
   | Types.ExprNode(And(e1, e2)) ->
       let (stmts1, res1) = translate_to_sppl env ~target_var:None e1 state in
       let (stmts2, res2) = translate_to_sppl env ~target_var:None e2 state in
@@ -621,13 +669,15 @@ let rec translate_to_sppl (env : (string * string) list) ?(target_var:string opt
   (* Fail on unsupported features *) 
   | Types.ExprNode(Pair _) | Types.ExprNode(First _) | Types.ExprNode(Second _)
   | Types.ExprNode(Fun _) | Types.ExprNode(FuncApp _) | Types.ExprNode(LoopApp _)
-  | Types.ExprNode(FinConst _) | Types.ExprNode(FinLt _) | Types.ExprNode(FinLeq _) ->
+  | Types.ExprNode(FinConst _) | Types.ExprNode(FinLt _) | Types.ExprNode(FinLeq _) 
+  | Types.ExprNode(FinGt _) | Types.ExprNode(FinGeq _) ->
       let err_msg = Printf.sprintf
         "Encountered an unsupported expression type (%s) during SPPL translation (in pretty.ml)."
         (match expr with
          | Types.ExprNode(Pair _) -> "Pair" | Types.ExprNode(First _) -> "First" | Types.ExprNode(Second _) -> "Second"
          | Types.ExprNode(Fun _) -> "Fun" | Types.ExprNode(FuncApp _) -> "FuncApp" | Types.ExprNode(LoopApp _) -> "LoopApp" 
-         | Types.ExprNode(FinConst _) -> "FinConst" | Types.ExprNode(FinLt _) -> "FinLt" | Types.ExprNode(FinLeq _) -> "FinLeq"
+         | Types.ExprNode(FinConst _) -> "FinConst" | Types.ExprNode(FinLt _) -> "FinLt" | Types.ExprNode(FinLeq _) -> "FinLeq" 
+         | Types.ExprNode(FinGt _) -> "FinGt" | Types.ExprNode(FinGeq _) -> "FinGeq"
          | _ -> "Other Unsupported")
       in
       failwith err_msg
