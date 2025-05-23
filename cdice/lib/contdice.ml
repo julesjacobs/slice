@@ -427,7 +427,7 @@ let elab (e : expr) : texpr =
             let bounds_to_add = ref Bags.BoundSet.empty in
 
             FloatSet.iter (fun f -> 
-              bounds_to_add := Bags.BoundSet.add (Bags.Less f) !bounds_to_add
+              bounds_to_add := Bags.BoundSet.add (Bags.Greater f) !bounds_to_add
             ) s2;
 
             (* Apply collected bounds to b_meta *) 
@@ -449,7 +449,7 @@ let elab (e : expr) : texpr =
             (match v2 with
               | Finite s2 ->
                   FloatSet.iter (fun f -> 
-                    bounds_to_add := Bags.BoundSet.add (Bags.Less f) !bounds_to_add
+                    bounds_to_add := Bags.BoundSet.add (Bags.Greater f) !bounds_to_add
                   ) s2
               | Top -> ()
             );
@@ -458,7 +458,7 @@ let elab (e : expr) : texpr =
             (match v1 with
               | Finite s1 ->
                   FloatSet.iter (fun f -> 
-                    bounds_to_add := Bags.BoundSet.add (Bags.LessEq f) !bounds_to_add
+                    bounds_to_add := Bags.BoundSet.add (Bags.GreaterEq f) !bounds_to_add
                   ) s1
               | Top -> ()
             );
@@ -508,7 +508,7 @@ let elab (e : expr) : texpr =
             let bounds_to_add = ref Bags.BoundSet.empty in
 
             FloatSet.iter (fun f -> 
-              bounds_to_add := Bags.BoundSet.add (Bags.LessEq f) !bounds_to_add
+              bounds_to_add := Bags.BoundSet.add (Bags.GreaterEq f) !bounds_to_add
             ) s2;
 
             (* Apply collected bounds to b_meta *) 
@@ -530,7 +530,7 @@ let elab (e : expr) : texpr =
             (match v2 with
               | Finite s2 ->
                   FloatSet.iter (fun f -> 
-                    bounds_to_add := Bags.BoundSet.add (Bags.LessEq f) !bounds_to_add
+                    bounds_to_add := Bags.BoundSet.add (Bags.GreaterEq f) !bounds_to_add
                   ) s2
               | Top -> ()
             );
@@ -539,7 +539,7 @@ let elab (e : expr) : texpr =
             (match v1 with
               | Finite s1 ->
                   FloatSet.iter (fun f -> 
-                    bounds_to_add := Bags.BoundSet.add (Bags.Less f) !bounds_to_add
+                    bounds_to_add := Bags.BoundSet.add (Bags.Greater f) !bounds_to_add
                   ) s1
               | Top -> ()
             );

@@ -33,22 +33,22 @@ let compare_bound b1 b2 =
   | GreaterEq c1, Greater c2 ->
       let cmp = compare c1 c2 in
       if cmp = 0 then 1 else cmp
-  | Less _, Greater _ -> 0
-  | Less _, GreaterEq _ -> 0
-  | LessEq _, Greater _ -> 0
-  | LessEq _, GreaterEq _ -> 0
-  | Greater _, Less _ -> 0
-  | Greater _, LessEq _ -> 0
-  | GreaterEq _, Less _ -> 0
-  | GreaterEq _, LessEq _ -> 0
+  | Less c1, Greater c2 -> compare c1 c2
+  | Less c1, GreaterEq c2 -> compare c1 c2
+  | LessEq c1, Greater c2 -> compare c1 c2
+  | LessEq c1, GreaterEq c2 -> compare c1 c2
+  | Greater c1, Less c2 -> compare c1 c2
+  | Greater c1, LessEq c2 -> compare c1 c2
+  | GreaterEq c1, Less c2 -> compare c1 c2
+  | GreaterEq c1, LessEq c2 -> compare c1 c2
 
 
 let satisfies_bound f bound =
   match bound with
   | Less c -> f < c
   | LessEq c -> f <= c
-  | Greater c -> f > c
-  | GreaterEq c -> f >= c
+  | Greater c -> f <= c
+  | GreaterEq c -> f < c
 
 
 (* == Bound Set == *)

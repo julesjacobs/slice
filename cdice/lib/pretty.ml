@@ -164,7 +164,7 @@ and string_of_expr_node ?(indent=0) (ExprNode expr_node) : string =
   | FinGt (e1, e2, n) ->
       let e1_str = string_of_expr_indented ~indent e1 in
       let e2_str = string_of_expr_indented ~indent e2 in
-      Printf.sprintf "%s %s>=%s%s#%d%s %s"
+      Printf.sprintf "%s %s>%s%s#%d%s %s"
         e1_str operator_color reset_color type_color n reset_color e2_str
   | FinGeq (e1, e2, n) ->
       let e1_str = string_of_expr_indented ~indent e1 in
@@ -315,7 +315,7 @@ and string_of_aexpr_node ?(indent=0) (TAExprNode ae_node) : string =
   | FinGt (te1, te2, n) ->
       let e1_str = string_of_texpr_indented ~indent te1 in
       let e2_str = string_of_texpr_indented ~indent te2 in
-      Printf.sprintf "%s %s>=%s%s#%d%s %s"
+      Printf.sprintf "%s %s>%s%s#%d%s %s"
         e1_str operator_color reset_color type_color n reset_color e2_str
   | FinGeq (te1, te2, n) ->
       let e1_str = string_of_texpr_indented ~indent te1 in
