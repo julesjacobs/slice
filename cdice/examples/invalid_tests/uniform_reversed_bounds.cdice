@@ -1,0 +1,5 @@
+(* Test: Uniform distribution with reversed bounds (low > high) *)
+(* Expected behavior: Runtime error inserted during discretization *)
+(* Expected error: "Uniform low > high" *)
+
+let x = uniform(1.0, 0.0) in x > 0.5 
