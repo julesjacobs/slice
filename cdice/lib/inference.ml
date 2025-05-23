@@ -233,8 +233,6 @@ let infer (e : expr) : texpr =
                 let bound = match cmp_op with
                   | Types.Lt -> Bags.Less f
                   | Types.Le -> Bags.LessEq f
-                  | Types.Gt -> Bags.Greater f
-                  | Types.Ge -> Bags.GreaterEq f
                 in
                 bounds_to_add := Bags.BoundSet.add bound !bounds_to_add
               ) s2;
@@ -261,8 +259,6 @@ let infer (e : expr) : texpr =
                      let bound = match cmp_op with
                        | Types.Lt -> Bags.Less f
                        | Types.Le -> Bags.LessEq f
-                       | Types.Gt -> Bags.Greater f
-                       | Types.Ge -> Bags.GreaterEq f
                      in
                      bounds_to_add := Bags.BoundSet.add bound !bounds_to_add
                    ) s2
@@ -276,8 +272,6 @@ let infer (e : expr) : texpr =
                      let bound = match cmp_op with
                        | Types.Lt -> Bags.LessEq f
                        | Types.Le -> Bags.Less f
-                       | Types.Gt -> Bags.GreaterEq f
-                       | Types.Ge -> Bags.Greater f
                      in
                      bounds_to_add := Bags.BoundSet.add bound !bounds_to_add
                    ) s1

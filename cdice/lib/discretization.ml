@@ -317,8 +317,6 @@ let discretize (e : texpr) : expr =
         let op_name = match cmp_op with
           | Types.Lt -> "Less"
           | Types.Le -> "LessEq" 
-          | Types.Gt -> "Greater"
-          | Types.Ge -> "GreaterEq"
         in
         handle_comparison aux op_name te1 te2 cmp_op
 

@@ -95,8 +95,6 @@ and string_of_expr_node ?(indent=0) (ExprNode expr_node) : string =
       let op_str = match cmp_op with
         | Types.Lt -> "<"
         | Types.Le -> "<="
-        | Types.Gt -> ">"
-        | Types.Ge -> ">="
       in
       Printf.sprintf "%s %s%s%s %s"
         (string_of_expr_indented ~indent e1) operator_color op_str reset_color (string_of_expr_indented ~indent e2)
@@ -104,11 +102,9 @@ and string_of_expr_node ?(indent=0) (ExprNode expr_node) : string =
       let op_str = match cmp_op with
         | Types.Lt -> "<"
         | Types.Le -> "<="
-        | Types.Gt -> ">"
-        | Types.Ge -> ">="
       in
-      Printf.sprintf "%s %s#%d %s"
-        (string_of_expr_indented ~indent e1) op_str n (string_of_expr_indented ~indent e2)
+      Printf.sprintf "%s %s%s%s%s#%d%s %s"
+        (string_of_expr_indented ~indent e1) operator_color op_str reset_color type_color n reset_color (string_of_expr_indented ~indent e2)
   | Not e1 ->
       Printf.sprintf "(%snot%s %s)"
         operator_color reset_color (string_of_expr_indented ~indent e1)
@@ -230,8 +226,6 @@ and string_of_aexpr_node ?(indent=0) (TAExprNode ae_node) : string =
       let op_str = match cmp_op with
         | Types.Lt -> "<"
         | Types.Le -> "<="
-        | Types.Gt -> ">"
-        | Types.Ge -> ">="
       in
       Printf.sprintf "%s %s%s%s %s"
         (string_of_texpr_indented ~indent te1) operator_color op_str reset_color (string_of_texpr_indented ~indent te2)
@@ -239,11 +233,9 @@ and string_of_aexpr_node ?(indent=0) (TAExprNode ae_node) : string =
       let op_str = match cmp_op with
         | Types.Lt -> "<"
         | Types.Le -> "<="
-        | Types.Gt -> ">"
-        | Types.Ge -> ">="
       in
-      Printf.sprintf "%s %s#%d %s"
-        (string_of_texpr_indented ~indent te1) op_str n (string_of_texpr_indented ~indent te2)
+      Printf.sprintf "%s %s%s%s%s#%d%s %s"
+        (string_of_texpr_indented ~indent te1) operator_color op_str reset_color type_color n reset_color (string_of_texpr_indented ~indent te2)
   | Not te1 ->
       Printf.sprintf "(%snot%s %s)"
         operator_color reset_color (string_of_texpr_indented ~indent te1)
@@ -544,8 +536,6 @@ let rec translate_to_sppl (env : (string * string) list) ?(target_var:string opt
       let op_str = match cmp_op with
         | Types.Lt -> "<"
         | Types.Le -> "<="
-        | Types.Gt -> ">"
-        | Types.Ge -> ">="
       in
       let expr_str = Printf.sprintf "(%s %s %s)" res1 op_str res2 in
       (match target_var with 
@@ -557,8 +547,6 @@ let rec translate_to_sppl (env : (string * string) list) ?(target_var:string opt
       let op_str = match cmp_op with
         | Types.Lt -> "<"
         | Types.Le -> "<="
-        | Types.Gt -> ">"
-        | Types.Ge -> ">="
       in
       let expr_str = Printf.sprintf "%s %s#%d %s" res1 op_str n res2 in
       (match target_var with

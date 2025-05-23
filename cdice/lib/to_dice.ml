@@ -67,16 +67,12 @@ and string_of_expr_node ?(indent=0) (ExprNode expr_node) : string =
       let op_str = match cmp_op with
         | Types.Lt -> "<"
         | Types.Le -> "<="
-        | Types.Gt -> ">"
-        | Types.Ge -> ">="
       in
       Printf.sprintf "%s %s %s" (string_of_expr_indented ~indent e1) op_str (string_of_expr_indented ~indent e2)
   | FinCmp (cmp_op, e1, e2, _) ->
       let op_str = match cmp_op with
         | Types.Lt -> "<"
         | Types.Le -> "<="
-        | Types.Gt -> ">"
-        | Types.Ge -> ">="
       in
       Printf.sprintf "%s %s %s" (string_of_expr_indented ~indent e1) op_str (string_of_expr_indented ~indent e2)
   | And (e1, e2) ->
@@ -163,16 +159,12 @@ and string_of_aexpr_node ?(indent=0) (TAExprNode ae_node) : string =
       let op_str = match cmp_op with
         | Types.Lt -> "<"
         | Types.Le -> "<="
-        | Types.Gt -> ">"
-        | Types.Ge -> ">="
       in
       Printf.sprintf "%s %s %s" (string_of_texpr_indented ~indent te1) op_str (string_of_texpr_indented ~indent te2)
   | FinCmp (cmp_op, te1, te2, _) ->
       let op_str = match cmp_op with
         | Types.Lt -> "<"
         | Types.Le -> "<="
-        | Types.Gt -> ">"
-        | Types.Ge -> ">="
       in
       Printf.sprintf "%s %s %s" (string_of_texpr_indented ~indent te1) op_str (string_of_texpr_indented ~indent te2)
   | And (te1, te2) ->

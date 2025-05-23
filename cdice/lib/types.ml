@@ -1,7 +1,7 @@
 (* Type definitions for ContDice *)
 
 (* Comparison operators *)
-type cmp_op = Lt | Le | Gt | Ge
+type cmp_op = Lt | Le
 
 (* Base functor for expression structure *)
 type 'a expr_generic = 

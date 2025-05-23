@@ -59,16 +59,12 @@ let rec eval (env : env) (ExprNode e_node : expr) : value =
            let result = match cmp_op with
              | Types.Lt -> f1 < f2
              | Types.Le -> f1 <= f2  
-             | Types.Gt -> f1 > f2
-             | Types.Ge -> f1 >= f2
            in
            VBool result
        | _ -> 
            let op_name = match cmp_op with
              | Types.Lt -> "Less"
              | Types.Le -> "LessEq"
-             | Types.Gt -> "Greater" 
-             | Types.Ge -> "GreaterEq"
            in
            raise (RuntimeError ("Type error during evaluation: " ^ op_name ^ " expects floats")))
 
@@ -80,16 +76,12 @@ let rec eval (env : env) (ExprNode e_node : expr) : value =
            let result = match cmp_op with
              | Types.Lt -> k1 < k2
              | Types.Le -> k1 <= k2
-             | Types.Gt -> k1 > k2  
-             | Types.Ge -> k1 >= k2
            in
            VBool result
        | _ ->
            let op_name = match cmp_op with
              | Types.Lt -> "FinLt"
              | Types.Le -> "FinLeq"
-             | Types.Gt -> "FinGt"
-             | Types.Ge -> "FinGeq" 
            in
            raise (RuntimeError (Printf.sprintf "Type error during evaluation: FinCmp %s expects Fin(%d)" op_name n)))
 
