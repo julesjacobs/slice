@@ -130,7 +130,7 @@ let process_file ~print_all ~to_sppl filename : ( ((int * int * int) * (int * in
       let final_type = fst texpr in 
       if print_all then Printf.printf "Typed AST (Pretty):\n%s\n\n" (Contdice.Pretty.string_of_texpr texpr);
       
-      let discretized_expr = Contdice.discretize texpr in
+      let discretized_expr = Contdice.discretize_top texpr in
       if print_all then (
         Printf.printf "Discretized Program (Pretty):\n%s\n\n" (Contdice.Pretty.string_of_expr discretized_expr);
         Printf.printf "Dice Program (Plaintext):\n%s\n\n" (Contdice.To_dice.string_of_expr discretized_expr)

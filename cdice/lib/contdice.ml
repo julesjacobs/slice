@@ -1479,4 +1479,8 @@ let discretize (e : texpr) : expr =
   aux e
 
 let discretize_top (e : texpr) : expr =
+  (* First set the bound bags to top in the top-level return type *)
+  let (return_type, _) = e in
+  Types.set_bound_bags_to_top return_type;
+  (* Then discretize *)
   discretize e
