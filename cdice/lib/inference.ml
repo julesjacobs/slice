@@ -145,7 +145,7 @@ let infer (e : expr) : texpr =
           let t_arg_float_bag = Bags.fresh_float_bag () in
           (try unify t_arg (Types.TFloat (t_arg_bound_bag, t_arg_float_bag))
            with Failure msg -> 
-            let kind_str = Pretty.string_of_expr_indented (ExprNode (Sample (Distr1 (dist_kind, arg_e)))) in (* Get a string for the kind *)
+            let kind_str = Pretty.string_of_expr_indented (ExprNode (Sample (Distr1 (dist_kind, arg_e)))) in 
             failwith (Printf.sprintf "Type error in Sample (%s) argument: %s" kind_str msg));
           
           add_floats_to_boundbag t_arg_float_bag t_arg_bound_bag;

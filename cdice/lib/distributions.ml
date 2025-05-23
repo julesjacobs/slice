@@ -1,9 +1,5 @@
 (** Continuous probability distributions and basic functionality            *)
 
-(* ----------------------------------------------------------------------- *)
-(*  Type definition                                                         *)
-(* ----------------------------------------------------------------------- *)
-
 (** The type representing continuous distributions *)
 type cdistr =
   | Uniform   of float * float            (** Uniform(low, high)                    *)
@@ -86,8 +82,6 @@ let cdistr_sample dist =
       Gsl.Randist.rayleigh rng ~sigma
   | Exppow (a, b) ->
       Gsl.Randist.exppow rng ~a ~b
-
-(* --- Helper Functions with Parameter Validation --- *)
 
 let string_of_single_arg_dist_kind (kind: Types.single_arg_dist_kind) : string =
   match kind with

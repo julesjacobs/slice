@@ -10,7 +10,6 @@ end
 (* Functor to create a Bag module for specific lattice elements *)
 module Make (L : Lat) : sig
 
-  (* The type of the contents held by the bag *)
   type t = L.t 
 
   (* Abstract type for a bag. Implementation details are hidden. *)

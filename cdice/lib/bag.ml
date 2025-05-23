@@ -10,7 +10,6 @@ end
 (* Functor to create a Bag module for specific lattice elements *)
 module Make (L : Lat) = struct
 
-  (* Expose the content type *) 
   type t = L.t
 
   (* Internal representation of a bag *)
@@ -27,7 +26,6 @@ module Make (L : Lat) = struct
     let current_val = !(b.content) in
     if not (L.equal current_val new_val) then (
       b.content := new_val;
-      (* Trigger listeners *) 
       List.iter (fun f -> f ()) b.listeners
     )
 
