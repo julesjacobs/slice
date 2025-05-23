@@ -51,8 +51,7 @@
 
 
 \section{Introduction}
-
-Probabilistic programming offers a way to define models involving random variables and perform inference. \CDice is a small functional language designed for expressing programs with both continuous and discrete distributions. Here is a simple example:
+Probabilistic programming languages (PPLs) offer a way to define models involving random variables and to perform inference, and specifically, probabilistic inference involves computing the probability that an event occurs according to the distribution defined by the program. ... [TODO: Give more context] \CDice is a small functional language designed for expressing programs with both continuous and discrete distributions. Here is a simple example:
 
 \begin{lstlisting}
 let x = uniform(0, 1) in
@@ -69,10 +68,37 @@ let y = discrete(0.05, 0.95) in
 if x <= 1 then x <= 0 else y <= 0
 \end{lstlisting}
 
-\section{Overview}
-This section illustrates the workflow of Contdice through two simple examples. First, we present the Indian GPA problem, a well-known example using of mixed-type random variables taking on both continuous and discrete values. 
 
-\subsection{Specifying the Prior}
+We first classify quantities as discrete or continuous. Discrete means that we can figure out that it has at most a fixed number of different values. This is for both distributions and floats. Let's call this notion ``discrete". Second, we classify quantities by whether they are only compared to a fixed number of constants (also both for floats and distributions. For distributions it means that its samples are only compared to a fixed number of constants, and the cdf is only called at a fixed number of constants). Let's call this notion ``co-discrete". Expressions that are not co-discrete, in which we denote as co-continuous, include those with parameters that are co-continuous or those that are compared to a co-continuous quantity.
+
+We can discretize a distribution only when it is co-discrete. This turns the distribution into a $\mathbf{discrete(...)}$ with a number of cdf calls in it. In particular, we can discretize:
+
+\begin{itemize}
+    \item Co-discrete discrete distributions
+    \begin{lstlisting}
+    let x = uniform(0, 1) in
+    let y = if x < 0.5 then discrete(0.5, 0.5) else discrete(0.1, 0.9) in y < 1
+    \end{lstlisting}
+
+    \begin{lstlisting}
+    let x = uniform(0, 1) in
+    let y = if x < 0.5 then 1.0 else 4.0 in y < 1.5
+    \end{lstlisting}
+
+    \item Co-discrete continuous distributions
+    \begin{lstlisting}
+    let x = uniform(0,1) in 
+    let y = if x < 0.5 then uniform(0,2) else uniform(0,4) in y < 0.5
+    \end{lstlisting}
+\end{itemize}
+
+
+\section{Motivating Examples}
+This section illustrates the workflow of Contdice through two simple examples. First, we present the Indian GPA problem, a well-known example using of mixed-type random variables taking on both continuous and discrete values. Then, we present a more real-world example of an ecological model whose program contains variable parameters that are themselves discrete distributions.
+
+\subsection{Indian GPA Problem}
+
+\textbf{Specifying the Prior.} The figure below illustrates the example using Contdice syntax. In this scenario, a student's GPA depends on their nationality and whether they have a perfect record, both of which are modeled as discrete random variables. The nationality variable is binary, representing an equal chance of a student from India (0\#2) or USA (1\#2). Similarly, the perfect variable encodes whether the student has a perfect GPA with a small prior probability, 0.01 for yes and 0.99 for no. Depending on these discrete inputs, the gpa is assigned deterministically, e.g. 10.0 for a perfect Indian student, or sampled from a continuous uniform distribution, e.g. uniform(0,10) or uniform(0,4) depending on nationality. We finally perform a query to determine the probability that a student's GPA falls below 1.0.
 
 \begin{lstlisting}
     let nationality = discrete(0.5: 0#2, 0.5: 1#2) in
@@ -84,9 +110,9 @@ This section illustrates the workflow of Contdice through two simple examples. F
     in gpa < 1.0
 \end{lstlisting}
 
-The figure above illustrates the example using Contdice syntax. In this scenario, a student's GPA depends on their nationality and whether they have a perfect record, both of which are modeled as discrete random variables. The nationality variable is binary, representing an equal chance of a student from India (0\#2) or USA (1\#2). Similarly, the perfect variable encodes whether the student has a perfect GPA with a small prior probability, 0.01 for yes and 0.99 for no. Depending on these discrete inputs, the gpa is assigned deterministically, e.g. 10.0 for a perfect Indian student, or sampled from a continuous uniform distribution, e.g. uniform(0,10) or uniform(0,4) depending on nationality. We finally perform a query to determine the probability that a student's GPA falls below 1.0.
 
-\subsection{Type-based Inference}
+\textbf{Type-based Inference.} A type is assigned to every subexpression, and specifically for the float subexpressions, all relevant comparison threshold points are collected in what we denote as a bag $B$. Most notably, since we query gpa $< 1$, and a $\textbf{uniform}(c_1,c_2)$ expression intrinsically has a $\textbf{float}\langle B \rangle$ type, we make sure to collect the 1 in the bags belonging to the $\textbf{uniform}(c_1,c_2)$ distributions corresponding to the gpa variable.
+
 \begin{lstlisting}
 (let nationality = (discrete(0.5: 0#2, 0.5: 1#2) : #2) in
 (let perfect = (discrete(0.01: 0#2, 0.99: 1#2) : #2) in
@@ -101,10 +127,9 @@ The figure above illustrates the example using Contdice syntax. In this scenario
     ((gpa : float[<1; T]) < (1 : float[<1; 1]) : bool) : bool) : bool) : bool)
 \end{lstlisting}
 
-A type is assigned to every subexpression, and specifically for the float subexpressions, all relevant comparison threshold points are collected in what we denote as a bag $B$. Most notably, since we query gpa $< 1$, and a $\textbf{uniform}(c_1,c_2)$ expression intrinsically has a $\textbf{float}\langle B \rangle$ type, we make sure to collect the 1 in the bags belonging to the $\textbf{uniform}(c_1,c_2)$ distributions corresponding to the gpa variable.
 
+\textbf{Discretization.} After type inference, the discretization process transforms cdice into a discretized program based on the bags containing all relevant threshold points for the float types. The continuous range of float variables are mapped onto a finite set of integers representing intervals defined by the threshold points in its corresponding bag. Notably, $\textbf{uniform}(0,10)$ is transformed to $\textbf{discrete}(0.1: 0\#2, 0.9: 1\#2)$ due to its threshold point 1 partitioning the continuous distribution into two intervals, from which we calculate the probabilities of the intervals using the uniform cdf. CDice now becomes a comparison against the corresponding interval index, in this case 1, in the discretized program.
 
-\subsection{Discretization}
 \begin{lstlisting}
     let nationality = discrete(0.5: 0#2, 0.5: 1#2) in
 let perfect = discrete(0.01: 0#2, 0.99: 1#2) in
@@ -121,15 +146,18 @@ let perfect = discrete(0.01: 0#2, 0.99: 1#2) in
     gpa <#2 1#2
 \end{lstlisting}
 
-After type inference, the discretization process transforms cdice into a discretized program based on the bags containing all relevant threshold points for the float types. The continuous range of float variables are mapped onto a finite set of integers representing intervals defined by the threshold points in its corresponding bag. Notably, $\textbf{uniform}(0,10)$ is transformed to $\textbf{discrete}(0.1: 0\#2 0.9: 1\#2)$ due to its threshold point 1 partitioning the continuous distribution into two intervals, from which we calculate the probabilities of the intervals using the uniform cdf. CDice now becomes a comparison against the corresponding interval index, in this case 1, in the discretized program.
+
+\textbf{Exact Inference.} The final step is a post-processing step of converting the discretized program into a discrete program compatible with a backend discrete exact inference solver, such as Dice or Roulette.
+
+\subsection{Plankton}
+This second example is an ecological model that highlights the difficulties in estimating $n$ for discrete models of plankton populations. Inference over discrete latent variables, particularly when one of those variables controls the domain of another random variable is challenging, but contdice can perform exact inference. Here, \textbf{param} is a latent discrete random variable representing the number of trials in a hypotehtical ecological setting, drawn uniformly at random from the integers between 10 and 50 inclusive. Given the latent param, a binomial distribution is used to model the number of observed plankton, in this case \textbf{planktonCount}.
+
+\begin{lstlisting}
+    let param = discUniform(10,50) in
+    let planktonCount = binomial(param, 0.5) in planktonCount
+\end{lstlisting}
 
 
-\subsection{Exact Inference}
-The final step is a post-processing step of converting the discretized program into a discrete program compatible with a backend discrete exact inference solver, such as Dice or Roulette.
-
-\section{Motivating Examples}
-\todo[inline]{Give some motivating examples...
-i.e. multimodality. What are some continuous programs that are challenging for exact inference (i.e. difficult for sampling based methods due to accuracy), but that we can support fast (more efficient than approximate methods like bit blasting)? Might want to merge this section in with the previous one.}
 
 \section{Language}
 
@@ -348,3 +376,4 @@ We would also like to improve mixed continuous-discrete inference by partial dis
 
 
 \end{document}
+
