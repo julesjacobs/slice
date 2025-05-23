@@ -1,4 +1,0 @@
-(* Test refactored distribution handling *)
-let exp_var = exponential(1.0) in
-let gauss_var = gaussian(0.0, 1.0) in
-(exp_var > 0.5) && (gauss_var < 0.0) 
