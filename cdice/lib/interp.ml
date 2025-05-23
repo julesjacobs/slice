@@ -246,13 +246,19 @@ and eval_dist env dist_exp =
   | Distr1 (kind, e1) ->
       let v1 = eval env e1 in
       (match v1 with
-       | VFloat f1 -> Distributions.get_cdistr_from_single_arg_kind kind f1
+       | VFloat f1 -> 
+           (match Distributions.get_cdistr_from_single_arg_kind kind f1 with
+            | Ok dist -> dist
+            | Error msg -> raise (RuntimeError msg))
        | _ -> raise (RuntimeError "Type error: single-argument distribution expects a float for cdistr conversion"))
   | Distr2 (kind, e1, e2) -> 
       let v1 = eval env e1 in
       let v2 = eval env e2 in
       (match v1, v2 with
-       | VFloat f1, VFloat f2 -> Distributions.get_cdistr_from_two_arg_kind kind f1 f2
+       | VFloat f1, VFloat f2 -> 
+           (match Distributions.get_cdistr_from_two_arg_kind kind f1 f2 with
+            | Ok dist -> dist
+            | Error msg -> raise (RuntimeError msg))
        | _ -> raise (RuntimeError "Type error: two-argument distribution expects floats for cdistr conversion"))
 
 (* Entry point for evaluation with an empty environment *)

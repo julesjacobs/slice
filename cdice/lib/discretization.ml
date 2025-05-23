@@ -221,64 +221,57 @@ let discretize (e : texpr) : expr =
           | Distr1 (DExponential, texpr_lambda) ->
               generate_runtime_match_for_param texpr_lambda "lambda"
                 (fun val_lambda ->
-                  if val_lambda <= 0.0 then
-                    ExprNode (RuntimeError "Exponential lambda must be positive")
-                  else
-                    final_expr_producer (Distributions.Exponential val_lambda)
+                  match Distributions.get_cdistr_from_single_arg_kind DExponential val_lambda with
+                  | Ok dist -> final_expr_producer dist
+                  | Error msg -> ExprNode (RuntimeError msg)
                 )
                 default_branch_expr
           | Distr1 (DLaplace, texpr_scale) ->
               generate_runtime_match_for_param texpr_scale "scale"
                 (fun val_scale ->
-                  if val_scale <= 0.0 then
-                    ExprNode (RuntimeError "Laplace scale must be positive")
-                  else
-                    final_expr_producer (Distributions.Laplace val_scale)
+                  match Distributions.get_cdistr_from_single_arg_kind DLaplace val_scale with
+                  | Ok dist -> final_expr_producer dist
+                  | Error msg -> ExprNode (RuntimeError msg)
                 )
                 default_branch_expr
           | Distr1 (DCauchy, texpr_scale) ->
               generate_runtime_match_for_param texpr_scale "scale"
                 (fun val_scale ->
-                  if val_scale <= 0.0 then
-                    ExprNode (RuntimeError "Cauchy scale must be positive")
-                  else
-                    final_expr_producer (Distributions.Cauchy val_scale)
+                  match Distributions.get_cdistr_from_single_arg_kind DCauchy val_scale with
+                  | Ok dist -> final_expr_producer dist
+                  | Error msg -> ExprNode (RuntimeError msg)
                 )
                 default_branch_expr
           | Distr1 (DTDist, texpr_nu) ->
               generate_runtime_match_for_param texpr_nu "nu"
                 (fun val_nu ->
-                  if val_nu <= 0.0 then
-                    ExprNode (RuntimeError "TDist nu must be positive")
-                  else
-                    final_expr_producer (Distributions.TDist val_nu)
+                  match Distributions.get_cdistr_from_single_arg_kind DTDist val_nu with
+                  | Ok dist -> final_expr_producer dist
+                  | Error msg -> ExprNode (RuntimeError msg)
                 )
                 default_branch_expr
           | Distr1 (DChi2, texpr_nu) ->
               generate_runtime_match_for_param texpr_nu "nu"
                 (fun val_nu ->
-                  if val_nu <= 0.0 then
-                    ExprNode (RuntimeError "Chi2 nu must be positive")
-                  else
-                    final_expr_producer (Distributions.Chi2 val_nu)
+                  match Distributions.get_cdistr_from_single_arg_kind DChi2 val_nu with
+                  | Ok dist -> final_expr_producer dist
+                  | Error msg -> ExprNode (RuntimeError msg)
                 )
                 default_branch_expr
           | Distr1 (DLogistic, texpr_scale) ->
               generate_runtime_match_for_param texpr_scale "scale"
                 (fun val_scale ->
-                  if val_scale <= 0.0 then
-                    ExprNode (RuntimeError "Logistic scale must be positive")
-                  else
-                    final_expr_producer (Distributions.Logistic val_scale)
+                  match Distributions.get_cdistr_from_single_arg_kind DLogistic val_scale with
+                  | Ok dist -> final_expr_producer dist
+                  | Error msg -> ExprNode (RuntimeError msg)
                 )
                 default_branch_expr
           | Distr1 (DRayleigh, texpr_sigma) ->
               generate_runtime_match_for_param texpr_sigma "sigma"
                 (fun val_sigma ->
-                  if val_sigma <= 0.0 then
-                    ExprNode (RuntimeError "Rayleigh sigma must be positive")
-                  else
-                    final_expr_producer (Distributions.Rayleigh val_sigma)
+                  match Distributions.get_cdistr_from_single_arg_kind DRayleigh val_sigma with
+                  | Ok dist -> final_expr_producer dist
+                  | Error msg -> ExprNode (RuntimeError msg)
                 )
                 default_branch_expr
           
@@ -289,10 +282,9 @@ let discretize (e : texpr) : expr =
                   (fun val_a -> 
                     generate_runtime_match_for_param ~already_discretized_expr:(Some eff_discretized_b_expr) texpr_b "b"
                       (fun val_b -> 
-                        if val_a > val_b then
-                          ExprNode (RuntimeError "Uniform low > high")
-                        else
-                          final_expr_producer (Distributions.Uniform (val_a, val_b))
+                        match Distributions.get_cdistr_from_two_arg_kind DUniform val_a val_b with
+                        | Ok dist -> final_expr_producer dist
+                        | Error msg -> ExprNode (RuntimeError msg)
                       )
                       default_branch_expr 
                   )
@@ -313,10 +305,9 @@ let discretize (e : texpr) : expr =
                   (fun val_mu ->
                     generate_runtime_match_for_param ~already_discretized_expr:(Some eff_discretized_sigma_expr) texpr_sigma "sigma"
                       (fun val_sigma ->
-                        if val_sigma <= 0.0 then
-                          ExprNode (RuntimeError "Gaussian sigma must be positive")
-                        else
-                          final_expr_producer (Distributions.Gaussian (val_mu, val_sigma))
+                        match Distributions.get_cdistr_from_two_arg_kind DGaussian val_mu val_sigma with
+                        | Ok dist -> final_expr_producer dist
+                        | Error msg -> ExprNode (RuntimeError msg)
                       )
                       default_branch_expr
                   )
@@ -337,10 +328,9 @@ let discretize (e : texpr) : expr =
                   (fun val_alpha ->
                     generate_runtime_match_for_param ~already_discretized_expr:(Some eff_discretized_beta_param_expr) texpr_beta_param "beta_param"
                       (fun val_beta_param ->
-                        if val_alpha <= 0.0 || val_beta_param <= 0.0 then
-                          ExprNode (RuntimeError "Beta alpha and beta_param must be positive")
-                        else
-                          final_expr_producer (Distributions.Beta (val_alpha, val_beta_param))
+                        match Distributions.get_cdistr_from_two_arg_kind DBeta val_alpha val_beta_param with
+                        | Ok dist -> final_expr_producer dist
+                        | Error msg -> ExprNode (RuntimeError msg)
                       )
                       default_branch_expr
                   )
@@ -361,10 +351,9 @@ let discretize (e : texpr) : expr =
                   (fun val_mu ->
                     generate_runtime_match_for_param ~already_discretized_expr:(Some eff_discretized_sigma_expr) texpr_sigma "sigma"
                       (fun val_sigma ->
-                        if val_sigma <= 0.0 then
-                          ExprNode (RuntimeError "LogNormal sigma must be positive")
-                        else
-                          final_expr_producer (Distributions.LogNormal (val_mu, val_sigma))
+                        match Distributions.get_cdistr_from_two_arg_kind DLogNormal val_mu val_sigma with
+                        | Ok dist -> final_expr_producer dist
+                        | Error msg -> ExprNode (RuntimeError msg)
                       )
                       default_branch_expr
                   )
@@ -385,10 +374,9 @@ let discretize (e : texpr) : expr =
                   (fun val_shape ->
                     generate_runtime_match_for_param ~already_discretized_expr:(Some eff_discretized_scale_expr) texpr_scale "scale"
                       (fun val_scale ->
-                        if val_shape <= 0.0 || val_scale <= 0.0 then
-                          ExprNode (RuntimeError "Gamma shape and scale must be positive")
-                        else
-                          final_expr_producer (Distributions.Gamma (val_shape, val_scale))
+                        match Distributions.get_cdistr_from_two_arg_kind DGamma val_shape val_scale with
+                        | Ok dist -> final_expr_producer dist
+                        | Error msg -> ExprNode (RuntimeError msg)
                       )
                       default_branch_expr
                   )
@@ -409,10 +397,9 @@ let discretize (e : texpr) : expr =
                   (fun val_a ->
                     generate_runtime_match_for_param ~already_discretized_expr:(Some eff_discretized_b_expr) texpr_b "b"
                       (fun val_b ->
-                        if val_a <= 0.0 || val_b <= 0.0 then
-                          ExprNode (RuntimeError "Pareto a and b must be positive")
-                        else
-                          final_expr_producer (Distributions.Pareto (val_a, val_b))
+                        match Distributions.get_cdistr_from_two_arg_kind DPareto val_a val_b with
+                        | Ok dist -> final_expr_producer dist
+                        | Error msg -> ExprNode (RuntimeError msg)
                       )
                       default_branch_expr
                   )
@@ -433,10 +420,9 @@ let discretize (e : texpr) : expr =
                   (fun val_a ->
                     generate_runtime_match_for_param ~already_discretized_expr:(Some eff_discretized_b_expr) texpr_b "b"
                       (fun val_b ->
-                        if val_a <= 0.0 || val_b <= 0.0 then
-                          ExprNode (RuntimeError "Weibull a and b must be positive")
-                        else
-                          final_expr_producer (Distributions.Weibull (val_a, val_b))
+                        match Distributions.get_cdistr_from_two_arg_kind DWeibull val_a val_b with
+                        | Ok dist -> final_expr_producer dist
+                        | Error msg -> ExprNode (RuntimeError msg)
                       )
                       default_branch_expr
                   )
@@ -457,10 +443,9 @@ let discretize (e : texpr) : expr =
                   (fun val_a ->
                     generate_runtime_match_for_param ~already_discretized_expr:(Some eff_discretized_b_expr) texpr_b "b"
                       (fun val_b ->
-                        if val_b <= 0.0 then (* Gumbel1 constraint is on b *)
-                          ExprNode (RuntimeError "Gumbel1 b must be positive")
-                        else
-                          final_expr_producer (Distributions.Gumbel1 (val_a, val_b))
+                        match Distributions.get_cdistr_from_two_arg_kind DGumbel1 val_a val_b with
+                        | Ok dist -> final_expr_producer dist
+                        | Error msg -> ExprNode (RuntimeError msg)
                       )
                       default_branch_expr
                   )
@@ -481,10 +466,9 @@ let discretize (e : texpr) : expr =
                   (fun val_a ->
                     generate_runtime_match_for_param ~already_discretized_expr:(Some eff_discretized_b_expr) texpr_b "b"
                       (fun val_b ->
-                        if val_b <= 0.0 then (* Gumbel2 constraint is on b *)
-                          ExprNode (RuntimeError "Gumbel2 b must be positive")
-                        else
-                          final_expr_producer (Distributions.Gumbel2 (val_a, val_b))
+                        match Distributions.get_cdistr_from_two_arg_kind DGumbel2 val_a val_b with
+                        | Ok dist -> final_expr_producer dist
+                        | Error msg -> ExprNode (RuntimeError msg)
                       )
                       default_branch_expr
                   )
@@ -505,10 +489,9 @@ let discretize (e : texpr) : expr =
                   (fun val_a ->
                     generate_runtime_match_for_param ~already_discretized_expr:(Some eff_discretized_b_expr) texpr_b "b"
                       (fun val_b ->
-                        if val_a <= 0.0 || val_b <= 0.0 then
-                          ExprNode (RuntimeError "Exppow a and b must be positive")
-                        else
-                          final_expr_producer (Distributions.Exppow (val_a, val_b))
+                        match Distributions.get_cdistr_from_two_arg_kind DExppow val_a val_b with
+                        | Ok dist -> final_expr_producer dist
+                        | Error msg -> ExprNode (RuntimeError msg)
                       )
                       default_branch_expr
                   )

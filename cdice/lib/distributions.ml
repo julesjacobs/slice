@@ -32,131 +32,62 @@ let cdistr_cdf dist x =
   else if x = infinity then 1.0
   else
     match dist with
-  | Uniform (lo, hi)        ->
-      if lo > hi then invalid_arg "Uniform CDF: lo must be ≤ hi"
-      else Gsl.Cdf.flat_P ~x:x ~a:lo ~b:hi
-  | Gaussian (m, s)         ->
-      if s <= 0.0 then invalid_arg "Gaussian CDF: σ must be > 0";
-      Gsl.Cdf.gaussian_P ~x:(x -. m) ~sigma:s
-  | Exponential lambda      ->
-      if lambda <= 0.0 then invalid_arg "Exponential CDF: λ must be > 0";
-      Gsl.Cdf.exponential_P ~x:x ~mu:(1.0 /. lambda)
-  | Beta (alpha, beta_param)      ->
-      if alpha <= 0.0 || beta_param <= 0.0 then
-        invalid_arg "Beta CDF: α and β must be > 0"
-      else Gsl.Cdf.beta_P ~x:x ~a:alpha ~b:beta_param
-  | LogNormal (mu, sigma)   ->
-      if sigma <= 0.0 then invalid_arg "LogNormal CDF: σ must be > 0";
-      Gsl.Cdf.lognormal_P ~x:x ~zeta:mu ~sigma
-  | Gamma (a, b) ->
-      if a <= 0.0 || b <= 0.0 then invalid_arg "Gamma CDF: shape and scale must be > 0";
-      Gsl.Cdf.gamma_P ~x:x ~a ~b
-  | Laplace a ->
-      if a <= 0.0 then invalid_arg "Laplace CDF: scale must be > 0";
-      Gsl.Cdf.laplace_P ~x:x ~a
-  | Cauchy a ->
-      if a <= 0.0 then invalid_arg "Cauchy CDF: scale must be > 0";
-      Gsl.Cdf.cauchy_P ~x:x ~a
-  | Pareto (a, b) ->
-      if a <= 0.0 || b <= 0.0 then invalid_arg "Pareto CDF: a and b must be > 0";
-      Gsl.Cdf.pareto_P ~x:x ~a ~b
-  | Weibull (a, b) ->
-      if a <= 0.0 || b <= 0.0 then invalid_arg "Weibull CDF: a and b must be > 0";
-      Gsl.Cdf.weibull_P ~x:x ~a ~b
-  | TDist nu ->
-      if nu <= 0.0 then invalid_arg "TDist CDF: nu must be > 0";
-      Gsl.Cdf.tdist_P ~x:x ~nu
-  | Chi2 nu ->
-      if nu <= 0.0 then invalid_arg "Chi2 CDF: nu must be > 0";
-      Gsl.Cdf.chisq_P ~x:x ~nu
-  | Logistic a ->
-      if a <= 0.0 then invalid_arg "Logistic CDF: scale must be > 0";
-      Gsl.Cdf.logistic_P ~x:x ~a
-  | Gumbel1 (a, b) ->
-      if b <= 0.0 then invalid_arg "Gumbel1 CDF: b must be > 0";
-      Gsl.Cdf.gumbel1_P ~x:x ~a ~b
-  | Gumbel2 (a, b) ->
-      if b <= 0.0 then invalid_arg "Gumbel2 CDF: b must be > 0";
-      Gsl.Cdf.gumbel2_P ~x:x ~a ~b
-  | Rayleigh sigma ->
-      if sigma <= 0.0 then invalid_arg "Rayleigh CDF: sigma must be > 0";
-      Gsl.Cdf.rayleigh_P ~x:x ~sigma
-  | Exppow (a, b) ->
-      if a <= 0.0 || b <= 0.0 then invalid_arg "Exppow CDF: a and b must be > 0";
-      Gsl.Cdf.exppow_P ~x:x ~a ~b
+  | Uniform (lo, hi)        -> Gsl.Cdf.flat_P ~x:x ~a:lo ~b:hi
+  | Gaussian (m, s)         -> Gsl.Cdf.gaussian_P ~x:(x -. m) ~sigma:s
+  | Exponential lambda      -> Gsl.Cdf.exponential_P ~x:x ~mu:(1.0 /. lambda)
+  | Beta (alpha, beta_param) -> Gsl.Cdf.beta_P ~x:x ~a:alpha ~b:beta_param
+  | LogNormal (mu, sigma)   -> Gsl.Cdf.lognormal_P ~x:x ~zeta:mu ~sigma
+  | Gamma (a, b)            -> Gsl.Cdf.gamma_P ~x:x ~a ~b
+  | Laplace a               -> Gsl.Cdf.laplace_P ~x:x ~a
+  | Cauchy a                -> Gsl.Cdf.cauchy_P ~x:x ~a
+  | Pareto (a, b)           -> Gsl.Cdf.pareto_P ~x:x ~a ~b
+  | Weibull (a, b)          -> Gsl.Cdf.weibull_P ~x:x ~a ~b
+  | TDist nu                -> Gsl.Cdf.tdist_P ~x:x ~nu
+  | Chi2 nu                 -> Gsl.Cdf.chisq_P ~x:x ~nu
+  | Logistic a              -> Gsl.Cdf.logistic_P ~x:x ~a
+  | Gumbel1 (a, b)          -> Gsl.Cdf.gumbel1_P ~x:x ~a ~b
+  | Gumbel2 (a, b)          -> Gsl.Cdf.gumbel2_P ~x:x ~a ~b
+  | Rayleigh sigma          -> Gsl.Cdf.rayleigh_P ~x:x ~sigma
+  | Exppow (a, b)           -> Gsl.Cdf.exppow_P ~x:x ~a ~b
 
 let cdistr_sample dist =
   match dist with
   | Uniform (lo, hi) ->
-      if lo > hi then invalid_arg "Uniform sample: lo must ≤ hi";
       if lo = hi then lo else Gsl.Randist.flat rng ~a:lo ~b:hi
-
   | Gaussian (mu, sigma) ->
-      if sigma <= 0.0 then invalid_arg "Gaussian sample: σ must be > 0";
       mu +. Gsl.Randist.gaussian rng ~sigma
-
   | Exponential lambda ->
-      if lambda <= 0.0 then invalid_arg "Exponential sample: lambda must be > 0";
       Gsl.Randist.exponential rng ~mu:(1.0 /. lambda)
-
   | Beta (alpha, beta_param) ->
-      if alpha <= 0.0 || beta_param <= 0.0 then
-        invalid_arg "Beta sample: α and β must be > 0";
       Gsl.Randist.beta rng ~a:alpha ~b:beta_param
-
   | LogNormal (mu, sigma) ->
-      if sigma <= 0.0 then invalid_arg "LogNormal sample: σ must be > 0";
       Gsl.Randist.lognormal rng ~zeta:mu ~sigma
-
   | Gamma (a, b) ->
-      if a <= 0.0 || b <= 0.0 then invalid_arg "Gamma sample: shape and scale must be > 0";
       Gsl.Randist.gamma rng ~a ~b
-
   | Laplace a ->
-      if a <= 0.0 then invalid_arg "Laplace sample: scale must be > 0";
       Gsl.Randist.laplace rng ~a
-
   | Cauchy a ->
-      if a <= 0.0 then invalid_arg "Cauchy sample: scale must be > 0";
       Gsl.Randist.cauchy rng ~a
-
   | Pareto (a, b) ->
-      if a <= 0.0 || b <= 0.0 then invalid_arg "Pareto sample: a and b must be > 0";
       Gsl.Randist.pareto rng ~a ~b
-
   | Weibull (a, b) ->
-      if a <= 0.0 || b <= 0.0 then invalid_arg "Weibull sample: a and b must be > 0";
       Gsl.Randist.weibull rng ~a ~b
-
   | TDist nu ->
-      if nu <= 0.0 then invalid_arg "TDist sample: nu must be > 0";
       Gsl.Randist.tdist rng ~nu
-
   | Chi2 nu ->
-      if nu <= 0.0 then invalid_arg "Chi2 sample: nu must be > 0";
       Gsl.Randist.chisq rng ~nu
-
   | Logistic a ->
-      if a <= 0.0 then invalid_arg "Logistic sample: scale must be > 0";
       Gsl.Randist.logistic rng ~a
-
   | Gumbel1 (a, b) ->
-      if b <= 0.0 then invalid_arg "Gumbel1 sample: b must be > 0";
       Gsl.Randist.gumbel1 rng ~a ~b
-
   | Gumbel2 (a, b) ->
-      if b <= 0.0 then invalid_arg "Gumbel2 sample: b must be > 0";
       Gsl.Randist.gumbel2 rng ~a ~b
-
   | Rayleigh sigma ->
-      if sigma <= 0.0 then invalid_arg "Rayleigh sample: sigma must be > 0";
       Gsl.Randist.rayleigh rng ~sigma
-
   | Exppow (a, b) ->
-      if a <= 0.0 || b <= 0.0 then invalid_arg "Exppow sample: a and b must be > 0";
       Gsl.Randist.exppow rng ~a ~b
 
-(* --- New Helper Functions --- *)
+(* --- Helper Functions with Parameter Validation --- *)
 
 let string_of_single_arg_dist_kind (kind: Types.single_arg_dist_kind) : string =
   match kind with
@@ -181,38 +112,59 @@ let string_of_two_arg_dist_kind (kind: Types.two_arg_dist_kind) : string =
   | Types.DGumbel2     -> "gumbel2"
   | Types.DExppow      -> "exppow"
 
-let get_cdistr_from_single_arg_kind (kind: Types.single_arg_dist_kind) (arg1: float) : cdistr =
+let get_cdistr_from_single_arg_kind (kind: Types.single_arg_dist_kind) (arg1: float) : (cdistr, string) result =
   match kind with
-  | Types.DExponential -> Exponential arg1
-  | Types.DLaplace     -> Laplace arg1
-  | Types.DCauchy      -> Cauchy arg1
-  | Types.DTDist       -> TDist arg1
-  | Types.DChi2        -> Chi2 arg1
-  | Types.DLogistic    -> Logistic arg1
-  | Types.DRayleigh    -> Rayleigh arg1
+  | Types.DExponential -> 
+      if arg1 <= 0.0 then Error "Exponential lambda must be positive"
+      else Ok (Exponential arg1)
+  | Types.DLaplace -> 
+      if arg1 <= 0.0 then Error "Laplace scale must be positive"
+      else Ok (Laplace arg1)
+  | Types.DCauchy -> 
+      if arg1 <= 0.0 then Error "Cauchy scale must be positive"
+      else Ok (Cauchy arg1)
+  | Types.DTDist -> 
+      if arg1 <= 0.0 then Error "TDist nu must be positive"
+      else Ok (TDist arg1)
+  | Types.DChi2 -> 
+      if arg1 <= 0.0 then Error "Chi2 nu must be positive"
+      else Ok (Chi2 arg1)
+  | Types.DLogistic -> 
+      if arg1 <= 0.0 then Error "Logistic scale must be positive"
+      else Ok (Logistic arg1)
+  | Types.DRayleigh -> 
+      if arg1 <= 0.0 then Error "Rayleigh sigma must be positive"
+      else Ok (Rayleigh arg1)
 
-let get_cdistr_from_two_arg_kind (kind: Types.two_arg_dist_kind) (arg1: float) (arg2: float) : cdistr =
+let get_cdistr_from_two_arg_kind (kind: Types.two_arg_dist_kind) (arg1: float) (arg2: float) : (cdistr, string) result =
   match kind with
-  | Types.DUniform     -> Uniform (arg1, arg2)
-  | Types.DGaussian    -> Gaussian (arg1, arg2)
-  | Types.DBeta        -> Beta (arg1, arg2)
-  | Types.DLogNormal   -> LogNormal (arg1, arg2)
-  | Types.DGamma       -> Gamma (arg1, arg2)
-  | Types.DPareto      -> Pareto (arg1, arg2)
-  | Types.DWeibull     -> Weibull (arg1, arg2)
-  | Types.DGumbel1     -> Gumbel1 (arg1, arg2)
-  | Types.DGumbel2     -> Gumbel2 (arg1, arg2)
-  | Types.DExppow      -> Exppow (arg1, arg2)
-
-let cdistr_sample_single_arg (kind: Types.single_arg_dist_kind) (arg1: float) : float =
-  cdistr_sample (get_cdistr_from_single_arg_kind kind arg1)
-
-let cdistr_sample_two_arg (kind: Types.two_arg_dist_kind) (arg1: float) (arg2: float) : float =
-  cdistr_sample (get_cdistr_from_two_arg_kind kind arg1 arg2)
-
-let cdistr_cdf_single_arg (kind: Types.single_arg_dist_kind) (arg1: float) (x: float) : float =
-  cdistr_cdf (get_cdistr_from_single_arg_kind kind arg1) x
-
-let cdistr_cdf_two_arg (kind: Types.two_arg_dist_kind) (arg1: float) (arg2: float) (x: float) : float =
-  cdistr_cdf (get_cdistr_from_two_arg_kind kind arg1 arg2) x
-
+  | Types.DUniform -> 
+      if arg1 > arg2 then Error "Uniform low > high"
+      else Ok (Uniform (arg1, arg2))
+  | Types.DGaussian -> 
+      if arg2 <= 0.0 then Error "Gaussian sigma must be positive"
+      else Ok (Gaussian (arg1, arg2))
+  | Types.DBeta -> 
+      if arg1 <= 0.0 || arg2 <= 0.0 then Error "Beta alpha and beta_param must be positive"
+      else Ok (Beta (arg1, arg2))
+  | Types.DLogNormal -> 
+      if arg2 <= 0.0 then Error "LogNormal sigma must be positive"
+      else Ok (LogNormal (arg1, arg2))
+  | Types.DGamma -> 
+      if arg1 <= 0.0 || arg2 <= 0.0 then Error "Gamma shape and scale must be positive"
+      else Ok (Gamma (arg1, arg2))
+  | Types.DPareto -> 
+      if arg1 <= 0.0 || arg2 <= 0.0 then Error "Pareto a and b must be positive"
+      else Ok (Pareto (arg1, arg2))
+  | Types.DWeibull -> 
+      if arg1 <= 0.0 || arg2 <= 0.0 then Error "Weibull a and b must be positive"
+      else Ok (Weibull (arg1, arg2))
+  | Types.DGumbel1 -> 
+      if arg2 <= 0.0 then Error "Gumbel1 b must be positive"
+      else Ok (Gumbel1 (arg1, arg2))
+  | Types.DGumbel2 -> 
+      if arg2 <= 0.0 then Error "Gumbel2 b must be positive"
+      else Ok (Gumbel2 (arg1, arg2))
+  | Types.DExppow -> 
+      if arg1 <= 0.0 || arg2 <= 0.0 then Error "Exppow a and b must be positive"
+      else Ok (Exppow (arg1, arg2))
