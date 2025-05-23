@@ -381,7 +381,7 @@ and string_of_ty = function
       in
       let content_str = 
         match bounds_str, consts_str with
-        | "", "" -> "" (* Just float *)
+        | "", "" -> "" (* If bounds and consts are empty, type is just 'float' *)
         (* Apply type_color around the whole bracketed content *)
         | b, "" -> Printf.sprintf "%s[%s]%s" type_color b reset_color 
         | "", c -> Printf.sprintf "%s[; %s]%s" type_color c reset_color
@@ -688,7 +688,7 @@ let rec translate_to_sppl (env : (string * string) list) ?(target_var:string opt
   | Types.ExprNode(Ref _) | Types.ExprNode(Deref _) | Types.ExprNode(Assign (_,_)) ->
       failwith "References (ref, !, :=) are not supported in SPPL translation."
 
-  | Types.ExprNode(Seq (_,_)) -> (* This is the correct place *) 
+  | Types.ExprNode(Seq (_,_)) -> 
       failwith "Sequences (e1; e2) are not supported in SPPL translation."
 
   | Types.ExprNode(Unit) ->

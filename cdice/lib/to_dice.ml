@@ -117,7 +117,6 @@ and string_of_expr_node ?(indent=0) (ExprNode expr_node) : string =
       Printf.sprintf "int(%d,%d)" !Util.curr_max_int_sz k
     ) else (Printf.sprintf "int(%d,%d)" (Util.bit_length (n-1)) k)
 
-    (* Printf.sprintf "int(%d,%d)" (Util.bit_length (n-1)) k *)
   | FinEq (e1, e2, _) -> Printf.sprintf "%s == %s" (string_of_expr_indented ~indent e1) (string_of_expr_indented ~indent e2)
   | Observe e1 -> Printf.sprintf "observe (%s)" (string_of_expr_indented ~indent e1)
   | Fix (f, x, e) -> 
@@ -280,7 +279,7 @@ and string_of_ty = function
       in
       let content_str = 
         match bounds_str, consts_str with
-        | "", "" -> ""
+        | "", "" -> "" (* If bounds and consts are empty, type is just 'float' *)
         | b, "" -> Printf.sprintf "[%s]" b
         | "", c -> Printf.sprintf "[; %s]" c
         | b, c  -> Printf.sprintf "[%s; %s]" b c

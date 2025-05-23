@@ -58,7 +58,6 @@ open Types
 %token GUMBELTWO
 %token EXPPOW
 %token ITERATE
-(* %token FOR TO DO *)
 
 %start <Types.expr> prog
 
