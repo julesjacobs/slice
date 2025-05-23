@@ -6,7 +6,6 @@ let () = Random.self_init ()
 exception RuntimeError of string
 exception ObserveFailure (* New custom exception for observe failures *)
 
-(* Look up a variable in the environment *)
 let rec lookup x env = 
   match env with
   | [] -> raise (RuntimeError ("Unbound variable: " ^ x))
@@ -35,11 +34,6 @@ let rec eval (env : env) (ExprNode e_node : expr) : value =
       end
 
   | DistrCase cases ->
-      (* Check probabilities sum close to 1.0 (optional, should be checked by elab) *)
-      (* let total_prob = List.fold_left (fun acc (_, p) -> acc +. p) 0.0 cases in *)
-      (* if abs_float (total_prob -. 1.0) > 0.0001 then 
-         raise (RuntimeError "DistrCase probabilities do not sum to 1.0"); *)
-      
       let r = Random.float 1.0 in
       let rec find_case cumulative_prob case_list =
         match case_list with

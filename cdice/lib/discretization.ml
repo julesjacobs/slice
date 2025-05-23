@@ -76,10 +76,6 @@ let discretize (e : texpr) : expr =
           | _ -> failwith "Type error: Const expects float") in
         (match Bags.BoundBag.get bounds_bag_ref with
          | Bags.Top -> ExprNode (Const f) (* Keep original if Top *)
-         (* For later : *)
-         (* | Bags.Finite bound_set when Bags.BoundSet.is_empty bound_set -> 
-            let sz = (Util.bit_length (int_of_float f)) in if sz > !Util.curr_max_int_sz then Util.curr_max_int_sz := sz;
-            ExprNode (FinConst (int_of_float f, 1)) *)
          | Bags.Finite bound_set_from_context ->
             let idx, modulus = get_const_idx_and_modulus f bound_set_from_context in
               ExprNode (FinConst (idx, modulus))
@@ -142,6 +138,8 @@ let discretize (e : texpr) : expr =
             if List.exists (fun p -> p < -0.0001 || p > 1.0001) probs then
                 failwith ("Internal error: generated probabilities are invalid: " ^ Pretty.string_of_float_list probs ^ " for distribution " ^ Pretty.string_of_cdistr concrete_distr ^ Printf.sprintf " with %d outer bounds." (List.length outer_cuts_as_bounds));
             let sum_probs = List.fold_left (+.) 0.0 probs in
+            (* Allow for small floating point inaccuracies in probability sum;
+               individual probabilities are clamped to [0,1] later. *)
             if abs_float (sum_probs -. 1.0) > 0.001 then
                (); 
             
@@ -393,8 +391,4 @@ let discretize (e : texpr) : expr =
   aux e
 
 let discretize_top (e : texpr) : expr =
-  (* TODO: First set the bound bags to top in the top-level return type *)
-  (* let (return_type, _) = e in
-     Types.set_float_bound_bags_to_top return_type; *)
-  (* Then discretize *)
   discretize e 
