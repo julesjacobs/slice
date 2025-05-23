@@ -1,0 +1,64 @@
+let age = gaussian(38.5816, 186.0614) in
+
+let education = discrete(
+    0.1644: 0#16, 0.2239: 1#16, 0.0361: 2#16, 0.3225: 3#16,
+    0.0177: 4#16, 0.0328: 5#16, 0.0424: 6#16, 0.0158: 7#16,
+    0.0198: 8#16, 0.0133: 9#16, 0.0530: 10#16, 0.0051: 11#16,
+    0.0287: 12#16, 0.0127: 13#16, 0.0102: 14#16, 0.0016: 15#16) in
+
+let relationship = discrete(
+    0.0481: 0#6, 0.1557: 1#6, 0.4051: 2#6,
+    0.2551: 3#6, 0.0301: 4#6, 0.1059: 5#6) in
+
+let sex = discrete(0.3307: 0#2, 0.6693: 1#2) in
+
+let capital_gain = gaussian(1077.6488, 54542539.1784) in
+
+let _ = observe(sex <#2 1#2) in
+let _ = observe(age > 18) in
+
+let t =
+  if relationship ==#6 0#6 then
+    if education ==#16 0#16 then 0.0
+    else if education ==#16 1#16 then 1.0
+    else if education ==#16 2#16 then 1.0
+    else if education ==#16 3#16 then 1.0
+    else if education ==#16 4#16 then 0.0
+    else if education ==#16 5#16 then 0.0
+    else if education ==#16 6#16 then 0.0
+    else if education ==#16 7#16 then 1.0
+    else if education ==#16 8#16 then 1.0
+    else if education ==#16 9#16 then 1.0
+    else if education ==#16 10#16 then 0.0
+    else if education ==#16 11#16 then 1.0
+    else if education ==#16 12#16 then 1.0
+    else if education ==#16 13#16 then 0.0
+    else if education ==#16 14#16 then 1.0
+    else 1.0
+  else if relationship ==#6 1#6 then
+    if capital_gain < 4718.5 then 1.0 else 0.0
+  else if relationship ==#6 2#6 then
+    if education ==#16 0#16 then 0.0
+    else if education ==#16 1#16 then 1.0
+    else if education ==#16 2#16 then 1.0
+    else if education ==#16 3#16 then 1.0
+    else if education ==#16 4#16 then 0.0
+    else if education ==#16 5#16 then 1.0
+    else if education ==#16 6#16 then 1.0
+    else if education ==#16 7#16 then 1.0
+    else if education ==#16 8#16 then 1.0
+    else if education ==#16 9#16 then 1.0
+    else if education ==#16 10#16 then 0.0
+    else if education ==#16 11#16 then 1.0
+    else if education ==#16 12#16 then 1.0
+    else if education ==#16 13#16 then 0.0
+    else if education ==#16 14#16 then 1.0
+    else 1.0
+  else if relationship ==#6 3#6 then
+    if capital_gain < 8296.0 then 1.0 else 0.0
+  else if relationship ==#6 4#6 then
+    1.0
+  else
+    if capital_gain < 4668.5 then 1.0 else 0.0
+in
+t < 0.5

@@ -1,12 +1,10 @@
 let sex = discrete(0.3307: 0#2, 0.6693: 1#2) in
 
-let capital_gain =
-  if sex <#2 1#2 then
-    gaussian(568.4105, 24248365.5428)
-  else
-    gaussian(1329.3700, 69327473.1006) in
+let capital_gain = 
+  if sex <#2 1#2 then gaussian(568.4105, 24248365.5428)
+  else gaussian(1329.3700, 69327473.1006) in
 
-let age =
+let age = 
   if sex <#2 1#2 then
     if capital_gain < 7298.0 then gaussian(38.4208, 184.9151)
     else gaussian(38.8125, 193.4918)
@@ -14,7 +12,7 @@ let age =
     if capital_gain < 5178.0 then gaussian(38.6361, 187.2435)
     else gaussian(38.2668, 187.2747) in
 
-let education_num =
+let education_num = 
   if sex <#2 1#2 then
     if capital_gain < 7298.0 then gaussian(10.0827, 6.5096)
     else gaussian(10.1041, 6.1522)
@@ -47,16 +45,17 @@ let _ = observe(age > 18.0) in
 
 let t =
   if relationship ==#6 0#6 then
-    if capital_gain < 5095.5 then 1.0 else 0.0
-  else if relationship ==#6 1#6 then
-    if capital_gain < 4718.5 then 1.0 else 0.0
-  else if relationship ==#6 2#6 then
-    if capital_gain < 5095.5 then 1.0 else 0.0
-  else if relationship ==#6 3#6 then
-    if capital_gain < 8296.0 then 1.0 else 0.0
-  else if relationship ==#6 4#6 then
     1.0
+  else if relationship ==#6 1#6 then
+    if age < 21.5 then 1.0
+    else if age < 47.5 then 1.0 else 0.0
+  else if relationship ==#6 2#6 then
+    1.0
+  else if relationship ==#6 3#6 then
+    if age < 50.5 then 1.0 else 0.0
+  else if relationship ==#6 4#6 then
+    if age < 49.5 then 1.0 else 0.0
   else
-    if capital_gain < 4668.5 then 1.0 else 0.0
+    1.0
 in
 t < 0.5

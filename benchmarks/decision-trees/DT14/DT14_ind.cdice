@@ -6,23 +6,22 @@ let relationship = discrete(
 
 let sex = discrete(0.3307: 0#2, 0.6693: 1#2) in
 
-let capital_gain = gaussian(1077.6488, 54542539.1784) in
-
 let _ = observe(sex <#2 1#2) in
-let _ = observe(age > 18) in
+let _ = observe(age > 18.0) in
 
 let t =
   if relationship ==#6 0#6 then
-    if capital_gain < 5095.5 then 1.0 else 0.0
-  else if relationship ==#6 1#6 then
-    if capital_gain < 4718.5 then 1.0 else 0.0
-  else if relationship ==#6 2#6 then
-    if capital_gain < 5095.5 then 1.0 else 0.0
-  else if relationship ==#6 3#6 then
-    if capital_gain < 8296.0 then 1.0 else 0.0
-  else if relationship ==#6 4#6 then
     1.0
+  else if relationship ==#6 1#6 then
+    if age < 21.5 then 1.0
+    else if age < 47.5 then 1.0 else 0.0
+  else if relationship ==#6 2#6 then
+    1.0
+  else if relationship ==#6 3#6 then
+    if age < 50.5 then 1.0 else 0.0
+  else if relationship ==#6 4#6 then
+    if age < 49.5 then 1.0 else 0.0
   else
-    if capital_gain < 4668.5 then 1.0 else 0.0
+    1.0
 in
 t < 0.5

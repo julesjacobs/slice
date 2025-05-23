@@ -1,4 +1,5 @@
 from sppl.compilers.sppl_to_python import SPPL_Compiler
+from sppl.compilers.ast_to_spe import Id
 
 compiler = SPPL_Compiler('''
 # Population model
@@ -21,11 +22,8 @@ else:
         age ~= norm(loc=38.2668, scale=187.2747)
         education_num ~= norm(loc=10.0974, scale=7.1793)
 
-# Ensure education_num <= age by rejecting cases where education_num > age
-# reject(education_num > age)
-
-# Qualification condition
-# condition(age > 18)
+condition(sex == 'female')
+condition(age > 18)
 
 # Decision model
 if capital_gain >= 7073.5:
@@ -38,8 +36,6 @@ else:
 ''')
 
 n = compiler.execute_module()
-model = n.model
-
-# Calculate probability that t < 0.5 (which corresponds to t == 0)
-model_c1 = model.prob(n.t << {0})
-print(model_c1)
+t  = Id('t')
+event = (t < 0.5)
+print(n.model.prob(event))
