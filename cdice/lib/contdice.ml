@@ -13,6 +13,7 @@ module Interp = Interp
 module Types = Types (* Explicitly alias Types here *)
 module Distributions = Distributions (* Explicitly alias Distributions here *)
 module Bags = Bags   (* And Bags *)
+module Discretization = Discretization (* And Discretization *)
 
 module StringMap = Map.Make(String)
 
