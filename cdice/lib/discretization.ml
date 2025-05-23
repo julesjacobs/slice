@@ -40,6 +40,33 @@ When doing a comparison against a float, we convert that to a comparison
 against the discrete integer that represents the i-th float in the bag.
 *)
 let discretize (e : texpr) : expr =
+  (* Helper function for comparison operations *)
+  let handle_comparison aux op_name te1 te2 top_constructor finite_constructor =
+    let t1 = fst te1 in
+    let t2 = fst te2 in
+    let b1 = (match Types.force t1 with
+      | Types.TFloat (b, _) -> b 
+      | _ -> failwith ("Type error: " ^ op_name ^ " expects float on left operand")) 
+    in
+    let b2 = (match Types.force t2 with
+      | Types.TFloat (b, _) -> b
+      | _ -> failwith ("Type error: " ^ op_name ^ " expects float on right operand"))
+    in
+    let val1 = Bags.BoundBag.get b1 in
+    let val2 = Bags.BoundBag.get b2 in
+    if not (Bags.BoundSetContents.equal val1 val2) then 
+      failwith ("Internal error: " ^ op_name ^ " operands have different bound bag values despite elaboration");
+
+    (match val1 with 
+      | Bags.Top -> 
+          ExprNode (top_constructor (aux te1) (aux te2))
+      | Bags.Finite bound_set -> 
+          let n = 1 + List.length (Bags.BoundSet.elements bound_set) in
+          let d1 = aux te1 in
+          let d2 = aux te2 in 
+          ExprNode (finite_constructor d1 d2 n))
+  in
+
   let rec aux ((ty, TAExprNode ae_node) : texpr) : expr =
     match ae_node with
     | Const f -> 
@@ -287,104 +314,16 @@ let discretize (e : texpr) : expr =
       ExprNode (DistrCase discretized_cases)
 
     | Less (te1, te2) ->
-        let t1 = fst te1 in
-        let t2 = fst te2 in
-        let b1 = (match Types.force t1 with
-          | Types.TFloat (b, _) -> b 
-          | _ -> failwith "Type error: Less expects float") 
-        in
-        let b2 = (match Types.force t2 with
-          | Types.TFloat (b, _) -> b
-          | _ -> failwith "Type error: Less expects float on right operand")
-        in
-        let val1 = Bags.BoundBag.get b1 in
-        let val2 = Bags.BoundBag.get b2 in
-        if not (Bags.BoundSetContents.equal val1 val2) then 
-          failwith "Internal error: Less operands have different bound bag values despite elaboration";
+        handle_comparison aux "Less" te1 te2 (fun e1 e2 -> Less (e1, e2)) (fun e1 e2 n -> FinLt (e1, e2, n))
 
-        (match val1 with 
-          | Bags.Top -> 
-              ExprNode (Less (aux te1, aux te2)) 
-          | Bags.Finite bound_set -> 
-              let n = 1 + List.length (Bags.BoundSet.elements bound_set) in
-              let d1 = aux te1 in
-              let d2 = aux te2 in 
-              ExprNode (FinLt (d1, d2, n)))
-        
-    | LessEq (te1, te2) -> 
-        let t1 = fst te1 in
-        let t2 = fst te2 in
-        let b1 = (match Types.force t1 with
-          | Types.TFloat (b, _) -> b 
-          | _ -> failwith "Type error: LessEq expects float on left operand") 
-        in
-        let b2 = (match Types.force t2 with
-          | Types.TFloat (b, _) -> b
-          | _ -> failwith "Type error: LessEq expects float on right operand")
-        in
-        let val1 = Bags.BoundBag.get b1 in
-        let val2 = Bags.BoundBag.get b2 in
-        if not (Bags.BoundSetContents.equal val1 val2) then 
-          failwith "Internal error: LessEq operands have different bound bag values despite elaboration";
-        
-        (match val1 with 
-          | Bags.Top -> 
-              ExprNode (LessEq (aux te1, aux te2))
-          | Bags.Finite bound_set -> 
-              let n = 1 + List.length (Bags.BoundSet.elements bound_set) in
-              let d1 = aux te1 in
-              let d2 = aux te2 in 
-              ExprNode (FinLeq (d1, d2, n)))
+    | LessEq (te1, te2) ->
+        handle_comparison aux "LessEq" te1 te2 (fun e1 e2 -> LessEq (e1, e2)) (fun e1 e2 n -> FinLeq (e1, e2, n))
 
     | Greater (te1, te2) ->
-      let t1 = fst te1 in
-      let t2 = fst te2 in
-      let b1 = (match Types.force t1 with
-        | Types.TFloat (b, _) -> b 
-        | _ -> failwith "Type error: Greater expects float") 
-      in
-      let b2 = (match Types.force t2 with
-        | Types.TFloat (b, _) -> b
-        | _ -> failwith "Type error: Greater expects float on right operand")
-      in
-      let val1 = Bags.BoundBag.get b1 in
-      let val2 = Bags.BoundBag.get b2 in
-      if not (Bags.BoundSetContents.equal val1 val2) then 
-        failwith "Internal error: Greater operands have different bound bag values despite elaboration";
+        handle_comparison aux "Greater" te1 te2 (fun e1 e2 -> Greater (e1, e2)) (fun e1 e2 n -> FinGt (e1, e2, n))
 
-      (match val1 with 
-        | Bags.Top -> 
-            ExprNode (Greater (aux te1, aux te2)) 
-        | Bags.Finite bound_set -> 
-            let n = 1 + List.length (Bags.BoundSet.elements bound_set) in
-            let d1 = aux te1 in
-            let d2 = aux te2 in 
-            ExprNode (FinGt (d1, d2, n)))
-
-    | GreaterEq (te1, te2) -> 
-      let t1 = fst te1 in
-      let t2 = fst te2 in
-      let b1 = (match Types.force t1 with
-        | Types.TFloat (b, _) -> b 
-        | _ -> failwith "Type error: GreaterEq expects float on left operand") 
-      in
-      let b2 = (match Types.force t2 with
-        | Types.TFloat (b, _) -> b
-        | _ -> failwith "Type error: GreaterEq expects float on right operand")
-      in
-      let val1 = Bags.BoundBag.get b1 in
-      let val2 = Bags.BoundBag.get b2 in
-      if not (Bags.BoundSetContents.equal val1 val2) then 
-        failwith "Internal error: GreaterEq operands have different bound bag values despite elaboration";
-      
-      (match val1 with 
-        | Bags.Top -> 
-            ExprNode (GreaterEq (aux te1, aux te2))
-        | Bags.Finite bound_set -> 
-            let n = 1 + List.length (Bags.BoundSet.elements bound_set) in
-            let d1 = aux te1 in
-            let d2 = aux te2 in 
-            ExprNode (FinGeq (d1, d2, n)))
+    | GreaterEq (te1, te2) ->
+        handle_comparison aux "GreaterEq" te1 te2 (fun e1 e2 -> GreaterEq (e1, e2)) (fun e1 e2 n -> FinGeq (e1, e2, n))
 
     | If (te1, te2, te3) ->
         ExprNode (If (aux te1, aux te2, aux te3))
