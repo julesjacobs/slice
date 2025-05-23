@@ -150,12 +150,14 @@ let perfect = discrete(0.01: 0#2, 0.99: 1#2) in
 \textbf{Exact Inference.} The final step is a post-processing step of converting the discretized program into a discrete program compatible with a backend discrete exact inference solver, such as Dice or Roulette.
 
 \subsection{Plankton}
-This second example is an ecological model that highlights the difficulties in estimating $n$ for discrete models of plankton populations. Inference over discrete latent variables, particularly when one of those variables controls the domain of another random variable is challenging, but contdice can perform exact inference. Here, \textbf{param} is a latent discrete random variable representing the number of trials in a hypotehtical ecological setting, drawn uniformly at random from the integers between 10 and 50 inclusive. Given the latent param, a binomial distribution is used to model the number of observed plankton, in this case \textbf{planktonCount}.
+This second example is an ecological model that highlights the difficulties in estimating $n$ for discrete models of plankton populations. Inference over discrete latent variables, particularly when one of those variables controls the domain of another random variable, is challenging, but contdice performs exact inference for such programs. Here, \textbf{param} is a latent discrete random variable representing the number of trials in a hypotehtical ecological setting, drawn uniformly at random from the integers between 10 and 50 inclusive. Given the latent param, a binomial distribution is used to model the number of observed plankton, in this case \textbf{planktonCount}.
 
 \begin{lstlisting}
     let param = discUniform(10,50) in
-    let planktonCount = binomial(param, 0.5) in planktonCount
+    let planktonCount = binomial(param, 0.5) in planktonCount < 5
 \end{lstlisting}
+
+
 
 
 
