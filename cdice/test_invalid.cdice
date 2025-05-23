@@ -1,2 +1,0 @@
-(* Test invalid parameter handling *)
-uniform(1.0, 0.0) 
