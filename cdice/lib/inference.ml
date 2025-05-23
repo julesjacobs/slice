@@ -204,18 +204,18 @@ let infer (e : expr) : texpr =
       let annotated_cases = List.map (fun (texpr, prob) -> (texpr, prob)) typed_cases in
       (result_ty, TAExprNode (DistrCase annotated_cases))
 
-    | Less (e1, e2) ->
+    | Cmp (cmp_op, e1, e2) ->
         let t1, a1 = aux env e1 in
         let t2, a2 = aux env e2 in
         let b_meta = Bags.fresh_bound_bag () in (* Shared bound bag for unification *)
         let c_meta1 = Bags.fresh_float_bag () in
         let c_meta2 = Bags.fresh_float_bag () in
         (try unify t1 (Types.TFloat (b_meta, c_meta1)) (* Unify t1 with TFloat(b_meta, c1) *)
-         with Failure msg -> failwith (Printf.sprintf "Type error in Less (<) left operand: %s" msg));
+         with Failure msg -> failwith (Printf.sprintf "Type error in comparison left operand: %s" msg));
         (try unify t2 (Types.TFloat (b_meta, c_meta2)) (* Unify t2 with TFloat(b_meta, c2) *)
-         with Failure msg -> failwith (Printf.sprintf "Type error in Less (<) right operand: %s" msg));
+         with Failure msg -> failwith (Printf.sprintf "Type error in comparison right operand: %s" msg));
 
-        (* Nested listener logic for Less *) 
+        (* Nested listener logic for comparison *) 
         let listener () = (* Listener takes unit *)
           let v1 = Bags.FloatBag.get c_meta1 in (* Get value inside listener *)
           let v2 = Bags.FloatBag.get c_meta2 in (* Get value inside listener *)
@@ -230,7 +230,13 @@ let infer (e : expr) : texpr =
               let bounds_to_add = ref Bags.BoundSet.empty in
 
               FloatSet.iter (fun f -> 
-                bounds_to_add := Bags.BoundSet.add (Bags.Less f) !bounds_to_add
+                let bound = match cmp_op with
+                  | Types.Lt -> Bags.Less f
+                  | Types.Le -> Bags.LessEq f
+                  | Types.Gt -> Bags.Greater f
+                  | Types.Ge -> Bags.GreaterEq f
+                in
+                bounds_to_add := Bags.BoundSet.add bound !bounds_to_add
               ) s2;
 
               (* Apply collected bounds to b_meta *) 
@@ -248,20 +254,32 @@ let infer (e : expr) : texpr =
               (* Temporarily store bounds to add *) 
               let bounds_to_add = ref Bags.BoundSet.empty in
 
-              (* Collect bounds from right bag (c_meta2) - LessEq *) 
+              (* Collect bounds from right bag (c_meta2) *) 
               (match v2 with
                | Finite s2 ->
                    FloatSet.iter (fun f -> 
-                     bounds_to_add := Bags.BoundSet.add (Bags.Less f) !bounds_to_add
+                     let bound = match cmp_op with
+                       | Types.Lt -> Bags.Less f
+                       | Types.Le -> Bags.LessEq f
+                       | Types.Gt -> Bags.Greater f
+                       | Types.Ge -> Bags.GreaterEq f
+                     in
+                     bounds_to_add := Bags.BoundSet.add bound !bounds_to_add
                    ) s2
                | Top -> ()
               );
 
-              (* Collect bounds from left bag (c_meta1) - Less *) 
+              (* Collect bounds from left bag (c_meta1) *) 
               (match v1 with
                | Finite s1 ->
                    FloatSet.iter (fun f -> 
-                     bounds_to_add := Bags.BoundSet.add (Bags.LessEq f) !bounds_to_add
+                     let bound = match cmp_op with
+                       | Types.Lt -> Bags.LessEq f
+                       | Types.Le -> Bags.Less f
+                       | Types.Gt -> Bags.GreaterEq f
+                       | Types.Ge -> Bags.Greater f
+                     in
+                     bounds_to_add := Bags.BoundSet.add bound !bounds_to_add
                    ) s1
                | Top -> ()
               );
@@ -283,250 +301,18 @@ let infer (e : expr) : texpr =
         Bags.FloatBag.listen c_meta1 listener;
         Bags.FloatBag.listen c_meta2 listener;
 
-        (TBool, TAExprNode (Less ((t1,a1), (t2,a2)))) (* Result is TBool *)
-      
-    | LessEq (e1, e2) ->
-        let t1, a1 = aux env e1 in
-        let t2, a2 = aux env e2 in
-        let b_meta = Bags.fresh_bound_bag () in (* Shared bound bag for unification *)
-        let c_meta1 = Bags.fresh_float_bag () in
-        let c_meta2 = Bags.fresh_float_bag () in
-        (try unify t1 (Types.TFloat (b_meta, c_meta1)) (* Unify t1 with TFloat(b_meta, c1) *)
-         with Failure msg -> failwith (Printf.sprintf "Type error in Less (<) left operand: %s" msg));
-        (try unify t2 (Types.TFloat (b_meta, c_meta2)) (* Unify t2 with TFloat(b_meta, c2) *)
-         with Failure msg -> failwith (Printf.sprintf "Type error in Less (<) right operand: %s" msg));
+        (TBool, TAExprNode (Cmp (cmp_op, (t1,a1), (t2,a2)))) (* Result is TBool *)
 
-        (* Nested listener logic for LessEq *) 
-        let listener () = (* Listener takes unit *)
-          let v1 = Bags.FloatBag.get c_meta1 in (* Get value inside listener *)
-          let v2 = Bags.FloatBag.get c_meta2 in (* Get value inside listener *)
-          match v1, v2 with
-          | Top, Top ->
-              (* Both Top -> BoundBag should be Top *) 
-              Bags.BoundBag.leq (Bags.BoundBag.create Top) b_meta
-          | Finite _, Finite s2 ->
-              (* Both are not Top. This means that e2 is being compared to a discrete distribution. *)
-              (* Only collect the bounds from the right bag, the constant itself *)
-              (* Temporarily store bounds to add *)
-              let bounds_to_add = ref Bags.BoundSet.empty in
-
-              FloatSet.iter (fun f -> 
-                bounds_to_add := Bags.BoundSet.add (Bags.LessEq f) !bounds_to_add
-              ) s2;
-
-              (* Apply collected bounds to b_meta *) 
-              (match Bags.BoundBag.get b_meta with
-              | Top -> ()  (* Cannot add to Top *) 
-              | Finite current_set ->
-                  let new_set = Bags.BoundSet.union current_set !bounds_to_add in
-                  if not (Bags.BoundSet.equal current_set new_set) then
-                    let temp_finite_bag = Bags.BoundBag.create (Finite new_set) in
-                    Bags.BoundBag.leq temp_finite_bag b_meta
-              )
-          | _, _ ->
-              (* Only one is Top. This means that e2 is being compared to a continuous distribution. *)
-              (* Add bounds from Finite bags. *)
-              (* Temporarily store bounds to add *) 
-              let bounds_to_add = ref Bags.BoundSet.empty in
-
-              (* Collect bounds from right bag (c_meta2) - LessEq *) 
-              (match v2 with
-               | Finite s2 ->
-                   FloatSet.iter (fun f -> 
-                     bounds_to_add := Bags.BoundSet.add (Bags.LessEq f) !bounds_to_add
-                   ) s2
-               | Top -> ()
-              );
-
-              (* Collect bounds from left bag (c_meta1) - Less *) 
-              (match v1 with
-               | Finite s1 ->
-                   FloatSet.iter (fun f -> 
-                     bounds_to_add := Bags.BoundSet.add (Bags.Less f) !bounds_to_add
-                   ) s1
-               | Top -> ()
-              );
-
-              (* Apply collected bounds to b_meta *) 
-              if not (Bags.BoundSet.is_empty !bounds_to_add) then
-                let current_bound_val = Bags.BoundBag.get b_meta in
-                match current_bound_val with
-                | Top -> () (* Cannot add to Top *) 
-                | Finite current_set ->
-                    let new_set = Bags.BoundSet.union current_set !bounds_to_add in
-                    if not (Bags.BoundSet.equal current_set new_set) then (
-                       (* Update using temporary bag and leq *) 
-                       let temp_finite_bag = Bags.BoundBag.create (Finite new_set) in
-                       Bags.BoundBag.leq temp_finite_bag b_meta
-                    )
-        in
-        (* Register the combined listener on both float bags *) 
-        Bags.FloatBag.listen c_meta1 listener;
-        Bags.FloatBag.listen c_meta2 listener;
-
-        (TBool, TAExprNode (LessEq ((t1,a1), (t2,a2)))) (* Result is TBool *)
-
-    | Greater (e1, e2) ->
+    | FinCmp (cmp_op, e1, e2, n) ->
+      if n <= 0 then failwith (Printf.sprintf "Invalid FinCmp modulus: ==#%d. n must be > 0." n);
       let t1, a1 = aux env e1 in
       let t2, a2 = aux env e2 in
-      let b_meta = Bags.fresh_bound_bag () in (* Shared bound bag for unification *)
-      let c_meta1 = Bags.fresh_float_bag () in
-      let c_meta2 = Bags.fresh_float_bag () in
-      (try unify t1 (Types.TFloat (b_meta, c_meta1)) (* Unify t1 with TFloat(b_meta, c1) *)
-        with Failure msg -> failwith (Printf.sprintf "Type error in Greater (>) left operand: %s" msg));
-      (try unify t2 (Types.TFloat (b_meta, c_meta2)) (* Unify t2 with TFloat(b_meta, c2) *)
-        with Failure msg -> failwith (Printf.sprintf "Type error in Greater (>) right operand: %s" msg));
-
-      (* Nested listener logic for Greater *) 
-      let listener () = (* Listener takes unit *)
-        let v1 = Bags.FloatBag.get c_meta1 in (* Get value inside listener *)
-        let v2 = Bags.FloatBag.get c_meta2 in (* Get value inside listener *)
-        match v1, v2 with
-        | Top, Top ->
-            (* Both Top -> BoundBag should be Top *) 
-            Bags.BoundBag.leq (Bags.BoundBag.create Top) b_meta
-        | Finite _, Finite s2 ->
-            (* Both are not Top. This means that e2 is being compared to a discrete distribution. *)
-            (* Only collect the bounds from the right bag, the constant itself *)
-            (* Temporarily store bounds to add *)
-            let bounds_to_add = ref Bags.BoundSet.empty in
-
-            FloatSet.iter (fun f -> 
-              bounds_to_add := Bags.BoundSet.add (Bags.Greater f) !bounds_to_add
-            ) s2;
-
-            (* Apply collected bounds to b_meta *) 
-            (match Bags.BoundBag.get b_meta with
-            | Top -> ()  (* Cannot add to Top *) 
-            | Finite current_set ->
-                let new_set = Bags.BoundSet.union current_set !bounds_to_add in
-                if not (Bags.BoundSet.equal current_set new_set) then
-                  let temp_finite_bag = Bags.BoundBag.create (Finite new_set) in
-                  Bags.BoundBag.leq temp_finite_bag b_meta
-            )
-        | _, _ ->
-            (* Only one is Top. This means that e2 is being compared to a continuous distribution. *)
-            (* Add bounds from Finite bags. *)
-            (* Temporarily store bounds to add *) 
-            let bounds_to_add = ref Bags.BoundSet.empty in
-
-            (* Collect bounds from right bag (c_meta2) - GreaterEq *) 
-            (match v2 with
-              | Finite s2 ->
-                  FloatSet.iter (fun f -> 
-                    bounds_to_add := Bags.BoundSet.add (Bags.Greater f) !bounds_to_add
-                  ) s2
-              | Top -> ()
-            );
-
-            (* Collect bounds from left bag (c_meta1) - Greater *) 
-            (match v1 with
-              | Finite s1 ->
-                  FloatSet.iter (fun f -> 
-                    bounds_to_add := Bags.BoundSet.add (Bags.GreaterEq f) !bounds_to_add
-                  ) s1
-              | Top -> ()
-            );
-
-            (* Apply collected bounds to b_meta *) 
-            if not (Bags.BoundSet.is_empty !bounds_to_add) then
-              let current_bound_val = Bags.BoundBag.get b_meta in
-              match current_bound_val with
-              | Top -> () (* Cannot add to Top *) 
-              | Finite current_set ->
-                  let new_set = Bags.BoundSet.union current_set !bounds_to_add in
-                  if not (Bags.BoundSet.equal current_set new_set) then (
-                      (* Update using temporary bag and leq *) 
-                      let temp_finite_bag = Bags.BoundBag.create (Finite new_set) in
-                      Bags.BoundBag.leq temp_finite_bag b_meta
-                  )
-      in
-      (* Register the combined listener on both float bags *) 
-      Bags.FloatBag.listen c_meta1 listener;
-      Bags.FloatBag.listen c_meta2 listener;
-
-      (TBool, TAExprNode (Greater ((t1,a1), (t2,a2)))) (* Result is TBool *)
-
-    | GreaterEq (e1, e2) ->
-      let t1, a1 = aux env e1 in
-      let t2, a2 = aux env e2 in
-      let b_meta = Bags.fresh_bound_bag () in (* Shared bound bag for unification *)
-      let c_meta1 = Bags.fresh_float_bag () in
-      let c_meta2 = Bags.fresh_float_bag () in
-      (try unify t1 (Types.TFloat (b_meta, c_meta1)) (* Unify t1 with TFloat(b_meta, c1) *)
-        with Failure msg -> failwith (Printf.sprintf "Type error in Greater (>) left operand: %s" msg));
-      (try unify t2 (Types.TFloat (b_meta, c_meta2)) (* Unify t2 with TFloat(b_meta, c2) *)
-        with Failure msg -> failwith (Printf.sprintf "Type error in Greater (>) right operand: %s" msg));
-
-      (* Nested listener logic for LessEq *) 
-      let listener () = (* Listener takes unit *)
-        let v1 = Bags.FloatBag.get c_meta1 in (* Get value inside listener *)
-        let v2 = Bags.FloatBag.get c_meta2 in (* Get value inside listener *)
-        match v1, v2 with
-        | Top, Top ->
-            (* Both Top -> BoundBag should be Top *) 
-            Bags.BoundBag.leq (Bags.BoundBag.create Top) b_meta
-        | Finite _, Finite s2 ->
-            (* Both are not Top. This means that e2 is being compared to a discrete distribution. *)
-            (* Only collect the bounds from the right bag, the constant itself *)
-            (* Temporarily store bounds to add *)
-            let bounds_to_add = ref Bags.BoundSet.empty in
-
-            FloatSet.iter (fun f -> 
-              bounds_to_add := Bags.BoundSet.add (Bags.GreaterEq f) !bounds_to_add
-            ) s2;
-
-            (* Apply collected bounds to b_meta *) 
-            (match Bags.BoundBag.get b_meta with
-            | Top -> ()  (* Cannot add to Top *) 
-            | Finite current_set ->
-                let new_set = Bags.BoundSet.union current_set !bounds_to_add in
-                if not (Bags.BoundSet.equal current_set new_set) then
-                  let temp_finite_bag = Bags.BoundBag.create (Finite new_set) in
-                  Bags.BoundBag.leq temp_finite_bag b_meta
-            )
-        | _, _ ->
-            (* Only one is Top. This means that e2 is being compared to a continuous distribution. *)
-            (* Add bounds from Finite bags. *)
-            (* Temporarily store bounds to add *) 
-            let bounds_to_add = ref Bags.BoundSet.empty in
-
-            (* Collect bounds from right bag (c_meta2) - GreaterEq *) 
-            (match v2 with
-              | Finite s2 ->
-                  FloatSet.iter (fun f -> 
-                    bounds_to_add := Bags.BoundSet.add (Bags.GreaterEq f) !bounds_to_add
-                  ) s2
-              | Top -> ()
-            );
-
-            (* Collect bounds from left bag (c_meta1) - Greater *) 
-            (match v1 with
-              | Finite s1 ->
-                  FloatSet.iter (fun f -> 
-                    bounds_to_add := Bags.BoundSet.add (Bags.Greater f) !bounds_to_add
-                  ) s1
-              | Top -> ()
-            );
-
-            (* Apply collected bounds to b_meta *) 
-            if not (Bags.BoundSet.is_empty !bounds_to_add) then
-              let current_bound_val = Bags.BoundBag.get b_meta in
-              match current_bound_val with
-              | Top -> () (* Cannot add to Top *) 
-              | Finite current_set ->
-                  let new_set = Bags.BoundSet.union current_set !bounds_to_add in
-                  if not (Bags.BoundSet.equal current_set new_set) then (
-                      (* Update using temporary bag and leq *) 
-                      let temp_finite_bag = Bags.BoundBag.create (Finite new_set) in
-                      Bags.BoundBag.leq temp_finite_bag b_meta
-                  )
-      in
-      (* Register the combined listener on both float bags *) 
-      Bags.FloatBag.listen c_meta1 listener;
-      Bags.FloatBag.listen c_meta2 listener;
-
-      (TBool, TAExprNode (GreaterEq ((t1,a1), (t2,a2)))) (* Result is TBool *)
+      let expected_type = Types.TFin n in
+      (try sub_type t1 expected_type
+       with Failure msg -> failwith (Printf.sprintf "Type error in FinCmp (==#%d) left operand: %s" n msg));
+      (try sub_type t2 expected_type
+       with Failure msg -> failwith (Printf.sprintf "Type error in FinCmp (==#%d) right operand: %s" n msg));
+      (Types.TBool, TAExprNode (FinCmp (cmp_op, (t1, a1), (t2, a2), n)))
 
     | If (e1, e2, e3) ->
       let t1, a1 = aux env e1 in
@@ -598,50 +384,6 @@ let infer (e : expr) : texpr =
     | FinConst (k, n) ->
       if k < 0 || k >= n then failwith (Printf.sprintf "Invalid FinConst value: %d#%d. k must be >= 0 and < n." k n);
       (Types.TFin n, TAExprNode (FinConst (k, n)))
-
-    | FinLt (e1, e2, n) ->
-      if n <= 0 then failwith (Printf.sprintf "Invalid FinLt modulus: <#%d. n must be > 0." n);
-      let t1, a1 = aux env e1 in
-      let t2, a2 = aux env e2 in
-      let expected_type = Types.TFin n in
-      (try sub_type t1 expected_type
-       with Failure msg -> failwith (Printf.sprintf "Type error in FinLt (<#%d) left operand: %s" n msg));
-      (try sub_type t2 expected_type
-       with Failure msg -> failwith (Printf.sprintf "Type error in FinLt (<#%d) right operand: %s" n msg));
-      (Types.TBool, TAExprNode (FinLt ((t1, a1), (t2, a2), n)))
-      
-    | FinLeq (e1, e2, n) ->
-      if n <= 0 then failwith (Printf.sprintf "Invalid FinLeq modulus: <=#%d. n must be > 0." n);
-      let t1, a1 = aux env e1 in
-      let t2, a2 = aux env e2 in
-      let expected_type = Types.TFin n in
-      (try sub_type t1 expected_type
-       with Failure msg -> failwith (Printf.sprintf "Type error in FinLeq (<=#%d) left operand: %s" n msg));
-      (try sub_type t2 expected_type
-       with Failure msg -> failwith (Printf.sprintf "Type error in FinLeq (<=#%d) right operand: %s" n msg));
-      (Types.TBool, TAExprNode (FinLeq ((t1, a1), (t2, a2), n)))
-
-    | FinGt (e1, e2, n) ->
-      if n <= 0 then failwith (Printf.sprintf "Invalid FinGt modulus: <#%d. n must be > 0." n);
-      let t1, a1 = aux env e1 in
-      let t2, a2 = aux env e2 in
-      let expected_type = Types.TFin n in
-      (try sub_type t1 expected_type
-        with Failure msg -> failwith (Printf.sprintf "Type error in FinGt (<#%d) left operand: %s" n msg));
-      (try sub_type t2 expected_type
-        with Failure msg -> failwith (Printf.sprintf "Type error in FinGt (<#%d) right operand: %s" n msg));
-      (Types.TBool, TAExprNode (FinGt ((t1, a1), (t2, a2), n)))
-      
-    | FinGeq (e1, e2, n) ->
-      if n <= 0 then failwith (Printf.sprintf "Invalid FinGeq modulus: <=#%d. n must be > 0." n);
-      let t1, a1 = aux env e1 in
-      let t2, a2 = aux env e2 in
-      let expected_type = Types.TFin n in
-      (try sub_type t1 expected_type
-        with Failure msg -> failwith (Printf.sprintf "Type error in FinGeq (<=#%d) left operand: %s" n msg));
-      (try sub_type t2 expected_type
-        with Failure msg -> failwith (Printf.sprintf "Type error in FinGeq (<=#%d) right operand: %s" n msg));
-      (Types.TBool, TAExprNode (FinGeq ((t1, a1), (t2, a2), n)))
 
     | FinEq (e1, e2, n) -> (* New case for FinEq in elab *)
       if n <= 0 then failwith (Printf.sprintf "Invalid FinEq modulus: ==#%d. n must be > 0." n);

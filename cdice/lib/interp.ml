@@ -51,33 +51,47 @@ let rec eval (env : env) (ExprNode e_node : expr) : value =
       in
       find_case 0.0 cases
 
-  | Less (e1, e2) ->
+  | Cmp (cmp_op, e1, e2) ->
       let v1 = eval env e1 in
       let v2 = eval env e2 in
       (match v1, v2 with
-       | VFloat f1, VFloat f2 -> VBool (f1 < f2)
-       | _ -> raise (RuntimeError "Type error during evaluation: Less expects floats"))
+       | VFloat f1, VFloat f2 ->
+           let result = match cmp_op with
+             | Types.Lt -> f1 < f2
+             | Types.Le -> f1 <= f2  
+             | Types.Gt -> f1 > f2
+             | Types.Ge -> f1 >= f2
+           in
+           VBool result
+       | _ -> 
+           let op_name = match cmp_op with
+             | Types.Lt -> "Less"
+             | Types.Le -> "LessEq"
+             | Types.Gt -> "Greater" 
+             | Types.Ge -> "GreaterEq"
+           in
+           raise (RuntimeError ("Type error during evaluation: " ^ op_name ^ " expects floats")))
 
-  | LessEq (e1, e2) ->
+  | FinCmp (cmp_op, e1, e2, n) ->
       let v1 = eval env e1 in
       let v2 = eval env e2 in
       (match v1, v2 with
-       | VFloat f1, VFloat f2 -> VBool (f1 <= f2)
-       | _ -> raise (RuntimeError "Type error during evaluation: LessEq expects floats"))
-
-  | Greater (e1, e2) ->
-        let v1 = eval env e1 in
-        let v2 = eval env e2 in
-        (match v1, v2 with
-         | VFloat f1, VFloat f2 -> VBool (f1 > f2)
-         | _ -> raise (RuntimeError "Type error during evaluation: Greater expects floats"))
-  
-  | GreaterEq (e1, e2) ->
-        let v1 = eval env e1 in
-        let v2 = eval env e2 in
-        (match v1, v2 with
-         | VFloat f1, VFloat f2 -> VBool (f1 >= f2)
-         | _ -> raise (RuntimeError "Type error during evaluation: GreaterEq expects floats"))
+       | VFin (k1, n1), VFin (k2, n2) when n1 = n && n2 = n ->
+           let result = match cmp_op with
+             | Types.Lt -> k1 < k2
+             | Types.Le -> k1 <= k2
+             | Types.Gt -> k1 > k2  
+             | Types.Ge -> k1 >= k2
+           in
+           VBool result
+       | _ ->
+           let op_name = match cmp_op with
+             | Types.Lt -> "FinLt"
+             | Types.Le -> "FinLeq"
+             | Types.Gt -> "FinGt"
+             | Types.Ge -> "FinGeq" 
+           in
+           raise (RuntimeError (Printf.sprintf "Type error during evaluation: FinCmp %s expects Fin(%d)" op_name n)))
 
   | And (e1, e2) ->
       let v1 = eval env e1 in
@@ -151,34 +165,6 @@ let rec eval (env : env) (ExprNode e_node : expr) : value =
             | _ -> raise (RuntimeError "Type error during evaluation: Application expects a loop"))
     
   | FinConst (k, n) -> VFin (k, n)
-
-  | FinLt (e1, e2, n) ->
-      let v1 = eval env e1 in
-      let v2 = eval env e2 in
-      (match v1, v2 with
-       | VFin (k1, n1), VFin (k2, n2) when n1 = n && n2 = n -> VBool (k1 < k2)
-       | _ -> raise (RuntimeError (Printf.sprintf "Type error during evaluation: FinLt expects Fin(%d)" n)))
-
-  | FinLeq (e1, e2, n) ->
-      let v1 = eval env e1 in
-      let v2 = eval env e2 in
-      (match v1, v2 with
-       | VFin (k1, n1), VFin (k2, n2) when n1 = n && n2 = n -> VBool (k1 <= k2)
-       | _ -> raise (RuntimeError (Printf.sprintf "Type error during evaluation: FinLeq expects Fin(%d)" n)))
-
-  | FinGt (e1, e2, n) ->
-        let v1 = eval env e1 in
-        let v2 = eval env e2 in
-        (match v1, v2 with
-         | VFin (k1, n1), VFin (k2, n2) when n1 = n && n2 = n -> VBool (k1 > k2)
-         | _ -> raise (RuntimeError (Printf.sprintf "Type error during evaluation: FinGt expects Fin(%d)" n)))
-  
-  | FinGeq (e1, e2, n) ->
-        let v1 = eval env e1 in
-        let v2 = eval env e2 in
-        (match v1, v2 with
-         | VFin (k1, n1), VFin (k2, n2) when n1 = n && n2 = n -> VBool (k1 >= k2)
-         | _ -> raise (RuntimeError (Printf.sprintf "Type error during evaluation: FinGeq expects Fin(%d)" n)))
 
   | FinEq (e1, e2, n) -> (* New case for FinEq *)
       let v1 = eval env e1 in

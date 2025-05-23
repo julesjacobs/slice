@@ -91,27 +91,33 @@ and string_of_expr_node ?(indent=0) (ExprNode expr_node) : string =
         keyword_color reset_color paren_color
         (String.concat ", " (List.map format_case cases))
         reset_color
-  | Less (e1, e2) ->
-      Printf.sprintf "%s %s<%s %s"
-        (string_of_expr_indented ~indent e1) operator_color reset_color (string_of_expr_indented ~indent e2)
-  | LessEq (e1, e2) ->
-      Printf.sprintf "%s %s<=%s %s"
-        (string_of_expr_indented ~indent e1) operator_color reset_color (string_of_expr_indented ~indent e2)
-  | Greater (e1, e2) ->
-      Printf.sprintf "%s %s>%s %s"
-        (string_of_expr_indented ~indent e1) operator_color reset_color (string_of_expr_indented ~indent e2)
-  | GreaterEq (e1, e2) ->
-      Printf.sprintf "%s %s>=%s %s"
-        (string_of_expr_indented ~indent e1) operator_color reset_color (string_of_expr_indented ~indent e2)
+  | Cmp (cmp_op, e1, e2) ->
+      let op_str = match cmp_op with
+        | Types.Lt -> "<"
+        | Types.Le -> "<="
+        | Types.Gt -> ">"
+        | Types.Ge -> ">="
+      in
+      Printf.sprintf "%s %s%s%s %s"
+        (string_of_expr_indented ~indent e1) operator_color op_str reset_color (string_of_expr_indented ~indent e2)
+  | FinCmp (cmp_op, e1, e2, n) ->
+      let op_str = match cmp_op with
+        | Types.Lt -> "<"
+        | Types.Le -> "<="
+        | Types.Gt -> ">"
+        | Types.Ge -> ">="
+      in
+      Printf.sprintf "%s %s#%d %s"
+        (string_of_expr_indented ~indent e1) op_str n (string_of_expr_indented ~indent e2)
+  | Not e1 ->
+      Printf.sprintf "(%snot%s %s)"
+        operator_color reset_color (string_of_expr_indented ~indent e1)
   | And (e1, e2) ->
       Printf.sprintf "%s %s&&%s %s"
         (string_of_expr_indented ~indent e1) operator_color reset_color (string_of_expr_indented ~indent e2)
   | Or (e1, e2) ->
       Printf.sprintf "%s %s||%s %s"
         (string_of_expr_indented ~indent e1) operator_color reset_color (string_of_expr_indented ~indent e2)
-  | Not e1 ->
-      Printf.sprintf "(%snot%s %s)"
-        operator_color reset_color (string_of_expr_indented ~indent e1)
   | If (e1, e2, e3) ->
       let indent_str = String.make indent ' ' in
       let next_indent_str = String.make (indent+2) ' ' in
@@ -151,31 +157,9 @@ and string_of_expr_node ?(indent=0) (ExprNode expr_node) : string =
         operator_color reset_color e_str
   | FinConst (k, n) ->
       Printf.sprintf "%s%d%s%s#%d%s" number_color k reset_color type_color n reset_color
-  | FinLt (e1, e2, n) ->
-      let e1_str = string_of_expr_indented ~indent e1 in
-      let e2_str = string_of_expr_indented ~indent e2 in
-      Printf.sprintf "%s %s<%s%s#%d%s %s"
-        e1_str operator_color reset_color type_color n reset_color e2_str
-  | FinLeq (e1, e2, n) ->
-      let e1_str = string_of_expr_indented ~indent e1 in
-      let e2_str = string_of_expr_indented ~indent e2 in
-      Printf.sprintf "%s %s<=%s%s#%d%s %s"
-        e1_str operator_color reset_color type_color n reset_color e2_str
-  | FinGt (e1, e2, n) ->
-      let e1_str = string_of_expr_indented ~indent e1 in
-      let e2_str = string_of_expr_indented ~indent e2 in
-      Printf.sprintf "%s %s>%s%s#%d%s %s"
-        e1_str operator_color reset_color type_color n reset_color e2_str
-  | FinGeq (e1, e2, n) ->
-      let e1_str = string_of_expr_indented ~indent e1 in
-      let e2_str = string_of_expr_indented ~indent e2 in
-      Printf.sprintf "%s %s>=%s%s#%d%s %s"
-        e1_str operator_color reset_color type_color n reset_color e2_str
   | FinEq (e1, e2, n) ->
-      let e1_str = string_of_expr_indented ~indent e1 in
-      let e2_str = string_of_expr_indented ~indent e2 in
-      Printf.sprintf "%s %s==#%s%s#%d%s %s"
-        e1_str operator_color reset_color type_color n reset_color e2_str
+      Printf.sprintf "%s %s==%s%s#%d%s %s"
+        (string_of_expr_indented ~indent e1) operator_color reset_color type_color n reset_color (string_of_expr_indented ~indent e2)
   | Observe e1 ->
       let e1_str = string_of_expr_indented ~indent e1 in
       Printf.sprintf "%sobserve%s (%s)"
@@ -242,27 +226,33 @@ and string_of_aexpr_node ?(indent=0) (TAExprNode ae_node) : string =
         keyword_color reset_color paren_color
         (String.concat ", " (List.map format_case cases))
         reset_color
-  | Less (te1, te2) ->
-      Printf.sprintf "%s %s<%s %s"
-        (string_of_texpr_indented ~indent te1) operator_color reset_color (string_of_texpr_indented ~indent te2)
-  | LessEq (te1, te2) ->
-      Printf.sprintf "%s %s<=%s %s"
-        (string_of_texpr_indented ~indent te1) operator_color reset_color (string_of_texpr_indented ~indent te2)
-  | Greater (te1, te2) ->
-      Printf.sprintf "%s %s>%s %s"
-        (string_of_texpr_indented ~indent te1) operator_color reset_color (string_of_texpr_indented ~indent te2)
-  | GreaterEq (te1, te2) ->
-      Printf.sprintf "%s %s>=%s %s"
-        (string_of_texpr_indented ~indent te1) operator_color reset_color (string_of_texpr_indented ~indent te2)
+  | Cmp (cmp_op, te1, te2) ->
+      let op_str = match cmp_op with
+        | Types.Lt -> "<"
+        | Types.Le -> "<="
+        | Types.Gt -> ">"
+        | Types.Ge -> ">="
+      in
+      Printf.sprintf "%s %s%s%s %s"
+        (string_of_texpr_indented ~indent te1) operator_color op_str reset_color (string_of_texpr_indented ~indent te2)
+  | FinCmp (cmp_op, te1, te2, n) ->
+      let op_str = match cmp_op with
+        | Types.Lt -> "<"
+        | Types.Le -> "<="
+        | Types.Gt -> ">"
+        | Types.Ge -> ">="
+      in
+      Printf.sprintf "%s %s#%d %s"
+        (string_of_texpr_indented ~indent te1) op_str n (string_of_texpr_indented ~indent te2)
+  | Not te1 ->
+      Printf.sprintf "(%snot%s %s)"
+        operator_color reset_color (string_of_texpr_indented ~indent te1)
   | And (te1, te2) ->
       Printf.sprintf "%s %s&&%s %s"
         (string_of_texpr_indented ~indent te1) operator_color reset_color (string_of_texpr_indented ~indent te2)
   | Or (te1, te2) ->
       Printf.sprintf "%s %s||%s %s"
         (string_of_texpr_indented ~indent te1) operator_color reset_color (string_of_texpr_indented ~indent te2)
-  | Not te1 ->
-      Printf.sprintf "(%snot%s %s)"
-        operator_color reset_color (string_of_texpr_indented ~indent te1)
   | If (te1, te2, te3) ->
       let indent_str = String.make indent ' ' in
       let next_indent_str = String.make (indent+2) ' ' in
@@ -302,31 +292,9 @@ and string_of_aexpr_node ?(indent=0) (TAExprNode ae_node) : string =
         operator_color reset_color te_str
   | FinConst (k, n) ->
       Printf.sprintf "%s%d%s%s#%d%s" number_color k reset_color type_color n reset_color
-  | FinLt (te1, te2, n) ->
-      let e1_str = string_of_texpr_indented ~indent te1 in
-      let e2_str = string_of_texpr_indented ~indent te2 in
-      Printf.sprintf "%s %s<%s%s#%d%s %s"
-        e1_str operator_color reset_color type_color n reset_color e2_str
-  | FinLeq (te1, te2, n) ->
-      let e1_str = string_of_texpr_indented ~indent te1 in
-      let e2_str = string_of_texpr_indented ~indent te2 in
-      Printf.sprintf "%s %s<=%s%s#%d%s %s"
-        e1_str operator_color reset_color type_color n reset_color e2_str
-  | FinGt (te1, te2, n) ->
-      let e1_str = string_of_texpr_indented ~indent te1 in
-      let e2_str = string_of_texpr_indented ~indent te2 in
-      Printf.sprintf "%s %s>%s%s#%d%s %s"
-        e1_str operator_color reset_color type_color n reset_color e2_str
-  | FinGeq (te1, te2, n) ->
-      let e1_str = string_of_texpr_indented ~indent te1 in
-      let e2_str = string_of_texpr_indented ~indent te2 in
-      Printf.sprintf "%s %s>=%s%s#%d%s %s"
-        e1_str operator_color reset_color type_color n reset_color e2_str
   | FinEq (te1, te2, n) ->
-      let e1_str = string_of_texpr_indented ~indent te1 in
-      let e2_str = string_of_texpr_indented ~indent te2 in
-      Printf.sprintf "%s %s==#%s%s#%d%s %s"
-        e1_str operator_color reset_color type_color n reset_color e2_str
+      Printf.sprintf "%s %s==%s%s#%d%s %s"
+        (string_of_texpr_indented ~indent te1) operator_color reset_color type_color n reset_color (string_of_texpr_indented ~indent te2)
   | Observe te1 ->
       let e1_str = string_of_texpr_indented ~indent te1 in
       Printf.sprintf "%sobserve%s (%s)"
@@ -570,45 +538,29 @@ let rec translate_to_sppl (env : (string * string) list) ?(target_var:string opt
       (prereq_stmts @ [sample_stmt], assign_var)
 
   (* Expression Cases: Assign only if target_var is Some *) 
-  | Types.ExprNode(Less(e1, e2)) ->
+  | Types.ExprNode(Cmp (cmp_op, e1, e2)) ->
       let (stmts1, res1) = translate_to_sppl env ~target_var:None e1 state in
       let (stmts2, res2) = translate_to_sppl env ~target_var:None e2 state in
-      let expr_str = Printf.sprintf "(%s < %s)" res1 res2 in
+      let op_str = match cmp_op with
+        | Types.Lt -> "<"
+        | Types.Le -> "<="
+        | Types.Gt -> ">"
+        | Types.Ge -> ">="
+      in
+      let expr_str = Printf.sprintf "(%s %s %s)" res1 op_str res2 in
       (match target_var with 
        | Some name -> (stmts1 @ stmts2 @ [Printf.sprintf "%s = %s" name expr_str], name)
        | None -> (stmts1 @ stmts2, expr_str))
-  | Types.ExprNode(LessEq(e1, e2)) ->
+  | Types.ExprNode(FinCmp (cmp_op, e1, e2, n)) ->
       let (stmts1, res1) = translate_to_sppl env ~target_var:None e1 state in
       let (stmts2, res2) = translate_to_sppl env ~target_var:None e2 state in
-      let expr_str = Printf.sprintf "(%s <= %s)" res1 res2 in
-      (match target_var with
-       | Some name -> (stmts1 @ stmts2 @ [Printf.sprintf "%s = %s" name expr_str], name)
-       | None -> (stmts1 @ stmts2, expr_str))
-  | Types.ExprNode(Greater(e1, e2)) ->
-      let (stmts1, res1) = translate_to_sppl env ~target_var:None e1 state in
-      let (stmts2, res2) = translate_to_sppl env ~target_var:None e2 state in
-      let expr_str = Printf.sprintf "(%s > %s)" res1 res2 in
-      (match target_var with 
-        | Some name -> (stmts1 @ stmts2 @ [Printf.sprintf "%s = %s" name expr_str], name)
-        | None -> (stmts1 @ stmts2, expr_str))
-  | Types.ExprNode(GreaterEq(e1, e2)) ->
-      let (stmts1, res1) = translate_to_sppl env ~target_var:None e1 state in
-      let (stmts2, res2) = translate_to_sppl env ~target_var:None e2 state in
-      let expr_str = Printf.sprintf "(%s >= %s)" res1 res2 in
-      (match target_var with
-        | Some name -> (stmts1 @ stmts2 @ [Printf.sprintf "%s = %s" name expr_str], name)
-        | None -> (stmts1 @ stmts2, expr_str))
-  | Types.ExprNode(And(e1, e2)) ->
-      let (stmts1, res1) = translate_to_sppl env ~target_var:None e1 state in
-      let (stmts2, res2) = translate_to_sppl env ~target_var:None e2 state in
-      let expr_str = Printf.sprintf "(%s) & (%s)" res1 res2 in
-      (match target_var with
-       | Some name -> (stmts1 @ stmts2 @ [Printf.sprintf "%s = %s" name expr_str], name)
-       | None -> (stmts1 @ stmts2, expr_str))
-  | Types.ExprNode(Or(e1, e2)) ->
-      let (stmts1, res1) = translate_to_sppl env ~target_var:None e1 state in
-      let (stmts2, res2) = translate_to_sppl env ~target_var:None e2 state in
-      let expr_str = Printf.sprintf "(%s) | (%s)" res1 res2 in
+      let op_str = match cmp_op with
+        | Types.Lt -> "<"
+        | Types.Le -> "<="
+        | Types.Gt -> ">"
+        | Types.Ge -> ">="
+      in
+      let expr_str = Printf.sprintf "%s %s#%d %s" res1 op_str n res2 in
       (match target_var with
        | Some name -> (stmts1 @ stmts2 @ [Printf.sprintf "%s = %s" name expr_str], name)
        | None -> (stmts1 @ stmts2, expr_str))
@@ -618,6 +570,22 @@ let rec translate_to_sppl (env : (string * string) list) ?(target_var:string opt
       (match target_var with
        | Some name -> (stmts1 @ [Printf.sprintf "%s = %s" name expr_str], name)
        | None -> (stmts1, expr_str))
+
+  | Types.ExprNode(And (e1, e2)) ->
+      let (stmts1, res1) = translate_to_sppl env ~target_var:None e1 state in
+      let (stmts2, res2) = translate_to_sppl env ~target_var:None e2 state in
+      let expr_str = Printf.sprintf "(%s and %s)" res1 res2 in
+      (match target_var with
+       | Some name -> (stmts1 @ stmts2 @ [Printf.sprintf "%s = %s" name expr_str], name)
+       | None -> (stmts1 @ stmts2, expr_str))
+
+  | Types.ExprNode(Or (e1, e2)) ->
+      let (stmts1, res1) = translate_to_sppl env ~target_var:None e1 state in
+      let (stmts2, res2) = translate_to_sppl env ~target_var:None e2 state in
+      let expr_str = Printf.sprintf "(%s or %s)" res1 res2 in
+      (match target_var with
+       | Some name -> (stmts1 @ stmts2 @ [Printf.sprintf "%s = %s" name expr_str], name)
+       | None -> (stmts1 @ stmts2, expr_str))
 
   (* Let Case: Optimize variable assignment *) 
   | Types.ExprNode(Let(x, e1, e2)) ->
@@ -669,15 +637,13 @@ let rec translate_to_sppl (env : (string * string) list) ?(target_var:string opt
   (* Fail on unsupported features *) 
   | Types.ExprNode(Pair _) | Types.ExprNode(First _) | Types.ExprNode(Second _)
   | Types.ExprNode(Fun _) | Types.ExprNode(FuncApp _) | Types.ExprNode(LoopApp _)
-  | Types.ExprNode(FinConst _) | Types.ExprNode(FinLt _) | Types.ExprNode(FinLeq _) 
-  | Types.ExprNode(FinGt _) | Types.ExprNode(FinGeq _) ->
+  | Types.ExprNode(FinConst _) ->
       let err_msg = Printf.sprintf
         "Encountered an unsupported expression type (%s) during SPPL translation (in pretty.ml)."
         (match expr with
          | Types.ExprNode(Pair _) -> "Pair" | Types.ExprNode(First _) -> "First" | Types.ExprNode(Second _) -> "Second"
          | Types.ExprNode(Fun _) -> "Fun" | Types.ExprNode(FuncApp _) -> "FuncApp" | Types.ExprNode(LoopApp _) -> "LoopApp" 
-         | Types.ExprNode(FinConst _) -> "FinConst" | Types.ExprNode(FinLt _) -> "FinLt" | Types.ExprNode(FinLeq _) -> "FinLeq" 
-         | Types.ExprNode(FinGt _) -> "FinGt" | Types.ExprNode(FinGeq _) -> "FinGeq"
+         | Types.ExprNode(FinConst _) -> "FinConst"
          | _ -> "Other Unsupported")
       in
       failwith err_msg

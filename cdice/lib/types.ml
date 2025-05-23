@@ -1,5 +1,8 @@
 (* Type definitions for ContDice *)
 
+(* Comparison operators *)
+type cmp_op = Lt | Le | Gt | Ge
+
 (* Base functor for expression structure *)
 type 'a expr_generic = 
   | Var    of string
@@ -9,10 +12,7 @@ type 'a expr_generic =
   | Sample of 'a sample          (* Continuous distribution *)
   (* | Discrete of float list    (* list of probabilities; i-th element is probability of float(i) *) *)
   | DistrCase of ('a * float) list (* General discrete distribution: (expr * prob) list *)
-  | Less   of 'a * 'a
-  | LessEq of 'a * 'a
-  | Greater   of 'a * 'a
-  | GreaterEq of 'a * 'a
+  | Cmp    of cmp_op * 'a * 'a   (* Parameterized comparison *)
   | And    of 'a * 'a            
   | Or     of 'a * 'a            
   | Not    of 'a                   
@@ -24,10 +24,7 @@ type 'a expr_generic =
   | FuncApp    of 'a * 'a            (* Function application: e1 e2 *)
   | LoopApp    of 'a * 'a * int           (* Loop application: e1 e2 int *)
   | FinConst of int * int (* k, n for k#n *)
-  | FinLt of 'a * 'a * int (* e1 <#n e2 *)
-  | FinLeq of 'a * 'a * int (* e1 <=#n e2 *)
-  | FinGt of 'a * 'a * int (* e1 >#n e2 *)
-  | FinGeq of 'a * 'a * int (* e1 >=#n e2 *)
+  | FinCmp of cmp_op * 'a * 'a * int (* Parameterized finite comparison *)
   | FinEq of 'a * 'a * int (* e1 ==#n e2 *)
   | Observe of 'a 
   | Fix of string * string * 'a

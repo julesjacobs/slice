@@ -41,7 +41,7 @@ against the discrete integer that represents the i-th float in the bag.
 *)
 let discretize (e : texpr) : expr =
   (* Helper function for comparison operations *)
-  let handle_comparison aux op_name te1 te2 top_constructor finite_constructor =
+  let handle_comparison aux op_name te1 te2 cmp_op =
     let t1 = fst te1 in
     let t2 = fst te2 in
     let b1 = (match Types.force t1 with
@@ -59,12 +59,12 @@ let discretize (e : texpr) : expr =
 
     (match val1 with 
       | Bags.Top -> 
-          ExprNode (top_constructor (aux te1) (aux te2))
+          ExprNode (Cmp (cmp_op, aux te1, aux te2))
       | Bags.Finite bound_set -> 
           let n = 1 + List.length (Bags.BoundSet.elements bound_set) in
           let d1 = aux te1 in
           let d2 = aux te2 in 
-          ExprNode (finite_constructor d1 d2 n))
+          ExprNode (FinCmp (cmp_op, d1, d2, n)))
   in
 
   let rec aux ((ty, TAExprNode ae_node) : texpr) : expr =
@@ -313,17 +313,20 @@ let discretize (e : texpr) : expr =
       in
       ExprNode (DistrCase discretized_cases)
 
-    | Less (te1, te2) ->
-        handle_comparison aux "Less" te1 te2 (fun e1 e2 -> Less (e1, e2)) (fun e1 e2 n -> FinLt (e1, e2, n))
+    | Cmp (cmp_op, te1, te2) ->
+        let op_name = match cmp_op with
+          | Types.Lt -> "Less"
+          | Types.Le -> "LessEq" 
+          | Types.Gt -> "Greater"
+          | Types.Ge -> "GreaterEq"
+        in
+        handle_comparison aux op_name te1 te2 cmp_op
 
-    | LessEq (te1, te2) ->
-        handle_comparison aux "LessEq" te1 te2 (fun e1 e2 -> LessEq (e1, e2)) (fun e1 e2 n -> FinLeq (e1, e2, n))
+    | FinCmp (cmp_op, te1, te2, n) -> 
+        ExprNode (FinCmp (cmp_op, aux te1, aux te2, n))
 
-    | Greater (te1, te2) ->
-        handle_comparison aux "Greater" te1 te2 (fun e1 e2 -> Greater (e1, e2)) (fun e1 e2 n -> FinGt (e1, e2, n))
-
-    | GreaterEq (te1, te2) ->
-        handle_comparison aux "GreaterEq" te1 te2 (fun e1 e2 -> GreaterEq (e1, e2)) (fun e1 e2 n -> FinGeq (e1, e2, n))
+    | FinEq (te1, te2, n) ->
+        ExprNode (FinEq (aux te1, aux te2, n))
 
     | If (te1, te2, te3) ->
         ExprNode (If (aux te1, aux te2, aux te3))
@@ -348,16 +351,6 @@ let discretize (e : texpr) : expr =
 
     | FinConst (k, n) -> 
         ExprNode (FinConst (k, n))
-    | FinLt (te1, te2, n) -> 
-        ExprNode (FinLt (aux te1, aux te2, n))
-    | FinLeq (te1, te2, n) -> 
-        ExprNode (FinLeq (aux te1, aux te2, n))
-    | FinGt (te1, te2, n) -> 
-        ExprNode (FinGt (aux te1, aux te2, n))
-    | FinGeq (te1, te2, n) -> 
-        ExprNode (FinGeq (aux te1, aux te2, n))
-    | FinEq (te1, te2, n) ->
-        ExprNode (FinEq (aux te1, aux te2, n))
 
     | And (te1, te2) ->
         ExprNode (And (aux te1, aux te2))

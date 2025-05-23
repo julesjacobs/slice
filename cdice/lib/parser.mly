@@ -134,14 +134,14 @@ not_expr:
 
 /* Comparison level */
 cmp_expr:
-  | cmp_expr LESS cons_expr     { ExprNode (Less ($1, $3)) }
-  | cmp_expr LESSEQ cons_expr   { ExprNode (LessEq ($1, $3)) }
-  | cons_expr LT_HASH INT cons_expr { ExprNode (FinLt ($1, $4, $3)) } 
-  | cons_expr LEQ_HASH INT cons_expr { ExprNode (FinLeq ($1, $4, $3)) } 
-  | cmp_expr GREATER cons_expr     { ExprNode (Greater ($1, $3)) }
-  | cmp_expr GREATEREQ cons_expr   { ExprNode (GreaterEq ($1, $3)) }
-  | cons_expr GT_HASH INT cons_expr { ExprNode (FinGt ($1, $4, $3)) } 
-  | cons_expr GEQ_HASH INT cons_expr { ExprNode (FinGeq ($1, $4, $3)) } 
+  | cmp_expr LESS cons_expr     { ExprNode (Cmp (Lt, $1, $3)) }
+  | cmp_expr LESSEQ cons_expr   { ExprNode (Cmp (Le, $1, $3)) }
+  | cons_expr LT_HASH INT cons_expr { ExprNode (FinCmp (Lt, $1, $4, $3)) } 
+  | cons_expr LEQ_HASH INT cons_expr { ExprNode (FinCmp (Le, $1, $4, $3)) } 
+  | cmp_expr GREATER cons_expr     { ExprNode (Cmp (Gt, $1, $3)) }
+  | cmp_expr GREATEREQ cons_expr   { ExprNode (Cmp (Ge, $1, $3)) }
+  | cons_expr GT_HASH INT cons_expr { ExprNode (FinCmp (Gt, $1, $4, $3)) } 
+  | cons_expr GEQ_HASH INT cons_expr { ExprNode (FinCmp (Ge, $1, $4, $3)) } 
   | cons_expr EQ_HASH INT cons_expr { ExprNode (FinEq ($1, $4, $3)) }
   | cons_expr { $1 }            /* Fallthrough to cons_expr */
   ;
