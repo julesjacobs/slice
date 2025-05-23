@@ -85,18 +85,6 @@ let discretize (e : texpr) : expr =
             let texpr_arg2_discretized = aux texpr_arg2 in
             ExprNode (Sample (Distr2 (kind, texpr_arg1_discretized, texpr_arg2_discretized)))
           )
-        (* For later : *)
-        (* | Bags.Finite outer_bound_set when Bags.BoundSet.is_empty outer_bound_set ->
-            (* Empty bound set - no discretization for distribution, fallback to simple recursive discretization of params *)
-            (match dist_exp with
-            | Distr1 (kind, texpr_arg) -> 
-                let texpr_arg_discretized = aux texpr_arg in
-                ExprNode (Sample (Distr1 (kind, texpr_arg_discretized)))
-            | Distr2 (kind, texpr_arg1, texpr_arg2) -> 
-                let texpr_arg1_discretized = aux texpr_arg1 in
-                let texpr_arg2_discretized = aux texpr_arg2 in
-                ExprNode (Sample (Distr2 (kind, texpr_arg1_discretized, texpr_arg2_discretized)))
-            ) *)
         | Bags.Finite outer_bound_set -> 
           (* Outer Sample's bounds are Finite, proceed with interval-based discretization *)
           let outer_cuts_as_bounds = Bags.BoundSet.elements outer_bound_set in
@@ -217,293 +205,78 @@ let discretize (e : texpr) : expr =
             | _ -> default_expr_for_this_param
           in
 
+          (* Helper function for 1-parameter distributions *)
+          let handle_single_param_distribution kind param_texpr param_name =
+            generate_runtime_match_for_param param_texpr param_name
+              (fun param_value ->
+                match Distributions.get_cdistr_from_single_arg_kind kind param_value with
+                | Ok dist -> final_expr_producer dist
+                | Error msg -> ExprNode (RuntimeError msg)
+              )
+              default_branch_expr
+          in
+
+          (* Helper function for 2-parameter distributions *)
+          let handle_two_param_distribution kind param1_texpr param1_name param2_texpr param2_name hoist_suffix =
+            let discretized_param2_expr = aux param2_texpr in
+            let core_logic (eff_discretized_param2_expr : expr) =
+              generate_runtime_match_for_param param1_texpr param1_name
+                (fun param1_value ->
+                  generate_runtime_match_for_param ~already_discretized_expr:(Some eff_discretized_param2_expr) param2_texpr param2_name
+                    (fun param2_value ->
+                      match Distributions.get_cdistr_from_two_arg_kind kind param1_value param2_value with
+                      | Ok dist -> final_expr_producer dist
+                      | Error msg -> ExprNode (RuntimeError msg)
+                    )
+                    default_branch_expr
+                )
+                default_branch_expr
+            in
+            (match discretized_param2_expr with
+             | ExprNode (Var _) | ExprNode (Const _) | ExprNode (BoolConst _) | ExprNode (FinConst _) ->
+                 core_logic discretized_param2_expr
+             | _ ->
+                 Util.gen_let ("_h_" ^ hoist_suffix) discretized_param2_expr (fun hoisted_var ->
+                   core_logic (ExprNode (Var hoisted_var))
+                 ))
+          in
+
           match dist_exp with
           | Distr1 (DExponential, texpr_lambda) ->
-              generate_runtime_match_for_param texpr_lambda "lambda"
-                (fun val_lambda ->
-                  match Distributions.get_cdistr_from_single_arg_kind DExponential val_lambda with
-                  | Ok dist -> final_expr_producer dist
-                  | Error msg -> ExprNode (RuntimeError msg)
-                )
-                default_branch_expr
+              handle_single_param_distribution DExponential texpr_lambda "lambda"
           | Distr1 (DLaplace, texpr_scale) ->
-              generate_runtime_match_for_param texpr_scale "scale"
-                (fun val_scale ->
-                  match Distributions.get_cdistr_from_single_arg_kind DLaplace val_scale with
-                  | Ok dist -> final_expr_producer dist
-                  | Error msg -> ExprNode (RuntimeError msg)
-                )
-                default_branch_expr
+              handle_single_param_distribution DLaplace texpr_scale "scale"
           | Distr1 (DCauchy, texpr_scale) ->
-              generate_runtime_match_for_param texpr_scale "scale"
-                (fun val_scale ->
-                  match Distributions.get_cdistr_from_single_arg_kind DCauchy val_scale with
-                  | Ok dist -> final_expr_producer dist
-                  | Error msg -> ExprNode (RuntimeError msg)
-                )
-                default_branch_expr
+              handle_single_param_distribution DCauchy texpr_scale "scale"
           | Distr1 (DTDist, texpr_nu) ->
-              generate_runtime_match_for_param texpr_nu "nu"
-                (fun val_nu ->
-                  match Distributions.get_cdistr_from_single_arg_kind DTDist val_nu with
-                  | Ok dist -> final_expr_producer dist
-                  | Error msg -> ExprNode (RuntimeError msg)
-                )
-                default_branch_expr
+              handle_single_param_distribution DTDist texpr_nu "nu"
           | Distr1 (DChi2, texpr_nu) ->
-              generate_runtime_match_for_param texpr_nu "nu"
-                (fun val_nu ->
-                  match Distributions.get_cdistr_from_single_arg_kind DChi2 val_nu with
-                  | Ok dist -> final_expr_producer dist
-                  | Error msg -> ExprNode (RuntimeError msg)
-                )
-                default_branch_expr
+              handle_single_param_distribution DChi2 texpr_nu "nu"
           | Distr1 (DLogistic, texpr_scale) ->
-              generate_runtime_match_for_param texpr_scale "scale"
-                (fun val_scale ->
-                  match Distributions.get_cdistr_from_single_arg_kind DLogistic val_scale with
-                  | Ok dist -> final_expr_producer dist
-                  | Error msg -> ExprNode (RuntimeError msg)
-                )
-                default_branch_expr
+              handle_single_param_distribution DLogistic texpr_scale "scale"
           | Distr1 (DRayleigh, texpr_sigma) ->
-              generate_runtime_match_for_param texpr_sigma "sigma"
-                (fun val_sigma ->
-                  match Distributions.get_cdistr_from_single_arg_kind DRayleigh val_sigma with
-                  | Ok dist -> final_expr_producer dist
-                  | Error msg -> ExprNode (RuntimeError msg)
-                )
-                default_branch_expr
+              handle_single_param_distribution DRayleigh texpr_sigma "sigma"
           
           | Distr2 (DUniform, texpr_a, texpr_b) ->
-              let discretized_b_expr = aux texpr_b in
-              let core_logic (eff_discretized_b_expr : expr) =
-                generate_runtime_match_for_param texpr_a "a"
-                  (fun val_a -> 
-                    generate_runtime_match_for_param ~already_discretized_expr:(Some eff_discretized_b_expr) texpr_b "b"
-                      (fun val_b -> 
-                        match Distributions.get_cdistr_from_two_arg_kind DUniform val_a val_b with
-                        | Ok dist -> final_expr_producer dist
-                        | Error msg -> ExprNode (RuntimeError msg)
-                      )
-                      default_branch_expr 
-                  )
-                  default_branch_expr
-              in
-              (match discretized_b_expr with
-               | ExprNode (Var _) | ExprNode (Const _) | ExprNode (BoolConst _) | ExprNode (FinConst _) ->
-                   core_logic discretized_b_expr
-               | _ ->
-                   Util.gen_let "_h_b" discretized_b_expr (fun hoisted_b_var ->
-                     core_logic (ExprNode (Var hoisted_b_var))
-                   ))
-
+              handle_two_param_distribution DUniform texpr_a "a" texpr_b "b" "b"
           | Distr2 (DGaussian, texpr_mu, texpr_sigma) ->
-              let discretized_sigma_expr = aux texpr_sigma in
-              let core_logic (eff_discretized_sigma_expr : expr) =
-                generate_runtime_match_for_param texpr_mu "mu"
-                  (fun val_mu ->
-                    generate_runtime_match_for_param ~already_discretized_expr:(Some eff_discretized_sigma_expr) texpr_sigma "sigma"
-                      (fun val_sigma ->
-                        match Distributions.get_cdistr_from_two_arg_kind DGaussian val_mu val_sigma with
-                        | Ok dist -> final_expr_producer dist
-                        | Error msg -> ExprNode (RuntimeError msg)
-                      )
-                      default_branch_expr
-                  )
-                  default_branch_expr
-              in
-              (match discretized_sigma_expr with
-               | ExprNode (Var _) | ExprNode (Const _) | ExprNode (BoolConst _) | ExprNode (FinConst _) ->
-                   core_logic discretized_sigma_expr
-               | _ ->
-                   Util.gen_let "_h_sigma" discretized_sigma_expr (fun hoisted_var ->
-                     core_logic (ExprNode (Var hoisted_var))
-                   ))
-
+              handle_two_param_distribution DGaussian texpr_mu "mu" texpr_sigma "sigma" "sigma"
           | Distr2 (DBeta, texpr_alpha, texpr_beta_param) ->
-              let discretized_beta_param_expr = aux texpr_beta_param in
-              let core_logic (eff_discretized_beta_param_expr : expr) =
-                generate_runtime_match_for_param texpr_alpha "alpha"
-                  (fun val_alpha ->
-                    generate_runtime_match_for_param ~already_discretized_expr:(Some eff_discretized_beta_param_expr) texpr_beta_param "beta_param"
-                      (fun val_beta_param ->
-                        match Distributions.get_cdistr_from_two_arg_kind DBeta val_alpha val_beta_param with
-                        | Ok dist -> final_expr_producer dist
-                        | Error msg -> ExprNode (RuntimeError msg)
-                      )
-                      default_branch_expr
-                  )
-                  default_branch_expr
-              in
-              (match discretized_beta_param_expr with
-               | ExprNode (Var _) | ExprNode (Const _) | ExprNode (BoolConst _) | ExprNode (FinConst _) ->
-                   core_logic discretized_beta_param_expr
-               | _ ->
-                   Util.gen_let "_h_beta_p" discretized_beta_param_expr (fun hoisted_var ->
-                     core_logic (ExprNode (Var hoisted_var))
-                   ))
-
+              handle_two_param_distribution DBeta texpr_alpha "alpha" texpr_beta_param "beta_param" "beta_p"
           | Distr2 (DLogNormal, texpr_mu, texpr_sigma) ->
-              let discretized_sigma_expr = aux texpr_sigma in
-              let core_logic (eff_discretized_sigma_expr : expr) =
-                generate_runtime_match_for_param texpr_mu "mu"
-                  (fun val_mu ->
-                    generate_runtime_match_for_param ~already_discretized_expr:(Some eff_discretized_sigma_expr) texpr_sigma "sigma"
-                      (fun val_sigma ->
-                        match Distributions.get_cdistr_from_two_arg_kind DLogNormal val_mu val_sigma with
-                        | Ok dist -> final_expr_producer dist
-                        | Error msg -> ExprNode (RuntimeError msg)
-                      )
-                      default_branch_expr
-                  )
-                  default_branch_expr
-              in
-              (match discretized_sigma_expr with
-               | ExprNode (Var _) | ExprNode (Const _) | ExprNode (BoolConst _) | ExprNode (FinConst _) ->
-                   core_logic discretized_sigma_expr
-               | _ ->
-                   Util.gen_let "_h_sigma_ln" discretized_sigma_expr (fun hoisted_var ->
-                     core_logic (ExprNode (Var hoisted_var))
-                   ))
-
+              handle_two_param_distribution DLogNormal texpr_mu "mu" texpr_sigma "sigma" "sigma_ln"
           | Distr2 (DGamma, texpr_shape, texpr_scale) ->
-              let discretized_scale_expr = aux texpr_scale in
-              let core_logic (eff_discretized_scale_expr : expr) =
-                generate_runtime_match_for_param texpr_shape "shape"
-                  (fun val_shape ->
-                    generate_runtime_match_for_param ~already_discretized_expr:(Some eff_discretized_scale_expr) texpr_scale "scale"
-                      (fun val_scale ->
-                        match Distributions.get_cdistr_from_two_arg_kind DGamma val_shape val_scale with
-                        | Ok dist -> final_expr_producer dist
-                        | Error msg -> ExprNode (RuntimeError msg)
-                      )
-                      default_branch_expr
-                  )
-                  default_branch_expr
-              in
-              (match discretized_scale_expr with
-               | ExprNode (Var _) | ExprNode (Const _) | ExprNode (BoolConst _) | ExprNode (FinConst _) ->
-                   core_logic discretized_scale_expr
-               | _ ->
-                   Util.gen_let "_h_scale_g" discretized_scale_expr (fun hoisted_var ->
-                     core_logic (ExprNode (Var hoisted_var))
-                   ))
-
+              handle_two_param_distribution DGamma texpr_shape "shape" texpr_scale "scale" "scale_g"
           | Distr2 (DPareto, texpr_a, texpr_b) ->
-              let discretized_b_expr = aux texpr_b in
-              let core_logic (eff_discretized_b_expr : expr) =
-                generate_runtime_match_for_param texpr_a "a"
-                  (fun val_a ->
-                    generate_runtime_match_for_param ~already_discretized_expr:(Some eff_discretized_b_expr) texpr_b "b"
-                      (fun val_b ->
-                        match Distributions.get_cdistr_from_two_arg_kind DPareto val_a val_b with
-                        | Ok dist -> final_expr_producer dist
-                        | Error msg -> ExprNode (RuntimeError msg)
-                      )
-                      default_branch_expr
-                  )
-                  default_branch_expr
-              in
-              (match discretized_b_expr with
-               | ExprNode (Var _) | ExprNode (Const _) | ExprNode (BoolConst _) | ExprNode (FinConst _) ->
-                   core_logic discretized_b_expr
-               | _ ->
-                   Util.gen_let "_h_b_p" discretized_b_expr (fun hoisted_var ->
-                     core_logic (ExprNode (Var hoisted_var))
-                   ))
-
+              handle_two_param_distribution DPareto texpr_a "a" texpr_b "b" "b_p"
           | Distr2 (DWeibull, texpr_a, texpr_b) ->
-              let discretized_b_expr = aux texpr_b in
-              let core_logic (eff_discretized_b_expr : expr) =
-                generate_runtime_match_for_param texpr_a "a"
-                  (fun val_a ->
-                    generate_runtime_match_for_param ~already_discretized_expr:(Some eff_discretized_b_expr) texpr_b "b"
-                      (fun val_b ->
-                        match Distributions.get_cdistr_from_two_arg_kind DWeibull val_a val_b with
-                        | Ok dist -> final_expr_producer dist
-                        | Error msg -> ExprNode (RuntimeError msg)
-                      )
-                      default_branch_expr
-                  )
-                  default_branch_expr
-              in
-              (match discretized_b_expr with
-               | ExprNode (Var _) | ExprNode (Const _) | ExprNode (BoolConst _) | ExprNode (FinConst _) ->
-                   core_logic discretized_b_expr
-               | _ ->
-                   Util.gen_let "_h_b_w" discretized_b_expr (fun hoisted_var ->
-                     core_logic (ExprNode (Var hoisted_var))
-                   ))
-
+              handle_two_param_distribution DWeibull texpr_a "a" texpr_b "b" "b_w"
           | Distr2 (DGumbel1, texpr_a, texpr_b) ->
-              let discretized_b_expr = aux texpr_b in
-              let core_logic (eff_discretized_b_expr : expr) =
-                generate_runtime_match_for_param texpr_a "a"
-                  (fun val_a ->
-                    generate_runtime_match_for_param ~already_discretized_expr:(Some eff_discretized_b_expr) texpr_b "b"
-                      (fun val_b ->
-                        match Distributions.get_cdistr_from_two_arg_kind DGumbel1 val_a val_b with
-                        | Ok dist -> final_expr_producer dist
-                        | Error msg -> ExprNode (RuntimeError msg)
-                      )
-                      default_branch_expr
-                  )
-                  default_branch_expr
-              in
-              (match discretized_b_expr with
-               | ExprNode (Var _) | ExprNode (Const _) | ExprNode (BoolConst _) | ExprNode (FinConst _) ->
-                   core_logic discretized_b_expr
-               | _ ->
-                   Util.gen_let "_h_b_g1" discretized_b_expr (fun hoisted_var ->
-                     core_logic (ExprNode (Var hoisted_var))
-                   ))
-
+              handle_two_param_distribution DGumbel1 texpr_a "a" texpr_b "b" "b_g1"
           | Distr2 (DGumbel2, texpr_a, texpr_b) ->
-              let discretized_b_expr = aux texpr_b in
-              let core_logic (eff_discretized_b_expr : expr) =
-                generate_runtime_match_for_param texpr_a "a"
-                  (fun val_a ->
-                    generate_runtime_match_for_param ~already_discretized_expr:(Some eff_discretized_b_expr) texpr_b "b"
-                      (fun val_b ->
-                        match Distributions.get_cdistr_from_two_arg_kind DGumbel2 val_a val_b with
-                        | Ok dist -> final_expr_producer dist
-                        | Error msg -> ExprNode (RuntimeError msg)
-                      )
-                      default_branch_expr
-                  )
-                  default_branch_expr
-              in
-              (match discretized_b_expr with
-               | ExprNode (Var _) | ExprNode (Const _) | ExprNode (BoolConst _) | ExprNode (FinConst _) ->
-                   core_logic discretized_b_expr
-               | _ ->
-                   Util.gen_let "_h_b_g2" discretized_b_expr (fun hoisted_var ->
-                     core_logic (ExprNode (Var hoisted_var))
-                   ))
-
+              handle_two_param_distribution DGumbel2 texpr_a "a" texpr_b "b" "b_g2"
           | Distr2 (DExppow, texpr_a, texpr_b) ->
-              let discretized_b_expr = aux texpr_b in
-              let core_logic (eff_discretized_b_expr : expr) =
-                generate_runtime_match_for_param texpr_a "a"
-                  (fun val_a ->
-                    generate_runtime_match_for_param ~already_discretized_expr:(Some eff_discretized_b_expr) texpr_b "b"
-                      (fun val_b ->
-                        match Distributions.get_cdistr_from_two_arg_kind DExppow val_a val_b with
-                        | Ok dist -> final_expr_producer dist
-                        | Error msg -> ExprNode (RuntimeError msg)
-                      )
-                      default_branch_expr
-                  )
-                  default_branch_expr
-              in
-              (match discretized_b_expr with
-               | ExprNode (Var _) | ExprNode (Const _) | ExprNode (BoolConst _) | ExprNode (FinConst _) ->
-                   core_logic discretized_b_expr
-               | _ ->
-                   Util.gen_let "_h_b_ep" discretized_b_expr (fun hoisted_var ->
-                     core_logic (ExprNode (Var hoisted_var))
-                   ))
+              handle_two_param_distribution DExppow texpr_a "a" texpr_b "b" "b_ep"
         )
         
     | DistrCase cases ->
