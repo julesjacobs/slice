@@ -1,0 +1,1 @@
+let x = gaussian(0.0, 1.0) in x > 0.0

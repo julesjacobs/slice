@@ -1,6 +1,14 @@
 open Cmdliner
-open Contdice
+
+(* Import individual modules from the contdice library *)
 module Types = Contdice.Types
+module Parse = Contdice.Parse  
+module Pretty = Contdice.Pretty
+module To_dice = Contdice.To_dice
+module Interp = Contdice.Interp
+module Inference = Contdice.Inference
+module Discretization = Contdice.Discretization
+
 exception ObserveFailure = Contdice.Interp.ObserveFailure
 
 (* Read a file and return its contents as a string *)
@@ -116,26 +124,26 @@ let process_file ~print_all ~to_sppl filename : ( ((int * int * int) * (int * in
   if print_all then Printf.printf "Processing file: %s\n" filename;
   try
     let content = read_file filename in
-    let expr = Contdice.Parse.parse_expr content in
+    let expr = Parse.parse_expr content in
     
     if to_sppl then (
-      let sppl_code = Contdice.Pretty.cdice_expr_to_sppl_prog expr in (* Call Pretty module *)
+      let sppl_code = Pretty.cdice_expr_to_sppl_prog expr in (* Call Pretty module *)
       print_endline sppl_code;
       Ok None (* Indicate success, no diff details *) 
     ) else (
       (* Original logic: pretty print, elab, discretize, compare *)
       if print_all then Printf.printf "Source:\n%s\n\n" content;
       
-      let texpr = Contdice.elab expr in 
+      let texpr = Inference.infer expr in 
       let final_type = fst texpr in 
-      if print_all then Printf.printf "Typed AST (Pretty):\n%s\n\n" (Contdice.Pretty.string_of_texpr texpr);
+      if print_all then Printf.printf "Typed AST (Pretty):\n%s\n\n" (Pretty.string_of_texpr texpr);
       
-      let discretized_expr = Contdice.discretize_top texpr in
+      let discretized_expr = Discretization.discretize_top texpr in
       if print_all then (
-        Printf.printf "Discretized Program (Pretty):\n%s\n\n" (Contdice.Pretty.string_of_expr discretized_expr);
-        Printf.printf "Dice Program (Plaintext):\n%s\n\n" (Contdice.To_dice.string_of_expr discretized_expr)
+        Printf.printf "Discretized Program (Pretty):\n%s\n\n" (Pretty.string_of_expr discretized_expr);
+        Printf.printf "Dice Program (Plaintext):\n%s\n\n" (To_dice.string_of_expr discretized_expr)
       ) else (
-        Printf.printf "%s\n" (Contdice.To_dice.string_of_expr discretized_expr)
+        Printf.printf "%s\n" (To_dice.string_of_expr discretized_expr)
       );
 
       (* Only run simulations if the result type is bool and print_all is true *)
