@@ -1,14 +1,5 @@
 open Cmdliner
 
-(* Import individual modules from the contdice library *)
-module Types = Contdice.Types
-module Parse = Contdice.Parse  
-module Pretty = Contdice.Pretty
-module To_dice = Contdice.To_dice
-module Interp = Contdice.Interp
-module Inference = Contdice.Inference
-module Discretization = Contdice.Discretization
-
 exception ObserveFailure = Contdice.Interp.ObserveFailure
 
 (* Read a file and return its contents as a string *)
@@ -28,17 +19,17 @@ let run_interp_and_summarize ~print_all label expr n_runs : ((int * int * int), 
   try
     for i = 1 to n_runs do
       try 
-        match Interp.run expr with
-        | Types.VBool true -> incr true_count
-        | Types.VBool false -> incr false_count
-        | Types.VUnit -> ()
+        match Contdice.Interp.run expr with
+        | Contdice.Types.VBool true -> incr true_count
+        | Contdice.Types.VBool false -> incr false_count
+        | Contdice.Types.VUnit -> ()
         | other_val -> 
             let msg = Printf.sprintf "Warning (%s): Expected VBool or VUnit, got %s after %d runs. Aborting run."
-                          label (Types.string_of_value other_val) (i-1) in
+                          label (Contdice.Types.string_of_value other_val) (i-1) in
             raise (Failure msg)
       with 
       | ObserveFailure -> incr observe_failures
-      | Interp.RuntimeError rt_msg -> 
+      | Contdice.Interp.RuntimeError rt_msg -> 
           let msg = Printf.sprintf "Runtime Error during %s run after %d runs: %s. Aborting run."
                           label (i-1) rt_msg in
           raise (Failure msg)
@@ -124,31 +115,31 @@ let process_file ~print_all ~to_sppl filename : ( ((int * int * int) * (int * in
   if print_all then Printf.printf "Processing file: %s\n" filename;
   try
     let content = read_file filename in
-    let expr = Parse.parse_expr content in
+    let expr = Contdice.Parse.parse_expr content in
     
     if to_sppl then (
-      let sppl_code = Pretty.cdice_expr_to_sppl_prog expr in (* Call Pretty module *)
+      let sppl_code = Contdice.Pretty.cdice_expr_to_sppl_prog expr in (* Call Pretty module *)
       print_endline sppl_code;
       Ok None (* Indicate success, no diff details *) 
     ) else (
       (* Original logic: pretty print, elab, discretize, compare *)
       if print_all then Printf.printf "Source:\n%s\n\n" content;
       
-      let texpr = Inference.infer expr in 
+      let texpr = Contdice.Inference.infer expr in 
       let final_type = fst texpr in 
-      if print_all then Printf.printf "Typed AST (Pretty):\n%s\n\n" (Pretty.string_of_texpr texpr);
+      if print_all then Printf.printf "Typed AST (Pretty):\n%s\n\n" (Contdice.Pretty.string_of_texpr texpr);
       
-      let discretized_expr = Discretization.discretize_top texpr in
+      let discretized_expr = Contdice.Discretization.discretize_top texpr in
       if print_all then (
-        Printf.printf "Discretized Program (Pretty):\n%s\n\n" (Pretty.string_of_expr discretized_expr);
-        Printf.printf "Dice Program (Plaintext):\n%s\n\n" (To_dice.string_of_expr discretized_expr)
+        Printf.printf "Discretized Program (Pretty):\n%s\n\n" (Contdice.Pretty.string_of_expr discretized_expr);
+        Printf.printf "Dice Program (Plaintext):\n%s\n\n" (Contdice.To_dice.string_of_expr discretized_expr)
       ) else (
-        Printf.printf "%s\n" (To_dice.string_of_expr discretized_expr)
+        Printf.printf "%s\n" (Contdice.To_dice.string_of_expr discretized_expr)
       );
 
       (* Only run simulations if the result type is bool and print_all is true *)
-      match Types.force final_type with 
-      | Types.TBool when print_all -> 
+      match Contdice.Types.force final_type with 
+      | Contdice.Types.TBool when print_all -> 
           let n_runs = 1000000 in 
           (match run_interp_and_summarize ~print_all "Discretized" discretized_expr n_runs with
           | Error msg -> Error msg
