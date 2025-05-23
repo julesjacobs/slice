@@ -1,8 +1,19 @@
 %{
-open Types
+(**
+ * @file parser.mly
+ * @brief Parser for the ContDice language.
+ *
+ * This file defines the grammar for ContDice using `menhir`.
+ * It specifies how tokens from `lexer.mll` are combined to form
+ * Abstract Syntax Tree (AST) nodes defined in `ast.ml`.
+ * The parser handles operator precedence and associativity.
+ *)
+open Types (* Provides access to Ast, TypeSystem etc. via module aliases *)
+open Ast   (* Brings Ast.expr, Ast.ExprNode, and other AST types directly into scope *)
 %}
 
-%token <string> IDENT
+(** Tokens defined by the lexer, with their semantic values if any. *)
+%token <string> IDENT (* Identifier, e.g., variable names *)
 %token <float> FLOAT
 %token <int> INT
 %token LET IN
@@ -56,37 +67,55 @@ open Types
 %token ITERATE
 (* %token FOR TO DO *)
 
-%start <Types.expr> prog
+%start <expr> prog
 
 (* Define types for non-terminals *) 
-%type <Types.expr> expr assign_expr cons_expr cmp_expr app_expr atomic_expr prefix_expr
-%type <Types.expr list> expr_comma_list (* New type for list of expressions *)
-%type <unit> opt_bar
-%type <float> number
-%type <(Types.expr * float) list> distr_cases
+%type <expr> expr assign_expr cons_expr cmp_expr app_expr atomic_expr prefix_expr (* Type for expression-like non-terminals *)
+%type <expr list> expr_comma_list (* Type for comma-separated lists of expressions, used in tuples *)
+%type <unit> opt_bar (* Type for optional bar in match cases *)
+%type <float> number (* Type for numeric literals and simple arithmetic results within 'atomic_expr' *)
+%type <(expr * float) list> distr_cases (* Type for cases in a discrete distribution: list of (expression, probability) *)
 
-(* Operator precedence and associativity from commit 23e2e6c *)
-%left ARROW             (* Function type arrow *)
-%left SEMICOLON
-%left PLUS MINUS
-%left TIMES DIVIDE
-%left OR                (* OR has lower precedence than AND *)
-%left AND               (* AND has lower precedence than NOT/comparison *)
-%right NOT              (* Unary NOT has high precedence *)
-%right COMMA
-%nonassoc LESS LESSEQ LT_HASH LEQ_HASH EQ_HASH (* Comparison operators *)
+(** Operator precedence and associativity.
+    Lower lines in this list have higher precedence. *)
+%left ARROW             (* Function type arrow `->`, low precedence, left-associative (though often used like right for currying) *)
+%left SEMICOLON         (* Sequencing `;`, left-associative *)
+(* Arithmetic operators for 'number' non-terminal - not for general expressions *)
+%left PLUS MINUS        (* Addition and subtraction, left-associative *)
+%left TIMES DIVIDE      (* Multiplication and division, left-associative *)
+%left OR                (* Logical OR `||`, left-associative *)
+%left AND               (* Logical AND `&&`, left-associative *)
+%right NOT              (* Logical NOT `not`, right-associative (unary prefix) *)
+%right COMMA            (* Comma operator for tuples, right-associative to build pairs like (e1, (e2, e3)) *)
+%nonassoc LESS LESSEQ LT_HASH LEQ_HASH EQ_HASH (* Comparison operators, non-associative *)
+%nonassoc IF THEN ELSE (* If-then-else, non-associative to handle dangling else (though grammar structure also helps) *)
+%nonassoc LET IN        (* Let-in, non-associative *)
+%nonassoc FUN           (* Fun, non-associative *)
+%nonassoc OBSERVE       (* Observe, non-associative *)
+%nonassoc FIX           (* Fix, non-associative *)
+%nonassoc MATCH         (* Match, non-associative *)
+%right CONS             (* List cons `::`, right-associative *)
+%right COLON_EQUAL     (* Assignment `:=`, right-associative *)
+%nonassoc BANG          (* Dereference `!`, non-associative (prefix unary) *)
+%nonassoc REF           (* Reference `ref`, non-associative (prefix unary) *)
 
-%% 
 
+%%
+
+(** The main entry point for parsing a ContDice program.
+    A program is an expression followed by the end-of-file token. *)
 prog: e = expr EOF { e };
 
-/* Lowest precedence: LET, IF, FUN, FIX, MATCH (handled by structure) 
-   then SEMICOLON, then assign_expr and higher operators */
+(** General expressions, ordered by precedence from lowest to highest. *)
+
+(** Expression level: LET, IF, FUN, OBSERVE, FIX, MATCH.
+    These are typically block-structured or have specific keywords.
+    Sequencing (e1 ; e2) is also handled at a low precedence level. *)
 expr:
-    expr SEMICOLON expr 
-    { ExprNode (Seq ($1, $3)) }
+    expr SEMICOLON expr
+    { ExprNode (Seq ($1, $3)) } (* e1 ; e2 *)
   | LET x = IDENT EQUAL e1 = expr IN e2 = expr
-    { ExprNode (Let (x, e1, e2)) }
+    { ExprNode (Let (x, e1, e2)) } (* let x = e1 in e2 *)
   | IF cond = expr THEN e1 = expr ELSE e2 = expr
     { ExprNode (If (cond, e1, e2)) }
   | FUN x = IDENT ARROW e = expr
@@ -104,70 +133,70 @@ expr:
   | assign_expr { $1 } /* Fallthrough to assign_expr */
   ;
 
-/* Assignment level */
+/* Assignment level (right-associative due to COLON_EQUAL being %right) */
 assign_expr:
-  | prefix_expr COLON_EQUAL assign_expr { ExprNode (Assign ($1, $3)) }
-  | or_expr { $1 } /* Fallthrough to or_expr, as per diff */
+  | prefix_expr COLON_EQUAL assign_expr { ExprNode (Assign ($1, $3)) } (* ref_expr := val_expr *)
+  | or_expr { $1 } (* Fallthrough to higher precedence *)
   ;
 
-/* OR Level */
+/* OR Level (left-associative) */
 or_expr:
-  | or_expr OR and_expr  { ExprNode (Or ($1, $3)) }
-  | and_expr { $1 }     /* Fallthrough to and_expr */
+  | or_expr OR and_expr  { ExprNode (Or ($1, $3)) } (* e1 || e2 *)
+  | and_expr { $1 }     (* Fallthrough to higher precedence *)
   ;
 
-/* AND Level */
+/* AND Level (left-associative) */
 and_expr:
-  | and_expr AND not_expr { ExprNode (And ($1, $3)) }
-  | not_expr { $1 }      /* Fallthrough to not_expr */
+  | and_expr AND not_expr { ExprNode (And ($1, $3)) } (* e1 && e2 *)
+  | not_expr { $1 }      (* Fallthrough to higher precedence *)
   ;
 
-/* NOT Level */
+/* NOT Level (right-associative prefix operator) */
 not_expr:
-  | NOT not_expr          { ExprNode (Not $2) }
-  | cmp_expr { $1 }       /* Fallthrough to cmp_expr */
+  | NOT not_expr          { ExprNode (Not $2) } (* not e *)
+  | cmp_expr { $1 }       (* Fallthrough to higher precedence *)
   ;
 
-/* Comparison level */
+/* Comparison level (non-associative) */
 cmp_expr:
-  | cmp_expr LESS cons_expr     { ExprNode (Less ($1, $3)) }
-  | cmp_expr LESSEQ cons_expr   { ExprNode (LessEq ($1, $3)) }
-  | cons_expr LT_HASH INT cons_expr { ExprNode (FinLt ($1, $4, $3)) } 
-  | cons_expr LEQ_HASH INT cons_expr { ExprNode (FinLeq ($1, $4, $3)) } 
-  | cons_expr EQ_HASH INT cons_expr { ExprNode (FinEq ($1, $4, $3)) }
-  | cons_expr { $1 }            /* Fallthrough to cons_expr */
+  | cmp_expr LESS cons_expr     { ExprNode (Less ($1, $3)) }     (* e1 < e2 *)
+  | cmp_expr LESSEQ cons_expr   { ExprNode (LessEq ($1, $3)) }   (* e1 <= e2 *)
+  | cons_expr LT_HASH INT cons_expr { ExprNode (FinLt ($1, $4, $3)) }  (* e1 <#k e2 *)
+  | cons_expr LEQ_HASH INT cons_expr { ExprNode (FinLeq ($1, $4, $3)) } (* e1 <=#k e2 *)
+  | cons_expr EQ_HASH INT cons_expr { ExprNode (FinEq ($1, $4, $3)) } (* e1 ==#k e2 *)
+  | cons_expr { $1 }            (* Fallthrough to higher precedence *)
   ;
 
-/* Cons level (right-associative) */
+/* Cons level for list construction (right-associative due to CONS being %right) */
 cons_expr:
-  | prefix_expr CONS cons_expr   { ExprNode (Cons ($1, $3)) } (* Use prefix_expr here *) 
-  | prefix_expr { $1 }           /* Fallthrough to prefix_expr */
+  | prefix_expr CONS cons_expr   { ExprNode (Cons ($1, $3)) } (* e_head :: e_tail *)
+  | prefix_expr { $1 }           (* Fallthrough to higher precedence *)
   ;
 
-/* Prefix operators level */
-prefix_expr:                  (* New level for prefix ops like ! and ref *)
-  | BANG prefix_expr          { ExprNode (Deref $2) }
-  | REF prefix_expr           { ExprNode (Ref $2) }
-  | app_expr { $1 }           /* Fallthrough to app_expr */
+/* Prefix operators level for `!` (deref) and `ref` (non-associative prefix) */
+prefix_expr:
+  | BANG prefix_expr          { ExprNode (Deref $2) } (* !e *)
+  | REF prefix_expr           { ExprNode (Ref $2) }   (* ref e *)
+  | app_expr { $1 }           (* Fallthrough to higher precedence *)
   ;
 
-/* Application Level */
+/* Application Level (left-associative for function application) */
 app_expr:
-  | app_expr atomic_expr                                                        { ExprNode (FuncApp ($1, $2)) }
-  | ITERATE LPAREN e1 = app_expr COMMA e2 = atomic_expr COMMA n = INT RPAREN    { ExprNode (LoopApp (e1, e2, n)) }
-  | FST atomic_expr                                                             { ExprNode (First $2) }
-  | SND atomic_expr                                                             { ExprNode (Second $2) }
-  | atomic_expr                                                                 { $1 }        /* Fallthrough to atomic_expr */
+  | app_expr atomic_expr                                                        { ExprNode (FuncApp ($1, $2)) } (* f x *)
+  | ITERATE LPAREN e1 = app_expr COMMA e2 = atomic_expr COMMA n = INT RPAREN    { ExprNode (LoopApp (e1, e2, n)) } (* iterate(f, x, n) *)
+  | FST atomic_expr                                                             { ExprNode (First $2) }  (* fst e *)
+  | SND atomic_expr                                                             { ExprNode (Second $2) }  (* snd e *)
+  | atomic_expr                                                                 { $1 }        (* Fallthrough to highest precedence *)
   ;
 
-/* Atomic expressions (variables, constants, parens, tuples, distributions, nil) */ 
+/* Atomic expressions: highest precedence, basic constructs. */
 atomic_expr:
-  | n = number                { ExprNode (Const n) }
-  | TRUE                      { ExprNode (BoolConst true) }
+  | n = number                { ExprNode (Const n) } (* Numeric literal (can be simple arithmetic from 'number' rule) *)
+  | TRUE                      { ExprNode (BoolConst true) } (* true *)
   | FALSE                     { ExprNode (BoolConst false) }
   | NIL                       { ExprNode Nil }
   | k = INT HASH n = INT
-    { if k < 0 || k >= n then failwith (Printf.sprintf "Invalid FinConst: %d#%d" k n) else ExprNode (FinConst (k, n)) }
+    { if k < 0 || k >= n then raise Parser.Error else ExprNode (FinConst (k, n)) }
   | x = IDENT                 { ExprNode (Var x) }
   | DISCRETE LPAREN cases = distr_cases RPAREN
     { ExprNode (DistrCase cases) }
@@ -219,36 +248,48 @@ atomic_expr:
     }
   ;
 
-/* Optional bar rule */
+/* Optional bar `|` before the first case in a match statement. */
 opt_bar:
   | /* empty */ { () }
   | BAR         { () }
   ;
 
-/* Rule for parsing the (expr : number) pairs for DistrCase */ 
+/* Rule for parsing the (expression : probability) pairs for discrete distributions.
+   Uses Menhir's standard library for `separated_nonempty_list`. */
 distr_cases:
-  | /* empty */ { [] } 
+  | /* empty */ { [] } (* Allows `discrete()` though perhaps not semantically valid if empty. *)
   | cases = separated_nonempty_list(COMMA, distr_case) { cases }
   ;
 
 distr_case:
-  | p = number COLON e = expr { (e, p) }
+  | p = number COLON e = expr { (e, p) } (* prob : expr *)
   ;
 
+/* 'number' rule: Allows simple arithmetic within certain atomic expressions,
+   specifically for probabilities in DistrCase and parameters of distributions if they were constants.
+   Note: This 'number' arithmetic is distinct from general expression arithmetic.
+   The precedence for PLUS, MINUS, TIMES, DIVIDE here is local to the 'number' non-terminal. */
 number:
-  | f = FLOAT { f }
-  | i = INT   { float_of_int i }
-  /* Arithmetic expressions */
+  | f = FLOAT { f } (* Float literal *)
+  | i = INT   { float_of_int i } (* Integer literal, converted to float *)
+  /* Simple arithmetic for constant folding at parse time for numbers. */
   | e1 = number PLUS e2 = number { e1 +. e2 }
   | e1 = number MINUS e2 = number { e1 -. e2 }
   | e1 = number TIMES e2 = number { e1 *. e2 }
   | e1 = number DIVIDE e2 = number { e1 /. e2 }
-  | LPAREN e = number RPAREN { e }
+  | LPAREN e = number RPAREN { e } (* Parenthesized number *)
   ;
 
-expr_comma_list: (* Definition for comma-separated list of expressions *)
-    e = expr                         { [e] }
-  | e = expr COMMA rest = expr_comma_list { e :: rest }
+/* Definition for comma-separated list of expressions, used for tuples.
+   e.g., (e1), (e1, e2), (e1, e2, e3).
+   A single expression in parentheses is handled by `atomic_expr: LPAREN expr RPAREN`
+   which gets disambiguated correctly by Menhir if `expr_comma_list` doesn't match just one `expr`.
+   The current `atomic_expr` rule for `LPAREN el = expr_comma_list RPAREN`
+   handles both single expressions in parens and actual tuples.
+*/
+expr_comma_list:
+    e = expr                         { [e] } (* A single expression can be a list of one. *)
+  | e = expr COMMA rest = expr_comma_list { e :: rest } (* Comma-separated, builds list `e1 :: e2 :: ... :: en :: []`. *)
   ;
 
-%% (* This %% should mark the end of rules and precede any OCaml code if present *)
+%%
