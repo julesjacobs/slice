@@ -63,18 +63,34 @@ and string_of_expr_node ?(indent=0) (ExprNode expr_node) : string =
       | _ -> Printf.sprintf "%g" prob
     in
     Printf.sprintf "discrete(%s)" (String.concat ", " (List.map format_case cases))
-  | Cmp (cmp_op, e1, e2) ->
-      let op_str = match cmp_op with
-        | Types.Lt -> "<"
-        | Types.Le -> "<="
+  | Cmp (cmp_op, e1, e2, flipped) ->
+      let op_str, left_expr, right_expr = 
+        if flipped then
+          (* Flip back to show original syntax *)
+          match cmp_op with
+          | Types.Lt -> ">", e2, e1   (* Originally > *)
+          | Types.Le -> ">=", e2, e1  (* Originally >= *)
+        else
+          (* Show as-is *)
+          match cmp_op with
+          | Types.Lt -> "<", e1, e2
+          | Types.Le -> "<=", e1, e2
       in
-      Printf.sprintf "%s %s %s" (string_of_expr_indented ~indent e1) op_str (string_of_expr_indented ~indent e2)
-  | FinCmp (cmp_op, e1, e2, _) ->
-      let op_str = match cmp_op with
-        | Types.Lt -> "<"
-        | Types.Le -> "<="
+      Printf.sprintf "%s %s %s" (string_of_expr_indented ~indent left_expr) op_str (string_of_expr_indented ~indent right_expr)
+  | FinCmp (cmp_op, e1, e2, n, flipped) ->
+      let op_str, left_expr, right_expr = 
+        if flipped then
+          (* Flip back to show original syntax *)
+          match cmp_op with
+          | Types.Lt -> ">#", e2, e1   (* Originally >#n *)
+          | Types.Le -> ">=#", e2, e1  (* Originally >=#n *)
+        else
+          (* Show as-is *)
+          match cmp_op with
+          | Types.Lt -> "<#", e1, e2
+          | Types.Le -> "<=#", e1, e2
       in
-      Printf.sprintf "%s %s %s" (string_of_expr_indented ~indent e1) op_str (string_of_expr_indented ~indent e2)
+      Printf.sprintf "%s %s%d %s" (string_of_expr_indented ~indent left_expr) op_str n (string_of_expr_indented ~indent right_expr)
   | And (e1, e2) ->
       Printf.sprintf "%s && %s" (string_of_expr_indented ~indent e1) (string_of_expr_indented ~indent e2)
   | Or (e1, e2) ->
@@ -155,18 +171,34 @@ and string_of_aexpr_node ?(indent=0) (TAExprNode ae_node) : string =
       | _ -> Printf.sprintf "%g" prob
     in
     Printf.sprintf "discrete(%s)" (String.concat ", " (List.map format_case cases))
-  | Cmp (cmp_op, te1, te2) ->
-      let op_str = match cmp_op with
-        | Types.Lt -> "<"
-        | Types.Le -> "<="
+  | Cmp (cmp_op, te1, te2, flipped) ->
+      let op_str, left_expr, right_expr = 
+        if flipped then
+          (* Flip back to show original syntax *)
+          match cmp_op with
+          | Types.Lt -> ">", te2, te1   (* Originally > *)
+          | Types.Le -> ">=", te2, te1  (* Originally >= *)
+        else
+          (* Show as-is *)
+          match cmp_op with
+          | Types.Lt -> "<", te1, te2
+          | Types.Le -> "<=", te1, te2
       in
-      Printf.sprintf "%s %s %s" (string_of_texpr_indented ~indent te1) op_str (string_of_texpr_indented ~indent te2)
-  | FinCmp (cmp_op, te1, te2, _) ->
-      let op_str = match cmp_op with
-        | Types.Lt -> "<"
-        | Types.Le -> "<="
+      Printf.sprintf "%s %s %s" (string_of_texpr_indented ~indent left_expr) op_str (string_of_texpr_indented ~indent right_expr)
+  | FinCmp (cmp_op, te1, te2, n, flipped) ->
+      let op_str, left_expr, right_expr = 
+        if flipped then
+          (* Flip back to show original syntax *)
+          match cmp_op with
+          | Types.Lt -> ">", te2, te1   (* Originally >#n *)
+          | Types.Le -> ">=", te2, te1  (* Originally >=#n *)
+        else
+          (* Show as-is *)
+          match cmp_op with
+          | Types.Lt -> "<", te1, te2
+          | Types.Le -> "<=", te1, te2
       in
-      Printf.sprintf "%s %s %s" (string_of_texpr_indented ~indent te1) op_str (string_of_texpr_indented ~indent te2)
+      Printf.sprintf "%s %s%d %s" (string_of_texpr_indented ~indent left_expr) op_str n (string_of_texpr_indented ~indent right_expr)
   | And (te1, te2) ->
       Printf.sprintf "%s && %s" (string_of_texpr_indented ~indent te1) (string_of_texpr_indented ~indent te2)
   | Or (te1, te2) ->

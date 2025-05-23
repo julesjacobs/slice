@@ -91,20 +91,36 @@ and string_of_expr_node ?(indent=0) (ExprNode expr_node) : string =
         keyword_color reset_color paren_color
         (String.concat ", " (List.map format_case cases))
         reset_color
-  | Cmp (cmp_op, e1, e2) ->
-      let op_str = match cmp_op with
-        | Types.Lt -> "<"
-        | Types.Le -> "<="
+  | Cmp (cmp_op, e1, e2, flipped) ->
+      let op_str, left_expr, right_expr = 
+        if flipped then
+          (* Flip back to show original syntax *)
+          match cmp_op with
+          | Types.Lt -> ">", e2, e1   (* Originally > *)
+          | Types.Le -> ">=", e2, e1  (* Originally >= *)
+        else
+          (* Show as-is *)
+          match cmp_op with
+          | Types.Lt -> "<", e1, e2
+          | Types.Le -> "<=", e1, e2
       in
       Printf.sprintf "%s %s%s%s %s"
-        (string_of_expr_indented ~indent e1) operator_color op_str reset_color (string_of_expr_indented ~indent e2)
-  | FinCmp (cmp_op, e1, e2, n) ->
-      let op_str = match cmp_op with
-        | Types.Lt -> "<"
-        | Types.Le -> "<="
+        (string_of_expr_indented ~indent left_expr) operator_color op_str reset_color (string_of_expr_indented ~indent right_expr)
+  | FinCmp (cmp_op, e1, e2, n, flipped) ->
+      let op_str, left_expr, right_expr = 
+        if flipped then
+          (* Flip back to show original syntax *)
+          match cmp_op with
+          | Types.Lt -> ">#", e2, e1   (* Originally >#n *)
+          | Types.Le -> ">=#", e2, e1  (* Originally >=#n *)
+        else
+          (* Show as-is *)
+          match cmp_op with
+          | Types.Lt -> "<#", e1, e2
+          | Types.Le -> "<=#", e1, e2
       in
-      Printf.sprintf "%s %s%s%s%s#%d%s %s"
-        (string_of_expr_indented ~indent e1) operator_color op_str reset_color type_color n reset_color (string_of_expr_indented ~indent e2)
+      Printf.sprintf "%s %s%s%s%s%d%s %s"
+        (string_of_expr_indented ~indent left_expr) operator_color op_str reset_color type_color n reset_color (string_of_expr_indented ~indent right_expr)
   | Not e1 ->
       Printf.sprintf "(%snot%s %s)"
         operator_color reset_color (string_of_expr_indented ~indent e1)
@@ -222,20 +238,36 @@ and string_of_aexpr_node ?(indent=0) (TAExprNode ae_node) : string =
         keyword_color reset_color paren_color
         (String.concat ", " (List.map format_case cases))
         reset_color
-  | Cmp (cmp_op, te1, te2) ->
-      let op_str = match cmp_op with
-        | Types.Lt -> "<"
-        | Types.Le -> "<="
+  | Cmp (cmp_op, te1, te2, flipped) ->
+      let op_str, left_expr, right_expr = 
+        if flipped then
+          (* Flip back to show original syntax *)
+          match cmp_op with
+          | Types.Lt -> ">", te2, te1   (* Originally > *)
+          | Types.Le -> ">=", te2, te1  (* Originally >= *)
+        else
+          (* Show as-is *)
+          match cmp_op with
+          | Types.Lt -> "<", te1, te2
+          | Types.Le -> "<=", te1, te2
       in
       Printf.sprintf "%s %s%s%s %s"
-        (string_of_texpr_indented ~indent te1) operator_color op_str reset_color (string_of_texpr_indented ~indent te2)
-  | FinCmp (cmp_op, te1, te2, n) ->
-      let op_str = match cmp_op with
-        | Types.Lt -> "<"
-        | Types.Le -> "<="
+        (string_of_texpr_indented ~indent left_expr) operator_color op_str reset_color (string_of_texpr_indented ~indent right_expr)
+  | FinCmp (cmp_op, te1, te2, n, flipped) ->
+      let op_str, left_expr, right_expr = 
+        if flipped then
+          (* Flip back to show original syntax *)
+          match cmp_op with
+          | Types.Lt -> ">#", te2, te1   (* Originally >#n *)
+          | Types.Le -> ">=#", te2, te1  (* Originally >=#n *)
+        else
+          (* Show as-is *)
+          match cmp_op with
+          | Types.Lt -> "<#", te1, te2
+          | Types.Le -> "<=#", te1, te2
       in
-      Printf.sprintf "%s %s%s%s%s#%d%s %s"
-        (string_of_texpr_indented ~indent te1) operator_color op_str reset_color type_color n reset_color (string_of_texpr_indented ~indent te2)
+      Printf.sprintf "%s %s%s%s%s%d%s %s"
+        (string_of_texpr_indented ~indent left_expr) operator_color op_str reset_color type_color n reset_color (string_of_texpr_indented ~indent right_expr)
   | Not te1 ->
       Printf.sprintf "(%snot%s %s)"
         operator_color reset_color (string_of_texpr_indented ~indent te1)
@@ -530,25 +562,41 @@ let rec translate_to_sppl (env : (string * string) list) ?(target_var:string opt
       (prereq_stmts @ [sample_stmt], assign_var)
 
   (* Expression Cases: Assign only if target_var is Some *) 
-  | Types.ExprNode(Cmp (cmp_op, e1, e2)) ->
+  | Types.ExprNode(Cmp (cmp_op, e1, e2, flipped)) ->
       let (stmts1, res1) = translate_to_sppl env ~target_var:None e1 state in
       let (stmts2, res2) = translate_to_sppl env ~target_var:None e2 state in
-      let op_str = match cmp_op with
-        | Types.Lt -> "<"
-        | Types.Le -> "<="
+      let op_str, left_res, right_res = 
+        if flipped then
+          (* Flip back to show original syntax *)
+          match cmp_op with
+          | Types.Lt -> ">", res2, res1   (* Originally > *)
+          | Types.Le -> ">=", res2, res1  (* Originally >= *)
+        else
+          (* Show as-is *)
+          match cmp_op with
+          | Types.Lt -> "<", res1, res2
+          | Types.Le -> "<=", res1, res2
       in
-      let expr_str = Printf.sprintf "(%s %s %s)" res1 op_str res2 in
+      let expr_str = Printf.sprintf "(%s %s %s)" left_res op_str right_res in
       (match target_var with 
        | Some name -> (stmts1 @ stmts2 @ [Printf.sprintf "%s = %s" name expr_str], name)
        | None -> (stmts1 @ stmts2, expr_str))
-  | Types.ExprNode(FinCmp (cmp_op, e1, e2, n)) ->
+  | Types.ExprNode(FinCmp (cmp_op, e1, e2, n, flipped)) ->
       let (stmts1, res1) = translate_to_sppl env ~target_var:None e1 state in
       let (stmts2, res2) = translate_to_sppl env ~target_var:None e2 state in
-      let op_str = match cmp_op with
-        | Types.Lt -> "<"
-        | Types.Le -> "<="
+      let op_str, left_res, right_res = 
+        if flipped then
+          (* Flip back to show original syntax *)
+          match cmp_op with
+          | Types.Lt -> ">#", res2, res1   (* Originally >#n *)
+          | Types.Le -> ">=#", res2, res1  (* Originally >=#n *)
+        else
+          (* Show as-is *)
+          match cmp_op with
+          | Types.Lt -> "<#", res1, res2
+          | Types.Le -> "<=#", res1, res2
       in
-      let expr_str = Printf.sprintf "%s %s#%d %s" res1 op_str n res2 in
+      let expr_str = Printf.sprintf "%s %s%d %s" left_res op_str n right_res in
       (match target_var with
        | Some name -> (stmts1 @ stmts2 @ [Printf.sprintf "%s = %s" name expr_str], name)
        | None -> (stmts1 @ stmts2, expr_str))

@@ -1,0 +1,26 @@
+(* Test demonstrating mixed usage of all comparison operators *)
+(* Shows that users can write natural comparison expressions *)
+
+let x = uniform(0.0, 10.0) in
+let y = uniform(0.0, 10.0) in
+let z = uniform(0.0, 10.0) in
+
+(* Complex logical expression using all comparison types *)
+let float_checks = (x < y) && (y <= z) && (z > x) && (x >= y) in
+
+(* Finite comparisons with different moduli *)
+let a = 2#5 in
+let b = 3#5 in  
+let c = 1#7 in
+let d = 4#7 in
+
+let finite_checks = (a <#5 b) && (b >=#5 a) && (c >#7 d) && (d <=#7 c) in
+
+(* Mixed boolean logic *)
+let equality_checks = (a ==#5 a) && (c ==#7 c) in
+
+(* Nested comparisons *)
+let nested = if x > y then (a >#5 b) else (c <=#7 d) in
+
+(* Combine all tests *)
+float_checks || finite_checks || equality_checks || nested 

@@ -1,0 +1,20 @@
+(* Test file demonstrating greater than operator desugaring *)
+(* All greater than operators (>, >=, >#, >=#) are desugared *)
+(* to flipped less than operators (<, <=, <#, <=#) *)
+
+let x = gaussian(0.0, 1.0) in
+let y = gaussian(1.0, 1.0) in
+
+(* Regular floating point comparisons *)
+let gt_result = x > y in        (* Desugars to: y < x *)
+let gte_result = x >= y in      (* Desugars to: y <= x *)
+
+(* Finite field comparisons *)
+let a = 2#5 in
+let b = 4#5 in
+let fin_gt = a >#5 b in         (* Desugars to: b <#5 a *)
+let fin_gte = a >=#5 b in       (* Desugars to: b <=#5 a *)
+let fin_eq = a ==#5 a in        (* No desugaring needed *)
+
+(* Combine all results *)
+gt_result && gte_result && fin_gt && fin_gte && fin_eq 

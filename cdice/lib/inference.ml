@@ -204,7 +204,7 @@ let infer (e : expr) : texpr =
       let annotated_cases = List.map (fun (texpr, prob) -> (texpr, prob)) typed_cases in
       (result_ty, TAExprNode (DistrCase annotated_cases))
 
-    | Cmp (cmp_op, e1, e2) ->
+    | Cmp (cmp_op, e1, e2, flipped) ->
         let t1, a1 = aux env e1 in
         let t2, a2 = aux env e2 in
         let b_meta = Bags.fresh_bound_bag () in (* Shared bound bag for unification *)
@@ -295,9 +295,9 @@ let infer (e : expr) : texpr =
         Bags.FloatBag.listen c_meta1 listener;
         Bags.FloatBag.listen c_meta2 listener;
 
-        (TBool, TAExprNode (Cmp (cmp_op, (t1,a1), (t2,a2)))) (* Result is TBool *)
+        (TBool, TAExprNode (Cmp (cmp_op, (t1,a1), (t2,a2), flipped))) (* Result is TBool, preserve flip flag *)
 
-    | FinCmp (cmp_op, e1, e2, n) ->
+    | FinCmp (cmp_op, e1, e2, n, flipped) ->
       if n <= 0 then failwith (Printf.sprintf "Invalid FinCmp modulus: ==#%d. n must be > 0." n);
       let t1, a1 = aux env e1 in
       let t2, a2 = aux env e2 in
@@ -306,7 +306,7 @@ let infer (e : expr) : texpr =
        with Failure msg -> failwith (Printf.sprintf "Type error in FinCmp (==#%d) left operand: %s" n msg));
       (try sub_type t2 expected_type
        with Failure msg -> failwith (Printf.sprintf "Type error in FinCmp (==#%d) right operand: %s" n msg));
-      (Types.TBool, TAExprNode (FinCmp (cmp_op, (t1, a1), (t2, a2), n)))
+      (Types.TBool, TAExprNode (FinCmp (cmp_op, (t1, a1), (t2, a2), n, flipped)))
 
     | If (e1, e2, e3) ->
       let t1, a1 = aux env e1 in

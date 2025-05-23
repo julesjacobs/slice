@@ -1,0 +1,28 @@
+(* Practical example: Age verification system *)
+(* Shows natural usage of greater than operators in a real scenario *)
+
+let age = uniform(0.0, 100.0) in
+let voting_age = 18.0 in
+let retirement_age = 65.0 in
+
+(* Natural way to write age checks *)
+let can_vote = age >= voting_age in      (* Desugars to: voting_age <= age *)
+let is_senior = age > retirement_age in  (* Desugars to: retirement_age < age *)
+let is_adult = age >= 18.0 in           (* Desugars to: 18.0 <= age *)
+
+(* Discrete example: Game level system *)
+let player_level = 7#10 in
+let boss_level = 8#10 in
+let min_level = 5#10 in
+
+(* Natural comparisons for game logic *)
+let strong_enough = player_level >#10 min_level in    (* Desugars to: min_level <#10 player_level *)
+let ready_for_boss = player_level >=#10 boss_level in (* Desugars to: boss_level <=#10 player_level *)
+
+(* Complex condition *)
+let game_complete = if is_adult && strong_enough then 
+                      ready_for_boss 
+                    else 
+                      false in
+
+can_vote && is_senior && is_adult && strong_enough && ready_for_boss && game_complete 

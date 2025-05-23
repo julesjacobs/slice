@@ -41,7 +41,7 @@ against the discrete integer that represents the i-th float in the bag.
 *)
 let discretize (e : texpr) : expr =
   (* Helper function for comparison operations *)
-  let handle_comparison aux op_name te1 te2 cmp_op =
+  let handle_comparison aux op_name te1 te2 cmp_op flipped =
     let t1 = fst te1 in
     let t2 = fst te2 in
     let b1 = (match Types.force t1 with
@@ -59,12 +59,13 @@ let discretize (e : texpr) : expr =
 
     (match val1 with 
       | Bags.Top -> 
-          ExprNode (Cmp (cmp_op, aux te1, aux te2))
+          ExprNode (Cmp (cmp_op, aux te1, aux te2, flipped))
       | Bags.Finite bound_set -> 
           let n = 1 + List.length (Bags.BoundSet.elements bound_set) in
           let d1 = aux te1 in
           let d2 = aux te2 in 
-          ExprNode (FinCmp (cmp_op, d1, d2, n)))
+          ExprNode (FinCmp (cmp_op, d1, d2, n, flipped))
+    )
   in
 
   let rec aux ((ty, TAExprNode ae_node) : texpr) : expr =
@@ -81,7 +82,8 @@ let discretize (e : texpr) : expr =
             ExprNode (FinConst (int_of_float f, 1)) *)
          | Bags.Finite bound_set_from_context ->
             let idx, modulus = get_const_idx_and_modulus f bound_set_from_context in
-              ExprNode (FinConst (idx, modulus)))
+              ExprNode (FinConst (idx, modulus))
+        )
 
     | BoolConst b -> ExprNode (BoolConst b)
 
@@ -313,15 +315,15 @@ let discretize (e : texpr) : expr =
       in
       ExprNode (DistrCase discretized_cases)
 
-    | Cmp (cmp_op, te1, te2) ->
+    | Cmp (cmp_op, te1, te2, flipped) ->
         let op_name = match cmp_op with
           | Types.Lt -> "Less"
           | Types.Le -> "LessEq" 
         in
-        handle_comparison aux op_name te1 te2 cmp_op
+        handle_comparison aux op_name te1 te2 cmp_op flipped
 
-    | FinCmp (cmp_op, te1, te2, n) -> 
-        ExprNode (FinCmp (cmp_op, aux te1, aux te2, n))
+    | FinCmp (cmp_op, te1, te2, n, flipped) -> 
+        ExprNode (FinCmp (cmp_op, aux te1, aux te2, n, flipped))
 
     | FinEq (te1, te2, n) ->
         ExprNode (FinEq (aux te1, aux te2, n))

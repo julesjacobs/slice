@@ -19,9 +19,13 @@ open Types
 %token FUN ARROW
 %token LESS
 %token LESSEQ
+%token GREATER
+%token GREATEREQ
 %token HASH
 %token LT_HASH
 %token LEQ_HASH
+%token GT_HASH
+%token GEQ_HASH
 %token EQ_HASH
 %token LPAREN RPAREN
 %token COMMA
@@ -74,7 +78,7 @@ open Types
 %left AND               (* AND has lower precedence than NOT/comparison *)
 %right NOT              (* Unary NOT has high precedence *)
 %right COMMA
-%nonassoc LESS LESSEQ LT_HASH LEQ_HASH EQ_HASH (* Comparison operators *)
+%nonassoc LESS LESSEQ GREATER GREATEREQ LT_HASH LEQ_HASH GT_HASH GEQ_HASH EQ_HASH (* Comparison operators *)
 
 %% 
 
@@ -130,10 +134,14 @@ not_expr:
 
 /* Comparison level */
 cmp_expr:
-  | cmp_expr LESS cons_expr     { ExprNode (Cmp (Lt, $1, $3)) }
-  | cmp_expr LESSEQ cons_expr   { ExprNode (Cmp (Le, $1, $3)) }
-  | cons_expr LT_HASH INT cons_expr { ExprNode (FinCmp (Lt, $1, $4, $3)) } 
-  | cons_expr LEQ_HASH INT cons_expr { ExprNode (FinCmp (Le, $1, $4, $3)) } 
+  | cmp_expr LESS cons_expr     { ExprNode (Cmp (Lt, $1, $3, false)) }     (* Original < *)
+  | cmp_expr LESSEQ cons_expr   { ExprNode (Cmp (Le, $1, $3, false)) }     (* Original <= *)
+  | cmp_expr GREATER cons_expr  { ExprNode (Cmp (Lt, $3, $1, true)) }      (* Flipped > to < *)
+  | cmp_expr GREATEREQ cons_expr { ExprNode (Cmp (Le, $3, $1, true)) }     (* Flipped >= to <= *)
+  | cons_expr LT_HASH INT cons_expr { ExprNode (FinCmp (Lt, $1, $4, $3, false)) }   (* Original <#n *)
+  | cons_expr LEQ_HASH INT cons_expr { ExprNode (FinCmp (Le, $1, $4, $3, false)) }  (* Original <=#n *)
+  | cons_expr GT_HASH INT cons_expr { ExprNode (FinCmp (Lt, $4, $1, $3, true)) }    (* Flipped >#n to <#n *)
+  | cons_expr GEQ_HASH INT cons_expr { ExprNode (FinCmp (Le, $4, $1, $3, true)) }   (* Flipped >=#n to <=#n *)
   | cons_expr EQ_HASH INT cons_expr { ExprNode (FinEq ($1, $4, $3)) }
   | cons_expr { $1 }            /* Fallthrough to cons_expr */
   ;

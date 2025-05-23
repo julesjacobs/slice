@@ -12,7 +12,7 @@ type 'a expr_generic =
   | Sample of 'a sample          (* Continuous distribution *)
   (* | Discrete of float list    (* list of probabilities; i-th element is probability of float(i) *) *)
   | DistrCase of ('a * float) list (* General discrete distribution: (expr * prob) list *)
-  | Cmp    of cmp_op * 'a * 'a   (* Parameterized comparison *)
+  | Cmp    of cmp_op * 'a * 'a * bool   (* Parameterized comparison with flip flag *)
   | And    of 'a * 'a            
   | Or     of 'a * 'a            
   | Not    of 'a                   
@@ -24,7 +24,7 @@ type 'a expr_generic =
   | FuncApp    of 'a * 'a            (* Function application: e1 e2 *)
   | LoopApp    of 'a * 'a * int           (* Loop application: e1 e2 int *)
   | FinConst of int * int (* k, n for k#n *)
-  | FinCmp of cmp_op * 'a * 'a * int (* Parameterized finite comparison *)
+  | FinCmp of cmp_op * 'a * 'a * int * bool (* Parameterized finite comparison with flip flag *)
   | FinEq of 'a * 'a * int (* e1 ==#n e2 *)
   | Observe of 'a 
   | Fix of string * string * 'a

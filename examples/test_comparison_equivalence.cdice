@@ -1,0 +1,28 @@
+(* Test demonstrating equivalence between greater than syntax *)
+(* and manually written flipped less than syntax *)
+
+let x = 5.0 in
+let y = 3.0 in
+
+(* Using greater than syntax (gets desugared) *)
+let gt_desugared = x > y in
+let gte_desugared = x >= y in
+
+(* Using manually flipped less than syntax *)
+let gt_manual = y < x in
+let gte_manual = y <= x in
+
+(* Same test with finite comparisons *)
+let a = 3#7 in
+let b = 1#7 in
+
+let fin_gt_desugared = a >#7 b in
+let fin_gte_desugared = a >=#7 b in
+
+let fin_gt_manual = b <#7 a in
+let fin_gte_manual = b <=#7 a in
+
+(* All comparisons should produce the same logical results *)
+(* The desugared and manual versions should behave identically *)
+gt_desugared && gte_desugared && gt_manual && gte_manual && 
+fin_gt_desugared && fin_gte_desugared && fin_gt_manual && fin_gte_manual 

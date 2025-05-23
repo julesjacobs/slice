@@ -51,7 +51,7 @@ let rec eval (env : env) (ExprNode e_node : expr) : value =
       in
       find_case 0.0 cases
 
-  | Cmp (cmp_op, e1, e2) ->
+  | Cmp (cmp_op, e1, e2, _flipped) ->
       let v1 = eval env e1 in
       let v2 = eval env e2 in
       (match v1, v2 with
@@ -68,7 +68,7 @@ let rec eval (env : env) (ExprNode e_node : expr) : value =
            in
            raise (RuntimeError ("Type error during evaluation: " ^ op_name ^ " expects floats")))
 
-  | FinCmp (cmp_op, e1, e2, n) ->
+  | FinCmp (cmp_op, e1, e2, n, _flipped) ->
       let v1 = eval env e1 in
       let v2 = eval env e2 in
       (match v1, v2 with
