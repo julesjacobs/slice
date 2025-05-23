@@ -122,7 +122,7 @@ let discretize (e : texpr) : expr =
 
           let final_expr_producer (concrete_distr : Distributions.cdistr) : expr =
             let get_float_val_from_bound (b: Bags.bound) : float = 
-              match b with Bags.Less f -> f | Bags.LessEq f -> f | Bags.Greater f -> f | Bags.GreaterEq f -> f
+              match b with Bags.Less f -> f | Bags.LessEq f -> f
             in
 
             let intervals_for_probs = List.init overall_modulus (fun k_idx ->

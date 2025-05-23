@@ -364,8 +364,6 @@ and string_of_ty = function
               let string_of_bound = function 
                 | Bags.Less c -> Printf.sprintf "<%g" c 
                 | Bags.LessEq c -> Printf.sprintf "<=%g" c 
-                | Bags.Greater c -> Printf.sprintf ">%g" c 
-                | Bags.GreaterEq c -> Printf.sprintf ">=%g" c 
               in
               let elements = BoundSet.elements bound_set in
               (* Join with comma, no space. Removed internal colors *)

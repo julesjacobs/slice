@@ -12,8 +12,6 @@ module FloatSet = Set.Make(struct type t = float let compare = compare end)
 type bound = 
   | Less of float   (* < c *)
   | LessEq of float (* <= c *)
-  | Greater of float   (* > c *)
-  | GreaterEq of float (* >= c *)
 
 let compare_bound b1 b2 = 
   match b1, b2 with
@@ -25,30 +23,11 @@ let compare_bound b1 b2 =
   | LessEq c1, Less c2 ->
       let cmp = compare c1 c2 in
       if cmp = 0 then 1 else cmp
-  | Greater c1, Greater c2 -> compare c1 c2
-  | GreaterEq c1, GreaterEq c2 -> compare c1 c2
-  | Greater c1, GreaterEq c2 -> 
-      let cmp = compare c1 c2 in
-      if cmp = 0 then -1 else cmp
-  | GreaterEq c1, Greater c2 ->
-      let cmp = compare c1 c2 in
-      if cmp = 0 then 1 else cmp
-  | Less c1, Greater c2 -> compare c1 c2
-  | Less c1, GreaterEq c2 -> compare c1 c2
-  | LessEq c1, Greater c2 -> compare c1 c2
-  | LessEq c1, GreaterEq c2 -> compare c1 c2
-  | Greater c1, Less c2 -> compare c1 c2
-  | Greater c1, LessEq c2 -> compare c1 c2
-  | GreaterEq c1, Less c2 -> compare c1 c2
-  | GreaterEq c1, LessEq c2 -> compare c1 c2
-
 
 let satisfies_bound f bound =
   match bound with
   | Less c -> f < c
   | LessEq c -> f <= c
-  | Greater c -> f <= c
-  | GreaterEq c -> f < c
 
 
 (* == Bound Set == *)

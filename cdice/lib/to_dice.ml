@@ -268,8 +268,6 @@ and string_of_ty = function
               let string_of_bound = function 
                 | Bags.Less c -> Printf.sprintf "<%g" c 
                 | Bags.LessEq c -> Printf.sprintf "<=%g" c 
-                | Bags.Greater c -> Printf.sprintf ">%g" c 
-                | Bags.GreaterEq c -> Printf.sprintf ">=%g" c
               in
               String.concat "," (List.map string_of_bound (BoundSet.elements bound_set))
       in
