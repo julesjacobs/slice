@@ -1,6 +1,36 @@
-\documentclass[nonacm,anonymous]{acmart}
-
+\documentclass[acmsmall,screen,dvipsnames,x11names,nonacm,anonymous,review]{acmart}
+\usepackage[most]{tcolorbox}
 \usepackage{listings}
+\usepackage{caption}
+
+\usepackage[table,xcdraw]{xcolor}
+\definecolor{col1}{HTML}{90f1ef}
+\definecolor{col2}{HTML}{ffd6e0}
+\definecolor{col3}{HTML}{ffef9f}
+
+
+
+\tcbuselibrary{listingsutf8}
+
+\newtcblisting{mybox}[2][]{%
+  colback=#2!20,
+  colframe=#2!80!black,
+  coltitle=white,
+  boxrule=1pt,
+  arc=6pt,
+  fonttitle=\bfseries\footnotesize,
+  listing only,
+  listing options={
+    basicstyle=\ttfamily\footnotesize,
+    breaklines=true,
+    language=Dice,
+    showstringspaces=false
+  },
+  width=\linewidth,
+  valign=top,
+  height=3.6cm,
+  #1
+}
 \usepackage[scaled=0.84]{beramono}
 \usepackage{mathpartir}
 \usepackage{xspace}
@@ -11,10 +41,13 @@
     morekeywords={let, in, if, then, else, fst, snd, fun},
     morekeywords=[2]{uniform, discrete, gaussian, exponential, beta},
     morekeywords=[3]{bool, float, int},
-    basicstyle=\ttfamily,
+    basicstyle=\ttfamily\small,
     keywordstyle=\bfseries,
     commentstyle=\itshape,
     stringstyle=\ttfamily,
+    lineskip=-1pt,                
+    aboveskip=0.1em,                
+    belowskip=0.1em,
 }
 
 \newcommand{\jules}[1]{{\color{blue}\textbf{Jules:} #1}}
@@ -95,6 +128,81 @@ We can discretize a distribution only when it is co-discrete. This turns the dis
 
 \section{Motivating Examples}
 This section illustrates the workflow of Contdice through two simple examples. First, we present the Indian GPA problem, a well-known example using of mixed-type random variables taking on both continuous and discrete values. Then, we present a more real-world example of an ecological model whose program contains variable parameters that are themselves discrete distributions.
+
+
+\noindent
+\begin{minipage}[t]{0.32\textwidth}
+\begin{mybox}[title=Original Program	]{col1}
+let x = uniform(0, 1) in
+let y = uniform(0, 2) in
+if x < 0.5 
+   then x < 0.1 
+   else y < 0.1
+\end{mybox}
+\end{minipage}
+\hfill
+\begin{minipage}[t]{0.32\textwidth}
+\begin{mybox}[title=Type Annotations]{col2}
+let x = uniform(0, 1) in
+let y = uniform(0, 2) in
+if x < 0.5 
+   then x < 0.1 
+   else y < 0.1
+\end{mybox}
+\end{minipage}
+\hfill
+\begin{minipage}[t]{0.32\textwidth}
+\begin{mybox}[title=Discretized Program]{col3}
+let x = uniform(0, 1) in
+let y = uniform(0, 2) in
+if x < 0.5 
+   then x < 0.1 
+   else y < 0.1
+\end{mybox}
+\end{minipage}
+
+bla bla bla
+
+\ \\
+
+\noindent
+\begin{minipage}[t]{0.32\textwidth}
+\begin{mybox}{col1}
+let x = uniform(0, 1) in
+let y = uniform(0, 2) in
+if x < 0.5 
+   then x < 0.1 
+   else y < 0.1
+\end{mybox}
+\end{minipage}
+\hfill
+\begin{minipage}[t]{0.32\textwidth}
+\begin{mybox}{col2}
+let x = uniform(0, 1) in
+let y = uniform(0, 2) in
+if x < 0.5 
+   then x < 0.1 
+   else y < 0.1
+\end{mybox}
+\end{minipage}
+\hfill
+\begin{minipage}[t]{0.32\textwidth}
+\begin{mybox}{col3}
+let x = uniform(0, 1) in
+let y = uniform(0, 2) in
+if x < 0.5 
+   then x < 0.1 
+   else y < 0.1
+\end{mybox}
+\end{minipage}
+
+
+\begin{lstlisting}
+let x = uniform(0, 1) in
+let y = uniform(0, 2) in
+if x < 0.5 then x < 0.1 else y < 0.1
+\end{lstlisting}
+
 
 \subsection{Indian GPA Problem}
 
