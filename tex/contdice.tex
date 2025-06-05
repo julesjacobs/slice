@@ -35,6 +35,7 @@
 \usepackage{mathpartir}
 \usepackage{xspace}
 \usepackage{todonotes}
+\usepackage{subcaption}
 \title{CDice: Type-Directed Discretization of Continuous Probabilistic Programs}
 
 \lstdefinelanguage{Dice}{
@@ -74,6 +75,7 @@
 % Macros for language names, use small caps
 \newcommand{\CDice}{\text{\scshape CDice}\xspace}
 \newcommand{\DDice}{\text{\scshape DDice}\xspace}
+\newcommand{\contdice}{\text{\scshape ContDice}\xspace}
 
 % Set this as the default language for listings
 \lstset{language=Dice}
@@ -127,81 +129,256 @@ We can discretize a distribution only when it is co-discrete. This turns the dis
 
 
 \section{Motivating Examples}
-This section illustrates the workflow of Contdice through two simple examples. First, we present the Indian GPA problem, a well-known example using of mixed-type random variables taking on both continuous and discrete values. Then, we present a more real-world example of an ecological model whose program contains variable parameters that are themselves discrete distributions.
+This section presents simple examples that highlight the key features of our probabilistic programming language \contdice, aiming to emphasize how \contdice meets the challenge of performing exact inference efficiently. \contdice extends a core functional language with traditional programming language constructs such as conditionals, local variables, and functions, augmented with constructs for probabilistic programming such as sampling and conditioning. Each example in the subsections is intended to showcase these features. Later in the section, we also mention examples for which \contdice is unable to fully discretize but nonetheless preserves the semantics across both the original and discretized program.
+
+\subsection{Simple branching on a uniform distribution}
+\label{sec:simple-branch}
+We start with the simplest example shown in , which is
 
 
-\noindent
-\begin{minipage}[t]{0.32\textwidth}
-\begin{mybox}[title=Original Program	]{col1}
-let x = uniform(0, 1) in
-let y = uniform(0, 2) in
-if x < 0.5 
-   then x < 0.1 
-   else y < 0.1
-\end{mybox}
-\end{minipage}
+\begin{figure}[ht]
+\centering
+% Left column: A on top, C on bottom
+\begin{subfigure}[t]{0.45\textwidth}
+  \centering
+  \begin{subfigure}[t]{\textwidth}
+    \begin{lstlisting}
+    uniform(0,1) < 0.5
+    \end{lstlisting}
+    \caption{Original program}
+    \label{fig:subA}
+  \end{subfigure}
+
+  \vspace{1em} % space between A and C
+
+  \begin{subfigure}[t]{\textwidth}
+    \begin{lstlisting}
+    discrete(0.5: 0#2, 0.5: 1#2) <#2 1#2
+    \end{lstlisting}
+    \caption{Discretized program}
+    \label{fig:subC}
+  \end{subfigure}
+\end{subfigure}
 \hfill
-\begin{minipage}[t]{0.32\textwidth}
-\begin{mybox}[title=Type Annotations]{col2}
-let x = uniform(0, 1) in
-let y = uniform(0, 2) in
-if x < 0.5 
-   then x < 0.1 
-   else y < 0.1
-\end{mybox}
-\end{minipage}
+% Right column: B
+\begin{subfigure}[t]{0.45\textwidth}
+  \begin{lstlisting}
+  (uniform(
+      (0 : float[<=0; 0]), 
+      (1 : float[<=1; 1])
+  ) : float[<0.5; T]) < 
+  (0.5 : float[<0.5; 0.5]) : bool
+  \end{lstlisting}
+  \caption{Type annotations}
+  \label{fig:subB}
+\end{subfigure}
+
+\caption{\contdice workflow for \ref{sec:simple-branch}}
+\label{fig:main}
+\end{figure}
+
+
+\subsection{Nested if else statements}
+\label{sec:nested-if}
+
+\begin{figure}[ht]
+\centering
+% Left column: A on top, C on bottom
+\begin{subfigure}[t]{0.48\textwidth}  % Slightly wider to give room
+  \centering
+  \begin{subfigure}[t]{\textwidth}
+    \begin{lstlisting}
+let x = gaussian(0,1) in 
+if x < 0.4 then 
+    ...
+else
+    if x < 0.5 then 
+        ...
+    else
+        if x < 0.6 then 
+            ...
+        else
+            ...
+    \end{lstlisting}
+    \caption{Original program}
+    \label{fig:subA}
+  \end{subfigure}
+
+  \vspace{2em} % more vertical space between A and C
+
+  \begin{subfigure}[t]{\textwidth}
+    \begin{lstlisting}
+let x = (gaussian((0 : float[<=0; 0]), (1 : float[<=1; 1])) : float[<0.4,<0.5,<0.6; T]) in
+(if ((x : float[<0.4,<0.5,<0.6; T]) < (0.4 : float[<0.4,<0.5,<0.6; 0.4]) : bool) then
+  (... : bool)
+else
+  (if ((x : float[<0.4,<0.5,<0.6; T]) < (0.5 : float[<0.4,<0.5,<0.6; 0.5]) : bool) then
+    (... : bool)
+  else
+    (if ((x : float[<0.4,<0.5,<0.6; T]) < (0.6 : float[<0.4,<0.5,<0.6; 0.6]) : bool) then
+      (... : bool)
+    else
+      (... : bool) : bool) : bool) : bool) : bool
+    \end{lstlisting}
+    \caption{Type annotations}
+    \label{fig:subC}
+  \end{subfigure}
+\end{subfigure}
 \hfill
-\begin{minipage}[t]{0.32\textwidth}
-\begin{mybox}[title=Discretized Program]{col3}
-let x = uniform(0, 1) in
-let y = uniform(0, 2) in
-if x < 0.5 
-   then x < 0.1 
-   else y < 0.1
-\end{mybox}
-\end{minipage}
+% Right column: B
+\begin{subfigure}[t]{0.48\textwidth}
+  \begin{lstlisting}
+let x = discrete(0.655422: 0#4, 0.0360407: 1#4, 
+0.0342844: 2#4, 0.274253: 3#4) in
+if x <#4 1#4 then
+  ...
+else
+  if x <#4 2#4 then
+    ...
+  else
+    if x <#4 3#4 then
+      ...
+    else
+      ...
+  \end{lstlisting}
+  \caption{Discretized program}
+  \label{fig:subB}
+\end{subfigure}
 
-bla bla bla
+\caption{\contdice workflow for \ref{sec:nested-if}}
+\label{fig:main}
+\end{figure}
 
-\ \\
 
-\noindent
-\begin{minipage}[t]{0.32\textwidth}
-\begin{mybox}{col1}
-let x = uniform(0, 1) in
-let y = uniform(0, 2) in
-if x < 0.5 
-   then x < 0.1 
-   else y < 0.1
-\end{mybox}
-\end{minipage}
+\subsection{If else with discrete values}
+\label{sec:discrete-if}
+
+\begin{figure}[ht]
+\centering
+% Left column: A on top, C on bottom
+\begin{subfigure}[t]{0.48\textwidth}  % Slightly wider to give room
+  \centering
+  \begin{subfigure}[t]{\textwidth}
+    \begin{lstlisting}
+let x = if uniform(0,1) < 0.5 then 
+    0.3 else 0.6 in x < 0.5
+    \end{lstlisting}
+    \caption{Original program}
+    \label{fig:subA}
+  \end{subfigure}
+
+  \vspace{2em} % more vertical space between A and C
+
+  \begin{subfigure}[t]{\textwidth}
+    \begin{lstlisting}
+let x = if discrete(0.5: 0#2, 0.5: 1#2) 
+    <#2 1#2 then 0#2 else 1#2 in
+    x <#2 1#2
+    \end{lstlisting}
+    \caption{Discretized program}
+    \label{fig:subC}
+  \end{subfigure}
+\end{subfigure}
 \hfill
-\begin{minipage}[t]{0.32\textwidth}
-\begin{mybox}{col2}
-let x = uniform(0, 1) in
-let y = uniform(0, 2) in
-if x < 0.5 
-   then x < 0.1 
-   else y < 0.1
-\end{mybox}
-\end{minipage}
+% Right column: B
+\begin{subfigure}[t]{0.48\textwidth}
+  \begin{lstlisting}
+let x = (
+    if ((uniform(
+            (0 : float[<=0; 0]), 
+            (1 : float[<=1; 1])
+         ) : float[<0.5; T]) < 
+         (0.5 : float[<0.5; 0.5]) : bool) 
+    then
+        (0.3 : float[<0.5; 0.3])
+    else
+        (0.6 : float[<0.5; 0.6])
+    : float[<0.5; 0.3,0.6]
+) in
+  ((x : float[<0.5; 0.3,0.6]) < 
+    (0.5 : float[<0.5; 0.5]) : bool) 
+: bool
+  \end{lstlisting}
+  \caption{Type annotations}
+  \label{fig:subB}
+\end{subfigure}
+
+\caption{\contdice workflow for \ref{sec:discrete-if}}
+\label{fig:main}
+\end{figure}
+
+
+\subsection{If else with continuous values}
+\label{sec:discrete-if}
+
+\begin{figure}[ht]
+\centering
+% Left column: A on top, C on bottom
+\begin{subfigure}[t]{0.48\textwidth}  % Slightly wider to give room
+  \centering
+  \begin{subfigure}[t]{\textwidth}
+    \begin{lstlisting}
+let x = if uniform(0,1) < 0.5 then 
+    uniform(0,2) else uniform(0,4) in 
+    x < 0.5
+    \end{lstlisting}
+    \caption{Original program}
+    \label{fig:subA}
+  \end{subfigure}
+
+  \vspace{2em} % more vertical space between A and C
+
+  \begin{subfigure}[t]{\textwidth}
+    \begin{lstlisting}
+let x = if discrete(0.5: 0#2, 0.5: 1#2) 
+    <#2 1#2 then 
+    discrete(0.25: 0#2, 0.75: 1#2) 
+    else
+    discrete(0.125: 0#2, 0.875: 1#2) in
+    x <#2 1#2
+    \end{lstlisting}
+    \caption{Discretized program}
+    \label{fig:subC}
+  \end{subfigure}
+\end{subfigure}
 \hfill
-\begin{minipage}[t]{0.32\textwidth}
-\begin{mybox}{col3}
-let x = uniform(0, 1) in
-let y = uniform(0, 2) in
-if x < 0.5 
-   then x < 0.1 
-   else y < 0.1
-\end{mybox}
-\end{minipage}
-
-
+% Right column: B
+\begin{subfigure}[t]{0.48\textwidth}
 \begin{lstlisting}
-let x = uniform(0, 1) in
-let y = uniform(0, 2) in
-if x < 0.5 then x < 0.1 else y < 0.1
+(let x = (
+    if ((uniform(
+            (0 : float[<=0; 0]), 
+            (1 : float[<=1; 1])
+         ) : float[<0.5; T]) < 
+         (0.5 : float[<0.5; 0.5]) : bool) 
+    then
+        (uniform(
+            (0 : float[<=0; 0]), 
+            (2 : float[<=2; 2])
+        ) : float[<0.5; T])
+    else
+        (uniform(
+            (0 : float[<=0; 0]), 
+            (4 : float[<=4; 4])
+        ) : float[<0.5; T])
+    : float[<0.5; T]
+) in
+  ((x : float[<0.5; T]) < 
+    (0.5 : float[<0.5; 0.5]) : bool) 
+: bool)
 \end{lstlisting}
+
+  \caption{Type annotations}
+  \label{fig:subB}
+\end{subfigure}
+
+\caption{\contdice workflow for \ref{sec:continuous-if}}
+\label{fig:main}
+\end{figure}
+
+
+
+
 
 
 \subsection{Indian GPA Problem}
