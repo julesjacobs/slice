@@ -118,8 +118,8 @@ This paper introduces \Slice, a small functional language that bridges this gap.
 \begin{lstlisting}
 
    let x = discrete(0.1, 0.4, 0.5) in
-   let y = discrete(0.05: 0#2, 0.95: 1#2) in
-   if x <= 1 then x <= 0 else y <= 0
+   let y = discrete(0.05, 0.95) in
+   if x < 2 then x < 1 else y < 1
 
 \end{lstlisting}\vspace{1em}
 
