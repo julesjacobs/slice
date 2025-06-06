@@ -7,7 +7,7 @@ let comparison_result = x <#3 y in (* FinLt *)
 
 let z =
   if comparison_result then
-    discrete(0.5 : 0#2, 0.5 : 1#2) (* DistrCase yielding FinConst *)
+    discrete(0.5, 0.5) (* DistrCase yielding FinConst *)
   else
     1#2 (* A simple FinConst *)
 in
