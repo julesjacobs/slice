@@ -2,11 +2,24 @@
 \usepackage[most]{tcolorbox}
 \usepackage{listings}
 \usepackage{caption}
+\usepackage{cleveref}
+% Redefine sections to display with § symbol
+\crefformat{section}{\S#2#1#3}
+\Crefformat{section}{\S#2#1#3}
+
+% Ensure subsections/subsubsections behave the same way (optional)
+\crefformat{subsection}{\S#2#1#3}
+\Crefformat{subsection}{\S#2#1#3}
+\crefformat{subsubsection}{\S#2#1#3}
+\Crefformat{subsubsection}{\S#2#1#3}
 
 \usepackage[table,xcdraw]{xcolor}
 \definecolor{col1}{HTML}{90f1ef}
 \definecolor{col2}{HTML}{ffd6e0}
 \definecolor{col3}{HTML}{ffef9f}
+
+\renewcommand{\paragraph}[1]{\vspace{1em}\noindent\textbf{#1}\ }
+
 
 
 
@@ -36,7 +49,7 @@
 \usepackage{xspace}
 \usepackage{todonotes}
 \usepackage{subcaption}
-\title{CDice: Type-Directed Discretization of Continuous Probabilistic Programs}
+\title{Slice: Type-Directed Discretization of Continuous Probabilistic Programs}
 
 \lstdefinelanguage{Dice}{
     morekeywords={let, in, if, then, else, fst, snd, fun},
@@ -73,9 +86,8 @@
 \newcommand{\float}{\text{\ttfamily\bfseries float}}
 
 % Macros for language names, use small caps
-\newcommand{\CDice}{\text{\scshape CDice}\xspace}
-\newcommand{\DDice}{\text{\scshape DDice}\xspace}
-\newcommand{\contdice}{\text{\scshape ContDice}\xspace}
+\newcommand{\Slice}{\text{\scshape Slice}\xspace}
+\newcommand{\Dice}{\text{\scshape Dice}\xspace}
 
 % Set this as the default language for listings
 \lstset{language=Dice}
@@ -85,8 +97,10 @@
 \maketitle
 
 
-\section{Introduction}
-Probabilistic programming languages (PPLs) offer a way to define models involving random variables and to perform inference, and specifically, probabilistic inference involves computing the probability that an event occurs according to the distribution defined by the program. ... [TODO: Give more context] \CDice is a small functional language designed for expressing programs with both continuous and discrete distributions. Here is a simple example:
+\section{Introduction}\label{sec:intro}
+Probabilistic programming languages (PPLs) have emerged as a powerful tool for building complex statistical models and reasoning about uncertainty. A key challenge in PPLs is inference: computing the probability of an event given a model. The tractability of inference often depends on the kinds of random variables used. For programs with only discrete random variables, powerful exact inference engines can compute probabilities precisely. However, many real-world models require continuous random variables to represent quantities like time, distance, or sensor readings. For these programs, exact inference is often intractable, forcing practitioners to rely on approximate methods like Monte Carlo simulation or variational inference.
+
+This paper introduces \Slice, a small functional language that bridges this gap. \Slice enables exact inference on a class of probabilistic programs with continuous distributions by automatically and soundly converting them into equivalent discrete programs. The key insight is to analyze how continuous variables are used within the program. Specifically, \Slice uses a type system to track all the constant thresholds against which continuous variables are compared. These comparison points are then used to intelligently discretize the continuous distributions into a finite number of buckets. When the resulting program is purely discrete it can then be solved by an off-the-shelf exact inference engine. This type-directed discretization allows developers to model with continuous distributions while still benefiting from the speed and precision of exact discrete inference. Here is a simple example:
 
 \begin{lstlisting}
 let x = uniform(0, 1) in
@@ -94,8 +108,7 @@ let y = uniform(0, 2) in
 if x < 0.5 then x < 0.1 else y < 0.1
 \end{lstlisting}
 
-
-Exact inference on programs with continuous variables is often intractable, so we convert continuous distributions into discrete ones by analyzing the comparison points used in the program. The program above can be discretized into:
+The program above can be discretized into:
 
 \begin{lstlisting}
 let x = discrete(0.1, 0.4, 0.5) in
@@ -103,43 +116,28 @@ let y = discrete(0.05, 0.95) in
 if x <= 1 then x <= 0 else y <= 0
 \end{lstlisting}
 
+The discretization process is driven by the comparisons present in the program. \Slice analyzes the program to find all numeric constants used in comparisons with continuous random variables. In the example above, the variable \texttt{x}, drawn from a \texttt{uniform(0, 1)} distribution, is compared to 0.5 and 0.1. These two "split points" partition the range of \texttt{x} into three intervals: $[0, 0.1)$, $[0.1, 0.5)$, and $[0.5, 1)$. \Slice replaces the continuous distribution for \texttt{x} with a discrete one that has three outcomes, where the probability of each outcome is equal to the probability mass of the original uniform distribution within the corresponding interval. Similarly, the variable \texttt{y}, drawn from \texttt{uniform(0, 2)}, is compared only to 0.1, partitioning its distribution into two intervals. All comparisons are then transformed to operate on these new discrete variables. This example illustrates the core mechanism of \Slice: a type-directed transformation that makes continuous programs amenable to exact discrete inference.
 
-We first classify quantities as discrete or continuous. Discrete means that we can figure out that it has at most a fixed number of different values. This is for both distributions and floats. Let's call this notion ``discrete". Second, we classify quantities by whether they are only compared to a fixed number of constants (also both for floats and distributions. For distributions it means that its samples are only compared to a fixed number of constants, and the cdf is only called at a fixed number of constants). Let's call this notion ``co-discrete". Expressions that are not co-discrete, in which we denote as co-continuous, include those with parameters that are co-continuous or those that are compared to a co-continuous quantity.
+\paragraph{Contributions.}
 
-We can discretize a distribution only when it is co-discrete. This turns the distribution into a $\mathbf{discrete(...)}$ with a number of cdf calls in it. In particular, we can discretize:
+We first introduce \Slice through examples (\Cref{sec:examples}), and then present and evaluate our framework for type-directed discretization via the following contributions:
 
-\begin{itemize}
-    \item Co-discrete discrete distributions
-    \begin{lstlisting}
-    let x = uniform(0, 1) in
-    let y = if x < 0.5 then discrete(0.5, 0.5) else discrete(0.1, 0.9) in y < 1
-    \end{lstlisting}
+\begin{description}
+    \item[Type System (\Cref{sec:language})] We introduce a novel type system that identifies which expressions are discretizable based on how they are used throughout the program.
 
-    \begin{lstlisting}
-    let x = uniform(0, 1) in
-    let y = if x < 0.5 then 1.0 else 4.0 in y < 1.5
-    \end{lstlisting}
+    \item[Type Inference (\Cref{sec:type-inference})] We develop a type inference algorithm that automatically collects the set of constant thresholds needed for discretization for each expression.
 
-    \item Co-discrete continuous distributions
-    \begin{lstlisting}
-    let x = uniform(0,1) in 
-    let y = if x < 0.5 then uniform(0,2) else uniform(0,4) in y < 0.5
-    \end{lstlisting}
-\end{itemize}
+    \item[Discretization (\Cref{sec:discretization})] We present a type-directed transformation that soundly converts continuous distributions and their comparisons into discrete counterparts. We characterize the class of programs for which this transformation results in a fully discrete program.
 
-Contributions:
-1. Discretization - type inference and type-directed discretization
-    1a. type system that determines what can be discretized
-    1b. inference for this type system
-    1c. type directed discretization
-    (1d. discussion for partial discretization)
-    (1e. characterization of what programs we can discretize - discrete, co-discrete, co-continuous)
-2. Implementation with dice (and roulette) as a backend
-3. and we show that it is faster than the state-of-the-art (sppl)
-TODO: rigorous soundness proof
+    \item[Soundness (\Cref{sec:soundness})] We prove that our discretization method is sound, establishing that the discretized program preserves the semantics of the original program.
 
-\section{Motivating Examples}
-This section presents simple examples that highlight the key features of our probabilistic programming language \contdice, aiming to emphasize how \contdice meets the challenge of performing exact inference efficiently. \contdice extends a core functional language with traditional programming language constructs such as conditionals, local variables, and functions, augmented with constructs for probabilistic programming such as sampling and conditioning. Each example in the subsections is intended to showcase these features. Later in the section, we also mention examples for which \contdice is unable to fully discretize but nonetheless preserves the semantics across both the original and discretized program.
+    \item[Implementation (\Cref{sec:implementation})] We provide an open-source implementation of our system, \Slice. The system transforms a given \Slice program into another, more discretized \Slice program. If the resulting program is fully discrete, it can be compiled for the \Dice probabilistic programming system to leverage its highly-optimized exact inference engine. We have also implemented a direct Monte Carlo simulator for \Slice itself, which can handle any program, including those that are only partially discretized.
+
+    \item[Evaluation (\Cref{sec:evaluation})] We conduct a thorough empirical evaluation of our approach on a range of benchmarks, including those used to evaluate existing systems like SPPL. The results show that our method of discretization followed by exact discrete inference is significantly faster than prior symbolic techniques, while maintaining the same level of correctness.
+\end{description}
+
+\section{Slice by Example}\label{sec:examples}
+This section presents simple examples that highlight the key features of our probabilistic programming language \Slice, aiming to emphasize how \Slice meets the challenge of performing exact inference efficiently. \Slice extends a core functional language with traditional programming language constructs such as conditionals, local variables, and functions, augmented with constructs for probabilistic programming such as sampling and conditioning. Each example in the subsections is intended to showcase these features. Later in the section, we also mention examples for which \Slice is unable to fully discretize but nonetheless preserves the semantics across both the original and discretized program.
 
 \subsection{Simple branching on a uniform distribution}
 \label{sec:simple-branch}
@@ -183,7 +181,7 @@ perhaps simulates a coin flip
   \label{fig:simple-branch-types}
 \end{subfigure}
 
-\caption{\contdice workflow for \ref{sec:simple-branch}}
+\caption{\Slice workflow for \ref{sec:simple-branch}}
 \label{fig:simple-branch}
 \end{figure}
 
@@ -255,7 +253,7 @@ else
   \label{fig:subB}
 \end{subfigure}
 
-\caption{\contdice workflow for \ref{sec:nested-if}}
+\caption{\Slice workflow for \ref{sec:nested-if}}
 \label{fig:main}
 \end{figure}
 
@@ -314,7 +312,7 @@ let x = (
   \label{fig:subB}
 \end{subfigure}
 
-\caption{\contdice workflow for \ref{sec:discrete-if}}
+\caption{\Slice workflow for \ref{sec:discrete-if}}
 \label{fig:main}
 \end{figure}
 
@@ -383,7 +381,7 @@ let x = if discrete(0.5: 0#2, 0.5: 1#2)
   \label{fig:subB}
 \end{subfigure}
 
-\caption{\contdice workflow for \ref{sec:continuous-if}}
+\caption{\Slice workflow for \ref{sec:continuous-if}}
 \label{fig:main}
 \end{figure}
 
@@ -436,7 +434,7 @@ if _h_sigma1 ==#3 0#3 then
   \label{fig:subB}
 \end{subfigure}
 
-\caption{\contdice workflow for \ref{sec:discrete-latent}}
+\caption{\Slice workflow for \ref{sec:discrete-latent}}
 \label{fig:main}
 \end{figure}
 
@@ -483,12 +481,12 @@ let _ = observe (x <#3 2#3) in
   \label{fig:subB}
 \end{subfigure}
 
-\caption{\contdice workflow for \ref{sec:observe}}
+\caption{\Slice workflow for \ref{sec:observe}}
 \label{fig:main}
 \end{figure}
 
 
-\subsection{Higher order functions, lists, recursion, mutable state}
+\subsection{Higher order functions, lists, recursion, mutable state}\label{sec:unsupported-constructs}
 
 
 
@@ -498,7 +496,7 @@ let _ = observe (x <#3 2#3) in
 
 
 
-\subsection{Indian GPA Problem}
+\subsection{Indian GPA Problem}\label{sec:gpa}
 
 \textbf{Specifying the Prior.} The figure below illustrates the example using Contdice syntax. In this scenario, a student's GPA depends on their nationality and whether they have a perfect record, both of which are modeled as discrete random variables. The nationality variable is binary, representing an equal chance of a student from India (0\#2) or USA (1\#2). Similarly, the perfect variable encodes whether the student has a perfect GPA with a small prior probability, 0.01 for yes and 0.99 for no. Depending on these discrete inputs, the gpa is assigned deterministically, e.g. 10.0 for a perfect Indian student, or sampled from a continuous uniform distribution, e.g. uniform(0,10) or uniform(0,4) depending on nationality. We finally perform a query to determine the probability that a student's GPA falls below 1.0.
 
@@ -530,7 +528,7 @@ let _ = observe (x <#3 2#3) in
 \end{lstlisting}
 
 
-\textbf{Discretization.} After type inference, the discretization process transforms cdice into a discretized program based on the bags containing all relevant threshold points for the float types. The continuous range of float variables are mapped onto a finite set of integers representing intervals defined by the threshold points in its corresponding bag. Notably, $\textbf{uniform}(0,10)$ is transformed to $\textbf{discrete}(0.1: 0\#2, 0.9: 1\#2)$ due to its threshold point 1 partitioning the continuous distribution into two intervals, from which we calculate the probabilities of the intervals using the uniform cdf. CDice now becomes a comparison against the corresponding interval index, in this case 1, in the discretized program.
+\textbf{Discretization.} After type inference, the discretization process transforms cdice into a discretized program based on the bags containing all relevant threshold points for the float types. The continuous range of float variables are mapped onto a finite set of integers representing intervals defined by the threshold points in its corresponding bag. Notably, $\textbf{uniform}(0,10)$ is transformed to $\textbf{discrete}(0.1: 0\#2, 0.9: 1\#2)$ due to its threshold point 1 partitioning the continuous distribution into two intervals, from which we calculate the probabilities of the intervals using the uniform cdf. Slice now becomes a comparison against the corresponding interval index, in this case 1, in the discretized program.
 
 \begin{lstlisting}
     let nationality = discrete(0.5: 0#2, 0.5: 1#2) in
@@ -552,7 +550,7 @@ let perfect = discrete(0.01: 0#2, 0.99: 1#2) in
 \textbf{Exact Inference.} The final step is a post-processing step of converting the discretized program into a discrete program compatible with a backend discrete exact inference solver, such as Dice or Roulette.
 
 \subsection{Plankton}
-This second example is an ecological model that highlights the difficulties in estimating $n$ for discrete models of plankton populations. Inference over discrete latent variables, particularly when one of those variables controls the domain of another random variable, is challenging, but contdice performs exact inference for such programs. Here, \textbf{param} is a latent discrete random variable representing the number of trials in a hypotehtical ecological setting, drawn uniformly at random from the integers between 10 and 50 inclusive. Given the latent param, a binomial distribution is used to model the number of observed plankton, in this case \textbf{planktonCount}.
+This second example is an ecological model that highlights the difficulties in estimating $n$ for discrete models of plankton populations. Inference over discrete latent variables, particularly when one of those variables controls the domain of another random variable, is challenging, but Slice performs exact inference for such programs. Here, \textbf{param} is a latent discrete random variable representing the number of trials in a hypotehtical ecological setting, drawn uniformly at random from the integers between 10 and 50 inclusive. Given the latent param, a binomial distribution is used to model the number of observed plankton, in this case \textbf{planktonCount}.
 
 \begin{lstlisting}
     let param = discUniform(10,50) in
@@ -563,9 +561,9 @@ This second example is an ecological model that highlights the difficulties in e
 
 
 
-\section{Language}
+\section{The Slice Language and Type System}\label{sec:language}
 
-The syntax of the \CDice language is shown in Figure~\ref{fig:grammar}.
+The syntax of the \Slice language is shown in Figure~\ref{fig:grammar}.
 
 \begin{figure}[h]
 \begin{align*}
@@ -587,7 +585,7 @@ e ::= &\; x                               & \text{variable} \\
            | &\; \exponential(c)      & \text{exponential distribution (rate)} \\
            | &\; \betafn(c_1, c_2)      & \text{beta distribution (alpha, beta)}
 \end{align*}
-\caption{Syntax of the \CDice language.}
+\caption{Syntax of the \Slice language.}
 \label{fig:grammar}
 \end{figure}
 
@@ -597,7 +595,7 @@ The uniform distribution $\uniform(c_1, c_2)$ represents a continuous random val
 
 When we discretize continuous programs, we convert expressions involving continuous distributions into expressions with discrete distributions, and convert less-than comparisons into less-than-or-equal comparisons on the corresponding discrete intervals.
 
-\section{Type System}
+\subsection{Type System}\label{sec:type-system}
 
 We introduce a type system that analyzes the threshold points of each floating point expression. We have the following types:
 \begin{itemize}
@@ -665,9 +663,9 @@ The typing rules are as follows:
     {\Gamma \vdash e_1 \; e_2 : \tau_2}
 \end{mathpar}
 
-\section{Type Inference}
+\section{Type Inference}\label{sec:type-inference}
 
-Type inference for \CDice aims to assign a type (e.g., \bool{}, \intty, \float$\langle \dots \rangle$, $\tau_1 * \tau_2$, $\tau_1 \rightarrow \tau_2$) to every subexpression while simultaneously collecting all relevant comparison threshold points for each float expression. This process works by traversing the abstract syntax tree (AST) of the program and generating type constraints based on the structure of the code and the typing rules.
+Type inference for \Slice aims to assign a type (e.g., \bool{}, \intty, \float$\langle \dots \rangle$, $\tau_1 * \tau_2$, $\tau_1 \rightarrow \tau_2$) to every subexpression while simultaneously collecting all relevant comparison threshold points for each float expression. This process works by traversing the abstract syntax tree (AST) of the program and generating type constraints based on the structure of the code and the typing rules.
 
 To manage the constraints on the threshold points associated with $\float\langle B \rangle$ types, we use a concept called ``bags''. Each expression inferred to have type $\float\langle B \rangle$ is associated with a bag $B$, which represents the set of constants $\{c_0, \dots, c_n\}$ it might be compared against. 
 
@@ -712,9 +710,9 @@ Type constraints are solved using unification. When two types $t_1$ and $t_2$ mu
 
 The inference algorithm recursively walks the expression AST. It maintains an environment mapping variables to their inferred types. At each node, it generates and solves constraints using unification and the bag operations. The final result is an AST annotated with types, where each $\float\langle B \rangle$ type carries a bag containing the complete set of relevant threshold points determined by the inference process.
 
-\section{Discretization}
+\section{Discretization}\label{sec:discretization}
 
-After type inference, we have a \CDice expression annotated with types, where each $\float\langle B \rangle$ type includes a bag $B$ containing all relevant threshold points $\{c_0, \dots, c_n\}$ (assumed sorted). The discretization process transforms continuous distributions in this typed expression into discrete distributions, replacing continuous distributions and continuous comparisons with their discrete counterparts.
+After type inference, we have a \Slice expression annotated with types, where each $\float\langle B \rangle$ type includes a bag $B$ containing all relevant threshold points $\{c_0, \dots, c_n\}$ (if $t$ is a float type). The discretization process transforms continuous distributions in this typed expression into discrete distributions, replacing continuous distributions and continuous comparisons with their discrete counterparts.
 
 The core idea is to map the continuous range of a float variable onto a finite set of integers, representing intervals defined by the threshold points in its bag. A comparison against a threshold constant $c_k$ becomes a comparison against the corresponding interval index $k$.
 
@@ -746,22 +744,29 @@ Let $e$ be a subexpression with inferred type $t$ and associated bag $B = \{c_0,
 
 This process effectively translates continuous distributions into discrete distributions based on the thresholds used in the program, while preserving the original discrete distributions and program structure, including functional and pair constructs.
 
-\section{Evaluation}
+\section{Soundness Proof}\label{sec:soundness}
+
+
+\section{Implementation}\label{sec:implementation}
 
 \jules{Here we describe how we implemented it, and how we have a Dice backend}
 
-\subsection{Synthetic benchmarks}
+
+\section{Evaluation}\label{sec:evaluation}
+
+
+\subsection{Synthetic benchmarks}\label{sec:synthetic-benchmarks}
 - Describe the benchmarks, the structure they have
 - Scaling graphs
 - Divide cdice and Dice
 
 * We compare all benchmarks that sppl runs on
-\subsection{Psi benchmarks}
+\subsection{Psi benchmarks}\label{sec:psi-benchmarks}
 - describe benchmarks, cite paper
 - simplications we made such as expanding out arrays
 - graphs (cdice + dice vs sppl vs bitblast)
 
-\subsection{Fairness benchmarks}
+\subsection{Fairness benchmarks}\label{sec:fairness-benchmarks}
 - describe benchmarks, cite paper
 - simplications we made such as expanding out arrays
 - graphs (cdice + dice vs sppl vs bitblast)
