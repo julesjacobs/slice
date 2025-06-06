@@ -114,9 +114,21 @@ Probabilistic programming languages have emerged as a powerful tool for building
 
 Existing discrete PPLs like \Dice~\cite{Holtzen2020Dice} and Roulette~\cite{Moy2025Roulette} offer powerful, exact inference but cannot handle continuous distributions. At the other end of the spectrum, popular general-purpose PPLs like Stan~\cite{Carpenter2017Stan} and Pyro~\cite{Bingham2019Pyro} excel at approximate inference for continuous models but sacrifice exactness. Symbolic inference systems like SPPL~\cite{Saad2021SPPL} can reason exactly about certain mixed discrete-continuous models.
 
-This paper introduces \Slice, which occupies a unique position in the PPL design space: it automatically and soundly translates a broad class of programs with continuous variables into equivalent discrete programs. This automated, sound discretization unlocks the ability to use powerful discrete exact inference engines on models that were previously out of their reach. The key insight is to analyze how continuous variables are used within the program. Specifically, \Slice uses a type system to track all the constant thresholds against which continuous variables are compared. These comparison points are then used to intelligently discretize the continuous distributions into a finite number of buckets. When the resulting program is purely discrete it can then be solved by an off-the-shelf exact inference engine such as Dice \cite{Holtzen2020Dice}. This type-directed discretization allows developers to model with continuous distributions while still benefiting from the speed and precision of exact discrete inference. Here is a simple example:
+This paper introduces \Slice, which occupies a unique position in the PPL design space: it automatically and soundly translates a broad class of programs with continuous variables into equivalent discrete programs. This automated, sound discretization unlocks the ability to use powerful discrete exact inference engines on models that were previously out of their reach. The key insight is to analyze how continuous variables are used within the program. Specifically, \Slice uses a type system to track all the constant thresholds against which continuous variables are compared. These comparison points are then used to intelligently discretize the continuous distributions into a finite number of buckets. When the resulting program is purely discrete it can then be solved by an off-the-shelf exact inference engine such as Dice \cite{Holtzen2020Dice}. This type-directed discretization allows developers to model with continuous distributions while still benefiting from the speed and precision of exact discrete inference.
 
-\jules{TODO: add an even simpler example above (just uniform(0,1) < 0.5), and then the more complex one below.}
+Consider the simplest possible example -- checking if a uniform random variable is less than 0.5:
+
+\begin{lstlisting}[aboveskip=1em,belowskip=1em]
+    uniform(0, 1) < 0.5
+\end{lstlisting}
+
+\noindent \Slice automatically transforms this into:
+
+\begin{lstlisting}[aboveskip=1em,belowskip=1em]
+    discrete(0.5, 0.5) < 1
+\end{lstlisting}
+
+\noindent The uniform distribution is replaced by a discrete distribution with two equally likely outcomes, and the comparison is adapted accordingly. Here is a more complex example:
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em]
     let x = uniform(0, 1) in
@@ -238,13 +250,42 @@ Consider the following program:
   let x = if uniform(0,1) < 0.5 
           then uniform(0,2) 
           else gaussian(0,1) in
-  let y = if 1.5 <= x
+  let y = if 1.5 < x
           then 1.8
           else 0.3 in
-  x < y
+  x <= y
 \end{lstlisting}
 
+\noindent This program demonstrates how comparison points propagate through control flow. The type inference annotates the program as follows:
+
+\begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
+  let x = if (uniform(0,1) : !{\codetype{float[<0.5; T]}}!) < (0.5 : !{\codetype{float[<0.5; 0.5]}}!)
+          then (uniform(0,2) : !{\codetype{float[<=0.3,<1.5,<=1.8; T]}}!)
+          else (gaussian(0,1) : !{\codetype{float[<=0.3,<1.5,<=1.8; T]}}!)
+          : !{\codetype{float[<=0.3,<1.5,<=1.8; T]}}! in
+  let y = if (1.5 : !{\codetype{float[<=0.3,<1.5,<=1.8; 1.5]}}!) < x
+          then (1.8 : !{\codetype{float[<=0.3,<1.5,<=1.8; 1.8]}}!)
+          else (0.3 : !{\codetype{float[<=0.3,<1.5,<=1.8; 0.3]}}!)
+          : !{\codetype{float[<=0.3,<1.5,<=1.8; 0.3,1.8]}}! in
+  x <= y
+\end{lstlisting}
+
+\noindent Notice that all comparison points from the entire program (0.3, 1.5, and 1.8) are collected for the variable \texttt{x}, regardless of which branch is taken. These comparison points with type \codetype{<=0.3,<1.5,<=1.8} split the real line into four intervals: $(-\infty, 0.3]$, $(0.3, 1.5)$, $[1.5, 1.8]$, and $(1.8, +\infty)$. Note that 1.5 is excluded from the second interval and included in the third because it comes from a strict `<` comparison. The discretized version becomes:
+
+\begin{lstlisting}[aboveskip=1em,belowskip=1em]
+  let x = if discrete(0.5, 0.5) < 1 then
+      discrete(0.15, 0.6, 0.15, 0.1)
+    else
+      discrete(0.617911, 0.315281, 0.0308769, 0.0359303) in
+  let y = if 1 < x then 2 else 0 in
+  x <= y
+\end{lstlisting}
+
+\noindent The four probabilities in each \texttt{discrete} distribution correspond to the probability mass in each of the four intervals. For example, \texttt{uniform(0,2)} has probability 0.15 in $(-\infty, 0.3]$, 0.6 in $(0.3, 1.5]$, 0.15 in $(1.5, 1.8]$, and 0.1 in $(1.8, +\infty)$.
+
 \subsection{Discrete latent variable}
+
+Continuous distributions can have parameters that depend on discrete random choices. In this example, a Gaussian distribution's standard deviation is determined by a random choice between two values:
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
     let x = if uniform(0,1) < 0.5 
@@ -253,7 +294,29 @@ Consider the following program:
     gaussian(0, x) < 0.5
 \end{lstlisting}
 
+\noindent This example shows how discrete choices can affect the parameters of continuous distributions. The type-annotated version reveals how the discrete latent variable \texttt{x} determines the standard deviation of the Gaussian:
+
+\begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
+    let x = if (uniform(0,1) : !{\codetype{float[<0.5; T]}}!) < (0.5 : !{\codetype{float[<0.5; 0.5]}}!)
+            then (0.5 : !{\codetype{float[<=0.5,<=1.5; 0.5]}}!)
+            else (1.5 : !{\codetype{float[<=0.5,<=1.5; 1.5]}}!)
+            : !{\codetype{float[<=0.5,<=1.5; 0.5,1.5]}}! in
+    (gaussian(0, x) : !{\codetype{float[<0.5; T]}}!) < (0.5 : !{\codetype{float[<0.5; 0.5]}}!)
+\end{lstlisting}
+
+\noindent The discretized program handles the distribution parameter that depends on a discrete choice:
+
+\begin{lstlisting}[aboveskip=1em,belowskip=1em]
+    let x = if discrete(0.5, 0.5) < 1 then 0 else 1 in
+    (if x == 0 then
+        discrete(0.841345, 0.158655)
+    else
+        discrete(0.630559, 0.369441)) < 1
+\end{lstlisting}
+
 \subsection{Conditioning}
+
+\Slice supports conditioning on events through the \texttt{observe} construct, allowing for Bayesian inference. The following program computes the probability that a uniform random variable is less than 0.2, given that it is less than 0.5:
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
     let x = uniform(0.0, 1.0) in
@@ -261,55 +324,56 @@ Consider the following program:
     x < 0.2
 \end{lstlisting}
 
-\subsection{Higher order functions, lists, recursion, mutable state}
+\noindent The type-annotated version shows how observation points become comparison points:
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
-    todo
+    let x = (uniform(0.0, 1.0) : !{\codetype{float[<0.2,<0.5; T]}}!) in
+    observe (x < (0.5 : !{\codetype{float[<0.2,<0.5; 0.5]}}!));
+    x < (0.2 : !{\codetype{float[<0.2,<0.5; 0.2]}}!)
 \end{lstlisting}
+
+\noindent The discretized version preserves the conditioning semantics:
+
+\begin{lstlisting}[aboveskip=1em,belowskip=1em]
+    let x = discrete(0.2, 0.3, 0.5) in
+    observe (x < 2);
+    x < 1
+\end{lstlisting}
+
+\noindent In the discrete version, the observation \texttt{x < 2} rules out the case where \texttt{x = 2} (corresponding to the original interval $[0.5, +\infty)$), effectively conditioning on \texttt{x} being in $[0.0, 0.5)$.
+
+\subsection{Higher order functions, lists, recursion}
+
+\Slice supports higher-order functions, enabling functional programming patterns. While the current implementation focuses on core probabilistic features, the type system naturally extends to handle these constructs. Future work will include support for lists and recursion to enable more complex probabilistic models.
 
 
 \subsection{Indian GPA Problem}\label{sec:gpa}
 
-\textbf{Specifying the Prior.} The figure below illustrates the example using Contdice syntax. In this scenario, a student's GPA depends on their nationality and whether they have a perfect record, both of which are modeled as discrete random variables. The nationality variable is binary, representing an equal chance of a student from India (0\#2) or USA (1\#2). Similarly, the perfect variable encodes whether the student has a perfect GPA with a small prior probability, 0.01 for yes and 0.99 for no. Depending on these discrete inputs, the gpa is assigned deterministically, e.g. 10.0 for a perfect Indian student, or sampled from a continuous uniform distribution, e.g. uniform(0,10) or uniform(0,4) depending on nationality. We finally perform a query to determine the probability that a student's GPA falls below 1.0.
+This example models a student's GPA based on nationality (India or USA) and whether they have a perfect record. The GPA is deterministic for perfect students (10.0 for India, 4.0 for USA) but drawn from a uniform distribution otherwise. The program computes the probability that a student's GPA falls below 1.0:
 
-\begin{lstlisting}[aboveskip=1em,belowskip=1em]
-    let nationality = discrete(0.5, 0.5) in
-    let perfect = discrete(0.01, 0.99) in
-    let gpa = if nationality <= 0 then 
-        if perfect <= 0 then 10.0 else uniform(0,10)
-        else
-        if perfect <= 0 then 4.0 else uniform(0,4) 
-    in gpa < 1.0
-\end{lstlisting}
-
-
-\textbf{Type-based Inference.} A type is assigned to every subexpression, and specifically for the float subexpressions, all relevant comparison threshold points are collected in what we denote as a bag $B$. Most notably, since we query gpa $< 1$, and a $\textbf{uniform}(c_1,c_2)$ expression intrinsically has a $\textbf{float}\langle B \rangle$ type, we make sure to collect the 1 in the bags belonging to the $\textbf{uniform}(c_1,c_2)$ distributions corresponding to the gpa variable.
-
-\begin{lstlisting}
+\begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
 let nationality = discrete(0.5, 0.5) in
 let perfect = discrete(0.01, 0.99) in
 let gpa = if nationality <= 0 then
-    if perfect <= 0 then
-        (10.0 : float[<1; 10])
-    else
-        (uniform(0, 10) : float[<1; T])
-    else
         if perfect <= 0 then
-            (4.0 : float[<1; 4])
+          (10.0 : !{\codetype{float[<1; 10]}}!)
         else
-            (uniform(0, 4) : float[<1; T])
-    : float[<1; T]
-in
-gpa < (1.0 : float[<1; 1.0])
+          (uniform(0, 10) : !{\codetype{float[<1; T]}}!)
+      else
+        if perfect <= 0 then
+          (4.0 : !{\codetype{float[<1; 4]}}!)
+        else
+          (uniform(0, 4) : !{\codetype{float[<1; T]}}!)
+      : !{\codetype{float[<1; T]}}! in
+gpa < (1.0 : !{\codetype{float[<1; 1.0]}}!)
 \end{lstlisting}
 
-
-\textbf{Discretization.} After type inference, the discretization process transforms cdice into a discretized program based on the bags containing all relevant threshold points for the float types. The continuous range of float variables are mapped onto a finite set of integers representing intervals defined by the threshold points in its corresponding bag. Notably, $\textbf{uniform}(0,10)$ is transformed to $\textbf{discrete}(0.1, 0.9)$ due to its threshold point 1 partitioning the continuous distribution into two intervals, from which we calculate the probabilities of the intervals using the uniform cdf. Slice now becomes a comparison against the corresponding interval index, in this case 1, in the discretized program.
+\noindent The type system collects the comparison point $<1$ for all GPA expressions. This splits each uniform distribution into two intervals at the threshold 1.0. The discretized version becomes:
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em]
-    let nationality = discrete(0.5, 0.5) in
+let nationality = discrete(0.5, 0.5) in
 let perfect = discrete(0.01, 0.99) in
-  let gpa = if nationality <= 0 then
+let gpa = if nationality <= 0 then
         if perfect <= 0 then
           1
         else
@@ -319,17 +383,22 @@ let perfect = discrete(0.01, 0.99) in
           1
         else
           discrete(0.25, 0.75) in
-    gpa < 1
+gpa < 1
 \end{lstlisting}
 
-
-\textbf{Exact Inference.} The final step is a post-processing step of converting the discretized program into a discrete program compatible with a backend discrete exact inference solver, such as Dice or Roulette.
+\noindent Here, \texttt{uniform(0,10)} becomes \texttt{discrete(0.1, 0.9)} representing 10\% probability for $[0,1)$ and 90\% for $[1,10]$. Similarly, \texttt{uniform(0,4)} becomes \texttt{discrete(0.25, 0.75)}. Constants like 10.0 and 4.0 that fall in the interval $[1,+\infty)$ are mapped to index 1. The discretized program can then be processed by exact inference engines like Dice.
 
 \subsection{Partial discretization}
 
+Not all programs can be fully discretized. Consider a program where continuous values are used in ways other than comparisons:
+
 \begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
-    todo
+    let x = uniform(0, 1) in
+    let y = uniform(0, 1) in
+    x + y
 \end{lstlisting}
+
+\noindent Since the continuous values are added rather than compared, there are no comparison points to drive discretization. In such cases, \Slice performs partial discretization: it discretizes the parts of the program that can be discretized while leaving other parts continuous. This allows for hybrid inference approaches where discrete parts can benefit from exact inference while continuous parts use approximate methods.
 
 
 

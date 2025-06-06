@@ -1,0 +1,4 @@
+let x = if uniform(0,1) < 0.5 
+        then 0.5
+        else 1.5 in
+gaussian(0, x) < 0.5
