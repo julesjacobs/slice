@@ -18,6 +18,9 @@
 \definecolor{col2}{HTML}{ffd6e0}
 \definecolor{col3}{HTML}{ffef9f}
 
+\definecolor{typecolor}{HTML}{4169E1} % RoyalBlue
+\newcommand{\codetype}[1]{\textcolor{typecolor}{\ttfamily\small#1}}
+
 \renewcommand{\paragraph}[1]{\vspace{1em}\noindent\textbf{#1}\ }
 
 \newcommand{\alexandra}[1]{\textcolor{pink}{\textbf{Alexandra:} #1}}
@@ -129,7 +132,7 @@ This paper introduces \Slice, which occupies a unique position in the PPL design
     if x < 2 then x < 1 else y < 1
 \end{lstlisting}
 
-The discretization process is driven by the comparisons present in the program. \Slice analyzes the program to find all numeric constants used in comparisons with continuous random variables. In the example above, the variable \texttt{x}, drawn from a \texttt{uniform(0, 1)} distribution, is compared to 0.5 and 0.1. These two "split points" partition the range of \texttt{x} into three intervals: $[0, 0.1)$, $[0.1, 0.5)$, and $[0.5, 1)$. \Slice replaces the continuous distribution for \texttt{x} with a discrete one that has three outcomes, where the probability of each outcome is equal to the probability mass of the original uniform distribution within the corresponding interval. Similarly, the variable \texttt{y}, drawn from \texttt{uniform(0, 2)}, is compared only to 0.1, partitioning its distribution into two intervals. All comparisons are then transformed to operate on these new discrete variables. This example illustrates the core mechanism of \Slice: a type-directed transformation that makes continuous programs amenable to exact discrete inference.
+The discretization process is driven by the comparisons present in the program. \Slice analyzes the program to find all numeric constants used in comparisons with continuous random variables. In the example above, the variable \texttt{x}, drawn from a \texttt{uniform(0, 1)} distribution, is compared to 0.5 and 0.1. These two "split points" partition the range of \texttt{x} into three intervals: $(-\infty, 0.1)$, $[0.1, 0.5)$, and $[0.5, +\infty)$. \Slice replaces the continuous distribution for \texttt{x} with a discrete one that has three outcomes, where the probability of each outcome is equal to the probability mass of the original uniform distribution within the corresponding interval. Similarly, the variable \texttt{y}, drawn from \texttt{uniform(0, 2)}, is compared only to 0.1, partitioning its distribution into two intervals. All comparisons are then transformed to operate on these new discrete variables. This example illustrates the core mechanism of \Slice: a type-directed transformation that makes continuous programs amenable to exact discrete inference.
 
 \jules{TODO: add a paragraph about which language features are supported in Slice}
 
@@ -155,7 +158,7 @@ We first introduce \Slice through examples (\Cref{sec:examples}), and then prese
 This section presents simple examples that highlight the key features of our probabilistic programming language \Slice, aiming to emphasize how \Slice meets the challenge of performing exact inference efficiently. \Slice extends a core functional language with traditional programming language constructs such as conditionals, local variables, and functions, augmented with constructs for probabilistic programming such as sampling and conditioning. Each example in the subsections is intended to showcase these features. Later in the section, we also mention examples that can only be partially discretized but nonetheless preserve the semantics across both the original and discretized program.
 
 \subsection{Simple branching on a uniform distribution}
-\label{sec:simple-branch}
+
 We start with a simple example that illustrates the core idea of \Slice. Consider the following program, which models a fair coin flip by checking if a random number from a uniform distribution is less than 0.5:
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em]
@@ -170,12 +173,12 @@ We start with a simple example that illustrates the core idea of \Slice. Conside
 
 \noindent Here, \texttt{discrete(0.5, 0.5)} represents a choice between two outcomes (0 or 1), each with probability 0.5. The outcome 0 corresponds to the original value being in $(-\infty, 0.5)$, and 1 corresponds to it being in $[0.5, +\infty)$. The comparison is updated to check if the outcome is less than 1, which is true only for outcome 0, correctly preserving the original program's meaning. This transformation is guided by tracking comparison points, which are determined by type inference as shown in the annotated program below:
 
-\begin{lstlisting}[aboveskip=1em,belowskip=1em]
-  (uniform(0, 1) : float[<0.5; T]) < (0.5 : float[<0.5; 0.5])
+\begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
+  (uniform(0, 1) : !{\codetype{float[<0.5; T]}}!) < (0.5 : !{\codetype{float[<0.5; 0.5]}}!)
 \end{lstlisting}
 
-The type \lstinline{float[<0.5; T]} for the uniform sample indicates that the relevant comparison cutpoint is "$<\!\!0.5$" and the quantity can take on a continuous range ($\top$). 
-The type \lstinline{float[<0.5; 0.5]} for the constant $0.5$ indicates that the relevant comparison cutpoint is $< 0.5$ and the quantity can only take on the single constant value $0.5$. 
+The type \codetype{float[<0.5; T]} for the uniform sample indicates that the relevant comparison cutpoint is "$<\!\!0.5$" and the quantity can take on a continuous range ($\top$). 
+The type \codetype{float[<0.5; 0.5]} for the constant $0.5$ indicates that the relevant comparison cutpoint is $< 0.5$ and the quantity can only take on the single constant value $0.5$. 
 
 In general, a type \lstinline{float[cut-points; value-set]} indicates:
 \[
@@ -194,105 +197,36 @@ In the example above, the expression \lstinline{uniform(0,1)} is discretized to 
 The constant $0.5$ on the right hand side is discretized to the constant $1$ because it falls in the second range $[0.5, +\infty)$. The less-than comparison is translated to an identical less-than comparison on the discrete values.
 
 \subsection{Branching on multiple continuous variables}
-\label{sec:nested-if}
 
-\begin{figure}[ht]
-\centering
-% Left column: A on top, C on bottom
-\begin{subfigure}[t]{0.48\textwidth}  % Slightly wider to give room
-  \centering
-  \begin{subfigure}[t]{\textwidth}
-    \begin{lstlisting}
-let x = uniform(0, 1) in
-let y = uniform(0, 2) in
-if x < 0.5 then x < 0.1 else y < 0.1
-    \end{lstlisting}
-    \caption{Original program}
-    \label{fig:subA}
-  \end{subfigure}
+\noindent Now let's consider a more complex example with multiple continuous variables and conditional branches:
 
-  \vspace{2em} % more vertical space between A and C
-
-  \begin{subfigure}[t]{\textwidth}
-    \begin{lstlisting}
-let x = uniform(0, 1) : float[<0.1,<0.5; T] in
-let y = uniform(0, 2) : float[<0.1; T] in
-if x < (0.5 : float[<0.1,<0.5; 0.5]) then
-  x < (0.1 : float[<0.1,<0.5; 0.1])
-else
-  y < (0.1 : float[<0.1; 0.1])
-    \end{lstlisting}
-    \caption{Type annotations}
-    \label{fig:subC}
-  \end{subfigure}
-\end{subfigure}
-\hfill
-% Right column: B
-\begin{subfigure}[t]{0.48\textwidth}
-  \begin{lstlisting}
-let x = discrete(0.1, 0.4, 0.5) in
-let y = discrete(0.05, 0.95) in
-if x < 2 then
-  x < 1
-else
-  y < 1
-  \end{lstlisting}
-  \caption{Discretized program}
-  \label{fig:subB}
-\end{subfigure}
-
-\caption{\Slice workflow for \ref{sec:nested-if}}
-\label{fig:main}
-\end{figure}
-
-%% Fix spacing
-
-\subsection{If else with discrete values}
-\label{sec:discrete-if}
-
-\begin{figure}[ht]
-\centering
-% Left column: A on top, C on bottom
-\begin{subfigure}[t]{0.48\textwidth}  % Slightly wider to give room
-  \centering
-  \begin{subfigure}[t]{\textwidth}
-    \begin{lstlisting}
-let x = if uniform(0,1) < 0.5 then 
-    0.3 else 0.6 in gaussian(0,1) < x
-    \end{lstlisting}
-    \caption{Original program}
-    \label{fig:subA}
-  \end{subfigure}
-
-  \vspace{2em} % more vertical space between A and C
-
-  \begin{subfigure}[t]{\textwidth}
-    \begin{lstlisting}
-let x = if discrete(0.5, 0.5) < 1 then 0 else 1 in
-    x < 1
-    \end{lstlisting}
-    \caption{Discretized program}
-    \label{fig:subC}
-  \end{subfigure}
-\end{subfigure}
-\hfill
-% Right column: B
-\begin{subfigure}[t]{0.48\textwidth}
-  \begin{lstlisting}
-let x = if discrete(0.5, 0.5) < 1 then 
-    discrete(0.25, 0.75) 
+\begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
+    let x = uniform(0, 1) : !{\codetype{float[<0.1,<0.5; T]}}! in
+    let y = uniform(0, 2) : !{\codetype{float[<0.5; T]}}! in
+    if x < (0.1 : !{\codetype{float[<0.1,<0.5; 0.1]}}!) then
+      x < (0.5 : !{\codetype{float[<0.1,<0.5; 0.5]}}!)
     else
-    discrete(0.125, 0.875) in
-    x < 1
-    \end{lstlisting}
-  \caption{Type annotations}
-  \label{fig:subB}
-\end{subfigure}
+      y < (0.5 : !{\codetype{float[<0.5; 0.5]}}!)
+\end{lstlisting}
 
-\caption{\Slice workflow for \ref{sec:discrete-if}}
-\label{fig:main}
-\end{figure}
+\noindent In this program, the variable \texttt{x} is drawn from \texttt{uniform(0, 1)} and is compared against two different constants: \texttt{0.5} and \texttt{0.1}. These two cut points partition the real line $\R$ into three intervals: $(-\infty, 0.1)$, $[0.1, 0.5)$, and $[0.5, +\infty)$. Similarly, the variable \texttt{y}, drawn from \texttt{uniform(0, 2)}, is compared only with \texttt{0.1}. This single cut point partitions the real line $\R$ into two intervals, $(-\infty, 0.1)$ and $[0.1, +\infty)$.
 
+
+This analysis is done by the type inference process, which collects all comparison points for each continuous variable. For \texttt{x}, the type inference algorithm discovers the cut points \texttt{<0.1} and \texttt{<0.5}, giving it the type \codetype{float[<0.1,<0.5; T]}. For \texttt{y}, it only finds \texttt{<0.1}, giving it the type \codetype{float[<0.1; T]}. This information is captured in the annotated program above.
+
+\Slice replaces the continuous distribution for \texttt{x} with a discrete one that has three outcomes, where the probability of each outcome is the probability mass of the original uniform distribution within the corresponding interval. This results in \texttt{discrete(0.1, 0.4, 0.5)}.
+\Slice replaces the continuous distribution for \texttt{y} with a discrete one that has two outcomes, where the probability of each outcome is the probability mass of the original uniform distribution within the corresponding interval. This results in \texttt{discrete(0.05, 0.95)}. The comparisons in the program are then transformed to operate on the integer indices of these new discrete intervals, leading to the following discretized program:
+
+\begin{lstlisting}[aboveskip=1em,belowskip=1em]
+    let x = discrete(0.1, 0.4, 0.5) in
+    let y = discrete(0.05, 0.95) in
+    if x < 1 then
+      x < 2
+    else
+      y < 1
+\end{lstlisting}
+
+Note that the original constant $0.5$ is discretized in two different ways: for $x < 0.5$ it is discretized to $2$ and for $y < 0.5$ it is discretized to $1$. This is because the constant $0.5$ falls in the second interval of the split $\R = (-\infty, 0.1) \cup [0.1, 0.5) \cup [0.5, +\infty)$ for $x$ and the first interval for the split $\R = (-\infty, 0.5) \cup [0.5, +\infty)$ for $y$.
 
 \subsection{If else with continuous values}
 \label{sec:continuous-if}
