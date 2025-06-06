@@ -483,7 +483,7 @@ Not all programs can be fully discretized. Consider a program where continuous v
   if uniform(0,1) < 0.5 then x < y else y < x
 \end{lstlisting}
 
-\noindent The type-annotated version reveals that \texttt{x} and \texttt{y} have type \codetype{float[T; T]}, indicating no comparison points were collected:
+\noindent The type-annotated version reveals that \texttt{x} and \texttt{y} have type \codetype{float[T; T]}, indicating that no finite set of comparison points suffices:
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
   let x = (uniform(0, 1) : !{\codetype{float[T; T]}}!) in
