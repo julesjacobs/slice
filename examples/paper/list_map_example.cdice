@@ -1,0 +1,12 @@
+(* Example with lists and recursion *)
+let map = fun f -> fix loop lst :=
+    match lst with
+      | nil -> nil
+      | head :: tail -> (f head) :: (loop tail)
+    end in
+(* Stochastically choose threshold *)
+let threshold = if uniform(0,1) < 0.5 then 0.3 else 0.7 in
+(* Closure captures the stochastic threshold *)
+let check_threshold = fun x -> x < threshold in
+let measurements = gaussian(0.0, 1.0) :: gaussian(0.5, 1.0) :: gaussian(1.0, 1.0) :: nil in
+map check_threshold measurements

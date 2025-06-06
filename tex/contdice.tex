@@ -347,31 +347,89 @@ Continuous distributions can have parameters that depend on discrete random choi
 \Slice supports higher-order functions, enabling functional programming patterns with probabilistic computations. This example shows a higher-order function \texttt{mappair} that applies a function to both elements of a pair:
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
-let mappair = fun f -> fun p -> (f (fst p), f (snd p)) in
-let f = fun x -> x < 0.5 in
-let g = fun x -> x < 1.5 in
-let p = (uniform(0,2), gaussian(0,2)) in
-let q = (mappair f) p in
-let r = (mappair g) p in
-if fst q then snd q else 
-    if fst r then snd r else fst q
+  let mappair = fun f -> fun p -> (f (fst p), f (snd p)) in
+  let f = fun x -> x < 0.5 in
+  let g = fun x -> x < 1.5 in
+  let p = (uniform(0,2), gaussian(0,2)) in
+  let q = (mappair f) p in
+  let r = (mappair g) p in
+  if fst q then snd q else 
+      if fst r then snd r else fst q
 \end{lstlisting}
 
 \noindent The type system correctly infers that comparison points from both \texttt{f} and \texttt{g} (0.5 and 1.5) must be collected for the distributions in \texttt{p}, yielding type \codetype{float[<0.5,<1.5; T]} for both components. The discretized version preserves the higher-order structure:
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em]
-let mappair = fun f -> fun p -> (f (fst p), f (snd p)) in
-let f = fun x -> x < 1 in
-let g = fun x -> x < 2 in
-let p = (discrete(0.25, 0.5, 0.25), 
-         discrete(0.598706, 0.174666, 0.226627)) in
-let q = (mappair f) p in
-let r = (mappair g) p in
-if fst q then snd q else 
-    if fst r then snd r else fst q
+  let mappair = fun f -> fun p -> (f (fst p), f (snd p)) in
+  let f = fun x -> x < 1 in
+  let g = fun x -> x < 2 in
+  let p = (discrete(0.25, 0.5, 0.25), 
+          discrete(0.598706, 0.174666, 0.226627)) in
+  let q = (mappair f) p in
+  let r = (mappair g) p in
+  if fst q then snd q else 
+      if fst r then snd r else fst q
 \end{lstlisting}
 
 \noindent The continuous distributions are discretized into three-valued discrete distributions based on the intervals $(-\infty, 0.5)$, $[0.5, 1.5)$, and $[1.5, +\infty)$, while the functional structure remains intact.
+
+\subsection{Sequential processes with iterate}
+
+While \Slice is purely functional without mutable state, it provides the \texttt{iterate} construct to model sequential probabilistic processes. This example simulates a simple weather model where tomorrow's weather depends on today's:
+
+\begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
+  let weather_transition = fun today ->
+      if today < 0.5 then 
+          (* If sunny today, likely stays sunny *)
+          uniform(0.2, 0.4)
+      else  
+          (* If rainy today, likely stays rainy *)
+          gaussian(0.7, 0.1) in
+  let weather_after_3_days = 
+      iterate(weather_transition, uniform(0,1), 3) in
+  weather_after_3_days < 0.5  (* Is it sunny? *)
+\end{lstlisting}
+
+\noindent The \texttt{iterate} function applies the weather transition function three times, starting from a random initial weather state. Each iteration represents one day, with values below 0.5 representing sunny weather and values above 0.5 representing rain. Sunny days tend to stay sunny (uniform between 0.2 and 0.4), while rainy days tend to stay rainy (Gaussian centered at 0.7). The type system ensures that all comparison points are properly collected across the iterations, enabling accurate discretization of this sequential process.
+
+\subsection{Mutable state}
+
+\Slice supports mutable references, allowing imperative-style updates within a probabilistic context. This example models temperature that can be updated based on weather events:
+
+\begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
+  let temperature = ref (uniform(15.0, 25.0)) in
+  let weather_event = uniform(0.0, 1.0) in
+  (if weather_event < 0.3 then
+      (* Cold front moves in *)
+      temperature := gaussian(10.0, 2.0)
+  else
+      ());
+  !temperature < 12.0
+\end{lstlisting}
+
+\noindent The reference \texttt{temperature} initially holds a uniform temperature between 15°C and 25°C. With 30\% probability, a cold front updates it to a Gaussian-distributed temperature centered at 10°C. The type system tracks that the dereferenced value will be compared to 12.0, ensuring proper discretization of both the initial uniform distribution and the potential Gaussian update.
+
+\subsection{Lists and recursion}
+
+\Slice supports lists and pattern matching, enabling functional list processing with probabilistic elements. This example demonstrates closures capturing stochastic values:
+
+\begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
+  let map = fun f -> fix loop lst :=
+      match lst with
+        | nil -> nil
+        | head :: tail -> (f head) :: (loop tail)
+      end in
+  (* Stochastically choose threshold *)
+  let threshold = if uniform(0,1) < 0.5 then 0.3 else 0.7 in
+  (* Closure captures the stochastic threshold *)
+  let check_threshold = fun x -> x < threshold in
+  let measurements = gaussian(0.0, 1.0) :: 
+                    gaussian(0.5, 1.0) :: 
+                    gaussian(1.0, 1.0) :: nil in
+  map check_threshold measurements
+\end{lstlisting}
+
+\noindent The closure \texttt{check\_threshold} lexically captures the stochastic \texttt{threshold} value, which is randomly chosen to be either 0.3 or 0.7. The type system correctly infers that both threshold values (0.3 and 0.7) must be included as comparison points for all Gaussian measurements, yielding type \codetype{float[<0.3,<0.7; T]} for list elements. This demonstrates how \Slice handles higher-order functions with captured stochastic values while maintaining sound discretization.
 
 
 \subsection{Indian GPA Problem}\label{sec:gpa}
@@ -379,38 +437,38 @@ if fst q then snd q else
 This example models a student's GPA based on nationality (India or USA) and whether they have a perfect record. The GPA is deterministic for perfect students (10.0 for India, 4.0 for USA) but drawn from a uniform distribution otherwise. The program computes the probability that a student's GPA falls below 1.0:
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
-let nationality = discrete(0.5, 0.5) in
-let perfect = discrete(0.01, 0.99) in
-let gpa = if nationality <= 0 then
-        if perfect <= 0 then
-          (10.0 : !{\codetype{float[<1; 10]}}!)
+  let nationality = discrete(0.5, 0.5) in
+  let perfect = discrete(0.01, 0.99) in
+  let gpa = if nationality <= 0 then
+          if perfect <= 0 then
+            (10.0 : !{\codetype{float[<1; 10]}}!)
+          else
+            (uniform(0, 10) : !{\codetype{float[<1; T]}}!)
         else
-          (uniform(0, 10) : !{\codetype{float[<1; T]}}!)
-      else
-        if perfect <= 0 then
-          (4.0 : !{\codetype{float[<1; 4]}}!)
-        else
-          (uniform(0, 4) : !{\codetype{float[<1; T]}}!)
-      : !{\codetype{float[<1; T]}}! in
-gpa < (1.0 : !{\codetype{float[<1; 1.0]}}!)
+          if perfect <= 0 then
+            (4.0 : !{\codetype{float[<1; 4]}}!)
+          else
+            (uniform(0, 4) : !{\codetype{float[<1; T]}}!)
+        : !{\codetype{float[<1; T]}}! in
+  gpa < (1.0 : !{\codetype{float[<1; 1.0]}}!)
 \end{lstlisting}
 
 \noindent The type system collects the comparison point $<1$ for all GPA expressions. This splits each uniform distribution into two intervals at the threshold 1.0. The discretized version becomes:
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em]
-let nationality = discrete(0.5, 0.5) in
-let perfect = discrete(0.01, 0.99) in
-let gpa = if nationality <= 0 then
-        if perfect <= 0 then
-          1
+  let nationality = discrete(0.5, 0.5) in
+  let perfect = discrete(0.01, 0.99) in
+  let gpa = if nationality <= 0 then
+          if perfect <= 0 then
+            1
+          else
+            discrete(0.1, 0.9)
         else
-          discrete(0.1, 0.9)
-      else
-        if perfect <= 0 then
-          1
-        else
-          discrete(0.25, 0.75) in
-gpa < 1
+          if perfect <= 0 then
+            1
+          else
+            discrete(0.25, 0.75) in
+  gpa < 1
 \end{lstlisting}
 
 \noindent Here, \texttt{uniform(0,10)} becomes \texttt{discrete(0.1, 0.9)} representing 10\% probability for $[0,1)$ and 90\% for $[1,10]$. Similarly, \texttt{uniform(0,4)} becomes \texttt{discrete(0.25, 0.75)}. Constants like 10.0 and 4.0 that fall in the interval $[1,+\infty)$ are mapped to index 1. The discretized program can then be processed by exact inference engines like Dice.
@@ -420,26 +478,26 @@ gpa < 1
 Not all programs can be fully discretized. Consider a program where continuous variables are compared directly to each other rather than to constants:
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
-let x = uniform(0, 1) in
-let y = gaussian(0, 1) in
-if uniform(0,1) < 0.5 then x < y else y < x
+  let x = uniform(0, 1) in
+  let y = gaussian(0, 1) in
+  if uniform(0,1) < 0.5 then x < y else y < x
 \end{lstlisting}
 
 \noindent The type-annotated version reveals that \texttt{x} and \texttt{y} have type \codetype{float[T; T]}, indicating no comparison points were collected:
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
-let x = (uniform(0, 1) : !{\codetype{float[T; T]}}!) in
-let y = (gaussian(0, 1) : !{\codetype{float[T; T]}}!) in
-if (uniform(0,1) : !{\codetype{float[<0.5; T]}}!) < (0.5 : !{\codetype{float[<0.5; 0.5]}}!) 
-then x < y else y < x
+  let x = (uniform(0, 1) : !{\codetype{float[T; T]}}!) in
+  let y = (gaussian(0, 1) : !{\codetype{float[T; T]}}!) in
+  if (uniform(0,1) : !{\codetype{float[<0.5; T]}}!) < (0.5 : !{\codetype{float[<0.5; 0.5]}}!) 
+  then x < y else y < x
 \end{lstlisting}
 
 \noindent \Slice performs partial discretization, discretizing only the parts it can:
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em]
-let x = uniform(0, 1) in
-let y = gaussian(0, 1) in
-if discrete(0.5, 0.5) < 1 then x < y else y < x
+  let x = uniform(0, 1) in
+  let y = gaussian(0, 1) in
+  if discrete(0.5, 0.5) < 1 then x < y else y < x
 \end{lstlisting}
 
 \noindent The branching condition gets discretized, but \texttt{x} and \texttt{y} remain continuous because they are only compared to each other, not to constants. This partially discretized program cannot be compiled to Dice but can still be executed using Monte Carlo simulation, potentially benefiting from the discrete branching structure.
