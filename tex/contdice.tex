@@ -29,6 +29,12 @@
 \newcommand{\ft}[1]{\codetype{float[\{#1\}; T]}}        % Bounds only, values are T
 \newcommand{\ftt}{\codetype{float[T; T]}}               % Both bags are T
 \newcommand{\ftv}[1]{\codetype{float[T; \{#1\}]}}       % Bounds are T, values specified
+% Macros for finite type operations and boolean operators
+\newcommand{\finconst}[2]{#1\#_{#2}}                    % k#n with subscript
+\newcommand{\finlt}[1]{<_{\#{#1}}}                      % <#n with subscript
+\newcommand{\finleq}[1]{\leq_{\#{#1}}}                  % <=#n with subscript
+\newcommand{\logand}{\mathrel{\&\&}}                    % logical and
+\newcommand{\logor}{\mathrel{||}}                       % logical or
 
 \renewcommand{\paragraph}[1]{\vspace{1em}\noindent\textbf{#1}\ }
 
@@ -153,6 +159,8 @@ We first introduce \Slice{} through examples (\Cref{sec:examples}), and then pre
 
     \item[Evaluation (\Cref{sec:evaluation})] We conduct a thorough empirical evaluation of our approach on a range of benchmarks, including those used to evaluate existing systems like SPPL\@. The results show that our method of discretization followed by exact discrete inference is significantly faster than prior symbolic techniques, while maintaining the same level of correctness.
 \end{description}
+
+Finally, we conclude with a discussion of related and future work (\Cref{sec:related}).
 
 \section{Slice by Example}\label{sec:examples}
 This section presents simple examples that highlight the key features of our probabilistic programming language \Slice{}, aiming to emphasize how \Slice{} meets the challenge of performing exact inference efficiently. \Slice{} extends a core functional language with traditional programming language constructs such as conditionals, local variables, and functions, augmented with constructs for probabilistic programming such as sampling and conditioning. Each example in the subsections is intended to showcase these features. Later in the section, we also mention examples that can only be partially discretized but nonetheless preserve the semantics across both the original and discretized program.
@@ -542,17 +550,17 @@ The syntax of the \Slice{} language is shown in Figure~\ref{fig:grammar}.
 e ::= &\; x                               & \text{variable} \\
     | &\; c                               & \text{float constant} \\
     | &\; \text{true} \mid \text{false}   & \text{boolean constant} \\
-    | &\; k\#n                            & \text{finite type constant (k of type fin(n))} \\
+    | &\; \finconst{k}{n}                 & \text{finite type constant (k of type fin(n))} \\
     | &\; ()                              & \text{unit} \\
     | &\; \letkw \; x = e_1\; \inkw \; e_2  & \text{let binding} \\
     | &\; \text{cdistr}                   & \text{continuous distribution} \\
     | &\; \discrete(p_0, \ldots, p_{n})      & \text{discrete distribution} \\
     | &\; e_1 < e_2                       & \text{less-than (floats)} \\
     | &\; e_1 \leq e_2                    & \text{less-or-equal (integers)} \\
-    | &\; e_1 <\#n\; e_2                  & \text{less-than (finite type n)} \\
-    | &\; e_1 \leq\#n\; e_2               & \text{less-or-equal (finite type n)} \\
-    | &\; e_1 \&\& e_2                    & \text{logical and} \\
-    | &\; e_1 \mid\mid e_2                & \text{logical or} \\
+    | &\; e_1 \finlt{n} e_2              & \text{less-than (finite type n)} \\
+    | &\; e_1 \finleq{n} e_2             & \text{less-or-equal (finite type n)} \\
+    | &\; e_1 \logand e_2                 & \text{logical and} \\
+    | &\; e_1 \logor e_2                  & \text{logical or} \\
     | &\; \text{not}\; e                  & \text{logical not} \\
     | &\; \ifkw \; e_1\; \thenkw \; e_2\; \elsekw \; e_3 & \text{conditional} \\
     | &\; (e_1, e_2)                      & \text{pair construction} \\
@@ -586,8 +594,8 @@ The uniform distribution $\uniform(e_1, e_2)$ represents a continuous random val
 
 Beyond basic functional constructs (pairs, projections, lambda abstractions, and function application), the language includes:
 \begin{itemize}
-\item \textbf{Finite types}: Values of the form $k\#n$ represent finite type constants, where $k$ is a value in the finite type with $n$ elements.
-\item \textbf{Boolean operations}: Logical operators $\&\&$, $||$, and $\text{not}$ for boolean expressions.
+\item \textbf{Finite types}: Values of the form $\finconst{k}{n}$ represent finite type constants, where $k$ is a value in the finite type with $n$ elements.
+\item \textbf{Boolean operations}: Logical operators $\logand$, $\logor$, and $\text{not}$ for boolean expressions.
 \item \textbf{Fixed-point recursion}: The $\text{fix}$ construct enables recursive function definitions.
 \item \textbf{Observations}: The $\text{observe}$ construct conditions the program on a boolean expression being true.
 \item \textbf{Lists}: Constructed with $\text{nil}$ and $::$, and deconstructed with pattern matching.
@@ -760,12 +768,12 @@ The typing rules are as follows:
     \inferrule[\textsc{And}]
     {\Gamma \vdash e_1 : \bool \\
      \Gamma \vdash e_2 : \bool}
-    {\Gamma \vdash e_1 \&\& e_2 : \bool}
+    {\Gamma \vdash e_1 \logand e_2 : \bool}
 
     \inferrule[\textsc{Or}]
     {\Gamma \vdash e_1 : \bool \\
      \Gamma \vdash e_2 : \bool}
-    {\Gamma \vdash e_1 || e_2 : \bool}
+    {\Gamma \vdash e_1 \logor e_2 : \bool}
 
     \inferrule[\textsc{Not}]
     {\Gamma \vdash e : \bool}
@@ -777,17 +785,17 @@ The typing rules are as follows:
 
     \inferrule[\textsc{FinConst}]
     {0 \leq k < n}
-    {\Gamma \vdash k\#n : \text{fin}(n)}
+    {\Gamma \vdash \finconst{k}{n} : \text{fin}(n)}
 
     \inferrule[\textsc{FinLess}]
     {\Gamma \vdash e_1 : \text{fin}(n) \\
      \Gamma \vdash e_2 : \text{fin}(n)}
-    {\Gamma \vdash e_1 <\#n\; e_2 : \bool}
+    {\Gamma \vdash e_1 \finlt{n} e_2 : \bool}
 
     \inferrule[\textsc{FinLessEq}]
     {\Gamma \vdash e_1 : \text{fin}(n) \\
      \Gamma \vdash e_2 : \text{fin}(n)}
-    {\Gamma \vdash e_1 \leq\#n\; e_2 : \bool}
+    {\Gamma \vdash e_1 \finleq{n} e_2 : \bool}
 
     \inferrule[\textsc{Observe}]
     {\Gamma \vdash e : \bool}
@@ -863,10 +871,10 @@ Constraints are generated as follows:
     \item For $\funkw \; x \; \rightarrow \; e$, if $e$ has type $\tau_2$ under the assumption that $x$ has type $\tau_1$, then the function has type $\tau_1 \rightarrow \tau_2$.
     \item For $e_1 \; e_2$, $e_1$ must have a function type $\tau_1 \rightarrow \tau_2$, and $e_2$ must have type $\tau_1$. The result has type $\tau_2$.
     \item Boolean constants $\text{true}$ and $\text{false}$ have type \bool.
-    \item Boolean operations ($\&\&$, $||$, $\text{not}$) require their operands to have type \bool{} and return type \bool.
+    \item Boolean operations ($\logand$, $\logor$, $\text{not}$) require their operands to have type \bool{} and return type \bool.
     \item The unit value $()$ has type $\text{unit}$.
-    \item A finite constant $k\#n$ has type $\text{fin}(n)$ if $0 \leq k < n$.
-    \item Finite comparisons $e_1 <\#n\; e_2$ and $e_1 \leq\#n\; e_2$ require both operands to have type $\text{fin}(n)$ and return type \bool.
+    \item A finite constant $\finconst{k}{n}$ has type $\text{fin}(n)$ if $0 \leq k < n$.
+    \item Finite comparisons $e_1 \finlt{n} e_2$ and $e_1 \finleq{n} e_2$ require both operands to have type $\text{fin}(n)$ and return type \bool.
     \item $\text{observe}\; e$ requires $e$ to have type \bool{} and returns type $\text{unit}$.
     \item For $e_1; e_2$, the result has the type of $e_2$.
     \item For $\text{fix}\; f\; x := e$, if $e$ has type $\tau_2$ under the assumptions that $f$ has type $\tau_1 \rightarrow \tau_2$ and $x$ has type $\tau_1$, then the result has type $\tau_1 \rightarrow \tau_2$.
@@ -944,7 +952,7 @@ Let $e$ be a subexpression with inferred type $\float\langle B; V \rangle$. From
     \end{itemize}
 
     \item \textbf{Boolean, Unit, Finite Constants}: These are already discrete and pass through unchanged.
-    \item \textbf{Finite Comparisons}: Comparisons like $e_1 <\#n\; e_2$ are preserved as-is since they already operate on discrete finite types.
+    \item \textbf{Finite Comparisons}: Comparisons like $e_1 \finlt{n} e_2$ are preserved as-is since they already operate on discrete finite types.
     \item \textbf{Lists, References, Boolean Operations}: These constructs are translated recursively, preserving their structure.
 \end{itemize}
 
