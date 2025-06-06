@@ -161,7 +161,7 @@ and string_of_expr_node ?(indent=0) (ExprNode expr_node) : string =
   | LoopApp (e1, e2, n) ->
       let e1_str = string_of_expr_indented ~indent e1 in
       let e2_str = string_of_expr_indented ~indent e2 in
-      Printf.sprintf "(%s %s %d)" e1_str e2_str n
+      Printf.sprintf "iterate(%s,%s,%d)" e1_str e2_str n
   | Fix (f, x, e) ->
       let e_str = string_of_expr_indented ~indent:(indent+2) e in
       Printf.sprintf "%sfix%s %s%s%s %s%s%s %s:=%s %s"
