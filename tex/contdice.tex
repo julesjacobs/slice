@@ -105,23 +105,19 @@ Probabilistic programming languages have emerged as a powerful tool for building
 
 This paper introduces \Slice, a small functional language that bridges this gap. \Slice enables exact inference on a class of probabilistic programs with continuous distributions by automatically and soundly converting them into equivalent discrete programs. The key insight is to analyze how continuous variables are used within the program. Specifically, \Slice uses a type system to track all the constant thresholds against which continuous variables are compared. These comparison points are then used to intelligently discretize the continuous distributions into a finite number of buckets. When the resulting program is purely discrete it can then be solved by an off-the-shelf exact inference engine. This type-directed discretization allows developers to model with continuous distributions while still benefiting from the speed and precision of exact discrete inference. Here is a simple example:
 
-\begin{lstlisting}
-
-   let x = uniform(0, 1) in
-   let y = uniform(0, 2) in
-   if x < 0.5 then x < 0.1 else y < 0.1
-
-\end{lstlisting}\vspace{1em}
+\begin{lstlisting}[aboveskip=1em,belowskip=1em]
+    let x = uniform(0, 1) in
+    let y = uniform(0, 2) in
+    if x < 0.5 then x < 0.1 else y < 0.1
+\end{lstlisting}
 
 \noindent The program above can be discretized into:
 
-\begin{lstlisting}
-
-   let x = discrete(0.1, 0.4, 0.5) in
-   let y = discrete(0.05, 0.95) in
-   if x < 2 then x < 1 else y < 1
-
-\end{lstlisting}\vspace{1em}
+\begin{lstlisting}[aboveskip=1em,belowskip=1em]
+    let x = discrete(0.1, 0.4, 0.5) in
+    let y = discrete(0.05, 0.95) in
+    if x < 2 then x < 1 else y < 1
+\end{lstlisting}
 
 The discretization process is driven by the comparisons present in the program. \Slice analyzes the program to find all numeric constants used in comparisons with continuous random variables. In the example above, the variable \texttt{x}, drawn from a \texttt{uniform(0, 1)} distribution, is compared to 0.5 and 0.1. These two "split points" partition the range of \texttt{x} into three intervals: $[0, 0.1)$, $[0.1, 0.5)$, and $[0.5, 1)$. \Slice replaces the continuous distribution for \texttt{x} with a discrete one that has three outcomes, where the probability of each outcome is equal to the probability mass of the original uniform distribution within the corresponding interval. Similarly, the variable \texttt{y}, drawn from \texttt{uniform(0, 2)}, is compared only to 0.1, partitioning its distribution into two intervals. All comparisons are then transformed to operate on these new discrete variables. This example illustrates the core mechanism of \Slice: a type-directed transformation that makes continuous programs amenable to exact discrete inference.
 
