@@ -1,0 +1,9 @@
+(* Example with mutable references *)
+let temperature = ref (uniform(15.0, 25.0)) in
+let weather_event = uniform(0.0, 1.0) in
+(if weather_event < 0.3 then
+    (* Cold front moves in *)
+    temperature := gaussian(10.0, 2.0)
+else
+    ());
+!temperature < 12.0

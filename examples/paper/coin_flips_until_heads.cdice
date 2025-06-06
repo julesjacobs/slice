@@ -1,0 +1,9 @@
+(* Count coin flips until we get heads *)
+let count_flips = fix loop n :=
+  if uniform(0,1) < 0.5 then
+    n  (* Got heads, return count *)
+  else
+    loop n  (* Got tails, keep flipping *)
+in
+(* What's the probability we need exactly 1 flip? *)
+count_flips 1
