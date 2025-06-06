@@ -83,7 +83,7 @@
 \begin{document}
 
 \begin{abstract}
-Probabilistic programming languages are a powerful tool for statistical modeling, but performing exact inference on programs with continuous random variables remains a major challenge. This paper presents \Slice, a language that enables exact inference for a broad class of programs with continuous distributions. \Slice works by automatically and soundly discretizing continuous variables. The core of our approach is a novel type system that analyzes how continuous random variables are compared within a program. It uses this information to partition the continuous domains into a finite number of intervals, transforming the original program into an equivalent, purely discrete one. This transformed program can then be solved by a backend exact inference engine for discrete PPLs. We formalize this type-directed discretization, prove its soundness, and provide an open-source implementation. Our evaluation shows that our approach is significantly faster than existing symbolic inference techniques for hybrid discrete-continuous programs, bridging the gap between expressive continuous modeling and the power of exact discrete inference.
+Probabilistic programming languages are a powerful tool for statistical modeling, but performing exact inference on programs with continuous random variables remains a major challenge. This paper presents \Slice{}, a language that enables exact inference for a broad class of programs with continuous distributions. \Slice{} works by automatically and soundly discretizing continuous variables. The core of our approach is a novel type system that analyzes how continuous random variables are compared within a program. It uses this information to partition the continuous domains into a finite number of intervals, transforming the original program into an equivalent, purely discrete one. This transformed program can then be solved by a backend exact inference engine for discrete PPLs. We formalize this type-directed discretization, prove its soundness, and provide an open-source implementation. Our evaluation shows that our approach is significantly faster than existing symbolic inference techniques for hybrid discrete-continuous programs, bridging the gap between expressive continuous modeling and the power of exact discrete inference.
 \end{abstract}
 
 \maketitle
@@ -93,15 +93,15 @@ Probabilistic programming languages have emerged as a powerful tool for building
 
 Existing discrete PPLs like \Dice~\cite{Holtzen2020Dice} and Roulette~\cite{Moy2025Roulette} offer powerful, exact inference but cannot handle continuous distributions. At the other end of the spectrum, popular general-purpose PPLs like Stan~\cite{Carpenter2017Stan} and Pyro~\cite{Bingham2019Pyro} excel at approximate inference for continuous models but sacrifice exactness. Symbolic inference systems like SPPL~\cite{Saad2021SPPL} can reason exactly about certain mixed discrete-continuous models.
 
-This paper introduces \Slice, which occupies a unique position in the PPL design space: it automatically and soundly translates a broad class of programs with continuous variables into equivalent discrete programs. This automated, sound discretization unlocks the ability to use powerful discrete exact inference engines on models that were previously out of their reach. The key insight is to analyze how continuous variables are used within the program. Specifically, \Slice uses a type system to track all the constant thresholds against which continuous variables are compared. These comparison points are then used to intelligently discretize the continuous distributions into a finite number of buckets. When the resulting program is purely discrete it can then be solved by an off-the-shelf exact inference engine such as Dice \cite{Holtzen2020Dice}. This type-directed discretization allows developers to model with continuous distributions while still benefiting from the speed and precision of exact discrete inference.
+This paper introduces \Slice{}, which occupies a unique position in the PPL design space: it automatically and soundly translates a broad class of programs with continuous variables into equivalent discrete programs. This automated, sound discretization unlocks the ability to use powerful discrete exact inference engines on models that were previously out of their reach. The key insight is to analyze how continuous variables are used within the program. Specifically, \Slice{} uses a type system to track all the constant thresholds against which continuous variables are compared. These comparison points are then used to intelligently discretize the continuous distributions into a finite number of buckets. When the resulting program is purely discrete it can then be solved by an off-the-shelf exact inference engine such as Dice~\cite{Holtzen2020Dice}. This type-directed discretization allows developers to model with continuous distributions while still benefiting from the speed and precision of exact discrete inference.
 
-Consider the simplest possible example -- checking if a uniform random variable is less than 0.5:
+Consider the simplest possible example---checking if a uniform random variable is less than 0.5:
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em]
     uniform(0, 1) < 0.5
 \end{lstlisting}
 
-\noindent \Slice automatically transforms this into:
+\noindent \Slice{} automatically transforms this into:
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em]
     discrete(0.5, 0.5) < 1
@@ -123,13 +123,13 @@ Consider the simplest possible example -- checking if a uniform random variable 
     if x < 2 then x < 1 else y < 1
 \end{lstlisting}
 
-The discretization process is driven by the comparisons present in the program. \Slice analyzes the program to find all numeric constants used in comparisons with continuous random variables. In the example above, the variable \texttt{x}, drawn from a \texttt{uniform(0, 1)} distribution, is compared to 0.5 and 0.1. These two "split points" partition the range of \texttt{x} into three intervals: $(-\infty, 0.1)$, $[0.1, 0.5)$, and $[0.5, +\infty)$. \Slice replaces the continuous distribution for \texttt{x} with a discrete one that has three outcomes, where the probability of each outcome is equal to the probability mass of the original uniform distribution within the corresponding interval. Similarly, the variable \texttt{y}, drawn from \texttt{uniform(0, 2)}, is compared only to 0.1, partitioning its distribution into two intervals. All comparisons are then transformed to operate on these new discrete variables. This example illustrates the core mechanism of \Slice: a type-directed transformation that makes continuous programs amenable to exact discrete inference.
+The discretization process is driven by the comparisons present in the program. \Slice{} analyzes the program to find all numeric constants used in comparisons with continuous random variables. In the example above, the variable \texttt{x}, drawn from a \texttt{uniform(0, 1)} distribution, is compared to 0.5 and 0.1. These two ``split points'' partition the range of \texttt{x} into three intervals: $(-\infty, 0.1)$, $[0.1, 0.5)$, and $[0.5, +\infty)$. \Slice{} replaces the continuous distribution for \texttt{x} with a discrete one that has three outcomes, where the probability of each outcome is equal to the probability mass of the original uniform distribution within the corresponding interval. Similarly, the variable \texttt{y}, drawn from \texttt{uniform(0, 2)}, is compared only to 0.1, partitioning its distribution into two intervals. All comparisons are then transformed to operate on these new discrete variables. This example illustrates the core mechanism of \Slice{}: a type-directed transformation that makes continuous programs amenable to exact discrete inference.
 
-\jules{TODO: add a paragraph about which language features are supported in Slice}
+\jules{TODO: add a paragraph about which language features are supported in Slice.}
 
 \paragraph{Contributions.}
 
-We first introduce \Slice through examples (\Cref{sec:examples}), and then present and evaluate our framework for type-directed discretization via the following contributions:
+We first introduce \Slice{} through examples (\Cref{sec:examples}), and then present and evaluate our framework for type-directed discretization via the following contributions:
 
 \begin{description}
     \item[Type System (\Cref{sec:language})] We introduce a novel type system that identifies which expressions are discretizable based on how they are used throughout the program.
@@ -140,13 +140,13 @@ We first introduce \Slice through examples (\Cref{sec:examples}), and then prese
 
     \item[Soundness (\Cref{sec:soundness})] We prove that our discretization method is sound, establishing that the discretized program preserves the semantics of the original program.
 
-    \item[Implementation (\Cref{sec:implementation})] We provide an open-source implementation of our system, \Slice. The system transforms a given \Slice program into another, more discretized \Slice program. If the resulting program is fully discrete, it can be compiled for the \Dice probabilistic programming system to leverage its highly-optimized exact inference engine. We have also implemented a direct Monte Carlo simulator for \Slice itself, which can handle any program, including those that are only partially discretized.
+    \item[Implementation (\Cref{sec:implementation})] We provide an open-source implementation of our system, \Slice{}. The system transforms a given \Slice{} program into another, more discretized \Slice{} program. If the resulting program is fully discrete, it can be compiled for the \Dice{} probabilistic programming system to leverage its highly-optimized exact inference engine. We have also implemented a direct Monte Carlo simulator for \Slice{} itself, which can handle any program, including those that are only partially discretized.
 
-    \item[Evaluation (\Cref{sec:evaluation})] We conduct a thorough empirical evaluation of our approach on a range of benchmarks, including those used to evaluate existing systems like SPPL. The results show that our method of discretization followed by exact discrete inference is significantly faster than prior symbolic techniques, while maintaining the same level of correctness.
+    \item[Evaluation (\Cref{sec:evaluation})] We conduct a thorough empirical evaluation of our approach on a range of benchmarks, including those used to evaluate existing systems like SPPL\@. The results show that our method of discretization followed by exact discrete inference is significantly faster than prior symbolic techniques, while maintaining the same level of correctness.
 \end{description}
 
 \section{Slice by Example}\label{sec:examples}
-This section presents simple examples that highlight the key features of our probabilistic programming language \Slice, aiming to emphasize how \Slice meets the challenge of performing exact inference efficiently. \Slice extends a core functional language with traditional programming language constructs such as conditionals, local variables, and functions, augmented with constructs for probabilistic programming such as sampling and conditioning. Each example in the subsections is intended to showcase these features. Later in the section, we also mention examples that can only be partially discretized but nonetheless preserve the semantics across both the original and discretized program.
+This section presents simple examples that highlight the key features of our probabilistic programming language \Slice{}, aiming to emphasize how \Slice{} meets the challenge of performing exact inference efficiently. \Slice{} extends a core functional language with traditional programming language constructs such as conditionals, local variables, and functions, augmented with constructs for probabilistic programming such as sampling and conditioning. Each example in the subsections is intended to showcase these features. Later in the section, we also mention examples that can only be partially discretized but nonetheless preserve the semantics across both the original and discretized program.
 
 \subsection{Simple branching on a uniform distribution}
 
@@ -156,7 +156,7 @@ We start with a simple example that illustrates the core idea of \Slice. Conside
     uniform(0,1) < 0.5
 \end{lstlisting}
 
-\noindent \Slice's type system analyzes this program and identifies that the only comparison point for the continuous variable is 0.5. This single split point partitions the range $\R = (-\infty, +\infty)$ into two intervals of equal probability mass: $(-\infty, 0.5)$ and $[0.5, +\infty)$. \Slice then transforms the program into an equivalent discrete version:
+\noindent \Slice{}'s type system analyzes this program and identifies that the only comparison point for the continuous variable is 0.5. This single split point partitions the range $\R = (-\infty, +\infty)$ into two intervals of equal probability mass: $(-\infty, 0.5)$ and $[0.5, +\infty)$. \Slice{} then transforms the program into an equivalent discrete version:
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em]
     discrete(0.5, 0.5) < 1
@@ -168,7 +168,7 @@ We start with a simple example that illustrates the core idea of \Slice. Conside
     (uniform(0, 1) : !{\codetype{float[<0.5; T]}}!) < (0.5 : !{\codetype{float[<0.5; 0.5]}}!)
 \end{lstlisting}
 
-The type \codetype{float[<0.5; T]} for the uniform sample indicates that the relevant comparison cutpoint is "$<\!\!0.5$" and the quantity can take on a continuous range ($\top$). 
+The type \codetype{float[<0.5; T]} for the uniform sample indicates that the relevant comparison cutpoint is ``$<\!\!0.5$'' and the quantity can take on a continuous range ($\top$). 
 The type \codetype{float[<0.5; 0.5]} for the constant $0.5$ indicates that the relevant comparison cutpoint is $< 0.5$ and the quantity can only take on the single constant value $0.5$. 
 
 In general, a type \lstinline{float[cut-points; value-set]} indicates:
@@ -205,8 +205,8 @@ The constant $0.5$ on the right hand side is discretized to the constant $1$ bec
 
 This analysis is done by the type inference process, which collects all comparison points for each continuous variable. For \texttt{x}, the type inference algorithm discovers the cut points \texttt{<0.1} and \texttt{<0.5}, giving it the type \codetype{float[<0.1,<0.5; T]}. For \texttt{y}, it only finds \texttt{<0.1}, giving it the type \codetype{float[<0.1; T]}. This information is captured in the annotated program above.
 
-\Slice replaces the continuous distribution for \texttt{x} with a discrete one that has three outcomes, where the probability of each outcome is the probability mass of the original uniform distribution within the corresponding interval. This results in \texttt{discrete(0.1, 0.4, 0.5)}.
-\Slice replaces the continuous distribution for \texttt{y} with a discrete one that has two outcomes, where the probability of each outcome is the probability mass of the original uniform distribution within the corresponding interval. This results in \texttt{discrete(0.05, 0.95)}. The comparisons in the program are then transformed to operate on the integer indices of these new discrete intervals, leading to the following discretized program:
+\Slice{} replaces the continuous distribution for \texttt{x} with a discrete one that has three outcomes, where the probability of each outcome is the probability mass of the original uniform distribution within the corresponding interval. This results in \texttt{discrete(0.1, 0.4, 0.5)}.
+\Slice{} replaces the continuous distribution for \texttt{y} with a discrete one that has two outcomes, where the probability of each outcome is the probability mass of the original uniform distribution within the corresponding interval. This results in \texttt{discrete(0.05, 0.95)}. The comparisons in the program are then transformed to operate on the integer indices of these new discrete intervals, leading to the following discretized program:
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em]
     let x = discrete(0.1, 0.4, 0.5) in
@@ -295,7 +295,7 @@ Continuous distributions can have parameters that depend on discrete random choi
 
 \subsection{Conditioning}
 
-\Slice supports conditioning on events through the \texttt{observe} construct, allowing for Bayesian inference. The following program computes the probability that a uniform random variable is less than 0.2, given that it is less than 0.5:
+\Slice{} supports conditioning on events through the \texttt{observe} construct, allowing for Bayesian inference. The following program computes the probability that a uniform random variable is less than 0.2, given that it is less than 0.5:
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
     let x = uniform(0.0, 1.0) in
@@ -323,7 +323,7 @@ Continuous distributions can have parameters that depend on discrete random choi
 
 \subsection{Higher-order functions}
 
-\Slice supports higher-order functions, enabling functional programming patterns with probabilistic computations. This example shows a higher-order function \texttt{mappair} that applies a function to both elements of a pair:
+\Slice{} supports higher-order functions, enabling functional programming patterns with probabilistic computations. This example shows a higher-order function \texttt{mappair} that applies a function to both elements of a pair:
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
   let mappair = fun f -> fun p -> (f (fst p), f (snd p)) in
@@ -354,7 +354,7 @@ Continuous distributions can have parameters that depend on discrete random choi
 
 \subsection{Sequential processes with iterate}
 
-While \Slice is purely functional without mutable state, it provides the \texttt{iterate} construct to model sequential probabilistic processes. This example simulates a simple weather model where tomorrow's weather depends on today's:
+While \Slice{} is purely functional without mutable state, it provides the \texttt{iterate} construct to model sequential probabilistic processes. This example simulates a simple weather model where tomorrow's weather depends on today's:
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
   let weather_transition = fun today ->
@@ -373,7 +373,7 @@ While \Slice is purely functional without mutable state, it provides the \texttt
 
 \subsection{Mutable state}
 
-\Slice supports mutable references, allowing imperative-style updates within a probabilistic context. This example models temperature that can be updated based on weather events:
+\Slice{} supports mutable references, allowing imperative-style updates within a probabilistic context. This example models temperature that can be updated based on weather events:
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
   let temperature = ref (uniform(15.0, 25.0)) in
@@ -390,7 +390,7 @@ While \Slice is purely functional without mutable state, it provides the \texttt
 
 \subsection{Lists and recursion}
 
-\Slice supports lists and pattern matching, enabling functional list processing with probabilistic elements. This example demonstrates closures capturing stochastic values:
+\Slice{} supports lists and pattern matching, enabling functional list processing with probabilistic elements. This example demonstrates closures capturing stochastic values:
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
   let map = fun f -> fix loop lst :=
@@ -408,7 +408,7 @@ While \Slice is purely functional without mutable state, it provides the \texttt
   map check_threshold measurements
 \end{lstlisting}
 
-\noindent The closure \texttt{check\_threshold} lexically captures the stochastic \texttt{threshold} value, which is randomly chosen to be either 0.3 or 0.7. The type system correctly infers that both threshold values (0.3 and 0.7) must be included as comparison points for all Gaussian measurements, yielding type \codetype{float[<0.3,<0.7; T]} for list elements. This demonstrates how \Slice handles higher-order functions with captured stochastic values while maintaining sound discretization.
+\noindent The closure \texttt{check\_threshold} lexically captures the stochastic \texttt{threshold} value, which is randomly chosen to be either 0.3 or 0.7. The type system correctly infers that both threshold values (0.3 and 0.7) must be included as comparison points for all Gaussian measurements, yielding type \codetype{float[<0.3,<0.7; T]} for list elements. This demonstrates how \Slice{} handles higher-order functions with captured stochastic values while maintaining sound discretization.
 
 
 \subsection{Indian GPA Problem}\label{sec:gpa}
@@ -471,7 +471,7 @@ Not all programs can be fully discretized. Consider a program where continuous v
   then x < y else y < x
 \end{lstlisting}
 
-\noindent \Slice performs partial discretization, discretizing only the parts it can:
+\noindent \Slice{} performs partial discretization, discretizing only the parts it can:
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em]
   let x = uniform(0, 1) in
@@ -497,7 +497,7 @@ Not all programs can be fully discretized. Consider a program where continuous v
 
 \section{The Slice Language and Type System}\label{sec:language}
 
-The syntax of the \Slice language is shown in Figure~\ref{fig:grammar}.
+The syntax of the \Slice{} language is shown in Figure~\ref{fig:grammar}.
 
 \begin{figure}[h]
 \begin{align*}
@@ -519,7 +519,7 @@ e ::= &\; x                               & \text{variable} \\
            | &\; \exponential(c)      & \text{exponential distribution (rate)} \\
            | &\; \betafn(c_1, c_2)      & \text{beta distribution (alpha, beta)}
 \end{align*}
-\caption{Syntax of the \Slice language.}
+\caption{Syntax of the \Slice{} language.}
 \label{fig:grammar}
 \end{figure}
 
@@ -599,7 +599,7 @@ The typing rules are as follows:
 
 \section{Type Inference}\label{sec:type-inference}
 
-Type inference for \Slice aims to assign a type (e.g., \bool{}, \intty, \float$\langle \dots \rangle$, $\tau_1 * \tau_2$, $\tau_1 \rightarrow \tau_2$) to every subexpression while simultaneously collecting all relevant comparison threshold points for each float expression. This process works by traversing the abstract syntax tree (AST) of the program and generating type constraints based on the structure of the code and the typing rules.
+Type inference for \Slice{} aims to assign a type (e.g., \bool{}, \intty, \float$\langle \dots \rangle$, $\tau_1 * \tau_2$, $\tau_1 \rightarrow \tau_2$) to every subexpression while simultaneously collecting all relevant comparison threshold points for each float expression. This process works by traversing the abstract syntax tree (AST) of the program and generating type constraints based on the structure of the code and the typing rules.
 
 To manage the constraints on the threshold points associated with $\float\langle B \rangle$ types, we use a concept called ``bags''. Each expression inferred to have type $\float\langle B \rangle$ is associated with a bag $B$, which represents the set of constants $\{c_0, \dots, c_n\}$ it might be compared against. 
 
@@ -646,7 +646,7 @@ The inference algorithm recursively walks the expression AST. It maintains an en
 
 \section{Discretization}\label{sec:discretization}
 
-After type inference, we have a \Slice expression annotated with types, where each $\float\langle B \rangle$ type includes a bag $B$ containing all relevant threshold points $\{c_0, \dots, c_n\}$ (if $t$ is a float type). The discretization process transforms continuous distributions in this typed expression into discrete distributions, replacing continuous distributions and continuous comparisons with their discrete counterparts.
+After type inference, we have a \Slice{} expression annotated with types, where each $\float\langle B \rangle$ type includes a bag $B$ containing all relevant threshold points $\{c_0, \dots, c_n\}$ (if $t$ is a float type). The discretization process transforms continuous distributions in this typed expression into discrete distributions, replacing continuous distributions and continuous comparisons with their discrete counterparts.
 
 The core idea is to map the continuous range of a float variable onto a finite set of integers, representing intervals defined by the threshold points in its bag. A comparison against a threshold constant $c_k$ becomes a comparison against the corresponding interval index $k$.
 
@@ -683,7 +683,7 @@ This process effectively translates continuous distributions into discrete distr
 
 \section{Implementation}\label{sec:implementation}
 
-\jules{Here we describe how we implemented it, and how we have a Dice backend}
+\jules{Here we describe how we implemented it, and how we have a Dice backend.}
 
 
 \section{Evaluation}\label{sec:evaluation}
