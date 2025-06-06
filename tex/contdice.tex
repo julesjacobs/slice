@@ -94,27 +94,34 @@
 
 \begin{document}
 
+\begin{abstract}
+Probabilistic programming languages are a powerful tool for statistical modeling, but performing exact inference on programs with continuous random variables remains a major challenge. This paper presents \Slice, a language that enables exact inference for a broad class of programs with continuous distributions. \Slice works by automatically and soundly discretizing continuous variables. The core of our approach is a novel type system that analyzes how continuous random variables are compared within a program. It uses this information to partition the continuous domains into a finite number of intervals, transforming the original program into an equivalent, purely discrete one. This transformed program can then be solved by a backend exact inference engine for discrete PPLs. We formalize this type-directed discretization, prove its soundness, and provide an open-source implementation. Our evaluation shows that our approach is significantly faster than existing symbolic inference techniques for hybrid discrete-continuous programs, bridging the gap between expressive continuous modeling and the power of exact discrete inference.
+\end{abstract}
+
 \maketitle
 
-
 \section{Introduction}\label{sec:intro}
-Probabilistic programming languages (PPLs) have emerged as a powerful tool for building complex statistical models and reasoning about uncertainty. A key challenge in PPLs is inference: computing the probability of an event given a model. The tractability of inference often depends on the kinds of random variables used. For programs with only discrete random variables, powerful exact inference engines can compute probabilities precisely. However, many real-world models require continuous random variables to represent quantities like time, distance, or sensor readings. For these programs, exact inference is often intractable, forcing practitioners to rely on approximate methods like Monte Carlo simulation or variational inference.
+Probabilistic programming languages have emerged as a powerful tool for building complex statistical models and reasoning about uncertainty~\cite{Moy2025Roulette,Holtzen2020Dice,DeRaedt2007ProbLog,Saad2021SPPL,Carpenter2017Stan,Salvatier2016PyMC3,Bingham2019Pyro,Dillon2017TFP,Tran2016Edward,Tolpin2016Anglican,Goodman2014WebPPL,Pfeffer2009Figaro,Minka2018InferNET,Ge2018Turing,CusumanoTowner2019Gen,Tehrani2020BeanMachine,Goodman2008Church}. A key challenge in PPLs is inference: computing the probability of an event given a model. The tractability of inference often depends on the kinds of random variables used. For programs with only discrete random variables, powerful exact inference engines can compute probabilities precisely. However, many real-world models require continuous random variables to represent quantities like time, distance, or sensor readings. For these programs, exact inference is often intractable, forcing practitioners to rely on approximate methods like Monte Carlo simulation or variational inference.
 
 This paper introduces \Slice, a small functional language that bridges this gap. \Slice enables exact inference on a class of probabilistic programs with continuous distributions by automatically and soundly converting them into equivalent discrete programs. The key insight is to analyze how continuous variables are used within the program. Specifically, \Slice uses a type system to track all the constant thresholds against which continuous variables are compared. These comparison points are then used to intelligently discretize the continuous distributions into a finite number of buckets. When the resulting program is purely discrete it can then be solved by an off-the-shelf exact inference engine. This type-directed discretization allows developers to model with continuous distributions while still benefiting from the speed and precision of exact discrete inference. Here is a simple example:
 
 \begin{lstlisting}
-let x = uniform(0, 1) in
-let y = uniform(0, 2) in
-if x < 0.5 then x < 0.1 else y < 0.1
-\end{lstlisting}
 
-The program above can be discretized into:
+   let x = uniform(0, 1) in
+   let y = uniform(0, 2) in
+   if x < 0.5 then x < 0.1 else y < 0.1
+
+\end{lstlisting}\vspace{1em}
+
+\noindent The program above can be discretized into:
 
 \begin{lstlisting}
-let x = discrete(0.1, 0.4, 0.5) in
-let y = discrete(0.05, 0.95) in
-if x <= 1 then x <= 0 else y <= 0
-\end{lstlisting}
+
+   let x = discrete(0.1, 0.4, 0.5) in
+   let y = discrete(0.05: 0#2, 0.95: 1#2) in
+   if x <= 1 then x <= 0 else y <= 0
+
+\end{lstlisting}\vspace{1em}
 
 The discretization process is driven by the comparisons present in the program. \Slice analyzes the program to find all numeric constants used in comparisons with continuous random variables. In the example above, the variable \texttt{x}, drawn from a \texttt{uniform(0, 1)} distribution, is compared to 0.5 and 0.1. These two "split points" partition the range of \texttt{x} into three intervals: $[0, 0.1)$, $[0.1, 0.5)$, and $[0.5, 1)$. \Slice replaces the continuous distribution for \texttt{x} with a discrete one that has three outcomes, where the probability of each outcome is equal to the probability mass of the original uniform distribution within the corresponding interval. Similarly, the variable \texttt{y}, drawn from \texttt{uniform(0, 2)}, is compared only to 0.1, partitioning its distribution into two intervals. All comparisons are then transformed to operate on these new discrete variables. This example illustrates the core mechanism of \Slice: a type-directed transformation that makes continuous programs amenable to exact discrete inference.
 
