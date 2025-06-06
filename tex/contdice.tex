@@ -150,7 +150,7 @@ This section presents simple examples that highlight the key features of our pro
 
 \subsection{Simple branching on a uniform distribution}
 
-We start with a simple example that illustrates the core idea of \Slice. Consider the following program, which models a fair coin flip by checking if a random number from a uniform distribution is less than 0.5:
+We start with a simple example that illustrates the core idea of \Slice{}. Consider the following program, which models a fair coin flip by checking if a random number from a uniform distribution is less than 0.5:
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em]
     uniform(0,1) < 0.5
@@ -168,8 +168,8 @@ We start with a simple example that illustrates the core idea of \Slice. Conside
     (uniform(0, 1) : !{\codetype{float[<0.5; T]}}!) < (0.5 : !{\codetype{float[<0.5; 0.5]}}!)
 \end{lstlisting}
 
-The type \codetype{float[<0.5; T]} for the uniform sample indicates that the relevant comparison cutpoint is ``$<\!\!0.5$'' and the quantity can take on a continuous range ($\top$). 
-The type \codetype{float[<0.5; 0.5]} for the constant $0.5$ indicates that the relevant comparison cutpoint is $< 0.5$ and the quantity can only take on the single constant value $0.5$. 
+The type \codetype{float[<0.5; T]} for the uniform sample indicates that the relevant comparison cutpoint is ``$<\!\!0.5$'' and the quantity can take on a continuous range ($\top$). This type allows \Slice{} to map \texttt{uniform(0,1)} in the original program to \texttt{discrete(0.5, 0.5)} in the discrete program.
+The type \codetype{float[<0.5; 0.5]} for the constant $0.5$ indicates that the relevant comparison cutpoint is $< 0.5$ and the quantity can only take on the single constant value $0.5$. This type allows \Slice{} to map the constant 0.5 in the original program to the index 1 in the discrete program.
 
 In general, a type \lstinline{float[cut-points; value-set]} indicates:
 \[
@@ -181,8 +181,7 @@ In general, a type \lstinline{float[cut-points; value-set]} indicates:
 ]
 \]
 
-The cut points are determined by \emph{how the expression is used} (i.e., its context) and the value set is determined by \emph{the constants used in the expression}.
-The discretization is driven by the cut points: a float value with $n$ cut points is discretized into $n+1$ possible discrete values.
+The cut points are determined by \emph{how the expression is used} (i.e., its context) and the value set is determined by \emph{the constants used in the expression}. In general, all continuous distributions with comparisons to a finite number of floats will have type \codetype{float[<c\_1, ..., <c\_n; T]}, where the cutpoints in this type allow \Slice{} to determine precisely where to partition the continuous range ($\top$) into intervals, in turn allowing it to determine the parameters in the \texttt{discrete} distribution in the discrete program by taking the cdfs of the continuous distribution at the various intervals. Essentially, the discretization is driven by the cut points: a float value with $n$ cut points is discretized into $n+1$ possible discrete values. 
 
 In the example above, the expression \lstinline{uniform(0,1)} is discretized to \lstinline{discrete(0.5, 0.5)} which returns $0$ with probability $0.5$ and $1$ with probability $0.5$.
 The constant $0.5$ on the right hand side is discretized to the constant $1$ because it falls in the second range $[0.5, +\infty)$. The less-than comparison is translated to an identical less-than comparison on the discrete values.
@@ -190,6 +189,17 @@ The constant $0.5$ on the right hand side is discretized to the constant $1$ bec
 \subsection{Branching on multiple continuous variables}
 
 \noindent Now let's consider a more complex example with multiple continuous variables and conditional branches:
+
+\begin{lstlisting}[aboveskip=1em,belowskip=1em]
+    let x = uniform(0, 1) in
+    let y = uniform(0, 2) in
+    if x < 0.5 then x < 0.1 else y < 0.1
+\end{lstlisting}
+
+\noindent In this program, the variable \texttt{x} is drawn from \texttt{uniform(0, 1)} and is compared against two different constants: \texttt{0.5} and \texttt{0.1}. These two cut points partition the real line $\R$ into three intervals: $(-\infty, 0.1)$, $[0.1, 0.5)$, and $[0.5, +\infty)$. Similarly, the variable \texttt{y}, drawn from \texttt{uniform(0, 2)}, is compared only with \texttt{0.1}. This single cut point partitions the real line $\R$ into two intervals, $(-\infty, 0.1)$ and $[0.1, +\infty)$.
+
+
+This analysis is done by the type inference process, which collects all comparison points for each continuous variable. For \texttt{x}, the type inference algorithm discovers the cut points \texttt{<0.1} and \texttt{<0.5}, giving it the type \codetype{float[<0.1,<0.5; T]}. For \texttt{y}, it only finds \texttt{<0.1}, giving it the type \codetype{float[<0.1; T]}. This information is captured in the annotated program below.
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
     let x = uniform(0, 1) : !{\codetype{float[<0.1,<0.5; T]}}! in
@@ -200,12 +210,8 @@ The constant $0.5$ on the right hand side is discretized to the constant $1$ bec
       y < (0.5 : !{\codetype{float[<0.5; 0.5]}}!)
 \end{lstlisting}
 
-\noindent In this program, the variable \texttt{x} is drawn from \texttt{uniform(0, 1)} and is compared against two different constants: \texttt{0.5} and \texttt{0.1}. These two cut points partition the real line $\R$ into three intervals: $(-\infty, 0.1)$, $[0.1, 0.5)$, and $[0.5, +\infty)$. Similarly, the variable \texttt{y}, drawn from \texttt{uniform(0, 2)}, is compared only with \texttt{0.1}. This single cut point partitions the real line $\R$ into two intervals, $(-\infty, 0.1)$ and $[0.1, +\infty)$.
 
-
-This analysis is done by the type inference process, which collects all comparison points for each continuous variable. For \texttt{x}, the type inference algorithm discovers the cut points \texttt{<0.1} and \texttt{<0.5}, giving it the type \codetype{float[<0.1,<0.5; T]}. For \texttt{y}, it only finds \texttt{<0.1}, giving it the type \codetype{float[<0.1; T]}. This information is captured in the annotated program above.
-
-\Slice{} replaces the continuous distribution for \texttt{x} with a discrete one that has three outcomes, where the probability of each outcome is the probability mass of the original uniform distribution within the corresponding interval. This results in \texttt{discrete(0.1, 0.4, 0.5)}.
+Based on these type annotations, \Slice{} replaces the continuous distribution for \texttt{x} with a discrete one that has three outcomes, where the probability of each outcome is the probability mass of the original uniform distribution within the corresponding interval. This results in \texttt{discrete(0.1, 0.4, 0.5)}.
 \Slice{} replaces the continuous distribution for \texttt{y} with a discrete one that has two outcomes, where the probability of each outcome is the probability mass of the original uniform distribution within the corresponding interval. This results in \texttt{discrete(0.05, 0.95)}. The comparisons in the program are then transformed to operate on the integer indices of these new discrete intervals, leading to the following discretized program:
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em]
@@ -369,7 +375,19 @@ While \Slice{} is purely functional without mutable state, it provides the \text
   weather_after_3_days < 0.5  (* Is it sunny? *)
 \end{lstlisting}
 
-\noindent The \texttt{iterate} function applies the weather transition function three times, starting from a random initial weather state. Each iteration represents one day, with values below 0.5 representing sunny weather and values above 0.5 representing rain. Sunny days tend to stay sunny (uniform between 0.2 and 0.4), while rainy days tend to stay rainy (Gaussian centered at 0.7). The type system ensures that all comparison points are properly collected across the iterations, enabling accurate discretization of this sequential process.
+\noindent The \texttt{iterate} function applies the weather transition function three times, starting from a random initial weather state. Each iteration represents one day, with values below 0.5 representing sunny weather and values above 0.5 representing rain. Sunny days tend to stay sunny (uniform between 0.2 and 0.4), while rainy days tend to stay rainy (Gaussian centered at 0.7). The type system ensures that all comparison points are properly collected across the iterations, e.g. yielding type \codetype{float[<0.5; T]} for \texttt{today}, \texttt{uniform(0.2,0.4)}, \texttt{gaussian(0.7,0.1)}, and \texttt{weather\_after\_three\_days} each. This enables accurate discretization of this sequential process:
+
+\begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
+  let weather_transition = fun today -> 
+    if today < 1 then
+        discrete(1, 0)
+    else
+        discrete(0.0227501, 0.97725) in
+  let weather_after_3_days = 
+    iterate(weather_transition, discrete(0.5, 0.5), 3) in
+  weather_after_3_days < 1
+\end{lstlisting}
+
 
 \subsection{Mutable state}
 
@@ -386,7 +404,17 @@ While \Slice{} is purely functional without mutable state, it provides the \text
   !temperature < 12.0
 \end{lstlisting}
 
-\noindent The reference \texttt{temperature} initially holds a uniform temperature between 15°C and 25°C. With 30\% probability, a cold front updates it to a Gaussian-distributed temperature centered at 10°C. The type system tracks that the dereferenced value will be compared to 12.0, ensuring proper discretization of both the initial uniform distribution and the potential Gaussian update.
+\noindent The reference \texttt{temperature} initially holds a uniform temperature between 15°C and 25°C. With 30\% probability, a cold front updates it to a Gaussian-distributed temperature centered at 10°C. The type system tracks that the dereferenced value will be compared to 12.0, ensuring proper discretization of both the initial uniform distribution and the potential Gaussian update, both with float types \codetype{float[<12; T]}:
+
+\begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
+    let temperature = ref (discrete(0, 1)) in
+    let weather_event = discrete(0.3, 0.7) in
+    (if weather_event < 1 then
+        temperature := discrete(0.841345, 0.158655)
+    else
+        ()); 
+    !temperature < 1
+\end{lstlisting}
 
 \subsection{Lists and recursion}
 
@@ -413,7 +441,7 @@ While \Slice{} is purely functional without mutable state, it provides the \text
 
 \subsection{Indian GPA Problem}\label{sec:gpa}
 
-This example models a student's GPA based on nationality (India or USA) and whether they have a perfect record. The GPA is deterministic for perfect students (10.0 for India, 4.0 for USA) but drawn from a uniform distribution otherwise. The program computes the probability that a student's GPA falls below 1.0:
+This canonical example involves both discrete and continuous random variables and models a student's GPA based on nationality (India or USA) and whether they have a perfect record. The GPA is deterministic for perfect students (10.0 for India, 4.0 for USA) but drawn from a uniform distribution otherwise. The program computes the probability that a student's GPA falls below 1.0:
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
   let nationality = discrete(0.5, 0.5) in
