@@ -1,0 +1,379 @@
+\section{Slice by Example}\label{sec:examples}
+This section presents simple examples that highlight the key features of our probabilistic programming language \Slice{}, aiming to emphasize how \Slice{} meets the challenge of performing exact inference efficiently. \Slice{} extends a core functional language with traditional programming language constructs such as conditionals, local variables, and functions, augmented with constructs for probabilistic programming such as sampling and conditioning. Each example in the subsections is intended to showcase these features. Later in the section, we also mention examples that can only be partially discretized but nonetheless preserve the semantics across both the original and discretized program.
+
+\subsection{Simple branching on a uniform distribution}
+
+We start with a simple example that illustrates the core idea of \Slice{}. Consider the following program, which models a fair coin flip by checking if a random number from a uniform distribution is less than 0.5:
+
+\begin{lstlisting}[aboveskip=1em,belowskip=1em]
+    uniform(0,1) < 0.5
+\end{lstlisting}
+
+\noindent \Slice{}'s type system analyzes this program and identifies that the only comparison point for the continuous variable is 0.5. This single split point partitions the range $\R = (-\infty, +\infty)$ into two intervals of equal probability mass: $(-\infty, 0.5)$ and $[0.5, +\infty)$. \Slice{} then transforms the program into an equivalent discrete version:
+
+\begin{lstlisting}[aboveskip=1em,belowskip=1em]
+    discrete(0.5, 0.5) < 1
+\end{lstlisting}
+
+\noindent Here, \texttt{discrete(0.5, 0.5)} represents a choice between two outcomes (0 or 1), each with probability 0.5. The outcome 0 corresponds to the original value being in $(-\infty, 0.5)$, and 1 corresponds to it being in $[0.5, +\infty)$. The comparison is updated to check if the outcome is less than 1, which is true only for outcome 0, correctly preserving the original program's meaning. This transformation is guided by tracking comparison points, which are determined by type inference as shown in the annotated program below:
+
+\begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
+    (uniform(0, 1) : !{\ft{<0.5}}!) < (0.5 : !{\ftb{<0.5}{0.5}}!)
+\end{lstlisting}
+
+The type \ft{<0.5} for the uniform sample indicates that the bound bag contains the comparison bound ``$<\!\!0.5$'' and the value bag is $\top$ (can take any value in the range). 
+The type \ftb{<0.5}{0.5} for the constant $0.5$ indicates that the bound bag contains $<0.5$ and the value bag contains only the single value $0.5$.
+
+In general, a type \lstinline{float[bound-bag; value-bag]} indicates:
+\[
+\textbf{float}
+[
+\underbrace{\text{bound-bag}}_{\begin{array}{c}\text{set of comparison bounds}\\\text{(e.g., }\{<\!0.1, <\!0.5, \leq\!0.8\}\text{)}\\\text{or }\top\text{ (unbounded)}\end{array}}
+;
+\underbrace{\text{value-bag}}_{\begin{array}{c}\text{set of concrete values}\\\text{(e.g., }\{0.1, 0.4, 0.5\}\text{)}\\\text{or }\top\text{ (any value)}\end{array}}
+]
+\]
+
+The bound bag is determined by \emph{how the expression is used} (i.e., what it's compared against) and the value bag is determined by \emph{what concrete values the expression can take}.
+The discretization is driven by the bound bag: a float value with $n$ comparison bounds is discretized into $n+1$ possible discrete values.
+
+In the example above, the expression \lstinline{uniform(0,1)} is discretized to \lstinline{discrete(0.5, 0.5)} which returns $0$ with probability $0.5$ and $1$ with probability $0.5$.
+The constant $0.5$ on the right hand side is discretized to the constant $1$ because it falls in the second range $[0.5, +\infty)$. The less-than comparison is translated to an identical less-than comparison on the discrete values.
+
+\subsection{Branching on multiple continuous variables}
+
+\noindent Now let's consider a more complex example with multiple continuous variables and conditional branches:
+
+\begin{lstlisting}[aboveskip=1em,belowskip=1em]
+    let x = uniform(0, 1) in
+    let y = uniform(0, 2) in
+    if x < 0.5 then x < 0.1 else y < 0.1
+\end{lstlisting}
+
+\noindent In this program, the variable \texttt{x} is drawn from \texttt{uniform(0, 1)} and is compared against two different constants: \texttt{0.5} and \texttt{0.1}. These two cut points partition the real line $\R$ into three intervals: $(-\infty, 0.1)$, $[0.1, 0.5)$, and $[0.5, +\infty)$. Similarly, the variable \texttt{y}, drawn from \texttt{uniform(0, 2)}, is compared only with \texttt{0.1}. This single cut point partitions the real line $\R$ into two intervals, $(-\infty, 0.1)$ and $[0.1, +\infty)$.
+
+
+This analysis is done by the type inference process, which collects all comparison points for each continuous variable. For \texttt{x}, the type inference algorithm discovers the cut points \texttt{<0.1} and \texttt{<0.5}, giving it the type \ft{<0.1,<0.5}. For \texttt{y}, it only finds \texttt{<0.1}, giving it the type \ft{<0.1}. This information is captured in the annotated program below.
+
+\begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
+    let x = uniform(0, 1) : !{\ft{<0.1,<0.5}}! in
+    let y = uniform(0, 2) : !{\ft{<0.5}}! in
+    if x < (0.1 : !{\ftb{<0.1,<0.5}{0.1}}!) then
+      x < (0.5 : !{\ftb{<0.1,<0.5}{0.5}}!)
+    else
+      y < (0.5 : !{\ftb{<0.5}{0.5}}!)
+\end{lstlisting}
+
+
+\Slice{} replaces the continuous distribution for \texttt{x} with a discrete one that has three outcomes, where the probability of each outcome is the probability mass of the original uniform distribution within the corresponding interval. This results in \texttt{discrete(0.1, 0.4, 0.5)}.
+\Slice{} replaces the continuous distribution for \texttt{y} with a discrete one that has two outcomes, where the probability of each outcome is the probability mass of the original uniform distribution within the corresponding interval. This results in \texttt{discrete(0.05, 0.95)}. The comparisons in the program are then transformed to operate on the integer indices of these new discrete intervals, leading to the following discretized program:
+
+\begin{lstlisting}[aboveskip=1em,belowskip=1em]
+    let x = discrete(0.1, 0.4, 0.5) in
+    let y = discrete(0.05, 0.95) in
+    if x < 1 then
+      x < 2
+    else
+      y < 1
+\end{lstlisting}
+
+Note that the original constant $0.5$ is discretized in two different ways: for $x < 0.5$ it is discretized to $2$ and for $y < 0.5$ it is discretized to $1$. This is because the constant $0.5$ falls in the second interval of the split $\R = (-\infty, 0.1) \cup [0.1, 0.5) \cup [0.5, +\infty)$ for $x$ and the first interval for the split $\R = (-\infty, 0.5) \cup [0.5, +\infty)$ for $y$.
+
+\subsection{If else with continuous values}
+
+In the program above, we always directly compare the continuous samples to constants.
+However, the discretization process still works if the continuous samples and constants flow through the program, for instance via an if-else statement.
+Consider the following program:
+
+\begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
+    let x = if uniform(0,1) < 0.5 
+            then uniform(0,2) 
+            else gaussian(0,1) in
+    let y = if 1.5 < x
+            then 1.8
+            else 0.3 in
+    x <= y
+\end{lstlisting}
+
+\noindent This program demonstrates how comparison points propagate through control flow. The type inference annotates the program as follows:
+
+\begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
+    let x = if (uniform(0,1) : !{\ft{<0.5}}!) < (0.5 : !{\ftb{<0.5}{0.5}}!)
+            then (uniform(0,2) : !{\ft{<=0.3,<1.5,<=1.8}}!)
+            else (gaussian(0,1) : !{\ft{<=0.3,<1.5,<=1.8}}!)
+            : !{\ft{<=0.3,<1.5,<=1.8}}! in
+    let y = if (1.5 : !{\ftb{<=0.3,<1.5,<=1.8}{1.5}}!) < x
+            then (1.8 : !{\ftb{<=0.3,<1.5,<=1.8}{1.8}}!)
+            else (0.3 : !{\ftb{<=0.3,<1.5,<=1.8}{0.3}}!)
+            : !{\ftb{<=0.3,<1.5,<=1.8}{0.3,1.8}}! in
+    x <= y
+\end{lstlisting}
+
+\noindent Notice that all comparison points from the entire program (0.3, 1.5, and 1.8) are collected for the variable \texttt{x}, regardless of which branch is taken. These comparison points with type \codetype{<=0.3,<1.5,<=1.8} split the real line into four intervals: $(-\infty, 0.3]$, $(0.3, 1.5)$, $[1.5, 1.8]$, and $(1.8, +\infty)$. Note that 1.5 is excluded from the second interval and included in the third because it comes from a strict `<` comparison. The discretized version becomes:
+
+\begin{lstlisting}[aboveskip=1em,belowskip=1em]
+    let x = if discrete(0.5, 0.5) < 1 then
+        discrete(0.15, 0.6, 0.15, 0.1)
+      else
+        discrete(0.617911, 0.315281, 0.0308769, 0.0359303) in
+    let y = if 1 < x then 2 else 0 in
+    x <= y
+\end{lstlisting}
+
+\noindent The four probabilities in each \texttt{discrete} distribution correspond to the probability mass in each of the four intervals. For example, \texttt{uniform(0,2)} has probability 0.15 in $(-\infty, 0.3]$, 0.6 in $(0.3, 1.5]$, 0.15 in $(1.5, 1.8]$, and 0.1 in $(1.8, +\infty)$.
+
+\subsection{Discrete latent variable}
+
+Continuous distributions can have parameters that depend on discrete random choices. In this example, a Gaussian distribution's standard deviation is determined by a random choice between two values:
+
+\begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
+    let x = if uniform(0,1) < 0.5 
+            then 0.5
+            else 1.5 in
+    gaussian(0, x) < 0.5
+\end{lstlisting}
+
+\noindent This example shows how discrete choices can affect the parameters of continuous distributions. The type-annotated version reveals how the discrete latent variable \texttt{x} determines the standard deviation of the Gaussian:
+
+\begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
+    let x = if (uniform(0,1) : !{\ft{<0.5}}!) < (0.5 : !{\ftb{<0.5}{0.5}}!)
+            then (0.5 : !{\ftb{<=0.5,<=1.5}{0.5}}!)
+            else (1.5 : !{\ftb{<=0.5,<=1.5}{1.5}}!)
+            : !{\ftb{<=0.5,<=1.5}{0.5,1.5}}! in
+    (gaussian(0, x) : !{\ft{<0.5}}!) < (0.5 : !{\ftb{<0.5}{0.5}}!)
+\end{lstlisting}
+
+\noindent The discretized program handles the distribution parameter that depends on a discrete choice:
+
+\begin{lstlisting}[aboveskip=1em,belowskip=1em]
+    let x = if discrete(0.5, 0.5) < 1 then 0 else 1 in
+    (if x == 0 then
+        discrete(0.841345, 0.158655)
+    else
+        discrete(0.630559, 0.369441)) < 1
+\end{lstlisting}
+
+\subsection{Conditioning}
+
+\Slice{} supports conditioning on events through the \texttt{observe} construct, allowing for Bayesian inference. The following program computes the probability that a uniform random variable is less than 0.2, given that it is less than 0.5:
+
+\begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
+    let x = uniform(0.0, 1.0) in
+    observe (x < 0.5);
+    x < 0.2
+\end{lstlisting}
+
+\noindent The type-annotated version shows how observation points become comparison points:
+
+\begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
+    let x = (uniform(0.0, 1.0) : !{\ft{<0.2,<0.5}}!) in
+    observe (x < (0.5 : !{\ftb{<0.2,<0.5}{0.5}}!));
+    x < (0.2 : !{\ftb{<0.2,<0.5}{0.2}}!)
+\end{lstlisting}
+
+\noindent The discretized version preserves the conditioning semantics:
+
+\begin{lstlisting}[aboveskip=1em,belowskip=1em]
+    let x = discrete(0.2, 0.3, 0.5) in
+    observe (x < 2);
+    x < 1
+\end{lstlisting}
+
+\noindent In the discrete version, the observation \texttt{x < 2} rules out the case where \texttt{x = 2} (corresponding to the original interval $[0.5, +\infty)$), effectively conditioning on \texttt{x} being in $[0.0, 0.5)$.
+
+\subsection{Higher-order functions}
+
+\Slice{} supports higher-order functions, enabling functional programming patterns with probabilistic computations. This example shows a higher-order function \texttt{mappair} that applies a function to both elements of a pair:
+
+\begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
+  let mappair = fun f -> fun p -> (f (fst p), f (snd p)) in
+  let f = fun x -> x < 0.5 in
+  let g = fun x -> x < 1.5 in
+  let p = (uniform(0,2), gaussian(0,2)) in
+  let q = (mappair f) p in
+  let r = (mappair g) p in
+  if fst q then snd q else 
+      if fst r then snd r else fst q
+\end{lstlisting}
+
+\noindent The type system correctly infers that comparison points from both \texttt{f} and \texttt{g} (0.5 and 1.5) must be collected for the distributions in \texttt{p}, yielding type \ft{<0.5,<1.5} for both components. The discretized version preserves the higher-order structure:
+
+\begin{lstlisting}[aboveskip=1em,belowskip=1em]
+  let mappair = fun f -> fun p -> (f (fst p), f (snd p)) in
+  let f = fun x -> x < 1 in
+  let g = fun x -> x < 2 in
+  let p = (discrete(0.25, 0.5, 0.25), 
+          discrete(0.598706, 0.174666, 0.226627)) in
+  let q = (mappair f) p in
+  let r = (mappair g) p in
+  if fst q then snd q else 
+      if fst r then snd r else fst q
+\end{lstlisting}
+
+\noindent The continuous distributions are discretized into three-valued discrete distributions based on the intervals $(-\infty, 0.5)$, $[0.5, 1.5)$, and $[1.5, +\infty)$, while the functional structure remains intact.
+
+\subsection{Sequential processes with iterate}
+
+While \Slice{} is purely functional without mutable state, it provides the \texttt{iterate} construct to model sequential probabilistic processes. This example simulates a simple weather model where tomorrow's weather depends on today's:
+
+\begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
+  let weather_transition = fun today ->
+      if today < 0.5 then 
+          (* If sunny today, likely stays sunny *)
+          uniform(0.2, 0.4)
+      else  
+          (* If rainy today, likely stays rainy *)
+          gaussian(0.7, 0.1) in
+  let weather_after_3_days = 
+      iterate(weather_transition, uniform(0,1), 3) in
+  weather_after_3_days < 0.5  (* Is it sunny? *)
+\end{lstlisting}
+
+\noindent The \texttt{iterate} function applies the weather transition function three times, starting from a random initial weather state. Each iteration represents one day, with values below 0.5 representing sunny weather and values above 0.5 representing rain. Sunny days tend to stay sunny (uniform between 0.2 and 0.4), while rainy days tend to stay rainy (Gaussian centered at 0.7). The type system ensures that all comparison points are properly collected across the iterations, e.g. yielding type \ft{<0.5} for \texttt{today}, \texttt{uniform(0.2,0.4)}, \texttt{gaussian(0.7,0.1)}, and \texttt{weather\_after\_three\_days} each. This enables accurate discretization of this sequential process:
+
+\begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
+  let weather_transition = fun today -> 
+    if today < 1 then
+        discrete(1, 0)
+    else
+        discrete(0.0227501, 0.97725) in
+  let weather_after_3_days = 
+    iterate(weather_transition, discrete(0.5, 0.5), 3) in
+  weather_after_3_days < 1
+\end{lstlisting}
+
+
+\subsection{Mutable state}
+
+\Slice{} supports mutable references, allowing imperative-style updates within a probabilistic context. This example models temperature that can be updated based on weather events:
+
+\begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
+  let temperature = ref (uniform(15.0, 25.0)) in
+  let weather_event = uniform(0.0, 1.0) in
+  (if weather_event < 0.3 then
+      (* Cold front moves in *)
+      temperature := gaussian(10.0, 2.0)
+  else
+      ());
+  !temperature < 12.0
+\end{lstlisting}
+
+\noindent The reference \texttt{temperature} initially holds a uniform temperature between 15°C and 25°C. With 30\% probability, a cold front updates it to a Gaussian-distributed temperature centered at 10°C. The type system tracks that the dereferenced value will be compared to 12.0, ensuring proper discretization of both the initial uniform distribution and the potential Gaussian update, both with float types \ft{<12}:
+
+\begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
+    let temperature = ref (discrete(0, 1)) in
+    let weather_event = discrete(0.3, 0.7) in
+    (if weather_event < 1 then
+        temperature := discrete(0.841345, 0.158655)
+    else
+        ()); 
+    !temperature < 1
+\end{lstlisting}
+
+\subsection{Lists and recursion}
+
+\Slice{} supports lists and pattern matching, enabling functional list processing with probabilistic elements. This example demonstrates closures capturing stochastic values:
+
+\begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
+  let map = fun f -> fix loop lst :=
+      match lst with
+        nil -> nil
+        | head :: tail -> (f head) :: (loop tail)
+      end in
+  (* Stochastically choose threshold *)
+  let threshold = if uniform(0,1) < 0.5 then 0.3 else 0.7 in
+  (* Closure captures the stochastic threshold *)
+  let check_threshold = fun x -> x < threshold in
+  let measurements = gaussian(0.0, 1.0) :: 
+                    gaussian(0.5, 1.0) :: 
+                    gaussian(1.0, 1.0) :: nil in
+  map check_threshold measurements
+\end{lstlisting}
+
+\noindent The closure \texttt{check\_threshold} lexically captures the stochastic \texttt{threshold} value, which is randomly chosen to be either 0.3 or 0.7. The type system correctly infers that both threshold values (0.3 and 0.7) must be included as comparison points for all Gaussian measurements, yielding type \ft{<0.3,<0.7} for list elements. This demonstrates how \Slice{} handles higher-order functions with captured stochastic values while maintaining sound discretization.
+
+
+\subsection{Indian GPA Problem}\label{sec:gpa}
+
+This canonical example involves both discrete and continuous random variables and models a student's GPA based on nationality (India or USA) and whether they have a perfect record. The GPA is deterministic for perfect students (10.0 for India, 4.0 for USA) but drawn from a uniform distribution otherwise. The program computes the probability that a student's GPA falls below 1.0:
+
+\begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
+  let nationality = discrete(0.5, 0.5) in
+  let perfect = discrete(0.01, 0.99) in
+  let gpa = if nationality <= 0 then
+          if perfect <= 0 then
+            (10.0 : !{\ftb{<1}{10}}!)
+          else
+            (uniform(0, 10) : !{\ft{<1}}!)
+        else
+          if perfect <= 0 then
+            (4.0 : !{\ftb{<1}{4}}!)
+          else
+            (uniform(0, 4) : !{\ft{<1}}!)
+        : !{\ft{<1}}! in
+  gpa < (1.0 : !{\ftb{<1}{1.0}}!)
+\end{lstlisting}
+
+\noindent The type system collects the comparison point $<1$ for all GPA expressions. This splits each uniform distribution into two intervals at the threshold 1.0. The discretized version becomes:
+
+\begin{lstlisting}[aboveskip=1em,belowskip=1em]
+  let nationality = discrete(0.5, 0.5) in
+  let perfect = discrete(0.01, 0.99) in
+  let gpa = if nationality <= 0 then
+          if perfect <= 0 then
+            1
+          else
+            discrete(0.1, 0.9)
+        else
+          if perfect <= 0 then
+            1
+          else
+            discrete(0.25, 0.75) in
+  gpa < 1
+\end{lstlisting}
+
+\noindent Here, \texttt{uniform(0,10)} becomes \texttt{discrete(0.1, 0.9)} representing 10\% probability for $[0,1)$ and 90\% for $[1,10]$. Similarly, \texttt{uniform(0,4)} becomes \texttt{discrete(0.25, 0.75)}. Constants like 10.0 and 4.0 that fall in the interval $[1,+\infty)$ are mapped to index 1. The discretized program can then be processed by exact inference engines like Dice.
+
+\subsection{Partial discretization}
+
+Not all programs can be fully discretized. Consider a program where continuous variables are compared directly to each other rather than to constants:
+
+\begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
+  let x = uniform(0, 1) in
+  let y = gaussian(0, 1) in
+  if uniform(0,1) < 0.5 then x < y else y < x
+\end{lstlisting}
+
+\noindent The type-annotated version reveals that \texttt{x} and \texttt{y} have type \ftt, indicating that no finite set of comparison points suffices:
+
+\begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
+  let x = (uniform(0, 1) : !{\ftt}!) in
+  let y = (gaussian(0, 1) : !{\ftt}!) in
+  if (uniform(0,1) : !{\ft{<0.5}}!) < (0.5 : !{\ftb{<0.5}{0.5}}!) 
+  then x < y else y < x
+\end{lstlisting}
+
+\noindent \Slice{} performs partial discretization, discretizing only the parts it can:
+
+\begin{lstlisting}[aboveskip=1em,belowskip=1em]
+  let x = uniform(0, 1) in
+  let y = gaussian(0, 1) in
+  if discrete(0.5, 0.5) < 1 then x < y else y < x
+\end{lstlisting}
+
+\noindent The branching condition gets discretized, but \texttt{x} and \texttt{y} remain continuous because they are only compared to each other, not to constants. This partially discretized program cannot be compiled to Dice but can still be executed using Monte Carlo simulation, potentially benefiting from the discrete branching structure.
+
+
+
+% \subsection{Plankton}
+% This second example is an ecological model that highlights the difficulties in estimating $n$ for discrete models of plankton populations. Inference over discrete latent variables, particularly when one of those variables controls the domain of another random variable, is challenging, but Slice performs exact inference for such programs. Here, \textbf{param} is a latent discrete random variable representing the number of trials in a hypotehtical ecological setting, drawn uniformly at random from the integers between 10 and 50 inclusive. Given the latent param, a binomial distribution is used to model the number of observed plankton, in this case \textbf{planktonCount}.
+
+% \begin{lstlisting}
+%     let param = discUniform(10,50) in
+%     let planktonCount = binomial(param, 0.5) in planktonCount < 5
+% \end{lstlisting}
+
+
+
+
+

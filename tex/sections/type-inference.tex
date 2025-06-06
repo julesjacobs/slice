@@ -1,0 +1,75 @@
+\section{Type Inference}\label{sec:type-inference}
+
+Type inference for \Slice{} aims to assign a type (e.g., \bool{}, \intty, $\text{fin}(n)$, \float$\langle \dots \rangle$, $\tau_1 * \tau_2$, $\tau_1 \rightarrow \tau_2$, $\text{unit}$, $\text{list}(\tau)$, $\text{ref}(\tau)$) to every subexpression while simultaneously collecting all relevant comparison threshold points for each float expression. This process works by traversing the abstract syntax tree (AST) of the program and generating type constraints based on the structure of the code and the typing rules.
+
+To manage the constraints on float types $\float\langle B; V \rangle$, we maintain two separate ``bags'' for each float expression:
+\begin{itemize}
+    \item The \emph{bound bag} $B$ collects comparison bounds (e.g., $<0.5$, $\leq 1.2$) from all comparison sites where the expression is used
+    \item The \emph{value bag} $V$ tracks concrete float values that the expression can evaluate to
+\end{itemize}
+
+Both bags start at the bottom of their respective lattices and are updated through constraint propagation during type inference. 
+
+We have two different kinds of constraints:
+\begin{description}
+    \item[Type constraints:] types $\tau=\tau'$ being equal.
+    \item[Bag constraints:] bags $B=B'$ being equal or $c \in B$ being a member of bag $B$.
+\end{description}
+
+Constraints are generated as follows:
+\begin{itemize}
+    \item In an $\ifkw \; e_1\; \thenkw \; e_2\; \elsekw \; e_3$ expression, $e_1$ must have type \bool, and the types inferred for $e_2$ and $e_3$ must be equal
+    \item A comparison $e < c$ requires $e$ to have a $\float\langle B; V \rangle$ type. The comparison adds the bound $<c$ to the bound bag $B$. If $c$ is a constant expression, its value is also tracked in its own value bag.
+    \item A comparison $e \leq i$ requires $e$ to have an $\intty$ type.
+    \item A $\letkw \; x = e_1 \; \inkw \; e_2$ expression requires the type inferred for $e_1$ to be used for the variable $x$ when inferring the type of $e_2$.
+    \item A continuous distribution sampling expression has type $\float\langle B; V \rangle$ where $B$ starts as $\text{Finite}(\emptyset)$ and $V$ is $\top$ (since it can produce any value in its range).
+    \item A $\discrete(p_0, \ldots, p_n)$ expression has type $\intty$, representing an integer in the range $[0,n]$ with probability distribution given by the probabilities.
+    \item A pair $(e_1, e_2)$ has type $\tau_1 * \tau_2$ if $e_1$ has type $\tau_1$ and $e_2$ has type $\tau_2$.
+    \item For $\fstkw \; e$, $e$ must have a pair type $\tau_1 * \tau_2$, and the result has type $\tau_1$.
+    \item For $\sndkw \; e$, $e$ must have a pair type $\tau_1 * \tau_2$, and the result has type $\tau_2$.
+    \item For $\funkw \; x \; \rightarrow \; e$, if $e$ has type $\tau_2$ under the assumption that $x$ has type $\tau_1$, then the function has type $\tau_1 \rightarrow \tau_2$.
+    \item For $e_1 \; e_2$, $e_1$ must have a function type $\tau_1 \rightarrow \tau_2$, and $e_2$ must have type $\tau_1$. The result has type $\tau_2$.
+    \item Boolean constants $\text{true}$ and $\text{false}$ have type \bool.
+    \item Boolean operations ($\logand$, $\logor$, $\text{not}$) require their operands to have type \bool{} and return type \bool.
+    \item The unit value $()$ has type $\text{unit}$.
+    \item A finite constant $\finconst{k}{n}$ has type $\text{fin}(n)$ if $0 \leq k < n$.
+    \item Finite comparisons $e_1 \finlt{n} e_2$ and $e_1 \finleq{n} e_2$ require both operands to have type $\text{fin}(n)$ and return type \bool.
+    \item $\text{observe}\; e$ requires $e$ to have type \bool{} and returns type $\text{unit}$.
+    \item For $e_1; e_2$, the result has the type of $e_2$.
+    \item For $\text{fix}\; f\; x := e$, if $e$ has type $\tau_2$ under the assumptions that $f$ has type $\tau_1 \rightarrow \tau_2$ and $x$ has type $\tau_1$, then the result has type $\tau_1 \rightarrow \tau_2$.
+    \item $\text{nil}$ can have type $\text{list}(\tau)$ for any type $\tau$.
+    \item For $e_1 :: e_2$, if $e_1$ has type $\tau$ and $e_2$ has type $\text{list}(\tau)$, the result has type $\text{list}(\tau)$.
+    \item For list pattern matching, the scrutinee must have type $\text{list}(\tau_1)$, and both branches must have the same type $\tau_2$.
+    \item For $\text{ref}\; e$, if $e$ has type $\tau$, the result has type $\text{ref}(\tau)$.
+    \item For $!e$, if $e$ has type $\text{ref}(\tau)$, the result has type $\tau$.
+    \item For $e_1 := e_2$, $e_1$ must have type $\text{ref}(\tau)$ and $e_2$ must have type $\tau$. The result has type $\text{unit}$.
+\end{itemize}
+
+Bag constraint solving is implemented using a variant of the disjoint-set data structure, commonly known as union-find.
+A union-find data structure maintains a collection of disjoint sets (our bags). Each bag is represented by a tree, where the root is the canonical representative of the set. It supports three main operations:
+\begin{itemize}
+    \item \texttt{find(b)}: Returns the canonical representative (root) of the bag $b$, containing the set of threshold points currently known for $b$. Path compression is used for efficiency: during the traversal from $b$ to the root, all nodes encountered are made direct children of the root. This flattens the tree and speeds up future \texttt{find} operations.
+    \item \texttt{union(b1, b2)}: Merges the bags containing $b1$ and $b2$. It first finds the roots of both bags. If they are different, one root is made a child of the other. Crucially, when merging bags associated with \float{} types, the sets of threshold points stored at the roots are combined (using set union).
+    \item \texttt{add(b, c)}: Adds a new threshold point $c$ to the bag $b$.
+\end{itemize}
+
+Type constraints are solved using unification. When two types $t_1$ and $t_2$ must be unified:
+\begin{itemize}
+    \item If $t_1 = \bool$ and $t_2 = \bool$, unification succeeds.
+    \item If $t_1 = \intty$ and $t_2 = \intty$, unification succeeds.
+    \item If $t_1 = \text{unit}$ and $t_2 = \text{unit}$, unification succeeds.
+    \item If $t_1 = \text{fin}(n)$ and $t_2 = \text{fin}(m)$, unification succeeds if $n = m$.
+    \item If $t_1 = \float\langle B_1; V_1 \rangle$ and $t_2 = \float\langle B_2; V_2 \rangle$, we must unify both components:
+        \begin{itemize}
+            \item Bound bags: $B_1$ and $B_2$ are unified to ensure both expressions share the same comparison context
+            \item Value bags: $V_1 \sqcup V_2$ is computed to combine value information
+        \end{itemize}
+    \item If $t_1 = \tau_{1a} * \tau_{1b}$ and $t_2 = \tau_{2a} * \tau_{2b}$, unification succeeds if $\tau_{1a}$ unifies with $\tau_{2a}$ and $\tau_{1b}$ unifies with $\tau_{2b}$.
+    \item If $t_1 = \tau_{1a} \rightarrow \tau_{1b}$ and $t_2 = \tau_{2a} \rightarrow \tau_{2b}$, unification succeeds if $\tau_{1a}$ unifies with $\tau_{2a}$ and $\tau_{1b}$ unifies with $\tau_{2b}$.
+    \item If $t_1 = \text{list}(\tau_1)$ and $t_2 = \text{list}(\tau_2)$, unification succeeds if $\tau_1$ unifies with $\tau_2$.
+    \item If $t_1 = \text{ref}(\tau_1)$ and $t_2 = \text{ref}(\tau_2)$, unification succeeds if $\tau_1$ unifies with $\tau_2$.
+    \item If the types are incompatible (e.g., \bool{} and \float{}, \intty{} and \float{}, pair and function), a type error occurs. Meta-variables (placeholder types) are handled by instantiation during unification.
+\end{itemize}
+
+The inference algorithm recursively walks the expression AST. It maintains an environment mapping variables to their inferred types. At each node, it generates and solves constraints using unification and the bag operations. The final result is an AST annotated with types, where each $\float\langle B; V \rangle$ type carries both bags populated with the relevant bounds and values determined by the inference process.
+
