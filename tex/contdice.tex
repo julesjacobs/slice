@@ -390,15 +390,32 @@ gpa < 1
 
 \subsection{Partial discretization}
 
-Not all programs can be fully discretized. Consider a program where continuous values are used in ways other than comparisons:
+Not all programs can be fully discretized. Consider a program where continuous variables are compared directly to each other rather than to constants:
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
-    let x = uniform(0, 1) in
-    let y = uniform(0, 1) in
-    x + y
+let x = uniform(0, 1) in
+let y = gaussian(0, 1) in
+if uniform(0,1) < 0.5 then x < y else y < x
 \end{lstlisting}
 
-\noindent Since the continuous values are added rather than compared, there are no comparison points to drive discretization. In such cases, \Slice performs partial discretization: it discretizes the parts of the program that can be discretized while leaving other parts continuous. This allows for hybrid inference approaches where discrete parts can benefit from exact inference while continuous parts use approximate methods.
+\noindent The type-annotated version reveals that \texttt{x} and \texttt{y} have type \codetype{float[T; T]}, indicating no comparison points were collected:
+
+\begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
+let x = (uniform(0, 1) : !{\codetype{float[T; T]}}!) in
+let y = (gaussian(0, 1) : !{\codetype{float[T; T]}}!) in
+if (uniform(0,1) : !{\codetype{float[<0.5; T]}}!) < (0.5 : !{\codetype{float[<0.5; 0.5]}}!) 
+then x < y else y < x
+\end{lstlisting}
+
+\noindent \Slice performs partial discretization, discretizing only the parts it can:
+
+\begin{lstlisting}[aboveskip=1em,belowskip=1em]
+let x = uniform(0, 1) in
+let y = gaussian(0, 1) in
+if discrete(0.5, 0.5) < 1 then x < y else y < x
+\end{lstlisting}
+
+\noindent The branching condition gets discretized, but \texttt{x} and \texttt{y} remain continuous because they are only compared to each other, not to constants. This partially discretized program cannot be compiled to Dice but can still be executed using Monte Carlo simulation, potentially benefiting from the discrete branching structure.
 
 
 
