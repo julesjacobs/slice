@@ -3,6 +3,11 @@ Probabilistic programming languages (PPLs) have emerged as a powerful tool for b
 
 Existing discrete PPLs like \Dice~\cite{Holtzen2020Dice} and Roulette~\cite{Moy2025Roulette} offer powerful, exact inference but cannot handle continuous distributions. At the other end of the spectrum, popular general-purpose PPLs like Stan~\cite{Carpenter2017Stan} and Pyro~\cite{Bingham2019Pyro} excel at approximate inference for continuous models but sacrifice exactness. Symbolic inference systems like SPPL~\cite{Saad2021SPPL} can reason exactly about certain mixed discrete-continuous models, but for a restricted class of programs.
 
+Another related line of work is on probabilistic program abstraction.
+For example, \textcite{Holtzen2018Abstraction} use abstract interpretation to translate a hybrid discrete-continuous program into a finite Boolean program.
+Their approach is distributionally sound, but it relies on the user to provide a set of predicates to abstract the program with.
+In contrast, our work automatically infers discretization points from the program text itself.
+
 This paper introduces \Slice{}, which occupies a unique position in the PPL design space: it automatically and soundly translates a broad class of programs with continuous variables into equivalent discrete programs. This automated, sound discretization unlocks the ability to use powerful discrete exact inference engines on models that were previously out of their reach. The key insight is to analyze how continuous variables are used within the program. Specifically, \Slice{} uses a type system to track all the constant thresholds against which continuous variables are compared. These comparison points are then used to intelligently discretize the continuous distributions into a finite number of buckets. When the resulting program is purely discrete it can then be solved by an off-the-shelf exact inference engine such as Dice~\cite{Holtzen2020Dice}. This type-directed discretization allows developers to model with continuous distributions while still benefiting from the speed and precision of exact discrete inference.
 
 For instance, consider a simple program that checks if a uniform random variable is less than 0.5:
