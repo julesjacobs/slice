@@ -229,173 +229,43 @@ This analysis is done by the type inference process, which collects all comparis
 Note that the original constant $0.5$ is discretized in two different ways: for $x < 0.5$ it is discretized to $2$ and for $y < 0.5$ it is discretized to $1$. This is because the constant $0.5$ falls in the second interval of the split $\R = (-\infty, 0.1) \cup [0.1, 0.5) \cup [0.5, +\infty)$ for $x$ and the first interval for the split $\R = (-\infty, 0.5) \cup [0.5, +\infty)$ for $y$.
 
 \subsection{If else with continuous values}
-\label{sec:continuous-if}
 
-\begin{figure}[ht]
-\centering
-% Left column: A on top, C on bottom
-\begin{subfigure}[t]{0.48\textwidth}  % Slightly wider to give room
-  \centering
-  \begin{subfigure}[t]{\textwidth}
-    \begin{lstlisting}
-let x = if uniform(0,1) < 0.5 then 
-    uniform(0,2) else uniform(0,4) in 
-    x < 0.5
-    \end{lstlisting}
-    \caption{Original program}
-    \label{fig:subA}
-  \end{subfigure}
+In the program above, we always directly compare the continuous samples to constants.
+However, the discretization process still works if the continuous samples and constants flow through the program, for instance via an if-else statement.
+Consider the following program:
 
-  \vspace{2em} % more vertical space between A and C
-
-  \begin{subfigure}[t]{\textwidth}
-    \begin{lstlisting}
-let x = if discrete(0.5, 0.5) < 1 then 
-    discrete(0.25, 0.75) 
-    else
-    discrete(0.125, 0.875) in
-    x < 1
-    \end{lstlisting}
-    \caption{Discretized program}
-    \label{fig:subC}
-  \end{subfigure}
-\end{subfigure}
-\hfill
-% Right column: B
-\begin{subfigure}[t]{0.48\textwidth}
-\begin{lstlisting}
-let x =
-    if (uniform(0, 1) : float[<0.5; T]) < 
-       (0.5 : float[<0.5; 0.5]) then
-        (0.3 : float[<0.5; 0.3])
-    else
-        (0.6 : float[<0.5; 0.6])
-    : float[<0.5; 0.3,0.6]
-in
-x < (0.5 : float[<0.5; 0.5])
+\begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
+  let x = if uniform(0,1) < 0.5 
+          then uniform(0,2) 
+          else gaussian(0,1) in
+  let y = if 1.5 <= x
+          then 1.8
+          else 0.3 in
+  x < y
 \end{lstlisting}
-
-  \caption{Type annotations}
-  \label{fig:subB}
-\end{subfigure}
-
-\caption{\Slice workflow for \ref{sec:continuous-if}}
-\label{fig:main}
-\end{figure}
 
 \subsection{Discrete latent variable}
-\label{sec:discrete-latent}
 
-\begin{figure}[ht]
-\centering
-% Left column: A on top, C on bottom
-\begin{subfigure}[t]{0.48\textwidth}  % Slightly wider to give room
-  \centering
-  \begin{subfigure}[t]{\textwidth}
-    \begin{lstlisting}
-gaussian(0, (if uniform(0,1) < 0.5 then 
-    1.2 else 2.4)) < 0.5
-    \end{lstlisting}
-    \caption{Original program}
-    \label{fig:subA}
-  \end{subfigure}
-
-  \vspace{2em} % more vertical space between A and C
-
-  \begin{subfigure}[t]{\textwidth}
-  \begin{lstlisting}
-gaussian(0, 
-  if (uniform(0,1) : float[<0.5; T]) < 
-     (0.5 : float[<0.5; 0.5]) then
-    (1.2 : float[<=1.2,<=2.4; 1.2])
-  else
-    (2.4 : float[<=1.2,<=2.4; 2.4])
-  : float[<=1.2,<=2.4; 1.2,2.4])
-: float[<0.5; T] 
-< (0.5 : float[<0.5; 0.5])
+\begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
+    let x = if uniform(0,1) < 0.5 
+            then 0.5
+            else 1.5 in
+    gaussian(0, x) < 0.5
 \end{lstlisting}
-    \caption{Type annotations}
-    \label{fig:subC}
-  \end{subfigure}
-\end{subfigure}
-\hfill
-% Right column: B
-\begin{subfigure}[t]{0.48\textwidth}
-    \begin{lstlisting}
-let _h_sigma1 = if discrete(0.5, 0.5) < 1 then
-    0
-  else
-    1 in
-if _h_sigma1 == 0 then
-    discrete(0.661539, 0.338461)
-  else
-    discrete(0.582516, 0.417484) < 1
-    \end{lstlisting}
-
-  \caption{Discretized program}
-  \label{fig:subB}
-\end{subfigure}
-
-\caption{\Slice workflow for \ref{sec:discrete-latent}}
-\label{fig:main}
-\end{figure}
-
 
 \subsection{Conditioning}
-\label{sec:observe}
 
-\begin{figure}[ht]
-\centering
-% Left column: A on top, C on bottom
-\begin{subfigure}[t]{0.48\textwidth}  % Slightly wider to give room
-  \centering
-  \begin{subfigure}[t]{\textwidth}
-    \begin{lstlisting}
-let x = uniform(0.0, 1.0) in
-  observe (x < 0.5);
-  (x < 0.2) 
-    \end{lstlisting}
-    \caption{Original program}
-    \label{fig:subA}
-  \end{subfigure}
-
-  \vspace{2em} % more vertical space between A and C
-
-  \begin{subfigure}[t]{\textwidth}
-    \begin{lstlisting}
-let x = discrete(0.2, 0.3, 0.5) in
-let _ = observe (x < 2) in
-    x < 1
-    \end{lstlisting}
-    \caption{Discretized program}
-    \label{fig:subC}
-  \end{subfigure}
-\end{subfigure}
-\hfill
-% Right column: B
-\begin{subfigure}[t]{0.48\textwidth}
-\begin{lstlisting}
-let x = uniform(0, 1) : float[<0.2,<0.5; T] in
-let _ = observe(x < (0.5 : float[<0.2,<0.5; 0.5])) in
-x < (0.2 : float[<0.2,<0.5; 0.2])
+\begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
+    let x = uniform(0.0, 1.0) in
+    observe (x < 0.5);
+    x < 0.2
 \end{lstlisting}
-  \caption{Type annotations}
-  \label{fig:subB}
-\end{subfigure}
 
-\caption{\Slice workflow for \ref{sec:observe}}
-\label{fig:main}
-\end{figure}
+\subsection{Higher order functions, lists, recursion, mutable state}
 
-
-\subsection{Higher order functions, lists, recursion, mutable state}\label{sec:unsupported-constructs}
-
-
-
-
-
-
-
+\begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
+    todo
+\end{lstlisting}
 
 
 \subsection{Indian GPA Problem}\label{sec:gpa}
@@ -455,13 +325,21 @@ let perfect = discrete(0.01, 0.99) in
 
 \textbf{Exact Inference.} The final step is a post-processing step of converting the discretized program into a discrete program compatible with a backend discrete exact inference solver, such as Dice or Roulette.
 
-\subsection{Plankton}
-This second example is an ecological model that highlights the difficulties in estimating $n$ for discrete models of plankton populations. Inference over discrete latent variables, particularly when one of those variables controls the domain of another random variable, is challenging, but Slice performs exact inference for such programs. Here, \textbf{param} is a latent discrete random variable representing the number of trials in a hypotehtical ecological setting, drawn uniformly at random from the integers between 10 and 50 inclusive. Given the latent param, a binomial distribution is used to model the number of observed plankton, in this case \textbf{planktonCount}.
+\subsection{Partial discretization}
 
-\begin{lstlisting}
-    let param = discUniform(10,50) in
-    let planktonCount = binomial(param, 0.5) in planktonCount < 5
+\begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
+    todo
 \end{lstlisting}
+
+
+
+% \subsection{Plankton}
+% This second example is an ecological model that highlights the difficulties in estimating $n$ for discrete models of plankton populations. Inference over discrete latent variables, particularly when one of those variables controls the domain of another random variable, is challenging, but Slice performs exact inference for such programs. Here, \textbf{param} is a latent discrete random variable representing the number of trials in a hypotehtical ecological setting, drawn uniformly at random from the integers between 10 and 50 inclusive. Given the latent param, a binomial distribution is used to model the number of observed plankton, in this case \textbf{planktonCount}.
+
+% \begin{lstlisting}
+%     let param = discUniform(10,50) in
+%     let planktonCount = binomial(param, 0.5) in planktonCount < 5
+% \end{lstlisting}
 
 
 
