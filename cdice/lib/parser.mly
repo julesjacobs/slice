@@ -176,8 +176,18 @@ atomic_expr:
   | k = INT HASH n = INT
     { if k < 0 || k >= n then failwith (Printf.sprintf "Invalid FinConst: %d#%d" k n) else ExprNode (FinConst (k, n)) }
   | x = IDENT                 { ExprNode (Var x) }
+  | DISCRETE LPAREN probs = separated_nonempty_list(COMMA, number) RPAREN
+    { 
+      (* New syntax: discrete(p1, p2, ...) returns Fin values *)
+      let n = List.length probs in
+      let cases = List.mapi (fun i p -> (ExprNode (FinConst (i, n)), p)) probs in
+      ExprNode (DistrCase cases)
+    }
   | DISCRETE LPAREN cases = distr_cases RPAREN
-    { ExprNode (DistrCase cases) }
+    { 
+      (* Old syntax: discrete(p1: e1, p2: e2, ...) - keeping for backward compatibility *)
+      ExprNode (DistrCase cases) 
+    }
   | UNIFORM LPAREN lo = app_expr COMMA hi = app_expr RPAREN
     { ExprNode (Sample (Distr2 (DUniform, lo, hi))) }
   | GAUSSIAN LPAREN mean = app_expr COMMA std = app_expr RPAREN
@@ -232,7 +242,7 @@ opt_bar:
   | BAR         { () }
   ;
 
-/* Rule for parsing the (expr : number) pairs for DistrCase */ 
+/* Rule for parsing the (expr : number) pairs for DistrCase - keeping for backward compatibility */ 
 distr_cases:
   | /* empty */ { [] } 
   | cases = separated_nonempty_list(COMMA, distr_case) { cases }
@@ -241,6 +251,7 @@ distr_cases:
 distr_case:
   | p = number COLON e = expr { (e, p) }
   ;
+
 
 number:
   | f = FLOAT { f }

@@ -1,4 +1,4 @@
-let sex = discrete(0.3307: 0#2, 0.6693: 1#2) in
+let sex = discrete(0.3307, 0.6693) in
 let capital_gain = 
   if sex <#2 1#2 then gaussian(568.4105, 24248365.5428)
   else gaussian(1329.3700, 69327473.1006) in

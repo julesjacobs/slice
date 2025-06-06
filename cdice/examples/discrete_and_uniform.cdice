@@ -1,7 +1,7 @@
 (* let coin = discrete(0#2 : 0.5, 1#2 : 0.5) in *) (* Returns 0 or 1 with equal probability *)
 (* let coin = discrete(0.5 : 0#2, 0.5 : 1#2) in *)
 (* let coin = discrete(0.5: 0#2, 0.5: 1#2) in *)
-let coin = discrete(0.5: 0#2, 0.5: 1#2) in
+let coin = discrete(0.5, 0.5) in
 let u = uniform(0.0, 1.0) in
 if coin <=#2 0#2 then
   u < 0.2  (* If coin is 0, check if u < 0.2 *)

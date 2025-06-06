@@ -43,7 +43,7 @@ Typed AST (Pretty):
 ((x : float[<0.5; T]) < (0.5 : float[<0.5; 0.5]) : bool) : bool)
 
 Discretized Program (Pretty):
-let x = discrete(0.5: 0#2, 0.5: 1#2) in
+let x = discrete(0.5, 0.5) in
 x <#2 1#2
 
 Discretized Program (Plaintext):

@@ -1,5 +1,5 @@
-let nationality = discrete(0.5: 0, 0.5: 1) in
-let perfect = discrete(0.01: 0, 0.99: 1) in
+let nationality = discrete(0.5, 0.5) in
+let perfect = discrete(0.01, 0.99) in
 let gpa = if nationality <= 0 then 
     if perfect <= 0 then 10.0 else uniform(0,10)
     else
