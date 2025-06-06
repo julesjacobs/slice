@@ -27,7 +27,7 @@ We introduce a type system that analyzes both the comparison points and concrete
 \begin{itemize}
     \item \bool: the expression is a boolean value (true or false)
     \item \intty: the expression is an integer value  
-    \item $\text{fin}(n)$: the expression is a finite type value in $\{0, 1, \ldots, n-1\}$
+    \item $\fin{n}$: the expression is a finite type value in $\{0, 1, \ldots, n-1\}$
     \item \float$\langle B; V \rangle$: the expression is a floating point value with comparison bounds $B$ and value set $V$
     \item $\tau_1 * \tau_2$: the expression is a pair with elements of type $\tau_1$ and $\tau_2$
     \item $\tau_1 \rightarrow \tau_2$: the expression is a function that takes an argument of type $\tau_1$ and returns a result of type $\tau_2$
@@ -91,16 +91,16 @@ The typing rules are as follows:
     {\Gamma \vdash \ifkw \; e_1 \; \thenkw \; e_2 \; \elsekw \; e_3 : \tau}
 
     \inferrule[\textsc{Float}]
-    {\ }
-    {\Gamma \vdash c : \float\langle \text{Finite}(\emptyset); \text{Finite}(\{c\}) \rangle}
+    {\ c \in V }
+    {\Gamma \vdash c : \float\langle B; V \rangle}
 
     \inferrule[\textsc{ContDist}]
     {\ }
-    {\Gamma \vdash cdistr : \float\langle \text{Finite}(\emptyset); \top \rangle}
+    {\Gamma \vdash cdistr : \float\langle B; \top \rangle}
 
     \inferrule[\textsc{Discrete}]
     {\ }
-    {\Gamma \vdash \discrete(p_0, \ldots, p_n) : \intty}
+    {\Gamma \vdash \discrete(p_0, \ldots, p_n) : \fin{n}}
 
     \inferrule[\textsc{Less}]
     {\Gamma \vdash e : \float\langle B; V \rangle}
@@ -161,16 +161,16 @@ The typing rules are as follows:
 
     \inferrule[\textsc{FinConst}]
     {0 \leq k < n}
-    {\Gamma \vdash \finconst{k}{n} : \text{fin}(n)}
+    {\Gamma \vdash \finconst{k}{n} : \fin{n}}
 
     \inferrule[\textsc{FinLess}]
-    {\Gamma \vdash e_1 : \text{fin}(n) \\
-     \Gamma \vdash e_2 : \text{fin}(n)}
+    {\Gamma \vdash e_1 : \fin{n} \\
+     \Gamma \vdash e_2 : \fin{n}}
     {\Gamma \vdash e_1 \finlt{n} e_2 : \bool}
 
     \inferrule[\textsc{FinLessEq}]
-    {\Gamma \vdash e_1 : \text{fin}(n) \\
-     \Gamma \vdash e_2 : \text{fin}(n)}
+    {\Gamma \vdash e_1 : \fin{n} \\
+     \Gamma \vdash e_2 : \fin{n}}
     {\Gamma \vdash e_1 \finleq{n} e_2 : \bool}
 
     \inferrule[\textsc{Observe}]
