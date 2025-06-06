@@ -13,7 +13,16 @@ The majority of widely-used PPLs treat \emph{continuous} distributions as first-
 \paragraph{Universal languages supporting both regimes}  
 Universal or ``hybrid'' languages aim for expressiveness by embedding probabilistic primitives into general-purpose hosts. \emph{Anglican} (Clojure), \emph{WebPPL} (JavaScript), \emph{Figaro} (Scala) and \emph{Infer.NET} (C\#) permit arbitrary mixtures of discrete and continuous variables with inference based on importance sampling, Gibbs, expectation propagation, or lightweight MCMC~\cite{Tolpin2016Anglican,Goodman2014WebPPL,Pfeffer2009Figaro,Minka2018InferNET}. More recently, Julia-based systems such as \emph{Turing.jl} and \emph{Gen.jl} expose programmable inference interfaces, while \emph{Bean Machine} offers a declarative syntax atop PyTorch~\cite{Ge2018Turing,CusumanoTowner2019Gen,Tehrani2020BeanMachine}. Classic languages like \emph{Church} pioneered the ``evaluation-as-sampling'' view that underlies many of these systems~\cite{Goodman2008Church}. Discretization transformations are left entirely to the user and are not integrated with the inference engine.
 
-\jules{Talk about Steven's abstract interpretation work here}
+\paragraph{Probabilistic program abstraction}
+The work of \textcite{Holtzen2018Abstraction} is perhaps most similar to our own in its aim to simplify probabilistic programs for easier inference.
+They use ideas from abstract interpretation to transform a program with continuous and discrete random variables into a finite Boolean program based on user-provided predicates.
+This *predicate abstraction* is proven to be \emph{distributionally sound}, meaning that for any query expressed in the predicate vocabulary, the abstract program gives the same probability as the concrete one.
+Their method works by taking a set of predicates and automatically adding *completion* predicates to create a tight abstraction.
+Inference then proceeds by querying the abstract Boolean program and using a concrete inference engine for sub-queries.
+While this approach is powerful, it has several limitations.
+The selection of predicates is left to the user, and a poor choice can lead to a coarse abstraction or a combinatorial explosion in the number of completion predicates.
+Furthermore, the full automation of their technique is limited to loop-free programs.
+Our work, in contrast, does not require user-provided predicates. Instead, \Slice{} automatically infers the necessary "cut points" from the program text using a novel type system, and our approach supports features like recursion.
 
 \paragraph{Positioning of our work}  
 Our contribution lies precisely at the intersection left open by the above lines of research. We propose a \emph{language-level transformation} that automatically discretises continuous sub-programs while preserving the semantics required for exact Bayesian reasoning in the discrete fragment. When discretization successfully translates all continuous distributions, we can translate the program into the finite domain accepted by Dice (or Roulette, or ProbLog), and inherit their fast exact inference without sacrificing the modelling convenience of continuous distributions. 
