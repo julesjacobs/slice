@@ -186,7 +186,7 @@ We start with a simple example that illustrates the core idea of \Slice. Conside
 \noindent Here, \texttt{discrete(0.5, 0.5)} represents a choice between two outcomes (0 or 1), each with probability 0.5. The outcome 0 corresponds to the original value being in $(-\infty, 0.5)$, and 1 corresponds to it being in $[0.5, +\infty)$. The comparison is updated to check if the outcome is less than 1, which is true only for outcome 0, correctly preserving the original program's meaning. This transformation is guided by tracking comparison points, which are determined by type inference as shown in the annotated program below:
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
-  (uniform(0, 1) : !{\codetype{float[<0.5; T]}}!) < (0.5 : !{\codetype{float[<0.5; 0.5]}}!)
+    (uniform(0, 1) : !{\codetype{float[<0.5; T]}}!) < (0.5 : !{\codetype{float[<0.5; 0.5]}}!)
 \end{lstlisting}
 
 The type \codetype{float[<0.5; T]} for the uniform sample indicates that the relevant comparison cutpoint is "$<\!\!0.5$" and the quantity can take on a continuous range ($\top$). 
@@ -247,38 +247,38 @@ However, the discretization process still works if the continuous samples and co
 Consider the following program:
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
-  let x = if uniform(0,1) < 0.5 
-          then uniform(0,2) 
-          else gaussian(0,1) in
-  let y = if 1.5 < x
-          then 1.8
-          else 0.3 in
-  x <= y
+    let x = if uniform(0,1) < 0.5 
+            then uniform(0,2) 
+            else gaussian(0,1) in
+    let y = if 1.5 < x
+            then 1.8
+            else 0.3 in
+    x <= y
 \end{lstlisting}
 
 \noindent This program demonstrates how comparison points propagate through control flow. The type inference annotates the program as follows:
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
-  let x = if (uniform(0,1) : !{\codetype{float[<0.5; T]}}!) < (0.5 : !{\codetype{float[<0.5; 0.5]}}!)
-          then (uniform(0,2) : !{\codetype{float[<=0.3,<1.5,<=1.8; T]}}!)
-          else (gaussian(0,1) : !{\codetype{float[<=0.3,<1.5,<=1.8; T]}}!)
-          : !{\codetype{float[<=0.3,<1.5,<=1.8; T]}}! in
-  let y = if (1.5 : !{\codetype{float[<=0.3,<1.5,<=1.8; 1.5]}}!) < x
-          then (1.8 : !{\codetype{float[<=0.3,<1.5,<=1.8; 1.8]}}!)
-          else (0.3 : !{\codetype{float[<=0.3,<1.5,<=1.8; 0.3]}}!)
-          : !{\codetype{float[<=0.3,<1.5,<=1.8; 0.3,1.8]}}! in
-  x <= y
+    let x = if (uniform(0,1) : !{\codetype{float[<0.5; T]}}!) < (0.5 : !{\codetype{float[<0.5; 0.5]}}!)
+            then (uniform(0,2) : !{\codetype{float[<=0.3,<1.5,<=1.8; T]}}!)
+            else (gaussian(0,1) : !{\codetype{float[<=0.3,<1.5,<=1.8; T]}}!)
+            : !{\codetype{float[<=0.3,<1.5,<=1.8; T]}}! in
+    let y = if (1.5 : !{\codetype{float[<=0.3,<1.5,<=1.8; 1.5]}}!) < x
+            then (1.8 : !{\codetype{float[<=0.3,<1.5,<=1.8; 1.8]}}!)
+            else (0.3 : !{\codetype{float[<=0.3,<1.5,<=1.8; 0.3]}}!)
+            : !{\codetype{float[<=0.3,<1.5,<=1.8; 0.3,1.8]}}! in
+    x <= y
 \end{lstlisting}
 
 \noindent Notice that all comparison points from the entire program (0.3, 1.5, and 1.8) are collected for the variable \texttt{x}, regardless of which branch is taken. These comparison points with type \codetype{<=0.3,<1.5,<=1.8} split the real line into four intervals: $(-\infty, 0.3]$, $(0.3, 1.5)$, $[1.5, 1.8]$, and $(1.8, +\infty)$. Note that 1.5 is excluded from the second interval and included in the third because it comes from a strict `<` comparison. The discretized version becomes:
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em]
-  let x = if discrete(0.5, 0.5) < 1 then
-      discrete(0.15, 0.6, 0.15, 0.1)
-    else
-      discrete(0.617911, 0.315281, 0.0308769, 0.0359303) in
-  let y = if 1 < x then 2 else 0 in
-  x <= y
+    let x = if discrete(0.5, 0.5) < 1 then
+        discrete(0.15, 0.6, 0.15, 0.1)
+      else
+        discrete(0.617911, 0.315281, 0.0308769, 0.0359303) in
+    let y = if 1 < x then 2 else 0 in
+    x <= y
 \end{lstlisting}
 
 \noindent The four probabilities in each \texttt{discrete} distribution correspond to the probability mass in each of the four intervals. For example, \texttt{uniform(0,2)} has probability 0.15 in $(-\infty, 0.3]$, 0.6 in $(0.3, 1.5]$, 0.15 in $(1.5, 1.8]$, and 0.1 in $(1.8, +\infty)$.
@@ -342,9 +342,36 @@ Continuous distributions can have parameters that depend on discrete random choi
 
 \noindent In the discrete version, the observation \texttt{x < 2} rules out the case where \texttt{x = 2} (corresponding to the original interval $[0.5, +\infty)$), effectively conditioning on \texttt{x} being in $[0.0, 0.5)$.
 
-\subsection{Higher order functions, lists, recursion}
+\subsection{Higher-order functions}
 
-\Slice supports higher-order functions, enabling functional programming patterns. While the current implementation focuses on core probabilistic features, the type system naturally extends to handle these constructs. Future work will include support for lists and recursion to enable more complex probabilistic models.
+\Slice supports higher-order functions, enabling functional programming patterns with probabilistic computations. This example shows a higher-order function \texttt{mappair} that applies a function to both elements of a pair:
+
+\begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
+let mappair = fun f -> fun p -> (f (fst p), f (snd p)) in
+let f = fun x -> x < 0.5 in
+let g = fun x -> x < 1.5 in
+let p = (uniform(0,2), gaussian(0,2)) in
+let q = (mappair f) p in
+let r = (mappair g) p in
+if fst q then snd q else 
+    if fst r then snd r else fst q
+\end{lstlisting}
+
+\noindent The type system correctly infers that comparison points from both \texttt{f} and \texttt{g} (0.5 and 1.5) must be collected for the distributions in \texttt{p}, yielding type \codetype{float[<0.5,<1.5; T]} for both components. The discretized version preserves the higher-order structure:
+
+\begin{lstlisting}[aboveskip=1em,belowskip=1em]
+let mappair = fun f -> fun p -> (f (fst p), f (snd p)) in
+let f = fun x -> x < 1 in
+let g = fun x -> x < 2 in
+let p = (discrete(0.25, 0.5, 0.25), 
+         discrete(0.598706, 0.174666, 0.226627)) in
+let q = (mappair f) p in
+let r = (mappair g) p in
+if fst q then snd q else 
+    if fst r then snd r else fst q
+\end{lstlisting}
+
+\noindent The continuous distributions are discretized into three-valued discrete distributions based on the intervals $(-\infty, 0.5)$, $[0.5, 1.5)$, and $[1.5, +\infty)$, while the functional structure remains intact.
 
 
 \subsection{Indian GPA Problem}\label{sec:gpa}
