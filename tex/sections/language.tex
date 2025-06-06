@@ -2,48 +2,7 @@
 
 The syntax of the \Slice{} language is shown in Figure~\ref{fig:grammar}.
 
-\begin{figure}[h]
-\begin{align*}
-e ::= &\; x                               & \text{variable} \\
-    | &\; c                               & \text{float constant} \\
-    | &\; \text{true} \mid \text{false}   & \text{boolean constant} \\
-    | &\; \finconst{k}{n}                 & \text{finite type constant (k of type fin(n))} \\
-    | &\; ()                              & \text{unit} \\
-    | &\; \letkw \; x = e_1\; \inkw \; e_2  & \text{let binding} \\
-    | &\; \text{cdistr}                   & \text{continuous distribution} \\
-    | &\; \discrete(p_0, \ldots, p_{n})      & \text{discrete distribution} \\
-    | &\; e_1 < e_2                       & \text{less-than (floats)} \\
-    | &\; e_1 \leq e_2                    & \text{less-or-equal (integers)} \\
-    | &\; e_1 \finlt{n} e_2              & \text{less-than (finite type n)} \\
-    | &\; e_1 \finleq{n} e_2             & \text{less-or-equal (finite type n)} \\
-    | &\; e_1 \logand e_2                 & \text{logical and} \\
-    | &\; e_1 \logor e_2                  & \text{logical or} \\
-    | &\; \text{not}\; e                  & \text{logical not} \\
-    | &\; \ifkw \; e_1\; \thenkw \; e_2\; \elsekw \; e_3 & \text{conditional} \\
-    | &\; (e_1, e_2)                      & \text{pair construction} \\
-    | &\; \fstkw \; e                     & \text{first projection} \\
-    | &\; \sndkw \; e                     & \text{second projection} \\
-    | &\; \funkw \; x \; \rightarrow \; e & \text{function abstraction} \\
-    | &\; e_1 \; e_2                      & \text{function application} \\
-    | &\; \text{fix}\; f\; x := e         & \text{fixed-point recursion} \\
-    | &\; \text{observe}\; e              & \text{observation/conditioning} \\
-    | &\; e_1; e_2                        & \text{sequencing} \\
-    | &\; \text{nil}                      & \text{empty list} \\
-    | &\; e_1 :: e_2                      & \text{list cons} \\
-    | &\; \text{match}\; e\; \text{with}\; \text{nil} \rightarrow e_1 \mid h :: t \rightarrow e_2\; \text{end} & \text{list match} \\
-    | &\; \text{ref}\; e                  & \text{reference creation} \\
-    | &\; !e                              & \text{dereference} \\
-    | &\; e_1 := e_2                      & \text{assignment} \\
-    \\[1ex] % Add some space before cdistr definition
-\text{cdistr} ::= &\; \uniform(e_1, e_2)      & \text{uniform distribution} \\
-           | &\; \gaussian(e_1, e_2)   & \text{gaussian distribution} \\
-           | &\; \exponential(e)       & \text{exponential distribution} \\
-           | &\; \betafn(e_1, e_2)     & \text{beta distribution} \\
-           | &\; \ldots                & \text{(and 13+ more distributions)}
-\end{align*}
-\caption{Syntax of the \Slice{} language.}
-\label{fig:grammar}
-\end{figure}
+\input{figures/grammar}
 
 \noindent where $x$ ranges over variable names, $c$ ranges over floating point constants, $i$ ranges over integer constants, $k$ and $n$ are non-negative integers with $0 \leq k < n$, $h$ and $t$ are variables in list patterns, and $p_0, \ldots, p_n$ are probabilities that should sum to 1.
 
@@ -111,47 +70,7 @@ This product lattice is also a join-semilattice with:
 
 The lattice structure enables type inference to systematically collect and propagate information about both how values are used (bounds) and what values they can take (values).
 
-\begin{figure}[h]
-\centering
-\begin{tikzpicture}[scale=0.8]
-  % Individual lattice (left)
-  \node (bot1) at (0,0) {$\text{Finite}(\emptyset)$};
-  \node (s1) at (-1.5,1.5) {$\text{Finite}(\{<0.5\})$};
-  \node (s2) at (1.5,1.5) {$\text{Finite}(\{<0.8\})$};
-  \node (s12) at (0,3) {$\text{Finite}(\{<0.5, <0.8\})$};
-  \node (top1) at (0,4.5) {$\top$};
-  
-  \draw (bot1) -- (s1);
-  \draw (bot1) -- (s2);
-  \draw (s1) -- (s12);
-  \draw (s2) -- (s12);
-  \draw (s12) -- (top1);
-  
-  \node at (0,-1) {(a) Bound Lattice Example};
-  
-  % Product lattice (right)
-  \node (bot2) at (7,0) {$(\emptyset, \emptyset)$};
-  \node (b1v0) at (5,1.5) {$(\{<c\}, \emptyset)$};
-  \node (b0v1) at (9,1.5) {$(\emptyset, \{0.5\})$};
-  \node (b1v1) at (7,3) {$(\{<c\}, \{0.5\})$};
-  \node (topb) at (5,4.5) {$(\top, \{0.5\})$};
-  \node (topv) at (9,4.5) {$(\{<c\}, \top)$};
-  \node (top2) at (7,6) {$(\top, \top)$};
-  
-  \draw (bot2) -- (b1v0);
-  \draw (bot2) -- (b0v1);
-  \draw (b1v0) -- (b1v1);
-  \draw (b0v1) -- (b1v1);
-  \draw (b1v1) -- (topb);
-  \draw (b1v1) -- (topv);
-  \draw (topb) -- (top2);
-  \draw (topv) -- (top2);
-  
-  \node at (7,-1) {(b) Product Lattice Example};
-\end{tikzpicture}
-\caption{Lattice structure for float types. (a) shows an example bound lattice with comparison bounds. (b) shows the product lattice combining bounds and values.}
-\label{fig:lattice}
-\end{figure}
+\input{figures/lattice}
 
 The typing rules are as follows:
 

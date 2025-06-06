@@ -6,63 +6,7 @@ We have implemented \Slice{} as an OCaml-based compiler that transforms continuo
 
 Figure~\ref{fig:architecture} shows the overall architecture of the \Slice{} system.
 
-\begin{figure}[h]
-\centering
-\begin{tikzpicture}[
-    node distance=1.5cm,
-    component/.style={rectangle, draw, thick, minimum width=3cm, minimum height=1cm, align=center},
-    data/.style={rectangle, draw, dashed, minimum width=2.5cm, minimum height=0.8cm, align=center},
-    arrow/.style={->, thick},
-    bigbox/.style={draw, thick, rounded corners, inner sep=0.3cm}
-]
-    % Input
-    \node[data] (input) {\texttt{.cdice} file\\(continuous program)};
-    
-    % Slice compiler box
-    \node[bigbox, below=0.5cm of input, minimum width=10cm, minimum height=7cm] (slicebox) {};
-    \node[above] at (slicebox.north) {\textbf{\Slice{} Compiler (cdice)}};
-    
-    % Components inside Slice
-    \node[component, below=1cm of input] (parser) {Parser\\(\texttt{parser.mly}, \texttt{lexer.mll})};
-    \node[component, below of=parser] (typeinf) {Type Inference\\(\texttt{inference.ml})};
-    \node[component, below of=typeinf] (disc) {Discretization\\(\texttt{discretization.ml})};
-    \node[component, below of=disc] (todice) {Code Generation\\(\texttt{to\_dice.ml})};
-    
-    % Intermediate data structures
-    \node[data, right=0.5cm of parser] (ast) {AST\\(\texttt{expr})};
-    \node[data, right=0.5cm of typeinf] (tast) {Typed AST\\(\texttt{texpr})};
-    \node[data, right=0.5cm of disc] (dast) {Discretized\\AST};
-    
-    % Bags module
-    \node[component, left=0.5cm of typeinf, minimum width=2cm] (bags) {Bags\\(\texttt{bags.ml})};
-    
-    % Output from Slice
-    \node[data, below=1cm of slicebox] (dice) {\texttt{.dice} file\\(discrete program)};
-    
-    % Dice engine
-    \node[component, below=0.5cm of dice, minimum width=10cm] (diceengine) {Dice Inference Engine\\BDD compilation + Weighted Model Counting};
-    
-    % Final output
-    \node[data, below=0.5cm of diceengine] (output) {Probability\\Distribution};
-    
-    % Arrows
-    \draw[arrow] (input) -- (parser);
-    \draw[arrow] (parser) -- (typeinf);
-    \draw[arrow] (typeinf) -- (disc);
-    \draw[arrow] (disc) -- (todice);
-    \draw[arrow] (todice) -- (dice);
-    \draw[arrow] (dice) -- (diceengine);
-    \draw[arrow] (diceengine) -- (output);
-    
-    % Side arrows for data structures
-    \draw[arrow, dashed] (parser) -- (ast);
-    \draw[arrow, dashed] (typeinf) -- (tast);
-    \draw[arrow, dashed] (disc) -- (dast);
-    \draw[arrow, dashed] (bags) -- (typeinf);
-\end{tikzpicture}
-\caption{Architecture of the \Slice{} system. The \Slice{} compiler transforms continuous probabilistic programs into discrete ones through type-directed discretization. The resulting discrete program is then processed by the Dice inference engine to compute exact probability distributions.}
-\label{fig:architecture}
-\end{figure}
+\input{figures/architecture}
 
 \subsection{Implementation Details}
 
