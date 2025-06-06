@@ -14,6 +14,7 @@
 \Crefformat{subsubsection}{\S#2#1#3}
 
 \usepackage[table,xcdraw]{xcolor}
+\usepackage{tikz}
 \definecolor{col1}{HTML}{90f1ef}
 \definecolor{col2}{HTML}{ffd6e0}
 \definecolor{col3}{HTML}{ffef9f}
@@ -165,23 +166,24 @@ We start with a simple example that illustrates the core idea of \Slice{}. Consi
 \noindent Here, \texttt{discrete(0.5, 0.5)} represents a choice between two outcomes (0 or 1), each with probability 0.5. The outcome 0 corresponds to the original value being in $(-\infty, 0.5)$, and 1 corresponds to it being in $[0.5, +\infty)$. The comparison is updated to check if the outcome is less than 1, which is true only for outcome 0, correctly preserving the original program's meaning. This transformation is guided by tracking comparison points, which are determined by type inference as shown in the annotated program below:
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
-    (uniform(0, 1) : !{\codetype{float[<0.5; T]}}!) < (0.5 : !{\codetype{float[<0.5; 0.5]}}!)
+    (uniform(0, 1) : !{\codetype{float[{<0.5}; T]}}!) < (0.5 : !{\codetype{float[{<0.5}; {0.5}]}}!)
 \end{lstlisting}
 
-The type \codetype{float[<0.5; T]} for the uniform sample indicates that the relevant comparison cutpoint is ``$<\!\!0.5$'' and the quantity can take on a continuous range ($\top$). This type allows \Slice{} to map \texttt{uniform(0,1)} in the original program to \texttt{discrete(0.5, 0.5)} in the discrete program.
-The type \codetype{float[<0.5; 0.5]} for the constant $0.5$ indicates that the relevant comparison cutpoint is $< 0.5$ and the quantity can only take on the single constant value $0.5$. This type allows \Slice{} to map the constant 0.5 in the original program to the index 1 in the discrete program.
+The type \codetype{float[{<0.5}; T]} for the uniform sample indicates that the bound bag contains the comparison bound ``$<\!\!0.5$'' and the value bag is $\top$ (can take any value in the range). 
+The type \codetype{float[{<0.5}; {0.5}]} for the constant $0.5$ indicates that the bound bag contains $<0.5$ and the value bag contains only the single value $0.5$.
 
-In general, a type \lstinline{float[cut-points; value-set]} indicates:
+In general, a type \lstinline{float[bound-bag; value-bag]} indicates:
 \[
 \textbf{float}
 [
-\underbrace{\text{cut-points}}_{\begin{array}{c}\text{finite list of bounds}\\\text{(e.g., }<\!0.1, <\!0.5, \leq\!0.8\text{)}\\\text{or unknown set }\top\end{array}}
+\underbrace{\text{bound-bag}}_{\begin{array}{c}\text{set of comparison bounds}\\\text{(e.g., }\{<\!0.1, <\!0.5, \leq\!0.8\}\text{)}\\\text{or }\top\text{ (unbounded)}\end{array}}
 ;
-\underbrace{\text{value-set}}_{\begin{array}{c}\text{finite set of constants}\\\text{(e.g., }0.1, 0.4, 0.5\text{)}\\\text{or unknown set }\top\end{array}}
+\underbrace{\text{value-bag}}_{\begin{array}{c}\text{set of concrete values}\\\text{(e.g., }\{0.1, 0.4, 0.5\}\text{)}\\\text{or }\top\text{ (any value)}\end{array}}
 ]
 \]
 
-The cut points are determined by \emph{how the expression is used} (i.e., its context) and the value set is determined by \emph{the constants used in the expression}. In general, all continuous distributions with comparisons to a finite number of floats will have type \codetype{float[<c\_1, ..., <c\_n; T]}, where the cutpoints in this type allow \Slice{} to determine precisely where to partition the continuous range ($\top$) into intervals, in turn allowing it to determine the parameters in the \texttt{discrete} distribution in the discrete program by taking the cdfs of the continuous distribution at the various intervals. Essentially, the discretization is driven by the cut points: a float value with $n$ cut points is discretized into $n+1$ possible discrete values. 
+The bound bag is determined by \emph{how the expression is used} (i.e., what it's compared against) and the value bag is determined by \emph{what concrete values the expression can take}.
+The discretization is driven by the bound bag: a float value with $n$ comparison bounds is discretized into $n+1$ possible discrete values.
 
 In the example above, the expression \lstinline{uniform(0,1)} is discretized to \lstinline{discrete(0.5, 0.5)} which returns $0$ with probability $0.5$ and $1$ with probability $0.5$.
 The constant $0.5$ on the right hand side is discretized to the constant $1$ because it falls in the second range $[0.5, +\infty)$. The less-than comparison is translated to an identical less-than comparison on the discrete values.
@@ -202,16 +204,16 @@ The constant $0.5$ on the right hand side is discretized to the constant $1$ bec
 This analysis is done by the type inference process, which collects all comparison points for each continuous variable. For \texttt{x}, the type inference algorithm discovers the cut points \texttt{<0.1} and \texttt{<0.5}, giving it the type \codetype{float[<0.1,<0.5; T]}. For \texttt{y}, it only finds \texttt{<0.1}, giving it the type \codetype{float[<0.1; T]}. This information is captured in the annotated program below.
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
-    let x = uniform(0, 1) : !{\codetype{float[<0.1,<0.5; T]}}! in
-    let y = uniform(0, 2) : !{\codetype{float[<0.5; T]}}! in
-    if x < (0.1 : !{\codetype{float[<0.1,<0.5; 0.1]}}!) then
-      x < (0.5 : !{\codetype{float[<0.1,<0.5; 0.5]}}!)
+    let x = uniform(0, 1) : !{\codetype{float[{<0.1,<0.5}; T]}}! in
+    let y = uniform(0, 2) : !{\codetype{float[{<0.5}; T]}}! in
+    if x < (0.1 : !{\codetype{float[{<0.1,<0.5}; {0.1}]}}!) then
+      x < (0.5 : !{\codetype{float[{<0.1,<0.5}; {0.5}]}}!)
     else
-      y < (0.5 : !{\codetype{float[<0.5; 0.5]}}!)
+      y < (0.5 : !{\codetype{float[{<0.5}; {0.5}]}}!)
 \end{lstlisting}
 
 
-Based on these type annotations, \Slice{} replaces the continuous distribution for \texttt{x} with a discrete one that has three outcomes, where the probability of each outcome is the probability mass of the original uniform distribution within the corresponding interval. This results in \texttt{discrete(0.1, 0.4, 0.5)}.
+\Slice{} replaces the continuous distribution for \texttt{x} with a discrete one that has three outcomes, where the probability of each outcome is the probability mass of the original uniform distribution within the corresponding interval. This results in \texttt{discrete(0.1, 0.4, 0.5)}.
 \Slice{} replaces the continuous distribution for \texttt{y} with a discrete one that has two outcomes, where the probability of each outcome is the probability mass of the original uniform distribution within the corresponding interval. This results in \texttt{discrete(0.05, 0.95)}. The comparisons in the program are then transformed to operate on the integer indices of these new discrete intervals, leading to the following discretized program:
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em]
@@ -244,14 +246,14 @@ Consider the following program:
 \noindent This program demonstrates how comparison points propagate through control flow. The type inference annotates the program as follows:
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
-    let x = if (uniform(0,1) : !{\codetype{float[<0.5; T]}}!) < (0.5 : !{\codetype{float[<0.5; 0.5]}}!)
-            then (uniform(0,2) : !{\codetype{float[<=0.3,<1.5,<=1.8; T]}}!)
-            else (gaussian(0,1) : !{\codetype{float[<=0.3,<1.5,<=1.8; T]}}!)
-            : !{\codetype{float[<=0.3,<1.5,<=1.8; T]}}! in
-    let y = if (1.5 : !{\codetype{float[<=0.3,<1.5,<=1.8; 1.5]}}!) < x
-            then (1.8 : !{\codetype{float[<=0.3,<1.5,<=1.8; 1.8]}}!)
-            else (0.3 : !{\codetype{float[<=0.3,<1.5,<=1.8; 0.3]}}!)
-            : !{\codetype{float[<=0.3,<1.5,<=1.8; 0.3,1.8]}}! in
+    let x = if (uniform(0,1) : !{\codetype{float[{<0.5}; T]}}!) < (0.5 : !{\codetype{float[{<0.5}; {0.5}]}}!)
+            then (uniform(0,2) : !{\codetype{float[{<=0.3,<1.5,<=1.8}; T]}}!)
+            else (gaussian(0,1) : !{\codetype{float[{<=0.3,<1.5,<=1.8}; T]}}!)
+            : !{\codetype{float[{<=0.3,<1.5,<=1.8}; T]}}! in
+    let y = if (1.5 : !{\codetype{float[{<=0.3,<1.5,<=1.8}; {1.5}]}}!) < x
+            then (1.8 : !{\codetype{float[{<=0.3,<1.5,<=1.8}; {1.8}]}}!)
+            else (0.3 : !{\codetype{float[{<=0.3,<1.5,<=1.8}; {0.3}]}}!)
+            : !{\codetype{float[{<=0.3,<1.5,<=1.8}; {0.3,1.8}]}}! in
     x <= y
 \end{lstlisting}
 
@@ -282,11 +284,11 @@ Continuous distributions can have parameters that depend on discrete random choi
 \noindent This example shows how discrete choices can affect the parameters of continuous distributions. The type-annotated version reveals how the discrete latent variable \texttt{x} determines the standard deviation of the Gaussian:
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
-    let x = if (uniform(0,1) : !{\codetype{float[<0.5; T]}}!) < (0.5 : !{\codetype{float[<0.5; 0.5]}}!)
-            then (0.5 : !{\codetype{float[<=0.5,<=1.5; 0.5]}}!)
-            else (1.5 : !{\codetype{float[<=0.5,<=1.5; 1.5]}}!)
-            : !{\codetype{float[<=0.5,<=1.5; 0.5,1.5]}}! in
-    (gaussian(0, x) : !{\codetype{float[<0.5; T]}}!) < (0.5 : !{\codetype{float[<0.5; 0.5]}}!)
+    let x = if (uniform(0,1) : !{\codetype{float[{<0.5}; T]}}!) < (0.5 : !{\codetype{float[{<0.5}; {0.5}]}}!)
+            then (0.5 : !{\codetype{float[{<=0.5,<=1.5}; {0.5}]}}!)
+            else (1.5 : !{\codetype{float[{<=0.5,<=1.5}; {1.5}]}}!)
+            : !{\codetype{float[{<=0.5,<=1.5}; {0.5,1.5}]}}! in
+    (gaussian(0, x) : !{\codetype{float[{<0.5}; T]}}!) < (0.5 : !{\codetype{float[{<0.5}; {0.5}]}}!)
 \end{lstlisting}
 
 \noindent The discretized program handles the distribution parameter that depends on a discrete choice:
@@ -312,9 +314,9 @@ Continuous distributions can have parameters that depend on discrete random choi
 \noindent The type-annotated version shows how observation points become comparison points:
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
-    let x = (uniform(0.0, 1.0) : !{\codetype{float[<0.2,<0.5; T]}}!) in
-    observe (x < (0.5 : !{\codetype{float[<0.2,<0.5; 0.5]}}!));
-    x < (0.2 : !{\codetype{float[<0.2,<0.5; 0.2]}}!)
+    let x = (uniform(0.0, 1.0) : !{\codetype{float[{<0.2,<0.5}; T]}}!) in
+    observe (x < (0.5 : !{\codetype{float[{<0.2,<0.5}; {0.5}]}}!));
+    x < (0.2 : !{\codetype{float[{<0.2,<0.5}; {0.2}]}}!)
 \end{lstlisting}
 
 \noindent The discretized version preserves the conditioning semantics:
@@ -342,7 +344,7 @@ Continuous distributions can have parameters that depend on discrete random choi
       if fst r then snd r else fst q
 \end{lstlisting}
 
-\noindent The type system correctly infers that comparison points from both \texttt{f} and \texttt{g} (0.5 and 1.5) must be collected for the distributions in \texttt{p}, yielding type \codetype{float[<0.5,<1.5; T]} for both components. The discretized version preserves the higher-order structure:
+\noindent The type system correctly infers that comparison points from both \texttt{f} and \texttt{g} (0.5 and 1.5) must be collected for the distributions in \texttt{p}, yielding type \codetype{float[{<0.5,<1.5}; T]} for both components. The discretized version preserves the higher-order structure:
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em]
   let mappair = fun f -> fun p -> (f (fst p), f (snd p)) in
@@ -423,7 +425,7 @@ While \Slice{} is purely functional without mutable state, it provides the \text
 \begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
   let map = fun f -> fix loop lst :=
       match lst with
-        | nil -> nil
+        nil -> nil
         | head :: tail -> (f head) :: (loop tail)
       end in
   (* Stochastically choose threshold *)
@@ -436,7 +438,7 @@ While \Slice{} is purely functional without mutable state, it provides the \text
   map check_threshold measurements
 \end{lstlisting}
 
-\noindent The closure \texttt{check\_threshold} lexically captures the stochastic \texttt{threshold} value, which is randomly chosen to be either 0.3 or 0.7. The type system correctly infers that both threshold values (0.3 and 0.7) must be included as comparison points for all Gaussian measurements, yielding type \codetype{float[<0.3,<0.7; T]} for list elements. This demonstrates how \Slice{} handles higher-order functions with captured stochastic values while maintaining sound discretization.
+\noindent The closure \texttt{check\_threshold} lexically captures the stochastic \texttt{threshold} value, which is randomly chosen to be either 0.3 or 0.7. The type system correctly infers that both threshold values (0.3 and 0.7) must be included as comparison points for all Gaussian measurements, yielding type \codetype{float[{<0.3,<0.7}; T]} for list elements. This demonstrates how \Slice{} handles higher-order functions with captured stochastic values while maintaining sound discretization.
 
 
 \subsection{Indian GPA Problem}\label{sec:gpa}
@@ -448,16 +450,16 @@ This canonical example involves both discrete and continuous random variables an
   let perfect = discrete(0.01, 0.99) in
   let gpa = if nationality <= 0 then
           if perfect <= 0 then
-            (10.0 : !{\codetype{float[<1; 10]}}!)
+            (10.0 : !{\codetype{float[{<1}; {10}]}}!)
           else
-            (uniform(0, 10) : !{\codetype{float[<1; T]}}!)
+            (uniform(0, 10) : !{\codetype{float[{<1}; T]}}!)
         else
           if perfect <= 0 then
-            (4.0 : !{\codetype{float[<1; 4]}}!)
+            (4.0 : !{\codetype{float[{<1}; {4}]}}!)
           else
-            (uniform(0, 4) : !{\codetype{float[<1; T]}}!)
-        : !{\codetype{float[<1; T]}}! in
-  gpa < (1.0 : !{\codetype{float[<1; 1.0]}}!)
+            (uniform(0, 4) : !{\codetype{float[{<1}; T]}}!)
+        : !{\codetype{float[{<1}; T]}}! in
+  gpa < (1.0 : !{\codetype{float[{<1}; {1.0}]}}!)
 \end{lstlisting}
 
 \noindent The type system collects the comparison point $<1$ for all GPA expressions. This splits each uniform distribution into two intervals at the threshold 1.0. The discretized version becomes:
@@ -495,7 +497,7 @@ Not all programs can be fully discretized. Consider a program where continuous v
 \begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
   let x = (uniform(0, 1) : !{\codetype{float[T; T]}}!) in
   let y = (gaussian(0, 1) : !{\codetype{float[T; T]}}!) in
-  if (uniform(0,1) : !{\codetype{float[<0.5; T]}}!) < (0.5 : !{\codetype{float[<0.5; 0.5]}}!) 
+  if (uniform(0,1) : !{\codetype{float[{<0.5}; T]}}!) < (0.5 : !{\codetype{float[{<0.5}; {0.5}]}}!) 
   then x < y else y < x
 \end{lstlisting}
 
@@ -530,43 +532,153 @@ The syntax of the \Slice{} language is shown in Figure~\ref{fig:grammar}.
 \begin{figure}[h]
 \begin{align*}
 e ::= &\; x                               & \text{variable} \\
+    | &\; c                               & \text{float constant} \\
+    | &\; \text{true} \mid \text{false}   & \text{boolean constant} \\
+    | &\; k\#n                            & \text{finite type constant (k of type fin(n))} \\
+    | &\; ()                              & \text{unit} \\
     | &\; \letkw \; x = e_1\; \inkw \; e_2  & \text{let binding} \\
-    | &\; \text{cdistr}                   & \text{continuous distribution (returns a float)} \\
-    | &\; \discrete(p_0, \ldots, p_{n})      & \text{discrete distribution (returns an integer)} \\
-    | &\; e < c                           & \text{less-than test (for floats)} \\
-    | &\; e \leq i                           & \text{less-than-or-equal test (for integers)} \\
+    | &\; \text{cdistr}                   & \text{continuous distribution} \\
+    | &\; \discrete(p_0, \ldots, p_{n})      & \text{discrete distribution} \\
+    | &\; e_1 < e_2                       & \text{less-than (floats)} \\
+    | &\; e_1 \leq e_2                    & \text{less-or-equal (integers)} \\
+    | &\; e_1 <\#n\; e_2                  & \text{less-than (finite type n)} \\
+    | &\; e_1 \leq\#n\; e_2               & \text{less-or-equal (finite type n)} \\
+    | &\; e_1 \&\& e_2                    & \text{logical and} \\
+    | &\; e_1 \mid\mid e_2                & \text{logical or} \\
+    | &\; \text{not}\; e                  & \text{logical not} \\
     | &\; \ifkw \; e_1\; \thenkw \; e_2\; \elsekw \; e_3 & \text{conditional} \\
     | &\; (e_1, e_2)                      & \text{pair construction} \\
-    | &\; \fstkw \; e                       & \text{first projection} \\
-    | &\; \sndkw \; e                       & \text{second projection} \\
-    | &\; \funkw \; x \; \rightarrow \; e    & \text{function abstraction} \\
+    | &\; \fstkw \; e                     & \text{first projection} \\
+    | &\; \sndkw \; e                     & \text{second projection} \\
+    | &\; \funkw \; x \; \rightarrow \; e & \text{function abstraction} \\
     | &\; e_1 \; e_2                      & \text{function application} \\
+    | &\; \text{fix}\; f\; x := e         & \text{fixed-point recursion} \\
+    | &\; \text{observe}\; e              & \text{observation/conditioning} \\
+    | &\; e_1; e_2                        & \text{sequencing} \\
+    | &\; \text{nil}                      & \text{empty list} \\
+    | &\; e_1 :: e_2                      & \text{list cons} \\
+    | &\; \text{match}\; e\; \text{with}\; \text{nil} \rightarrow e_1 \mid h :: t \rightarrow e_2\; \text{end} & \text{list match} \\
+    | &\; \text{ref}\; e                  & \text{reference creation} \\
+    | &\; !e                              & \text{dereference} \\
+    | &\; e_1 := e_2                      & \text{assignment} \\
     \\[1ex] % Add some space before cdistr definition
-\text{cdistr} ::= &\; \uniform(c_1, c_2)      & \text{uniform distribution} \\
-           | &\; \gaussian(c_1, c_2)   & \text{gaussian distribution (mean, stddev)} \\
-           | &\; \exponential(c)      & \text{exponential distribution (rate)} \\
-           | &\; \betafn(c_1, c_2)      & \text{beta distribution (alpha, beta)}
+\text{cdistr} ::= &\; \uniform(e_1, e_2)      & \text{uniform distribution} \\
+           | &\; \gaussian(e_1, e_2)   & \text{gaussian distribution} \\
+           | &\; \exponential(e)       & \text{exponential distribution} \\
+           | &\; \betafn(e_1, e_2)     & \text{beta distribution} \\
+           | &\; \ldots                & \text{(and 13+ more distributions)}
 \end{align*}
 \caption{Syntax of the \Slice{} language.}
 \label{fig:grammar}
 \end{figure}
 
-\noindent where $x$ ranges over variable names, $c$, $c_1$, $c_2$ range over floating point constants, $i$ ranges over integer constants, and $p_0, \ldots, p_n$ are probabilities that should sum to 1.
+\noindent where $x$ ranges over variable names, $c$ ranges over floating point constants, $i$ ranges over integer constants, $k$ and $n$ are non-negative integers with $0 \leq k < n$, $h$ and $t$ are variables in list patterns, and $p_0, \ldots, p_n$ are probabilities that should sum to 1.
 
-The uniform distribution $\uniform(c_1, c_2)$ represents a continuous random value in the range $[c_1, c_2)$. Other continuous distributions (\gaussian, \exponential, \betafn) are defined similarly according to their standard statistical definitions. The discrete distribution $\discrete(p_0, \ldots, p_{n})$ represents a random integer value, returning a value $i \in \{0, \ldots, n\}$ with probability $p_i$. The language also includes standard functional constructs: pairs, projections, lambda abstractions, and function application.
+The uniform distribution $\uniform(e_1, e_2)$ represents a continuous random value uniformly distributed in the range $[e_1, e_2)$. Other continuous distributions are defined according to their standard statistical definitions. The implementation supports over 17 distributions including Gaussian, exponential, beta, gamma, Laplace, Cauchy, and others. The discrete distribution $\discrete(p_0, \ldots, p_{n})$ represents a random value that returns integer $i \in \{0, \ldots, n\}$ with probability $p_i$.
+
+Beyond basic functional constructs (pairs, projections, lambda abstractions, and function application), the language includes:
+\begin{itemize}
+\item \textbf{Finite types}: Values of the form $k\#n$ represent finite type constants, where $k$ is a value in the finite type with $n$ elements.
+\item \textbf{Boolean operations}: Logical operators $\&\&$, $||$, and $\text{not}$ for boolean expressions.
+\item \textbf{Fixed-point recursion}: The $\text{fix}$ construct enables recursive function definitions.
+\item \textbf{Observations}: The $\text{observe}$ construct conditions the program on a boolean expression being true.
+\item \textbf{Lists}: Constructed with $\text{nil}$ and $::$, and deconstructed with pattern matching.
+\item \textbf{Mutable references}: Created with $\text{ref}$, dereferenced with $!$, and updated with $:=$.
+\item \textbf{Sequencing}: The semicolon operator sequences expressions with side effects.
+\end{itemize}
 
 When we discretize continuous programs, we convert expressions involving continuous distributions into expressions with discrete distributions, and convert less-than comparisons into less-than-or-equal comparisons on the corresponding discrete intervals.
 
 \subsection{Type System}\label{sec:type-system}
 
-We introduce a type system that analyzes the threshold points of each floating point expression. We have the following types:
+We introduce a type system that analyzes both the comparison points and concrete values of floating point expressions. We have the following types:
 \begin{itemize}
     \item \bool: the expression is a boolean value (true or false)
-    \item \intty: the expression is an integer value
-    \item \float$\langle c_0, \ldots, c_n \rangle$: the expression is a floating point value that can only be compared with threshold tests $e < c_i$ for $i \in \{0, \ldots, n\}$.
-    \item $\tau_1 * \tau_2$: the expression is a pair with elements of type $\tau_1$ and $\tau_2$.
-    \item $\tau_1 \rightarrow \tau_2$: the expression is a function that takes an argument of type $\tau_1$ and returns a result of type $\tau_2$.
+    \item \intty: the expression is an integer value  
+    \item $\text{fin}(n)$: the expression is a finite type value in $\{0, 1, \ldots, n-1\}$
+    \item \float$\langle B; V \rangle$: the expression is a floating point value with comparison bounds $B$ and value set $V$
+    \item $\tau_1 * \tau_2$: the expression is a pair with elements of type $\tau_1$ and $\tau_2$
+    \item $\tau_1 \rightarrow \tau_2$: the expression is a function that takes an argument of type $\tau_1$ and returns a result of type $\tau_2$
+    \item $\text{unit}$: the unit type with single value $()$
+    \item $\text{list}(\tau)$: list of elements of type $\tau$
+    \item $\text{ref}(\tau)$: mutable reference containing a value of type $\tau$
 \end{itemize}
+
+The float type \float$\langle B; V \rangle$ uses a two-bag approach:
+\begin{itemize}
+    \item $B$ is the \emph{bound bag}, containing comparison bounds of the form $< c$ or $\leq c$
+    \item $V$ is the \emph{value bag}, containing concrete float values that the expression can evaluate to
+\end{itemize}
+
+Both $B$ and $V$ can be either a finite set or $\top$ (representing an unknown/unbounded set). This forms a product lattice structure that we describe in detail below.
+
+\subsubsection{Lattice Structure}
+
+Each bag forms a join-semilattice with the following structure:
+\begin{itemize}
+    \item Elements: $\{\text{Finite}(S) \mid S \text{ is a finite set}\} \cup \{\top\}$
+    \item Ordering: $\text{Finite}(S_1) \sqsubseteq \text{Finite}(S_2)$ if $S_1 \subseteq S_2$, and $\text{Finite}(S) \sqsubseteq \top$ for any $S$
+    \item Join: $\text{Finite}(S_1) \sqcup \text{Finite}(S_2) = \text{Finite}(S_1 \cup S_2)$, and $x \sqcup \top = \top$ for any $x$
+    \item Bottom: $\text{Finite}(\emptyset)$
+    \item Top: $\top$
+\end{itemize}
+
+The float type forms a product lattice:
+\begin{align}
+\text{FloatLattice} &= \text{BoundLattice} \times \text{ValueLattice} \\
+(B_1, V_1) \sqsubseteq (B_2, V_2) &\iff B_1 \sqsubseteq B_2 \land V_1 \sqsubseteq V_2 \\
+(B_1, V_1) \sqcup (B_2, V_2) &= (B_1 \sqcup B_2, V_1 \sqcup V_2)
+\end{align}
+
+This product lattice is also a join-semilattice with:
+\begin{itemize}
+    \item Bottom element: $(\text{Finite}(\emptyset), \text{Finite}(\emptyset))$
+    \item Top element: $(\top, \top)$
+\end{itemize}
+
+The lattice structure enables type inference to systematically collect and propagate information about both how values are used (bounds) and what values they can take (values).
+
+\begin{figure}[h]
+\centering
+\begin{tikzpicture}[scale=0.8]
+  % Individual lattice (left)
+  \node (bot1) at (0,0) {$\text{Finite}(\emptyset)$};
+  \node (s1) at (-1.5,1.5) {$\text{Finite}(\{<0.5\})$};
+  \node (s2) at (1.5,1.5) {$\text{Finite}(\{<0.8\})$};
+  \node (s12) at (0,3) {$\text{Finite}(\{<0.5, <0.8\})$};
+  \node (top1) at (0,4.5) {$\top$};
+  
+  \draw (bot1) -- (s1);
+  \draw (bot1) -- (s2);
+  \draw (s1) -- (s12);
+  \draw (s2) -- (s12);
+  \draw (s12) -- (top1);
+  
+  \node at (0,-1) {(a) Bound Lattice Example};
+  
+  % Product lattice (right)
+  \node (bot2) at (7,0) {$(\emptyset, \emptyset)$};
+  \node (b1v0) at (5,1.5) {$(\{<c\}, \emptyset)$};
+  \node (b0v1) at (9,1.5) {$(\emptyset, \{0.5\})$};
+  \node (b1v1) at (7,3) {$(\{<c\}, \{0.5\})$};
+  \node (topb) at (5,4.5) {$(\top, \{0.5\})$};
+  \node (topv) at (9,4.5) {$(\{<c\}, \top)$};
+  \node (top2) at (7,6) {$(\top, \top)$};
+  
+  \draw (bot2) -- (b1v0);
+  \draw (bot2) -- (b0v1);
+  \draw (b1v0) -- (b1v1);
+  \draw (b0v1) -- (b1v1);
+  \draw (b1v1) -- (topb);
+  \draw (b1v1) -- (topv);
+  \draw (topb) -- (top2);
+  \draw (topv) -- (top2);
+  
+  \node at (7,-1) {(b) Product Lattice Example};
+\end{tikzpicture}
+\caption{Lattice structure for float types. (a) shows an example bound lattice with comparison bounds. (b) shows the product lattice combining bounds and values.}
+\label{fig:lattice}
+\end{figure}
 
 The typing rules are as follows:
 
@@ -586,17 +698,22 @@ The typing rules are as follows:
      \Gamma \vdash e_3 : \tau}
     {\Gamma \vdash \ifkw \; e_1 \; \thenkw \; e_2 \; \elsekw \; e_3 : \tau}
 
+    \inferrule[\textsc{Float}]
+    {\ }
+    {\Gamma \vdash c : \float\langle \text{Finite}(\emptyset); \text{Finite}(\{c\}) \rangle}
+
     \inferrule[\textsc{ContDist}]
     {\ }
-    {\Gamma \vdash cdistr : \float\langle c'_0, \ldots, c'_n \rangle}
+    {\Gamma \vdash cdistr : \float\langle \text{Finite}(\emptyset); \top \rangle}
 
     \inferrule[\textsc{Discrete}]
     {\ }
     {\Gamma \vdash \discrete(p_0, \ldots, p_n) : \intty}
 
     \inferrule[\textsc{Less}]
-    {\Gamma \vdash e : \float\langle c_0, \ldots, c_n \rangle}
-    {\Gamma \vdash e < c_i : \bool}
+    {\Gamma \vdash e : \float\langle B; V \rangle}
+    {\Gamma \vdash e < c : \bool}
+    \quad \text{where } B \text{ is constrained to include } {<c}
 
     \inferrule[\textsc{LessEq}]
     {\Gamma \vdash e : \intty}
@@ -623,13 +740,100 @@ The typing rules are as follows:
     {\Gamma \vdash e_1 : \tau_1 \rightarrow \tau_2 \\
      \Gamma \vdash e_2 : \tau_1}
     {\Gamma \vdash e_1 \; e_2 : \tau_2}
+
+    \inferrule[\textsc{True}]
+    {\ }
+    {\Gamma \vdash \text{true} : \bool}
+
+    \inferrule[\textsc{False}]
+    {\ }
+    {\Gamma \vdash \text{false} : \bool}
+
+    \inferrule[\textsc{And}]
+    {\Gamma \vdash e_1 : \bool \\
+     \Gamma \vdash e_2 : \bool}
+    {\Gamma \vdash e_1 \&\& e_2 : \bool}
+
+    \inferrule[\textsc{Or}]
+    {\Gamma \vdash e_1 : \bool \\
+     \Gamma \vdash e_2 : \bool}
+    {\Gamma \vdash e_1 || e_2 : \bool}
+
+    \inferrule[\textsc{Not}]
+    {\Gamma \vdash e : \bool}
+    {\Gamma \vdash \text{not}\; e : \bool}
+
+    \inferrule[\textsc{Unit}]
+    {\ }
+    {\Gamma \vdash () : \text{unit}}
+
+    \inferrule[\textsc{FinConst}]
+    {0 \leq k < n}
+    {\Gamma \vdash k\#n : \text{fin}(n)}
+
+    \inferrule[\textsc{FinLess}]
+    {\Gamma \vdash e_1 : \text{fin}(n) \\
+     \Gamma \vdash e_2 : \text{fin}(n)}
+    {\Gamma \vdash e_1 <\#n\; e_2 : \bool}
+
+    \inferrule[\textsc{FinLessEq}]
+    {\Gamma \vdash e_1 : \text{fin}(n) \\
+     \Gamma \vdash e_2 : \text{fin}(n)}
+    {\Gamma \vdash e_1 \leq\#n\; e_2 : \bool}
+
+    \inferrule[\textsc{Observe}]
+    {\Gamma \vdash e : \bool}
+    {\Gamma \vdash \text{observe}\; e : \text{unit}}
+
+    \inferrule[\textsc{Seq}]
+    {\Gamma \vdash e_1 : \tau_1 \\
+     \Gamma \vdash e_2 : \tau_2}
+    {\Gamma \vdash e_1; e_2 : \tau_2}
+
+    \inferrule[\textsc{Fix}]
+    {\Gamma, f: \tau_1 \rightarrow \tau_2, x: \tau_1 \vdash e : \tau_2}
+    {\Gamma \vdash \text{fix}\; f\; x := e : \tau_1 \rightarrow \tau_2}
+
+    \inferrule[\textsc{Nil}]
+    {\ }
+    {\Gamma \vdash \text{nil} : \text{list}(\tau)}
+
+    \inferrule[\textsc{Cons}]
+    {\Gamma \vdash e_1 : \tau \\
+     \Gamma \vdash e_2 : \text{list}(\tau)}
+    {\Gamma \vdash e_1 :: e_2 : \text{list}(\tau)}
+
+    \inferrule[\textsc{Match}]
+    {\Gamma \vdash e : \text{list}(\tau_1) \\
+     \Gamma \vdash e_1 : \tau_2 \\
+     \Gamma, h: \tau_1, t: \text{list}(\tau_1) \vdash e_2 : \tau_2}
+    {\Gamma \vdash \text{match}\; e\; \text{with}\; \text{nil} \rightarrow e_1 \; | h :: t \rightarrow e_2\; \text{end} : \tau_2}
+
+    \inferrule[\textsc{Ref}]
+    {\Gamma \vdash e : \tau}
+    {\Gamma \vdash \text{ref}\; e : \text{ref}(\tau)}
+
+    \inferrule[\textsc{Deref}]
+    {\Gamma \vdash e : \text{ref}(\tau)}
+    {\Gamma \vdash !e : \tau}
+
+    \inferrule[\textsc{Assign}]
+    {\Gamma \vdash e_1 : \text{ref}(\tau) \\
+     \Gamma \vdash e_2 : \tau}
+    {\Gamma \vdash e_1 := e_2 : \text{unit}}
 \end{mathpar}
 
 \section{Type Inference}\label{sec:type-inference}
 
-Type inference for \Slice{} aims to assign a type (e.g., \bool{}, \intty, \float$\langle \dots \rangle$, $\tau_1 * \tau_2$, $\tau_1 \rightarrow \tau_2$) to every subexpression while simultaneously collecting all relevant comparison threshold points for each float expression. This process works by traversing the abstract syntax tree (AST) of the program and generating type constraints based on the structure of the code and the typing rules.
+Type inference for \Slice{} aims to assign a type (e.g., \bool{}, \intty, $\text{fin}(n)$, \float$\langle \dots \rangle$, $\tau_1 * \tau_2$, $\tau_1 \rightarrow \tau_2$, $\text{unit}$, $\text{list}(\tau)$, $\text{ref}(\tau)$) to every subexpression while simultaneously collecting all relevant comparison threshold points for each float expression. This process works by traversing the abstract syntax tree (AST) of the program and generating type constraints based on the structure of the code and the typing rules.
 
-To manage the constraints on the threshold points associated with $\float\langle B \rangle$ types, we use a concept called ``bags''. Each expression inferred to have type $\float\langle B \rangle$ is associated with a bag $B$, which represents the set of constants $\{c_0, \dots, c_n\}$ it might be compared against. 
+To manage the constraints on float types $\float\langle B; V \rangle$, we maintain two separate ``bags'' for each float expression:
+\begin{itemize}
+    \item The \emph{bound bag} $B$ collects comparison bounds (e.g., $<0.5$, $\leq 1.2$) from all comparison sites where the expression is used
+    \item The \emph{value bag} $V$ tracks concrete float values that the expression can evaluate to
+\end{itemize}
+
+Both bags start at the bottom of their respective lattices and are updated through constraint propagation during type inference. 
 
 We have two different kinds of constraints:
 \begin{description}
@@ -640,16 +844,30 @@ We have two different kinds of constraints:
 Constraints are generated as follows:
 \begin{itemize}
     \item In an $\ifkw \; e_1\; \thenkw \; e_2\; \elsekw \; e_3$ expression, $e_1$ must have type \bool, and the types inferred for $e_2$ and $e_3$ must be equal
-    \item A comparison $e < c$ requires $e$ to have a $\float\langle B \rangle$ type. Furthermore, the constant $c$ becomes a relevant threshold point for the value computed by $e$, so we have the constraint $c \in B$.
+    \item A comparison $e < c$ requires $e$ to have a $\float\langle B; V \rangle$ type. The comparison adds the bound $<c$ to the bound bag $B$. If $c$ is a constant expression, its value is also tracked in its own value bag.
     \item A comparison $e \leq i$ requires $e$ to have an $\intty$ type.
     \item A $\letkw \; x = e_1 \; \inkw \; e_2$ expression requires the type inferred for $e_1$ to be used for the variable $x$ when inferring the type of $e_2$.
-    \item A continuous distribution sampling expression intrinsically has a $\float\langle B \rangle$ type, with unconstrained $B$.
+    \item A continuous distribution sampling expression has type $\float\langle B; V \rangle$ where $B$ starts as $\text{Finite}(\emptyset)$ and $V$ is $\top$ (since it can produce any value in its range).
     \item A $\discrete(p_0, \ldots, p_n)$ expression has type $\intty$, representing an integer in the range $[0,n]$ with probability distribution given by the probabilities.
     \item A pair $(e_1, e_2)$ has type $\tau_1 * \tau_2$ if $e_1$ has type $\tau_1$ and $e_2$ has type $\tau_2$.
     \item For $\fstkw \; e$, $e$ must have a pair type $\tau_1 * \tau_2$, and the result has type $\tau_1$.
     \item For $\sndkw \; e$, $e$ must have a pair type $\tau_1 * \tau_2$, and the result has type $\tau_2$.
     \item For $\funkw \; x \; \rightarrow \; e$, if $e$ has type $\tau_2$ under the assumption that $x$ has type $\tau_1$, then the function has type $\tau_1 \rightarrow \tau_2$.
     \item For $e_1 \; e_2$, $e_1$ must have a function type $\tau_1 \rightarrow \tau_2$, and $e_2$ must have type $\tau_1$. The result has type $\tau_2$.
+    \item Boolean constants $\text{true}$ and $\text{false}$ have type \bool.
+    \item Boolean operations ($\&\&$, $||$, $\text{not}$) require their operands to have type \bool{} and return type \bool.
+    \item The unit value $()$ has type $\text{unit}$.
+    \item A finite constant $k\#n$ has type $\text{fin}(n)$ if $0 \leq k < n$.
+    \item Finite comparisons $e_1 <\#n\; e_2$ and $e_1 \leq\#n\; e_2$ require both operands to have type $\text{fin}(n)$ and return type \bool.
+    \item $\text{observe}\; e$ requires $e$ to have type \bool{} and returns type $\text{unit}$.
+    \item For $e_1; e_2$, the result has the type of $e_2$.
+    \item For $\text{fix}\; f\; x := e$, if $e$ has type $\tau_2$ under the assumptions that $f$ has type $\tau_1 \rightarrow \tau_2$ and $x$ has type $\tau_1$, then the result has type $\tau_1 \rightarrow \tau_2$.
+    \item $\text{nil}$ can have type $\text{list}(\tau)$ for any type $\tau$.
+    \item For $e_1 :: e_2$, if $e_1$ has type $\tau$ and $e_2$ has type $\text{list}(\tau)$, the result has type $\text{list}(\tau)$.
+    \item For list pattern matching, the scrutinee must have type $\text{list}(\tau_1)$, and both branches must have the same type $\tau_2$.
+    \item For $\text{ref}\; e$, if $e$ has type $\tau$, the result has type $\text{ref}(\tau)$.
+    \item For $!e$, if $e$ has type $\text{ref}(\tau)$, the result has type $\tau$.
+    \item For $e_1 := e_2$, $e_1$ must have type $\text{ref}(\tau)$ and $e_2$ must have type $\tau$. The result has type $\text{unit}$.
 \end{itemize}
 
 Bag constraint solving is implemented using a variant of the disjoint-set data structure, commonly known as union-find.
@@ -664,30 +882,44 @@ Type constraints are solved using unification. When two types $t_1$ and $t_2$ mu
 \begin{itemize}
     \item If $t_1 = \bool$ and $t_2 = \bool$, unification succeeds.
     \item If $t_1 = \intty$ and $t_2 = \intty$, unification succeeds.
-    \item If $t_1 = \float\langle B_1 \rangle$ and $t_2 = \float\langle B_2 \rangle$, where $B_1$ and $B_2$ are the underlying bags, we perform $\texttt{union}(B_1, B_2)$. This ensures both expressions now share the same bag (and thus the same combined set of threshold points).
+    \item If $t_1 = \text{unit}$ and $t_2 = \text{unit}$, unification succeeds.
+    \item If $t_1 = \text{fin}(n)$ and $t_2 = \text{fin}(m)$, unification succeeds if $n = m$.
+    \item If $t_1 = \float\langle B_1; V_1 \rangle$ and $t_2 = \float\langle B_2; V_2 \rangle$, we must unify both components:
+        \begin{itemize}
+            \item Bound bags: $B_1$ and $B_2$ are unified to ensure both expressions share the same comparison context
+            \item Value bags: $V_1 \sqcup V_2$ is computed to combine value information
+        \end{itemize}
     \item If $t_1 = \tau_{1a} * \tau_{1b}$ and $t_2 = \tau_{2a} * \tau_{2b}$, unification succeeds if $\tau_{1a}$ unifies with $\tau_{2a}$ and $\tau_{1b}$ unifies with $\tau_{2b}$.
     \item If $t_1 = \tau_{1a} \rightarrow \tau_{1b}$ and $t_2 = \tau_{2a} \rightarrow \tau_{2b}$, unification succeeds if $\tau_{1a}$ unifies with $\tau_{2a}$ and $\tau_{1b}$ unifies with $\tau_{2b}$.
+    \item If $t_1 = \text{list}(\tau_1)$ and $t_2 = \text{list}(\tau_2)$, unification succeeds if $\tau_1$ unifies with $\tau_2$.
+    \item If $t_1 = \text{ref}(\tau_1)$ and $t_2 = \text{ref}(\tau_2)$, unification succeeds if $\tau_1$ unifies with $\tau_2$.
     \item If the types are incompatible (e.g., \bool{} and \float{}, \intty{} and \float{}, pair and function), a type error occurs. Meta-variables (placeholder types) are handled by instantiation during unification.
 \end{itemize}
 
-The inference algorithm recursively walks the expression AST. It maintains an environment mapping variables to their inferred types. At each node, it generates and solves constraints using unification and the bag operations. The final result is an AST annotated with types, where each $\float\langle B \rangle$ type carries a bag containing the complete set of relevant threshold points determined by the inference process.
+The inference algorithm recursively walks the expression AST. It maintains an environment mapping variables to their inferred types. At each node, it generates and solves constraints using unification and the bag operations. The final result is an AST annotated with types, where each $\float\langle B; V \rangle$ type carries both bags populated with the relevant bounds and values determined by the inference process.
 
 \section{Discretization}\label{sec:discretization}
 
-After type inference, we have a \Slice{} expression annotated with types, where each $\float\langle B \rangle$ type includes a bag $B$ containing all relevant threshold points $\{c_0, \dots, c_n\}$ (if $t$ is a float type). The discretization process transforms continuous distributions in this typed expression into discrete distributions, replacing continuous distributions and continuous comparisons with their discrete counterparts.
+After type inference, we have a \Slice{} expression annotated with types, where each $\float\langle B; V \rangle$ type includes:
+\begin{itemize}
+    \item A bound bag $B$ containing all comparison bounds (e.g., $<0.5$, $\leq 1.2$)
+    \item A value bag $V$ containing known constant values or $\top$
+\end{itemize}
+
+The discretization process uses the bound bag $B$ to determine how to partition continuous distributions. For each continuous distribution with type $\float\langle B; V \rangle$, we extract the numeric thresholds from $B$ to create discretization intervals.
 
 The core idea is to map the continuous range of a float variable onto a finite set of integers, representing intervals defined by the threshold points in its bag. A comparison against a threshold constant $c_k$ becomes a comparison against the corresponding interval index $k$.
 
-Let $e$ be a subexpression with inferred type $t$ and associated bag $B = \{c_0, \dots, c_n\}$ (if $t$ is a float type). Let $\texttt{discretize}(e)$ be the corresponding discretized expression.
+Let $e$ be a subexpression with inferred type $\float\langle B; V \rangle$. From the bound bag $B$, we extract the set of numeric thresholds $\{c_0, \dots, c_n\}$ (sorting and removing duplicates from bounds like $<c_i$ and $\leq c_i$). Let $\texttt{discretize}(e)$ be the corresponding discretized expression.
 
 \begin{itemize}
-    \item \textbf{Continuous Distribution}: If $e = cdistr$ with type $\float\langle B \rangle$, where $B = \{c_0, \dots, c_n\}$ are the sorted threshold points. We define $n+1$ intervals based on these points: $I_0 = (-\infty, c_0)$, $I_1 = [c_0, c_1)$, \dots, $I_n = [c_{n-1}, c_n)$, $I_{n+1} = [c_n, +\infty)$. The discretization is $\texttt{discretize}(e) = \discrete(p_0, \dots, p_{n+1})$, where $p_i$ is the probability mass of the original continuous distribution $cdistr$ within the interval $I_i$. This is calculated using the Cumulative Distribution Function (CDF) of the specific distribution:
+    \item \textbf{Continuous Distribution}: If $e = cdistr$ with type $\float\langle B; V \rangle$, we extract threshold points $\{c_0, \dots, c_n\}$ from the bound bag $B$. We define $n+1$ intervals based on these points: $I_0 = (-\infty, c_0)$, $I_1 = [c_0, c_1)$, \dots, $I_n = [c_{n-1}, c_n)$, $I_{n+1} = [c_n, +\infty)$. The discretization is $\texttt{discretize}(e) = \discrete(p_0, \dots, p_{n+1})$, where $p_i$ is the probability mass of the original continuous distribution $cdistr$ within the interval $I_i$. This is calculated using the Cumulative Distribution Function (CDF) of the specific distribution:
     \[ p_i = \text{CDF}(\text{right}_i) - \text{CDF}(\text{left}_i) \]
     where $\text{left}_i$ and $\text{right}_i$ are the bounds of interval $I_i$ (using $-\infty$ and $+\infty$ appropriately). This \discrete{} distribution yields an integer $i$ with probability $p_i$, signifying that the original continuous value fell within interval $I_i$. Special handling is needed for degenerate cases (e.g., zero-width intervals for uniform).
 
     \item \textbf{Discrete Distribution}: If $e = \discrete(p_0, \ldots, p_n)$ with type $\intty$, the discretization simply preserves the discrete distribution as is: $\texttt{discretize}(e) = \discrete(p_0, \ldots, p_n)$. This expression returns an integer value $i \in \{0, 1, \ldots, n\}$ with probability $p_i$.
 
-    \item \textbf{Less Than Comparison}: If $e = e' < c_k$, where $e'$ has type $\float\langle B \rangle$ and $c_k$ is the $k$-th smallest element in the sorted bag $B = \{c_0, \dots, c_n\}$ (i.e., the element at index $k$ if using 0-based indexing). The discretization is $\texttt{discretize}(e) = \texttt{discretize}(e') \leq k$. The discretized subexpression $\texttt{discretize}(e')$ evaluates to an integer $i$ representing an interval $I_i$. The comparison $i \leq k$ checks if the value falls into any of the intervals $I_0, \dots, I_k$. The union of these intervals is $(-\infty, c_k)$. Thus, the comparison correctly determines if the original value of $e'$ was less than $c_k$.
+    \item \textbf{Less Than Comparison}: If $e = e' < c_k$, where $e'$ has type $\float\langle B; V \rangle$. We extract the sorted threshold set $\{c_0, \dots, c_n\}$ from the bound bag $B$, and $c_k$ is the $k$-th smallest element in this set. The discretization is $\texttt{discretize}(e) = \texttt{discretize}(e') \leq k$. The discretized subexpression $\texttt{discretize}(e')$ evaluates to an integer $i$ representing an interval $I_i$. The comparison $i \leq k$ checks if the value falls into any of the intervals $I_0, \dots, I_k$. The union of these intervals is $(-\infty, c_k)$. Thus, the comparison correctly determines if the original value of $e'$ was less than $c_k$.
 
     \item \textbf{Less Than or Equal Comparison}: If $e = e' \leq i$, where $e'$ has type $\intty$, the discretization preserves the comparison: $\texttt{discretize}(e) = \texttt{discretize}(e') \leq i$. This form is used for comparing integer values, particularly the results of discrete distributions.
 
@@ -702,16 +934,141 @@ Let $e$ be a subexpression with inferred type $t$ and associated bag $B = \{c_0,
         \item $\texttt{discretize}(\funkw \; x \; \rightarrow \; e) = \funkw \; x \; \rightarrow \; (\texttt{discretize}(e))$
         \item $\texttt{discretize}(e_1 \; e_2) = \texttt{discretize}(e_1) \; \texttt{discretize}(e_2)$
     \end{itemize}
+
+    \item \textbf{Boolean, Unit, Finite Constants}: These are already discrete and pass through unchanged.
+    \item \textbf{Finite Comparisons}: Comparisons like $e_1 <\#n\; e_2$ are preserved as-is since they already operate on discrete finite types.
+    \item \textbf{Lists, References, Boolean Operations}: These constructs are translated recursively, preserving their structure.
 \end{itemize}
 
-This process effectively translates continuous distributions into discrete distributions based on the thresholds used in the program, while preserving the original discrete distributions and program structure, including functional and pair constructs.
+This process effectively translates continuous distributions into discrete distributions based on the thresholds used in the program, while preserving the original discrete distributions and program structure, including functional constructs, pairs, lists, references, and finite types.
 
 \section{Soundness Proof}\label{sec:soundness}
 
 
 \section{Implementation}\label{sec:implementation}
 
-\jules{Here we describe how we implemented it, and how we have a Dice backend.}
+We have implemented \Slice{} as an OCaml-based compiler that transforms continuous probabilistic programs into discrete ones, which can then be analyzed using exact inference engines. The implementation consists of two main components: the \Slice{} compiler (\texttt{cdice}) and the Dice inference engine~\cite{Holtzen2020Dice}.
+
+\subsection{Architecture Overview}
+
+Figure~\ref{fig:architecture} shows the overall architecture of the \Slice{} system.
+
+\begin{figure}[h]
+\centering
+\begin{tikzpicture}[
+    node distance=1.5cm,
+    component/.style={rectangle, draw, thick, minimum width=3cm, minimum height=1cm, align=center},
+    data/.style={rectangle, draw, dashed, minimum width=2.5cm, minimum height=0.8cm, align=center},
+    arrow/.style={->, thick},
+    bigbox/.style={draw, thick, rounded corners, inner sep=0.3cm}
+]
+    % Input
+    \node[data] (input) {\texttt{.cdice} file\\(continuous program)};
+    
+    % Slice compiler box
+    \node[bigbox, below=0.5cm of input, minimum width=10cm, minimum height=7cm] (slicebox) {};
+    \node[above] at (slicebox.north) {\textbf{\Slice{} Compiler (cdice)}};
+    
+    % Components inside Slice
+    \node[component, below=1cm of input] (parser) {Parser\\(\texttt{parser.mly}, \texttt{lexer.mll})};
+    \node[component, below of=parser] (typeinf) {Type Inference\\(\texttt{inference.ml})};
+    \node[component, below of=typeinf] (disc) {Discretization\\(\texttt{discretization.ml})};
+    \node[component, below of=disc] (todice) {Code Generation\\(\texttt{to\_dice.ml})};
+    
+    % Intermediate data structures
+    \node[data, right=0.5cm of parser] (ast) {AST\\(\texttt{expr})};
+    \node[data, right=0.5cm of typeinf] (tast) {Typed AST\\(\texttt{texpr})};
+    \node[data, right=0.5cm of disc] (dast) {Discretized\\AST};
+    
+    % Bags module
+    \node[component, left=0.5cm of typeinf, minimum width=2cm] (bags) {Bags\\(\texttt{bags.ml})};
+    
+    % Output from Slice
+    \node[data, below=1cm of slicebox] (dice) {\texttt{.dice} file\\(discrete program)};
+    
+    % Dice engine
+    \node[component, below=0.5cm of dice, minimum width=10cm] (diceengine) {Dice Inference Engine\\BDD compilation + Weighted Model Counting};
+    
+    % Final output
+    \node[data, below=0.5cm of diceengine] (output) {Probability\\Distribution};
+    
+    % Arrows
+    \draw[arrow] (input) -- (parser);
+    \draw[arrow] (parser) -- (typeinf);
+    \draw[arrow] (typeinf) -- (disc);
+    \draw[arrow] (disc) -- (todice);
+    \draw[arrow] (todice) -- (dice);
+    \draw[arrow] (dice) -- (diceengine);
+    \draw[arrow] (diceengine) -- (output);
+    
+    % Side arrows for data structures
+    \draw[arrow, dashed] (parser) -- (ast);
+    \draw[arrow, dashed] (typeinf) -- (tast);
+    \draw[arrow, dashed] (disc) -- (dast);
+    \draw[arrow, dashed] (bags) -- (typeinf);
+\end{tikzpicture}
+\caption{Architecture of the \Slice{} system. The \Slice{} compiler transforms continuous probabilistic programs into discrete ones through type-directed discretization. The resulting discrete program is then processed by the Dice inference engine to compute exact probability distributions.}
+\label{fig:architecture}
+\end{figure}
+
+\subsection{Implementation Details}
+
+\paragraph{Parser and Lexer} The frontend uses OCaml's Menhir parser generator to parse \texttt{.cdice} source files. The parser (\texttt{parser.mly}) defines the concrete syntax and produces an abstract syntax tree (AST) represented by the \texttt{expr} type. The lexer (\texttt{lexer.mll}) handles tokenization, including special tokens for finite type comparisons (e.g., \texttt{<\#n}).
+
+\paragraph{Type Inference} The type inference module (\texttt{inference.ml}) implements the two-bag type system described in Section~\ref{sec:type-inference}. It uses a constraint-based approach with unification to infer types while collecting comparison bounds. The implementation features:
+\begin{itemize}
+    \item A union-find data structure for managing bags efficiently
+    \item Listener patterns for propagating constraints between related expressions
+    \item Subtyping rules that ensure proper information flow
+\end{itemize}
+
+\paragraph{Bags Module} The \texttt{bags.ml} module provides the lattice-based data structures for tracking bounds and values. It implements:
+\begin{itemize}
+    \item Generic bag operations (union, equality checking)
+    \item Specialized \texttt{BoundBag} for comparison bounds ($<c$, $\leq c$)
+    \item \texttt{FloatBag} for tracking concrete float values
+    \item Efficient representation using either finite sets or $\top$
+\end{itemize}
+
+\paragraph{Discretization} The discretization module (\texttt{discretization.ml}) transforms typed continuous programs into discrete ones. For each continuous distribution, it:
+\begin{enumerate}
+    \item Extracts comparison thresholds from the bound bag
+    \item Computes interval probabilities using distribution CDFs
+    \item Generates equivalent discrete distributions
+    \item Transforms comparisons to operate on interval indices
+\end{enumerate}
+
+\paragraph{Code Generation} The \texttt{to\_dice.ml} module generates Dice source code from the discretized AST. It handles the translation of \Slice{} constructs to their Dice equivalents, including special handling for finite types that become integers in Dice.
+
+\paragraph{Runtime and Evaluation} The implementation includes:
+\begin{itemize}
+    \item An interpreter (\texttt{interp.ml}) for sampling-based execution
+    \item Statistical testing to verify discretization correctness
+    \item Support for multiple output formats (Dice, SPPL)
+\end{itemize}
+
+\subsection{Integration with Dice}
+
+The Dice inference engine~\cite{Holtzen2020Dice} provides exact inference for discrete probabilistic programs using Binary Decision Diagrams (BDDs) and weighted model counting. Our discretized programs are designed to work seamlessly with Dice's capabilities:
+\begin{itemize}
+    \item Discrete distributions map directly to Dice's \texttt{discrete} construct
+    \item Finite types become bounded integers
+    \item Observations translate to Dice's conditioning primitives
+\end{itemize}
+
+The complete workflow is automated through the \texttt{run\_contdice.sh} script, which pipes the output of \Slice{} directly to Dice for inference.
+
+\subsection{Engineering Considerations}
+
+The implementation prioritizes correctness and clarity:
+\begin{itemize}
+    \item Extensive use of OCaml's type system for safety
+    \item Modular design allowing independent testing of components
+    \item Clear separation between syntax-directed and semantic phases
+    \item Comprehensive test suite including adversarial examples
+\end{itemize}
+
+The system is open-source and available at \url{https://github.com/[repository-url]}, along with benchmarks and documentation.
 
 
 \section{Evaluation}\label{sec:evaluation}
