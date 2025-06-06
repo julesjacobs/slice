@@ -167,7 +167,7 @@ perhaps simulates a coin flip
 
   \begin{subfigure}[t]{\textwidth}
     \begin{lstlisting}
-    discrete(0.5: 0#2, 0.5: 1#2) <#2 1#2
+    discrete(0.5, 0.5) < 1
     \end{lstlisting}
     \caption{Discretized program}
     \label{fig:simple-branch-discr}
@@ -177,10 +177,8 @@ perhaps simulates a coin flip
 % Right column: B
 \begin{subfigure}[t]{0.45\textwidth}
   \begin{lstlisting}
-  (uniform(
-      0, 1
-  ) : float[<0.5; T]) < 
-  (0.5 : float[<0.5; 0.5]) : bool
+  (uniform(0, 1) : float[<0.5; T]) < 
+  (0.5 : float[<0.5; 0.5])
   \end{lstlisting}
   \caption{Type annotations}
   \label{fig:simple-branch-types}
@@ -221,17 +219,15 @@ else
 
   \begin{subfigure}[t]{\textwidth}
     \begin{lstlisting}
-let x = (gaussian((0 : float[<=0; 0]), (1 : float[<=1; 1])) : float[<0.4,<0.5,<0.6; T]) in
-(if ((x : float[<0.4,<0.5,<0.6; T]) < (0.4 : float[<0.4,<0.5,<0.6; 0.4]) : bool) then
-  (... : bool)
+let x = gaussian(0, 1) : float[<0.4,<0.5,<0.6; T] in
+if x < (0.4 : float[<0.4,...; 0.4]) then
+  ...
+else if x < (0.5 : float[...; 0.5]) then
+  ...
+else if x < (0.6 : float[...; 0.6]) then
+  ...
 else
-  (if ((x : float[<0.4,<0.5,<0.6; T]) < (0.5 : float[<0.4,<0.5,<0.6; 0.5]) : bool) then
-    (... : bool)
-  else
-    (if ((x : float[<0.4,<0.5,<0.6; T]) < (0.6 : float[<0.4,<0.5,<0.6; 0.6]) : bool) then
-      (... : bool)
-    else
-      (... : bool) : bool) : bool) : bool) : bool
+  ...
     \end{lstlisting}
     \caption{Type annotations}
     \label{fig:subC}
@@ -241,15 +237,15 @@ else
 % Right column: B
 \begin{subfigure}[t]{0.48\textwidth}
   \begin{lstlisting}
-let x = discrete(0.655422: 0#4, 0.0360407: 1#4, 
-0.0342844: 2#4, 0.274253: 3#4) in
-if x <#4 1#4 then
+let x = discrete(0.655422, 0.0360407, 
+0.0342844, 0.274253) in
+if x < 1 then
   ...
 else
-  if x <#4 2#4 then
+  if x < 2 then
     ...
   else
-    if x <#4 3#4 then
+    if x < 3 then
       ...
     else
       ...
@@ -285,9 +281,8 @@ let x = if uniform(0,1) < 0.5 then
 
   \begin{subfigure}[t]{\textwidth}
     \begin{lstlisting}
-let x = if discrete(0.5: 0#2, 0.5: 1#2) 
-    <#2 1#2 then 0#2 else 1#2 in
-    x <#2 1#2
+let x = if discrete(0.5, 0.5) < 1 then 0 else 1 in
+    x < 1
     \end{lstlisting}
     \caption{Discretized program}
     \label{fig:subC}
@@ -297,22 +292,12 @@ let x = if discrete(0.5: 0#2, 0.5: 1#2)
 % Right column: B
 \begin{subfigure}[t]{0.48\textwidth}
   \begin{lstlisting}
-let x = (
-    if ((uniform(
-            (0 : float[<=0; 0]), 
-            (1 : float[<=1; 1])
-         ) : float[<0.5; T]) < 
-         (0.5 : float[<0.5; 0.5]) : bool) 
-    then
-        (0.3 : float[<0.5; 0.3])
+let x = if discrete(0.5, 0.5) < 1 then 
+    discrete(0.25, 0.75) 
     else
-        (0.6 : float[<0.5; 0.6])
-    : float[<0.5; 0.3,0.6]
-) in
-  ((x : float[<0.5; 0.3,0.6]) < 
-    (0.5 : float[<0.5; 0.5]) : bool) 
-: bool
-  \end{lstlisting}
+    discrete(0.125, 0.875) in
+    x < 1
+    \end{lstlisting}
   \caption{Type annotations}
   \label{fig:subB}
 \end{subfigure}
@@ -344,12 +329,11 @@ let x = if uniform(0,1) < 0.5 then
 
   \begin{subfigure}[t]{\textwidth}
     \begin{lstlisting}
-let x = if discrete(0.5: 0#2, 0.5: 1#2) 
-    <#2 1#2 then 
-    discrete(0.25: 0#2, 0.75: 1#2) 
+let x = if discrete(0.5, 0.5) < 1 then 
+    discrete(0.25, 0.75) 
     else
-    discrete(0.125: 0#2, 0.875: 1#2) in
-    x <#2 1#2
+    discrete(0.125, 0.875) in
+    x < 1
     \end{lstlisting}
     \caption{Discretized program}
     \label{fig:subC}
@@ -359,27 +343,15 @@ let x = if discrete(0.5: 0#2, 0.5: 1#2)
 % Right column: B
 \begin{subfigure}[t]{0.48\textwidth}
 \begin{lstlisting}
-(let x = (
-    if ((uniform(
-            (0 : float[<=0; 0]), 
-            (1 : float[<=1; 1])
-         ) : float[<0.5; T]) < 
-         (0.5 : float[<0.5; 0.5]) : bool) 
-    then
-        (uniform(
-            (0 : float[<=0; 0]), 
-            (2 : float[<=2; 2])
-        ) : float[<0.5; T])
+let x =
+    if (uniform(0, 1) : float[<0.5; T]) < 
+       (0.5 : float[<0.5; 0.5]) then
+        (0.3 : float[<0.5; 0.3])
     else
-        (uniform(
-            (0 : float[<=0; 0]), 
-            (4 : float[<=4; 4])
-        ) : float[<0.5; T])
-    : float[<0.5; T]
-) in
-  ((x : float[<0.5; T]) < 
-    (0.5 : float[<0.5; 0.5]) : bool) 
-: bool)
+        (0.6 : float[<0.5; 0.6])
+    : float[<0.5; 0.3,0.6]
+in
+x < (0.5 : float[<0.5; 0.5])
 \end{lstlisting}
 
   \caption{Type annotations}
@@ -411,11 +383,15 @@ gaussian(0, (if uniform(0,1) < 0.5 then
 
   \begin{subfigure}[t]{\textwidth}
   \begin{lstlisting}
-(gaussian((0 : float[<=0; 0]), 
-(if ((uniform((0 : float[<=0; 0]), (1 : float[<=1; 1])) : float[<0.5; T]) < (0.5 : float[<0.5; 0.5]) : bool) then
-  (1.2 : float[<=1.2,<=2.4; 1.2])
-else
-  (2.4 : float[<=1.2,<=2.4; 2.4]) : float[<=1.2,<=2.4; 1.2,2.4])) : float[<0.5; T]) < (0.5 : float[<0.5; 0.5]) : bool
+gaussian(0, 
+  if (uniform(0,1) : float[<0.5; T]) < 
+     (0.5 : float[<0.5; 0.5]) then
+    (1.2 : float[<=1.2,<=2.4; 1.2])
+  else
+    (2.4 : float[<=1.2,<=2.4; 2.4])
+  : float[<=1.2,<=2.4; 1.2,2.4])
+: float[<0.5; T] 
+< (0.5 : float[<0.5; 0.5])
 \end{lstlisting}
     \caption{Type annotations}
     \label{fig:subC}
@@ -425,14 +401,14 @@ else
 % Right column: B
 \begin{subfigure}[t]{0.48\textwidth}
     \begin{lstlisting}
-let _h_sigma1 = if discrete(0.5: 0#2, 0.5: 1#2) <#2 1#2 then
-    0#3
+let _h_sigma1 = if discrete(0.5, 0.5) < 1 then
+    0
   else
-    1#3 in
-if _h_sigma1 ==#3 0#3 then
-    discrete(0.661539: 0#2, 0.338461: 1#2)
+    1 in
+if _h_sigma1 == 0 then
+    discrete(0.661539, 0.338461)
   else
-    discrete(0.582516: 0#2, 0.417484: 1#2) <#2 1#2
+    discrete(0.582516, 0.417484) < 1
     \end{lstlisting}
 
   \caption{Discretized program}
@@ -466,9 +442,9 @@ let x = uniform(0.0, 1.0) in
 
   \begin{subfigure}[t]{\textwidth}
     \begin{lstlisting}
-let x = discrete(0.2: 0#3, 0.3: 1#3, 0.5: 2#3) in
-let _ = observe (x <#3 2#3) in
-    x <#3 1#3
+let x = discrete(0.2, 0.3, 0.5) in
+let _ = observe (x < 2) in
+    x < 1
     \end{lstlisting}
     \caption{Discretized program}
     \label{fig:subC}
@@ -478,9 +454,9 @@ let _ = observe (x <#3 2#3) in
 % Right column: B
 \begin{subfigure}[t]{0.48\textwidth}
 \begin{lstlisting}
-(let x = (uniform((0 : float[<=0; 0]), (1 : float[<=1; 1])) : float[<0.2,<0.5; T]) in
-(let _ = (observe (((x : float[<0.2,<0.5; T]) < (0.5 : float[<0.2,<0.5; 0.5]) : bool)) : unit) in
-  ((x : float[<0.2,<0.5; T]) < (0.2 : float[<0.2,<0.5; 0.2]) : bool) : bool) : bool)
+let x = uniform(0, 1) : float[<0.2,<0.5; T] in
+let _ = observe(x < (0.5 : float[<0.2,<0.5; 0.5])) in
+x < (0.2 : float[<0.2,<0.5; 0.2])
 \end{lstlisting}
   \caption{Type annotations}
   \label{fig:subB}
@@ -505,13 +481,13 @@ let _ = observe (x <#3 2#3) in
 
 \textbf{Specifying the Prior.} The figure below illustrates the example using Contdice syntax. In this scenario, a student's GPA depends on their nationality and whether they have a perfect record, both of which are modeled as discrete random variables. The nationality variable is binary, representing an equal chance of a student from India (0\#2) or USA (1\#2). Similarly, the perfect variable encodes whether the student has a perfect GPA with a small prior probability, 0.01 for yes and 0.99 for no. Depending on these discrete inputs, the gpa is assigned deterministically, e.g. 10.0 for a perfect Indian student, or sampled from a continuous uniform distribution, e.g. uniform(0,10) or uniform(0,4) depending on nationality. We finally perform a query to determine the probability that a student's GPA falls below 1.0.
 
-\begin{lstlisting}
-    let nationality = discrete(0.5: 0#2, 0.5: 1#2) in
-    let perfect = discrete(0.01: 0#2, 0.99: 1#2) in
-    let gpa = if nationality <=#2 0#2 then 
-        if perfect <=#2 0#2 then 10.0 else uniform(0,10)
+\begin{lstlisting}[aboveskip=1em,belowskip=1em]
+    let nationality = discrete(0.5, 0.5) in
+    let perfect = discrete(0.01, 0.99) in
+    let gpa = if nationality <= 0 then 
+        if perfect <= 0 then 10.0 else uniform(0,10)
         else
-        if perfect <=#2 0#2 then 4.0 else uniform(0,4) 
+        if perfect <= 0 then 4.0 else uniform(0,4) 
     in gpa < 1.0
 \end{lstlisting}
 
@@ -519,36 +495,40 @@ let _ = observe (x <#3 2#3) in
 \textbf{Type-based Inference.} A type is assigned to every subexpression, and specifically for the float subexpressions, all relevant comparison threshold points are collected in what we denote as a bag $B$. Most notably, since we query gpa $< 1$, and a $\textbf{uniform}(c_1,c_2)$ expression intrinsically has a $\textbf{float}\langle B \rangle$ type, we make sure to collect the 1 in the bags belonging to the $\textbf{uniform}(c_1,c_2)$ distributions corresponding to the gpa variable.
 
 \begin{lstlisting}
-(let nationality = (discrete(0.5: 0#2, 0.5: 1#2) : #2) in
-(let perfect = (discrete(0.01: 0#2, 0.99: 1#2) : #2) in
-(let gpa = (if ((nationality : #2) <=#2 0#2 : bool) then
-    (if ((perfect : #2) <=#2 0#2 : bool) then (10 : float[<1; 10])
-    else (uniform((0 : float[<=0; 0]), (10 : float[<=10; 10])) : float[<1; T]) : float[<1; T])
-      else
-        (if ((perfect : #2) <=#2 0#2 : bool) then
-          (4 : float[<1; 4])
+let nationality = discrete(0.5, 0.5) in
+let perfect = discrete(0.01, 0.99) in
+let gpa = if nationality <= 0 then
+    if perfect <= 0 then
+        (10.0 : float[<1; 10])
+    else
+        (uniform(0, 10) : float[<1; T])
+    else
+        if perfect <= 0 then
+            (4.0 : float[<1; 4])
         else
-    (uniform((0 : float[<=0; 0]), (4 : float[<=4; 4])) : float[<1; T]) : float[<1; T]) : float[<1; T]) in
-    ((gpa : float[<1; T]) < (1 : float[<1; 1]) : bool) : bool) : bool) : bool)
+            (uniform(0, 4) : float[<1; T])
+    : float[<1; T]
+in
+gpa < (1.0 : float[<1; 1.0])
 \end{lstlisting}
 
 
-\textbf{Discretization.} After type inference, the discretization process transforms cdice into a discretized program based on the bags containing all relevant threshold points for the float types. The continuous range of float variables are mapped onto a finite set of integers representing intervals defined by the threshold points in its corresponding bag. Notably, $\textbf{uniform}(0,10)$ is transformed to $\textbf{discrete}(0.1: 0\#2, 0.9: 1\#2)$ due to its threshold point 1 partitioning the continuous distribution into two intervals, from which we calculate the probabilities of the intervals using the uniform cdf. Slice now becomes a comparison against the corresponding interval index, in this case 1, in the discretized program.
+\textbf{Discretization.} After type inference, the discretization process transforms cdice into a discretized program based on the bags containing all relevant threshold points for the float types. The continuous range of float variables are mapped onto a finite set of integers representing intervals defined by the threshold points in its corresponding bag. Notably, $\textbf{uniform}(0,10)$ is transformed to $\textbf{discrete}(0.1, 0.9)$ due to its threshold point 1 partitioning the continuous distribution into two intervals, from which we calculate the probabilities of the intervals using the uniform cdf. Slice now becomes a comparison against the corresponding interval index, in this case 1, in the discretized program.
 
-\begin{lstlisting}
-    let nationality = discrete(0.5: 0#2, 0.5: 1#2) in
-let perfect = discrete(0.01: 0#2, 0.99: 1#2) in
-  let gpa = if nationality <=#2 0#2 then
-        if perfect <=#2 0#2 then
-          1#2
+\begin{lstlisting}[aboveskip=1em,belowskip=1em]
+    let nationality = discrete(0.5, 0.5) in
+let perfect = discrete(0.01, 0.99) in
+  let gpa = if nationality <= 0 then
+        if perfect <= 0 then
+          1
         else
-          discrete(0.1: 0#2, 0.9: 1#2)
+          discrete(0.1, 0.9)
       else
-        if perfect <=#2 0#2 then
-          1#2
+        if perfect <= 0 then
+          1
         else
-          discrete(0.25: 0#2, 0.75: 1#2) in
-    gpa <#2 1#2
+          discrete(0.25, 0.75) in
+    gpa < 1
 \end{lstlisting}
 
 
