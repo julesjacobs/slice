@@ -1,0 +1,3 @@
+let x = uniform(0.0, 1.0) in
+observe (x < 0.5);
+x < 0.2
