@@ -16,13 +16,14 @@ def build_conditional_independent_contdice(comparison_count):
     variables = [f"x{n}" for n in range(1, comparison_count + 1)]
 
     for idx in range(comparison_count):
+        rand_const = random.uniform(1e-10, 1 - 1e-10)
         var = variables[idx]
         if idx == 0:
             code.append(f"let {var} = uniform(0,{counter}) in")
             counter += 1
         else:
             prev = variables[idx - 1]
-            code.append(f"let {var} = if {prev} < 0.5 then uniform(0,{counter}) else uniform(0,{counter + 1}) in")
+            code.append(f"let {var} = if {prev} < {rand_const} then uniform(0,{counter}) else uniform(0,{counter + 1}) in")
             counter += 2
 
     last_var = variables[-1]
@@ -62,6 +63,7 @@ def build_conditional_random_independent_contdice_1(comparison_count):
     variables = [f"x{n}" for n in range(1, comparison_count + 1)]
 
     for idx in range(comparison_count):
+        rand_const = random.uniform(1e-10, 1 - 1e-10)
         var = variables[idx]
         if idx == 0:
             code.append(f"let {var} = uniform(0,{counter}) in")
@@ -69,7 +71,7 @@ def build_conditional_random_independent_contdice_1(comparison_count):
         else:
             rand_idx = random.randint(0, idx - 1)
             prev = variables[rand_idx]
-            code.append(f"let {var} = if {prev} < 0.5 then uniform(0,{counter}) else uniform(0,{counter + 1}) in")
+            code.append(f"let {var} = if {prev} < {rand_const} then uniform(0,{counter}) else uniform(0,{counter + 1}) in")
             counter += 2
 
     last_var = variables[-1]
@@ -138,7 +140,7 @@ def build_conditional_random_independent_contdice_2(depth):
                     valid_flag[0] = True
                         
             quantity = g.ite(
-                g.lt(guard_expr, g.const(0.5)),
+                g.lt(guard_expr, g.const(random.uniform(1e-10, 1 - 1e-10))),
                 thenb_expr,
                 elseb_expr
             )
@@ -181,6 +183,7 @@ def build_alternating_guard_contdice_1(comparison_count, guard_span):
     variables = [f"x{n}" for n in range(1, comparison_count + 1)]
 
     for idx in range(comparison_count):
+        rand_const = random.uniform(1e-10, 1 - 1e-10)
         var = variables[idx]
         if idx == 0:
             code.append(f"let {var} = uniform(0,{counter}) in")
@@ -189,7 +192,7 @@ def build_alternating_guard_contdice_1(comparison_count, guard_span):
             guard_idx = (idx - 1) % guard_span
             guard_var = variables[guard_idx]
             code.append(
-                f"let {var} = if {guard_var} < 0.5 then uniform(0,{counter}) else uniform(0,{counter + 1}) in"
+                f"let {var} = if {guard_var} < {rand_const} then uniform(0,{counter}) else uniform(0,{counter + 1}) in"
             )
             counter += 2
 
@@ -208,6 +211,7 @@ def build_alternating_guard_contdice_2(comparison_count, guard_span):
     variables = [f"x{n}" for n in range(1, comparison_count + 1)]
 
     for idx in range(comparison_count):
+        rand_const = random.uniform(1e-10, 1 - 1e-10)
         var = variables[idx]
         if idx == 0:
             code.append(f"let {var} = uniform(0,{counter}) in")
@@ -217,7 +221,7 @@ def build_alternating_guard_contdice_2(comparison_count, guard_span):
             guard_var = variables[guard_idx]
             prev_var = variables[idx - 1]
             code.append(
-                f"let {var} = if {guard_var} < 0.5 then uniform(0,{counter}) else {prev_var} in"
+                f"let {var} = if {guard_var} < {rand_const} then uniform(0,{counter}) else {prev_var} in"
             )
             counter += 2
 
@@ -236,6 +240,7 @@ def build_alternating_guard_contdice_3(comparison_count, guard_span):
     variables = [f"x{n}" for n in range(1, comparison_count + 1)]
 
     for idx in range(comparison_count):
+        rand_const = random.uniform(1e-10, 1 - 1e-10)
         var = variables[idx]
         if idx == 0:
             code.append(f"let {var} = uniform(0,{counter}) in")
@@ -244,7 +249,7 @@ def build_alternating_guard_contdice_3(comparison_count, guard_span):
             # Special case for x2
             prev_var = variables[idx - 1]
             code.append(
-                f"let {var} = if {prev_var} < 0.5 then uniform(0,{counter}) else uniform(0,{counter + 1}) in"
+                f"let {var} = if {prev_var} < {rand_const} then uniform(0,{counter}) else uniform(0,{counter + 1}) in"
             )
             counter += 2
         else:
@@ -271,6 +276,7 @@ def build_random_alternating_guard_contdice(comparison_count, guard_span):
     variables = [f"x{n}" for n in range(1, comparison_count + 1)]
 
     for idx in range(comparison_count):
+        rand_const = random.uniform(1e-10, 1 - 1e-10)
         var = variables[idx]
         if idx == 0:
             code.append(f"let {var} = uniform(0,{random.randint(1, 10)}) in")
@@ -278,7 +284,7 @@ def build_random_alternating_guard_contdice(comparison_count, guard_span):
             guard_idx = (idx - 1) % guard_span
             guard_var = variables[guard_idx]
             code.append(
-                f"let {var} = if {guard_var} < 0.5 then uniform(0,{random.randint(1, 10)}) else uniform(0,{random.randint(1, 10)}) in"
+                f"let {var} = if {guard_var} < {rand_const} then uniform(0,{random.randint(1, 10)}) else uniform(0,{random.randint(1, 10)}) in"
             )
 
     last_var = variables[-1]
@@ -286,8 +292,8 @@ def build_random_alternating_guard_contdice(comparison_count, guard_span):
     return "\n".join(code), last_var
 
 
-def main():
-    program, last_var = build_conditional_independent_contdice(10)
+def main(): 
+    program, last_var = build_alternating_guard_contdice_1(10,3)
     print(program)
     # print(last_var)
 
