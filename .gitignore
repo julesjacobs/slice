@@ -20,7 +20,9 @@ tex/contdice.fls
 tex/contdice.fdb_latexmk
 tex/contdice.aux
 output.dice
-parametrize.cdice
 tex/contdice.bbl
 tex/contdice.blg
 cdice/.DS_Store
+scale.cdice
+julia-1.11.5/
+Alea.jl/
