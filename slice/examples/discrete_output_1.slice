@@ -1,2 +1,0 @@
-let x = uniform(0,1) in
-let y = if x < 0.5 then if x < 0.2 then 1.0 else 2.0 else if x < 0.8 then 6.0 else 8.0 in y

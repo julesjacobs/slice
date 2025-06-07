@@ -5,12 +5,7 @@
 
 (generate_opam_files true)
 
-(source
- (github julesjacobs/slice))
-
-(authors "Jules Jacobs")
 (license MIT)
-(documentation https://github.com/julesjacobs/slice)
 
 (package
  (name slice)
@@ -20,11 +15,8 @@
   (ocaml (>= 4.08))
   (dune (>= 3.0))
   (menhir (>= 20201216))
-  (stats (>= 0.1))
   (cmdliner (>= 1.1.0))
   (ounit2 (>= 2.2.6))
   )
  (tags ("probabilistic-programming" "continuous-distributions" "type-directed" "discretization"))
- (bug_reports https://github.com/julesjacobs/slice/issues)
- (homepage https://github.com/julesjacobs/slice)
 )

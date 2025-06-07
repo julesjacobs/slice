@@ -1,5 +1,0 @@
-(* Test: Gamma distribution with zero scale parameter *)
-(* Expected behavior: Runtime error inserted during discretization *)
-(* Expected error: "Gamma shape and scale must be positive" *)
-
-let x = gamma(2.0, 0.0) in x > 1.0 

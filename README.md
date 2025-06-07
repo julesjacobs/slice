@@ -1,73 +1,98 @@
-# Slice - A Language for Type-Directed Discretization
+# Slice: Type-Directed Discretization of Continuous Probabilistic Programs
 
-Slice is a language for probabilistic programming with continuous distributions that uses type-directed discretization to enable exact inference.
+Slice is a probabilistic programming language that automatically discretizes continuous distributions to enable exact inference. This repository contains the implementation described in our POPL 2025 paper.
 
-# Usage
+## Quick Start
 
-`run_slice.sh` outlines the inference workflow: first slice is run on a continuous program outputting a discretized program, then dice is run on the discretized program outputting the final probability distribution.
+### Using Docker (Recommended)
 
 ```bash
-$ ./run_slice.sh <example-slice-program>
+# Build the Docker image
+docker build -t slice .
+
+# Run an example
+docker run --rm slice python3 slice.py run examples/paper/simple_uniform.slice
+
+# Run benchmarks
+docker run --rm slice python3 slice.py benchmark
+
+# Get help
+docker run --rm slice python3 slice.py --help
 ```
 
-## Running slice alone
-```bash
-$ cd slice
-$ dune build
-$ ./run_slice.sh [--print-all] <example.slice>
-```
-Options:
+### Local Installation
 
---print-all: prints to stdout the intermediate steps in the slice workflow up to the discretized program, and performs a statistical verification test to determine equivalence between the discretized output and the sampled original using a Z-test, i.e.:
+Requires OCaml 4.14+ and Python 3.8+.
 
 ```bash
-$ dune exec -- bin/main.exe examples/coin_flip.slice 
+# Install OCaml dependencies
+opam install dune menhir cmdliner ounit2 gsl core core_unix \
+             ppx_sexp_conv sexplib ppx_deriving yojson ctypes \
+             ctypes-foreign bignum mlcuddidl
 
-Processing file: examples/coin_flip.slice
-Source:
-let x = uniform(0, 1) in
-x < 0.5
+# Build Slice and Dice
+cd slice && dune build && cd ..
+cd dice && dune build && cd ..
 
-Parsed AST (Pretty):
-let x = uniform(0, 1) in
-x < 0.5
+# Install Python dependencies
+pip install matplotlib sppl
 
-Typed AST (Pretty):
-(let x = (uniform(0, 1) : float[<0.5; T]) in
-((x : float[<0.5; T]) < (0.5 : float[<0.5; 0.5]) : bool) : bool)
-
-Discretized Program (Pretty):
-let x = discrete(0.5, 0.5) in
-x <#2 1#2
-
-Discretized Program (Plaintext):
-let x = discrete(0.5, 0.5) in
-x < int(1,1)
-
-Running Discretized version 1000000 times...
-Summary (Discretized): True: 500014, False: 499986
-Running Original (Sampling) version 1000000 times...
-Summary (Original (Sampling)): True: 499965, False: 500035
-
---- Statistical Comparison ---
-Proportion True (Discretized): 0.5000
-Proportion True (Original):   0.5000
-Pooled Proportion:            0.5000
-Z-score: 0.0693
-Conclusion: No statistically significant difference found (alpha=0.01).
-------------------------------------------------------------
-
-*** No statistically significant difference detected for this file. ***
+# Run an example
+python3 slice.py run examples/paper/simple_uniform.slice
 ```
 
-## Running dice alone
+## Usage
+
+The `slice.py` script provides a unified interface for all operations:
+
 ```bash
-$ cd dice
-$ dune build
-$ ./run_dice <example.dice> # file or string
+# Run a Slice program
+python3 slice.py run <file.slice>
+
+# Convert to SPPL
+python3 slice.py run <file.slice> --to-sppl
+
+# Run benchmarks
+python3 slice.py benchmark              # All benchmarks
+python3 slice.py benchmark dt           # Decision trees only
+python3 slice.py benchmark scaling      # Scaling benchmarks only
+
+# Test installation
+python3 slice.py test
+
+# List examples
+python3 slice.py examples --list
+
+# Build components
+python3 slice.py build
 ```
 
-## Using docker
-```bash
-$ docker pull katherinewu312/sliceppl
+## Project Structure
+
+- `slice/` - The Slice compiler (continuous → discrete)
+- `dice/` - The Dice inference engine (exact inference on discrete programs)
+- `examples/` - Example Slice programs organized by category:
+  - `tutorial/` - Simple tutorial examples
+  - `paper/` - Examples from the POPL 2025 paper
+  - `features/` - Examples demonstrating specific language features
+  - `tests/` - Test cases and edge cases
+- `benchmarks/` - Performance benchmarks:
+  - `decision-trees/` - Decision tree benchmarks (DT4, DT14, DT16, DT44)
+  - `scaling/` - Scaling benchmarks
+  - `baselines/` - Baseline implementations
+- `tex/` - Paper source
+
+## Paper
+
+The paper "Slice: Type-Directed Discretization of Continuous Probabilistic Programs" is available in the `tex/` directory.
+
+## Citation
+
+```bibtex
+@inproceedings{slice2025,
+  title={Slice: Type-Directed Discretization of Continuous Probabilistic Programs},
+  author={[Authors]},
+  booktitle={Proceedings of the ACM on Programming Languages (POPL)},
+  year={2025}
+}
 ```

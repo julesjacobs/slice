@@ -1,2 +1,0 @@
-let x = uniform(0,1) in
-let y = if x < 0.5 then discrete(0.6, 0.2, 0.2) else discrete(0.9, 0.05, 0.05) in y

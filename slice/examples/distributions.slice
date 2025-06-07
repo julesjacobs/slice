@@ -1,7 +1,0 @@
-(* Example file for testing functions and pairs *)
-
-(* Pairs *)
-let p = (uniform(0, 1), gaussian(0, 2)) in
-let x = fst p in
-let y = snd p in
-y < 2 && (x < 2 || y < 1)

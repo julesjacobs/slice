@@ -1,0 +1,18 @@
+# Exclude build artifacts
+dice/_build/
+slice/_build/
+cdice/_build/
+**/_build/
+
+# Exclude version control
+.git/
+.gitignore
+
+# Exclude editor files
+*.swp
+.vscode/
+.idea/
+
+# Exclude temporary files
+*.tmp
+*.log
