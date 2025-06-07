@@ -1,0 +1,101 @@
+\section{Discretization}\label{sec:discretization}
+
+After type inference, each float-typed expression carries refinement information in its type $\float\langle B; V \rangle$. The discretization transformation uses this information to convert continuous probabilistic programs into discrete ones that can be analyzed exactly.
+
+\subsection{Overview}
+
+The discretization process transforms continuous distributions into discrete ones based on the comparison points collected during type inference. The key insight is that if a program only compares a continuous value against certain thresholds, we can partition the continuous range into intervals separated by these thresholds and track only which interval contains the value.
+
+For each expression with type $\float\langle B; V \rangle$:
+\begin{itemize}
+    \item If $B = \top$ (unbounded), the expression remains continuous
+    \item If $B = \{b_1, \ldots, b_n\}$ (finite bounds), we create $n+1$ intervals
+\end{itemize}
+
+\subsection{Discretization Rules}
+
+The transformation $\texttt{discretize}(e)$ is defined recursively on the structure of typed expressions:
+
+\paragraph{Float Constants} For a constant $c$ with type $\float\langle B; V \rangle$:
+\begin{itemize}
+    \item If $B = \top$: remains as constant $c$
+    \item If $B = \{b_1, \ldots, b_n\}$: becomes $\finconst{k}{n+1}$ where $k$ is the index of the interval containing $c$
+\end{itemize}
+
+\paragraph{Continuous Distributions} For a distribution $d$ with type $\float\langle B; V \rangle$ where $B = \{b_1, \ldots, b_n\}$:
+\begin{enumerate}
+    \item Extract numeric thresholds $c_1 < \cdots < c_n$ from bounds in $B$
+    \item Define $n+1$ intervals: $I_0 = (-\infty, c_1)$, $I_1 = [c_1, c_2)$, \ldots, $I_n = [c_n, +\infty)$
+    \item Calculate probability mass for each interval using the CDF:
+    \[ p_i = \text{CDF}_d(\text{right}_i) - \text{CDF}_d(\text{left}_i) \]
+    \item Generate $\discrete(p_0, \ldots, p_n)$ returning interval indices
+\end{enumerate}
+
+If $B = \top$, the distribution remains continuous.
+
+\paragraph{Comparisons} For $e_1 < e_2$ where both have type $\float\langle B; V \rangle$:
+\begin{itemize}
+    \item If $B = \top$: comparison remains as $\texttt{discretize}(e_1) < \texttt{discretize}(e_2)$
+    \item If $B = \{b_1, \ldots, b_n\}$: becomes $\texttt{discretize}(e_1) \finlt{n+1} \texttt{discretize}(e_2)$
+\end{itemize}
+
+The finite comparison $\finlt{n+1}$ operates on interval indices modulo $n+1$.
+
+\paragraph{Structural Constructs} All other constructs are discretized recursively:
+\begin{itemize}
+    \item Variables, constants, and discrete distributions pass through unchanged
+    \item Let bindings, conditionals, pairs, functions preserve structure
+    \item Boolean operations, lists, references maintain their semantics
+\end{itemize}
+
+\subsection{Variable Distribution Parameters}
+
+A key challenge arises when distribution parameters are not constant. Consider:
+\begin{lstlisting}
+let scale = discrete(0.5, 0.5) in
+let x = if scale = 0 then exponential(1.0) 
+        else exponential(2.0) in
+x < 3.0
+\end{lstlisting}
+
+During type inference, the parameter to \texttt{exponential} has type $\float\langle B_{\text{param}}; \{1.0, 2.0\} \rangle$. The implementation generates runtime dispatch code that:
+\begin{enumerate}
+    \item Evaluates the parameter expression
+    \item Matches against possible constant values from the value bag
+    \item Applies appropriate discretization for each case
+\end{enumerate}
+
+This ensures correct discretization even when distribution parameters depend on runtime values.
+
+\subsection{Implementation Details}
+
+The discretization algorithm:
+\begin{itemize}
+    \item Uses the GNU Scientific Library (GSL) for CDF calculations
+    \item Handles floating-point precision by clamping probabilities to $[0,1]$
+    \item Validates that discretized probabilities sum to approximately 1.0
+    \item Generates finite types $\text{fin}(n)$ for discretized values
+    \item Preserves comparison semantics through interval index comparisons
+\end{itemize}
+
+\subsection{Example}
+
+Consider the program from Section~\ref{sec:type-inference}:
+\begin{lstlisting}
+let x = uniform(0.0, 1.0) in
+if x < 0.5 then 
+  if x < 0.7 then 1 else 2
+else 3
+\end{lstlisting}
+
+After type inference, \texttt{x} has type $\float\langle \{<0.5, <0.7\}; \top \rangle$. Discretization:
+\begin{enumerate}
+    \item Extracts thresholds: $\{0.5, 0.7\}$
+    \item Creates intervals: $I_0 = (-\infty, 0.5)$, $I_1 = [0.5, 0.7)$, $I_2 = [0.7, \infty)$
+    \item Calculates probabilities: $p_0 = 0.5$, $p_1 = 0.2$, $p_2 = 0.3$
+    \item Generates: \texttt{let x = discrete(0.5, 0.2, 0.3) in ...}
+    \item Transforms comparisons: \texttt{x < 0.5} becomes \texttt{x}$\finlt{3}$\texttt{1}, \texttt{x < 0.7} becomes \texttt{x}$\finlt{3}$\texttt{2}
+\end{enumerate}
+
+The discretized program preserves the original semantics while enabling exact inference.
+
