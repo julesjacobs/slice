@@ -1,0 +1,425 @@
+\section{Soundness Proof}\label{sec:soundness}
+
+This section establishes the soundness of our discretization transformation. We proceed in three steps: first, we define a nondeterministic small-step semantics for the base language; second, we extend this to a probabilistic semantics that tracks distributions; and third, we prove that discretization preserves the probabilistic semantics.
+
+\subsection{Nondeterministic Small-Step Semantics}
+
+We begin by defining a small-step operational semantics for \Slice{} that treats probabilistic sampling nondeterministically. This semantics captures the possible values that expressions can take without tracking their probabilities.
+
+\subsubsection{Values}
+
+First, we define the set of values that expressions can evaluate to:
+\begin{align*}
+v ::= &\; c                                  & \text{float constant} \\
+    | &\; \text{true} \mid \text{false}      & \text{boolean value} \\
+    | &\; \finconst{k}{n}                    & \text{finite type value} \\
+    | &\; i                                  & \text{integer value} \\
+    | &\; ()                                 & \text{unit value} \\
+    | &\; (v_1, v_2)                         & \text{pair value} \\
+    | &\; \funkw \; x \; \rightarrow \; e    & \text{function closure} \\
+    | &\; \text{nil}                         & \text{empty list} \\
+    | &\; v_1 :: v_2                         & \text{list cons value} \\
+    | &\; \ell                               & \text{location (for references)}
+\end{align*}
+
+\subsubsection{Evaluation Contexts}
+
+We use evaluation contexts to specify the order of evaluation:
+\begin{align*}
+E ::= &\; [\cdot] \\
+    | &\; \letkw \; x = E \; \inkw \; e \\
+    | &\; E < e \mid v < E \\
+    | &\; E \leq e \mid v \leq E \\
+    | &\; E \finlt{n} e \mid v \finlt{n} E \\
+    | &\; E \finleq{n} e \mid v \finleq{n} E \\
+    | &\; E \logand e \mid v \logand E \\
+    | &\; E \logor e \mid v \logor E \\
+    | &\; \text{not}\; E \\
+    | &\; \ifkw \; E \; \thenkw \; e_1 \; \elsekw \; e_2 \\
+    | &\; (E, e) \mid (v, E) \\
+    | &\; \fstkw \; E \mid \sndkw \; E \\
+    | &\; E \; e \mid v \; E \\
+    | &\; \text{observe}\; E \\
+    | &\; E; e \\
+    | &\; E :: e \mid v :: E \\
+    | &\; \text{match}\; E \; \text{with}\; \ldots \\
+    | &\; \text{ref}\; E \\
+    | &\; !E \\
+    | &\; E := e \mid v := E
+\end{align*}
+
+\subsubsection{Small-Step Relation}
+
+We define the small-step relation $e \rightarrow \mathcal{P}(e')$ that maps an expression to a set of possible next expressions. For deterministic constructs, this set is a singleton; for probabilistic sampling, it contains all possible values in the distribution's support.
+
+\paragraph{Basic Rules}
+
+\begin{mathpar}
+\inferrule[\textsc{Let}]
+{\ }
+{\letkw \; x = v \; \inkw \; e \rightarrow \{e[v/x]\}}
+
+\inferrule[\textsc{IfTrue}]
+{\ }
+{\ifkw \; \text{true} \; \thenkw \; e_1 \; \elsekw \; e_2 \rightarrow \{e_1\}}
+
+\inferrule[\textsc{IfFalse}]
+{\ }
+{\ifkw \; \text{false} \; \thenkw \; e_1 \; \elsekw \; e_2 \rightarrow \{e_2\}}
+
+\inferrule[\textsc{Fst}]
+{\ }
+{\fstkw \; (v_1, v_2) \rightarrow \{v_1\}}
+
+\inferrule[\textsc{Snd}]
+{\ }
+{\sndkw \; (v_1, v_2) \rightarrow \{v_2\}}
+
+\inferrule[\textsc{App}]
+{\ }
+{(\funkw \; x \; \rightarrow \; e) \; v \rightarrow \{e[v/x]\}}
+\end{mathpar}
+
+\paragraph{Comparison Rules}
+
+\begin{mathpar}
+\inferrule[\textsc{LessTrue}]
+{c_1 < c_2}
+{c_1 < c_2 \rightarrow \{\text{true}\}}
+
+\inferrule[\textsc{LessFalse}]
+{c_1 \geq c_2}
+{c_1 < c_2 \rightarrow \{\text{false}\}}
+
+\inferrule[\textsc{LeqTrue}]
+{i_1 \leq i_2}
+{i_1 \leq i_2 \rightarrow \{\text{true}\}}
+
+\inferrule[\textsc{LeqFalse}]
+{i_1 > i_2}
+{i_1 \leq i_2 \rightarrow \{\text{false}\}}
+\end{mathpar}
+
+\paragraph{Boolean Operations}
+
+\begin{mathpar}
+\inferrule[\textsc{AndTrue}]
+{\ }
+{\text{true} \logand e \rightarrow \{e\}}
+
+\inferrule[\textsc{AndFalse}]
+{\ }
+{\text{false} \logand e \rightarrow \{\text{false}\}}
+
+\inferrule[\textsc{OrTrue}]
+{\ }
+{\text{true} \logor e \rightarrow \{\text{true}\}}
+
+\inferrule[\textsc{OrFalse}]
+{\ }
+{\text{false} \logor e \rightarrow \{e\}}
+
+\inferrule[\textsc{NotTrue}]
+{\ }
+{\text{not}\; \text{true} \rightarrow \{\text{false}\}}
+
+\inferrule[\textsc{NotFalse}]
+{\ }
+{\text{not}\; \text{false} \rightarrow \{\text{true}\}}
+\end{mathpar}
+
+\paragraph{List Operations}
+
+\begin{mathpar}
+\inferrule[\textsc{MatchNil}]
+{\ }
+{\text{match}\; \text{nil} \; \text{with}\; \text{nil} \rightarrow e_1 \mid h :: t \rightarrow e_2 \; \text{end} \rightarrow \{e_1\}}
+
+\inferrule[\textsc{MatchCons}]
+{\ }
+{\text{match}\; v_1 :: v_2 \; \text{with}\; \text{nil} \rightarrow e_1 \mid h :: t \rightarrow e_2 \; \text{end} \rightarrow \{e_2[v_1/h, v_2/t]\}}
+\end{mathpar}
+
+\paragraph{Probabilistic Sampling (Nondeterministic)}
+
+For continuous distributions, the small-step relation returns the set of all possible values in the distribution's support:
+
+\begin{mathpar}
+\inferrule[\textsc{Uniform}]
+{v_1, v_2 \text{ are float values} \\ v_1 < v_2}
+{\uniform(v_1, v_2) \rightarrow \{c \mid v_1 \leq c < v_2\}}
+
+\inferrule[\textsc{Gaussian}]
+{\mu, \sigma \text{ are float values} \\ \sigma > 0}
+{\gaussian(\mu, \sigma) \rightarrow \{c \mid c \in \mathbb{R}\}}
+
+\inferrule[\textsc{Exponential}]
+{\lambda \text{ is a float value} \\ \lambda > 0}
+{\exponential(\lambda) \rightarrow \{c \mid c \geq 0\}}
+
+\inferrule[\textsc{Beta}]
+{\alpha, \beta \text{ are float values} \\ \alpha > 0 \\ \beta > 0}
+{\betafn(\alpha, \beta) \rightarrow \{c \mid 0 \leq c \leq 1\}}
+
+\inferrule[\textsc{Discrete}]
+{p_0, \ldots, p_n \text{ are probabilities}}
+{\discrete(p_0, \ldots, p_n) \rightarrow \{0, 1, \ldots, n\}}
+\end{mathpar}
+
+\paragraph{Observations}
+
+\begin{mathpar}
+\inferrule[\textsc{ObserveTrue}]
+{\ }
+{\text{observe}\; \text{true} \rightarrow \{()\}}
+
+\inferrule[\textsc{ObserveFalse}]
+{\ }
+{\text{observe}\; \text{false} \rightarrow \emptyset}
+\end{mathpar}
+
+Note that observing a false condition results in an empty set, representing program termination without producing a value.
+
+\paragraph{References and State}
+
+For references, we extend the semantics with a store $\sigma$ that maps locations to values. The relation becomes $\langle e, \sigma \rangle \rightarrow \mathcal{P}(\langle e', \sigma' \rangle)$:
+
+\begin{mathpar}
+\inferrule[\textsc{Ref}]
+{\ell \text{ is a fresh location}}
+{\langle \text{ref}\; v, \sigma \rangle \rightarrow \{\langle \ell, \sigma[\ell \mapsto v] \rangle\}}
+
+\inferrule[\textsc{Deref}]
+{\sigma(\ell) = v}
+{\langle !\ell, \sigma \rangle \rightarrow \{\langle v, \sigma \rangle\}}
+
+\inferrule[\textsc{Assign}]
+{\ }
+{\langle \ell := v, \sigma \rangle \rightarrow \{\langle (), \sigma[\ell \mapsto v] \rangle\}}
+\end{mathpar}
+
+\paragraph{Context Rule}
+
+\begin{mathpar}
+\inferrule[\textsc{Context}]
+{e \rightarrow S}
+{E[e] \rightarrow \{E[e'] \mid e' \in S\}}
+\end{mathpar}
+
+This nondeterministic semantics captures all possible execution paths of a probabilistic program without tracking the probability of each path. In the next subsection, we will extend this to a probabilistic semantics that properly tracks distributions.
+
+\subsection{Probabilistic Small-Step Semantics}
+
+We now define a probabilistic semantics that tracks the distribution over expressions. The semantic function $\llbracket \cdot \rrbracket : \text{Expr} \rightarrow \mathcal{D}(\text{Expr})$ maps expressions to distributions over expressions, where $\mathcal{D}(X)$ denotes the space of probability distributions over $X$.
+
+We assume the existence of the Giry monad structure on $\mathcal{D}$, which provides:
+\begin{itemize}
+    \item $\text{return} : X \rightarrow \mathcal{D}(X)$ (also written as $\delta_x$ for the Dirac distribution at $x$)
+    \item $(>>=) : \mathcal{D}(X) \times (X \rightarrow \mathcal{D}(Y)) \rightarrow \mathcal{D}(Y)$ (monadic bind)
+\end{itemize}
+
+\subsubsection{Deterministic Constructs}
+
+For deterministic constructs, the semantics returns a Dirac distribution:
+
+\paragraph{Values and Basic Operations}
+\begin{align*}
+\llbracket v \rrbracket &= \delta_v \quad \text{(for any value } v \text{)} \\
+\llbracket \letkw \; x = v \; \inkw \; e \rrbracket &= \delta_{e[v/x]} \\
+\llbracket \fstkw \; (v_1, v_2) \rrbracket &= \delta_{v_1} \\
+\llbracket \sndkw \; (v_1, v_2) \rrbracket &= \delta_{v_2} \\
+\llbracket (\funkw \; x \; \rightarrow \; e) \; v \rrbracket &= \delta_{e[v/x]}
+\end{align*}
+
+\paragraph{Conditionals}
+\begin{align*}
+\llbracket \ifkw \; \text{true} \; \thenkw \; e_1 \; \elsekw \; e_2 \rrbracket &= \llbracket e_1 \rrbracket \\
+\llbracket \ifkw \; \text{false} \; \thenkw \; e_1 \; \elsekw \; e_2 \rrbracket &= \llbracket e_2 \rrbracket
+\end{align*}
+
+\paragraph{Comparisons}
+\begin{align*}
+\llbracket c_1 < c_2 \rrbracket &= \begin{cases}
+    \delta_{\text{true}} & \text{if } c_1 < c_2 \\
+    \delta_{\text{false}} & \text{otherwise}
+\end{cases} \\
+\llbracket i_1 \leq i_2 \rrbracket &= \begin{cases}
+    \delta_{\text{true}} & \text{if } i_1 \leq i_2 \\
+    \delta_{\text{false}} & \text{otherwise}
+\end{cases}
+\end{align*}
+
+\paragraph{Boolean Operations}
+\begin{align*}
+\llbracket \text{true} \logand e \rrbracket &= \llbracket e \rrbracket \\
+\llbracket \text{false} \logand e \rrbracket &= \delta_{\text{false}} \\
+\llbracket \text{true} \logor e \rrbracket &= \delta_{\text{true}} \\
+\llbracket \text{false} \logor e \rrbracket &= \llbracket e \rrbracket \\
+\llbracket \text{not}\; \text{true} \rrbracket &= \delta_{\text{false}} \\
+\llbracket \text{not}\; \text{false} \rrbracket &= \delta_{\text{true}}
+\end{align*}
+
+\subsubsection{Compositional Rules}
+
+For compound expressions, we use monadic bind to compose distributions:
+
+\paragraph{Binary Operations}
+\begin{align*}
+\llbracket e_1 < e_2 \rrbracket &= \llbracket e_1 \rrbracket \gg\!= \lambda v_1. \llbracket v_1 < e_2 \rrbracket \\
+\llbracket v_1 < e_2 \rrbracket &= \llbracket e_2 \rrbracket \gg\!= \lambda v_2. \llbracket v_1 < v_2 \rrbracket
+\end{align*}
+
+Similar rules apply for $\leq$, $\logand$, $\logor$, and other binary operations.
+
+\paragraph{Let Binding}
+\begin{align*}
+\llbracket \letkw \; x = e_1 \; \inkw \; e_2 \rrbracket &= \llbracket e_1 \rrbracket \gg\!= \lambda v. \llbracket \letkw \; x = v \; \inkw \; e_2 \rrbracket
+\end{align*}
+
+\paragraph{Conditionals}
+\begin{align*}
+\llbracket \ifkw \; e_1 \; \thenkw \; e_2 \; \elsekw \; e_3 \rrbracket &= \llbracket e_1 \rrbracket \gg\!= \lambda v. \llbracket \ifkw \; v \; \thenkw \; e_2 \; \elsekw \; e_3 \rrbracket
+\end{align*}
+
+\paragraph{Function Application}
+\begin{align*}
+\llbracket e_1 \; e_2 \rrbracket &= \llbracket e_1 \rrbracket \gg\!= \lambda v_1. \llbracket v_1 \; e_2 \rrbracket \\
+\llbracket v_1 \; e_2 \rrbracket &= \llbracket e_2 \rrbracket \gg\!= \lambda v_2. \llbracket v_1 \; v_2 \rrbracket
+\end{align*}
+
+\paragraph{Pairs and Projections}
+\begin{align*}
+\llbracket (e_1, e_2) \rrbracket &= \llbracket e_1 \rrbracket \gg\!= \lambda v_1. \llbracket (v_1, e_2) \rrbracket \\
+\llbracket (v_1, e_2) \rrbracket &= \llbracket e_2 \rrbracket \gg\!= \lambda v_2. \delta_{(v_1, v_2)} \\
+\llbracket \fstkw \; e \rrbracket &= \llbracket e \rrbracket \gg\!= \lambda v. \llbracket \fstkw \; v \rrbracket \\
+\llbracket \sndkw \; e \rrbracket &= \llbracket e \rrbracket \gg\!= \lambda v. \llbracket \sndkw \; v \rrbracket
+\end{align*}
+
+\paragraph{Sequencing}
+\begin{align*}
+\llbracket e_1; e_2 \rrbracket &= \llbracket e_1 \rrbracket \gg\!= \lambda v_1. \llbracket e_2 \rrbracket
+\end{align*}
+
+\paragraph{Finite Type Operations}
+\begin{align*}
+\llbracket \finconst{k}{n} \rrbracket &= \delta_{\finconst{k}{n}} \\
+\llbracket e_1 \finlt{n} e_2 \rrbracket &= \llbracket e_1 \rrbracket \gg\!= \lambda v_1. \llbracket v_1 \finlt{n} e_2 \rrbracket \\
+\llbracket \finconst{k_1}{n} \finlt{n} \finconst{k_2}{n} \rrbracket &= \begin{cases}
+    \delta_{\text{true}} & \text{if } k_1 < k_2 \\
+    \delta_{\text{false}} & \text{otherwise}
+\end{cases}
+\end{align*}
+
+\subsubsection{Probabilistic Distributions}
+
+For sampling expressions, we map to the corresponding probability distributions:
+
+\begin{align*}
+\llbracket \uniform(v_1, v_2) \rrbracket &= \text{Uniform}_{[v_1, v_2)} \\
+\llbracket \gaussian(v_\mu, v_\sigma) \rrbracket &= \mathcal{N}(v_\mu, v_\sigma^2) \\
+\llbracket \exponential(v_\lambda) \rrbracket &= \text{Exp}(v_\lambda) \\
+\llbracket \betafn(v_\alpha, v_\beta) \rrbracket &= \text{Beta}(v_\alpha, v_\beta) \\
+\llbracket \discrete(p_0, \ldots, p_n) \rrbracket &= \sum_{i=0}^n p_i \cdot \delta_i
+\end{align*}
+
+Note that for continuous distributions, we have an implicit coercion from distributions over reals to distributions over constant expressions. That is, if $D$ is a distribution over $\mathbb{R}$, we treat it as a distribution over expressions by mapping each real $r$ to the constant expression $r$.
+
+\subsubsection{Observations}
+
+Observations condition the distribution:
+
+\begin{align*}
+\llbracket \text{observe}\; e \rrbracket &= \llbracket e \rrbracket \gg\!= \lambda v. \llbracket \text{observe}\; v \rrbracket \\
+\llbracket \text{observe}\; \text{true} \rrbracket &= \delta_{()} \\
+\llbracket \text{observe}\; \text{false} \rrbracket &= \bot
+\end{align*}
+
+where $\bot$ represents the zero measure (failed observation).
+
+\subsubsection{DistrCase}
+
+For distrcase expressions (which represent explicit discrete distributions in the implementation):
+
+\begin{align*}
+\llbracket \text{distrcase}\{(e_0, p_0), \ldots, (e_n, p_n)\} \rrbracket &= \sum_{i=0}^n p_i \cdot \llbracket e_i \rrbracket
+\end{align*}
+
+\subsubsection{Example}
+
+Consider the expression:
+\begin{lstlisting}
+let x = uniform(0.0, 1.0) in
+if x < 0.5 then 1 else 2
+\end{lstlisting}
+
+The probabilistic semantics gives:
+\begin{align*}
+&\llbracket \text{let } x = \uniform(0.0, 1.0) \text{ in if } x < 0.5 \text{ then } 1 \text{ else } 2 \rrbracket \\
+&= \llbracket \uniform(0.0, 1.0) \rrbracket \gg\!= \lambda x. \llbracket \text{if } x < 0.5 \text{ then } 1 \text{ else } 2 \rrbracket \\
+&= \text{Uniform}_{[0,1)} \gg\!= \lambda x. \llbracket \text{if } x < 0.5 \text{ then } 1 \text{ else } 2 \rrbracket \\
+&= \text{Uniform}_{[0,1)} \gg\!= \lambda x. \begin{cases}
+    \delta_1 & \text{if } x < 0.5 \\
+    \delta_2 & \text{if } x \geq 0.5
+\end{cases} \\
+&= 0.5 \cdot \delta_1 + 0.5 \cdot \delta_2
+\end{align*}
+
+This probabilistic semantics forms the foundation for proving that our discretization transformation preserves program behavior.
+
+\subsection{Measure Space on Expressions}
+
+To make the probabilistic semantics precise, we need to define an appropriate measure space structure on the set of expressions. We construct this measure space using the notion of \emph{expression skeletons}.
+
+\subsubsection{Expression Skeletons}
+
+An expression skeleton is an expression with ``holes'' where real-valued constants can appear. Formally, we define:
+
+\begin{definition}[Expression Skeleton]
+An expression skeleton $s$ is an expression where each occurrence of a float constant is replaced by a hole $\square_i$ for some index $i \in \mathbb{N}$. We denote by $\text{Skel}$ the set of all expression skeletons, and by $\text{holes}(s)$ the number of distinct holes in skeleton $s$.
+\end{definition}
+
+For example, the expression $\uniform(0.0, 1.0) < 0.5$ has the skeleton $\uniform(\square_1, \square_2) < \square_3$ with three holes.
+
+\subsubsection{Measure Space Construction}
+
+Given a skeleton $s$ with $n = \text{holes}(s)$ holes, we can instantiate it with a vector $\vec{r} = (r_1, \ldots, r_n) \in \mathbb{R}^n$ to produce a concrete expression $s[\vec{r}]$ by replacing each hole $\square_i$ with the real value $r_i$.
+
+The set of all expressions can then be represented as:
+\[
+\text{Expr} = \bigsqcup_{s \in \text{Skel}} \{s[\vec{r}] \mid \vec{r} \in \mathbb{R}^{\text{holes}(s)}\}
+\]
+
+This is a countable disjoint union because:
+\begin{enumerate}
+    \item The set of skeletons $\text{Skel}$ is countable (expressions have finite syntax trees)
+    \item For each skeleton $s$, the set of instantiations forms a copy of $\mathbb{R}^{\text{holes}(s)}$
+    \item Different skeletons produce disjoint sets of expressions
+\end{enumerate}
+
+\subsubsection{Measurable Sets}
+
+We equip $\text{Expr}$ with the $\sigma$-algebra generated by sets of the form:
+\[
+\{s[\vec{r}] \mid \vec{r} \in B\}
+\]
+where $s$ is a skeleton and $B \subseteq \mathbb{R}^{\text{holes}(s)}$ is a Borel measurable set.
+
+This construction ensures that:
+\begin{itemize}
+    \item Basic operations like evaluating an expression to a value are measurable
+    \item The distributions returned by our probabilistic semantics are well-defined probability measures
+    \item We can integrate over expressions when needed for semantic definitions
+\end{itemize}
+
+\subsubsection{Distributions Over Expressions}
+
+When we write $\mathcal{D}(\text{Expr})$ in our probabilistic semantics, we mean the space of probability measures on $(\text{Expr}, \mathcal{F})$ where $\mathcal{F}$ is the $\sigma$-algebra described above.
+
+For continuous distributions like $\uniform(a, b)$, the implicit coercion to $\mathcal{D}(\text{Expr})$ works as follows:
+\begin{enumerate}
+    \item The uniform distribution on $[a, b)$ is a measure on $\mathbb{R}$
+    \item We lift it to expressions via the skeleton containing a single hole: $s = \square_1$
+    \item The resulting distribution on expressions assigns probability to sets of the form $\{r \mid r \in B\}$ for Borel sets $B \subseteq [a, b)$
+\end{enumerate}
+
+This measure-theoretic foundation ensures that our probabilistic semantics is mathematically rigorous and that operations like conditioning (via observations) and marginalization are well-defined.
