@@ -1,4 +1,0 @@
-(tests
- (names test_contdice)
- (libraries contdice ounit2)
- (action (ignore-stderr (run %{test}))))

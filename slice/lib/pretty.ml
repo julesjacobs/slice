@@ -703,7 +703,7 @@ let rec translate_to_sppl (env : (string * string) list) ?(target_var:string opt
       ([err_msg], "")
 
 (* Top-level function: call translate with target 'model' *) 
-let cdice_expr_to_sppl_prog (expr : Types.expr) : string =
+let slice_expr_to_sppl_prog (expr : Types.expr) : string =
   let state = { next_var = 0 } in
   (* Pass target_var = Some "model" to the top-level call *) 
   let (stmts, _final_res_name) = translate_to_sppl [] ~target_var:(Some "model") expr state in

@@ -1,35 +1,35 @@
-# ContDice - A Continuous Dice Language
+# Slice - A Language for Type-Directed Discretization
 
-ContDice is a language for probabilistic programming with continuous distributions.
+Slice is a language for probabilistic programming with continuous distributions that uses type-directed discretization to enable exact inference.
 
 # Usage
 
-`run_contdice.sh` outlines the inference workflow: first cdice is run on a continuous program outputting a discretized program, then dice is run on the discretized program outputting the final probability distribution.
+`run_slice.sh` outlines the inference workflow: first slice is run on a continuous program outputting a discretized program, then dice is run on the discretized program outputting the final probability distribution.
 
 ```bash
-$ ./run_contdice.sh <example-cdice-program>
+$ ./run_slice.sh <example-slice-program>
 ```
 
-## Running cdice alone
+## Running slice alone
 ```bash
-$ cd cdice
+$ cd slice
 $ dune build
-$ dune exec -- bin/main.exe [--print-all] <example-cdice-program>
+$ dune exec -- bin/main.exe [--print-all] <example-slice-program>
 ```
 Alternatively, can use the run script:
 
 ```bash
-$ cd cdice
-$ ./run_cdice.sh [--print-all] <example-cdice-program>
+$ cd slice
+$ ./run_slice.sh [--print-all] <example-slice-program>
 ```
 Options:
 
---print-all: prints to stdout the intermediate steps in the contdice workflow up to the discretized program, and performs a statistical verification test to determine equivalence between the discretized output and the sampled original using a Z-test, i.e.:
+--print-all: prints to stdout the intermediate steps in the slice workflow up to the discretized program, and performs a statistical verification test to determine equivalence between the discretized output and the sampled original using a Z-test, i.e.:
 
 ```bash
-$ dune exec -- bin/main.exe examples/coin_flip.cdice 
+$ dune exec -- bin/main.exe examples/coin_flip.slice 
 
-Processing file: examples/coin_flip.cdice
+Processing file: examples/coin_flip.slice
 Source:
 let x = uniform(0, 1) in
 x < 0.5

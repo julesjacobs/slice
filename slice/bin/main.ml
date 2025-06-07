@@ -1,6 +1,6 @@
 open Cmdliner
 
-exception ObserveFailure = Contdice.Interp.ObserveFailure
+exception ObserveFailure = Slice.Interp.ObserveFailure
 
 (* Read a file and return its contents as a string *)
 let read_file filename =
@@ -19,17 +19,17 @@ let run_interp_and_summarize ~print_all label expr n_runs : ((int * int * int), 
   try
     for i = 1 to n_runs do
       try 
-        match Contdice.Interp.run expr with
-        | Contdice.Types.VBool true -> incr true_count
-        | Contdice.Types.VBool false -> incr false_count
-        | Contdice.Types.VUnit -> ()
+        match Slice.Interp.run expr with
+        | Slice.Types.VBool true -> incr true_count
+        | Slice.Types.VBool false -> incr false_count
+        | Slice.Types.VUnit -> ()
         | other_val -> 
             let msg = Printf.sprintf "Warning (%s): Expected VBool or VUnit, got %s after %d runs. Aborting run."
-                          label (Contdice.Types.string_of_value other_val) (i-1) in
+                          label (Slice.Types.string_of_value other_val) (i-1) in
             raise (Failure msg)
       with 
       | ObserveFailure -> incr observe_failures
-      | Contdice.Interp.RuntimeError rt_msg -> 
+      | Slice.Interp.RuntimeError rt_msg -> 
           let msg = Printf.sprintf "Runtime Error during %s run after %d runs: %s. Aborting run."
                           label (i-1) rt_msg in
           raise (Failure msg)
@@ -110,36 +110,36 @@ let perform_two_proportion_z_test ~print_all (t_disc, f_disc, e_disc, o_disc) (t
         abs_float z_score > critical_z
       )
 
-(* Process a single .cdice file *)
+(* Process a single .slice file *)
 let process_file ~print_all ~to_sppl filename : ( ((int * int * int) * (int * int * int)) option, string) result =
   if print_all then Printf.printf "Processing file: %s\n" filename;
   try
     let content = read_file filename in
-    let expr = Contdice.Parse.parse_expr content in
+    let expr = Slice.Parse.parse_expr content in
     
     if to_sppl then (
-      let sppl_code = Contdice.Pretty.cdice_expr_to_sppl_prog expr in (* Call Pretty module *)
+      let sppl_code = Slice.Pretty.slice_expr_to_sppl_prog expr in (* Call Pretty module *)
       print_endline sppl_code;
       Ok None (* Indicate success, no diff details *) 
     ) else (
       (* Original logic: pretty print, elab, discretize, compare *)
       if print_all then Printf.printf "Source:\n%s\n\n" content;
       
-      let texpr = Contdice.Inference.infer expr in 
+      let texpr = Slice.Inference.infer expr in 
       let final_type = fst texpr in 
-      if print_all then Printf.printf "Typed AST (Pretty):\n%s\n\n" (Contdice.Pretty.string_of_texpr texpr);
+      if print_all then Printf.printf "Typed AST (Pretty):\n%s\n\n" (Slice.Pretty.string_of_texpr texpr);
       
-      let discretized_expr = Contdice.Discretization.discretize_top texpr in
+      let discretized_expr = Slice.Discretization.discretize_top texpr in
       if print_all then (
-        Printf.printf "Discretized Program (Pretty):\n%s\n\n" (Contdice.Pretty.string_of_expr discretized_expr);
-        Printf.printf "Dice Program (Plaintext):\n%s\n\n" (Contdice.To_dice.string_of_expr discretized_expr)
+        Printf.printf "Discretized Program (Pretty):\n%s\n\n" (Slice.Pretty.string_of_expr discretized_expr);
+        Printf.printf "Dice Program (Plaintext):\n%s\n\n" (Slice.To_dice.string_of_expr discretized_expr)
       ) else (
-        Printf.printf "%s\n" (Contdice.To_dice.string_of_expr discretized_expr)
+        Printf.printf "%s\n" (Slice.To_dice.string_of_expr discretized_expr)
       );
 
       (* Only run simulations if the result type is bool and print_all is true *)
-      match Contdice.Types.force final_type with 
-      | Contdice.Types.TBool when print_all -> 
+      match Slice.Types.force final_type with 
+      | Slice.Types.TBool when print_all -> 
           let n_runs = 1000000 in 
           (match run_interp_and_summarize ~print_all "Discretized" discretized_expr n_runs with
           | Error msg -> Error msg
@@ -170,11 +170,11 @@ let process_file ~print_all ~to_sppl filename : ( ((int * int * int) * (int * in
       if print_all then print_endline (String.make 60 '-');
       Error err_msg
 
-(* Check if a filename has .cdice extension *)
-let has_cdice_extension filename =
-  Filename.check_suffix filename ".cdice"
+(* Check if a filename has .slice extension *)
+let has_slice_extension filename =
+  Filename.check_suffix filename ".slice"
 
-(* Process a directory, finding all .cdice files recursively *)
+(* Process a directory, finding all .slice files recursively *)
 let rec process_directory ~print_all ~to_sppl path : (int * (string * string) list * (string * (int * int * int) * (int * int * int)) list) =
   let dir = Unix.opendir path in
   let rec process_entries count errors_list diff_details_list =
@@ -186,7 +186,7 @@ let rec process_directory ~print_all ~to_sppl path : (int * (string * string) li
         let full_path = Filename.concat path entry in
         let stats = Unix.stat full_path in
         match stats.Unix.st_kind with
-        | Unix.S_REG when has_cdice_extension full_path ->
+        | Unix.S_REG when has_slice_extension full_path ->
             (match process_file ~print_all ~to_sppl full_path with
              | Ok diff_details_opt ->
                  let new_diff_details_list = 
@@ -216,12 +216,12 @@ let rec process_directory ~print_all ~to_sppl path : (int * (string * string) li
   process_entries 0 [] []
 
 (* Main command execution logic *) 
-let run_contdice path print_all to_sppl =
+let run_slice path print_all to_sppl =
   try
     let stats = Unix.stat path in
     match stats.Unix.st_kind with
     | Unix.S_REG ->
-        if has_cdice_extension path then (
+        if has_slice_extension path then (
           match process_file ~print_all ~to_sppl path with
           | Ok diff_details_opt ->
               if not to_sppl && print_all then (
@@ -236,7 +236,7 @@ let run_contdice path print_all to_sppl =
           | Error msg -> 
               Printf.printf "\n*** Error processing file: %s ***\n" msg
         ) else
-          Printf.eprintf "Error: File must have .cdice extension: %s\n" path
+          Printf.eprintf "Error: File must have .slice extension: %s\n" path
     | Unix.S_DIR ->
         let count, errors_list, diff_details_list = process_directory ~print_all ~to_sppl path in
         if print_all then (
@@ -270,7 +270,7 @@ let run_contdice path print_all to_sppl =
 
 (* Cmdliner term definition *) 
 let path_arg = 
-  let doc = "The .cdice file or directory to process." in
+  let doc = "The .slice file or directory to process." in
   Arg.(required & pos 0 (some string) None & info [] ~docv:"PATH" ~doc)
 
 let print_all_arg =
@@ -281,16 +281,16 @@ let to_sppl_arg =
   let doc = "Convert the input program to SPPL and print it, skipping other processing." in
   Arg.(value & flag & info ["to-sppl"] ~doc)
 
-let contdice_t = Term.(const run_contdice $ path_arg $ print_all_arg $ to_sppl_arg)
+let slice_t = Term.(const run_slice $ path_arg $ print_all_arg $ to_sppl_arg)
 
 let cmd = 
-  let doc = "Process and analyze ContDice files." in
+  let doc = "Process and analyze Slice files." in
   let man = [
     `S Manpage.s_bugs;
     `P "Report bugs to <your-bug-reporting-address>"; 
   ] in
-  let info = Cmd.info "contdice_main" ~version:"%%VERSION%%" ~doc ~exits:Cmd.Exit.defaults ~man in
-  Cmd.v info contdice_t
+  let info = Cmd.info "slice_main" ~version:"%%VERSION%%" ~doc ~exits:Cmd.Exit.defaults ~man in
+  Cmd.v info slice_t
 
 (* Main entry point *) 
 let () = exit (Cmd.eval cmd)
