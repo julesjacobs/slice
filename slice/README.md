@@ -1,6 +1,6 @@
-# ContDice - A Continuous Dice Language
+# Slice - A Language for Type-Directed Discretization
 
-ContDice is a language for probabilistic programming with continuous distributions.
+Slice is a language for probabilistic programming with continuous distributions that uses type-directed discretization to enable exact inference.
 
 ## Features
 
@@ -34,9 +34,9 @@ The main executable is `bin/main.exe`.
 
 ```bash
 # Run on a single file
-dune exec -- bin/main.exe examples/coin_flip.cdice
+dune exec -- bin/main.exe examples/coin_flip.slice
 
-# Run on a directory (processes all .cdice files recursively)
+# Run on a directory (processes all .slice files recursively)
 dune exec -- bin/main.exe examples
 ```
 
@@ -46,8 +46,8 @@ Alternatively, use the provided helper script:
 # Run all examples
 ./run.sh
 
-# Run a specific example (e.g., coin.cdice)
-./run.sh coin.cdice
+# Run a specific example (e.g., coin.slice)
+./run.sh coin.slice
 ```
 
 ## Examples
@@ -57,7 +57,7 @@ Check the `examples/` directory for more sample programs.
 ### Coin Flip Example
 
 ```ocaml
-(* examples/coin.cdice *)
+(* examples/coin.slice *)
 let coin = discrete(0.5: 0#2, 0.5: 1#2) in  (* Returns 0 or 1 with equal probability *)
 let u = uniform(0.0, 1.0) in
 if coin <=#2 0#2 then

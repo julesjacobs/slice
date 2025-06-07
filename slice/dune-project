@@ -1,0 +1,30 @@
+(lang dune 3.11)
+(using menhir 2.1)
+
+(name slice)
+
+(generate_opam_files true)
+
+(source
+ (github julesjacobs/slice))
+
+(authors "Jules Jacobs")
+(license MIT)
+(documentation https://github.com/julesjacobs/slice)
+
+(package
+ (name slice)
+ (synopsis "Type-directed discretization of continuous probabilistic programs")
+ (description "Slice automatically transforms continuous probabilistic programs into discrete ones for exact inference")
+ (depends
+  (ocaml (>= 4.08))
+  (dune (>= 3.0))
+  (menhir (>= 20201216))
+  (stats (>= 0.1))
+  (cmdliner (>= 1.1.0))
+  (ounit2 (>= 2.2.6))
+  )
+ (tags ("probabilistic-programming" "continuous-distributions" "type-directed" "discretization"))
+ (bug_reports https://github.com/julesjacobs/slice/issues)
+ (homepage https://github.com/julesjacobs/slice)
+)

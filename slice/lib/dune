@@ -1,6 +1,6 @@
 (library
- (name contdice)
- (public_name contdice)
+ (name slice)
+ (public_name slice)
  (libraries gsl)
  (modules bag bags types distributions lexer parser parse pretty interp util to_dice discretization inference))
 

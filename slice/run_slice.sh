@@ -2,7 +2,7 @@
 # Running dice with a bash script
 
 if [ $# -lt 1 ]; then
-  echo "Usage: $0 [--print-all] <cdice-file>"
+  echo "Usage: $0 [--print-all] <slice-file>"
   exit 1
 fi
 
@@ -15,7 +15,7 @@ if [ "$1" == "--print-all" ]; then
 fi
 
 if [ $# -lt 1 ]; then
-  echo "Error: Missing <cdice-file> argument."
+  echo "Error: Missing <slice-file> argument."
   exit 1
 fi
 
