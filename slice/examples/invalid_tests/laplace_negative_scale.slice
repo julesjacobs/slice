@@ -1,5 +1,0 @@
-(* Test: Laplace distribution with negative scale parameter *)
-(* Expected behavior: Runtime error inserted during discretization *)
-(* Expected error: "Laplace scale must be positive" *)
-
-let x = laplace(-0.5) in x > 0.0 

@@ -1,5 +1,0 @@
-(* Test: Beta distribution with negative alpha parameter *)
-(* Expected behavior: Runtime error inserted during discretization *)
-(* Expected error: "Beta alpha and beta_param must be positive" *)
-
-let x = beta(-1.0, 2.0) in x > 0.5 

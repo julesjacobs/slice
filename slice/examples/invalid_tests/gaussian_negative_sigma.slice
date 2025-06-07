@@ -1,5 +1,0 @@
-(* Test: Gaussian distribution with negative sigma parameter *)
-(* Expected behavior: Runtime error inserted during discretization *)
-(* Expected error: "Gaussian sigma must be positive" *)
-
-let x = gaussian(0.0, -1.0) in x > 0.0 

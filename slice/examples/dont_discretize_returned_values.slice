@@ -1,3 +1,0 @@
-let x = gaussian(0, 1) in
-let y = gaussian(0, 1) in
-(x, y)

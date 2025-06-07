@@ -1,2 +1,0 @@
-let x = if uniform(0,1) <= 0.5 then 0.2 else 0.4 in
-uniform(0,2) <= x

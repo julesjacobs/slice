@@ -1,4 +1,0 @@
-let p_val = if uniform(0,1) < 0.3 then 0.2 else 0.4 in
-let q_val = if uniform(0,1) <= p_val then 0.5 else 0.9 in
-let r = gaussian(p_val, q_val) in
-0.1 < r && r < 0.5

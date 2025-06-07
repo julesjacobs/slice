@@ -1,9 +1,0 @@
-let p_val = if uniform(0,1) < 0.3 then 0.2 
-            else if uniform(0,1) < 0.6 then 0.3
-            else 0.4 in
-let q_val = if uniform(0,1) < p_val then
-             if uniform(0,1) < 0.4 then 0.5 else 0.6
-           else 
-             if uniform(0,1) < 0.7 then 0.7 else 0.9 in
-let r = uniform(p_val, q_val) in
-0.1 < r && r < 0.5

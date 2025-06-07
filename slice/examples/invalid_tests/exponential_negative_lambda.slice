@@ -1,5 +1,0 @@
-(* Test: Exponential distribution with negative lambda parameter *)
-(* Expected behavior: Runtime error inserted during discretization *)
-(* Expected error: "Exponential lambda must be positive" *)
-
-let x = exponential(-1.0) in x > 0.5 
