@@ -14,13 +14,7 @@ $ ./run_slice.sh <example-slice-program>
 ```bash
 $ cd slice
 $ dune build
-$ dune exec -- bin/main.exe [--print-all] <example-slice-program>
-```
-Alternatively, can use the run script:
-
-```bash
-$ cd slice
-$ ./run_slice.sh [--print-all] <example-slice-program>
+$ ./run_slice.sh [--print-all] <example.slice>
 ```
 Options:
 
@@ -70,10 +64,10 @@ Conclusion: No statistically significant difference found (alpha=0.01).
 ```bash
 $ cd dice
 $ dune build
-$ dune exec dice <example-dice-program> # file or string
+$ ./run_dice <example.dice> # file or string
 ```
-Alternatively, can use the run script:
+
+## Using docker
 ```bash
-$ cd dice
-$ ./run_dice <example-dice-program> # file or string
+$ docker pull katherinewu312/sliceppl
 ```
