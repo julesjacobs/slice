@@ -8,11 +8,11 @@
     bigbox/.style={draw, thick, rounded corners, inner sep=0.3cm}
 ]
     % Input
-    \node[data] (input) {\texttt{.cdice} file\\(continuous program)};
+    \node[data] (input) {\texttt{.slice} file\\(continuous program)};
     
     % Slice compiler box
     \node[bigbox, below=0.5cm of input, minimum width=10cm, minimum height=7cm] (slicebox) {};
-    \node[above] at (slicebox.north) {\textbf{\Slice{} Compiler (cdice)}};
+    \node[above] at (slicebox.north) {\textbf{\Slice{} Compiler}};
     
     % Components inside Slice
     \node[component, below=1cm of input] (parser) {Parser\\(\texttt{parser.mly}, \texttt{lexer.mll})};

@@ -28,7 +28,7 @@ We introduce a type system that analyzes both the comparison points and concrete
     \item \bool: the expression is a boolean value (true or false)
     \item \intty: the expression is an integer value  
     \item $\fin{n}$: the expression is a finite type value in $\{0, 1, \ldots, n-1\}$
-    \item \float$\langle B; V \rangle$: the expression is a floating point value with comparison bounds $B$ and value set $V$
+    \item \float$[B; V]$: the expression is a floating point value with comparison bounds $B$ and value set $V$
     \item $\tau_1 * \tau_2$: the expression is a pair with elements of type $\tau_1$ and $\tau_2$
     \item $\tau_1 \rightarrow \tau_2$: the expression is a function that takes an argument of type $\tau_1$ and returns a result of type $\tau_2$
     \item $\text{unit}$: the unit type with single value $()$
@@ -36,7 +36,7 @@ We introduce a type system that analyzes both the comparison points and concrete
     \item $\text{ref}(\tau)$: mutable reference containing a value of type $\tau$
 \end{itemize}
 
-The float type \float$\langle B; V \rangle$ uses a two-bag approach:
+The float type \float$[B; V]$ uses a two-bag approach:
 \begin{itemize}
     \item $B$ is the \emph{bound bag}, containing comparison bounds of the form $< c$ or $\leq c$
     \item $V$ is the \emph{value bag}, containing concrete float values that the expression can evaluate to
@@ -92,18 +92,18 @@ The typing rules are as follows:
 
     \inferrule[\textsc{Float}]
     {\ c \in V }
-    {\Gamma \vdash c : \float\langle B; V \rangle}
+    {\Gamma \vdash c : \float[B; V]}
 
     \inferrule[\textsc{ContDist}]
     {\ }
-    {\Gamma \vdash cdistr : \float\langle B; \top \rangle}
+    {\Gamma \vdash cdistr : \float[B; \top]}
 
     \inferrule[\textsc{Discrete}]
     {\ }
     {\Gamma \vdash \discrete(p_0, \ldots, p_n) : \fin{n}}
 
     \inferrule[\textsc{Less}]
-    {\Gamma \vdash e : \float\langle B; V \rangle}
+    {\Gamma \vdash e : \float[B; V]}
     {\Gamma \vdash e < c : \bool}
     \quad \text{where } B \text{ is constrained to include } {<c}
 
