@@ -302,9 +302,9 @@ Similar rules apply for $\leq$, $\logand$, $\logor$, and other binary operations
 
 \paragraph{Finite Type Operations}
 \begin{align*}
-\llbracket \finconst{k}{n} \rrbracket &= \delta_{\finconst{k}{n}} \\
+\llbracket \finconst{k}{n} \rrbracket &= \delta_{k_{\#n}} \\
 \llbracket e_1 \finlt{n} e_2 \rrbracket &= \llbracket e_1 \rrbracket \gg\!= \lambda v_1. \llbracket v_1 \finlt{n} e_2 \rrbracket \\
-\llbracket \finconst{k_1}{n} \finlt{n} \finconst{k_2}{n} \rrbracket &= \begin{cases}
+\llbracket k_{1,\#n} \finlt{n} k_{2,\#n} \rrbracket &= \begin{cases}
     \delta_{\text{true}} & \text{if } k_1 < k_2 \\
     \delta_{\text{false}} & \text{otherwise}
 \end{cases}
