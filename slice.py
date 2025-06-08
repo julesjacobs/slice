@@ -21,17 +21,18 @@ from datetime import datetime
 class BenchmarkRunner:
     """Integrated benchmark runner for Slice"""
     
-    def __init__(self, output_dir="artifact_results"):
+    def __init__(self, output_dir="artifact_results", timeout=300):
         self.output_dir = Path(output_dir)
         self.output_dir.mkdir(exist_ok=True)
         self.results = []
         self.num_runs = 5  # Number of times to run each benchmark
+        self.timeout = timeout  # Timeout in seconds
         
     def run_command(self, cmd, cwd=None):
         """Run a command and return timing information"""
         try:
             # Warm-up run
-            subprocess.run(cmd, shell=True, capture_output=True, cwd=cwd, timeout=300)
+            subprocess.run(cmd, shell=True, capture_output=True, cwd=cwd, timeout=self.timeout)
             
             # Timed runs
             times = []
@@ -43,7 +44,7 @@ class BenchmarkRunner:
                     capture_output=True, 
                     text=True,
                     cwd=cwd,
-                    timeout=300
+                    timeout=self.timeout
                 )
                 end = time.time()
                 
@@ -64,7 +65,7 @@ class BenchmarkRunner:
             return None
             
         except subprocess.TimeoutExpired:
-            print(f"    Timeout running {cmd}")
+            print(f"    Timeout after {self.timeout}s running {cmd}")
             return None
         except Exception as e:
             print(f"    Exception running {cmd}: {e}")
@@ -92,8 +93,8 @@ class BenchmarkRunner:
     
     def run_decision_tree_benchmarks(self):
         """Run decision tree benchmarks comparing Slice and SPPL"""
-        print("Running decision tree benchmarks...")
-        print("-" * 50)
+        print("Running decision tree benchmarks...", flush=True)
+        print("-" * 50, flush=True)
         
         dt_dir = Path("benchmarks/decision-trees")
         
@@ -108,7 +109,7 @@ class BenchmarkRunner:
                 # Run Slice version
                 slice_file = size_dir / f"{benchmark_name}.slice"
                 if slice_file.exists():
-                    print(f"  Running {benchmark_name} (Slice)...")
+                    print(f"  Running {benchmark_name} (Slice)...", flush=True)
                     timing = self.run_slice_on_file(slice_file)
                     if timing:
                         self.results.append({
@@ -127,7 +128,7 @@ class BenchmarkRunner:
                 # Run SPPL version
                 py_file = size_dir / f"{benchmark_name}.py"
                 if py_file.exists():
-                    print(f"  Running {benchmark_name} (SPPL)...")
+                    print(f"  Running {benchmark_name} (SPPL)...", flush=True)
                     timing = self.run_python_file(py_file)
                     if timing:
                         self.results.append({
@@ -143,18 +144,65 @@ class BenchmarkRunner:
                         })
                         print(f"    Mean: {timing['mean']:.3f}s ± {timing['stdev']:.3f}s")
     
+    def run_baseline_benchmarks(self):
+        """Run baseline benchmarks comparing Slice and SPPL"""
+        print("\nRunning baseline benchmarks...", flush=True)
+        print("-" * 50, flush=True)
+        
+        baseline_dir = Path("benchmarks/baselines")
+        
+        for benchmark in ["clinical_trial"]:
+            # Run Slice version
+            slice_file = baseline_dir / f"{benchmark}.slice"
+            if slice_file.exists():
+                print(f"  Running {benchmark} (Slice)...", flush=True)
+                timing = self.run_slice_on_file(slice_file)
+                if timing:
+                    self.results.append({
+                        'benchmark': benchmark,
+                        'category': 'baseline',
+                        'tool': 'slice',
+                        'mean_time': timing['mean'],
+                        'stdev': timing['stdev'],
+                        'min_time': timing['min'],
+                        'max_time': timing['max']
+                    })
+                    print(f"    Mean: {timing['mean']:.3f}s ± {timing['stdev']:.3f}s")
+            
+            # Run SPPL version
+            py_file = baseline_dir / f"{benchmark}.py"
+            if py_file.exists():
+                print(f"  Running {benchmark} (SPPL)...", flush=True)
+                timing = self.run_python_file(py_file)
+                if timing:
+                    self.results.append({
+                        'benchmark': benchmark,
+                        'category': 'baseline',
+                        'tool': 'sppl',
+                        'mean_time': timing['mean'],
+                        'stdev': timing['stdev'],
+                        'min_time': timing['min'],
+                        'max_time': timing['max']
+                    })
+                    print(f"    Mean: {timing['mean']:.3f}s ± {timing['stdev']:.3f}s")
+    
     def run_scaling_benchmarks(self):
         """Run scaling benchmarks"""
-        print("\nRunning scaling benchmarks...")
-        print("-" * 50)
+        print("\nRunning scaling benchmarks...", flush=True)
+        print("-" * 50, flush=True)
         
         scaling_dir = Path("benchmarks/scaling")
         if (scaling_dir / "run.py").exists():
-            print("  Running scaling experiments...")
+            print("  Running scaling experiments...", flush=True)
             # The scaling runner creates its own graphs
-            cmd = f"cd {scaling_dir} && python3 run.py"
-            subprocess.run(cmd, shell=True)
-            print("  Scaling graphs saved to images/scaling/")
+            cmd = f"cd {scaling_dir} && python3 -u run.py"
+            # Use subprocess.Popen for real-time output
+            process = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, 
+                                     universal_newlines=True, bufsize=1)
+            for line in process.stdout:
+                print(f"    {line.rstrip()}", flush=True)
+            process.wait()
+            print("  Scaling graphs saved to images/scaling/", flush=True)
     
     def calculate_speedups(self):
         """Calculate speedups for decision tree benchmarks"""
@@ -464,7 +512,7 @@ class SliceCLI:
                 self.run_hyperfine_benchmarks(output_dir)
             else:
                 # Use integrated benchmark runner
-                runner = BenchmarkRunner(str(output_dir))
+                runner = BenchmarkRunner(str(output_dir), timeout=args.timeout if args.timeout else 300)
                 runner.num_runs = args.runs
                 runner.run_decision_tree_benchmarks()
                 runner.save_results()
@@ -472,12 +520,45 @@ class SliceCLI:
                 if args.format == 'latex':
                     runner.generate_latex_table()
         
+        if args.type in ['all', 'baseline']:
+            if not self.quiet:
+                print("\nRunning baseline benchmarks...")
+            
+            if args.hyperfine:
+                # Use hyperfine for benchmarking
+                self.run_hyperfine_benchmarks(output_dir)
+            else:
+                # Use integrated benchmark runner
+                runner = BenchmarkRunner(str(output_dir), timeout=args.timeout if args.timeout else 300)
+                runner.num_runs = args.runs
+                runner.run_baseline_benchmarks()
+                runner.save_results()
+                
+                if args.format == 'latex':
+                    runner.generate_latex_table()
+        
         if args.type in ['all', 'scaling']:
             if not self.quiet:
-                print("\nRunning scaling benchmarks...")
-            os.chdir("benchmarks/scaling")
-            self.run_command("python3 run.py")
-            os.chdir("../..")
+                print("\nRunning scaling benchmarks...", flush=True)
+            # Use subprocess with real-time output
+            cmd = f"python3 -u run.py"
+            if args.timeout:
+                cmd += f" --timeout {args.timeout}"
+            try:
+                process = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+                                         universal_newlines=True, bufsize=1, cwd="benchmarks/scaling")
+                
+                # Read output line by line without overall timeout
+                while True:
+                    line = process.stdout.readline()
+                    if not line and process.poll() is not None:
+                        break
+                    if line:
+                        print(line.rstrip(), flush=True)
+                
+                process.wait()
+            except Exception as e:
+                print(f"Error running scaling benchmarks: {e}", flush=True)
         
         if not self.quiet:
             print(f"\nBenchmark results saved to {output_dir}/")
@@ -629,14 +710,14 @@ Examples:
     # Benchmark command
     bench_parser = subparsers.add_parser('benchmark', help='Run benchmarks')
     bench_parser.add_argument('type', nargs='?', default='all',
-                            choices=['all', 'decision-trees', 'dt', 'scaling'],
+                            choices=['all', 'decision-trees', 'dt', 'baseline', 'scaling'],
                             help='Type of benchmarks to run')
     bench_parser.add_argument('--output-dir', default='artifact_results', help='Output directory')
     bench_parser.add_argument('--runs', type=int, default=5, help='Number of runs per benchmark')
     bench_parser.add_argument('--format', choices=['csv', 'json', 'latex', 'markdown'],
                             default='csv', help='Output format')
     bench_parser.add_argument('--hyperfine', action='store_true', help='Use hyperfine for benchmarks')
-    bench_parser.add_argument('--timeout', type=int, help='Timeout per benchmark in seconds')
+    bench_parser.add_argument('--timeout', type=int, default=300, help='Timeout per benchmark in seconds (default: 300)')
     
     # Build command
     build_parser = subparsers.add_parser('build', help='Build components')
