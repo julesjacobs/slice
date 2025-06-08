@@ -1,6 +1,6 @@
 FROM ocaml/opam
 
-WORKDIR contdice
+WORKDIR slice
 
 RUN opam switch create 4.14.1
 
