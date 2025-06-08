@@ -13,7 +13,6 @@ We evaluate Slice on decision tree models from the FairSquare suite with the fol
 
 \begin{table}[!t]
 \centering
-\caption{Execution times (seconds) for decision tree benchmarks}
 \begin{tabular}{lrrr}
 \toprule
 Benchmark & Slice+Dice (s) & SPPL (s) & Speedup \\
@@ -32,6 +31,7 @@ DT44\_bn1 & 0.016 & 0.363 & 22.9× \\
 DT44\_bn2 & 0.016 & 0.354 & 22.1× \\
 \bottomrule
 \end{tabular}
+\caption{Execution times (seconds) for decision tree benchmarks}
 \end{table}
 
 \subsubsection{Clinical Trial Benchmark}
@@ -39,7 +39,6 @@ We evaluate Slice on a clinical trial model that uses discrete distributions to 
 
 \begin{table}[!t]
 \centering
-\caption{Execution times for clinical trial benchmark}
 \begin{tabular}{lrrr}
 \toprule
 Benchmark & Slice+Dice (s) & SPPL (s) & Speedup \\
@@ -47,6 +46,7 @@ Benchmark & Slice+Dice (s) & SPPL (s) & Speedup \\
 Clinical Trial & 0.009 & 0.356 & 38.2× \\
 \bottomrule
 \end{tabular}
+\caption{Execution times for clinical trial benchmark}
 \end{table}
 
 \subsubsection{Scaling Benchmarks}
@@ -61,25 +61,7 @@ These benchmarks test programs where each variable's distribution depends on com
 \item \textbf{Conditional Random Independent 2}: Similar to above but with additional randomization in the dependency structure, potentially creating unused code fragments.
 \end{itemize}
 
-\begin{figure}[!t]
-\centering
-\begin{subfigure}{0.32\textwidth}
-\includegraphics[width=\textwidth]{../images/scaling/build_conditional_independent_contdice.png}
-\caption{Conditional Independent}
-\end{subfigure}
-\hfill
-\begin{subfigure}{0.32\textwidth}
-\includegraphics[width=\textwidth]{../images/scaling/build_conditional_random_independent_contdice_1.png}
-\caption{Conditional Random 1}
-\end{subfigure}
-\hfill
-\begin{subfigure}{0.32\textwidth}
-\includegraphics[width=\textwidth]{../images/scaling/build_conditional_random_independent_contdice_2.png}
-\caption{Conditional Random 2}
-\end{subfigure}
-\caption{Scaling results for conditional independence benchmarks. SPPL (red) shows exponential growth and times out early, while Slice (blue) and Slice+Dice (light blue) maintain near-linear scaling.}
-\label{fig:cond-benchmarks}
-\end{figure}
+\input{figures/scaling-conditional}
 
 \paragraph{Alternating Guard Benchmarks.}
 These benchmarks test programs with alternating comparison patterns:
@@ -90,30 +72,7 @@ These benchmarks test programs with alternating comparison patterns:
 \item \textbf{Random Alternating Guard}: Combines alternating patterns with random guard selection.
 \end{itemize}
 
-\begin{figure}[!t]
-\centering
-\begin{subfigure}{0.48\textwidth}
-\includegraphics[width=\textwidth]{../images/scaling/build_alternating_guard_contdice_1.png}
-\caption{Alternating Guard 1}
-\end{subfigure}
-\hfill
-\begin{subfigure}{0.48\textwidth}
-\includegraphics[width=\textwidth]{../images/scaling/build_alternating_guard_contdice_2.png}
-\caption{Alternating Guard 2}
-\end{subfigure}
-\vspace{0.5em}
-\begin{subfigure}{0.48\textwidth}
-\includegraphics[width=\textwidth]{../images/scaling/build_alternating_guard_contdice_3.png}
-\caption{Alternating Guard 3}
-\end{subfigure}
-\hfill
-\begin{subfigure}{0.48\textwidth}
-\includegraphics[width=\textwidth]{../images/scaling/build_random_alternating_guard_contdice.png}
-\caption{Random Alternating Guard}
-\end{subfigure}
-\caption{Scaling results for alternating guard benchmarks. SPPL (red) times out early (between program sizes 20-30), while Slice continues to scale to large programs.}
-\label{fig:alt-benchmarks}
-\end{figure}
+\input{figures/scaling-alternating}
 
 \paragraph{Results.} The scaling experiments demonstrate that Slice maintains near-linear scaling behavior while SPPL exhibits exponential growth and times out on larger programs. Across all seven benchmarks, Slice+Dice execution time remains under 0.5 seconds even for programs with 90+ variables and comparisons, while SPPL times out (at 300s) for programs as small as 20-30 variables. The Slice compilation phase alone (dark blue line) shows essentially constant time, indicating that the type-directed discretization algorithm scales extremely well.
 

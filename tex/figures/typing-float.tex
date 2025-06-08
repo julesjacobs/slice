@@ -1,0 +1,18 @@
+\begin{figure}[h]
+\begin{mathpar}
+    \inferrule[\textsc{Float}]
+    {\ c \in V }
+    {\Gamma \vdash c : \float[B; V]}
+
+    \inferrule[\textsc{ContDist}]
+    {\ }
+    {\Gamma \vdash cdistr : \float[B; \top]}
+
+    \inferrule[\textsc{Less}]
+    {\Gamma \vdash e : \float[B; V]}
+    {\Gamma \vdash e < c : \bool}
+    \quad \text{where } B \text{ is constrained to include } {<c}
+\end{mathpar}
+\caption{Typing rules for float types and continuous distributions}
+\label{fig:typing-float}
+\end{figure}
