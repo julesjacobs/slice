@@ -49,6 +49,8 @@ A type $\float$[B; V] is discretized as follows:
 
 To understand the typing rules, keep in mind that the $B$ set needs to be sufficiently refined (i.e., contain enough comparison points) so that the discretized program has enough information to determine how the original continuous program behaved.
 
+\input{figures/typing-float}
+
 \paragraph{Continuous distributions.} Let us first consider the typing rule for single-argument continuous distributions.
 The rule states that the argument $\Gamma \vdash e : \float[B; V]$ with the constraint that $B$ distinguishes $V$. The distinguishes predicate is defined as follows:
 \begin{definition}
@@ -88,12 +90,6 @@ It can also be the case that we have a comparison $c < e$ where the continuously
 
 For less-than-or-equal comparisons, the typing rule is similar, but with the conditions reversed.
 
-
-
-
-
-
-\input{figures/typing-float}
-
 \input{figures/typing-general}
 
+The typing rules for the other constructs are standard, and are shown in Figure~\ref{fig:typing-general}.
