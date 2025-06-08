@@ -26,3 +26,12 @@ cdice/.DS_Store
 scale.cdice
 julia-1.11.5/
 Alea.jl/
+tex/slice.aux
+tex/slice.bbl
+tex/slice.blg
+tex/slice.fdb_latexmk
+tex/slice.fls
+tex/slice.log
+tex/slice.out
+tex/slice.pdf
+tex/slice.synctex.gz

@@ -1,42 +1,18 @@
-\begin{figure}[h]
+\begin{figure}[!t]
 \begin{align*}
-e ::= &\; x                               & \text{variable} \\
-    | &\; c                               & \text{float constant} \\
-    | &\; \text{true} \mid \text{false}   & \text{boolean constant} \\
-    | &\; \finconst{k}{n}                 & \text{finite type constant (k of type fin(n))} \\
-    | &\; ()                              & \text{unit} \\
+e ::= &\; x \mid c \mid \text{true} \mid \text{false} \mid \finconst{k}{n} \mid () & \text{constants} \\
     | &\; \letkw \; x = e_1\; \inkw \; e_2  & \text{let binding} \\
-    | &\; \text{cdistr}                   & \text{continuous distribution} \\
+    | &\; \uniform(e_1, e_2) \mid \gaussian(e_1, e_2) \mid \exponential(e) \mid \ldots & \text{continuous distributions} \\
     | &\; \discrete(p_0, \ldots, p_{n})      & \text{discrete distribution} \\
-    | &\; e_1 < e_2                       & \text{less-than (floats)} \\
-    | &\; e_1 \leq e_2                    & \text{less-or-equal (integers)} \\
-    | &\; e_1 \finlt{n} e_2              & \text{less-than (finite type n)} \\
-    | &\; e_1 \finleq{n} e_2             & \text{less-or-equal (finite type n)} \\
-    | &\; e_1 \logand e_2                 & \text{logical and} \\
-    | &\; e_1 \logor e_2                  & \text{logical or} \\
-    | &\; \text{not}\; e                  & \text{logical not} \\
+    | &\; e_1 < e_2 \mid e_1 \leq e_2 \mid e_1 \finlt{n} e_2 \mid e_1 \finleq{n} e_2 & \text{comparisons} \\
+    | &\; e_1 \logand e_2 \mid e_1 \logor e_2 \mid \text{not}\; e & \text{boolean operations} \\
     | &\; \ifkw \; e_1\; \thenkw \; e_2\; \elsekw \; e_3 & \text{conditional} \\
-    | &\; (e_1, e_2)                      & \text{pair construction} \\
-    | &\; \fstkw \; e                     & \text{first projection} \\
-    | &\; \sndkw \; e                     & \text{second projection} \\
-    | &\; \funkw \; x \; \rightarrow \; e & \text{function abstraction} \\
-    | &\; e_1 \; e_2                      & \text{function application} \\
-    | &\; \text{fix}\; f\; x := e         & \text{fixed-point recursion} \\
-    | &\; \text{observe}\; e              & \text{observation/conditioning} \\
-    | &\; e_1; e_2                        & \text{sequencing} \\
-    | &\; \text{nil}                      & \text{empty list} \\
-    | &\; e_1 :: e_2                      & \text{list cons} \\
-    | &\; \text{match}\; e\; \text{with}\; \text{nil} \rightarrow e_1 \mid h :: t \rightarrow e_2\; \text{end} & \text{list match} \\
-    | &\; \text{ref}\; e                  & \text{reference creation} \\
-    | &\; !e                              & \text{dereference} \\
-    | &\; e_1 := e_2                      & \text{assignment} \\
-    \\[1ex] % Add some space before cdistr definition
-\text{cdistr} ::= &\; \uniform(e_1, e_2)      & \text{uniform distribution} \\
-           | &\; \gaussian(e_1, e_2)   & \text{gaussian distribution} \\
-           | &\; \exponential(e)       & \text{exponential distribution} \\
-           | &\; \betafn(e_1, e_2)     & \text{beta distribution} \\
-           | &\; \ldots                & \text{(and 13+ more distributions)}
+    | &\; (e_1, e_2) \mid \fstkw \; e \mid \sndkw \; e & \text{pairs} \\
+    | &\; \funkw \; x \; \rightarrow \; e \mid e_1 \; e_2 \mid \text{fix}\; f\; x := e & \text{functions} \\
+    | &\; \text{observe}\; e \mid e_1; e_2 & \text{effects} \\
+    | &\; \text{nil} \mid e_1 :: e_2 \mid \text{match}\; e\; \text{with}\; \ldots & \text{lists} \\
+    | &\; \text{ref}\; e \mid\ !e \mid e_1 := e_2 & \text{references}
 \end{align*}
-\caption{Syntax of the \Slice{} language.}
+\caption{Syntax of the \Slice{} language, supporting 17+ continuous distributions.}
 \label{fig:grammar}
 \end{figure}

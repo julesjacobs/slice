@@ -84,6 +84,7 @@ COPY --chown=opam:opam . /home/opam/artifact/
 
 # Set up environment variables
 ENV PATH="/home/opam/artifact/slice/_build/default/bin:/home/opam/artifact/dice/_build/default/bin:${PATH}"
+ENV PYTHONUNBUFFERED=1
 
 # Make slice.py executable
 RUN chmod +x /home/opam/artifact/slice.py
