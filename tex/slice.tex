@@ -30,7 +30,7 @@
 \newcommand{\ftt}{\codetype{float[T; T]}}               % Both bags are T
 \newcommand{\ftv}[1]{\codetype{float[T; \{#1\}]}}       % Bounds are T, values specified
 % Macros for finite type operations and boolean operators
-\newcommand{\finconst}[2]{#1\#_{#2}}                    % k#n with subscript
+\newcommand{\finconst}[2]{#1_{\##2}}                    % k_{#n}
 \newcommand{\finlt}[1]{<_{\#{#1}}}                      % <#n with subscript
 \newcommand{\finleq}[1]{\leq_{\#{#1}}}                  % <=#n with subscript
 \newcommand{\logand}{\mathrel{\&\&}}                    % logical and
