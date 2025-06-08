@@ -4,7 +4,7 @@ Type inference for \Slice{} assigns types to every subexpression while simultane
 
 \subsection{Overview}
 
-The inference algorithm performs type checking and constraint generation in a single pass over the AST. For float types $\float\langle B; V \rangle$, it maintains two separate refinement components:
+The inference algorithm performs type checking and constraint generation in a single pass over the AST. For float types $\float[B; V]$, it maintains two separate refinement components:
 \begin{itemize}
     \item The \emph{bound bag} $B$ collects comparison bounds (e.g., $<0.5$, $\leq 1.2$) from sites where the expression is compared
     \item The \emph{value bag} $V$ tracks concrete float constants that flow to the expression
@@ -24,7 +24,7 @@ The algorithm traverses the AST, generating types and constraints according to t
 
 \paragraph{Basic Expressions}
 \begin{itemize}
-    \item Float constants $c$ get type $\float\langle \emptyset; \{c\} \rangle$ (empty bounds, singleton value set)
+    \item Float constants $c$ get type $\float[\emptyset; \{c\}]$ (empty bounds, singleton value set)
     \item Boolean constants get type \bool{}, finite constants $\finconst{k}{n}$ get type $\text{fin}(n)$
     \item Variables lookup their type in the environment
 \end{itemize}
@@ -50,7 +50,7 @@ The algorithm traverses the AST, generating types and constraints according to t
 
 \paragraph{Distributions}
 \begin{itemize}
-    \item Continuous distributions (uniform, gaussian, etc.) get type $\float\langle \emptyset; \top \rangle$
+    \item Continuous distributions (uniform, gaussian, etc.) get type $\float[\emptyset; \top]$
     \item Parameters' bound bags are linked to the result's bound bag for propagation
     \item $\discrete(p_0, \ldots, p_n)$ has type \intty{}
     \item $\text{distrcase}$ branches must have unifiable types
@@ -87,7 +87,7 @@ Type unification in \Slice{} is implemented via bidirectional subtyping. The key
 
 \begin{itemize}
     \item \textbf{Base types}: Must match exactly (\bool{}, \intty{}, $\text{fin}(n)$, $\text{unit}$)
-    \item \textbf{Float types}: $\float\langle B_1; V_1 \rangle \leq \float\langle B_2; V_2 \rangle$ requires:
+    \item \textbf{Float types}: $\float[B_1; V_1] \leq \float[B_2; V_2]$ requires:
         \begin{itemize}
             \item $B_1 = B_2$ (bound bags must be equal for safe discretization)
             \item $V_1 \leq V_2$ (values flow covariantly)
@@ -127,8 +127,8 @@ else 3
 
 The inference proceeds as follows:
 \begin{enumerate}
-    \item \texttt{uniform(0.0, 1.0)} gets type $\float\langle B_x; \top \rangle$ with fresh bag $B_x = \emptyset$
-    \item \texttt{0.7} gets type $\float\langle \emptyset; \{0.7\} \rangle$
+    \item \texttt{uniform(0.0, 1.0)} gets type $\float[B_x; \top]$ with fresh bag $B_x = \emptyset$
+    \item \texttt{0.7} gets type $\float[\emptyset; \{0.7\}]$
     \item For \texttt{x < 0.5}:
         \begin{itemize}
             \item Both operands unify to share bound bag $B_x$
@@ -140,7 +140,7 @@ The inference proceeds as follows:
             \item Since \texttt{y} has value $\{0.7\}$, listener adds $<0.7$ to $B_x$
             \item Now $B_x = \{<0.5, <0.7\}$
         \end{itemize}
-    \item Final type for \texttt{x}: $\float\langle \{<0.5, <0.7\}; \top \rangle$
+    \item Final type for \texttt{x}: $\float[\{<0.5, <0.7\}; \top]$
 \end{enumerate}
 
 This example shows how comparison points accumulate in the bound bag through the listener mechanism, even when comparisons appear in different branches of the program.
