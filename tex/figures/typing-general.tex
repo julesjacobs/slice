@@ -1,0 +1,131 @@
+\begin{figure}[h]
+\begin{mathpar}
+    \inferrule[\textsc{Var}]
+    {\ }
+    {\Gamma, x: \tau \vdash x : \tau}
+
+    \inferrule[\textsc{Let}]
+    {\Gamma \vdash e_1 : \tau_1 \\
+     \Gamma, x: \tau_1 \vdash e_2 : \tau_2}
+    {\Gamma \vdash \letkw \; x = e_1 \; \inkw \; e_2 : \tau_2}
+
+    \inferrule[\textsc{If}]
+    {\Gamma \vdash e_1 : \bool \\
+     \Gamma \vdash e_2 : \tau \\
+     \Gamma \vdash e_3 : \tau}
+    {\Gamma \vdash \ifkw \; e_1 \; \thenkw \; e_2 \; \elsekw \; e_3 : \tau}
+
+    \inferrule[\textsc{Discrete}]
+    {\ }
+    {\Gamma \vdash \discrete(p_0, \ldots, p_n) : \fin{n}}
+
+    \inferrule[\textsc{LessEq}]
+    {\Gamma \vdash e : \intty}
+    {\Gamma \vdash e \leq i : \bool}
+
+    \inferrule[\textsc{Pair}]
+    {\Gamma \vdash e_1 : \tau_1 \\
+     \Gamma \vdash e_2 : \tau_2}
+    {\Gamma \vdash (e_1, e_2) : \tau_1 * \tau_2}
+
+    \inferrule[\textsc{Fst}]
+    {\Gamma \vdash e : \tau_1 * \tau_2}
+    {\Gamma \vdash \fstkw \; e : \tau_1}
+
+    \inferrule[\textsc{Snd}]
+    {\Gamma \vdash e : \tau_1 * \tau_2}
+    {\Gamma \vdash \sndkw \; e : \tau_2}
+
+    \inferrule[\textsc{Fun}]
+    {\Gamma, x: \tau_1 \vdash e : \tau_2}
+    {\Gamma \vdash \funkw \; x \; \rightarrow \; e : \tau_1 \rightarrow \tau_2}
+
+    \inferrule[\textsc{App}]
+    {\Gamma \vdash e_1 : \tau_1 \rightarrow \tau_2 \\
+     \Gamma \vdash e_2 : \tau_1}
+    {\Gamma \vdash e_1 \; e_2 : \tau_2}
+
+    \inferrule[\textsc{True}]
+    {\ }
+    {\Gamma \vdash \text{true} : \bool}
+
+    \inferrule[\textsc{False}]
+    {\ }
+    {\Gamma \vdash \text{false} : \bool}
+
+    \inferrule[\textsc{And}]
+    {\Gamma \vdash e_1 : \bool \\
+     \Gamma \vdash e_2 : \bool}
+    {\Gamma \vdash e_1 \logand e_2 : \bool}
+
+    \inferrule[\textsc{Or}]
+    {\Gamma \vdash e_1 : \bool \\
+     \Gamma \vdash e_2 : \bool}
+    {\Gamma \vdash e_1 \logor e_2 : \bool}
+
+    \inferrule[\textsc{Not}]
+    {\Gamma \vdash e : \bool}
+    {\Gamma \vdash \text{not}\; e : \bool}
+
+    \inferrule[\textsc{Unit}]
+    {\ }
+    {\Gamma \vdash () : \text{unit}}
+
+    \inferrule[\textsc{FinConst}]
+    {0 \leq k < n}
+    {\Gamma \vdash \finconst{k}{n} : \fin{n}}
+
+    \inferrule[\textsc{FinLess}]
+    {\Gamma \vdash e_1 : \fin{n} \\
+     \Gamma \vdash e_2 : \fin{n}}
+    {\Gamma \vdash e_1 \finlt{n} e_2 : \bool}
+
+    \inferrule[\textsc{FinLessEq}]
+    {\Gamma \vdash e_1 : \fin{n} \\
+     \Gamma \vdash e_2 : \fin{n}}
+    {\Gamma \vdash e_1 \finleq{n} e_2 : \bool}
+
+    \inferrule[\textsc{Observe}]
+    {\Gamma \vdash e : \bool}
+    {\Gamma \vdash \text{observe}\; e : \text{unit}}
+
+    \inferrule[\textsc{Seq}]
+    {\Gamma \vdash e_1 : \tau_1 \\
+     \Gamma \vdash e_2 : \tau_2}
+    {\Gamma \vdash e_1; e_2 : \tau_2}
+
+    \inferrule[\textsc{Fix}]
+    {\Gamma, f: \tau_1 \rightarrow \tau_2, x: \tau_1 \vdash e : \tau_2}
+    {\Gamma \vdash \text{fix}\; f\; x := e : \tau_1 \rightarrow \tau_2}
+
+    \inferrule[\textsc{Nil}]
+    {\ }
+    {\Gamma \vdash \text{nil} : \text{list}(\tau)}
+
+    \inferrule[\textsc{Cons}]
+    {\Gamma \vdash e_1 : \tau \\
+     \Gamma \vdash e_2 : \text{list}(\tau)}
+    {\Gamma \vdash e_1 :: e_2 : \text{list}(\tau)}
+
+    \inferrule[\textsc{Match}]
+    {\Gamma \vdash e : \text{list}(\tau_1) \\
+     \Gamma \vdash e_1 : \tau_2 \\
+     \Gamma, h: \tau_1, t: \text{list}(\tau_1) \vdash e_2 : \tau_2}
+    {\Gamma \vdash \text{match}\; e\; \text{with}\; \text{nil} \rightarrow e_1 \mid h :: t \rightarrow e_2\; \text{end} : \tau_2}
+
+    \inferrule[\textsc{Ref}]
+    {\Gamma \vdash e : \tau}
+    {\Gamma \vdash \text{ref}\; e : \text{ref}(\tau)}
+
+    \inferrule[\textsc{Deref}]
+    {\Gamma \vdash e : \text{ref}(\tau)}
+    {\Gamma \vdash !e : \tau}
+
+    \inferrule[\textsc{Assign}]
+    {\Gamma \vdash e_1 : \text{ref}(\tau) \\
+     \Gamma \vdash e_2 : \tau}
+    {\Gamma \vdash e_1 := e_2 : \text{unit}}
+\end{mathpar}
+\caption{Typing rules for general language constructs}
+\label{fig:typing-general}
+\end{figure}
