@@ -1,78 +1,97 @@
 \section{The Slice Language and Type System}\label{sec:language}
 
-The syntax of the \Slice{} language is shown in Figure~\ref{fig:grammar}.
-
 \input{figures/grammar}
 
-\noindent where $x$ ranges over variable names, $c$ ranges over floating point constants, $i$ ranges over integer constants, $k$ and $n$ are non-negative integers with $0 \leq k < n$, $h$ and $t$ are variables in list patterns, and $p_0, \ldots, p_n$ are probabilities that should sum to 1.
-
-The uniform distribution $\uniform(e_1, e_2)$ represents a continuous random value uniformly distributed in the range $[e_1, e_2)$. Other continuous distributions are defined according to their standard statistical definitions. The implementation supports over 17 distributions including Gaussian, exponential, beta, gamma, Laplace, Cauchy, and others. The discrete distribution $\discrete(p_0, \ldots, p_{n})$ represents a random value that returns integer $i \in \{0, \ldots, n\}$ with probability $p_i$.
-
-Beyond basic functional constructs (pairs, projections, lambda abstractions, and function application), the language includes:
+The syntax of the \Slice{} language is shown in Figure~\ref{fig:grammar}.
+Beyond basic functional constructs, the language includes the following constructs:
 \begin{itemize}
 \item \textbf{Finite types}: Values of the form $\finconst{k}{n}$ represent finite type constants, where $k$ is a value in the finite type with $n$ elements.
-\item \textbf{Boolean operations}: Logical operators $\logand$, $\logor$, and $\text{not}$ for boolean expressions.
-\item \textbf{Fixed-point recursion}: The $\text{fix}$ construct enables recursive function definitions.
-\item \textbf{Observations}: The $\text{observe}$ construct conditions the program on a boolean expression being true.
-\item \textbf{Lists}: Constructed with $\text{nil}$ and $::$, and deconstructed with pattern matching.
-\item \textbf{Mutable references}: Created with $\text{ref}$, dereferenced with $!$, and updated with $:=$.
-\item \textbf{Sequencing}: The semicolon operator sequences expressions with side effects.
+\item \textbf{Discrete distributions}: The $\discrete(p_0, \ldots, p_{n-1})$ construct returns a random value in the finite type with $n$ elements.
+\item \textbf{Continuous distributions}: The implementation supports distributions including uniform, Gaussian, exponential, beta, gamma, Laplace, Cauchy, and others.
+\item \textbf{Observations}: The $\text{observe}(e)$ construct conditions the program on a boolean expression $e$ being true.
+\item \textbf{Other features}: Features such as lists, recursion, and mutable references are supported.
 \end{itemize}
 
-When we discretize continuous programs, we convert expressions involving continuous distributions into expressions with discrete distributions, and convert less-than comparisons into less-than-or-equal comparisons on the corresponding discrete intervals.
+When we discretize continuous programs, we convert expressions involving continuous distributions into expressions with discrete distributions over the corresponding finite type, and convert less-than comparisons into less-than-or-equal comparisons on the corresponding discrete values.
 
 \subsection{Type System}\label{sec:type-system}
 
 We introduce a type system that analyzes both the comparison points and concrete values of floating point expressions. We have the following types:
 \begin{itemize}
-    \item \bool: the expression is a boolean value (true or false)
-    \item \intty: the expression is an integer value  
-    \item $\fin{n}$: the expression is a finite type value in $\{0, 1, \ldots, n-1\}$
-    \item \float$[B; V]$: the expression is a floating point value with comparison bounds $B$ and value set $V$
-    \item $\tau_1 * \tau_2$: the expression is a pair with elements of type $\tau_1$ and $\tau_2$
-    \item $\tau_1 \rightarrow \tau_2$: the expression is a function that takes an argument of type $\tau_1$ and returns a result of type $\tau_2$
-    \item $\text{unit}$: the unit type with single value $()$
-    \item $\text{list}(\tau)$: list of elements of type $\tau$
-    \item $\text{ref}(\tau)$: mutable reference containing a value of type $\tau$
+    \item Standard types: $\textbf{int}$, $\textbf{bool}$, $\tau_1 * \tau_2$, $\tau_1 \rightarrow \tau_2$, $\textbf{unit}$, $\textbf{list}(\tau)$, $\textbf{ref}(\tau)$, etc.
+    \item $\fin{n}$: finite type with values $\{\finconst{0}{n}, \finconst{1}{n}, \ldots, \finconst{(n-1)}{n}\}$
+    \item \float$[B; V]$: floating point type with comparison bounds $B$ and value set $V$ that are elements of the lattice structure described below.
 \end{itemize}
 
-The float type \float$[B; V]$ uses a two-bag approach:
+\paragraph{Lattice Structure.} 
+We use a join-semilattice with the following structure, given a domain $D$:
 \begin{itemize}
-    \item $B$ is the \emph{bound bag}, containing comparison bounds of the form $< c$ or $\leq c$
-    \item $V$ is the \emph{value bag}, containing concrete float values that the expression can evaluate to
-\end{itemize}
-
-Both $B$ and $V$ can be either a finite set or $\top$ (representing an unknown/unbounded set). This forms a product lattice structure that we describe in detail below.
-
-\subsubsection{Lattice Structure}
-
-Each bag forms a join-semilattice with the following structure:
-\begin{itemize}
-    \item Elements: $\{\text{Finite}(S) \mid S \text{ is a finite set}\} \cup \{\top\}$
-    \item Ordering: $\text{Finite}(S_1) \sqsubseteq \text{Finite}(S_2)$ if $S_1 \subseteq S_2$, and $\text{Finite}(S) \sqsubseteq \top$ for any $S$
+    \item Elements: $\{\text{Finite}(S) \mid S \text{ is a finite set over } D\} \cup \{\top\}$
+    \item Ordering: $\text{Finite}(S_1) \sqsubseteq \text{Finite}(S_2)$ if $S_1 \subseteq S_2$, and $x \sqsubseteq \top$ for any $x$
     \item Join: $\text{Finite}(S_1) \sqcup \text{Finite}(S_2) = \text{Finite}(S_1 \cup S_2)$, and $x \sqcup \top = \top$ for any $x$
     \item Bottom: $\text{Finite}(\emptyset)$
     \item Top: $\top$
 \end{itemize}
 
-The float type forms a product lattice:
-\begin{align}
-\text{FloatLattice} &= \text{BoundLattice} \times \text{ValueLattice} \\
-(B_1, V_1) \sqsubseteq (B_2, V_2) &\iff B_1 \sqsubseteq B_2 \land V_1 \sqsubseteq V_2 \\
-(B_1, V_1) \sqcup (B_2, V_2) &= (B_1 \sqcup B_2, V_1 \sqcup V_2)
-\end{align}
-
-This product lattice is also a join-semilattice with:
-\begin{itemize}
-    \item Bottom element: $(\text{Finite}(\emptyset), \text{Finite}(\emptyset))$
-    \item Top element: $(\top, \top)$
-\end{itemize}
-
+In $\float$[B; V], $V$ is a lattice element with domain $\R$, and $B$ is a lattice element with domain $<\!\!x$ and $\leq\!\!x$ for all $x \in \R$.
 The lattice structure enables type inference to systematically collect and propagate information about both how values are used (bounds) and what values they can take (values).
 
 \input{figures/lattice}
 
-The typing rules are split into two parts: rules specific to float types and continuous distributions (Figure~\ref{fig:typing-float}), and rules for all other language constructs (Figure~\ref{fig:typing-general}).
+The typing rules are split into two parts: rules specific to float types and continuous distributions (Figure~\ref{fig:typing-float}), and standard rules for all other language constructs (Figure~\ref{fig:typing-general}).
+
+To understand the float typing rules, it is helpful to understand how discretization works.
+A type $\float$[B; V] is discretized as follows:
+\begin{itemize}
+    \item If $B$ is a finite set of bounds, then the type is discretized to a type $\fin{(n+1)}$ where $n$ is the number of bounds. For instance, if $B = \{<\!\!0.5, \leq\!\!0.8\}$, then the type is discretized to $\fin{3}$, where $\finconst{0}{3}$ represents the range $(-\infty, 0.5)$, $\finconst{1}{3}$ represents the range $[0.5, 0.8]$, and $\finconst{2}{3}$ represents the range $(0.8, \infty)$.
+    \item If $B = \top$, then no discretization is performed, and the type remains $\float$.
+\end{itemize}
+
+To understand the typing rules, keep in mind that the $B$ set needs to be sufficiently refined (i.e., contain enough comparison points) so that the discretized program has enough information to determine how the original continuous program behaved.
+
+\paragraph{Continuous distributions.} Let us first consider the typing rule for single-argument continuous distributions.
+The rule states that the argument $\Gamma \vdash e : \float[B; V]$ with the constraint that $B$ distinguishes $V$. The distinguishes predicate is defined as follows:
+\begin{definition}
+    \label{def:distinguishes}
+    $B$ distinguishes $V$ if every interval in $B$ contains at most one value in $V$, or $B = \top$.
+\end{definition}
+Intuitively $V$ contains the possible values that the float expression can take on, and $B$ distinguishes $V$ if the continuous quantity can be fully recovered by the discretized program.
+For example, if $B = \{<\!\!0.5, \leq\!\!0.8\}$ and $V = \{0.2, 0.7\}$, then $B$ distinguishes $V$. The intervals induced by $B$ are $(-\infty, 0.5)$, $[0.5, 0.8]$, and $(0.8, \infty)$. The first interval contains $0.2$, the second contains $0.7$, and the third contains no values from $V$, so the condition holds. In contrast, if $V = \{0.2, 0.3\}$, $B$ would not distinguish $V$ because both values lie in the first interval $(-\infty, 0.5)$.
+
+Note that if $e$ is a constant, then $V = \{e\}$ and $B = \emptyset$ distinguishes $V$ (because $V$ is a singleton set, so there are no two elements that could lie in the same interval).
+If $V = \top$ then $V$ essentially contains all possible real values, so we must also have $B = \top$ in that case.
+
+The rule for two-argument continuous distributions is similar, but the argument $\Gamma \vdash e_1 : \float[B_1; V_1]$ and $\Gamma \vdash e_2 : \float[B_2; V_2]$ with the constraint that $B_1$ and $B_2$ distinguish $V_1$ and $V_2$ respectively.
+
+
+
+\paragraph{Comparisons.} 
+To understand the typing rules for less-than and less-than-or-equal comparisons, let us first consider a comparison $e < c$ where $c$ is a constant and $e$ is a continuously ranging quantity. Intuitively, if $e : \float[B_1; V_1]$ is discretized, then it must still contain enough information to determine whether $e < c$ is true or false. Therefore, $B_1$ must contain the comparison $<\!\!c$.
+
+Similarly, if $c$ is not a literal constant, but has type $c : \float[B_2; V_2]$, then $c$ can take on values in $V_2$. Therefore, if $V = \{v_1, v_2, \dots, v_n\}$ then $B_1$ must contain the comparisons $<\!\!v_1, <\!\!v_2, \dots, <\!\!v_n$. This motivates the following definition:
+
+\begin{definition}
+    \label{def:answers-less}
+    $B$ answers $<\!\!V$ if $B$ contains comparisons $<\!\!v$ for every $v \in V$, or $B = \top$.
+\end{definition}
+
+In the case that $B = \top$, the quantity is not discretized, so the comparison remains continuous.
+
+Lastly, in order to be able to perform the comparison on the discrete values, we insist that $B_1 = B_2$, ensuring that $e$ and $c$ are discretized to the same representation, and $<$ can be discretized to $\finleq{k}$.
+
+It can also be the case that we have a comparison $c < e$ where the continuously ranging quantity $e : \float[B_2; V_2]$ is on the right hand side. In this case, $B_2$ must answer $c\!\!<$, that is, it must contain a comparison $\leq\!\!c$. To make this explicit, consider $2.3 < e$. We can answer this precisely when $B_2$ contains an intervals $(-\infty, 2.3]$ and $(2.3, +\infty)$: the comparison $2.3 < e$ is true if $e$ is in the second interval, and false if $e$ is in the first interval. Of course, it is also ok if $B_2$ is even more precise, as long as it contains the comparison $\leq\!\!2.3$.
+
+\begin{definition}
+    \label{def:answers-less-equal}
+    $B$ answers $\leq\!\!V$ if $B$ contains comparisons $\leq\!\!v$ for every $v \in V$, or $B = \top$.
+\end{definition}
+
+For less-than-or-equal comparisons, the typing rule is similar, but with the conditions reversed.
+
+
+
+
+
 
 \input{figures/typing-float}
 
