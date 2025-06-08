@@ -1,4 +1,4 @@
-\begin{figure}[h]
+\begin{figure}
 \centering
 \begin{tikzpicture}[
     node distance=1.2cm and 2cm,
@@ -14,7 +14,7 @@
     % Slice compiler pipeline (horizontal inside the box)
     \node[data] (ast) {AST\\{\tiny\texttt{expr}}};
     \node[data, right=of ast] (tast) {Typed AST\\{\tiny\texttt{texpr}}};
-    \node[data, right=of tast] (dast) {Discretized\\{\tiny AST}};
+    \node[data, right=of tast] (dast) {Discretized\\{\tiny \texttt{expr}}};
     
     % Input above AST
     \node[data, above=1.5cm of ast] (input) {\texttt{.slice} file\\{\footnotesize continuous program}};
@@ -57,6 +57,6 @@
         node[operationleft, font=\footnotesize, align=center, yshift=-5mm, xshift=8mm] {Interpreter\\[-1mm]{\tiny \textcolor{gray}{interp.ml}}} (output.north);
     \draw[interp] (dast.south) .. controls +(0,-0.5) and +(0,1) .. (output.north);
 \end{tikzpicture}
-\caption{Architecture of the \Slice{} system. The \Slice{} compiler transforms continuous probabilistic programs into discrete ones through type-directed discretization. The resulting discrete program is then processed by the Dice inference engine to compute exact probability distributions. Dashed blue arrows show the interpreter's direct evaluation paths from AST and discretized AST to probability distributions.}
+\caption{Architecture of the \Slice{} system. The \Slice{} compiler transforms continuous probabilistic programs into discrete ones through type-directed discretization.}
 \label{fig:architecture}
 \end{figure}
