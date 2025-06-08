@@ -1,57 +1,62 @@
 \begin{figure}[h]
 \centering
 \begin{tikzpicture}[
-    node distance=1.5cm,
-    component/.style={rectangle, draw, thick, minimum width=3cm, minimum height=1cm, align=center},
-    data/.style={rectangle, draw, dashed, minimum width=2.5cm, minimum height=0.8cm, align=center},
+    node distance=1.2cm and 2cm,
+    data/.style={rectangle, draw, dashed, minimum width=2.5cm, minimum height=0.9cm, align=center, font=\small},
     arrow/.style={->, thick},
-    bigbox/.style={draw, thick, rounded corners, inner sep=0.3cm}
+    interp/.style={->, thick},
+    operation/.style={font=\footnotesize, midway, above},
+    operationside/.style={font=\footnotesize, midway, right},
+    operationleft/.style={font=\footnotesize, midway, left},
+    bigbox/.style={draw, thick, rounded corners, inner sep=0.3cm},
+    impl/.style={font=\tiny, text=gray}
 ]
-    % Input
-    \node[data] (input) {\texttt{.slice} file\\(continuous program)};
+    % Slice compiler pipeline (horizontal inside the box)
+    \node[data] (ast) {AST\\{\tiny\texttt{expr}}};
+    \node[data, right=of ast] (tast) {Typed AST\\{\tiny\texttt{texpr}}};
+    \node[data, right=of tast] (dast) {Discretized\\{\tiny AST}};
+    
+    % Input above AST
+    \node[data, above=1.5cm of ast] (input) {\texttt{.slice} file\\{\footnotesize continuous program}};
     
     % Slice compiler box
-    \node[bigbox, below=0.5cm of input, minimum width=10cm, minimum height=7cm] (slicebox) {};
-    \node[above] at (slicebox.north) {\textbf{\Slice{} Compiler}};
+    \node[bigbox, fit=(ast)(tast)(dast), inner sep=0.5cm, label=above:{\textbf{\Slice{} Compiler}}] (slicebox) {};
     
-    % Components inside Slice
-    \node[component, below=1cm of input] (parser) {Parser\\(\texttt{parser.mly}, \texttt{lexer.mll})};
-    \node[component, below of=parser] (typeinf) {Type Inference\\(\texttt{inference.ml})};
-    \node[component, below of=typeinf] (disc) {Discretization\\(\texttt{discretization.ml})};
-    \node[component, below of=disc] (todice) {Code Generation\\(\texttt{to\_dice.ml})};
+    % ast.ml in top right corner of compiler box
+    \node[impl] at ($(slicebox.south) + (0.0,0.2)$) {ast.ml, utils.ml, pretty.ml};
     
-    % Intermediate data structures
-    \node[data, right=0.5cm of parser] (ast) {AST\\(\texttt{expr})};
-    \node[data, right=0.5cm of typeinf] (tast) {Typed AST\\(\texttt{texpr})};
-    \node[data, right=0.5cm of disc] (dast) {Discretized\\AST};
+    % Output below dast
+    \node[data, below=1.5cm of dast] (dice) {\texttt{.dice} file\\{\footnotesize discrete program}};
     
-    % Bags module
-    \node[component, left=0.5cm of typeinf, minimum width=2cm] (bags) {Bags\\(\texttt{bags.ml})};
+    % Dice engine result to the left of dice output
+    \node[data, below=1.5cm of tast] (output) {Probability\\Distribution};
     
-    % Output from Slice
-    \node[data, below=1cm of slicebox] (dice) {\texttt{.dice} file\\(discrete program)};
+    % Arrows with operations
+    % Input to compiler
+    \draw[arrow] (input) -- node[operationside, yshift=5mm, xshift=1mm] {Parse} (ast);
+    \node[impl, align=center] at ($(input)!0.5!(ast) + (0.6,0.1)$) {parser.mly\\lexer.mll};
     
-    % Dice engine
-    \node[component, below=0.5cm of dice, minimum width=10cm] (diceengine) {Dice Inference Engine\\BDD compilation + Weighted Model Counting};
+    % Inside compiler
+    \draw[arrow] (ast) -- node[operation] {Type Infer} (tast);
+    \node[impl, align=center] at ($(ast)!0.5!(tast) + (0,-0.3)$) {inference.ml\\bags.ml(i)};
+
+
+    \draw[arrow] (tast) -- node[operation] {Discretize} (dast);
+    \node[impl, align=center] at ($(tast)!0.5!(dast) + (0,-0.3)$) {discretization.ml\\distributions.ml};
     
-    % Final output
-    \node[data, below=0.5cm of diceengine] (output) {Probability\\Distribution};
+    % Compiler to output
+    \draw[arrow] (dast) -- node[operationside, yshift=-1mm] {Convert} (dice);
+    \node[impl, align=center] at ($(dast)!0.5!(dice) + (0.6,-0.4)$) {to\_dice.ml};
     
-    % Arrows
-    \draw[arrow] (input) -- (parser);
-    \draw[arrow] (parser) -- (typeinf);
-    \draw[arrow] (typeinf) -- (disc);
-    \draw[arrow] (disc) -- (todice);
-    \draw[arrow] (todice) -- (dice);
-    \draw[arrow] (dice) -- (diceengine);
-    \draw[arrow] (diceengine) -- (output);
+    % Dice engine - horizontal arrow from dice to output
+    \draw[arrow] (dice) -- node[operation, align=center] {Dice Engine} (output);
+    \node[impl, align=center] at ($(dice)!0.5!(output) + (0,-0.2)$) {BDD + WMC};
     
-    % Side arrows for data structures
-    \draw[arrow, dashed] (parser) -- (ast);
-    \draw[arrow, dashed] (typeinf) -- (tast);
-    \draw[arrow, dashed] (disc) -- (dast);
-    \draw[arrow, dashed] (bags) -- (typeinf);
+    % Interpreter arrows (dashed blue)
+    \draw[interp] (ast.south) .. controls +(0,-0.5) and +(0,1) .. 
+        node[operationleft, font=\footnotesize, align=center, yshift=-5mm, xshift=8mm] {Interpreter\\[-1mm]{\tiny \textcolor{gray}{interp.ml}}} (output.north);
+    \draw[interp] (dast.south) .. controls +(0,-0.5) and +(0,1) .. (output.north);
 \end{tikzpicture}
-\caption{Architecture of the \Slice{} system. The \Slice{} compiler transforms continuous probabilistic programs into discrete ones through type-directed discretization. The resulting discrete program is then processed by the Dice inference engine to compute exact probability distributions.}
+\caption{Architecture of the \Slice{} system. The \Slice{} compiler transforms continuous probabilistic programs into discrete ones through type-directed discretization. The resulting discrete program is then processed by the Dice inference engine to compute exact probability distributions. Dashed blue arrows show the interpreter's direct evaluation paths from AST and discretized AST to probability distributions.}
 \label{fig:architecture}
 \end{figure}
