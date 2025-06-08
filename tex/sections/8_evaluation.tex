@@ -1,12 +1,36 @@
 \section{Evaluation}\label{sec:evaluation}
+This section confirms that the performance of \Slice{} is competitive with existing state-of-the-art exact and approximate inference solvers. In particular, we evaluate \Slice{} against SPPL~\cite{Saad2021SPPL}, an exact inference solver for continuous programs, and HyBit, an approximate inference solver for continuous programs. The evaluation consists of three sets of programs. First is a series of synthetic benchmarks designed to test the asymptotic scaling of our system against SPPL. Second is a set of benchmarks for verifying fairness properties of decision trees, as characterizing the fairness of classification algorithms is an interesting application area of probabilistic programs in machine learning. Lastly, we evaluate \Slice{} on a series of small baseline programs commonly used to test PPLs in the literature. 
 
+\subsection{Experimental Setup}\label{sec:experimenal-setup}
+All experiments were run on a ..., using the original version of Dice (2020) from Holtzen et. al.~\cite{Holtzen2020Dice}. Each experiment was carried out using a consistent-effort approach, with the goal of determining the most effective encoding for the program in each language and making sure that programs were equivalent across all systems. 
 
 \subsection{Synthetic benchmarks}\label{sec:synthetic-benchmarks}
-- Describe the benchmarks, the structure they have
-- Scaling graphs
-- Divide cdice and Dice
+To evaluate the asymptotic performance of \Slice{}, we designed seven synthetic benchmarks that stress-test different aspects of probabilistic programs with continuous distributions. Each benchmark generates programs that grow linearly in size in the number of comparison tests (e.g. number of $<$ operators) to measure how execution time scales. This bears resemblence to how scalability is tested for discrete PPLs in the litearture: by growing the program by adding one additional layer to the chain of \texttt{flips} that depends on the previous. Doing so results in a path enumeration that grows exponentially in the number of layers. We generate programs of varying structure:
 
-* We compare all benchmarks that sppl runs on
+\subsubsection{Conditional Independence.} 
+If a variable \texttt{z} is conditionally independent of \texttt{x} given \texttt{y}, then \texttt{y} acts as a kind of interface between \texttt{x} and \texttt{z} that allows inference to be split into two separate analyses. Bayesian networks use conditional independence to compactly represent complex distributions, and these independence relationships capture essential structure in many real-world applications. We test programs where each variable's distribution depends on comparisons with previous variables, specifically when:
+
+\begin{itemize}
+\item Each variable depends on its immediate predecessor through conditional statements. This creates a chain of dependencies where $x_i$ depends on whether $x_{i-1} < c$ for some constant $c$. See Figure~\ref{fig:cond-benchmarks-a}.
+\item Each variable depends on a randomly chosen previous variable through conditional statements. This creates a more complex dependency graph, a chain of dependencies where $x_i$ depends on whether $x_1, ..., x_{i-1}$ chosen uniformly at random is $< c$ for some constant $c$. See Figures~\ref{fig:cond-benchmarks-b} and~\ref{fig:cond-benchmarks-c}.
+\end{itemize}
+
+\input{figures/scaling-conditional}
+
+\subsubsection{Alternating Guards.}
+We test programs with alternating comparison patterns,
+where the control flow depends on earlier random variables. This pattern is characteristic of hierarchical or history-dependent probabilistic systems. Specifically, we test when:
+
+\begin{itemize}
+\item Variables in conditionals alternate based on a guard span parameter. For example, with span 3, guards cycle through $x_1, x_2, x_3, x_1, x_2, x_3, ...$ See Figure~\ref{fig:alt-benchmarks-a}. This may lead to many unused code fragments, however. This led us to generate programs whose if-else bodies depend on the immediate predecessor variable. See Figures~\ref{fig:alt-benchmarks-b} and~\ref{fig:alt-benchmarks-c}.
+
+\item Variables in conditionals alternate based on a guard span parameter, but we add randomization in the selection of continuous distributions in the if-else bodies. See Figure~\ref{fig:alt-benchmarks-d}.
+\end{itemize}
+
+\input{figures/scaling-alternating}
+
+\paragraph{Results.} The scaling experiments demonstrate that Slice maintains near-linear scaling behavior while SPPL exhibits exponential growth and times out on larger programs. Across all seven benchmarks, Slice+Dice execution time remains under 0.5 seconds even for programs with 90+ variables and comparisons, while SPPL times out (at 300s) for programs as small as 20-30 variables. The Slice compilation phase alone (dark blue line) shows essentially constant time, indicating that the type-directed discretization algorithm scales extremely well.
+
 
 \subsubsection{Decision Tree Benchmarks}
 We evaluate Slice on decision tree models from the FairSquare suite with the following results:
@@ -49,32 +73,6 @@ Clinical Trial & 0.009 & 0.356 & 38.2× \\
 \caption{Execution times for clinical trial benchmark}
 \end{table}
 
-\subsubsection{Scaling Benchmarks}
-
-To evaluate the asymptotic performance of Slice, we designed seven synthetic benchmarks that stress-test different aspects of probabilistic programs with continuous distributions. Each benchmark generates programs of increasing size to measure how execution time scales.
-
-\paragraph{Conditional Independence Benchmarks.} 
-These benchmarks test programs where each variable's distribution depends on comparisons with previous variables:
-\begin{itemize}
-\item \textbf{Conditional Independent}: Each variable depends on its immediate predecessor through conditional statements. This creates a chain of dependencies where $x_i$ depends on whether $x_{i-1} < c$ for some constant $c$.
-\item \textbf{Conditional Random Independent 1}: Each variable depends on a randomly chosen previous variable, creating a more complex dependency graph.
-\item \textbf{Conditional Random Independent 2}: Similar to above but with additional randomization in the dependency structure, potentially creating unused code fragments.
-\end{itemize}
-
-\input{figures/scaling-conditional}
-
-\paragraph{Alternating Guard Benchmarks.}
-These benchmarks test programs with alternating comparison patterns:
-\begin{itemize}
-\item \textbf{Alternating Guard 1}: Variables in conditionals alternate based on a guard span parameter. For example, with span 3, guards cycle through $x_1, x_2, x_3, x_1, x_2, x_3, ...$
-\item \textbf{Alternating Guard 2}: Similar to above but the else branch depends on the immediate predecessor variable.
-\item \textbf{Alternating Guard 3}: Similar structure but the then branch depends on the immediate predecessor.
-\item \textbf{Random Alternating Guard}: Combines alternating patterns with random guard selection.
-\end{itemize}
-
-\input{figures/scaling-alternating}
-
-\paragraph{Results.} The scaling experiments demonstrate that Slice maintains near-linear scaling behavior while SPPL exhibits exponential growth and times out on larger programs. Across all seven benchmarks, Slice+Dice execution time remains under 0.5 seconds even for programs with 90+ variables and comparisons, while SPPL times out (at 300s) for programs as small as 20-30 variables. The Slice compilation phase alone (dark blue line) shows essentially constant time, indicating that the type-directed discretization algorithm scales extremely well.
 
 \subsection{Psi benchmarks}\label{sec:psi-benchmarks}
 - describe benchmarks, cite paper
