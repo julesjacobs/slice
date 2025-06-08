@@ -1,18 +1,27 @@
-\begin{figure}[h]
+\begin{figure}
 \begin{mathpar}
-    \inferrule[\textsc{Float}]
-    {\ c \in V }
+    \inferrule[\textsc{Float-Const}]
+    {\ c \in V \text{ or } V = \top}
     {\Gamma \vdash c : \float[B; V]}
 
-    \inferrule[\textsc{ContDist}]
-    {\ }
-    {\Gamma \vdash cdistr : \float[B; \top]}
+    \inferrule[\textsc{Continuous-1}]
+    {\ \Gamma \vdash e : \float[B_1; V_1] \text{ and } B_1 \textit{ distinguishes } V_1}
+    {\Gamma \vdash \exponential(e) : \float[B; \top]}
+
+    \inferrule[\textsc{Continuous-2}]
+    {\ \Gamma \vdash e_1 : \float[B_1; V_1] \text{ and } B_1 \textit{ distinguishes } V_1 \and 
+       \Gamma \vdash e_2 : \float[B_2; V_2] \text{ and } B_2 \textit{ distinguishes } V_2}
+    {\Gamma \vdash \gaussian(e_1, e_2) : \float[B; \top]}
 
     \inferrule[\textsc{Less}]
-    {\Gamma \vdash e : \float[B; V]}
-    {\Gamma \vdash e < c : \bool}
-    \quad \text{where } B \text{ is constrained to include } {<c}
+    {\Gamma \vdash e_1 : \float[B; V_1] \and \Gamma \vdash e_2 : \float[B; V_2] \and B \textit{ answers} <\!\!V_2 \text{ or } B \textit{ answers} \leq\!\!V_1}
+    {\Gamma \vdash e_1 < e_2 : \bool}
+
+    \inferrule[\textsc{Less-Equal}]
+    {\Gamma \vdash e_1 : \float[B; V_1] \and \Gamma \vdash e_2 : \float[B; V_2] \and B \textit{ answers} \leq\!\!V_2 \text{ or } B \textit{ answers} <\!\!V_1}
+    {\Gamma \vdash e_1 \leq e_2 : \bool}
+
 \end{mathpar}
-\caption{Typing rules for float types and continuous distributions}
+\caption{Typing rules for float types and continuous distributions. The notions \emph{distinguishes} and \emph{answers} are defined in Definitions~\ref{def:distinguishes} and \ref{def:answers-less} and \ref{def:answers-less-equal}.}
 \label{fig:typing-float}
 \end{figure}
