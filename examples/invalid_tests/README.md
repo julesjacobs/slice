@@ -12,19 +12,19 @@ These tests verify that:
 
 ## Test Files
 
-- `exponential_negative_lambda.cdice` - Tests exponential distribution with negative λ parameter
-- `gaussian_negative_sigma.cdice` - Tests Gaussian distribution with negative σ parameter  
-- `uniform_reversed_bounds.cdice` - Tests uniform distribution with low > high bounds
-- `laplace_negative_scale.cdice` - Tests Laplace distribution with negative scale parameter
-- `beta_negative_parameters.cdice` - Tests Beta distribution with negative α parameter
-- `gamma_zero_scale.cdice` - Tests Gamma distribution with zero scale parameter
+- `exponential_negative_lambda.slice` - Tests exponential distribution with negative λ parameter
+- `gaussian_negative_sigma.slice` - Tests Gaussian distribution with negative σ parameter  
+- `uniform_reversed_bounds.slice` - Tests uniform distribution with low > high bounds
+- `laplace_negative_scale.slice` - Tests Laplace distribution with negative scale parameter
+- `beta_negative_parameters.slice` - Tests Beta distribution with negative α parameter
+- `gamma_zero_scale.slice` - Tests Gamma distribution with zero scale parameter
 
 ## How to Run
 
 To test any of these files and see the runtime error insertion:
 
 ```bash
-dune exec bin/main.exe -- --print-all examples/invalid_tests/<test_file>.cdice
+dune exec bin/main.exe -- --print-all examples/invalid_tests/<test_file>.slice
 ```
 
 ## Expected Behavior

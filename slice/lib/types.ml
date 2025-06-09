@@ -1,4 +1,4 @@
-(* Type definitions for ContDice *)
+(* Type definitions for Slice *)
 
 type cmp_op = Lt | Le
 

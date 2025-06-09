@@ -1,6 +1,6 @@
 \section{Implementation}\label{sec:implementation}
 
-We have implemented \Slice{} as an OCaml-based compiler that transforms continuous probabilistic programs into discrete ones, which can then be analyzed using exact inference engines. The implementation consists of two main components: the \Slice{} compiler (\texttt{cdice}) and the Dice inference engine~\cite{Holtzen2020Dice}.
+We have implemented \Slice{} as an OCaml-based compiler that transforms continuous probabilistic programs into discrete ones, which can then be analyzed using exact inference engines. The implementation consists of two main components: the \Slice{} compiler (\texttt{slice}) and the Dice inference engine~\cite{Holtzen2020Dice}.
 
 \subsection{Architecture Overview}
 
@@ -10,7 +10,7 @@ Figure~\ref{fig:architecture} shows the overall architecture of the \Slice{} sys
 
 \subsection{Implementation Details}
 
-\paragraph{Parser and Lexer} The frontend uses OCaml's Menhir parser generator to parse \texttt{.cdice} source files. The parser (\texttt{parser.mly}) defines the concrete syntax and produces an abstract syntax tree (AST) represented by the \texttt{expr} type. The lexer (\texttt{lexer.mll}) handles tokenization, including special tokens for finite type comparisons (e.g., \texttt{<\#n}).
+\paragraph{Parser and Lexer} The frontend uses OCaml's Menhir parser generator to parse \texttt{.slice} source files. The parser (\texttt{parser.mly}) defines the concrete syntax and produces an abstract syntax tree (AST) represented by the \texttt{expr} type. The lexer (\texttt{lexer.mll}) handles tokenization, including special tokens for finite type comparisons (e.g., \texttt{<\#n}).
 
 \paragraph{Type Inference} The type inference module (\texttt{inference.ml}) implements the two-bag type system described in Section~\ref{sec:type-inference}. It uses a constraint-based approach with unification to infer types while collecting comparison bounds. The implementation features:
 \begin{itemize}
@@ -53,7 +53,7 @@ The Dice inference engine~\cite{Holtzen2020Dice} provides exact inference for di
     \item Observations translate to Dice's conditioning primitives
 \end{itemize}
 
-The complete workflow is automated through the \texttt{run\_contdice.sh} script, which pipes the output of \Slice{} directly to Dice for inference.
+The complete workflow is automated through the \texttt{slice.py} script, which pipes the output of \Slice{} directly to Dice for inference.
 
 \subsection{Engineering Considerations}
 

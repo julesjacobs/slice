@@ -10,7 +10,7 @@ import random
 '''
 Each variable in the if-else guard depends on its immediate predecessor.
 '''
-def build_conditional_independent_contdice(comparison_count):
+def build_conditional_independent_slice(comparison_count):
     code = []
     counter = 1
     variables = [f"x{n}" for n in range(1, comparison_count + 1)]
@@ -32,7 +32,7 @@ def build_conditional_independent_contdice(comparison_count):
 
 
 def build_conditional_independent_sppl(comparison_count):
-    # Can alternatively use the --to-sppl flag from cdice to generate these programs
+    # Can alternatively use the --to-sppl flag from slice to generate these programs
     lines = []
     counter = 1
     variables = [f"x{n}" for n in range(1, comparison_count + 1)]
@@ -57,7 +57,7 @@ def build_conditional_independent_sppl(comparison_count):
 Each variable in the if-else guard depends on any previous variable chosen at random.
 May lead to unused fragments.
 '''
-def build_conditional_random_independent_contdice_1(comparison_count):
+def build_conditional_random_independent_slice_1(comparison_count):
     code = []
     counter = 1
     variables = [f"x{n}" for n in range(1, comparison_count + 1)]
@@ -81,16 +81,16 @@ def build_conditional_random_independent_contdice_1(comparison_count):
 
 '''
 Each variable in the if-else guard depends on any previous variable chosen at random.
-Uses more randomization than build_conditional_random_independent_contdice_1.
+Uses more randomization than build_conditional_random_independent_slice_1.
 May lead to unused fragments.
 '''
-def build_conditional_random_independent_contdice_2(depth):
+def build_conditional_random_independent_slice_2(depth):
     counter = [0]
     def gen_var():
         counter[0] += 1
         return f"x{counter[0]}"
     
-    class CDiceGenerator:
+    class SliceGenerator:
         def let(self, a, fn):
             var_name = gen_var()
             body = fn(var_name)
@@ -108,7 +108,7 @@ def build_conditional_random_independent_contdice_2(depth):
         def const(self, value):
             return f"{value}"
     
-    g = CDiceGenerator()
+    g = SliceGenerator()
     last_comparison_var = [None]  # To keep track of the last variable used in comparison
     guard_info = {i: 0 for i in range(1, depth + 1)} # Eventually to map to the correct last variable used in SPPL
     valid_flag = [False]
@@ -177,7 +177,7 @@ Variables in the if-else guard alternate depending on guard_span, e.g. guards al
 Generates unique uniform distributions for each let
 May lead to unused fragments.
 '''
-def build_alternating_guard_contdice_1(comparison_count, guard_span):
+def build_alternating_guard_slice_1(comparison_count, guard_span):
     code = []
     counter = 1
     variables = [f"x{n}" for n in range(1, comparison_count + 1)]
@@ -205,7 +205,7 @@ def build_alternating_guard_contdice_1(comparison_count, guard_span):
 Variables in the if-else guard alternate depending on guard_span, e.g. guards alternate between x1, x2, x3 if guard_span = 3 
 Generates unique uniform distributions for each let, but else body will depend on immediate predecessor variable
 '''
-def build_alternating_guard_contdice_2(comparison_count, guard_span):
+def build_alternating_guard_slice_2(comparison_count, guard_span):
     code = []
     counter = 1
     variables = [f"x{n}" for n in range(1, comparison_count + 1)]
@@ -234,7 +234,7 @@ def build_alternating_guard_contdice_2(comparison_count, guard_span):
 Variables in the if-else guard alternate depending on guard_span, e.g. guards alternate between x1, x2, x3 if guard_span = 3 
 Generates unique uniform distributions for each let, but then body will depend on immediate predecessor variable
 '''
-def build_alternating_guard_contdice_3(comparison_count, guard_span):
+def build_alternating_guard_slice_3(comparison_count, guard_span):
     code = []
     counter = 1
     variables = [f"x{n}" for n in range(1, comparison_count + 1)]
@@ -268,10 +268,10 @@ def build_alternating_guard_contdice_3(comparison_count, guard_span):
 
 '''
 Variables in the if-else guard alternate depending on guard_span, e.g. guards alternate between x1, x2, x3 if guard_span = 3 
-Generates random uniform distributions for each let, different from build_alternating_guard_contdice_1
+Generates random uniform distributions for each let, different from build_alternating_guard_slice_1
 May lead to unused fragments
 '''
-def build_random_alternating_guard_contdice(comparison_count, guard_span):
+def build_random_alternating_guard_slice(comparison_count, guard_span):
     code = []
     variables = [f"x{n}" for n in range(1, comparison_count + 1)]
 
@@ -293,7 +293,7 @@ def build_random_alternating_guard_contdice(comparison_count, guard_span):
 
 
 def main(): 
-    program, last_var = build_alternating_guard_contdice_1(10,3)
+    program, last_var = build_alternating_guard_slice_1(10,3)
     print(program)
     # print(last_var)
 

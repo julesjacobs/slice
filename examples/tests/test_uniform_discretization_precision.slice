@@ -1,4 +1,4 @@
-(* test_uniform_discretization_precision.cdice *)
+(* test_uniform_discretization_precision.slice *)
 (* Create many small intervals by comparing a variable with several constants *)
 let a = 0.0 in
 let _c1 = a < 0.1 in
