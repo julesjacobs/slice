@@ -19,8 +19,11 @@ usage() {
     echo "  benchmark [type]        Run benchmarks (all, dt, scaling)"
     echo "  examples --list         List available examples"
     echo "  examples --run <name>   Run a specific example"
+    echo "  build                   Build Slice components inside Docker"
+    echo "  docker-build            Build the Docker image from Dockerfile"
     echo ""
     echo "Examples:"
+    echo "  $0 docker-build                         # Build Docker image"
     echo "  $0 run examples/tutorial/coin.slice"
     echo "  $0 benchmark dt"
     echo "  $0 benchmark scaling --timeout 600"
@@ -76,6 +79,17 @@ case "$COMMAND" in
     build)
         echo "Building components inside Docker..."
         $DOCKER_CMD build "$@"
+        ;;
+        
+    docker-build)
+        echo "Building Docker image from Dockerfile..."
+        docker build -t slice .
+        if [ $? -eq 0 ]; then
+            echo "Docker image 'slice' built successfully!"
+        else
+            echo "Error: Failed to build Docker image"
+            exit 1
+        fi
         ;;
         
     *)

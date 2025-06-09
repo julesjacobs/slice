@@ -1,6 +1,6 @@
 (* Discretization logic for continuous dice *)
 
-open Types
+open Ast
 open Bags
 
 let find_index pred lst =
@@ -44,12 +44,12 @@ let discretize (e : texpr) : expr =
   let handle_comparison aux op_name te1 te2 cmp_op flipped =
     let t1 = fst te1 in
     let t2 = fst te2 in
-    let b1 = (match Types.force t1 with
-      | Types.TFloat (b, _) -> b 
+    let b1 = (match Ast.force t1 with
+      | Ast.TFloat (b, _) -> b 
       | _ -> failwith ("Type error: " ^ op_name ^ " expects float on left operand")) 
     in
-    let b2 = (match Types.force t2 with
-      | Types.TFloat (b, _) -> b
+    let b2 = (match Ast.force t2 with
+      | Ast.TFloat (b, _) -> b
       | _ -> failwith ("Type error: " ^ op_name ^ " expects float on right operand"))
     in
     let val1 = Bags.BoundBag.get b1 in
@@ -71,8 +71,8 @@ let discretize (e : texpr) : expr =
   let rec aux ((ty, TAExprNode ae_node) : texpr) : expr =
     match ae_node with
     | Const f -> 
-        let bounds_bag_ref = (match Types.force ty with
-          | Types.TFloat (b, _) -> b (* Extract bounds bag *)
+        let bounds_bag_ref = (match Ast.force ty with
+          | Ast.TFloat (b, _) -> b (* Extract bounds bag *)
           | _ -> failwith "Type error: Const expects float") in
         (match Bags.BoundBag.get bounds_bag_ref with
          | Bags.Top -> ExprNode (Const f) (* Keep original if Top *)
@@ -92,8 +92,8 @@ let discretize (e : texpr) : expr =
     | Sample dist_exp ->
         let outer_sample_ty = ty in (* Type of the Sample expression itself *)
         let bounds_bag_of_outer_sample =
-          match Types.force outer_sample_ty with
-          | Types.TFloat (b, _) -> b
+          match Ast.force outer_sample_ty with
+          | Ast.TFloat (b, _) -> b
           | _ -> failwith "Internal error: Sample expression's type is not TFloat during discretize"
         in
         let set_or_top_val = Bags.BoundBag.get bounds_bag_of_outer_sample in
@@ -155,8 +155,8 @@ let discretize (e : texpr) : expr =
 
           let get_possible_floats_from_param (param_texpr : texpr) : float list option =
             let param_ty, _ = param_texpr in
-            match Types.force param_ty with
-            | Types.TFloat (_, consts_bag_ref) ->
+            match Ast.force param_ty with
+            | Ast.TFloat (_, consts_bag_ref) ->
               (match Bags.FloatBag.get consts_bag_ref with
                | Bags.Finite float_set -> 
                  if Bags.FloatSet.is_empty float_set then None 
@@ -167,7 +167,7 @@ let discretize (e : texpr) : expr =
 
           let get_param_modulus_and_cuts (param_texpr : texpr) : (int * Bags.bound list) option =
             let param_ty, _ = param_texpr in
-            match Types.force param_ty with
+            match Ast.force param_ty with
             | TFloat (b_bag, _) -> 
               (match Bags.BoundBag.get b_bag with
                | Top -> None 
@@ -315,8 +315,8 @@ let discretize (e : texpr) : expr =
 
     | Cmp (cmp_op, te1, te2, flipped) ->
         let op_name = match cmp_op with
-          | Types.Lt -> "Less"
-          | Types.Le -> "LessEq" 
+          | Ast.Lt -> "Less"
+          | Ast.Le -> "LessEq" 
         in
         handle_comparison aux op_name te1 te2 cmp_op flipped
 
@@ -393,6 +393,6 @@ let discretize (e : texpr) : expr =
 let discretize_top (e : texpr) : expr =
   (* First set the bound bags to top in the top-level return type *)
   let (return_type, _) = e in
-  Types.set_bound_bags_to_top return_type;
+  Ast.set_bound_bags_to_top return_type;
   (* Then discretize *)
   discretize e
