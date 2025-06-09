@@ -111,7 +111,7 @@ let perform_two_proportion_z_test ~print_all (t_disc, f_disc, e_disc, o_disc) (t
       )
 
 (* Process a single .slice file *)
-let process_file ~print_all ~to_sppl filename : ( ((int * int * int) * (int * int * int)) option, string) result =
+let process_file ~print_all ~to_sppl ~backend filename : ( ((int * int * int) * (int * int * int)) option, string) result =
   if print_all then Printf.printf "Processing file: %s\n" filename;
   try
     let content = read_file filename in
@@ -132,9 +132,19 @@ let process_file ~print_all ~to_sppl filename : ( ((int * int * int) * (int * in
       let discretized_expr = Slice.Discretization.discretize_top texpr in
       if print_all then (
         Printf.printf "Discretized Program (Pretty):\n%s\n\n" (Slice.Pretty.string_of_expr discretized_expr);
-        Printf.printf "Dice Program (Plaintext):\n%s\n\n" (Slice.To_dice.string_of_expr discretized_expr)
+        let backend_code = match backend with
+          | `Dice -> Slice.To_dice.string_of_expr discretized_expr
+          | `Roulette -> Slice.To_roulette.string_of_expr discretized_expr
+        in
+        Printf.printf "%s Program (Plaintext):\n%s\n\n" 
+          (match backend with `Dice -> "Dice" | `Roulette -> "Roulette")
+          backend_code
       ) else (
-        Printf.printf "%s\n" (Slice.To_dice.string_of_expr discretized_expr)
+        let backend_code = match backend with
+          | `Dice -> Slice.To_dice.string_of_expr discretized_expr
+          | `Roulette -> Slice.To_roulette.string_of_expr discretized_expr
+        in
+        Printf.printf "%s\n" backend_code
       );
 
       (* Only run simulations if the result type is bool and print_all is true *)
@@ -175,7 +185,7 @@ let has_slice_extension filename =
   Filename.check_suffix filename ".slice"
 
 (* Process a directory, finding all .slice files recursively *)
-let rec process_directory ~print_all ~to_sppl path : (int * (string * string) list * (string * (int * int * int) * (int * int * int)) list) =
+let rec process_directory ~print_all ~to_sppl ~backend path : (int * (string * string) list * (string * (int * int * int) * (int * int * int)) list) =
   let dir = Unix.opendir path in
   let rec process_entries count errors_list diff_details_list =
     try
@@ -187,7 +197,7 @@ let rec process_directory ~print_all ~to_sppl path : (int * (string * string) li
         let stats = Unix.stat full_path in
         match stats.Unix.st_kind with
         | Unix.S_REG when has_slice_extension full_path ->
-            (match process_file ~print_all ~to_sppl full_path with
+            (match process_file ~print_all ~to_sppl ~backend full_path with
              | Ok diff_details_opt ->
                  let new_diff_details_list = 
                    match diff_details_opt with
@@ -200,7 +210,7 @@ let rec process_directory ~print_all ~to_sppl path : (int * (string * string) li
                  process_entries (count + 1) ((full_path, msg) :: errors_list) diff_details_list
             )
         | Unix.S_DIR ->
-            let sub_count, sub_errors_list, sub_diff_details_list = process_directory ~print_all ~to_sppl full_path in
+            let sub_count, sub_errors_list, sub_diff_details_list = process_directory ~print_all ~to_sppl ~backend full_path in
             process_entries (count + sub_count) (sub_errors_list @ errors_list) (sub_diff_details_list @ diff_details_list)
         | _ ->
             process_entries count errors_list diff_details_list
@@ -216,13 +226,13 @@ let rec process_directory ~print_all ~to_sppl path : (int * (string * string) li
   process_entries 0 [] []
 
 (* Main command execution logic *) 
-let run_slice path print_all to_sppl =
+let run_slice path print_all to_sppl backend =
   try
     let stats = Unix.stat path in
     match stats.Unix.st_kind with
     | Unix.S_REG ->
         if has_slice_extension path then (
-          match process_file ~print_all ~to_sppl path with
+          match process_file ~print_all ~to_sppl ~backend path with
           | Ok diff_details_opt ->
               if not to_sppl && print_all then (
                 match diff_details_opt with
@@ -238,10 +248,11 @@ let run_slice path print_all to_sppl =
         ) else
           Printf.eprintf "Error: File must have .slice extension: %s\n" path
     | Unix.S_DIR ->
-        let count, errors_list, diff_details_list = process_directory ~print_all ~to_sppl path in
+        let count, errors_list, diff_details_list = process_directory ~print_all ~to_sppl ~backend path in
         if print_all then (
           Printf.printf "\n=== Directory Processing Summary ===\n";
           Printf.printf "Processed %d files.\n" count;
+          Printf.printf "Using backend: %s\n" (match backend with `Dice -> "Dice" | `Roulette -> "Roulette");
           
           if errors_list <> [] then (
             Printf.printf "Errors occurred in %d files:\n" (List.length errors_list);
@@ -281,7 +292,16 @@ let to_sppl_arg =
   let doc = "Convert the input program to SPPL and print it, skipping other processing." in
   Arg.(value & flag & info ["to-sppl"] ~doc)
 
-let slice_t = Term.(const run_slice $ path_arg $ print_all_arg $ to_sppl_arg)
+(* New backend selection argument *)
+let backend_arg =
+  let doc = "Select the backend to use (dice or roulette). Default is dice." in
+  let backend = Arg.enum [
+    ("dice", `Dice);
+    ("roulette", `Roulette)
+  ] in
+  Arg.(value & opt backend `Dice & info ["backend"] ~docv:"BACKEND" ~doc)
+
+let slice_t = Term.(const run_slice $ path_arg $ print_all_arg $ to_sppl_arg $ backend_arg)
 
 let cmd = 
   let doc = "Process and analyze Slice files." in

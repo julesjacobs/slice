@@ -1,31 +1,53 @@
 #!/bin/bash
-# Running dice with a bash script
-
-if [ $# -lt 1 ]; then
-  echo "Usage: $0 [--print-all] <slice-file>"
-  exit 1
-fi
+# Running slice compiler with a bash script
 
 PRINT_ALL=false
+BACKEND="dice"  # Default backend
 
-# Check if the first argument is --print-all
-if [ "$1" == "--print-all" ]; then
-  PRINT_ALL=true
-  shift  # Remove --print-all from the arguments
-fi
+# Parse command line arguments
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --print-all)
+      PRINT_ALL=true
+      shift
+      ;;
+    --dice)
+      BACKEND="dice"
+      shift
+      ;;
+    --roulette)
+      BACKEND="roulette"
+      shift
+      ;;
+    *)
+      # First non-flag argument is the input file
+      if [[ -z "$INPUT" ]]; then
+        INPUT=$1
+        shift
+      else
+        echo "Error: Unexpected argument: $1"
+        exit 1
+      fi
+      ;;
+  esac
+done
 
-if [ $# -lt 1 ]; then
-  echo "Error: Missing <slice-file> argument."
+if [ -z "$INPUT" ]; then
+  echo "Usage: $0 [--print-all] [--dice|--roulette] <slice-file>"
+  echo "Options:"
+  echo "  --print-all   Print detailed output"
+  echo "  --dice        Use Dice backend (default)"
+  echo "  --roulette    Use Roulette backend"
   exit 1
 fi
 
-INPUT=$1
 INPUT_ABS=$(realpath "$INPUT")
 
+# Determine output file extension based on backend
+OUTPUT_EXT=$([ "$BACKEND" = "roulette" ] && echo "rkt" || echo "dice")
+
 if [ "$PRINT_ALL" = true ]; then
-  # dune exec -- bin/main.exe --print-all "$INPUT_ABS" | tee ../output.dice # build-step included
-  ./_build/default/bin/main.exe --print-all "$INPUT_ABS" | tee ../output.dice # directly run the executable
+  ./_build/default/bin/main.exe --print-all --backend "$BACKEND" "$INPUT_ABS" | tee "../output.$OUTPUT_EXT"
 else
-  # dune exec -- bin/main.exe "$INPUT_ABS" | tee ../output.dice # build-step included
-  ./_build/default/bin/main.exe "$INPUT_ABS" | tee ../output.dice # directly run the executable
+  ./_build/default/bin/main.exe --backend "$BACKEND" "$INPUT_ABS" | tee "../output.$OUTPUT_EXT"
 fi
