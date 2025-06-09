@@ -83,82 +83,82 @@ let cdistr_sample dist =
   | Exppow (a, b) ->
       Gsl.Randist.exppow rng ~a ~b
 
-let string_of_single_arg_dist_kind (kind: Types.single_arg_dist_kind) : string =
+let string_of_single_arg_dist_kind (kind: Ast.single_arg_dist_kind) : string =
   match kind with
-  | Types.DExponential -> "exponential"
-  | Types.DLaplace     -> "laplace"
-  | Types.DCauchy      -> "cauchy"
-  | Types.DTDist       -> "tdist"
-  | Types.DChi2        -> "chi2"
-  | Types.DLogistic    -> "logistic"
-  | Types.DRayleigh    -> "rayleigh"
+  | Ast.DExponential -> "exponential"
+  | Ast.DLaplace     -> "laplace"
+  | Ast.DCauchy      -> "cauchy"
+  | Ast.DTDist       -> "tdist"
+  | Ast.DChi2        -> "chi2"
+  | Ast.DLogistic    -> "logistic"
+  | Ast.DRayleigh    -> "rayleigh"
 
-let string_of_two_arg_dist_kind (kind: Types.two_arg_dist_kind) : string =
+let string_of_two_arg_dist_kind (kind: Ast.two_arg_dist_kind) : string =
   match kind with
-  | Types.DUniform     -> "uniform"
-  | Types.DGaussian    -> "gaussian"
-  | Types.DBeta        -> "beta"
-  | Types.DLogNormal   -> "lognormal"
-  | Types.DGamma       -> "gamma"
-  | Types.DPareto      -> "pareto"
-  | Types.DWeibull     -> "weibull"
-  | Types.DGumbel1     -> "gumbel1"
-  | Types.DGumbel2     -> "gumbel2"
-  | Types.DExppow      -> "exppow"
+  | Ast.DUniform     -> "uniform"
+  | Ast.DGaussian    -> "gaussian"
+  | Ast.DBeta        -> "beta"
+  | Ast.DLogNormal   -> "lognormal"
+  | Ast.DGamma       -> "gamma"
+  | Ast.DPareto      -> "pareto"
+  | Ast.DWeibull     -> "weibull"
+  | Ast.DGumbel1     -> "gumbel1"
+  | Ast.DGumbel2     -> "gumbel2"
+  | Ast.DExppow      -> "exppow"
 
-let get_cdistr_from_single_arg_kind (kind: Types.single_arg_dist_kind) (arg1: float) : (cdistr, string) result =
+let get_cdistr_from_single_arg_kind (kind: Ast.single_arg_dist_kind) (arg1: float) : (cdistr, string) result =
   match kind with
-  | Types.DExponential -> 
+  | Ast.DExponential -> 
       if arg1 <= 0.0 then Error "Exponential lambda must be positive"
       else Ok (Exponential arg1)
-  | Types.DLaplace -> 
+  | Ast.DLaplace -> 
       if arg1 <= 0.0 then Error "Laplace scale must be positive"
       else Ok (Laplace arg1)
-  | Types.DCauchy -> 
+  | Ast.DCauchy -> 
       if arg1 <= 0.0 then Error "Cauchy scale must be positive"
       else Ok (Cauchy arg1)
-  | Types.DTDist -> 
+  | Ast.DTDist -> 
       if arg1 <= 0.0 then Error "TDist nu must be positive"
       else Ok (TDist arg1)
-  | Types.DChi2 -> 
+  | Ast.DChi2 -> 
       if arg1 <= 0.0 then Error "Chi2 nu must be positive"
       else Ok (Chi2 arg1)
-  | Types.DLogistic -> 
+  | Ast.DLogistic -> 
       if arg1 <= 0.0 then Error "Logistic scale must be positive"
       else Ok (Logistic arg1)
-  | Types.DRayleigh -> 
+  | Ast.DRayleigh -> 
       if arg1 <= 0.0 then Error "Rayleigh sigma must be positive"
       else Ok (Rayleigh arg1)
 
-let get_cdistr_from_two_arg_kind (kind: Types.two_arg_dist_kind) (arg1: float) (arg2: float) : (cdistr, string) result =
+let get_cdistr_from_two_arg_kind (kind: Ast.two_arg_dist_kind) (arg1: float) (arg2: float) : (cdistr, string) result =
   match kind with
-  | Types.DUniform -> 
+  | Ast.DUniform -> 
       if arg1 > arg2 then Error "Uniform low > high"
       else Ok (Uniform (arg1, arg2))
-  | Types.DGaussian -> 
+  | Ast.DGaussian -> 
       if arg2 <= 0.0 then Error "Gaussian sigma must be positive"
       else Ok (Gaussian (arg1, arg2))
-  | Types.DBeta -> 
+  | Ast.DBeta -> 
       if arg1 <= 0.0 || arg2 <= 0.0 then Error "Beta alpha and beta_param must be positive"
       else Ok (Beta (arg1, arg2))
-  | Types.DLogNormal -> 
+  | Ast.DLogNormal -> 
       if arg2 <= 0.0 then Error "LogNormal sigma must be positive"
       else Ok (LogNormal (arg1, arg2))
-  | Types.DGamma -> 
+  | Ast.DGamma -> 
       if arg1 <= 0.0 || arg2 <= 0.0 then Error "Gamma shape and scale must be positive"
       else Ok (Gamma (arg1, arg2))
-  | Types.DPareto -> 
+  | Ast.DPareto -> 
       if arg1 <= 0.0 || arg2 <= 0.0 then Error "Pareto a and b must be positive"
       else Ok (Pareto (arg1, arg2))
-  | Types.DWeibull -> 
+  | Ast.DWeibull -> 
       if arg1 <= 0.0 || arg2 <= 0.0 then Error "Weibull a and b must be positive"
       else Ok (Weibull (arg1, arg2))
-  | Types.DGumbel1 -> 
+  | Ast.DGumbel1 -> 
       if arg2 <= 0.0 then Error "Gumbel1 b must be positive"
       else Ok (Gumbel1 (arg1, arg2))
-  | Types.DGumbel2 -> 
+  | Ast.DGumbel2 -> 
       if arg2 <= 0.0 then Error "Gumbel2 b must be positive"
       else Ok (Gumbel2 (arg1, arg2))
-  | Types.DExppow -> 
+  | Ast.DExppow -> 
       if arg1 <= 0.0 || arg2 <= 0.0 then Error "Exppow a and b must be positive"
       else Ok (Exppow (arg1, arg2))

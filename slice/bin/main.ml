@@ -20,12 +20,12 @@ let run_interp_and_summarize ~print_all label expr n_runs : ((int * int * int), 
     for i = 1 to n_runs do
       try 
         match Slice.Interp.run expr with
-        | Slice.Types.VBool true -> incr true_count
-        | Slice.Types.VBool false -> incr false_count
-        | Slice.Types.VUnit -> ()
+        | Slice.Ast.VBool true -> incr true_count
+        | Slice.Ast.VBool false -> incr false_count
+        | Slice.Ast.VUnit -> ()
         | other_val -> 
             let msg = Printf.sprintf "Warning (%s): Expected VBool or VUnit, got %s after %d runs. Aborting run."
-                          label (Slice.Types.string_of_value other_val) (i-1) in
+                          label (Slice.Ast.string_of_value other_val) (i-1) in
             raise (Failure msg)
       with 
       | ObserveFailure -> incr observe_failures
@@ -148,8 +148,8 @@ let process_file ~print_all ~to_sppl ~backend filename : ( ((int * int * int) * 
       );
 
       (* Only run simulations if the result type is bool and print_all is true *)
-      match Slice.Types.force final_type with 
-      | Slice.Types.TBool when print_all -> 
+      match Slice.Ast.force final_type with 
+      | Slice.Ast.TBool when print_all -> 
           let n_runs = 1000000 in 
           (match run_interp_and_summarize ~print_all "Discretized" discretized_expr n_runs with
           | Error msg -> Error msg

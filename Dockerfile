@@ -53,7 +53,10 @@ RUN eval $(opam env) && \
 USER root
 RUN pip3 install --upgrade pip setuptools wheel && \
     pip3 install --no-cache-dir \
-    matplotlib \
+    numpy==1.22.3 \
+    scipy==1.8.0 \
+    matplotlib==3.5.1 \
+    pandas==1.4.2 \
     sppl
 
 # Install hyperfine

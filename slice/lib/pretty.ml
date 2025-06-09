@@ -1,4 +1,4 @@
-open Types
+open Ast
 open Bags (* Open Bags to get FloatSet and access Set modules and Bound type *)
 
 (* ANSI color codes for syntax highlighting *)
@@ -96,13 +96,13 @@ and string_of_expr_node ?(indent=0) (ExprNode expr_node) : string =
         if flipped then
           (* Flip back to show original syntax *)
           match cmp_op with
-          | Types.Lt -> ">", e2, e1   (* Originally > *)
-          | Types.Le -> ">=", e2, e1  (* Originally >= *)
+          | Ast.Lt -> ">", e2, e1   (* Originally > *)
+          | Ast.Le -> ">=", e2, e1  (* Originally >= *)
         else
           (* Show as-is *)
           match cmp_op with
-          | Types.Lt -> "<", e1, e2
-          | Types.Le -> "<=", e1, e2
+          | Ast.Lt -> "<", e1, e2
+          | Ast.Le -> "<=", e1, e2
       in
       Printf.sprintf "%s %s%s%s %s"
         (string_of_expr_indented ~indent left_expr) operator_color op_str reset_color (string_of_expr_indented ~indent right_expr)
@@ -111,13 +111,13 @@ and string_of_expr_node ?(indent=0) (ExprNode expr_node) : string =
         if flipped then
           (* Flip back to show original syntax *)
           match cmp_op with
-          | Types.Lt -> ">#", e2, e1   (* Originally >#n *)
-          | Types.Le -> ">=#", e2, e1  (* Originally >=#n *)
+          | Ast.Lt -> ">#", e2, e1   (* Originally >#n *)
+          | Ast.Le -> ">=#", e2, e1  (* Originally >=#n *)
         else
           (* Show as-is *)
           match cmp_op with
-          | Types.Lt -> "<#", e1, e2
-          | Types.Le -> "<=#", e1, e2
+          | Ast.Lt -> "<#", e1, e2
+          | Ast.Le -> "<=#", e1, e2
       in
       Printf.sprintf "%s %s%s%s%s%d%s %s"
         (string_of_expr_indented ~indent left_expr) operator_color op_str reset_color type_color n reset_color (string_of_expr_indented ~indent right_expr)
@@ -243,13 +243,13 @@ and string_of_aexpr_node ?(indent=0) (TAExprNode ae_node) : string =
         if flipped then
           (* Flip back to show original syntax *)
           match cmp_op with
-          | Types.Lt -> ">", te2, te1   (* Originally > *)
-          | Types.Le -> ">=", te2, te1  (* Originally >= *)
+          | Ast.Lt -> ">", te2, te1   (* Originally > *)
+          | Ast.Le -> ">=", te2, te1  (* Originally >= *)
         else
           (* Show as-is *)
           match cmp_op with
-          | Types.Lt -> "<", te1, te2
-          | Types.Le -> "<=", te1, te2
+          | Ast.Lt -> "<", te1, te2
+          | Ast.Le -> "<=", te1, te2
       in
       Printf.sprintf "%s %s%s%s %s"
         (string_of_texpr_indented ~indent left_expr) operator_color op_str reset_color (string_of_texpr_indented ~indent right_expr)
@@ -258,13 +258,13 @@ and string_of_aexpr_node ?(indent=0) (TAExprNode ae_node) : string =
         if flipped then
           (* Flip back to show original syntax *)
           match cmp_op with
-          | Types.Lt -> ">#", te2, te1   (* Originally >#n *)
-          | Types.Le -> ">=#", te2, te1  (* Originally >=#n *)
+          | Ast.Lt -> ">#", te2, te1   (* Originally >#n *)
+          | Ast.Le -> ">=#", te2, te1  (* Originally >=#n *)
         else
           (* Show as-is *)
           match cmp_op with
-          | Types.Lt -> "<#", te1, te2
-          | Types.Le -> "<=#", te1, te2
+          | Ast.Lt -> "<#", te1, te2
+          | Ast.Le -> "<=#", te1, te2
       in
       Printf.sprintf "%s %s%s%s%s%d%s %s"
         (string_of_texpr_indented ~indent left_expr) operator_color op_str reset_color type_color n reset_color (string_of_texpr_indented ~indent right_expr)
@@ -445,20 +445,20 @@ let is_simple_var s =
   with Failure _ -> false
 
 (* Main translation function with target variable optimization *)
-let rec translate_to_sppl (env : (string * string) list) ?(target_var:string option=None) (expr : Types.expr) (state : sppl_state) : (string list * string) =
+let rec translate_to_sppl (env : (string * string) list) ?(target_var:string option=None) (expr : Ast.expr) (state : sppl_state) : (string list * string) =
   match expr with
   (* Base Cases: Assign directly if target_var is Some *) 
-  | Types.ExprNode(Const f) ->
+  | Ast.ExprNode(Const f) ->
       let val_str = string_of_float f in
       (match target_var with
        | Some name -> ([Printf.sprintf "%s = %s" name val_str], name)
        | None -> ([], val_str))
-  | Types.ExprNode(BoolConst b) ->
+  | Ast.ExprNode(BoolConst b) ->
       let val_str = string_of_bool b |> String.capitalize_ascii in
       (match target_var with
        | Some name -> ([Printf.sprintf "%s = %s" name val_str], name)
        | None -> ([], val_str))
-  | Types.ExprNode(Var x) ->
+  | Ast.ExprNode(Var x) ->
       let var_name = 
         try List.assoc x env 
         with Not_found -> failwith ("Unbound variable during SPPL translation: " ^ x)
@@ -469,11 +469,11 @@ let rec translate_to_sppl (env : (string * string) list) ?(target_var:string opt
         | None -> ([], var_name) (* No target, just return the var name *))
 
   (* Sampling Cases: Must assign to a variable *) 
-  | Types.ExprNode(Sample d) ->
+  | Ast.ExprNode(Sample d) ->
       let assign_var = match target_var with Some name -> name | None -> fresh_sppl_var state in
       let assert_float_const e = 
         match e with
-        | Types.ExprNode(Const f) -> f
+        | Ast.ExprNode(Const f) -> f
         | _ -> failwith "Expected a constant expression for SPPL translation because SPPL does not support non-constant expressions in sampling (in pretty.ml)"
       in
       let stmt = match d with
@@ -540,7 +540,7 @@ let rec translate_to_sppl (env : (string * string) list) ?(target_var:string opt
             Printf.sprintf "%s ~= exponpow(b=%f, scale=%f)" assign_var val1 val2 (* Assuming arg1=shape_b, arg2=scale *)
       in
       ([stmt], assign_var)
-  | Types.ExprNode(DistrCase cases) ->
+  | Ast.ExprNode(DistrCase cases) ->
       let assign_var = match target_var with Some name -> name | None -> fresh_sppl_var state in
       (* Translate sub-expressions first (target=None for them) *) 
       let (prereq_stmts, dict_items) =
@@ -548,8 +548,8 @@ let rec translate_to_sppl (env : (string * string) list) ?(target_var:string opt
           let (sub_stmts, sub_res_expr) = translate_to_sppl env ~target_var:None sub_expr state in
           let key_str =
             match sub_expr with
-            | Types.ExprNode(Const _) -> sub_res_expr
-            | Types.ExprNode(BoolConst _) -> sub_res_expr 
+            | Ast.ExprNode(Const _) -> sub_res_expr
+            | Ast.ExprNode(BoolConst _) -> sub_res_expr 
             | _ -> failwith "DistrCase expects constant expressions for SPPL choice keys (in pretty.ml)"
           in
           (acc @ sub_stmts, Printf.sprintf "%s: %f" key_str prob)
@@ -560,52 +560,52 @@ let rec translate_to_sppl (env : (string * string) list) ?(target_var:string opt
       (prereq_stmts @ [sample_stmt], assign_var)
 
   (* Expression Cases: Assign only if target_var is Some *) 
-  | Types.ExprNode(Cmp (cmp_op, e1, e2, flipped)) ->
+  | Ast.ExprNode(Cmp (cmp_op, e1, e2, flipped)) ->
       let (stmts1, res1) = translate_to_sppl env ~target_var:None e1 state in
       let (stmts2, res2) = translate_to_sppl env ~target_var:None e2 state in
       let op_str, left_res, right_res = 
         if flipped then
           (* Flip back to show original syntax *)
           match cmp_op with
-          | Types.Lt -> ">", res2, res1   (* Originally > *)
-          | Types.Le -> ">=", res2, res1  (* Originally >= *)
+          | Ast.Lt -> ">", res2, res1   (* Originally > *)
+          | Ast.Le -> ">=", res2, res1  (* Originally >= *)
         else
           (* Show as-is *)
           match cmp_op with
-          | Types.Lt -> "<", res1, res2
-          | Types.Le -> "<=", res1, res2
+          | Ast.Lt -> "<", res1, res2
+          | Ast.Le -> "<=", res1, res2
       in
       let expr_str = Printf.sprintf "(%s %s %s)" left_res op_str right_res in
       (match target_var with 
        | Some name -> (stmts1 @ stmts2 @ [Printf.sprintf "%s = %s" name expr_str], name)
        | None -> (stmts1 @ stmts2, expr_str))
-  | Types.ExprNode(FinCmp (cmp_op, e1, e2, n, flipped)) ->
+  | Ast.ExprNode(FinCmp (cmp_op, e1, e2, n, flipped)) ->
       let (stmts1, res1) = translate_to_sppl env ~target_var:None e1 state in
       let (stmts2, res2) = translate_to_sppl env ~target_var:None e2 state in
       let op_str, left_res, right_res = 
         if flipped then
           (* Flip back to show original syntax *)
           match cmp_op with
-          | Types.Lt -> ">#", res2, res1   (* Originally >#n *)
-          | Types.Le -> ">=#", res2, res1  (* Originally >=#n *)
+          | Ast.Lt -> ">#", res2, res1   (* Originally >#n *)
+          | Ast.Le -> ">=#", res2, res1  (* Originally >=#n *)
         else
           (* Show as-is *)
           match cmp_op with
-          | Types.Lt -> "<#", res1, res2
-          | Types.Le -> "<=#", res1, res2
+          | Ast.Lt -> "<#", res1, res2
+          | Ast.Le -> "<=#", res1, res2
       in
       let expr_str = Printf.sprintf "%s %s%d %s" left_res op_str n right_res in
       (match target_var with
        | Some name -> (stmts1 @ stmts2 @ [Printf.sprintf "%s = %s" name expr_str], name)
        | None -> (stmts1 @ stmts2, expr_str))
-  | Types.ExprNode(Not e) ->
+  | Ast.ExprNode(Not e) ->
       let (stmts1, res1) = translate_to_sppl env ~target_var:None e state in
       let expr_str = Printf.sprintf "not (%s)" res1 in
       (match target_var with
        | Some name -> (stmts1 @ [Printf.sprintf "%s = %s" name expr_str], name)
        | None -> (stmts1, expr_str))
 
-  | Types.ExprNode(And (e1, e2)) ->
+  | Ast.ExprNode(And (e1, e2)) ->
       let (stmts1, res1) = translate_to_sppl env ~target_var:None e1 state in
       let (stmts2, res2) = translate_to_sppl env ~target_var:None e2 state in
       let expr_str = Printf.sprintf "(%s and %s)" res1 res2 in
@@ -613,7 +613,7 @@ let rec translate_to_sppl (env : (string * string) list) ?(target_var:string opt
        | Some name -> (stmts1 @ stmts2 @ [Printf.sprintf "%s = %s" name expr_str], name)
        | None -> (stmts1 @ stmts2, expr_str))
 
-  | Types.ExprNode(Or (e1, e2)) ->
+  | Ast.ExprNode(Or (e1, e2)) ->
       let (stmts1, res1) = translate_to_sppl env ~target_var:None e1 state in
       let (stmts2, res2) = translate_to_sppl env ~target_var:None e2 state in
       let expr_str = Printf.sprintf "(%s or %s)" res1 res2 in
@@ -622,7 +622,7 @@ let rec translate_to_sppl (env : (string * string) list) ?(target_var:string opt
        | None -> (stmts1 @ stmts2, expr_str))
 
   (* Let Case: Optimize variable assignment *) 
-  | Types.ExprNode(Let(x, e1, e2)) ->
+  | Ast.ExprNode(Let(x, e1, e2)) ->
       let (stmts1, res1_expr) = translate_to_sppl env ~target_var:None e1 state in
       let (final_stmts1, x_var_name) =
         if is_simple_var res1_expr then
@@ -638,7 +638,7 @@ let rec translate_to_sppl (env : (string * string) list) ?(target_var:string opt
       (final_stmts1 @ stmts2, res2_expr)
 
   (* If Case: Result must be assigned - Attempting target propagation *) 
-  | Types.ExprNode(If(cond_e, then_e, else_e)) ->
+  | Ast.ExprNode(If(cond_e, then_e, else_e)) ->
       let (cond_stmts, cond_expr) = translate_to_sppl env ~target_var:None cond_e state in
       let final_res_var = match target_var with Some name -> name | None -> fresh_sppl_var state in
       (* Translate branches, forcing result into final_res_var *) 
@@ -660,50 +660,50 @@ let rec translate_to_sppl (env : (string * string) list) ?(target_var:string opt
       (final_stmts, final_res_var) (* Result is always the value in final_res_var *)
 
   (* Observe Case: Handle Observe for SPPL *)
-  | Types.ExprNode(Observe e) ->
+  | Ast.ExprNode(Observe e) ->
       let (cond_stmts, cond_expr) = translate_to_sppl env ~target_var:None e state in
       let observe_stmt = Printf.sprintf "condition(%s)" cond_expr in
       (cond_stmts @ [observe_stmt], "") (* Observe returns unit, effectively no result name for SPPL value assignment *)
 
-  | Types.ExprNode(Fix (f,x,_)) -> (* SPPL does not support recursive functions *)
+  | Ast.ExprNode(Fix (f,x,_)) -> (* SPPL does not support recursive functions *)
       failwith (Printf.sprintf "Recursive functions (fix %s %s := ...) are not supported in SPPL translation." f x)
 
   (* Fail on unsupported features *) 
-  | Types.ExprNode(Pair _) | Types.ExprNode(First _) | Types.ExprNode(Second _)
-  | Types.ExprNode(Fun _) | Types.ExprNode(FuncApp _) | Types.ExprNode(LoopApp _)
-  | Types.ExprNode(FinConst _) ->
+  | Ast.ExprNode(Pair _) | Ast.ExprNode(First _) | Ast.ExprNode(Second _)
+  | Ast.ExprNode(Fun _) | Ast.ExprNode(FuncApp _) | Ast.ExprNode(LoopApp _)
+  | Ast.ExprNode(FinConst _) ->
       let err_msg = Printf.sprintf
         "Encountered an unsupported expression type (%s) during SPPL translation (in pretty.ml)."
         (match expr with
-         | Types.ExprNode(Pair _) -> "Pair" | Types.ExprNode(First _) -> "First" | Types.ExprNode(Second _) -> "Second"
-         | Types.ExprNode(Fun _) -> "Fun" | Types.ExprNode(FuncApp _) -> "FuncApp" | Types.ExprNode(LoopApp _) -> "LoopApp" 
-         | Types.ExprNode(FinConst _) -> "FinConst"
+         | Ast.ExprNode(Pair _) -> "Pair" | Ast.ExprNode(First _) -> "First" | Ast.ExprNode(Second _) -> "Second"
+         | Ast.ExprNode(Fun _) -> "Fun" | Ast.ExprNode(FuncApp _) -> "FuncApp" | Ast.ExprNode(LoopApp _) -> "LoopApp" 
+         | Ast.ExprNode(FinConst _) -> "FinConst"
          | _ -> "Other Unsupported")
       in
       failwith err_msg
 
-  | Types.ExprNode(Nil) | Types.ExprNode(Cons _) | Types.ExprNode(MatchList _) ->
+  | Ast.ExprNode(Nil) | Ast.ExprNode(Cons _) | Ast.ExprNode(MatchList _) ->
       failwith "List constructs (nil, ::, match) are not supported in SPPL translation."
 
-  | Types.ExprNode(Ref _) | Types.ExprNode(Deref _) | Types.ExprNode(Assign (_,_)) ->
+  | Ast.ExprNode(Ref _) | Ast.ExprNode(Deref _) | Ast.ExprNode(Assign (_,_)) ->
       failwith "References (ref, !, :=) are not supported in SPPL translation."
 
-  | Types.ExprNode(Seq (_,_)) -> 
+  | Ast.ExprNode(Seq (_,_)) -> 
       failwith "Sequences (e1; e2) are not supported in SPPL translation."
 
-  | Types.ExprNode(Unit) ->
+  | Ast.ExprNode(Unit) ->
       ([], "None")
 
-  | Types.ExprNode(FinEq (e1, e2, n)) ->
+  | Ast.ExprNode(FinEq (e1, e2, n)) ->
       failwith (Printf.sprintf "FinEq (%s ==#%d %s) is not directly supported in SPPL translation." 
         (string_of_expr_indented e1) n (string_of_expr_indented e2))
 
-  | Types.ExprNode(RuntimeError s) ->
+  | Ast.ExprNode(RuntimeError s) ->
       let err_msg = Printf.sprintf "RUNTIME_ERROR(\"%s%s%s\")" variable_color s reset_color in
       ([err_msg], "")
 
 (* Top-level function: call translate with target 'model' *) 
-let slice_expr_to_sppl_prog (expr : Types.expr) : string =
+let slice_expr_to_sppl_prog (expr : Ast.expr) : string =
   let state = { next_var = 0 } in
   (* Pass target_var = Some "model" to the top-level call *) 
   let (stmts, _final_res_name) = translate_to_sppl [] ~target_var:(Some "model") expr state in
