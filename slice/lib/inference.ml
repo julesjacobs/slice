@@ -1,13 +1,13 @@
 (* Type inference and elaboration for continuous dice *)
 
-open Types
+open Ast
 open Bags
 
 module StringMap = Map.Make(String)
 
 (* Enforce t_sub is a subtype of t_super *)
 let rec sub_type (t_sub : ty) (t_super : ty) : unit =
-  match Types.force t_sub, Types.force t_super with
+  match Ast.force t_sub, Ast.force t_super with
   (* Base Cases *)
   | TBool,    TBool      -> ()
   | TFin n1, TFin n2 when n1 = n2 -> () 
@@ -25,38 +25,38 @@ let rec sub_type (t_sub : ty) (t_super : ty) : unit =
   | TList t1, TList t2 -> sub_type t1 t2 (* Covariant *) 
   | TRef t1, TRef t2 -> unify t1 t2 (* Invariant *)
   | TMeta r, _ ->
-    (match Types.force t_super with (* Ensure t_super is forced *)
-    | TMeta r' -> (Types.listen r (fun t -> sub_type t t_super); Types.listen r' (fun t' -> sub_type t_sub t'))
-    | TBool -> Types.assign r TBool
-    | TFin n -> Types.assign r (TFin n)
-    | TPair (_, _) -> let a_meta = Types.fresh_meta () in let b_meta = Types.fresh_meta () in
-      Types.assign r (TPair (a_meta, b_meta)); sub_type t_sub t_super
-    | TFun (_, _) -> let a_meta = Types.fresh_meta () in let b_meta = Types.fresh_meta () in
-      Types.assign r (TFun (a_meta, b_meta)); sub_type t_sub t_super
+    (match Ast.force t_super with (* Ensure t_super is forced *)
+    | TMeta r' -> (Ast.listen r (fun t -> sub_type t t_super); Ast.listen r' (fun t' -> sub_type t_sub t'))
+    | TBool -> Ast.assign r TBool
+    | TFin n -> Ast.assign r (TFin n)
+    | TPair (_, _) -> let a_meta = Ast.fresh_meta () in let b_meta = Ast.fresh_meta () in
+      Ast.assign r (TPair (a_meta, b_meta)); sub_type t_sub t_super
+    | TFun (_, _) -> let a_meta = Ast.fresh_meta () in let b_meta = Ast.fresh_meta () in
+      Ast.assign r (TFun (a_meta, b_meta)); sub_type t_sub t_super
     | TFloat (_, _) -> let b_bag = Bags.fresh_bound_bag () in let c_bag = Bags.fresh_float_bag () in
-      Types.assign r (TFloat (b_bag, c_bag)); sub_type t_sub t_super
-    | TUnit -> Types.assign r TUnit (* Handle TUnit for t_super *)
-    | TList _ -> let elem_meta = Types.fresh_meta () in 
-                 Types.assign r (TList elem_meta); sub_type t_sub t_super
-    | TRef _ -> let ref_meta = Types.fresh_meta () in
-                Types.assign r (TRef ref_meta); sub_type t_sub t_super
+      Ast.assign r (TFloat (b_bag, c_bag)); sub_type t_sub t_super
+    | TUnit -> Ast.assign r TUnit (* Handle TUnit for t_super *)
+    | TList _ -> let elem_meta = Ast.fresh_meta () in 
+                 Ast.assign r (TList elem_meta); sub_type t_sub t_super
+    | TRef _ -> let ref_meta = Ast.fresh_meta () in
+                Ast.assign r (TRef ref_meta); sub_type t_sub t_super
     )
   | _, TMeta r ->
-    (match Types.force t_sub with (* Ensure t_sub is forced *)
-    | TMeta r' -> (Types.listen r (fun t -> sub_type t_sub t); Types.listen r' (fun t' -> sub_type t_sub t'))
-    | TBool -> Types.assign r TBool
-    | TFin n -> Types.assign r (TFin n)
-    | TPair (_, _) -> let a_meta = Types.fresh_meta () in let b_meta = Types.fresh_meta () in
-      Types.assign r (TPair (a_meta, b_meta)); sub_type t_sub t_super
-    | TFun (_, _) -> let a_meta = Types.fresh_meta () in let b_meta = Types.fresh_meta () in
-      Types.assign r (TFun (a_meta, b_meta)); sub_type t_sub t_super
+    (match Ast.force t_sub with (* Ensure t_sub is forced *)
+    | TMeta r' -> (Ast.listen r (fun t -> sub_type t_sub t); Ast.listen r' (fun t' -> sub_type t_sub t'))
+    | TBool -> Ast.assign r TBool
+    | TFin n -> Ast.assign r (TFin n)
+    | TPair (_, _) -> let a_meta = Ast.fresh_meta () in let b_meta = Ast.fresh_meta () in
+      Ast.assign r (TPair (a_meta, b_meta)); sub_type t_sub t_super
+    | TFun (_, _) -> let a_meta = Ast.fresh_meta () in let b_meta = Ast.fresh_meta () in
+      Ast.assign r (TFun (a_meta, b_meta)); sub_type t_sub t_super
     | TFloat (_, _) -> let b_bag = Bags.fresh_bound_bag () in let c_bag = Bags.fresh_float_bag () in
-      Types.assign r (TFloat (b_bag, c_bag)); sub_type t_sub t_super
-    | TUnit -> Types.assign r TUnit (* Handle TUnit for t_sub *)
-    | TList _ -> let elem_meta = Types.fresh_meta () in 
-                 Types.assign r (TList elem_meta); sub_type t_sub t_super
-    | TRef _ -> let ref_meta = Types.fresh_meta () in
-                Types.assign r (TRef ref_meta); sub_type t_sub t_super
+      Ast.assign r (TFloat (b_bag, c_bag)); sub_type t_sub t_super
+    | TUnit -> Ast.assign r TUnit (* Handle TUnit for t_sub *)
+    | TList _ -> let elem_meta = Ast.fresh_meta () in 
+                 Ast.assign r (TList elem_meta); sub_type t_sub t_super
+    | TRef _ -> let ref_meta = Ast.fresh_meta () in
+                Ast.assign r (TRef ref_meta); sub_type t_sub t_super
     )
   (* Error Case *) 
   | _, _ -> 
@@ -143,7 +143,7 @@ let infer (e : expr) : texpr =
           let t_arg, a_arg = aux env arg_e in
           let t_arg_bound_bag = Bags.fresh_bound_bag () in
           let t_arg_float_bag = Bags.fresh_float_bag () in
-          (try unify t_arg (Types.TFloat (t_arg_bound_bag, t_arg_float_bag))
+          (try unify t_arg (Ast.TFloat (t_arg_bound_bag, t_arg_float_bag))
            with Failure msg -> 
             let kind_str = Pretty.string_of_expr_indented (ExprNode (Sample (Distr1 (dist_kind, arg_e)))) in 
             failwith (Printf.sprintf "Type error in Sample (%s) argument: %s" kind_str msg));
@@ -163,11 +163,11 @@ let infer (e : expr) : texpr =
         let t2_bound_bag = Bags.fresh_bound_bag () in
         let t2_float_bag = Bags.fresh_float_bag () in
 
-        (try unify t1 (Types.TFloat (t1_bound_bag, t1_float_bag))
+        (try unify t1 (Ast.TFloat (t1_bound_bag, t1_float_bag))
          with Failure msg -> 
           let kind_str = Pretty.string_of_expr_indented (ExprNode (Sample (Distr2 (dist_kind, arg1_e, arg2_e)))) in
           failwith (Printf.sprintf "Type error in Sample (%s) first argument: %s" kind_str msg));
-        (try unify t2 (Types.TFloat (t2_bound_bag, t2_float_bag))
+        (try unify t2 (Ast.TFloat (t2_bound_bag, t2_float_bag))
          with Failure msg -> 
           let kind_str = Pretty.string_of_expr_indented (ExprNode (Sample (Distr2 (dist_kind, arg1_e, arg2_e)))) in
           failwith (Printf.sprintf "Type error in Sample (%s) second argument: %s" kind_str msg));
@@ -195,7 +195,7 @@ let infer (e : expr) : texpr =
       
       (* Type-check all expressions and subtype them into a fresh result type *) 
       let typed_cases = List.map (fun (e, p) -> (aux env e, p)) cases in
-      let result_ty = Types.fresh_meta () in (* Fresh meta for the result *) 
+      let result_ty = Ast.fresh_meta () in (* Fresh meta for the result *) 
       List.iter (fun ((branch_ty, _), _) -> 
         try sub_type branch_ty result_ty (* Enforce branch <: result *)
         with Failure msg -> failwith ("Type error in DistrCase branches: " ^ msg)
@@ -210,9 +210,9 @@ let infer (e : expr) : texpr =
         let b_meta = Bags.fresh_bound_bag () in (* Shared bound bag for unification *)
         let c_meta1 = Bags.fresh_float_bag () in
         let c_meta2 = Bags.fresh_float_bag () in
-        (try unify t1 (Types.TFloat (b_meta, c_meta1)) (* Unify t1 with TFloat(b_meta, c1) *)
+        (try unify t1 (Ast.TFloat (b_meta, c_meta1)) (* Unify t1 with TFloat(b_meta, c1) *)
          with Failure msg -> failwith (Printf.sprintf "Type error in comparison left operand: %s" msg));
-        (try unify t2 (Types.TFloat (b_meta, c_meta2)) (* Unify t2 with TFloat(b_meta, c2) *)
+        (try unify t2 (Ast.TFloat (b_meta, c_meta2)) (* Unify t2 with TFloat(b_meta, c2) *)
          with Failure msg -> failwith (Printf.sprintf "Type error in comparison right operand: %s" msg));
 
         (* Nested listener logic for comparison *) 
@@ -231,8 +231,8 @@ let infer (e : expr) : texpr =
 
               FloatSet.iter (fun f -> 
                 let bound = match cmp_op with
-                  | Types.Lt -> Bags.Less f
-                  | Types.Le -> Bags.LessEq f
+                  | Ast.Lt -> Bags.Less f
+                  | Ast.Le -> Bags.LessEq f
                 in
                 bounds_to_add := Bags.BoundSet.add bound !bounds_to_add
               ) s2;
@@ -257,8 +257,8 @@ let infer (e : expr) : texpr =
                | Finite s2 ->
                    FloatSet.iter (fun f -> 
                      let bound = match cmp_op with
-                       | Types.Lt -> Bags.Less f
-                       | Types.Le -> Bags.LessEq f
+                       | Ast.Lt -> Bags.Less f
+                       | Ast.Le -> Bags.LessEq f
                      in
                      bounds_to_add := Bags.BoundSet.add bound !bounds_to_add
                    ) s2
@@ -270,8 +270,8 @@ let infer (e : expr) : texpr =
                | Finite s1 ->
                    FloatSet.iter (fun f -> 
                      let bound = match cmp_op with
-                       | Types.Lt -> Bags.LessEq f
-                       | Types.Le -> Bags.Less f
+                       | Ast.Lt -> Bags.LessEq f
+                       | Ast.Le -> Bags.Less f
                      in
                      bounds_to_add := Bags.BoundSet.add bound !bounds_to_add
                    ) s1
@@ -301,20 +301,20 @@ let infer (e : expr) : texpr =
       if n <= 0 then failwith (Printf.sprintf "Invalid FinCmp modulus: ==#%d. n must be > 0." n);
       let t1, a1 = aux env e1 in
       let t2, a2 = aux env e2 in
-      let expected_type = Types.TFin n in
+      let expected_type = Ast.TFin n in
       (try sub_type t1 expected_type
        with Failure msg -> failwith (Printf.sprintf "Type error in FinCmp (==#%d) left operand: %s" n msg));
       (try sub_type t2 expected_type
        with Failure msg -> failwith (Printf.sprintf "Type error in FinCmp (==#%d) right operand: %s" n msg));
-      (Types.TBool, TAExprNode (FinCmp (cmp_op, (t1, a1), (t2, a2), n, flipped)))
+      (Ast.TBool, TAExprNode (FinCmp (cmp_op, (t1, a1), (t2, a2), n, flipped)))
 
     | If (e1, e2, e3) ->
       let t1, a1 = aux env e1 in
-      (try sub_type t1 Types.TBool (* Condition must be bool *) 
+      (try sub_type t1 Ast.TBool (* Condition must be bool *) 
        with Failure msg -> failwith ("Type error in If condition: " ^ msg));
       let t2, a2 = aux env e2 in
       let t3, a3 = aux env e3 in
-      let result_ty = Types.fresh_meta () in (* Fresh meta for the result *) 
+      let result_ty = Ast.fresh_meta () in (* Fresh meta for the result *) 
       (try 
          sub_type t2 result_ty; (* Enforce true_branch <: result *) 
          sub_type t3 result_ty  (* Enforce false_branch <: result *) 
@@ -328,34 +328,34 @@ let infer (e : expr) : texpr =
       
     | First e1 ->
       let t, a = aux env e1 in
-      let t1_meta = Types.fresh_meta () in
-      let t2_meta = Types.fresh_meta () in
+      let t1_meta = Ast.fresh_meta () in
+      let t2_meta = Ast.fresh_meta () in
       (try sub_type t (TPair (t1_meta, t2_meta))
        with Failure msg -> failwith ("Type error in First (fst): " ^ msg));
-      (Types.force t1_meta, TAExprNode (First (t, a))) (* Use Types.force *)
+      (Ast.force t1_meta, TAExprNode (First (t, a))) (* Use Ast.force *)
       
     | Second e1 ->
       let t, a = aux env e1 in
-      let t1_meta = Types.fresh_meta () in
-      let t2_meta = Types.fresh_meta () in
+      let t1_meta = Ast.fresh_meta () in
+      let t2_meta = Ast.fresh_meta () in
       (try sub_type t (TPair (t1_meta, t2_meta))
        with Failure msg -> failwith ("Type error in Second (snd): " ^ msg));
-      (Types.force t2_meta, TAExprNode (Second (t, a))) (* Use Types.force *)
+      (Ast.force t2_meta, TAExprNode (Second (t, a))) (* Use Ast.force *)
       
     | Fun (x, e1) ->
-      let param_type = Types.fresh_meta () in
+      let param_type = Ast.fresh_meta () in
       let env' = StringMap.add x param_type env in
       let return_type, a = aux env' e1 in
-      (Types.TFun (param_type, return_type), TAExprNode (Fun (x, (return_type, a))))
+      (Ast.TFun (param_type, return_type), TAExprNode (Fun (x, (return_type, a))))
       
     | FuncApp (e1, e2) ->
       let t_fun, a_fun = aux env e1 in
       let t_arg, a_arg = aux env e2 in
-      let param_ty_expected = Types.fresh_meta () in (* Fresh meta for expected param type *) 
-      let result_ty = Types.fresh_meta () in (* Fresh meta for result type *) 
+      let param_ty_expected = Ast.fresh_meta () in (* Fresh meta for expected param type *) 
+      let result_ty = Ast.fresh_meta () in (* Fresh meta for result type *) 
       (try 
          (* Check t_fun is a function expecting param_ty_expected and returning result_ty *) 
-         sub_type t_fun (Types.TFun (param_ty_expected, result_ty));
+         sub_type t_fun (Ast.TFun (param_ty_expected, result_ty));
          (* Check t_arg is a subtype of what the function expects *) 
          sub_type t_arg param_ty_expected 
        with Failure msg -> failwith ("Type error in function application: " ^ msg));
@@ -365,11 +365,11 @@ let infer (e : expr) : texpr =
       let t_fun, a_fun = aux env e1 in
       let t_arg, a_arg = aux env e2 in
       (* Third argument is just a number *)
-      let param_ty_expected = Types.fresh_meta () in (* Fresh meta for expected param type *) 
-      let result_ty = Types.fresh_meta () in (* Fresh meta for result type *) 
+      let param_ty_expected = Ast.fresh_meta () in (* Fresh meta for expected param type *) 
+      let result_ty = Ast.fresh_meta () in (* Fresh meta for result type *) 
       (try 
           (* Check t_fun is a function expecting param_ty_expected and returning result_ty *) 
-          sub_type t_fun (Types.TFun (param_ty_expected, result_ty));
+          sub_type t_fun (Ast.TFun (param_ty_expected, result_ty));
           (* Check t_arg is a subtype of what the function expects *) 
           sub_type t_arg param_ty_expected 
         with Failure msg -> failwith ("Type error in loop application: " ^ msg));
@@ -377,40 +377,40 @@ let infer (e : expr) : texpr =
        
     | FinConst (k, n) ->
       if k < 0 || k >= n then failwith (Printf.sprintf "Invalid FinConst value: %d#%d. k must be >= 0 and < n." k n);
-      (Types.TFin n, TAExprNode (FinConst (k, n)))
+      (Ast.TFin n, TAExprNode (FinConst (k, n)))
 
     | FinEq (e1, e2, n) -> (* New case for FinEq in elab *)
       if n <= 0 then failwith (Printf.sprintf "Invalid FinEq modulus: ==#%d. n must be > 0." n);
       let t1, a1 = aux env e1 in
       let t2, a2 = aux env e2 in
-      let expected_type = Types.TFin n in
+      let expected_type = Ast.TFin n in
       (try sub_type t1 expected_type
        with Failure msg -> failwith (Printf.sprintf "Type error in FinEq (==#%d) left operand: %s" n msg));
       (try sub_type t2 expected_type
        with Failure msg -> failwith (Printf.sprintf "Type error in FinEq (==#%d) right operand: %s" n msg));
-      (Types.TBool, TAExprNode (FinEq ((t1, a1), (t2, a2), n)))
+      (Ast.TBool, TAExprNode (FinEq ((t1, a1), (t2, a2), n)))
 
     | And (e1, e2) ->
       let t1, a1 = aux env e1 in
       let t2, a2 = aux env e2 in
-      (try sub_type t1 Types.TBool
+      (try sub_type t1 Ast.TBool
        with Failure msg -> failwith ("Type error in And (&&) left operand: " ^ msg));
-      (try sub_type t2 Types.TBool
+      (try sub_type t2 Ast.TBool
        with Failure msg -> failwith ("Type error in And (&&) right operand: " ^ msg));
       (TBool, TAExprNode (And ((t1, a1), (t2, a2))))
       
     | Or (e1, e2) ->
       let t1, a1 = aux env e1 in
       let t2, a2 = aux env e2 in
-      (try sub_type t1 Types.TBool
+      (try sub_type t1 Ast.TBool
        with Failure msg -> failwith ("Type error in Or (||) left operand: " ^ msg));
-      (try sub_type t2 Types.TBool
+      (try sub_type t2 Ast.TBool
        with Failure msg -> failwith ("Type error in Or (||) right operand: " ^ msg));
       (TBool, TAExprNode (Or ((t1, a1), (t2, a2))))
 
     | Not e1 ->
       let t1, a1 = aux env e1 in
-      (try sub_type t1 Types.TBool
+      (try sub_type t1 Ast.TBool
        with Failure msg -> failwith ("Type error in Not operand: " ^ msg));
       (TBool, TAExprNode (Not (t1, a1)))
 
@@ -421,17 +421,17 @@ let infer (e : expr) : texpr =
       (TUnit, TAExprNode (Observe (t1, a1))) (* Result is TUnit *)
 
     | Fix (f, x, e_body) -> 
-      let fun_type_itself = Types.fresh_meta () in (* Type of f *)
-      let param_type = Types.fresh_meta () in      (* Type of x *)
+      let fun_type_itself = Ast.fresh_meta () in (* Type of f *)
+      let param_type = Ast.fresh_meta () in      (* Type of x *)
       let env_body = StringMap.add x param_type (StringMap.add f fun_type_itself env) in
       let body_texpr = aux env_body e_body in
       let body_ret_type = fst body_texpr in
-      let actual_fun_type = Types.TFun (param_type, body_ret_type) in
+      let actual_fun_type = Ast.TFun (param_type, body_ret_type) in
       unify fun_type_itself actual_fun_type;
       (fun_type_itself, TAExprNode (Fix (f, x, body_texpr)))
 
     | Nil -> 
-      let elem_ty = Types.fresh_meta () in
+      let elem_ty = Ast.fresh_meta () in
       (TList elem_ty, TAExprNode Nil) 
 
     | Cons (e_hd, e_tl) ->
@@ -443,7 +443,7 @@ let infer (e : expr) : texpr =
 
     | MatchList (e_match, e_nil, y, ys, e_cons) ->
       let t_match, a_match = aux env e_match in
-      let elem_ty = Types.fresh_meta () in
+      let elem_ty = Ast.fresh_meta () in
       (try unify t_match (TList elem_ty)
        with Failure msg -> failwith ("Type error in match expression (expected list type): " ^ msg));
       (* Type check nil branch *) 
@@ -452,7 +452,7 @@ let infer (e : expr) : texpr =
       let env_cons = StringMap.add y elem_ty (StringMap.add ys t_match env) in
       let t_cons, a_cons = aux env_cons e_cons in
       (* Unify branch types *) 
-      let result_ty = Types.fresh_meta () in
+      let result_ty = Ast.fresh_meta () in
       (try 
          sub_type t_nil result_ty;
          sub_type t_cons result_ty
@@ -465,18 +465,18 @@ let infer (e : expr) : texpr =
 
     | Deref e1 ->
       let t1, a1 = aux env e1 in
-      let val_ty = Types.fresh_meta () in
+      let val_ty = Ast.fresh_meta () in
       (try unify t1 (TRef val_ty)
        with Failure msg -> failwith ("Type error in dereference (!): " ^ msg));
-      (Types.force val_ty, TAExprNode (Deref (t1, a1)))
+      (Ast.force val_ty, TAExprNode (Deref (t1, a1)))
 
     | Assign (e1, e2) ->
       let t1, a1 = aux env e1 in
       let t2, a2 = aux env e2 in
-      let val_ty = Types.fresh_meta () in
+      let val_ty = Ast.fresh_meta () in
       (try 
          unify t1 (TRef val_ty);
-         sub_type t2 (Types.force val_ty)
+         sub_type t2 (Ast.force val_ty)
        with Failure msg -> failwith ("Type error in assignment (:=): " ^ msg));
       (TUnit, TAExprNode (Assign ((t1, a1), (t2, a2))))
 
@@ -485,9 +485,9 @@ let infer (e : expr) : texpr =
       let t2, a2 = aux env e2 in
       (t2, TAExprNode (Seq ((t1, a1), (t2, a2)))) (* Type of sequence is type of e2 *)
 
-    | Unit -> (Types.TUnit, TAExprNode Unit)
+    | Unit -> (Ast.TUnit, TAExprNode Unit)
 
-    | RuntimeError s -> (Types.fresh_meta (), TAExprNode (RuntimeError s))
+    | RuntimeError s -> (Ast.fresh_meta (), TAExprNode (RuntimeError s))
 
   in
   aux StringMap.empty e
@@ -495,5 +495,5 @@ let infer (e : expr) : texpr =
 (* Function that does infer but insists that the return type is TBool *)
 let infer_bool (e : expr) : texpr =
   let t, a = infer e in
-  sub_type t Types.TBool;
+  sub_type t Ast.TBool;
   (t, a) 

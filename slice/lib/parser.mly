@@ -1,5 +1,5 @@
 %{
-open Types
+open Ast
 %}
 
 %token <string> IDENT
@@ -59,14 +59,14 @@ open Types
 %token EXPPOW
 %token ITERATE
 
-%start <Types.expr> prog
+%start <Ast.expr> prog
 
 (* Define types for non-terminals *) 
-%type <Types.expr> expr assign_expr cons_expr cmp_expr app_expr atomic_expr prefix_expr
-%type <Types.expr list> expr_comma_list (* New type for list of expressions *)
+%type <Ast.expr> expr assign_expr cons_expr cmp_expr app_expr atomic_expr prefix_expr
+%type <Ast.expr list> expr_comma_list (* New type for list of expressions *)
 %type <unit> opt_bar
 %type <float> number
-%type <(Types.expr * float) list> distr_cases
+%type <(Ast.expr * float) list> distr_cases
 
 (* Operator precedence and associativity from commit 23e2e6c *)
 %left ARROW             (* Function type arrow *)
