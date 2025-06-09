@@ -407,7 +407,7 @@ class SliceCLI:
         dice_binary = "dice.exe"
         if subprocess.run("which dice.exe", shell=True, capture_output=True).returncode != 0:
             # Not in PATH, use local build
-            dice_binary = "./dice/_build/default/bin/dice.exe"
+            dice_binary = "./_build/default/bin/dice.exe"
             dice_cmd = f"cd dice && {dice_binary} '../output.dice' -show-size -flip-lifting"
             if args.dice_args:
                 dice_cmd = f"cd dice && {dice_binary} '../output.dice' {args.dice_args}"
