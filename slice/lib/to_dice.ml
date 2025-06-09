@@ -1,4 +1,4 @@
-open Types
+open Ast
 open Bags (* Open Bags to get FloatSet and access Set modules and Bound type *)
 module Util = Util
 
@@ -68,13 +68,13 @@ and string_of_expr_node ?(indent=0) (ExprNode expr_node) : string =
         if flipped then
           (* Flip back to show original syntax *)
           match cmp_op with
-          | Types.Lt -> ">", e2, e1   (* Originally > *)
-          | Types.Le -> ">=", e2, e1  (* Originally >= *)
+          | Ast.Lt -> ">", e2, e1   (* Originally > *)
+          | Ast.Le -> ">=", e2, e1  (* Originally >= *)
         else
           (* Show as-is *)
           match cmp_op with
-          | Types.Lt -> "<", e1, e2
-          | Types.Le -> "<=", e1, e2
+          | Ast.Lt -> "<", e1, e2
+          | Ast.Le -> "<=", e1, e2
       in
       Printf.sprintf "%s %s %s" (string_of_expr_indented ~indent left_expr) op_str (string_of_expr_indented ~indent right_expr)
   | FinCmp (cmp_op, e1, e2, _, flipped) ->
@@ -82,13 +82,13 @@ and string_of_expr_node ?(indent=0) (ExprNode expr_node) : string =
         if flipped then
           (* Flip back to show original syntax *)
           match cmp_op with
-          | Types.Lt -> ">", e2, e1   (* Originally >#n *)
-          | Types.Le -> ">=", e2, e1  (* Originally >=#n *)
+          | Ast.Lt -> ">", e2, e1   (* Originally >#n *)
+          | Ast.Le -> ">=", e2, e1  (* Originally >=#n *)
         else
           (* Show as-is *)
           match cmp_op with
-          | Types.Lt -> "<", e1, e2
-          | Types.Le -> "<=", e1, e2
+          | Ast.Lt -> "<", e1, e2
+          | Ast.Le -> "<=", e1, e2
       in
       Printf.sprintf "%s %s %s" (string_of_expr_indented ~indent left_expr) op_str (string_of_expr_indented ~indent right_expr)
   | And (e1, e2) ->
@@ -175,13 +175,13 @@ and string_of_aexpr_node ?(indent=0) (TAExprNode ae_node) : string =
         if flipped then
           (* Flip back to show original syntax *)
           match cmp_op with
-          | Types.Lt -> ">", te2, te1   (* Originally > *)
-          | Types.Le -> ">=", te2, te1  (* Originally >= *)
+          | Ast.Lt -> ">", te2, te1   (* Originally > *)
+          | Ast.Le -> ">=", te2, te1  (* Originally >= *)
         else
           (* Show as-is *)
           match cmp_op with
-          | Types.Lt -> "<", te1, te2
-          | Types.Le -> "<=", te1, te2
+          | Ast.Lt -> "<", te1, te2
+          | Ast.Le -> "<=", te1, te2
       in
       Printf.sprintf "%s %s %s" (string_of_texpr_indented ~indent left_expr) op_str (string_of_texpr_indented ~indent right_expr)
   | FinCmp (cmp_op, te1, te2, _, flipped) ->
@@ -189,13 +189,13 @@ and string_of_aexpr_node ?(indent=0) (TAExprNode ae_node) : string =
         if flipped then
           (* Flip back to show original syntax *)
           match cmp_op with
-          | Types.Lt -> ">", te2, te1   (* Originally >#n *)
-          | Types.Le -> ">=", te2, te1  (* Originally >=#n *)
+          | Ast.Lt -> ">", te2, te1   (* Originally >#n *)
+          | Ast.Le -> ">=", te2, te1  (* Originally >=#n *)
         else
           (* Show as-is *)
           match cmp_op with
-          | Types.Lt -> "<", te1, te2
-          | Types.Le -> "<=", te1, te2
+          | Ast.Lt -> "<", te1, te2
+          | Ast.Le -> "<=", te1, te2
       in
       Printf.sprintf "%s %s %s" (string_of_texpr_indented ~indent left_expr) op_str (string_of_texpr_indented ~indent right_expr)
   | And (te1, te2) ->

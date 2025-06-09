@@ -1,6 +1,6 @@
 (* Implementation of the expression parser *)
 
-open Types
+open Ast
 open Lexing
 
 let parse_expr (s : string) : expr =

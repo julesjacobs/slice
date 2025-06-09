@@ -1,4 +1,4 @@
-open Types
+open Ast
 
 (* Ensure Random is initialized *)
 let () = Random.self_init ()
@@ -51,14 +51,14 @@ let rec eval (env : env) (ExprNode e_node : expr) : value =
       (match v1, v2 with
        | VFloat f1, VFloat f2 ->
            let result = match cmp_op with
-             | Types.Lt -> f1 < f2
-             | Types.Le -> f1 <= f2  
+             | Ast.Lt -> f1 < f2
+             | Ast.Le -> f1 <= f2  
            in
            VBool result
        | _ -> 
            let op_name = match cmp_op with
-             | Types.Lt -> "Less"
-             | Types.Le -> "LessEq"
+             | Ast.Lt -> "Less"
+             | Ast.Le -> "LessEq"
            in
            raise (RuntimeError ("Type error during evaluation: " ^ op_name ^ " expects floats")))
 
@@ -68,14 +68,14 @@ let rec eval (env : env) (ExprNode e_node : expr) : value =
       (match v1, v2 with
        | VFin (k1, n1), VFin (k2, n2) when n1 = n && n2 = n ->
            let result = match cmp_op with
-             | Types.Lt -> k1 < k2
-             | Types.Le -> k1 <= k2
+             | Ast.Lt -> k1 < k2
+             | Ast.Le -> k1 <= k2
            in
            VBool result
        | _ ->
            let op_name = match cmp_op with
-             | Types.Lt -> "FinLt"
-             | Types.Le -> "FinLeq"
+             | Ast.Lt -> "FinLt"
+             | Ast.Le -> "FinLeq"
            in
            raise (RuntimeError (Printf.sprintf "Type error during evaluation: FinCmp %s expects Fin(%d)" op_name n)))
 

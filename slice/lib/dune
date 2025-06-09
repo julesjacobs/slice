@@ -2,7 +2,7 @@
  (name slice)
  (public_name slice)
  (libraries gsl)
- (modules bag bags types distributions lexer parser parse pretty interp util to_dice to_roulette discretization inference))
+ (modules bag bags ast distributions lexer parser parse pretty interp util to_dice to_roulette discretization inference))
 
 (ocamllex lexer)
 
