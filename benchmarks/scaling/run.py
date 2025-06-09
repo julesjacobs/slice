@@ -351,16 +351,16 @@ def main():
         
     # Define all tests with their argument count
     tests_1_arg = [
-        build_conditional_independent_contdice,
-        build_conditional_random_independent_contdice_1,
-        build_conditional_random_independent_contdice_2
+        build_conditional_independent_slice,
+        build_conditional_random_independent_slice_1,
+        build_conditional_random_independent_slice_2
     ]
     
     tests_2_args = [
-        build_alternating_guard_contdice_1,
-        build_alternating_guard_contdice_2,
-        build_alternating_guard_contdice_3,
-        build_random_alternating_guard_contdice
+        build_alternating_guard_slice_1,
+        build_alternating_guard_slice_2,
+        build_alternating_guard_slice_3,
+        build_random_alternating_guard_slice
     ]
     
     # Run all benchmarks

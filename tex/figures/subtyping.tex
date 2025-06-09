@@ -1,0 +1,33 @@
+\begin{figure}
+\begin{mathpar}
+    \inferrule[\textsc{Sub-Refl}]
+    {\ }
+    {\tau <: \tau}
+
+    \inferrule[\textsc{Sub-Trans}]
+    {\tau_1 <: \tau_2 \and \tau_2 <: \tau_3}
+    {\tau_1 <: \tau_3}
+
+    \inferrule[\textsc{Sub-Float}]
+    {B_1 = B_2 \and V_1 \sqsubseteq V_2}
+    {\float[B_1; V_1] <: \float[B_2; V_2]}
+
+    \inferrule[\textsc{Sub-Pair}]
+    {\tau_1 <: \tau_1' \and \tau_2 <: \tau_2'}
+    {\tau_1 * \tau_2 <: \tau_1' * \tau_2'}
+
+    \inferrule[\textsc{Sub-List}]
+    {\tau <: \tau'}
+    {\textbf{list}(\tau) <: \textbf{list}(\tau')}
+
+    \inferrule[\textsc{Sub-Arrow}]
+    {\tau_1' <: \tau_1 \and \tau_2 <: \tau_2'}
+    {\tau_1 \rightarrow \tau_2 <: \tau_1' \rightarrow \tau_2'}
+
+    \inferrule[\textsc{Sub-Type}]
+    {\tau_1 <: \tau_2 \and \Gamma \vdash e : \tau_1}
+    {\Gamma \vdash e : \tau_2}
+\end{mathpar}
+\caption{Subtyping relation for Slice types.}
+\label{fig:subtyping}
+\end{figure}

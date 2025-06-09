@@ -34,7 +34,7 @@ We present and evaluate our framework for type-directed discretization via the f
 
     \item[Discretization (\Cref{sec:discretization})] We present a type-directed program transformation that soundly converts continuous distributions and their comparisons into discrete counterparts.
 
-    \item[Soundness (\Cref{sec:soundness})] We prove that our discretization method is sound, establishing that the discretized program preserves the semantics of the original program.
+    \item[Soundness (\Cref{sec:soundness})] We prove that our discretization method is sound, establishing that the discretized program preserves the semantics of the original program. Our proof employs logical relations, a well-established technique for reasoning about program equivalences in probabilistic languages~\cite{Bizjak2015Step,Wand2018Contextual}.
 
     \item[Implementation (\Cref{sec:implementation})] We provide an open-source implementation of \Slice{} that compiles programs for the \Dice{} exact inference engine. Our implementation also includes a direct interpreter for partially discretized programs.
 
