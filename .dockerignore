@@ -3,8 +3,6 @@ dice/_build/
 slice/_build/
 cdice/_build/
 **/_build/
-dice/rsdd/target/
-**/target/
 
 # Exclude version control
 .git/
