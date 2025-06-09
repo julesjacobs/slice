@@ -455,18 +455,10 @@ class SliceCLI:
         # Test Dice
         if 'dice' in components:
             print("2. Testing Dice...")
-            dice_exe = "dice/_build/default/bin/dice.exe"
-            if os.path.exists(dice_exe):
-                result = self.run_command(
-                    f"{dice_exe} dice/resources/example.dice",
-                    check=False
-                )
-            else:
-                # Fallback to dune exec
-                result = self.run_command(
-                    "cd dice && dune exec dice resources/example.dice",
-                    check=False
-                )
+            result = self.run_command(
+                "cd dice && dune exec dice resources/example.dice",
+                check=False
+            )
             if result.returncode == 0:
                 print("   ✓ Dice is working")
             else:
