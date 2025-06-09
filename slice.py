@@ -81,9 +81,10 @@ class BenchmarkRunner:
         else:
             # Local environment
             slice_cmd = f"cd slice && ./_build/default/bin/main.exe {os.path.abspath(slice_file)} | tee ../output.dice"
+            cd_out = "cd .."
             dice_cmd = "cd dice && ./_build/default/bin/dice.exe '../output.dice' -show-size -flip-lifting"
         
-        full_cmd = f"{slice_cmd} && {dice_cmd}"
+        full_cmd = f"{slice_cmd} && {cd_out} && {dice_cmd}"
         return self.run_command(full_cmd)
     
     def run_python_file(self, py_file):
