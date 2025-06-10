@@ -104,10 +104,17 @@ and string_of_expr_node ?(indent=0) (ExprNode expr_node) : string =
   | Pair (e1, e2) -> Printf.sprintf "(list %s %s)" (string_of_expr_indented ~indent e1) (string_of_expr_indented ~indent e2)
   | First e -> Printf.sprintf "(first %s)" (string_of_expr_indented ~indent e)
   | Second e -> Printf.sprintf "(second %s)" (string_of_expr_indented ~indent e)
-  | Fun (x, e) ->
-      let e_str = string_of_expr_indented ~indent:(indent+2) e in
-      Printf.sprintf "fun %s -> %s" x e_str
-  | FuncApp (e1, e2) -> Printf.sprintf "(%s %s)" (string_of_expr_indented ~indent e1) (string_of_expr_indented ~indent e2)
+  | Fun (_, _) -> ""
+  | FuncApp (e1, e2) -> 
+    let rec collect_args expr acc =
+      match expr with
+      | ExprNode (FuncApp (inner_e1, inner_e2)) -> collect_args inner_e1 (inner_e2 :: acc)
+      | _ -> (expr, acc)
+    in
+    let (func, args) = collect_args e1 [e2] in
+    let func_str = string_of_expr_indented ~indent func in
+    let args_str = String.concat " " (List.map (string_of_expr_indented ~indent) args) in
+    Printf.sprintf "(%s %s)" func_str args_str
   | LoopApp (e1, e2, n) -> Printf.sprintf "iterate(%s,%s,%d)" (string_of_expr_indented ~indent e1) (string_of_expr_indented ~indent e2) n
   | FinConst (k, _) -> 
       Printf.sprintf "%d" k
