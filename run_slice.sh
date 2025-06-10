@@ -1,4 +1,5 @@
 #!/bin/bash
+# Can alternatively use the slice.py CLI
 
 # ================[ WORKFLOW FOR SLICE ]================
 # First run slice, which converts a continuous program to an equivalent discretized one

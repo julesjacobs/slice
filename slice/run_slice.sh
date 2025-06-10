@@ -46,8 +46,21 @@ INPUT_ABS=$(realpath "$INPUT")
 # Determine output file extension based on backend
 OUTPUT_EXT=$([ "$BACKEND" = "roulette" ] && echo "rkt" || echo "dice")
 
-if [ "$PRINT_ALL" = true ]; then
-  ./_build/default/bin/main.exe --print-all --backend "$BACKEND" "$INPUT_ABS" | tee "../output.$OUTPUT_EXT"
+if [ "$BACKEND" = "roulette" ]; then
+  # For roulette, prepend the #lang line
+  {
+    echo "#lang roulette/example/disrupt"
+    if [ "$PRINT_ALL" = true ]; then
+      ./_build/default/bin/main.exe --print-all --backend "$BACKEND" "$INPUT_ABS"
+    else
+      ./_build/default/bin/main.exe --backend "$BACKEND" "$INPUT_ABS"
+    fi
+  } | tee "../output.$OUTPUT_EXT"
 else
-  ./_build/default/bin/main.exe --backend "$BACKEND" "$INPUT_ABS" | tee "../output.$OUTPUT_EXT"
+  # For dice, run normally
+  if [ "$PRINT_ALL" = true ]; then
+    ./_build/default/bin/main.exe --print-all --backend "$BACKEND" "$INPUT_ABS" | tee "../output.$OUTPUT_EXT"
+  else
+    ./_build/default/bin/main.exe --backend "$BACKEND" "$INPUT_ABS" | tee "../output.$OUTPUT_EXT"
+  fi
 fi
