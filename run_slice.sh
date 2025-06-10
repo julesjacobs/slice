@@ -46,8 +46,18 @@ EXAMPLE_ABS=$(realpath "$EXAMPLE")
 
 # ================[ SLICE ]================
 cd slice || exit 1
-# Run slice with backend flag and tee output to appropriate file
-./_build/default/bin/main.exe --backend "$BACKEND" "$EXAMPLE_ABS" | tee "../output.$OUTPUT_EXT"
+
+if [ "$BACKEND" = "roulette" ]; then
+  # For roulette, prepend the #lang line
+  {
+    echo "#lang roulette/example/disrupt"
+    ./_build/default/bin/main.exe --backend "$BACKEND" "$EXAMPLE_ABS"
+  } > "../output.$OUTPUT_EXT"
+else
+  # For dice, just run normally
+  ./_build/default/bin/main.exe --backend "$BACKEND" "$EXAMPLE_ABS" > "../output.$OUTPUT_EXT"
+fi
+
 cd ..
 
 # ================[ BACKEND EXECUTION ]================
