@@ -25,35 +25,16 @@ and string_of_expr_node ?(indent=0) (ExprNode expr_node) : string =
   | BoolConst b -> string_of_bool b
   | Var x -> x
   | Let (x, e1, e2) ->
-    let indent_str = String.make indent ' ' in
     (match e1 with
     | ExprNode (Fun (param, body)) ->
-        (* Try to extract int size k from #k from LoopApp inside e2 *)
-        let rec find_loopapp_arg e =
-          (match e with
-          | ExprNode (LoopApp (ExprNode (Var f), arg_expr, _)) when f = x ->
-              Some arg_expr
-          | ExprNode (FuncApp (ExprNode (Var f), arg_expr)) when f = x ->
-              Some arg_expr
-          | ExprNode (Let (_, e1', e2')) ->
-            (match find_loopapp_arg e1' with
-              | Some _ as res -> res
-              | None -> find_loopapp_arg e2')
-          | _ -> None)
-        in
-        let k_opt = Option.bind (find_loopapp_arg e2) extract_fin_modulus in
-        let annotation = match k_opt with
-          | Some k -> Printf.sprintf ": int(%d)" (Util.bit_length (k-1))
-          | None -> ""
-        in
-        let fun_body_str = string_of_expr_indented ~indent:(indent+2) body in
-        let rest_str = string_of_expr_indented ~indent e2 in
-        Printf.sprintf "%sfun %s(%s%s) {\n%s\n%s}\n%s"
-          indent_str x param annotation fun_body_str indent_str rest_str
+      let fun_body_str = string_of_expr_indented ~indent:(indent+2) body in
+      let rest_str = string_of_expr_indented ~indent e2 in
+      Printf.sprintf "(define (%s %s) %s)\n%s"
+        x param fun_body_str rest_str
     | _ ->
-        let e1_str = string_of_expr_indented ~indent:(indent+2) e1 in
-        let e2_str = string_of_expr_indented ~indent:(indent+2) e2 in
-        Printf.sprintf "(define %s %s) \n%s" x e1_str e2_str)
+      let e1_str = string_of_expr_indented ~indent:(indent+2) e1 in
+      let e2_str = string_of_expr_indented ~indent:(indent+2) e2 in
+      Printf.sprintf "(define %s %s) \n%s" x e1_str e2_str)
   | Sample dist_exp -> string_of_sample ~indent dist_exp
   | DistrCase cases ->
     (* Construct a chain of if-else statements containing flips to resemble the pmf *)
@@ -120,7 +101,7 @@ and string_of_expr_node ?(indent=0) (ExprNode expr_node) : string =
   | Fun (x, e) ->
       let e_str = string_of_expr_indented ~indent:(indent+2) e in
       Printf.sprintf "fun %s -> %s" x e_str
-  | FuncApp (e1, e2) -> Printf.sprintf "%s(%s)" (string_of_expr_indented ~indent e1) (string_of_expr_indented ~indent e2)
+  | FuncApp (e1, e2) -> Printf.sprintf "(%s %s)" (string_of_expr_indented ~indent e1) (string_of_expr_indented ~indent e2)
   | LoopApp (e1, e2, n) -> Printf.sprintf "iterate(%s,%s,%d)" (string_of_expr_indented ~indent e1) (string_of_expr_indented ~indent e2) n
   | FinConst (k, _) -> 
       Printf.sprintf "%d" k
