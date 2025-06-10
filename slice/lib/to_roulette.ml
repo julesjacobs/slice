@@ -95,9 +95,9 @@ and string_of_expr_node ?(indent=0) (ExprNode expr_node) : string =
       let e2_str = string_of_expr_indented ~indent:(indent+2) e2 in
       let e3_str = string_of_expr_indented ~indent:(indent+2) e3 in
       Printf.sprintf "(if %s %s %s)" e1_str e2_str e3_str
-  | Pair (e1, e2) -> Printf.sprintf "(%s, %s)" (string_of_expr_indented ~indent e1) (string_of_expr_indented ~indent e2)
-  | First e -> Printf.sprintf "(fst %s)" (string_of_expr_indented ~indent e)
-  | Second e -> Printf.sprintf "(snd %s)" (string_of_expr_indented ~indent e)
+  | Pair (e1, e2) -> Printf.sprintf "(list %s %s)" (string_of_expr_indented ~indent e1) (string_of_expr_indented ~indent e2)
+  | First e -> Printf.sprintf "(first %s)" (string_of_expr_indented ~indent e)
+  | Second e -> Printf.sprintf "(second %s)" (string_of_expr_indented ~indent e)
   | Fun (x, e) ->
       let e_str = string_of_expr_indented ~indent:(indent+2) e in
       Printf.sprintf "fun %s -> %s" x e_str
