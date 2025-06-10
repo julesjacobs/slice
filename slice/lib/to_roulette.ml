@@ -27,14 +27,20 @@ and string_of_expr_node ?(indent=0) (ExprNode expr_node) : string =
   | Let (x, e1, e2) ->
     (match e1 with
     | ExprNode (Fun (param, body)) ->
-      let fun_body_str = string_of_expr_indented ~indent:(indent+2) body in
+      (* Recursively collect all parameters from nested `fun` expressions *)
+      let rec collect_params acc = function
+        | ExprNode (Fun (p, body)) -> collect_params (p :: acc) body
+        | body -> (List.rev acc, body)
+      in
+      let (params, final_body) = collect_params [param] body in
+      let params_str = String.concat " " params in
+      let body_str = string_of_expr_indented ~indent:(indent+2) final_body in
       let rest_str = string_of_expr_indented ~indent e2 in
-      Printf.sprintf "(define (%s %s) %s)\n%s"
-        x param fun_body_str rest_str
+      Printf.sprintf "(define (%s %s) %s)\n%s" x params_str body_str rest_str
     | _ ->
       let e1_str = string_of_expr_indented ~indent:(indent+2) e1 in
-      let e2_str = string_of_expr_indented ~indent:(indent+2) e2 in
-      Printf.sprintf "(define %s %s) \n%s" x e1_str e2_str)
+      let e2_str = string_of_expr_indented ~indent e2 in
+      Printf.sprintf "(define %s %s)\n%s" x e1_str e2_str)
   | Sample dist_exp -> string_of_sample ~indent dist_exp
   | DistrCase cases ->
     (* Construct a chain of if-else statements containing flips to resemble the pmf *)
