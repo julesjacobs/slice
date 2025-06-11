@@ -380,8 +380,8 @@ Similar rules apply for $\leq$, $\logand$, $\logor$, and other binary operations
 \end{cases} \\
 %
 \sem{ v_1 \finlt{n} v_1 } &= \begin{cases}
-	\delta_{\text{true}} & \text{if $v_1 = k_{1,\#n}$ and $v_2=k_{1,\#n}'$ are finite type values}~k < k' \\
-	\delta_{\text{false}} & \text{if $v_1 = k_{1,\#n}$ and $v_2=k_{1,\#n}'$ are finite type values}~k \geq k' \\
+	\delta_{\text{true}} & \text{if $v_1 = k_{1,\#n}$ and $v_2=k_{1,\#n}'$ are finite type values and}~k < k' \\
+	\delta_{\text{false}} & \text{if $v_1 = k_{1,\#n}$ and $v_2=k_{1,\#n}'$ are finite type values and}~k \geq k' \\
 	\delta_{\error} & \text{otherwise}
 \end{cases}
 \end{align*}
@@ -389,14 +389,44 @@ Similar rules apply for $\leq$, $\logand$, $\logor$, and other binary operations
 \subsubsection{Probabilistic Distributions}
 
 For sampling expressions, we map to the corresponding probability distributions:
+\kevin{double check if type system should ensure the side conditions}
 
 \begin{align*}
-\sem{ \uniform(v_1, v_2) } &= \text{Uniform}_{[v_1, v_2)} \\
-\sem{ \gaussian(v_\mu, v_\sigma) } &= \mathcal{N}(v_\mu, v_\sigma^2) \\
-\sem{ \exponential(v_\lambda) } &= \text{Exp}(v_\lambda) \\
-\sem{ \betafn(v_\alpha, v_\beta) } &= \text{Beta}(v_\alpha, v_\beta) \\
-\sem{ \discrete(p_0, \ldots, p_n) } &= \sum_{i=0}^n p_i \cdot \delta_i
+\sem{ \uniform(v_1, v_2) } &= \begin{cases}
+\text{Uniform}_{[v_1, v_2)}  & \text{if $v_1$ and $v_2$ are float constants with $v_1 < v_2$} \\
+%
+\delta_\error & \text{otherwise}
+\end{cases}
+\\
+\sem{ \gaussian(v_\mu, v_\sigma) } &= 
+ \begin{cases}
+	\mathcal{N}(v_\mu, v_\sigma^2)  & \text{if $v_\mu$ and $v_\sigma$ are float constants with $v_\sigma > 0$} \\
+	%
+	\delta_\error & \text{otherwise}
+\end{cases}
+\\
+\sem{ \exponential(v_\lambda) } &= 
+ \begin{cases}
+	\text{Exp}(v_\lambda)   & \text{if $v_\lambda$ is a float constant with $v_\lambda > 0$} \\
+	%
+	\delta_\error & \text{otherwise}
+\end{cases}
+\\
+\sem{ \betafn(v_\alpha, v_\beta) } &= 
+ \begin{cases}
+	\text{Beta}(v_\alpha, v_\beta)   & \text{if $v_\alpha$ and $v_\beta$ are float constants with $v_\alpha > 0$ and $v_\beta > 0$} \\
+	%
+	\delta_\error & \text{otherwise}
+\end{cases}
+\\
+\sem{ \discrete(v_0, \ldots, v_n) } &= %\sum_{i=0}^n p_i \cdot \delta_i
+\begin{cases}
+	\sum_{i=0}^n v_i \cdot \delta_i & \text{if the $v_i$ a are non-negative float constants with $\sum_i v_i = 1$} \\
+	%
+	\delta_\error  & \text{otherwise}
+\end{cases}
 \end{align*}
+\kevin{double check discrete}
 
 Note that for continuous distributions, we have an implicit coercion from distributions over reals to distributions over constant expressions. That is, if $D$ is a distribution over $\mathbb{R}$, we treat it as a distribution over expressions by mapping each real $r$ to the constant expression $r$.
 
