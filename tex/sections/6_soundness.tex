@@ -503,7 +503,28 @@ The probabilistic semantics gives:
 
 \subsection{From Small-Step to Big-Step Semantics}
 %
-
+%
+%
+For every $\expr \in \exprs$ and all $n \in \mathbb{N}$, we define the distribution $\bigsemstep{\expr}{n} \in \distexprs$ recursively as
+%
+\[
+	\bigsemstep{\expr}{n} = 
+	\begin{cases}
+		\delta_\expr & \text{if $n=0$} \\
+		%
+		\bigsemstep{\expr}{n-1} \monbind \sem{\cdot} & \text{if $n>0$}~.
+	\end{cases}
+\]
+%
+\begin{definition}[Big-Step Semantics of Expressions]
+	Let $\expr \in \exprs$. The \emph{big-step semantics of $\expr$} is 
+	%
+	\[
+		\bigsem{\expr} ~{}={}~ \lim_{n \to \infty} \bigsemstep{\expr}{n} \in \distextexprs~.
+	\]
+\end{definition}
+%
+The above limit is to be understood pointwise and well-defined since...
 
 \subsection{Measure Space on Expressions}
 
