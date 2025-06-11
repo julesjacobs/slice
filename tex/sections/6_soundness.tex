@@ -210,12 +210,21 @@ This nondeterministic semantics captures all possible execution paths of a proba
 
 \subsection{Probabilistic Small-Step Semantics}
 
-We now define a probabilistic semantics that tracks the distribution over expressions. The semantic function $\sem{\cdot} \colon \exprs \rightarrow \distexprs$ maps expressions to distributions over expressions, where $\dist{X}$ denotes the space of probability distributions over $X$.
+We now define a probabilistic semantics that tracks the distribution over expressions. Define
+%
+\[
+	\extexprs = \exprs \cup  \{ \error \} \cup \{ \obsfail \}~,
+\]
+%
+and call them \emph{extended expressions}.
+%
+%where $\error$ indicates a type error and $\obsfail$ denotes observation failure.
+The semantic function $\sem{\cdot} \colon \exprs \rightarrow \distexprs$ maps expressions to distributions over expressions, where $\dist{X}$ denotes the space of probability distributions over $X$.
 
 We assume the existence of the Giry monad structure on $\mathcal{D}$, which provides:
 \begin{itemize}
-    \item $\text{return} : X \rightarrow \mathcal{D}(X)$ (also written as $\delta_x$ for the Dirac distribution at $x$)
-    \item $(>>=) : \mathcal{D}(X) \times (X \rightarrow \mathcal{D}(Y)) \rightarrow \mathcal{D}(Y)$ (monadic bind)
+    \item $\monunit \colon X \rightarrow \dist{X}$ (also written as $\delta_x$ for the Dirac distribution at $x$)
+    \item $\monbind \colon \dist{X} \times (X \to \dist{Y}) \rightarrow \dist{Y}$ (monadic bind)
 \end{itemize}
 
 \subsubsection{Deterministic Constructs}
@@ -226,38 +235,96 @@ For deterministic constructs, the semantics returns a Dirac distribution:
 \begin{align*}
 \sem{\val} &= \delta_\val \quad \text{(for any value } \val \text{)} \\
 \sem{\letkw \; \var = \val \; \inkw \; \expr} &= \delta_{\expr\subst{\val}{\var}} \\
-\sem{ \fstkw \; (\val_1, \val_2) } &= \delta_{\val_1} \\
-\sem{ \sndkw \; (\val_1, \val_2) } &= \delta_{\val_2} \\
-\sem{ (\funkw \; \var \; \rightarrow \; \expr) \; \val } &= \delta_{\expr\subst{\val}{\var}}
+%
+%
+\sem{ \fstkw \; \val} & = 
+\begin{cases}
+	\delta_{\val_1}  & \text{if $\val = (\val_1,\val_2)$ for some values $\val_1,\val_2$} \\
+	%
+	\delta_{\error}  & \text{otherwise}
+\end{cases}
+%
+\\
+%
+%
+\sem{ \sndkw \; \val} & = 
+\begin{cases}
+	\delta_{\val_2}  & \text{if $\val = (\val_1,\val_2)$ for some values $\val_1,\val_2$} \\
+	%
+	\delta_{\error}  & \text{otherwise}
+\end{cases}
+%
+\\
+%
+\sem{ (\funkw \; \var \; \rightarrow \; \expr) \; \val } &= \delta_{\expr\subst{\val}{\var}}\\
+\sem{\error} = \delta_\error \\
+\sem{\obsfail} = \delta_\obsfail
 \end{align*}
+%
 
 \paragraph{Conditionals}
 \begin{align*}
-\sem{ \ifkw \; \text{true} \; \thenkw \; e_1 \; \elsekw \; e_2 } &= \llbracket e_1 \rrbracket \\
-\sem{ \ifkw \; \text{false} \; \thenkw \; e_1 \; \elsekw \; e_2 } &= \llbracket e_2 \rrbracket
+\sem{ \ifkw \; \val \; \thenkw \; e_1 \; \elsekw \; e_2 } & = 
+\begin{cases}
+	\sem{\expr_1}  & \text{if $\val = \true$} \\
+	%
+	\sem{\expr_2}  & \text{if $\val = \false$} \\
+	%
+	\delta_\error & \text{otherwise}
+\end{cases}
 \end{align*}
+%
 
 \paragraph{Comparisons}
 \begin{align*}
-\sem{ c_1 < c_2 } &= \begin{cases}
-    \delta_{\text{true}} & \text{if } c_1 < c_2 \\
-    \delta_{\text{false}} & \text{otherwise}
+\sem{ v_1 < v_2 } &= \begin{cases}
+    \delta_{\text{true}} & \text{if $v_1$ and $v_2$ are float constants and~} v_1 < v_2 \\
+    \delta_{\text{false}} & \text{if $v_1$ and $v_2$ are float constants and~} v_1 \geq v_2\\
+    \delta_\error & \text{otherwise}
 \end{cases} \\
-\sem{ i_1 \leq i_2 } &= \begin{cases}
-    \delta_{\text{true}} & \text{if } i_1 \leq i_2 \\
-    \delta_{\text{false}} & \text{otherwise}
+\sem{ v_1 \leq v_2 } &=\begin{cases}
+	\delta_{\text{true}} & \text{if $v_1$ and $v_2$ are integer values and~} v_1 < v_2 \\
+	\delta_{\text{false}} & \text{if $v_1$ and $v_2$ are integer values and~} v_1 \geq v_2\\
+	\delta_\error & \text{otherwise}
 \end{cases}
 \end{align*}
+%
 
 \paragraph{Boolean Operations}
 \begin{align*}
-\sem{ \text{true} \logand e } &=  e \rrbracket \\
-\sem{ \text{false} \logand e } &= \delta_{\text{false}} \\
-\sem{ \text{true} \logor e } &= \delta_{\text{true}} \\
-\sem{ \text{false} \logor e } &= \llbracket e \rrbracket \\
-\sem{ \text{not}\; \text{true} } &= \delta_{\text{false}} \\
-\sem{ \text{not}\; \text{false} } &= \delta_{\text{true}}
+%\sem{ \text{true} \logand e } &=  \sem{ e } \\
+%\sem{ \text{false} \logand e } &= \delta_{\text{false}} \\
+%
+\sem{ v \logand e } & = \begin{cases}
+	\sem{ e } & \text{if $v=\true$} \\
+	\delta_{\text{false}} & \text{if $v=\false$} \\
+	\delta_\error & \text{otherwise}
+\end{cases} \\ 
+%
+%=
+%\sem{ \text{true} \logor e } &= \delta_{\text{true}} \\
+%\sem{ \text{false} \logor e } &= \sem{ e } \\
+%
+\sem{ v \logor e } & = \begin{cases}
+	\delta_\true & \text{if $v=\true$} \\
+	\sem{ e } & \text{if $v=\false$} \\
+	\delta_\error & \text{otherwise}
+\end{cases} \\ 
+%
+%
+\sem{ \text{not}\; v } &= 
+ \begin{cases}
+	\delta_\false & \text{if $v=\true$} \\
+	\delta_\true & \text{if $v=\false$} \\
+	\delta_\error & \text{otherwise}
+\end{cases} \\ 
+ \\
+%
+%\sem{ \text{not}\; \text{true} } &= \delta_{\text{false}} \\
+%\sem{ \text{not}\; \text{false} } &= \delta_{\text{true}}
 \end{align*}
+%
+
 
 \subsubsection{Compositional Rules}
 
@@ -265,48 +332,57 @@ For compound expressions, we use monadic bind to compose distributions:
 
 \paragraph{Binary Operations}
 \begin{align*}
-\sem{ e_1 < e_2 } &= \llbracket e_1 \rrbracket \gg\!= \lambda v_1. \llbracket v_1 < e_2 \rrbracket \\
-\sem{ v_1 < e_2 } &= \llbracket e_2 \rrbracket \gg\!= \lambda v_2. \llbracket v_1 < v_2 \rrbracket
+\sem{ e_1 < e_2 } &= \sem{ e_1 } \gg\!= \lambda v_1. \sem{ v_1 < e_2 } \\
+\sem{ v_1 < e_2 } &= \sem{ e_2 } \gg\!= \lambda v_2. \sem{ v_1 < v_2 }
 \end{align*}
 
 Similar rules apply for $\leq$, $\logand$, $\logor$, and other binary operations.
 
 \paragraph{Let Binding}
 \begin{align*}
-\sem{ \letkw \; x = e_1 \; \inkw \; e_2 } &= \llbracket e_1 \rrbracket \gg\!= \lambda v. \llbracket \letkw \; x = v \; \inkw \; e_2 \rrbracket
+\sem{ \letkw \; x = e_1 \; \inkw \; e_2 } &= \sem{ e_1 } \gg\!= \lambda v. \sem{ \letkw \; x = v \; \inkw \; e_2 }
 \end{align*}
 
 \paragraph{Conditionals}
 \begin{align*}
-\sem{ \ifkw \; e_1 \; \thenkw \; e_2 \; \elsekw \; e_3 } &= \llbracket e_1 \rrbracket \gg\!= \lambda v. \llbracket \ifkw \; v \; \thenkw \; e_2 \; \elsekw \; e_3 \rrbracket
+\sem{ \ifkw \; e_1 \; \thenkw \; e_2 \; \elsekw \; e_3 } &= \sem{ e_1 } \gg\!= \lambda v. \sem{ \ifkw \; v \; \thenkw \; e_2 \; \elsekw \; e_3 }
 \end{align*}
 
 \paragraph{Function Application}
 \begin{align*}
-\sem{ e_1 \; e_2 } &= \llbracket e_1 \rrbracket \gg\!= \lambda v_1. \llbracket v_1 \; e_2 \rrbracket \\
-\sem{ v_1 \; e_2 } &= \llbracket e_2 \rrbracket \gg\!= \lambda v_2. \llbracket v_1 \; v_2 \rrbracket
+\sem{ e_1 \; e_2 } &= \sem{ e_1 } \gg\!= \lambda v_1. \sem{ v_1 \; e_2 } \\
+\sem{ v_1 \; e_2 } &= \sem{ e_2 } \gg\!= \lambda v_2. \sem{ v_1 \; v_2 }
 \end{align*}
 
 \paragraph{Pairs and Projections}
 \begin{align*}
-\sem{ (e_1, e_2) } &= \llbracket e_1 \rrbracket \gg\!= \lambda v_1. \llbracket (v_1, e_2) \rrbracket \\
-\sem{ (v_1, e_2) } &= \llbracket e_2 \rrbracket \gg\!= \lambda v_2. \delta_{(v_1, v_2)} \\
-\sem{ \fstkw \; e } &= \llbracket e \rrbracket \gg\!= \lambda v. \llbracket \fstkw \; v \rrbracket \\
-\sem{ \sndkw \; e } &= \llbracket e \rrbracket \gg\!= \lambda v. \llbracket \sndkw \; v \rrbracket
+\sem{ (e_1, e_2) } &= \sem{ e_1 } \gg\!= \lambda v_1. \sem{ (v_1, e_2) } \\
+\sem{ (v_1, e_2) } &= \sem{ e_2 } \gg\!= \lambda v_2. \delta_{(v_1, v_2)} \\
+\sem{ \fstkw \; e } &= \sem{ e } \gg\!= \lambda v. \sem{ \fstkw \; v } \\
+\sem{ \sndkw \; e } &= \sem{ e } \gg\!= \lambda v. \sem{ \sndkw \; v }
 \end{align*}
 
 \paragraph{Sequencing}
 \begin{align*}
-\llbracket e_1; e_2 \rrbracket &= \llbracket e_1 \rrbracket \gg\!= \lambda v_1. \llbracket e_2 \rrbracket
+\sem{ e_1; e_2 } &= \sem{ e_1 } \gg\!= \lambda v_1. \sem{ e_2 }
 \end{align*}
 
 \paragraph{Finite Type Operations}
+\kevin{why don't we distinguish values and compound expressions here?}
 \begin{align*}
-\llbracket \finconst{k}{n} \rrbracket &= \delta_{k_{\#n}} \\
-\llbracket e_1 \finlt{n} e_2 \rrbracket &= \llbracket e_1 \rrbracket \gg\!= \lambda v_1. \llbracket v_1 \finlt{n} e_2 \rrbracket \\
-\llbracket k_{1,\#n} \finlt{n} k_{2,\#n} \rrbracket &= \begin{cases}
+\sem{ \finconst{k}{n} } &= \delta_{k_{\#n}} \\
+%
+\sem{ e_1 \finlt{n} e_2 } &= \sem{ e_1 } \gg\!= \lambda v_1. \sem{ v_1 \finlt{n} e_2 } \\
+%
+\sem{ k_{1,\#n} \finlt{n} k_{2,\#n} } &= \begin{cases}
     \delta_{\text{true}} & \text{if } k_1 < k_2 \\
     \delta_{\text{false}} & \text{otherwise}
+\end{cases} \\
+%
+\sem{ v_1 \finlt{n} v_1 } &= \begin{cases}
+	\delta_{\text{true}} & \text{if $v_1 = k_{1,\#n}$ and $v_2=k_{1,\#n}'$ are finite type values}~k < k' \\
+	\delta_{\text{false}} & \text{if $v_1 = k_{1,\#n}$ and $v_2=k_{1,\#n}'$ are finite type values}~k \geq k' \\
+	\delta_{\error} & \text{otherwise}
 \end{cases}
 \end{align*}
 
@@ -315,11 +391,11 @@ Similar rules apply for $\leq$, $\logand$, $\logor$, and other binary operations
 For sampling expressions, we map to the corresponding probability distributions:
 
 \begin{align*}
-\llbracket \uniform(v_1, v_2) \rrbracket &= \text{Uniform}_{[v_1, v_2)} \\
-\llbracket \gaussian(v_\mu, v_\sigma) \rrbracket &= \mathcal{N}(v_\mu, v_\sigma^2) \\
-\llbracket \exponential(v_\lambda) \rrbracket &= \text{Exp}(v_\lambda) \\
-\llbracket \betafn(v_\alpha, v_\beta) \rrbracket &= \text{Beta}(v_\alpha, v_\beta) \\
-\llbracket \discrete(p_0, \ldots, p_n) \rrbracket &= \sum_{i=0}^n p_i \cdot \delta_i
+\sem{ \uniform(v_1, v_2) } &= \text{Uniform}_{[v_1, v_2)} \\
+\sem{ \gaussian(v_\mu, v_\sigma) } &= \mathcal{N}(v_\mu, v_\sigma^2) \\
+\sem{ \exponential(v_\lambda) } &= \text{Exp}(v_\lambda) \\
+\sem{ \betafn(v_\alpha, v_\beta) } &= \text{Beta}(v_\alpha, v_\beta) \\
+\sem{ \discrete(p_0, \ldots, p_n) } &= \sum_{i=0}^n p_i \cdot \delta_i
 \end{align*}
 
 Note that for continuous distributions, we have an implicit coercion from distributions over reals to distributions over constant expressions. That is, if $D$ is a distribution over $\mathbb{R}$, we treat it as a distribution over expressions by mapping each real $r$ to the constant expression $r$.
@@ -329,9 +405,9 @@ Note that for continuous distributions, we have an implicit coercion from distri
 Observations condition the distribution:
 
 \begin{align*}
-\llbracket \text{observe}\; e \rrbracket &= \llbracket e \rrbracket \gg\!= \lambda v. \llbracket \text{observe}\; v \rrbracket \\
-\llbracket \text{observe}\; \text{true} \rrbracket &= \delta_{()} \\
-\llbracket \text{observe}\; \text{false} \rrbracket &= \bot
+\sem{ \text{observe}\; e } &= \sem{ e } \gg\!= \lambda v. \sem{ \text{observe}\; v } \\
+\sem{ \text{observe}\; \text{true} } &= \delta_{()} \\
+\sem{ \text{observe}\; \text{false} } &= \bot
 \end{align*}
 
 where $\bot$ represents the zero measure (failed observation).
@@ -341,7 +417,7 @@ where $\bot$ represents the zero measure (failed observation).
 For distrcase expressions (which represent explicit discrete distributions in the implementation):
 
 \begin{align*}
-\llbracket \text{distrcase}\{(e_0, p_0), \ldots, (e_n, p_n)\} \rrbracket &= \sum_{i=0}^n p_i \cdot \llbracket e_i \rrbracket
+\sem{ \text{distrcase}\{(e_0, p_0), \ldots, (e_n, p_n)\} } &= \sum_{i=0}^n p_i \cdot \sem{ e_i }
 \end{align*}
 
 \subsubsection{Example}
@@ -354,9 +430,9 @@ if x < 0.5 then 1 else 2
 
 The probabilistic semantics gives:
 \begin{align*}
-&\llbracket \text{let } x = \uniform(0.0, 1.0) \text{ in if } x < 0.5 \text{ then } 1 \text{ else } 2 \rrbracket \\
-&= \llbracket \uniform(0.0, 1.0) \rrbracket \gg\!= \lambda x. \llbracket \text{if } x < 0.5 \text{ then } 1 \text{ else } 2 \rrbracket \\
-&= \text{Uniform}_{[0,1)} \gg\!= \lambda x. \llbracket \text{if } x < 0.5 \text{ then } 1 \text{ else } 2 \rrbracket \\
+&\sem{ \text{let } x = \uniform(0.0, 1.0) \text{ in if } x < 0.5 \text{ then } 1 \text{ else } 2 } \\
+&= \sem{ \uniform(0.0, 1.0) } \gg\!= \lambda x. \sem{ \text{if } x < 0.5 \text{ then } 1 \text{ else } 2 } \\
+&= \text{Uniform}_{[0,1)} \gg\!= \lambda x. \sem{ \text{if } x < 0.5 \text{ then } 1 \text{ else } 2 } \\
 &= \text{Uniform}_{[0,1)} \gg\!= \lambda x. \begin{cases}
     \delta_1 & \text{if } x < 0.5 \\
     \delta_2 & \text{if } x \geq 0.5
@@ -365,17 +441,41 @@ The probabilistic semantics gives:
 \end{align*}
 
 This probabilistic semantics forms the foundation for proving that our discretization transformation preserves program behavior.
+%
+\begin{theorem}
+	\label{thm:small-step-well-defined}
+	For every $\expr \in \exprs$, $\sem{\expr}$ is a well defined distribution in $\distextexprs$.
+\end{theorem}
+%
+\begin{proof}
+	By induction on $\exprs$.
+\end{proof}
+%
+%
+\kevin{we will need some relation to nondet semantics. lets see whether we need to add error and obsfail.}
+\begin{theorem}
+	\label{thm:small-step-well-typed}
+	If $\expr : \tau$, then $\sem{\expr}({\error}) = 0$.
+\end{theorem}
+%
+\begin{proof}
+	\kevin{probably} By induction on the derivation tree for $\expr : \tau$.
+\end{proof}
+
+\subsection{From Small-Step to Big-Step Semantics}
+%
+
 
 \subsection{Measure Space on Expressions}
 
-To make the probabilistic semantics precise, we need to define an appropriate measure space structure on the set of expressions. We construct this measure space using the notion of \emph{expression skeletons}.
+To make the probabilistic semantics precise, we need to define an appropriate measure space structure on the set of extended expressions. We construct this measure space using the notion of \emph{expression skeletons}.
 
 \subsubsection{Expression Skeletons}
 
-An expression skeleton is an expression with ``holes'' where real-valued constants can appear. Formally, we define:
+An expression skeleton is an extended expression with ``holes'' where real-valued constants can appear. Formally, we define:
 
 \begin{definition}[Expression Skeleton]
-An expression skeleton $s$ is an expression where each occurrence of a float constant is replaced by a hole $\square_i$ for some index $i \in \mathbb{N}$. We denote by $\text{Skel}$ the set of all expression skeletons, and by $\text{holes}(s)$ the number of distinct holes in skeleton $s$.
+An expression skeleton $s$ is an extended expression where each occurrence of a float constant is replaced by a hole $\square_i$ for some index $i \in \mathbb{N}$. We denote by $\text{Skel}$ the set of all expression skeletons, and by $\text{holes}(s)$ the number of distinct holes in skeleton $s$.
 \end{definition}
 
 For example, the expression $\uniform(0.0, 1.0) < 0.5$ has the skeleton $\uniform(\square_1, \square_2) < \square_3$ with three holes.
@@ -384,9 +484,9 @@ For example, the expression $\uniform(0.0, 1.0) < 0.5$ has the skeleton $\unifor
 
 Given a skeleton $s$ with $n = \text{holes}(s)$ holes, we can instantiate it with a vector $\vec{r} = (r_1, \ldots, r_n) \in \mathbb{R}^n$ to produce a concrete expression $s[\vec{r}]$ by replacing each hole $\square_i$ with the real value $r_i$.
 
-The set of all expressions can then be represented as:
+The set of all extended expressions can then be represented as:
 \[
-\text{Expr} = \bigsqcup_{s \in \text{Skel}} \{s[\vec{r}] \mid \vec{r} \in \mathbb{R}^{\text{holes}(s)}\}
+\extexprs = \bigsqcup_{s \in \text{Skel}} \{s[\vec{r}] \mid \vec{r} \in \mathbb{R}^{\text{holes}(s)}\}
 \]
 
 This is a countable disjoint union because:
@@ -398,7 +498,7 @@ This is a countable disjoint union because:
 
 \subsubsection{Measurable Sets}
 
-We equip $\text{Expr}$ with the $\sigma$-algebra generated by sets of the form:
+We equip $\extexprs$ with the $\sigma$-algebra generated by sets of the form:
 \[
 \{s[\vec{r}] \mid \vec{r} \in B\}
 \]
@@ -413,13 +513,14 @@ This construction ensures that:
 
 \subsubsection{Distributions Over Expressions}
 
-When we write $\mathcal{D}(\text{Expr})$ in our probabilistic semantics, we mean the space of probability measures on $(\text{Expr}, \mathcal{F})$ where $\mathcal{F}$ is the $\sigma$-algebra described above.
+When we write $\mathcal{D}(\extexprs)$ in our probabilistic semantics, we mean the space of probability measures on $(\extexprs, \mathcal{F})$ where $\mathcal{F}$ is the $\sigma$-algebra described above.
 
-For continuous distributions like $\uniform(a, b)$, the implicit coercion to $\mathcal{D}(\text{Expr})$ works as follows:
+For continuous distributions like $\uniform(a, b)$, the implicit coercion to $\mathcal{D}(\extexprs)$ works as follows:
 \begin{enumerate}
     \item The uniform distribution on $[a, b)$ is a measure on $\mathbb{R}$
     \item We lift it to expressions via the skeleton containing a single hole: $s = \square_1$
     \item The resulting distribution on expressions assigns probability to sets of the form $\{r \mid r \in B\}$ for Borel sets $B \subseteq [a, b)$
 \end{enumerate}
 
-This measure-theoretic foundation ensures that our probabilistic semantics is mathematically rigorous and that operations like conditioning (via observations) and marginalization are well-defined.
+This measure-theoretic foundation ensures that our probabilistic semantics is mathematically rigorous and that operations like conditioning (via observations) and marginalization are well-defined. 
+

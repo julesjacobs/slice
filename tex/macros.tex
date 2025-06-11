@@ -23,14 +23,24 @@
 \newcommand{\val}{v}
 \newcommand{\var}{x}
 
+\newcommand{\true}{\text{true}}
+\newcommand{\false}{\text{false}}
+
 
 % Semantics
 \newcommand{\dist}[1]{\mathcal{D}\left( #1 \right)}
 \newcommand{\exprs}{\text{Expr}}
+\newcommand{\extexprs}{{\overline{\text{Expr}}}}
+\newcommand{\distextexprs}{\mathcal{D} \big( \extexprs \big)}
 \newcommand{\distexprs}{\dist{\exprs}}
 \newcommand{\obsfail}{\text{\Lightning}}
 \newcommand{\error}{\text{error}}
 \newcommand{\sem}[1]{\llbracket #1  \rrbracket}
+\newcommand{\bigsem}[2]{\llbracket #1  \rrbracket_{#2}}
+
+\newcommand{\monunit}{\text{return}}
+\newcommand{\monbind}{\ensuremath{\ensuremath{\gg\!\!=}}}
+
 
 
 % Macros for language names, use small caps
