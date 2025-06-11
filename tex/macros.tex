@@ -17,6 +17,22 @@
 \newcommand{\float}{\text{\ttfamily\bfseries float}}
 \newcommand{\fin}[1]{\text{\ttfamily\bfseries \#}#1}
 
+\newcommand{\subst}[2]{[#1/#2]}
+% Meta variables
+\newcommand{\expr}{e}
+\newcommand{\val}{v}
+\newcommand{\var}{x}
+
+
+% Semantics
+\newcommand{\dist}[1]{\mathcal{D}\left( #1 \right)}
+\newcommand{\exprs}{\text{Expr}}
+\newcommand{\distexprs}{\dist{\exprs}}
+\newcommand{\obsfail}{\text{\Lightning}}
+\newcommand{\error}{\text{error}}
+\newcommand{\sem}[1]{\llbracket #1  \rrbracket}
+
+
 % Macros for language names, use small caps
 \newcommand{\Slice}{\text{\scshape Slice}\xspace}
 \newcommand{\Dice}{\text{\scshape Dice}\xspace}

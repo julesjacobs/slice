@@ -210,7 +210,7 @@ This nondeterministic semantics captures all possible execution paths of a proba
 
 \subsection{Probabilistic Small-Step Semantics}
 
-We now define a probabilistic semantics that tracks the distribution over expressions. The semantic function $\llbracket \cdot \rrbracket : \text{Expr} \rightarrow \mathcal{D}(\text{Expr})$ maps expressions to distributions over expressions, where $\mathcal{D}(X)$ denotes the space of probability distributions over $X$.
+We now define a probabilistic semantics that tracks the distribution over expressions. The semantic function $\sem{\cdot} \colon \exprs \rightarrow \distexprs$ maps expressions to distributions over expressions, where $\dist{X}$ denotes the space of probability distributions over $X$.
 
 We assume the existence of the Giry monad structure on $\mathcal{D}$, which provides:
 \begin{itemize}
@@ -224,11 +224,11 @@ For deterministic constructs, the semantics returns a Dirac distribution:
 
 \paragraph{Values and Basic Operations}
 \begin{align*}
-\llbracket v \rrbracket &= \delta_v \quad \text{(for any value } v \text{)} \\
-\llbracket \letkw \; x = v \; \inkw \; e \rrbracket &= \delta_{e[v/x]} \\
-\llbracket \fstkw \; (v_1, v_2) \rrbracket &= \delta_{v_1} \\
-\llbracket \sndkw \; (v_1, v_2) \rrbracket &= \delta_{v_2} \\
-\llbracket (\funkw \; x \; \rightarrow \; e) \; v \rrbracket &= \delta_{e[v/x]}
+\sem{\val} &= \delta_\val \quad \text{(for any value } \val \text{)} \\
+\sem{\letkw \; \var = \val \; \inkw \; \expr} &= \delta_{\expr\subst{\val}{\var}} \\
+\sem{ \fstkw \; (\val_1, \val_2) } &= \delta_{\val_1} \\
+\sem{ \sndkw \; (\val_1, \val_2) } &= \delta_{\val_2} \\
+\sem{ (\funkw \; \var \; \rightarrow \; \expr) \; \val } &= \delta_{\expr\subst{\val}{\var}}
 \end{align*}
 
 \paragraph{Conditionals}
