@@ -233,17 +233,17 @@ For deterministic constructs, the semantics returns a Dirac distribution:
 
 \paragraph{Conditionals}
 \begin{align*}
-\llbracket \ifkw \; \text{true} \; \thenkw \; e_1 \; \elsekw \; e_2 \rrbracket &= \llbracket e_1 \rrbracket \\
-\llbracket \ifkw \; \text{false} \; \thenkw \; e_1 \; \elsekw \; e_2 \rrbracket &= \llbracket e_2 \rrbracket
+\sem{ \ifkw \; \text{true} \; \thenkw \; e_1 \; \elsekw \; e_2 } &= \llbracket e_1 \rrbracket \\
+\sem{ \ifkw \; \text{false} \; \thenkw \; e_1 \; \elsekw \; e_2 } &= \llbracket e_2 \rrbracket
 \end{align*}
 
 \paragraph{Comparisons}
 \begin{align*}
-\llbracket c_1 < c_2 \rrbracket &= \begin{cases}
+\sem{ c_1 < c_2 } &= \begin{cases}
     \delta_{\text{true}} & \text{if } c_1 < c_2 \\
     \delta_{\text{false}} & \text{otherwise}
 \end{cases} \\
-\llbracket i_1 \leq i_2 \rrbracket &= \begin{cases}
+\sem{ i_1 \leq i_2 } &= \begin{cases}
     \delta_{\text{true}} & \text{if } i_1 \leq i_2 \\
     \delta_{\text{false}} & \text{otherwise}
 \end{cases}
@@ -251,12 +251,12 @@ For deterministic constructs, the semantics returns a Dirac distribution:
 
 \paragraph{Boolean Operations}
 \begin{align*}
-\llbracket \text{true} \logand e \rrbracket &= \llbracket e \rrbracket \\
-\llbracket \text{false} \logand e \rrbracket &= \delta_{\text{false}} \\
-\llbracket \text{true} \logor e \rrbracket &= \delta_{\text{true}} \\
-\llbracket \text{false} \logor e \rrbracket &= \llbracket e \rrbracket \\
-\llbracket \text{not}\; \text{true} \rrbracket &= \delta_{\text{false}} \\
-\llbracket \text{not}\; \text{false} \rrbracket &= \delta_{\text{true}}
+\sem{ \text{true} \logand e } &=  e \rrbracket \\
+\sem{ \text{false} \logand e } &= \delta_{\text{false}} \\
+\sem{ \text{true} \logor e } &= \delta_{\text{true}} \\
+\sem{ \text{false} \logor e } &= \llbracket e \rrbracket \\
+\sem{ \text{not}\; \text{true} } &= \delta_{\text{false}} \\
+\sem{ \text{not}\; \text{false} } &= \delta_{\text{true}}
 \end{align*}
 
 \subsubsection{Compositional Rules}
@@ -265,34 +265,34 @@ For compound expressions, we use monadic bind to compose distributions:
 
 \paragraph{Binary Operations}
 \begin{align*}
-\llbracket e_1 < e_2 \rrbracket &= \llbracket e_1 \rrbracket \gg\!= \lambda v_1. \llbracket v_1 < e_2 \rrbracket \\
-\llbracket v_1 < e_2 \rrbracket &= \llbracket e_2 \rrbracket \gg\!= \lambda v_2. \llbracket v_1 < v_2 \rrbracket
+\sem{ e_1 < e_2 } &= \llbracket e_1 \rrbracket \gg\!= \lambda v_1. \llbracket v_1 < e_2 \rrbracket \\
+\sem{ v_1 < e_2 } &= \llbracket e_2 \rrbracket \gg\!= \lambda v_2. \llbracket v_1 < v_2 \rrbracket
 \end{align*}
 
 Similar rules apply for $\leq$, $\logand$, $\logor$, and other binary operations.
 
 \paragraph{Let Binding}
 \begin{align*}
-\llbracket \letkw \; x = e_1 \; \inkw \; e_2 \rrbracket &= \llbracket e_1 \rrbracket \gg\!= \lambda v. \llbracket \letkw \; x = v \; \inkw \; e_2 \rrbracket
+\sem{ \letkw \; x = e_1 \; \inkw \; e_2 } &= \llbracket e_1 \rrbracket \gg\!= \lambda v. \llbracket \letkw \; x = v \; \inkw \; e_2 \rrbracket
 \end{align*}
 
 \paragraph{Conditionals}
 \begin{align*}
-\llbracket \ifkw \; e_1 \; \thenkw \; e_2 \; \elsekw \; e_3 \rrbracket &= \llbracket e_1 \rrbracket \gg\!= \lambda v. \llbracket \ifkw \; v \; \thenkw \; e_2 \; \elsekw \; e_3 \rrbracket
+\sem{ \ifkw \; e_1 \; \thenkw \; e_2 \; \elsekw \; e_3 } &= \llbracket e_1 \rrbracket \gg\!= \lambda v. \llbracket \ifkw \; v \; \thenkw \; e_2 \; \elsekw \; e_3 \rrbracket
 \end{align*}
 
 \paragraph{Function Application}
 \begin{align*}
-\llbracket e_1 \; e_2 \rrbracket &= \llbracket e_1 \rrbracket \gg\!= \lambda v_1. \llbracket v_1 \; e_2 \rrbracket \\
-\llbracket v_1 \; e_2 \rrbracket &= \llbracket e_2 \rrbracket \gg\!= \lambda v_2. \llbracket v_1 \; v_2 \rrbracket
+\sem{ e_1 \; e_2 } &= \llbracket e_1 \rrbracket \gg\!= \lambda v_1. \llbracket v_1 \; e_2 \rrbracket \\
+\sem{ v_1 \; e_2 } &= \llbracket e_2 \rrbracket \gg\!= \lambda v_2. \llbracket v_1 \; v_2 \rrbracket
 \end{align*}
 
 \paragraph{Pairs and Projections}
 \begin{align*}
-\llbracket (e_1, e_2) \rrbracket &= \llbracket e_1 \rrbracket \gg\!= \lambda v_1. \llbracket (v_1, e_2) \rrbracket \\
-\llbracket (v_1, e_2) \rrbracket &= \llbracket e_2 \rrbracket \gg\!= \lambda v_2. \delta_{(v_1, v_2)} \\
-\llbracket \fstkw \; e \rrbracket &= \llbracket e \rrbracket \gg\!= \lambda v. \llbracket \fstkw \; v \rrbracket \\
-\llbracket \sndkw \; e \rrbracket &= \llbracket e \rrbracket \gg\!= \lambda v. \llbracket \sndkw \; v \rrbracket
+\sem{ (e_1, e_2) } &= \llbracket e_1 \rrbracket \gg\!= \lambda v_1. \llbracket (v_1, e_2) \rrbracket \\
+\sem{ (v_1, e_2) } &= \llbracket e_2 \rrbracket \gg\!= \lambda v_2. \delta_{(v_1, v_2)} \\
+\sem{ \fstkw \; e } &= \llbracket e \rrbracket \gg\!= \lambda v. \llbracket \fstkw \; v \rrbracket \\
+\sem{ \sndkw \; e } &= \llbracket e \rrbracket \gg\!= \lambda v. \llbracket \sndkw \; v \rrbracket
 \end{align*}
 
 \paragraph{Sequencing}
