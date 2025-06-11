@@ -436,8 +436,17 @@ Observations condition the distribution:
 
 \begin{align*}
 \sem{ \text{observe}\; e } &= \sem{ e } \gg\!= \lambda v. \sem{ \text{observe}\; v } \\
-\sem{ \text{observe}\; \text{true} } &= \delta_{()} \\
-\sem{ \text{observe}\; \text{false} } &= \bot
+%\sem{ \text{observe}\; \text{true} } &= \delta_{()} \\
+%\sem{ \text{observe}\; \text{false} } &= \bot
+%
+\sem{ \text{observe}\; v} &=
+\begin{cases}
+	\delta_{()}  & \text{if $v=\true$} \\
+	%
+	\delta_{\obsfail} & \text{if $v=\false$} \\
+	%
+	\delta_\error & \text{otherwise}
+\end{cases}
 \end{align*}
 
 where $\bot$ represents the zero measure (failed observation).
@@ -470,22 +479,22 @@ The probabilistic semantics gives:
 &= 0.5 \cdot \delta_1 + 0.5 \cdot \delta_2
 \end{align*}
 
-This probabilistic semantics forms the foundation for proving that our discretization transformation preserves program behavior.
-%
-\begin{theorem}
-	\label{thm:small-step-well-defined}
-	For every $\expr \in \exprs$, $\sem{\expr}$ is a well defined distribution in $\distextexprs$.
-\end{theorem}
-%
-\begin{proof}
-	By induction on $\exprs$.
-\end{proof}
+%This probabilistic semantics forms the foundation for proving that our discretization transformation preserves program behavior.
+%%
+%\begin{theorem}
+%	\label{thm:small-step-well-defined}
+%	For every $\expr \in \exprs$, $\sem{\expr}$ is a well defined distribution in $\distextexprs$.
+%\end{theorem}
+%%
+%\begin{proof}
+%	By induction on $\exprs$.
+%\end{proof}
 %
 %
 \kevin{we will need some relation to nondet semantics. lets see whether we need to add error and obsfail.}
 \begin{theorem}
 	\label{thm:small-step-well-typed}
-	If $\expr : \tau$, then $\sem{\expr}({\error}) = 0$.
+	If $\expr : \tau$, then $\sem{\expr}(\{ \error \}) = 0$.
 \end{theorem}
 %
 \begin{proof}
