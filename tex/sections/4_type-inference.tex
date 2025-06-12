@@ -1,96 +1,35 @@
 \section{Type Inference}\label{sec:type-inference}
 
-Type inference for \Slice{} assigns types to every subexpression while simultaneously collecting comparison points that will guide the discretization process. The type system tracks both traditional type information and refinement information specific to floating-point values.
+Type inference for \Slice{} assigns types to every subexpression while simultaneously collecting comparison points that will guide the discretization process. The type system tracks both traditional type information and refinement information specific to floating-point values. The main challenge is that the typing rules are not syntax directed, which we address in this section by using a constraint-based approach.
 
-\subsection{Overview}
-
+\paragraph{Overview.}
 The inference algorithm performs type checking and constraint generation in a single pass over the AST. For float types $\float[B; V]$, it maintains two separate refinement components:
 \begin{itemize}
-    \item The \emph{bound bag} $B$ collects comparison bounds (e.g., $<0.5$, $\leq 1.2$) from sites where the expression is compared
+    \item The \emph{bound bag} $B$ collects comparison bounds (e.g., $<\!\!0.5$, $\leq\!\!1.2$) from sites where the expression is compared
     \item The \emph{value bag} $V$ tracks concrete float constants that flow to the expression
 \end{itemize}
 
-Both components start at the bottom of their respective lattices ($\emptyset$) and monotonically accumulate information through constraint propagation.
+Both components start at the bottom of their respective lattices ($\emptyset$) and monotonically accumulate information through constraint propagation. The implementation maintains bags as mutable references with attached listeners that propagate updates immediately when new information becomes available. The listeners of a bag are triggered when the lattice value goes up in the lattice (it can never go down; the changes are always monotone).
+For instance, to maintain the constraint $B_1 \leq B_2$, the system registers a listener that propagates updates from $B_1$ to $B_2$ when $B_1$ goes up.
 
-\subsection{Constraint Generation and Propagation}
+\paragraph{Basic constraints between bags.}
+We maintain three types of constraints between bags:
+\begin{description}
+    \item[Order:] $B_1 \sqsubseteq B_2$ means that $B_1$ is lower than or equal to $B_2$ in the lattice order. This is enforced with a listener on $B_1$ that increases $B_2$ to maintain the constraint.
+    \item[Answerability:] $B \textit{ answers} \leq\!\!V$ or $B \textit{ answers} <\!\!V$ means that $B$ contains $\leq\!\!v$ or $<\!\!v$ for every $v \in V$. This is enforced with a listener on $V$ that adds the corresponding bound to $B$.
+    \item[Distinguishability:] $B \textit{ distinguishes } V$ means that every interval in $B$ has at most one point in $V$. This is enforced with a listener on $V$ that adds $\leq\!\!v$ to $B$ for every $v \in V$. Note that this may not lead to the coarsest possible bound bag, but it is sound.
+\end{description}
+In each case, if the bag is set to $\top$, we propagate the required $\top$ to the other bag.
 
-Rather than collecting constraints for later solving, \Slice{} uses an incremental propagation approach. The implementation maintains bags as mutable references with attached listeners that propagate updates immediately when new information becomes available.
-
-The key mechanism is the \emph{listener pattern}: when establishing relationships between bags (e.g., $B_1 = B_2$ or $B_1 \leq B_2$), the system registers callback functions that automatically propagate updates. This creates a dataflow network where refinement information flows through the program structure.
-
-\subsection{Type Inference Rules}
-
-The algorithm traverses the AST, generating types and constraints according to these rules:
-
-\paragraph{Basic Expressions}
-\begin{itemize}
-    \item Float constants $c$ get type $\float[\emptyset; \{c\}]$ (empty bounds, singleton value set)
-    \item Boolean constants get type \bool{}, finite constants $\finconst{k}{n}$ get type $\text{fin}(n)$
-    \item Variables lookup their type in the environment
-\end{itemize}
-
-\paragraph{Comparisons} For a comparison $e_1 < e_2$ (or $e_1 \leq e_2$):
-\begin{itemize}
-    \item Both operands must have float types with a \emph{shared} bound bag
-    \item A listener is registered that monitors both value bags:
-    \begin{itemize}
-        \item If comparing to a constant (e.g., $e < 0.5$), the bound $<0.5$ is added to the shared bag
-        \item If comparing two non-constants, the bound bag may become $\top$ (unbounded)
-        \item Mixed cases propagate bounds from constant operands
-    \end{itemize}
-    \item The result has type \bool{}
-\end{itemize}
-
-\paragraph{Control Flow}
-\begin{itemize}
-    \item $\ifkw \; e_1\; \thenkw \; e_2\; \elsekw \; e_3$: condition must be \bool{}, branches must have unifiable types
-    \item $\letkw \; x = e_1 \; \inkw \; e_2$: $x$ gets the type of $e_1$ in the body $e_2$
-    \item Sequencing $e_1; e_2$ returns the type of $e_2$
-\end{itemize}
-
-\paragraph{Distributions}
-\begin{itemize}
-    \item Continuous distributions (uniform, gaussian, etc.) get type $\float[\emptyset; \top]$
-    \item Parameters' bound bags are linked to the result's bound bag for propagation
-    \item $\discrete(p_0, \ldots, p_n)$ has type \intty{}
-    \item $\text{distrcase}$ branches must have unifiable types
-\end{itemize}
-
-\paragraph{Data Structures}
-\begin{itemize}
-    \item Pairs, functions, lists, and references follow standard typing rules
-    \item Pattern matching branches must have unifiable result types
-    \item References are invariant (exact type match required)
-\end{itemize}
-
-\subsection{Bag Implementation}
-
-Rather than using a traditional union-find data structure, \Slice{} implements bags as mutable lattice values with automatic propagation. Each bag contains:
-\begin{itemize}
-    \item A mutable reference to a lattice value (either a finite set or $\top$)
-    \item A list of listener functions that are triggered on updates
-\end{itemize}
-
-The key operations are:
-\begin{itemize}
-    \item \texttt{create(v)}: Creates a new bag with initial value $v$
-    \item \texttt{leq(b1, b2)}: Establishes $b_1 \leq b_2$, registering a listener that propagates updates from $b_1$ to $b_2$
-    \item \texttt{eq(b1, b2)}: Establishes $b_1 = b_2$ via bidirectional \texttt{leq}
-    \item \texttt{add(b, v)}: Adds value $v$ to bag $b$ (equivalent to $b := b \sqcup \{v\}$)
-\end{itemize}
-
-This design ensures that constraints are solved incrementally as information becomes available, without requiring a separate constraint solving phase.
-
-\subsection{Unification and Subtyping}
-
-Type unification in \Slice{} is implemented via bidirectional subtyping. The key insight is that for most types, $\tau_1 = \tau_2$ iff $\tau_1 \leq \tau_2$ and $\tau_2 \leq \tau_1$. The subtyping rules handle:
+\paragraph{Subtyping constraints between types.}
+To maintain subtyping constraints $\tau_1 <: \tau_2$ between types, we recurse into the types according to the rules in \Cref{fig:subtyping}. Whenever one of the sides is a type variable, we instantiate it with the corresponding type of the other side, and add subtyping constraints according to the rules. When both sides are type variables, we add listeners to the type variables that propagate the subtyping constraints whenever one side is instantiated. To enforce equality between types, we enforce subtyping both ways.
 
 \begin{itemize}
     \item \textbf{Base types}: Must match exactly (\bool{}, \intty{}, $\text{fin}(n)$, $\text{unit}$)
-    \item \textbf{Float types}: $\float[B_1; V_1] \leq \float[B_2; V_2]$ requires:
+    \item \textbf{Float types}: $\float[B_1; V_1] <: \float[B_2; V_2]$ requires:
         \begin{itemize}
             \item $B_1 = B_2$ (bound bags must be equal for safe discretization)
-            \item $V_1 \leq V_2$ (values flow covariantly)
+            \item $V_1 \sqsubseteq V_2$ (values flow covariantly)
         \end{itemize}
     \item \textbf{Structural types}: 
         \begin{itemize}
@@ -98,50 +37,121 @@ Type unification in \Slice{} is implemented via bidirectional subtyping. The key
             \item Functions are contravariant in arguments, covariant in results
             \item References are invariant (require exact type match)
         \end{itemize}
-    \item \textbf{Type variables}: Instantiated on first use, then must match consistently
+\end{itemize}
+
+\paragraph{Type Inference Rules.}
+The algorithm traverses the AST, generating types and constraints according to these rules:
+
+\paragraph{Basic Expressions}
+\begin{itemize}
+    \item Float constants $c$ start with type $\float[\emptyset; \{c\}]$ (empty bounds, singleton value set)
+    \item Boolean constants get type \bool{}, finite constants $\finconst{k}{n}$ get type $\text{fin}(n)$
+    \item Variables look up their type in the environment
+\end{itemize}
+
+\paragraph{Comparisons} 
+
+For a comparison $e_1 < e_2$ (or $e_1 \leq e_2$) we add the appropriate answerability constraints.
+
+\paragraph{Distributions}
+\begin{itemize}
+    \item Continuous distributions (uniform, gaussian, etc.) get type $\float[\emptyset; \top]$
+    \item Parameters' bags are linked according to the distinguishability constraint.
+    \item $\discrete(p_0, \ldots, p_n)$ has type $\text{fin}(n+1)$.
+\end{itemize}
+
+
+\paragraph{Other constructs}
+Other constructs follow standard typing rules:
+\begin{itemize}
+    \item $\ifkw \; e_1\; \thenkw \; e_2\; \elsekw \; e_3$: condition must be \bool{}, branches must have unifiable types
+    \item $\letkw \; x = e_1 \; \inkw \; e_2$: $x$ gets the type of $e_1$ in the body $e_2$
+    \item Sequencing $e_1; e_2$ returns the type of $e_2$, and $e_1$ must have type $\textbf{unit}$.
+    \item Pairs, functions, lists, and references follow standard typing rules.
 \end{itemize}
 
 \subsection{Algorithm Summary}
 
-The complete type inference algorithm:
-\begin{enumerate}
-    \item Traverses the AST in a single pass
-    \item Generates fresh type variables and bags as needed
-    \item Establishes bag relationships via listeners for automatic propagation
-    \item Uses subtyping-based unification to resolve type constraints
-    \item Returns a fully-annotated AST where each float type carries its collected bounds and values
-\end{enumerate}
+The complete type inference creates a new type variable for every subexpression, and establishes constraints between them with a single pass over the AST. The constraints are then solved with the constraint solver, returning an AST where every single expression carries its type. In particular, expressions of type $\float[B; V]$ carry the cut points $B$. The annotated program is ready for discretization, with all comparison points captured in the refinements.
 
-The output is an annotated program ready for discretization, with all comparison points captured in the refinement types.
-
-\subsection{Example}
-
+\paragraph{Example.}
 Consider the type inference process for this simple program:
-\begin{lstlisting}
-let x = uniform(0.0, 1.0) in
-let y = 0.7 in
-if x < 0.5 then 
-  if x < y then 1 else 2
-else 3
+\begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
+    let x = if uniform(0,1) < 0.5 
+            then uniform(0,2) 
+            else gaussian(0,1) in
+    let y = if 1.5 < x
+            then 1.8
+            else 0.3 in
+    x <= y
 \end{lstlisting}
 
-The inference proceeds as follows:
+The inference proceeds as follows. First, we create a new type variable for every subexpression. Second, the constraint solver finds the types of the subexpressions.
+This obtains the following annotated program with unknown bags:
+
+\begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
+    let x = if (uniform(0,1) : !{\codetype{float[$B_1$; $V_1$]}}!) < (0.5 : !{\codetype{float[$B_2$; $V_2$]}}!)
+            then (uniform(0,2) : !{\codetype{float[$B_3$; $V_3$]}}!)
+            else (gaussian(0,1) : !{\codetype{float[$B_4$; $V_4$]}}!)
+            : !{\codetype{float[$B_x$; $V_x$]}}! in
+    let y = if (1.5 : !{\codetype{float[$B_5$; $V_5$]}}!) < (x : !{\codetype{float[$B_x$; $V_x$]}}!)
+            then (1.8 : !{\codetype{float[$B_6$; $V_6$]}}!)
+            else (0.3 : !{\codetype{float[$B_7$; $V_7$]}}!)
+            : !{\codetype{float[$B_y$; $V_y$]}}! in
+    (x : !{\codetype{float[$B_x$; $V_x$]}}!) <= (y : !{\codetype{float[$B_y$; $V_y$]}}!)
+\end{lstlisting}
+
+The bags are then solved in the following manner:
+
 \begin{enumerate}
-    \item \texttt{uniform(0.0, 1.0)} gets type $\float[B_x; \top]$ with fresh bag $B_x = \emptyset$
-    \item \texttt{0.7} gets type $\float[\emptyset; \{0.7\}]$
-    \item For \texttt{x < 0.5}:
-        \begin{itemize}
-            \item Both operands unify to share bound bag $B_x$
-            \item Listener adds bound $<0.5$ to $B_x$, so $B_x = \{<0.5\}$
-        \end{itemize}
-    \item For \texttt{x < y}:
-        \begin{itemize}
-            \item Both operands unify to share the same bound bag $B_x$
-            \item Since \texttt{y} has value $\{0.7\}$, listener adds $<0.7$ to $B_x$
-            \item Now $B_x = \{<0.5, <0.7\}$
-        \end{itemize}
-    \item Final type for \texttt{x}: $\float[\{<0.5, <0.7\}; \top]$
+    \item \textbf{Initial bags:}
+    Float constants get singleton value bags: $V_2=\{0.5\}$, $V_5=\{1.5\}$, $V_6=\{1.8\}$, $V_7=\{0.3\}$.
+    Continuous distributions get $\top$ value bags: $V_1=V_3=V_4=\top$.
+    All bound bags start empty.
+
+    \item \textbf{Subtyping and equality constraints:}
+    The type inference enforces equality on bound bags for subexpressions involved in comparisons or belonging to different branches of an `if` statement.
+    \begin{itemize}
+        \item From `uniform(0,1) < 0.5`: $B_1 = B_2$.
+        \item From the `if` expression assigned to `x`: $B_3 = B_4 = B_x$.
+        \item From the `if` expression assigned to `y`: $B_6 = B_7 = B_y$.
+        \item From `1.5 < x`: $B_5 = B_x$.
+        \item From `x <= y`: $B_x = B_y$.
+    \end{itemize}
+    All bound bags are therefore in two equivalence classes: $B_{12}$ ($= B_1 = B_2$) and $B_{xy}$ ($=B_x=B_y=B_3=B_4=B_5=B_6=B_7$).
+
+    \item \textbf{Value bag propagation:}
+    Value bags are joined at `if` expressions.
+    \begin{itemize}
+        \item For `x`, $V_x$ is the join of $V_3$ and $V_4$, so $V_x = \top \sqcup \top = \top$.
+        \item For `y`, $V_y$ is the join of $V_6$ and $V_7$, so $V_y = \{1.8\} \sqcup \{0.3\} = \{0.3, 1.8\}$.
+    \end{itemize}
+
+    \item \textbf{Answerability constraints:}
+    Comparisons generate answerability constraints which populate the bound bags.
+    \begin{itemize}
+        \item `uniform(0,1) < 0.5`: Adds the constraint ``$B_1$ answers $<\!\!V_2$'', which means $B_1$ must contain $<\!0.5$. Since $B_1=B_2$, both become $\{<0.5\}$.
+        \item `1.5 < x`: Adds ``$B_x$ answers $< V_5$'', which adds $<\ 1.5$ to $B_x$ (and all bags equal to it).
+        \item `x <= y`: Adds ``$B_x$ answers $\leq V_y$'', which adds $\leq\ 0.3$ and $\leq\ 1.8$ to $B_x$.
+    \end{itemize}
+
+    \item \textbf{Solution:}
+    Combining all constraints on $B_{xy}$ ($=B_x=B_y=B_3=B_4=B_5=B_6=B_7$) gives the final bound bag: $\{ \leq\!0.3, <\!1.5, \leq\!1.8 \}$. The bag $B_{12}$ ($=B_1=B_2$) for the first comparison is $\{ <\!0.5 \}$.
 \end{enumerate}
 
-This example shows how comparison points accumulate in the bound bag through the listener mechanism, even when comparisons appear in different branches of the program.
+This results in the following fully annotated program:
+
+\begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
+    let x = if (uniform(0,1) : !{\ft{<0.5}}!) < (0.5 : !{\ftb{<0.5}{0.5}}!)
+            then (uniform(0,2) : !{\ft{<=0.3,<1.5,<=1.8}}!)
+            else (gaussian(0,1) : !{\ft{<=0.3,<1.5,<=1.8}}!)
+            : !{\ft{<=0.3,<1.5,<=1.8}}! in
+    let y = if (1.5 : !{\ftb{<=0.3,<1.5,<=1.8}{1.5}}!) < x
+            then (1.8 : !{\ftb{<=0.3,<1.5,<=1.8}{1.8}}!)
+            else (0.3 : !{\ftb{<=0.3,<1.5,<=1.8}{0.3}}!)
+            : !{\ftb{<=0.3,<1.5,<=1.8}{0.3,1.8}}! in
+    x <= y
+\end{lstlisting}
+
+This example shows how comparison points accumulate in the value and bound bags through the constraint propagation mechanism, even when comparisons appear in different branches of the program.
 
