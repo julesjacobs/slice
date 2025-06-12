@@ -1,0 +1,265 @@
+let p_similar = discrete(0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05,
+                        0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05) in
+
+let similar_0 = 
+    if p_similar ==#20 0#20 then discrete(0.0, 1.0)
+    else if p_similar ==#20 1#20 then discrete(0.05, 0.95)
+    else if p_similar ==#20 2#20 then discrete(0.1, 0.9)
+    else if p_similar ==#20 3#20 then discrete(0.15, 0.85)
+    else if p_similar ==#20 4#20 then discrete(0.2, 0.8)
+    else if p_similar ==#20 5#20 then discrete(0.25, 0.75)
+    else if p_similar ==#20 6#20 then discrete(0.3, 0.7)
+    else if p_similar ==#20 7#20 then discrete(0.35, 0.65)
+    else if p_similar ==#20 8#20 then discrete(0.4, 0.6)
+    else if p_similar ==#20 9#20 then discrete(0.45, 0.55)
+    else if p_similar ==#20 10#20 then discrete(0.5, 0.5)
+    else if p_similar ==#20 11#20 then discrete(0.55, 0.45)
+    else if p_similar ==#20 12#20 then discrete(0.6, 0.4)
+    else if p_similar ==#20 13#20 then discrete(0.65, 0.35)
+    else if p_similar ==#20 14#20 then discrete(0.7, 0.3)
+    else if p_similar ==#20 15#20 then discrete(0.75, 0.25)
+    else if p_similar ==#20 16#20 then discrete(0.8, 0.2)
+    else if p_similar ==#20 17#20 then discrete(0.85, 0.15)
+    else if p_similar ==#20 18#20 then discrete(0.9, 0.1)
+    else discrete(0.95, 0.05) in
+
+let p_click_url_A_0 = 
+    if similar_0 ==#2 1#2 then discrete(0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1) else discrete(0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1) in
+
+let p_click_url_B_0 = 
+    if similar_0 ==#2 1#2 then discrete(0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1) else discrete(0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1) in
+
+let click_url_A_0 =
+    if p_click_url_A_0 ==#10 0#10 then discrete(0.0, 1.0)
+    else if p_click_url_A_0 ==#10 1#10 then discrete(0.1, 0.9)
+    else if p_click_url_A_0 ==#10 2#10 then discrete(0.2, 0.8)
+    else if p_click_url_A_0 ==#10 3#10 then discrete(0.3, 0.7)
+    else if p_click_url_A_0 ==#10 4#10 then discrete(0.4, 0.6)
+    else if p_click_url_A_0 ==#10 5#10 then discrete(0.5, 0.5)
+    else if p_click_url_A_0 ==#10 6#10 then discrete(0.6, 0.4)
+    else if p_click_url_A_0 ==#10 7#10 then discrete(0.7, 0.3)
+    else if p_click_url_A_0 ==#10 8#10 then discrete(0.8, 0.2)
+    else discrete(0.9, 0.1) in
+
+let click_url_B_0 =
+    if p_click_url_B_0 ==#10 0#10 then discrete(0.0, 1.0)
+    else if p_click_url_B_0 ==#10 1#10 then discrete(0.1, 0.9)
+    else if p_click_url_B_0 ==#10 2#10 then discrete(0.2, 0.8)
+    else if p_click_url_B_0 ==#10 3#10 then discrete(0.3, 0.7)
+    else if p_click_url_B_0 ==#10 4#10 then discrete(0.4, 0.6)
+    else if p_click_url_B_0 ==#10 5#10 then discrete(0.5, 0.5)
+    else if p_click_url_B_0 ==#10 6#10 then discrete(0.6, 0.4)
+    else if p_click_url_B_0 ==#10 7#10 then discrete(0.7, 0.3)
+    else if p_click_url_B_0 ==#10 8#10 then discrete(0.8, 0.2)
+    else discrete(0.9, 0.1) in
+
+
+let similar_1 = 
+    if p_similar ==#20 0#20 then discrete(0.0, 1.0)
+    else if p_similar ==#20 1#20 then discrete(0.05, 0.95)
+    else if p_similar ==#20 2#20 then discrete(0.1, 0.9)
+    else if p_similar ==#20 3#20 then discrete(0.15, 0.85)
+    else if p_similar ==#20 4#20 then discrete(0.2, 0.8)
+    else if p_similar ==#20 5#20 then discrete(0.25, 0.75)
+    else if p_similar ==#20 6#20 then discrete(0.3, 0.7)
+    else if p_similar ==#20 7#20 then discrete(0.35, 0.65)
+    else if p_similar ==#20 8#20 then discrete(0.4, 0.6)
+    else if p_similar ==#20 9#20 then discrete(0.45, 0.55)
+    else if p_similar ==#20 10#20 then discrete(0.5, 0.5)
+    else if p_similar ==#20 11#20 then discrete(0.55, 0.45)
+    else if p_similar ==#20 12#20 then discrete(0.6, 0.4)
+    else if p_similar ==#20 13#20 then discrete(0.65, 0.35)
+    else if p_similar ==#20 14#20 then discrete(0.7, 0.3)
+    else if p_similar ==#20 15#20 then discrete(0.75, 0.25)
+    else if p_similar ==#20 16#20 then discrete(0.8, 0.2)
+    else if p_similar ==#20 17#20 then discrete(0.85, 0.15)
+    else if p_similar ==#20 18#20 then discrete(0.9, 0.1)
+    else discrete(0.95, 0.05) in
+
+let p_click_url_A_1 = 
+    if similar_1 ==#2 1#2 then discrete(0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1) else discrete(0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1) in
+
+let p_click_url_B_1 = 
+    if similar_1 ==#2 1#2 then discrete(0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1) else discrete(0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1) in
+
+let click_url_A_1 =
+    if p_click_url_A_1 ==#10 0#10 then discrete(0.0, 1.0)
+    else if p_click_url_A_1 ==#10 1#10 then discrete(0.1, 0.9)
+    else if p_click_url_A_1 ==#10 2#10 then discrete(0.2, 0.8)
+    else if p_click_url_A_1 ==#10 3#10 then discrete(0.3, 0.7)
+    else if p_click_url_A_1 ==#10 4#10 then discrete(0.4, 0.6)
+    else if p_click_url_A_1 ==#10 5#10 then discrete(0.5, 0.5)
+    else if p_click_url_A_1 ==#10 6#10 then discrete(0.6, 0.4)
+    else if p_click_url_A_1 ==#10 7#10 then discrete(0.7, 0.3)
+    else if p_click_url_A_1 ==#10 8#10 then discrete(0.8, 0.2)
+    else discrete(0.9, 0.1) in
+
+let click_url_B_1 =
+    if p_click_url_B_1 ==#10 0#10 then discrete(0.0, 1.0)
+    else if p_click_url_B_1 ==#10 1#10 then discrete(0.1, 0.9)
+    else if p_click_url_B_1 ==#10 2#10 then discrete(0.2, 0.8)
+    else if p_click_url_B_1 ==#10 3#10 then discrete(0.3, 0.7)
+    else if p_click_url_B_1 ==#10 4#10 then discrete(0.4, 0.6)
+    else if p_click_url_B_1 ==#10 5#10 then discrete(0.5, 0.5)
+    else if p_click_url_B_1 ==#10 6#10 then discrete(0.6, 0.4)
+    else if p_click_url_B_1 ==#10 7#10 then discrete(0.7, 0.3)
+    else if p_click_url_B_1 ==#10 8#10 then discrete(0.8, 0.2)
+    else discrete(0.9, 0.1) in
+
+let similar_2 = 
+    if p_similar ==#20 0#20 then discrete(0.0, 1.0)
+    else if p_similar ==#20 1#20 then discrete(0.05, 0.95)
+    else if p_similar ==#20 2#20 then discrete(0.1, 0.9)
+    else if p_similar ==#20 3#20 then discrete(0.15, 0.85)
+    else if p_similar ==#20 4#20 then discrete(0.2, 0.8)
+    else if p_similar ==#20 5#20 then discrete(0.25, 0.75)
+    else if p_similar ==#20 6#20 then discrete(0.3, 0.7)
+    else if p_similar ==#20 7#20 then discrete(0.35, 0.65)
+    else if p_similar ==#20 8#20 then discrete(0.4, 0.6)
+    else if p_similar ==#20 9#20 then discrete(0.45, 0.55)
+    else if p_similar ==#20 10#20 then discrete(0.5, 0.5)
+    else if p_similar ==#20 11#20 then discrete(0.55, 0.45)
+    else if p_similar ==#20 12#20 then discrete(0.6, 0.4)
+    else if p_similar ==#20 13#20 then discrete(0.65, 0.35)
+    else if p_similar ==#20 14#20 then discrete(0.7, 0.3)
+    else if p_similar ==#20 15#20 then discrete(0.75, 0.25)
+    else if p_similar ==#20 16#20 then discrete(0.8, 0.2)
+    else if p_similar ==#20 17#20 then discrete(0.85, 0.15)
+    else if p_similar ==#20 18#20 then discrete(0.9, 0.1)
+    else discrete(0.95, 0.05) in
+
+let p_click_url_A_2 = 
+    if similar_2 ==#2 1#2 then discrete(0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1) else discrete(0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1) in
+
+let p_click_url_B_2 = 
+    if similar_2 ==#2 1#2 then discrete(0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1) else discrete(0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1) in
+
+let click_url_A_2 =
+    if p_click_url_A_2 ==#10 0#10 then discrete(0.0, 1.0)
+    else if p_click_url_A_2 ==#10 1#10 then discrete(0.1, 0.9)
+    else if p_click_url_A_2 ==#10 2#10 then discrete(0.2, 0.8)
+    else if p_click_url_A_2 ==#10 3#10 then discrete(0.3, 0.7)
+    else if p_click_url_A_2 ==#10 4#10 then discrete(0.4, 0.6)
+    else if p_click_url_A_2 ==#10 5#10 then discrete(0.5, 0.5)
+    else if p_click_url_A_2 ==#10 6#10 then discrete(0.6, 0.4)
+    else if p_click_url_A_2 ==#10 7#10 then discrete(0.7, 0.3)
+    else if p_click_url_A_2 ==#10 8#10 then discrete(0.8, 0.2)
+    else discrete(0.9, 0.1) in
+
+let click_url_B_2 =
+    if p_click_url_B_2 ==#10 0#10 then discrete(0.0, 1.0)
+    else if p_click_url_B_2 ==#10 1#10 then discrete(0.1, 0.9)
+    else if p_click_url_B_2 ==#10 2#10 then discrete(0.2, 0.8)
+    else if p_click_url_B_2 ==#10 3#10 then discrete(0.3, 0.7)
+    else if p_click_url_B_2 ==#10 4#10 then discrete(0.4, 0.6)
+    else if p_click_url_B_2 ==#10 5#10 then discrete(0.5, 0.5)
+    else if p_click_url_B_2 ==#10 6#10 then discrete(0.6, 0.4)
+    else if p_click_url_B_2 ==#10 7#10 then discrete(0.7, 0.3)
+    else if p_click_url_B_2 ==#10 8#10 then discrete(0.8, 0.2)
+    else discrete(0.9, 0.1) in
+
+let similar_3 = 
+    if p_similar ==#20 0#20 then discrete(0.0, 1.0)
+    else if p_similar ==#20 1#20 then discrete(0.05, 0.95)
+    else if p_similar ==#20 2#20 then discrete(0.1, 0.9)
+    else if p_similar ==#20 3#20 then discrete(0.15, 0.85)
+    else if p_similar ==#20 4#20 then discrete(0.2, 0.8)
+    else if p_similar ==#20 5#20 then discrete(0.25, 0.75)
+    else if p_similar ==#20 6#20 then discrete(0.3, 0.7)
+    else if p_similar ==#20 7#20 then discrete(0.35, 0.65)
+    else if p_similar ==#20 8#20 then discrete(0.4, 0.6)
+    else if p_similar ==#20 9#20 then discrete(0.45, 0.55)
+    else if p_similar ==#20 10#20 then discrete(0.5, 0.5)
+    else if p_similar ==#20 11#20 then discrete(0.55, 0.45)
+    else if p_similar ==#20 12#20 then discrete(0.6, 0.4)
+    else if p_similar ==#20 13#20 then discrete(0.65, 0.35)
+    else if p_similar ==#20 14#20 then discrete(0.7, 0.3)
+    else if p_similar ==#20 15#20 then discrete(0.75, 0.25)
+    else if p_similar ==#20 16#20 then discrete(0.8, 0.2)
+    else if p_similar ==#20 17#20 then discrete(0.85, 0.15)
+    else if p_similar ==#20 18#20 then discrete(0.9, 0.1)
+    else discrete(0.95, 0.05) in
+
+let p_click_url_A_3 = 
+    if similar_3 ==#2 1#2 then discrete(0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1) else discrete(0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1) in
+
+let p_click_url_B_3 = 
+    if similar_3 ==#2 1#2 then discrete(0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1) else discrete(0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1) in
+
+let click_url_A_3 =
+    if p_click_url_A_3 ==#10 0#10 then discrete(0.0, 1.0)
+    else if p_click_url_A_3 ==#10 1#10 then discrete(0.1, 0.9)
+    else if p_click_url_A_3 ==#10 2#10 then discrete(0.2, 0.8)
+    else if p_click_url_A_3 ==#10 3#10 then discrete(0.3, 0.7)
+    else if p_click_url_A_3 ==#10 4#10 then discrete(0.4, 0.6)
+    else if p_click_url_A_3 ==#10 5#10 then discrete(0.5, 0.5)
+    else if p_click_url_A_3 ==#10 6#10 then discrete(0.6, 0.4)
+    else if p_click_url_A_3 ==#10 7#10 then discrete(0.7, 0.3)
+    else if p_click_url_A_3 ==#10 8#10 then discrete(0.8, 0.2)
+    else discrete(0.9, 0.1) in
+
+let click_url_B_3 =
+    if p_click_url_B_3 ==#10 0#10 then discrete(0.0, 1.0)
+    else if p_click_url_B_3 ==#10 1#10 then discrete(0.1, 0.9)
+    else if p_click_url_B_3 ==#10 2#10 then discrete(0.2, 0.8)
+    else if p_click_url_B_3 ==#10 3#10 then discrete(0.3, 0.7)
+    else if p_click_url_B_3 ==#10 4#10 then discrete(0.4, 0.6)
+    else if p_click_url_B_3 ==#10 5#10 then discrete(0.5, 0.5)
+    else if p_click_url_B_3 ==#10 6#10 then discrete(0.6, 0.4)
+    else if p_click_url_B_3 ==#10 7#10 then discrete(0.7, 0.3)
+    else if p_click_url_B_3 ==#10 8#10 then discrete(0.8, 0.2)
+    else discrete(0.9, 0.1) in
+
+let similar_4 = 
+    if p_similar ==#20 0#20 then discrete(0.0, 1.0)
+    else if p_similar ==#20 1#20 then discrete(0.05, 0.95)
+    else if p_similar ==#20 2#20 then discrete(0.1, 0.9)
+    else if p_similar ==#20 3#20 then discrete(0.15, 0.85)
+    else if p_similar ==#20 4#20 then discrete(0.2, 0.8)
+    else if p_similar ==#20 5#20 then discrete(0.25, 0.75)
+    else if p_similar ==#20 6#20 then discrete(0.3, 0.7)
+    else if p_similar ==#20 7#20 then discrete(0.35, 0.65)
+    else if p_similar ==#20 8#20 then discrete(0.4, 0.6)
+    else if p_similar ==#20 9#20 then discrete(0.45, 0.55)
+    else if p_similar ==#20 10#20 then discrete(0.5, 0.5)
+    else if p_similar ==#20 11#20 then discrete(0.55, 0.45)
+    else if p_similar ==#20 12#20 then discrete(0.6, 0.4)
+    else if p_similar ==#20 13#20 then discrete(0.65, 0.35)
+    else if p_similar ==#20 14#20 then discrete(0.7, 0.3)
+    else if p_similar ==#20 15#20 then discrete(0.75, 0.25)
+    else if p_similar ==#20 16#20 then discrete(0.8, 0.2)
+    else if p_similar ==#20 17#20 then discrete(0.85, 0.15)
+    else if p_similar ==#20 18#20 then discrete(0.9, 0.1)
+    else discrete(0.95, 0.05) in
+
+let p_click_url_A_4 = 
+    if similar_4 ==#2 1#2 then discrete(0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1) else discrete(0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1) in
+
+let p_click_url_B_4 = 
+    if similar_4 ==#2 1#2 then discrete(0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1) else discrete(0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1) in
+
+let click_url_A_4 =
+    if p_click_url_A_4 ==#10 0#10 then discrete(0.0, 1.0)
+    else if p_click_url_A_4 ==#10 1#10 then discrete(0.1, 0.9)
+    else if p_click_url_A_4 ==#10 2#10 then discrete(0.2, 0.8)
+    else if p_click_url_A_4 ==#10 3#10 then discrete(0.3, 0.7)
+    else if p_click_url_A_4 ==#10 4#10 then discrete(0.4, 0.6)
+    else if p_click_url_A_4 ==#10 5#10 then discrete(0.5, 0.5)
+    else if p_click_url_A_4 ==#10 6#10 then discrete(0.6, 0.4)
+    else if p_click_url_A_4 ==#10 7#10 then discrete(0.7, 0.3)
+    else if p_click_url_A_4 ==#10 8#10 then discrete(0.8, 0.2)
+    else discrete(0.9, 0.1) in
+
+let click_url_B_4 =
+    if p_click_url_B_4 ==#10 0#10 then discrete(0.0, 1.0)
+    else if p_click_url_B_4 ==#10 1#10 then discrete(0.1, 0.9)
+    else if p_click_url_B_4 ==#10 2#10 then discrete(0.2, 0.8)
+    else if p_click_url_B_4 ==#10 3#10 then discrete(0.3, 0.7)
+    else if p_click_url_B_4 ==#10 4#10 then discrete(0.4, 0.6)
+    else if p_click_url_B_4 ==#10 5#10 then discrete(0.5, 0.5)
+    else if p_click_url_B_4 ==#10 6#10 then discrete(0.6, 0.4)
+    else if p_click_url_B_4 ==#10 7#10 then discrete(0.7, 0.3)
+    else if p_click_url_B_4 ==#10 8#10 then discrete(0.8, 0.2)
+    else discrete(0.9, 0.1) in
+
+click_url_B_0 <#2 1#2

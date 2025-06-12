@@ -28,8 +28,8 @@ let education_num =
     else 
       gaussian(10.0974, 7.1793) in
   
-let _ = observe(sex <#2 1#2) in
-let _ = observe(age > 18) in
+let _1 = observe(sex <#2 1#2) in
+let _2 = observe(age > 18) in
 
 let t = if capital_gain >= 7073.5 then
         if age < 20.0 then 

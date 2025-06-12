@@ -40,7 +40,7 @@ def test_asymptotic_scaling_1(test_func, timeout=300):
     sppl_timed_out = False
     
     # Generate programs of increasing size, linearly
-    # Currently testing: programs of size 1-200 incremented by 5
+    # Currently testing: programs of size 1-50 incremented by 10
     for i in range(1,50,5):
         prog_size = i
         print(f"---- PROGRAM SIZE: {prog_size} ----", flush=True)
@@ -223,7 +223,7 @@ def test_asymptotic_scaling_2(test_func, timeout=300):
     sppl_timed_out = False
     
     # Generate programs of increasing size, linearly
-    # Currently testing: programs of size 1-50 incremented by 5, with alternating guards incremented by 1 each program
+    # Currently testing: programs of size 1-100 incremented by 5, with alternating guards incremented by 1 each program
     for i in range(1, 20):
         prog_size = i*5
         print(f"---- PROGRAM SIZE: {prog_size} ----", flush=True)
@@ -442,14 +442,6 @@ def generate_line_graphs(benchmark_results, output_path):
 
     plt.xlabel("Program Size")
     plt.ylabel("Execution Time (seconds)")
-    
-    # Set appropriate title based on backends used
-    if dice_backend and roulette_backend:
-        plt.title("SPPL vs Slice Execution Time Scaling (Both Backends)")
-    elif dice_backend:
-        plt.title("SPPL vs Slice Execution Time Scaling (Dice Backend)")
-    else:
-        plt.title("SPPL vs Slice Execution Time Scaling (Roulette Backend)")
     
     plt.legend()
     plt.grid(True)

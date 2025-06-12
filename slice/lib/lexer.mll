@@ -104,6 +104,8 @@ rule token = parse
   | "gumbel1" { GUMBELONE }
   | "gumbel2" { GUMBELTWO }
   | "exppow" { EXPPOW }
+  | "poisson" { POISSON }
+  | "binomial" { BINOMIAL }
   | '+'       { PLUS }
   | '-'       { MINUS }
   | '*'       { TIMES }

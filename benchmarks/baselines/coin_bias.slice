@@ -1,0 +1,73 @@
+let bias = discrete(0.02, 0.12, 0.22, 0.22, 0.18, 0.12, 0.07, 0.03, 0.01, 0.01) in
+
+let tossResults_0 = 
+    if bias ==#10 0#10 then discrete(0.0, 1.0)
+    else if bias ==#10 1#10 then discrete(0.1, 0.9)
+    else if bias ==#10 2#10 then discrete(0.2, 0.8)
+    else if bias ==#10 3#10 then discrete(0.3, 0.7)
+    else if bias ==#10 4#10 then discrete(0.4, 0.6)
+    else if bias ==#10 5#10 then discrete(0.5, 0.5)
+    else if bias ==#10 6#10 then discrete(0.6, 0.4)
+    else if bias ==#10 7#10 then discrete(0.7, 0.3)
+    else if bias ==#10 8#10 then discrete(0.8, 0.2)
+    else discrete(0.9, 0.1) in
+
+let _0 = observe(tossResults_0 ==#2 1#2) in
+
+let tossResults_1 = 
+    if bias ==#10 0#10 then discrete(0.0, 1.0)
+    else if bias ==#10 1#10 then discrete(0.1, 0.9)
+    else if bias ==#10 2#10 then discrete(0.2, 0.8)
+    else if bias ==#10 3#10 then discrete(0.3, 0.7)
+    else if bias ==#10 4#10 then discrete(0.4, 0.6)
+    else if bias ==#10 5#10 then discrete(0.5, 0.5)
+    else if bias ==#10 6#10 then discrete(0.6, 0.4)
+    else if bias ==#10 7#10 then discrete(0.7, 0.3)
+    else if bias ==#10 8#10 then discrete(0.8, 0.2)
+    else discrete(0.9, 0.1) in
+
+let _1 = observe(tossResults_1 ==#2 1#2) in
+
+let tossResults_2 = 
+    if bias ==#10 0#10 then discrete(0.0, 1.0)
+    else if bias ==#10 1#10 then discrete(0.1, 0.9)
+    else if bias ==#10 2#10 then discrete(0.2, 0.8)
+    else if bias ==#10 3#10 then discrete(0.3, 0.7)
+    else if bias ==#10 4#10 then discrete(0.4, 0.6)
+    else if bias ==#10 5#10 then discrete(0.5, 0.5)
+    else if bias ==#10 6#10 then discrete(0.6, 0.4)
+    else if bias ==#10 7#10 then discrete(0.7, 0.3)
+    else if bias ==#10 8#10 then discrete(0.8, 0.2)
+    else discrete(0.9, 0.1) in
+
+let _2 = observe(tossResults_2 ==#2 0#2) in
+
+let tossResults_3 = 
+    if bias ==#10 0#10 then discrete(0.0, 1.0)
+    else if bias ==#10 1#10 then discrete(0.1, 0.9)
+    else if bias ==#10 2#10 then discrete(0.2, 0.8)
+    else if bias ==#10 3#10 then discrete(0.3, 0.7)
+    else if bias ==#10 4#10 then discrete(0.4, 0.6)
+    else if bias ==#10 5#10 then discrete(0.5, 0.5)
+    else if bias ==#10 6#10 then discrete(0.6, 0.4)
+    else if bias ==#10 7#10 then discrete(0.7, 0.3)
+    else if bias ==#10 8#10 then discrete(0.8, 0.2)
+    else discrete(0.9, 0.1) in
+
+let _3 = observe(tossResults_3 ==#2 1#2) in
+
+let tossResults_4 = 
+    if bias ==#10 0#10 then discrete(0.0, 1.0)
+    else if bias ==#10 1#10 then discrete(0.1, 0.9)
+    else if bias ==#10 2#10 then discrete(0.2, 0.8)
+    else if bias ==#10 3#10 then discrete(0.3, 0.7)
+    else if bias ==#10 4#10 then discrete(0.4, 0.6)
+    else if bias ==#10 5#10 then discrete(0.5, 0.5)
+    else if bias ==#10 6#10 then discrete(0.6, 0.4)
+    else if bias ==#10 7#10 then discrete(0.7, 0.3)
+    else if bias ==#10 8#10 then discrete(0.8, 0.2)
+    else discrete(0.9, 0.1) in
+
+let _4 = observe(tossResults_4 ==#2 0#2) in
+
+tossResults_0 <#2 1#2

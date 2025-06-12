@@ -37,11 +37,11 @@ type 'a expr_generic =
   | RuntimeError of string
 
 and single_arg_dist_kind =
-  | DExponential | DLaplace | DCauchy | DTDist | DChi2 | DLogistic | DRayleigh
+  | DExponential | DLaplace | DCauchy | DTDist | DChi2 | DLogistic | DRayleigh | DPoisson
 
 and two_arg_dist_kind =
   | DUniform | DGaussian | DBeta | DLogNormal | DGamma | DPareto | DWeibull 
-  | DGumbel1 | DGumbel2 | DExppow
+  | DGumbel1 | DGumbel2 | DExppow | DBinomial
 
 and 'a sample = 
   | Distr1 of single_arg_dist_kind * 'a

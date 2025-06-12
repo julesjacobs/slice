@@ -6,8 +6,8 @@ let relationship = discrete(
 
 let sex = discrete(0.3307, 0.6693) in
 
-let _ = observe(sex <#2 1#2) in
-let _ = observe(age > 18.0) in
+let _1 = observe(sex <#2 1#2) in
+let _2 = observe(age > 18.0) in
 
 let t =
   if relationship ==#6 0#6 then

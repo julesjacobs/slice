@@ -283,6 +283,8 @@ let discretize (e : texpr) : expr =
               handle_single_param_distribution DLogistic texpr_scale "scale"
           | Distr1 (DRayleigh, texpr_sigma) ->
               handle_single_param_distribution DRayleigh texpr_sigma "sigma"
+          | Distr1 (DPoisson, texpr_mu) ->
+              handle_single_param_distribution DPoisson texpr_mu "mu"
           
           | Distr2 (DUniform, texpr_a, texpr_b) ->
               handle_two_param_distribution DUniform texpr_a "a" texpr_b "b" "b"
@@ -304,6 +306,9 @@ let discretize (e : texpr) : expr =
               handle_two_param_distribution DGumbel2 texpr_a "a" texpr_b "b" "b_g2"
           | Distr2 (DExppow, texpr_a, texpr_b) ->
               handle_two_param_distribution DExppow texpr_a "a" texpr_b "b" "b_ep"
+          | Distr2 (DBinomial, texpr_p, texpr_n) ->
+              handle_two_param_distribution DBinomial texpr_p "p" texpr_n "n" "b_bi"
+          
         )
         
     | DistrCase cases ->
