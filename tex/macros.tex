@@ -1,24 +1,51 @@
 % Macros for language keywords to be used in math mode
-\newcommand{\letkw}{\text{\ttfamily\bfseries let}}
-\newcommand{\inkw}{\text{\ttfamily\bfseries in}}
-\newcommand{\ifkw}{\text{\ttfamily\bfseries if}}
-\newcommand{\thenkw}{\text{\ttfamily\bfseries then}}
-\newcommand{\elsekw}{\text{\ttfamily\bfseries else}}
-\newcommand{\uniform}{\text{\ttfamily\bfseries uniform}}
-\newcommand{\discrete}{\text{\ttfamily\bfseries discrete}}
-\newcommand{\gaussian}{\text{\ttfamily\bfseries gaussian}}
-\newcommand{\exponential}{\text{\ttfamily\bfseries exponential}}
-\newcommand{\betafn}{\text{\ttfamily\bfseries beta}} % Use beta for the keyword
-\newcommand{\fstkw}{\text{\ttfamily\bfseries fst}}
-\newcommand{\sndkw}{\text{\ttfamily\bfseries snd}}
-\newcommand{\funkw}{\text{\ttfamily\bfseries fun}}
-\newcommand{\bool}{\text{\ttfamily\bfseries bool}}
-\newcommand{\intty}{\text{\ttfamily\bfseries int}}
-\newcommand{\float}{\text{\ttfamily\bfseries float}}
-\newcommand{\fin}[1]{\text{\ttfamily\bfseries \#}#1}
+\newcommand{\letkw}{\textnormal{\ttfamily\bfseries let}}
+\newcommand{\inkw}{\textnormal{\ttfamily\bfseries in}}
+\newcommand{\ifkw}{\textnormal{\ttfamily\bfseries if}}
+\newcommand{\thenkw}{\textnormal{\ttfamily\bfseries then}}
+\newcommand{\elsekw}{\textnormal{\ttfamily\bfseries else}}
+\newcommand{\uniform}{\textnormal{\ttfamily\bfseries uniform}}
+\newcommand{\discrete}{\textnormal{\ttfamily\bfseries discrete}}
+\newcommand{\gaussian}{\textnormal{\ttfamily\bfseries gaussian}}
+\newcommand{\exponential}{\textnormal{\ttfamily\bfseries exponential}}
+\newcommand{\betafn}{\textnormal{\ttfamily\bfseries beta}} % Use beta for the keyword
+\newcommand{\fstkw}{\textnormal{\ttfamily\bfseries fst}}
+\newcommand{\sndkw}{\textnormal{\ttfamily\bfseries snd}}
+\newcommand{\funkw}{\textnormal{\ttfamily\bfseries fun}}
+\newcommand{\bool}{\textnormal{\ttfamily\bfseries bool}}
+\newcommand{\intty}{\textnormal{\ttfamily\bfseries int}}
+\newcommand{\float}{\textnormal{\ttfamily\bfseries float}}
+\newcommand{\fin}[1]{\textnormal{\ttfamily\bfseries \#}#1}
+
+\newcommand{\subst}[2]{[#1/#2]}
+% Meta variables
+\newcommand{\expr}{e}
+\newcommand{\val}{v}
+\newcommand{\var}{x}
+
+\newcommand{\true}{\textnormal{true}}
+\newcommand{\false}{\textnormal{false}}
+
+
+% Semantics
+\newcommand{\dist}[1]{\mathcal{D}\left( #1 \right)}
+\newcommand{\exprs}{\textnormal{Expr}}
+\newcommand{\extexprs}{{\overline{\textnormal{Expr}}}}
+\newcommand{\distextexprs}{\mathcal{D} \big( \extexprs \big)}
+\newcommand{\distexprs}{\dist{\exprs}}
+\newcommand{\obsfail}{\textnormal{\Lightning}}
+\newcommand{\error}{\textnormal{error}}
+\newcommand{\sem}[1]{\llbracket #1  \rrbracket}
+\newcommand{\bigsemstep}[2]{\langle #1  \rangle_{#2}}
+\newcommand{\bigsem}[1]{\langle #1  \rangle}
+
+\newcommand{\monunit}{\textnormal{return}}
+\newcommand{\monbind}{\ensuremath{\ensuremath{\gg\!\!=}}}
+
+
 
 % Macros for language names, use small caps
-\newcommand{\Slice}{\text{\scshape Slice}\xspace}
-\newcommand{\Dice}{\text{\scshape Dice}\xspace}
+\newcommand{\Slice}{\textnormal{\scshape Slice}\xspace}
+\newcommand{\Dice}{\textnormal{\scshape Dice}\xspace}
 
 \newcommand{\R}{\mathbb{R}}

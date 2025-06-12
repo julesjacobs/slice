@@ -1,0 +1,95 @@
+This is BibTeX, Version 0.99d (TeX Live 2025)
+Capacity: max_strings=200000, hash_size=200000, hash_prime=170003
+The top-level auxiliary file: contdice.aux
+The style file: ACM-Reference-Format.bst
+Reallocated singl_function (elt_size=4) to 100 items from 50.
+Reallocated singl_function (elt_size=4) to 100 items from 50.
+Reallocated wiz_functions (elt_size=4) to 6000 items from 3000.
+Database file #1: refs.bib
+Reallocated singl_function (elt_size=4) to 100 items from 50.
+Reallocated glb_str_ptr (elt_size=4) to 20 items from 10.
+Reallocated global_strs (elt_size=200001) to 20 items from 10.
+Reallocated glb_str_end (elt_size=4) to 20 items from 10.
+Reallocated singl_function (elt_size=4) to 100 items from 50.
+Reallocated wiz_functions (elt_size=4) to 9000 items from 6000.
+Warning--no number and no volume in Bingham2019Pyro
+Warning--page numbers missing in both pages and numpages fields in Bingham2019Pyro
+Warning--no number and no volume in Carpenter2017Stan
+Warning--page numbers missing in both pages and numpages fields in Carpenter2017Stan
+Warning--empty publisher in CusumanoTowner2019Gen
+Warning--empty address in CusumanoTowner2019Gen
+Warning--page numbers missing in both pages and numpages fields in CusumanoTowner2019Gen
+Warning--empty publisher in DeRaedt2007ProbLog
+Warning--empty address in DeRaedt2007ProbLog
+Warning--page numbers missing in both pages and numpages fields in DeRaedt2007ProbLog
+Warning--empty publisher in Dillon2017TFP
+Warning--empty address in Dillon2017TFP
+Warning--page numbers missing in both pages and numpages fields in Dillon2017TFP
+Warning--empty publisher in Ge2018Turing
+Warning--empty address in Ge2018Turing
+Warning--page numbers missing in both pages and numpages fields in Ge2018Turing
+Warning--empty publisher in Goodman2008Church
+Warning--empty address in Goodman2008Church
+Warning--page numbers missing in both pages and numpages fields in Goodman2008Church
+Warning--empty address in Holtzen2018Abstraction
+Warning--unusual to have number, but no volume, for Holtzen2020Dice
+Warning--page numbers missing in both pages and numpages fields in Holtzen2020Dice
+Warning--empty publisher in Moy2025Roulette
+Warning--empty address in Moy2025Roulette
+Warning--page numbers missing in both pages and numpages fields in Moy2025Roulette
+Warning--empty publisher in Pfeffer2009Figaro
+Warning--empty address in Pfeffer2009Figaro
+Warning--page numbers missing in both pages and numpages fields in Pfeffer2009Figaro
+Warning--empty publisher in Saad2021SPPL
+Warning--empty address in Saad2021SPPL
+Warning--page numbers missing in both pages and numpages fields in Saad2021SPPL
+Warning--no number and no volume in Salvatier2016PyMC3
+Warning--page numbers missing in both pages and numpages fields in Salvatier2016PyMC3
+Warning--empty publisher in Tehrani2020BeanMachine
+Warning--empty address in Tehrani2020BeanMachine
+Warning--page numbers missing in both pages and numpages fields in Tehrani2020BeanMachine
+Warning--page numbers missing in both pages and numpages fields in Tolpin2016Anglican
+Warning--no number and no volume in Tran2016Edward
+Warning--page numbers missing in both pages and numpages fields in Tran2016Edward
+You've used 18 entries,
+            6056 wiz_defined-function locations,
+            1597 strings with 21833 characters,
+and the built_in function-call counts, 19803 in all, are:
+= -- 2248
+> -- 864
+< -- 0
++ -- 296
+- -- 284
+* -- 1579
+:= -- 2001
+add.period$ -- 81
+call.type$ -- 18
+change.case$ -- 162
+chr.to.int$ -- 18
+cite$ -- 57
+duplicate$ -- 1701
+empty$ -- 1212
+format.name$ -- 352
+if$ -- 4717
+int.to.chr$ -- 2
+int.to.str$ -- 1
+missing$ -- 74
+newline$ -- 193
+num.names$ -- 128
+pop$ -- 852
+preamble$ -- 1
+purify$ -- 306
+quote$ -- 0
+skip$ -- 575
+stack$ -- 0
+substring$ -- 1053
+swap$ -- 93
+text.length$ -- 0
+text.prefix$ -- 0
+top$ -- 0
+type$ -- 456
+warning$ -- 39
+while$ -- 66
+width$ -- 0
+write$ -- 374
+(There were 39 warnings)
