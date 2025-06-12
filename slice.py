@@ -182,7 +182,7 @@ class BenchmarkRunner:
         
         baseline_dir = Path("benchmarks/baselines")
         
-        for benchmark in ["clickgraph", "clinical_trial", "coin_bias", "trueskill"]:
+        for benchmark in ["clickgraph", "clinical_trial", "coin_bias", "survey_unbias", "trueskill"]:
             # Run Slice version
             slice_file = baseline_dir / f"{benchmark}.slice"
             if slice_file.exists():

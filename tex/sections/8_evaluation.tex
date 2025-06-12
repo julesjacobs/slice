@@ -1,10 +1,10 @@
 \section{Evaluation}\label{sec:evaluation}
-\todo[inline]{Might need to rerun the benchmarks on a better machine, as Roulette is too slow right now. Also want to add in bit blast to the results, currently it's way too slow to execute on my machine.}
+\todo[inline]{Will need to rerun the benchmarks on a better machine, as Roulette is too slow and bit blast keeps timing out.}
 
 This section confirms that the performance of \Slice{} is competitive with existing state-of-the-art exact and approximate inference solvers for hybrid probabilistic programs. In particular, we evaluate \Slice{} using Dice and Roulette backends against the exact inference solver SPPL~\cite{Saad2021SPPL} and the approximate inference solver HyBit~\cite{Garg2024BitBlast} on various benchmarks. Our evaluation consists of three sets of programs. First is a series of synthetic benchmarks designed to test the how well \Slice{} scales asymptotically compared to SPPL. Second is a set of benchmarks for verifying fairness properties of decision trees. Lastly, we evaluate \Slice{} on a series of small baseline programs commonly used to test PPLs in the literature. 
 
 \subsection{Experimental Setup}\label{sec:experimenal-setup}
-All experiments were run on a ..., using the original version of Dice (2020) from Holtzen et. al.~\cite{Holtzen2020Dice} and the most recent version of Roulette that relies on Racket 8.13 and Rosette 4.1. Each experiment was carried out using a consistent-effort approach, with the goal of determining the most effective encoding for the program in each language and making sure that programs were equivalent across all languages. 
+All experiments were run on a ..., using the original version of Dice (2020) from Holtzen et. al.~\cite{Holtzen2020Dice} and the most recent version of Roulette that uses Racket 8.13 and Rosette 4.1. Each experiment was carried out using a consistent-effort approach, with the goal of determining the most effective encoding for the program in each language and making sure that programs were equivalent across all languages. 
 
 \subsection{Synthetic benchmarks}\label{sec:synthetic-benchmarks}
 To evaluate the asymptotic performance of \Slice{}, we designed seven synthetic benchmarks that stress-test different variants of probabilistic programs with continuous distributions. Currently, there are no benchmarks in the literature that test scaling of continuous programs, and we seek to close this gap. Each benchmark generates programs that grow linearly in size in the number of comparison tests (e.g. number of $<$ operators) to measure how execution time scales. This bears resemblence to how scalability is tested for discrete PPLs in the litearture: by growing the program by adding one additional layer to the chain of \texttt{flips} that depends on the previous. Doing so results in a path enumeration that grows exponentially in the number of layers. We generate programs of varying structure:
@@ -34,60 +34,48 @@ where the control flow depends on earlier random variables. This pattern is char
 \paragraph{Results.} We generate programs of size 1-50 with step size 5 in each iteration for the conditional independence tests, and for the alternating guards tests, we generate programs of size 1-100 with step size 5 and 1 for the program size and guard span, respectively. We specify a timeout of 300s. The scaling experiments demonstrate that Slice maintains near-linear scaling behavior while SPPL exhibits significantly faster growth and times out on larger programs. Across all seven benchmarks, Slice+Dice execution time remains under 0.5 seconds even for programs with 90+ comparisons, while SPPL times out (at 300s) for programs as small as 20-30 in size. The Slice compilation phase alone (dark blue line) shows essentially constant time, indicating that the type-directed discretization algorithm scales extremely well.
 
 \subsection{Fairness Benchmarks}
-Characterizing the fairness of classification algorithms is an interesting application in machine learning. 
+Characterizing the fairness of classification algorithms is an interesting application in machine learning~\cite{Dwork2012FairnessAwareness}. FairSquare~\cite{albarghouthi2017fairsquare} and VeriFair~\cite{Bastani2019VeriFair} are two solvers that obtain fairness judgments for large-scale decision-making programs. Prior to SPPL, they were state-of-the-art for verifying the fairness of decision tree classifiers, neural network classifiers, and support vector machine classifiers. We evaluate performance on the decision tree benchmarks, as \Slice cannot solve the neural network and support vector machine benchmarks as they contain multivariate transforms, and show that \Slice{} beats SPPL in performance on such benchmarks.
 
-
-We evaluate Slice on decision tree models from the FairSquare suite with the following results:
+Table 1 shows the results. The first column shows the decision making program ($DT_n$ means ``decision tree'' with $n$ conditionals), and the remaining columns display the execution times in seconds of Slice with Dice, Slice with Roulette, and SPPL respectively. The measurements indicate that SPPL consistently obtains probability estimates in milliseconds, with up to about 200x in speedup compared to SPPL. Although FairSquare and VeriFair can compute approximate probabilities that enable them to express more fairness problems, their cost is that their runtime on the decision trees is higher and less predictable than \Slice{} and SPPL which can compute exact probabilities efficiently.
 
 \begin{table}[!t]
 \centering
-\begin{tabular}{lrrr}
+\begin{tabular}{lrrrr}
 \toprule
-Benchmark & Slice+Dice (s) & SPPL (s) & Speedup \\
+Benchmark & Slice+Dice (s) & Slice+Roulette (s) & SPPL (s) & Speedup \\
 \midrule
-DT4\_ind & 0.007 & 0.335 & 45.6× \\
-DT4\_bn1 & 0.008 & 0.335 & 42.8× \\
-DT4\_bn2 & 0.007 & 0.340 & 46.3× \\
-DT14\_ind & 0.008 & 0.324 & 43.0× \\
-DT14\_bn1 & 0.010 & 0.341 & 35.8× \\
-DT14\_bn2 & 0.011 & 0.356 & 33.3× \\
-DT16\_ind & 0.008 & 0.339 & 44.4× \\
-DT16\_bn1 & 0.009 & 0.349 & 38.3× \\
-DT16\_bn2 & 0.011 & 0.339 & 30.7× \\
-DT44\_ind & 0.011 & 0.349 & 31.1× \\
-DT44\_bn1 & 0.016 & 0.363 & 22.9× \\
-DT44\_bn2 & 0.016 & 0.354 & 22.1× \\
+DT4\_ind & 0.007 & & 0.335 & 45.6× \\
+DT4\_bn1 & 0.008 & & 0.335 & 42.8× \\
+DT4\_bn2 & 0.007 & & 0.340 & 46.3× \\
+DT14\_ind & 0.008 & & 0.324 & 43.0× \\
+DT14\_bn1 & 0.010 & & 0.341 & 35.8× \\
+DT14\_bn2 & 0.011 & & 0.356 & 33.3× \\
+DT16\_ind & 0.008 & & 0.339 & 44.4× \\
+DT16\_bn1 & 0.009 & & 0.349 & 38.3× \\
+DT16\_bn2 & 0.011 & & 0.339 & 30.7× \\
+DT44\_ind & 0.011 & & 0.349 & 31.1× \\
+DT44\_bn1 & 0.016 & & 0.363 & 22.9× \\
+DT44\_bn2 & 0.016 & & 0.354 & 22.1× \\
 \bottomrule
 \end{tabular}
 \caption{Execution times (seconds) for decision tree benchmarks}
 \end{table}
 
-\subsubsection{Clinical Trial Benchmark}
-We evaluate Slice on a clinical trial model that uses discrete distributions to model treatment effectiveness:
+\subsection{Simple Baselines}
+We finally evaluate \Slice{} on a set of benchmarks that were introduced by~\cite{gehr2016psi}. We evaluate \Slice{} on the hybrid programs in these benchmarks. The results are shown in Table 2. We omit the runs of PSI in the table due to its significally slower performance than SPPL on all benchmarks. The first column in the table gives the benchmark name, and the remaining columns display the execution times in seconds of Slice with Dice, Slice with Roulette, and SPPL respectively. As both SPPL and \Slice{} are restricted languages, in order to test a broader range of programs, we converted several benchmarks with parameters inside distributions that depend on continuous random choices to a discretized version. The time taken by \Slice{} to solve these problems is nearly instant in all cases. 
 
 \begin{table}[!t]
 \centering
-\begin{tabular}{lrrr}
+\begin{tabular}{lrrrr}
 \toprule
-Benchmark & Slice+Dice (s) & SPPL (s) & Speedup \\
+Benchmark & Slice+Dice (s) & Slice+Roulette (s) & SPPL (s) & Speedup \\
 \midrule
-Clinical Trial & 0.009 & 0.356 & 38.2× \\
+ClickGraph & 0.510 & 4.891 & 109.868 & 215.4× \\
+ClinicalTrial & 0.738 & 4.352 & 7.965 & 10.8× \\
+CoinBias & 0.261 & 3.006 & 4.067 & 15.6× \\
+SurveyUnbias & 0.229 & 2.849 & 3.599 & 15.7× \\
+TrueSkill & 0.222 & 2.762 & 3.438 & 15.4× \\
 \bottomrule
 \end{tabular}
 \caption{Execution times for clinical trial benchmark}
 \end{table}
-
-
-\subsection{Psi benchmarks}\label{sec:psi-benchmarks}
-- describe benchmarks, cite paper
-- simplications we made such as expanding out arrays
-- graphs (slice + dice vs sppl vs bitblast)
-
-\todo{Note: Psi benchmark files exist in dice/benchmarks/ but need to be ported to Slice syntax. Current .psi files include alarm, cancer, bayesian networks, etc.}
-
-\subsection{Fairness benchmarks}\label{sec:fairness-benchmarks}
-- describe benchmarks, cite paper
-- simplications we made such as expanding out arrays
-- graphs (slice + dice vs sppl vs bitblast)
-
-\todo{Note: Fairness benchmarks need to be collected/created. The indian\_gpa example in examples/paper/ could be one fairness benchmark.}
