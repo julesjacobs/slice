@@ -1,0 +1,31 @@
+let bias_0 = discrete(0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1) in
+
+let votes_0 = 
+    if bias_0 ==#10 0#10 then binomial(0.00000001, 1000) (* Encode as 0.0000001 since binomial distr cannot take values <= 0.0 *)
+    else if bias_0 ==#10 1#10 then binomial(0.1, 1000)
+    else if bias_0 ==#10 2#10 then binomial(0.2, 1000)
+    else if bias_0 ==#10 3#10 then binomial(0.3, 1000)
+    else if bias_0 ==#10 4#10 then binomial(0.4, 1000)
+    else if bias_0 ==#10 5#10 then binomial(0.5, 1000)
+    else if bias_0 ==#10 6#10 then binomial(0.6, 1000)
+    else if bias_0 ==#10 7#10 then binomial(0.7, 1000)
+    else if bias_0 ==#10 8#10 then binomial(0.8, 1000)
+    else binomial(0.9, 1000) in
+
+let ansBias_0 = bias_0 in
+
+let answer_0 = 
+    if ansBias_0 ==#10 0#10 then discrete(0.0, 1.0)
+    else if ansBias_0 ==#10 1#10 then discrete(0.1, 0.9)
+    else if ansBias_0 ==#10 2#10 then discrete(0.2, 0.8)
+    else if ansBias_0 ==#10 3#10 then discrete(0.3, 0.7)
+    else if ansBias_0 ==#10 4#10 then discrete(0.4, 0.6)
+    else if ansBias_0 ==#10 5#10 then discrete(0.5, 0.5)
+    else if ansBias_0 ==#10 6#10 then discrete(0.6, 0.4)
+    else if ansBias_0 ==#10 7#10 then discrete(0.7, 0.3)
+    else if ansBias_0 ==#10 8#10 then discrete(0.8, 0.2)
+    else discrete(0.9, 0.1) in
+
+let _0 = observe(answer_0 ==#2 1#2) in
+
+answer_0 <#2 1#2
