@@ -1,0 +1,264 @@
+%%% -*-BibTeX-*-
+%%% Do NOT edit. File created by BibTeX with style
+%%% ACM-Reference-Format-Journals [18-Jan-2012].
+
+\begin{thebibliography}{18}
+
+%%% ====================================================================
+%%% NOTE TO THE USER: you can override these defaults by providing
+%%% customized versions of any of these macros before the \bibliography
+%%% command.  Each of them MUST provide its own final punctuation,
+%%% except for \shownote{} and \showURL{}.  The latter two
+%%% do not use final punctuation, in order to avoid confusing it with
+%%% the Web address.
+%%%
+%%% To suppress output of a particular field, define its macro to expand
+%%% to an empty string, or better, \unskip, like this:
+%%%
+%%% \newcommand{\showURL}[1]{\unskip}   % LaTeX syntax
+%%%
+%%% \def \showURL #1{\unskip}           % plain TeX syntax
+%%%
+%%% ====================================================================
+
+\ifx \showCODEN    \undefined \def \showCODEN     #1{\unskip}     \fi
+\ifx \showISBNx    \undefined \def \showISBNx     #1{\unskip}     \fi
+\ifx \showISBNxiii \undefined \def \showISBNxiii  #1{\unskip}     \fi
+\ifx \showISSN     \undefined \def \showISSN      #1{\unskip}     \fi
+\ifx \showLCCN     \undefined \def \showLCCN      #1{\unskip}     \fi
+\ifx \shownote     \undefined \def \shownote      #1{#1}          \fi
+\ifx \showarticletitle \undefined \def \showarticletitle #1{#1}   \fi
+\ifx \showURL      \undefined \def \showURL       {\relax}        \fi
+% The following commands are used for tagged output and should be
+% invisible to TeX
+\providecommand\bibfield[2]{#2}
+\providecommand\bibinfo[2]{#2}
+\providecommand\natexlab[1]{#1}
+\providecommand\showeprint[2][]{arXiv:#2}
+
+\bibitem[Bingham et~al\mbox{.}(2019)]%
+        {Bingham2019Pyro}
+\bibfield{author}{\bibinfo{person}{Eli Bingham}, \bibinfo{person}{Jonathan~P.
+  Chen}, \bibinfo{person}{Martin Jankowiak}, \bibinfo{person}{Fritz Obermeyer},
+  \bibinfo{person}{Neeraj Pradhan}, \bibinfo{person}{Theofanis Karaletsos},
+  \bibinfo{person}{Rohit Singh}, \bibinfo{person}{Paul Szerlip},
+  \bibinfo{person}{Paul Horsfall}, {and} \bibinfo{person}{Noah~D. Goodman}.}
+  \bibinfo{year}{2019}\natexlab{}.
+\newblock \showarticletitle{Pyro: Deep Universal Probabilistic Programming}.
+\newblock \bibinfo{journal}{\emph{JMLR}} (\bibinfo{year}{2019}).
+\newblock
+
+
+\bibitem[Carpenter et~al\mbox{.}(2017)]%
+        {Carpenter2017Stan}
+\bibfield{author}{\bibinfo{person}{Bob Carpenter}, \bibinfo{person}{Andrew
+  Gelman}, \bibinfo{person}{Matthew~D. Hoffman}, \bibinfo{person}{Daniel Lee},
+  \bibinfo{person}{Ben Goodrich}, \bibinfo{person}{Michael Betancourt},
+  \bibinfo{person}{Marcus~A. Brubaker}, \bibinfo{person}{Jiqiang Guo},
+  \bibinfo{person}{Peter Li}, {and} \bibinfo{person}{Allen Riddell}.}
+  \bibinfo{year}{2017}\natexlab{}.
+\newblock \showarticletitle{Stan: A Probabilistic Programming Language}.
+\newblock \bibinfo{journal}{\emph{J. Stat. Softw.}} (\bibinfo{year}{2017}).
+\newblock
+\href{https://doi.org/10.18637/jss.v076.i01}{doi:\nolinkurl{10.18637/jss.v076.i01}}
+
+
+\bibitem[Cusumano-Towner et~al\mbox{.}(2019)]%
+        {CusumanoTowner2019Gen}
+\bibfield{author}{\bibinfo{person}{Marco~F. Cusumano-Towner},
+  \bibinfo{person}{Feras~A. Saad}, \bibinfo{person}{Alexander~K. Lew}, {and}
+  \bibinfo{person}{Vikash~K. Mansinghka}.} \bibinfo{year}{2019}\natexlab{}.
+\newblock \showarticletitle{Gen: A General-Purpose Probabilistic Programming
+  System with Programmable Inference}. In \bibinfo{booktitle}{\emph{PLDI}}.
+\newblock
+\href{https://doi.org/10.1145/3314221.3314642}{doi:\nolinkurl{10.1145/3314221.3314642}}
+
+
+\bibitem[De~Raedt et~al\mbox{.}(2007)]%
+        {DeRaedt2007ProbLog}
+\bibfield{author}{\bibinfo{person}{Luc De~Raedt}, \bibinfo{person}{Angelika
+  Kimmig}, {and} \bibinfo{person}{Hannu Toivonen}.}
+  \bibinfo{year}{2007}\natexlab{}.
+\newblock \showarticletitle{ProbLog: A Probabilistic Prolog and Its Application
+  in Link Discovery}. In \bibinfo{booktitle}{\emph{IJCAI}}.
+\newblock
+
+
+\bibitem[Dillon et~al\mbox{.}(2017)]%
+        {Dillon2017TFP}
+\bibfield{author}{\bibinfo{person}{Joshua~V. Dillon}, \bibinfo{person}{Ian
+  Langmore}, \bibinfo{person}{Dustin Tran}, \bibinfo{person}{Eugene Brevdo},
+  \bibinfo{person}{Srinivas Vasudevan}, \bibinfo{person}{Dave Moore},
+  \bibinfo{person}{Brian Patton}, \bibinfo{person}{Alexander~A. Alemi},
+  \bibinfo{person}{Matthew~D. Hoffman}, {and} \bibinfo{person}{Rif~A.
+  Saurous}.} \bibinfo{year}{2017}\natexlab{}.
+\newblock \showarticletitle{TensorFlow Distributions}. In
+  \bibinfo{booktitle}{\emph{SysML}}.
+\newblock
+
+
+\bibitem[Ge et~al\mbox{.}(2018)]%
+        {Ge2018Turing}
+\bibfield{author}{\bibinfo{person}{Hong Ge}, \bibinfo{person}{Kai Xu}, {and}
+  \bibinfo{person}{Zoubin Ghahramani}.} \bibinfo{year}{2018}\natexlab{}.
+\newblock \showarticletitle{Turing: A Language for Flexible Probabilistic
+  Inference}. In \bibinfo{booktitle}{\emph{AISTATS}}.
+\newblock
+
+
+\bibitem[Goodman et~al\mbox{.}(2008)]%
+        {Goodman2008Church}
+\bibfield{author}{\bibinfo{person}{Noah~D. Goodman}, \bibinfo{person}{Vikash~K.
+  Mansinghka}, \bibinfo{person}{Daniel~M. Roy}, \bibinfo{person}{Keith
+  Bonawitz}, {and} \bibinfo{person}{Joshua~B. Tenenbaum}.}
+  \bibinfo{year}{2008}\natexlab{}.
+\newblock \showarticletitle{Church: A Language for Generative Models}. In
+  \bibinfo{booktitle}{\emph{UAI}}.
+\newblock
+
+
+\bibitem[Goodman and Stuhlmüller(2014)]%
+        {Goodman2014WebPPL}
+\bibfield{author}{\bibinfo{person}{Noah~D. Goodman} {and}
+  \bibinfo{person}{Andreas Stuhlmüller}.} \bibinfo{year}{2014}\natexlab{}.
+\newblock \bibinfo{title}{The Design and Implementation of Probabilistic
+  Programming Languages}.
+\newblock
+\urldef\tempurl%
+\url{http://dippl.org}
+\showURL{%
+\tempurl}
+\newblock
+\shownote{Online textbook demonstrating WebPPL}.
+
+
+\bibitem[Holtzen et~al\mbox{.}(2018)]%
+        {Holtzen2018Abstraction}
+\bibfield{author}{\bibinfo{person}{Steven Holtzen}, \bibinfo{person}{Guy
+  Van~den Broeck}, {and} \bibinfo{person}{Todd Millstein}.}
+  \bibinfo{year}{2018}\natexlab{}.
+\newblock \showarticletitle{Sound Abstraction and Decomposition of
+  Probabilistic Programs}. In \bibinfo{booktitle}{\emph{Proceedings of the 35th
+  International Conference on Machine Learning}}
+  \emph{(\bibinfo{series}{Proceedings of Machine Learning Research},
+  Vol.~\bibinfo{volume}{80})}, \bibfield{editor}{\bibinfo{person}{Jennifer Dy}
+  {and} \bibinfo{person}{Andreas Krause}} (Eds.). \bibinfo{publisher}{PMLR},
+  \bibinfo{pages}{1999--2008}.
+\newblock
+\urldef\tempurl%
+\url{https://proceedings.mlr.press/v80/holtzen18a.html}
+\showURL{%
+\tempurl}
+
+
+\bibitem[Holtzen et~al\mbox{.}(2020)]%
+        {Holtzen2020Dice}
+\bibfield{author}{\bibinfo{person}{Steven Holtzen}, \bibinfo{person}{Guy
+  Van~den Broeck}, {and} \bibinfo{person}{Todd Millstein}.}
+  \bibinfo{year}{2020}\natexlab{}.
+\newblock \showarticletitle{Scaling Exact Inference for Discrete Probabilistic
+  Programs}.
+\newblock \bibinfo{journal}{\emph{PACMPL}} \bibinfo{number}{OOPSLA}
+  (\bibinfo{year}{2020}).
+\newblock
+\href{https://doi.org/10.1145/3428208}{doi:\nolinkurl{10.1145/3428208}}
+
+
+\bibitem[Minka et~al\mbox{.}(2018)]%
+        {Minka2018InferNET}
+\bibfield{author}{\bibinfo{person}{Tom Minka}, \bibinfo{person}{John~M. Winn},
+  \bibinfo{person}{John Guiver}, \bibinfo{person}{Yordan Zaykov},
+  \bibinfo{person}{David Fabian}, {and} \bibinfo{person}{Jim Bronskill}.}
+  \bibinfo{year}{2018}\natexlab{}.
+\newblock \bibinfo{title}{Infer.NET 0.3}.
+\newblock
+\newblock
+\shownote{Microsoft Research Cambridge. \url{http://dotnet.github.io/infer}}.
+
+
+\bibitem[Moy et~al\mbox{.}(2025)]%
+        {Moy2025Roulette}
+\bibfield{author}{\bibinfo{person}{Cameron Moy}, \bibinfo{person}{Jack
+  Czenszak}, \bibinfo{person}{John~M. Li}, \bibinfo{person}{Brianna Marshall},
+  {and} \bibinfo{person}{Steven Holtzen}.} \bibinfo{year}{2025}\natexlab{}.
+\newblock \showarticletitle{Roulette: A Language for Expressive, Exact, and
+  Efficient Discrete Probabilistic Programming}. In
+  \bibinfo{booktitle}{\emph{PLDI}}.
+\newblock
+\href{https://doi.org/10.1145/3729334}{doi:\nolinkurl{10.1145/3729334}}
+
+
+\bibitem[Pfeffer(2009)]%
+        {Pfeffer2009Figaro}
+\bibfield{author}{\bibinfo{person}{Avi Pfeffer}.}
+  \bibinfo{year}{2009}\natexlab{}.
+\newblock \showarticletitle{Figaro: An Object-Oriented Probabilistic
+  Programming Language}. In \bibinfo{booktitle}{\emph{CRA Tech Report}}.
+\newblock
+
+
+\bibitem[Saad et~al\mbox{.}(2021)]%
+        {Saad2021SPPL}
+\bibfield{author}{\bibinfo{person}{Feras~A. Saad}, \bibinfo{person}{Martin~C.
+  Rinard}, {and} \bibinfo{person}{Vikash~K. Mansinghka}.}
+  \bibinfo{year}{2021}\natexlab{}.
+\newblock \showarticletitle{SPPL: Probabilistic Programming with Fast Exact
+  Symbolic Inference}. In \bibinfo{booktitle}{\emph{PLDI}}.
+\newblock
+\href{https://doi.org/10.1145/3453483.3454078}{doi:\nolinkurl{10.1145/3453483.3454078}}
+
+
+\bibitem[Salvatier et~al\mbox{.}(2016)]%
+        {Salvatier2016PyMC3}
+\bibfield{author}{\bibinfo{person}{John Salvatier}, \bibinfo{person}{Thomas~V.
+  Wiecki}, {and} \bibinfo{person}{Christopher Fonnesbeck}.}
+  \bibinfo{year}{2016}\natexlab{}.
+\newblock \showarticletitle{Probabilistic Programming in Python Using PyMC3}.
+\newblock \bibinfo{journal}{\emph{PeerJ CS}} (\bibinfo{year}{2016}).
+\newblock
+\href{https://doi.org/10.7717/peerj-cs.55}{doi:\nolinkurl{10.7717/peerj-cs.55}}
+
+
+\bibitem[Tehrani et~al\mbox{.}(2020)]%
+        {Tehrani2020BeanMachine}
+\bibfield{author}{\bibinfo{person}{Nazanin Tehrani}, \bibinfo{person}{Nimar~S.
+  Arora}, \bibinfo{person}{Yucen~Lily Li}, \bibinfo{person}{Kinjal~D. Shah},
+  \bibinfo{person}{David Noursi}, \bibinfo{person}{Michael Tingley},
+  \bibinfo{person}{Narjes Torabi}, \bibinfo{person}{Eric Lippert}, {and}
+  \bibinfo{person}{Erik Meijer}.} \bibinfo{year}{2020}\natexlab{}.
+\newblock \showarticletitle{Bean Machine: A Declarative Probabilistic
+  Programming Language for Efficient Programmable Inference}. In
+  \bibinfo{booktitle}{\emph{PGM}}.
+\newblock
+
+
+\bibitem[Tolpin et~al\mbox{.}(2016)]%
+        {Tolpin2016Anglican}
+\bibfield{author}{\bibinfo{person}{David Tolpin}, \bibinfo{person}{Jan-Willem
+  van~de Meent}, \bibinfo{person}{Hongseok Yang}, {and} \bibinfo{person}{Frank
+  Wood}.} \bibinfo{year}{2016}\natexlab{}.
+\newblock \showarticletitle{Design and Implementation of Probabilistic
+  Programming Language Anglican}.
+\newblock \bibinfo{journal}{\emph{CoRR}}  \bibinfo{volume}{abs/1608.05263}
+  (\bibinfo{year}{2016}).
+\newblock
+\urldef\tempurl%
+\url{http://arxiv.org/abs/1608.05263}
+\showURL{%
+\tempurl}
+
+
+\bibitem[Tran et~al\mbox{.}(2016)]%
+        {Tran2016Edward}
+\bibfield{author}{\bibinfo{person}{Dustin Tran}, \bibinfo{person}{Alp
+  Kucukelbir}, \bibinfo{person}{Adji~B. Dieng}, \bibinfo{person}{Maja Rudolph},
+  \bibinfo{person}{Dawen Liang}, {and} \bibinfo{person}{David~M. Blei}.}
+  \bibinfo{year}{2016}\natexlab{}.
+\newblock \showarticletitle{Edward: A Library for Probabilistic Modeling,
+  Inference, and Criticism}.
+\newblock \bibinfo{journal}{\emph{arXiv preprint arXiv:1610.09787}}
+  (\bibinfo{year}{2016}).
+\newblock
+
+
+\end{thebibliography}
