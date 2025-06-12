@@ -53,9 +53,16 @@ and string_of_expr_node ?(indent=0) (ExprNode expr_node) : string =
     let rec gen_flip_chain probs remaining index =
       match probs with
       | [] -> failwith "Empty probability list"
-      | [(_, _)] -> string_of_int index  (* final case *)
+      | [(_, _)] -> string_of_int index
       | (_, p) :: rest ->
-          let cond = flip_expr (p /. remaining) in
+          let prob_ratio = 
+            if remaining = 0.0 then 0.0
+            else p /. remaining 
+          in
+          let cond = 
+            if prob_ratio < 0.0 || prob_ratio > 1.0 then "flip 0.0"  (* Invalid probabilities *)
+            else flip_expr prob_ratio 
+          in
           let then_branch = string_of_int index in
           let else_branch = gen_flip_chain rest (remaining -. p) (index + 1) in
           Printf.sprintf "(if (%s) %s %s)" cond then_branch else_branch
