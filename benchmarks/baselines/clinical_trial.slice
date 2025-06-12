@@ -1,62 +1,524 @@
 let isEffective = discrete(0.5, 0.5) in
-let probControl = discrete(0.25, 0.25, 0.25, 0.25) in
-let probTreated = probControl in
-let probAll = probControl in 
+let probControl = discrete(0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1) in
+let probTreated = discrete(0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1) in
+let probAll = discrete(0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1) in 
 
 let controlGroup0 = 
     if isEffective ==#2 1#2 then 
-        if probControl ==#4 0#4 then discrete(0.0, 1.0) 
-        else if probControl ==#4 1#4 then discrete(0.25, 0.75) 
-        else if probControl ==#4 2#4 then discrete(0.5, 0.5) 
-        else discrete(0.75, 0.25) 
+        if probControl ==#10 0#10 then discrete(0.0, 1.0) 
+        else if probControl ==#10 1#10 then discrete(0.1, 0.9) 
+        else if probControl ==#10 2#10 then discrete(0.2, 0.8) 
+        else if probControl ==#10 3#10 then discrete(0.3, 0.7)
+        else if probControl ==#10 4#10 then discrete(0.4, 0.6)
+        else if probControl ==#10 5#10 then discrete(0.5, 0.5)
+        else if probControl ==#10 6#10 then discrete(0.6, 0.4)
+        else if probControl ==#10 7#10 then discrete(0.7, 0.3)
+        else if probControl ==#10 8#10 then discrete(0.8, 0.2)
+        else discrete(0.9, 0.1) 
     
     else 
-        if probAll ==#4 0#4 then discrete(0.0, 1.0) 
-        else if probAll ==#4 1#4 then discrete(0.25, 0.75) 
-        else if probAll ==#4 2#4 then discrete(0.5, 0.5) 
-        else discrete(0.75, 0.25) in
+        if probAll ==#10 0#10 then discrete(0.0, 1.0) 
+        else if probAll ==#10 1#10 then discrete(0.1, 0.9) 
+        else if probAll ==#10 2#10 then discrete(0.2, 0.8) 
+        else if probAll ==#10 3#10 then discrete(0.3, 0.7)
+        else if probAll ==#10 4#10 then discrete(0.4, 0.6)
+        else if probAll ==#10 5#10 then discrete(0.5, 0.5)
+        else if probAll ==#10 6#10 then discrete(0.6, 0.4)
+        else if probAll ==#10 7#10 then discrete(0.7, 0.3)
+        else if probAll ==#10 8#10 then discrete(0.8, 0.2)
+        else discrete(0.9, 0.1) in
+
+let treatedGroup0 = 
+    if isEffective ==#2 1#2 then 
+        if probTreated ==#10 0#10 then discrete(0.0, 1.0) 
+        else if probTreated ==#10 1#10 then discrete(0.1, 0.9) 
+        else if probTreated ==#10 2#10 then discrete(0.2, 0.8) 
+        else if probTreated ==#10 3#10 then discrete(0.3, 0.7)
+        else if probTreated ==#10 4#10 then discrete(0.4, 0.6)
+        else if probTreated ==#10 5#10 then discrete(0.5, 0.5)
+        else if probTreated ==#10 6#10 then discrete(0.6, 0.4)
+        else if probTreated ==#10 7#10 then discrete(0.7, 0.3)
+        else if probTreated ==#10 8#10 then discrete(0.8, 0.2)
+        else discrete(0.9, 0.1) 
+    
+    else 
+        if probAll ==#10 0#10 then discrete(0.0, 1.0) 
+        else if probAll ==#10 1#10 then discrete(0.1, 0.9) 
+        else if probAll ==#10 2#10 then discrete(0.2, 0.8) 
+        else if probAll ==#10 3#10 then discrete(0.3, 0.7)
+        else if probAll ==#10 4#10 then discrete(0.4, 0.6)
+        else if probAll ==#10 5#10 then discrete(0.5, 0.5)
+        else if probAll ==#10 6#10 then discrete(0.6, 0.4)
+        else if probAll ==#10 7#10 then discrete(0.7, 0.3)
+        else if probAll ==#10 8#10 then discrete(0.8, 0.2)
+        else discrete(0.9, 0.1) in
 
 
 let controlGroup1 = 
     if isEffective ==#2 1#2 then 
-        if probControl ==#4 0#4 then discrete(0.0, 1.0) 
-        else if probControl ==#4 1#4 then discrete(0.25, 0.75) 
-        else if probControl ==#4 2#4 then discrete(0.5, 0.5) 
-        else discrete(0.75, 0.25) 
+        if probControl ==#10 0#10 then discrete(0.0, 1.0) 
+        else if probControl ==#10 1#10 then discrete(0.1, 0.9) 
+        else if probControl ==#10 2#10 then discrete(0.2, 0.8) 
+        else if probControl ==#10 3#10 then discrete(0.3, 0.7)
+        else if probControl ==#10 4#10 then discrete(0.4, 0.6)
+        else if probControl ==#10 5#10 then discrete(0.5, 0.5)
+        else if probControl ==#10 6#10 then discrete(0.6, 0.4)
+        else if probControl ==#10 7#10 then discrete(0.7, 0.3)
+        else if probControl ==#10 8#10 then discrete(0.8, 0.2)
+        else discrete(0.9, 0.1) 
     
     else 
-        if probAll ==#4 0#4 then discrete(0.0, 1.0) 
-        else if probAll ==#4 1#4 then discrete(0.25, 0.75) 
-        else if probAll ==#4 2#4 then discrete(0.5, 0.5) 
-        else discrete(0.75, 0.25) in
+        if probAll ==#10 0#10 then discrete(0.0, 1.0) 
+        else if probAll ==#10 1#10 then discrete(0.1, 0.9) 
+        else if probAll ==#10 2#10 then discrete(0.2, 0.8) 
+        else if probAll ==#10 3#10 then discrete(0.3, 0.7)
+        else if probAll ==#10 4#10 then discrete(0.4, 0.6)
+        else if probAll ==#10 5#10 then discrete(0.5, 0.5)
+        else if probAll ==#10 6#10 then discrete(0.6, 0.4)
+        else if probAll ==#10 7#10 then discrete(0.7, 0.3)
+        else if probAll ==#10 8#10 then discrete(0.8, 0.2)
+        else discrete(0.9, 0.1) in
+
+
+let treatedGroup1 = 
+    if isEffective ==#2 1#2 then 
+        if probTreated ==#10 0#10 then discrete(0.0, 1.0) 
+        else if probTreated ==#10 1#10 then discrete(0.1, 0.9) 
+        else if probTreated ==#10 2#10 then discrete(0.2, 0.8) 
+        else if probTreated ==#10 3#10 then discrete(0.3, 0.7)
+        else if probTreated ==#10 4#10 then discrete(0.4, 0.6)
+        else if probTreated ==#10 5#10 then discrete(0.5, 0.5)
+        else if probTreated ==#10 6#10 then discrete(0.6, 0.4)
+        else if probTreated ==#10 7#10 then discrete(0.7, 0.3)
+        else if probTreated ==#10 8#10 then discrete(0.8, 0.2)
+        else discrete(0.9, 0.1) 
+    
+    else 
+        if probAll ==#10 0#10 then discrete(0.0, 1.0) 
+        else if probAll ==#10 1#10 then discrete(0.1, 0.9) 
+        else if probAll ==#10 2#10 then discrete(0.2, 0.8) 
+        else if probAll ==#10 3#10 then discrete(0.3, 0.7)
+        else if probAll ==#10 4#10 then discrete(0.4, 0.6)
+        else if probAll ==#10 5#10 then discrete(0.5, 0.5)
+        else if probAll ==#10 6#10 then discrete(0.6, 0.4)
+        else if probAll ==#10 7#10 then discrete(0.7, 0.3)
+        else if probAll ==#10 8#10 then discrete(0.8, 0.2)
+        else discrete(0.9, 0.1) in
 
 
 let controlGroup2 = 
     if isEffective ==#2 1#2 then 
-        if probControl ==#4 0#4 then discrete(0.0, 1.0) 
-        else if probControl ==#4 1#4 then discrete(0.25, 0.75) 
-        else if probControl ==#4 2#4 then discrete(0.5, 0.5) 
-        else discrete(0.75, 0.25) 
+        if probControl ==#10 0#10 then discrete(0.0, 1.0) 
+        else if probControl ==#10 1#10 then discrete(0.1, 0.9) 
+        else if probControl ==#10 2#10 then discrete(0.2, 0.8) 
+        else if probControl ==#10 3#10 then discrete(0.3, 0.7)
+        else if probControl ==#10 4#10 then discrete(0.4, 0.6)
+        else if probControl ==#10 5#10 then discrete(0.5, 0.5)
+        else if probControl ==#10 6#10 then discrete(0.6, 0.4)
+        else if probControl ==#10 7#10 then discrete(0.7, 0.3)
+        else if probControl ==#10 8#10 then discrete(0.8, 0.2)
+        else discrete(0.9, 0.1) 
     
     else 
-        if probAll ==#4 0#4 then discrete(0.0, 1.0) 
-        else if probAll ==#4 1#4 then discrete(0.25, 0.75) 
-        else if probAll ==#4 2#4 then discrete(0.5, 0.5) 
-        else discrete(0.75, 0.25) in
+        if probAll ==#10 0#10 then discrete(0.0, 1.0) 
+        else if probAll ==#10 1#10 then discrete(0.1, 0.9) 
+        else if probAll ==#10 2#10 then discrete(0.2, 0.8) 
+        else if probAll ==#10 3#10 then discrete(0.3, 0.7)
+        else if probAll ==#10 4#10 then discrete(0.4, 0.6)
+        else if probAll ==#10 5#10 then discrete(0.5, 0.5)
+        else if probAll ==#10 6#10 then discrete(0.6, 0.4)
+        else if probAll ==#10 7#10 then discrete(0.7, 0.3)
+        else if probAll ==#10 8#10 then discrete(0.8, 0.2)
+        else discrete(0.9, 0.1) in
+
+
+let treatedGroup2 = 
+    if isEffective ==#2 1#2 then 
+        if probTreated ==#10 0#10 then discrete(0.0, 1.0) 
+        else if probTreated ==#10 1#10 then discrete(0.1, 0.9) 
+        else if probTreated ==#10 2#10 then discrete(0.2, 0.8) 
+        else if probTreated ==#10 3#10 then discrete(0.3, 0.7)
+        else if probTreated ==#10 4#10 then discrete(0.4, 0.6)
+        else if probTreated ==#10 5#10 then discrete(0.5, 0.5)
+        else if probTreated ==#10 6#10 then discrete(0.6, 0.4)
+        else if probTreated ==#10 7#10 then discrete(0.7, 0.3)
+        else if probTreated ==#10 8#10 then discrete(0.8, 0.2)
+        else discrete(0.9, 0.1) 
+    
+    else 
+        if probAll ==#10 0#10 then discrete(0.0, 1.0) 
+        else if probAll ==#10 1#10 then discrete(0.1, 0.9) 
+        else if probAll ==#10 2#10 then discrete(0.2, 0.8) 
+        else if probAll ==#10 3#10 then discrete(0.3, 0.7)
+        else if probAll ==#10 4#10 then discrete(0.4, 0.6)
+        else if probAll ==#10 5#10 then discrete(0.5, 0.5)
+        else if probAll ==#10 6#10 then discrete(0.6, 0.4)
+        else if probAll ==#10 7#10 then discrete(0.7, 0.3)
+        else if probAll ==#10 8#10 then discrete(0.8, 0.2)
+        else discrete(0.9, 0.1) in
 
 
 let controlGroup3 = 
     if isEffective ==#2 1#2 then 
-        if probControl ==#4 0#4 then discrete(0.0, 1.0) 
-        else if probControl ==#4 1#4 then discrete(0.25, 0.75) 
-        else if probControl ==#4 2#4 then discrete(0.5, 0.5) 
-        else discrete(0.75, 0.25) 
+        if probControl ==#10 0#10 then discrete(0.0, 1.0) 
+        else if probControl ==#10 1#10 then discrete(0.1, 0.9) 
+        else if probControl ==#10 2#10 then discrete(0.2, 0.8) 
+        else if probControl ==#10 3#10 then discrete(0.3, 0.7)
+        else if probControl ==#10 4#10 then discrete(0.4, 0.6)
+        else if probControl ==#10 5#10 then discrete(0.5, 0.5)
+        else if probControl ==#10 6#10 then discrete(0.6, 0.4)
+        else if probControl ==#10 7#10 then discrete(0.7, 0.3)
+        else if probControl ==#10 8#10 then discrete(0.8, 0.2)
+        else discrete(0.9, 0.1) 
     
     else 
-        if probAll ==#4 0#4 then discrete(0.0, 1.0) 
-        else if probAll ==#4 1#4 then discrete(0.25, 0.75) 
-        else if probAll ==#4 2#4 then discrete(0.5, 0.5) 
-        else discrete(0.75, 0.25) in
+        if probAll ==#10 0#10 then discrete(0.0, 1.0) 
+        else if probAll ==#10 1#10 then discrete(0.1, 0.9) 
+        else if probAll ==#10 2#10 then discrete(0.2, 0.8) 
+        else if probAll ==#10 3#10 then discrete(0.3, 0.7)
+        else if probAll ==#10 4#10 then discrete(0.4, 0.6)
+        else if probAll ==#10 5#10 then discrete(0.5, 0.5)
+        else if probAll ==#10 6#10 then discrete(0.6, 0.4)
+        else if probAll ==#10 7#10 then discrete(0.7, 0.3)
+        else if probAll ==#10 8#10 then discrete(0.8, 0.2)
+        else discrete(0.9, 0.1) in
 
 
-controlGroup0 <#2 1#2 
+let treatedGroup3 = 
+    if isEffective ==#2 1#2 then 
+        if probTreated ==#10 0#10 then discrete(0.0, 1.0) 
+        else if probTreated ==#10 1#10 then discrete(0.1, 0.9) 
+        else if probTreated ==#10 2#10 then discrete(0.2, 0.8) 
+        else if probTreated ==#10 3#10 then discrete(0.3, 0.7)
+        else if probTreated ==#10 4#10 then discrete(0.4, 0.6)
+        else if probTreated ==#10 5#10 then discrete(0.5, 0.5)
+        else if probTreated ==#10 6#10 then discrete(0.6, 0.4)
+        else if probTreated ==#10 7#10 then discrete(0.7, 0.3)
+        else if probTreated ==#10 8#10 then discrete(0.8, 0.2)
+        else discrete(0.9, 0.1) 
+    
+    else 
+        if probAll ==#10 0#10 then discrete(0.0, 1.0) 
+        else if probAll ==#10 1#10 then discrete(0.1, 0.9) 
+        else if probAll ==#10 2#10 then discrete(0.2, 0.8) 
+        else if probAll ==#10 3#10 then discrete(0.3, 0.7)
+        else if probAll ==#10 4#10 then discrete(0.4, 0.6)
+        else if probAll ==#10 5#10 then discrete(0.5, 0.5)
+        else if probAll ==#10 6#10 then discrete(0.6, 0.4)
+        else if probAll ==#10 7#10 then discrete(0.7, 0.3)
+        else if probAll ==#10 8#10 then discrete(0.8, 0.2)
+        else discrete(0.9, 0.1) in
+
+
+let controlGroup4 = 
+    if isEffective ==#2 1#2 then 
+        if probControl ==#10 0#10 then discrete(0.0, 1.0) 
+        else if probControl ==#10 1#10 then discrete(0.1, 0.9) 
+        else if probControl ==#10 2#10 then discrete(0.2, 0.8) 
+        else if probControl ==#10 3#10 then discrete(0.3, 0.7)
+        else if probControl ==#10 4#10 then discrete(0.4, 0.6)
+        else if probControl ==#10 5#10 then discrete(0.5, 0.5)
+        else if probControl ==#10 6#10 then discrete(0.6, 0.4)
+        else if probControl ==#10 7#10 then discrete(0.7, 0.3)
+        else if probControl ==#10 8#10 then discrete(0.8, 0.2)
+        else discrete(0.9, 0.1) 
+    
+    else 
+        if probAll ==#10 0#10 then discrete(0.0, 1.0) 
+        else if probAll ==#10 1#10 then discrete(0.1, 0.9) 
+        else if probAll ==#10 2#10 then discrete(0.2, 0.8) 
+        else if probAll ==#10 3#10 then discrete(0.3, 0.7)
+        else if probAll ==#10 4#10 then discrete(0.4, 0.6)
+        else if probAll ==#10 5#10 then discrete(0.5, 0.5)
+        else if probAll ==#10 6#10 then discrete(0.6, 0.4)
+        else if probAll ==#10 7#10 then discrete(0.7, 0.3)
+        else if probAll ==#10 8#10 then discrete(0.8, 0.2)
+        else discrete(0.9, 0.1) in
+
+
+let treatedGroup4 = 
+    if isEffective ==#2 1#2 then 
+        if probTreated ==#10 0#10 then discrete(0.0, 1.0) 
+        else if probTreated ==#10 1#10 then discrete(0.1, 0.9) 
+        else if probTreated ==#10 2#10 then discrete(0.2, 0.8) 
+        else if probTreated ==#10 3#10 then discrete(0.3, 0.7)
+        else if probTreated ==#10 4#10 then discrete(0.4, 0.6)
+        else if probTreated ==#10 5#10 then discrete(0.5, 0.5)
+        else if probTreated ==#10 6#10 then discrete(0.6, 0.4)
+        else if probTreated ==#10 7#10 then discrete(0.7, 0.3)
+        else if probTreated ==#10 8#10 then discrete(0.8, 0.2)
+        else discrete(0.9, 0.1) 
+    
+    else 
+        if probAll ==#10 0#10 then discrete(0.0, 1.0) 
+        else if probAll ==#10 1#10 then discrete(0.1, 0.9) 
+        else if probAll ==#10 2#10 then discrete(0.2, 0.8) 
+        else if probAll ==#10 3#10 then discrete(0.3, 0.7)
+        else if probAll ==#10 4#10 then discrete(0.4, 0.6)
+        else if probAll ==#10 5#10 then discrete(0.5, 0.5)
+        else if probAll ==#10 6#10 then discrete(0.6, 0.4)
+        else if probAll ==#10 7#10 then discrete(0.7, 0.3)
+        else if probAll ==#10 8#10 then discrete(0.8, 0.2)
+        else discrete(0.9, 0.1) in
+
+
+let controlGroup5 = 
+    if isEffective ==#2 1#2 then 
+        if probControl ==#10 0#10 then discrete(0.0, 1.0) 
+        else if probControl ==#10 1#10 then discrete(0.1, 0.9) 
+        else if probControl ==#10 2#10 then discrete(0.2, 0.8) 
+        else if probControl ==#10 3#10 then discrete(0.3, 0.7)
+        else if probControl ==#10 4#10 then discrete(0.4, 0.6)
+        else if probControl ==#10 5#10 then discrete(0.5, 0.5)
+        else if probControl ==#10 6#10 then discrete(0.6, 0.4)
+        else if probControl ==#10 7#10 then discrete(0.7, 0.3)
+        else if probControl ==#10 8#10 then discrete(0.8, 0.2)
+        else discrete(0.9, 0.1) 
+    
+    else 
+        if probAll ==#10 0#10 then discrete(0.0, 1.0) 
+        else if probAll ==#10 1#10 then discrete(0.1, 0.9) 
+        else if probAll ==#10 2#10 then discrete(0.2, 0.8) 
+        else if probAll ==#10 3#10 then discrete(0.3, 0.7)
+        else if probAll ==#10 4#10 then discrete(0.4, 0.6)
+        else if probAll ==#10 5#10 then discrete(0.5, 0.5)
+        else if probAll ==#10 6#10 then discrete(0.6, 0.4)
+        else if probAll ==#10 7#10 then discrete(0.7, 0.3)
+        else if probAll ==#10 8#10 then discrete(0.8, 0.2)
+        else discrete(0.9, 0.1) in
+
+
+let treatedGroup5= 
+    if isEffective ==#2 1#2 then 
+        if probTreated ==#10 0#10 then discrete(0.0, 1.0) 
+        else if probTreated ==#10 1#10 then discrete(0.1, 0.9) 
+        else if probTreated ==#10 2#10 then discrete(0.2, 0.8) 
+        else if probTreated ==#10 3#10 then discrete(0.3, 0.7)
+        else if probTreated ==#10 4#10 then discrete(0.4, 0.6)
+        else if probTreated ==#10 5#10 then discrete(0.5, 0.5)
+        else if probTreated ==#10 6#10 then discrete(0.6, 0.4)
+        else if probTreated ==#10 7#10 then discrete(0.7, 0.3)
+        else if probTreated ==#10 8#10 then discrete(0.8, 0.2)
+        else discrete(0.9, 0.1) 
+    
+    else 
+        if probAll ==#10 0#10 then discrete(0.0, 1.0) 
+        else if probAll ==#10 1#10 then discrete(0.1, 0.9) 
+        else if probAll ==#10 2#10 then discrete(0.2, 0.8) 
+        else if probAll ==#10 3#10 then discrete(0.3, 0.7)
+        else if probAll ==#10 4#10 then discrete(0.4, 0.6)
+        else if probAll ==#10 5#10 then discrete(0.5, 0.5)
+        else if probAll ==#10 6#10 then discrete(0.6, 0.4)
+        else if probAll ==#10 7#10 then discrete(0.7, 0.3)
+        else if probAll ==#10 8#10 then discrete(0.8, 0.2)
+        else discrete(0.9, 0.1) in
+
+
+let controlGroup6 = 
+    if isEffective ==#2 1#2 then 
+        if probControl ==#10 0#10 then discrete(0.0, 1.0) 
+        else if probControl ==#10 1#10 then discrete(0.1, 0.9) 
+        else if probControl ==#10 2#10 then discrete(0.2, 0.8) 
+        else if probControl ==#10 3#10 then discrete(0.3, 0.7)
+        else if probControl ==#10 4#10 then discrete(0.4, 0.6)
+        else if probControl ==#10 5#10 then discrete(0.5, 0.5)
+        else if probControl ==#10 6#10 then discrete(0.6, 0.4)
+        else if probControl ==#10 7#10 then discrete(0.7, 0.3)
+        else if probControl ==#10 8#10 then discrete(0.8, 0.2)
+        else discrete(0.9, 0.1) 
+    
+    else 
+        if probAll ==#10 0#10 then discrete(0.0, 1.0) 
+        else if probAll ==#10 1#10 then discrete(0.1, 0.9) 
+        else if probAll ==#10 2#10 then discrete(0.2, 0.8) 
+        else if probAll ==#10 3#10 then discrete(0.3, 0.7)
+        else if probAll ==#10 4#10 then discrete(0.4, 0.6)
+        else if probAll ==#10 5#10 then discrete(0.5, 0.5)
+        else if probAll ==#10 6#10 then discrete(0.6, 0.4)
+        else if probAll ==#10 7#10 then discrete(0.7, 0.3)
+        else if probAll ==#10 8#10 then discrete(0.8, 0.2)
+        else discrete(0.9, 0.1) in
+
+
+let treatedGroup6 = 
+    if isEffective ==#2 1#2 then 
+        if probTreated ==#10 0#10 then discrete(0.0, 1.0) 
+        else if probTreated ==#10 1#10 then discrete(0.1, 0.9) 
+        else if probTreated ==#10 2#10 then discrete(0.2, 0.8) 
+        else if probTreated ==#10 3#10 then discrete(0.3, 0.7)
+        else if probTreated ==#10 4#10 then discrete(0.4, 0.6)
+        else if probTreated ==#10 5#10 then discrete(0.5, 0.5)
+        else if probTreated ==#10 6#10 then discrete(0.6, 0.4)
+        else if probTreated ==#10 7#10 then discrete(0.7, 0.3)
+        else if probTreated ==#10 8#10 then discrete(0.8, 0.2)
+        else discrete(0.9, 0.1) 
+    
+    else 
+        if probAll ==#10 0#10 then discrete(0.0, 1.0) 
+        else if probAll ==#10 1#10 then discrete(0.1, 0.9) 
+        else if probAll ==#10 2#10 then discrete(0.2, 0.8) 
+        else if probAll ==#10 3#10 then discrete(0.3, 0.7)
+        else if probAll ==#10 4#10 then discrete(0.4, 0.6)
+        else if probAll ==#10 5#10 then discrete(0.5, 0.5)
+        else if probAll ==#10 6#10 then discrete(0.6, 0.4)
+        else if probAll ==#10 7#10 then discrete(0.7, 0.3)
+        else if probAll ==#10 8#10 then discrete(0.8, 0.2)
+        else discrete(0.9, 0.1) in
+
+
+let controlGroup7 = 
+    if isEffective ==#2 1#2 then 
+        if probControl ==#10 0#10 then discrete(0.0, 1.0) 
+        else if probControl ==#10 1#10 then discrete(0.1, 0.9) 
+        else if probControl ==#10 2#10 then discrete(0.2, 0.8) 
+        else if probControl ==#10 3#10 then discrete(0.3, 0.7)
+        else if probControl ==#10 4#10 then discrete(0.4, 0.6)
+        else if probControl ==#10 5#10 then discrete(0.5, 0.5)
+        else if probControl ==#10 6#10 then discrete(0.6, 0.4)
+        else if probControl ==#10 7#10 then discrete(0.7, 0.3)
+        else if probControl ==#10 8#10 then discrete(0.8, 0.2)
+        else discrete(0.9, 0.1) 
+    
+    else 
+        if probAll ==#10 0#10 then discrete(0.0, 1.0) 
+        else if probAll ==#10 1#10 then discrete(0.1, 0.9) 
+        else if probAll ==#10 2#10 then discrete(0.2, 0.8) 
+        else if probAll ==#10 3#10 then discrete(0.3, 0.7)
+        else if probAll ==#10 4#10 then discrete(0.4, 0.6)
+        else if probAll ==#10 5#10 then discrete(0.5, 0.5)
+        else if probAll ==#10 6#10 then discrete(0.6, 0.4)
+        else if probAll ==#10 7#10 then discrete(0.7, 0.3)
+        else if probAll ==#10 8#10 then discrete(0.8, 0.2)
+        else discrete(0.9, 0.1) in
+
+
+let treatedGroup7 = 
+    if isEffective ==#2 1#2 then 
+        if probTreated ==#10 0#10 then discrete(0.0, 1.0) 
+        else if probTreated ==#10 1#10 then discrete(0.1, 0.9) 
+        else if probTreated ==#10 2#10 then discrete(0.2, 0.8) 
+        else if probTreated ==#10 3#10 then discrete(0.3, 0.7)
+        else if probTreated ==#10 4#10 then discrete(0.4, 0.6)
+        else if probTreated ==#10 5#10 then discrete(0.5, 0.5)
+        else if probTreated ==#10 6#10 then discrete(0.6, 0.4)
+        else if probTreated ==#10 7#10 then discrete(0.7, 0.3)
+        else if probTreated ==#10 8#10 then discrete(0.8, 0.2)
+        else discrete(0.9, 0.1) 
+    
+    else 
+        if probAll ==#10 0#10 then discrete(0.0, 1.0) 
+        else if probAll ==#10 1#10 then discrete(0.1, 0.9) 
+        else if probAll ==#10 2#10 then discrete(0.2, 0.8) 
+        else if probAll ==#10 3#10 then discrete(0.3, 0.7)
+        else if probAll ==#10 4#10 then discrete(0.4, 0.6)
+        else if probAll ==#10 5#10 then discrete(0.5, 0.5)
+        else if probAll ==#10 6#10 then discrete(0.6, 0.4)
+        else if probAll ==#10 7#10 then discrete(0.7, 0.3)
+        else if probAll ==#10 8#10 then discrete(0.8, 0.2)
+        else discrete(0.9, 0.1) in
+
+
+let controlGroup8 = 
+    if isEffective ==#2 1#2 then 
+        if probControl ==#10 0#10 then discrete(0.0, 1.0) 
+        else if probControl ==#10 1#10 then discrete(0.1, 0.9) 
+        else if probControl ==#10 2#10 then discrete(0.2, 0.8) 
+        else if probControl ==#10 3#10 then discrete(0.3, 0.7)
+        else if probControl ==#10 4#10 then discrete(0.4, 0.6)
+        else if probControl ==#10 5#10 then discrete(0.5, 0.5)
+        else if probControl ==#10 6#10 then discrete(0.6, 0.4)
+        else if probControl ==#10 7#10 then discrete(0.7, 0.3)
+        else if probControl ==#10 8#10 then discrete(0.8, 0.2)
+        else discrete(0.9, 0.1) 
+    
+    else 
+        if probAll ==#10 0#10 then discrete(0.0, 1.0) 
+        else if probAll ==#10 1#10 then discrete(0.1, 0.9) 
+        else if probAll ==#10 2#10 then discrete(0.2, 0.8) 
+        else if probAll ==#10 3#10 then discrete(0.3, 0.7)
+        else if probAll ==#10 4#10 then discrete(0.4, 0.6)
+        else if probAll ==#10 5#10 then discrete(0.5, 0.5)
+        else if probAll ==#10 6#10 then discrete(0.6, 0.4)
+        else if probAll ==#10 7#10 then discrete(0.7, 0.3)
+        else if probAll ==#10 8#10 then discrete(0.8, 0.2)
+        else discrete(0.9, 0.1) in
+
+
+let treatedGroup8 = 
+    if isEffective ==#2 1#2 then 
+        if probTreated ==#10 0#10 then discrete(0.0, 1.0) 
+        else if probTreated ==#10 1#10 then discrete(0.1, 0.9) 
+        else if probTreated ==#10 2#10 then discrete(0.2, 0.8) 
+        else if probTreated ==#10 3#10 then discrete(0.3, 0.7)
+        else if probTreated ==#10 4#10 then discrete(0.4, 0.6)
+        else if probTreated ==#10 5#10 then discrete(0.5, 0.5)
+        else if probTreated ==#10 6#10 then discrete(0.6, 0.4)
+        else if probTreated ==#10 7#10 then discrete(0.7, 0.3)
+        else if probTreated ==#10 8#10 then discrete(0.8, 0.2)
+        else discrete(0.9, 0.1) 
+    
+    else 
+        if probAll ==#10 0#10 then discrete(0.0, 1.0) 
+        else if probAll ==#10 1#10 then discrete(0.1, 0.9) 
+        else if probAll ==#10 2#10 then discrete(0.2, 0.8) 
+        else if probAll ==#10 3#10 then discrete(0.3, 0.7)
+        else if probAll ==#10 4#10 then discrete(0.4, 0.6)
+        else if probAll ==#10 5#10 then discrete(0.5, 0.5)
+        else if probAll ==#10 6#10 then discrete(0.6, 0.4)
+        else if probAll ==#10 7#10 then discrete(0.7, 0.3)
+        else if probAll ==#10 8#10 then discrete(0.8, 0.2)
+        else discrete(0.9, 0.1) in
+
+
+let controlGroup9 = 
+    if isEffective ==#2 1#2 then 
+        if probControl ==#10 0#10 then discrete(0.0, 1.0) 
+        else if probControl ==#10 1#10 then discrete(0.1, 0.9) 
+        else if probControl ==#10 2#10 then discrete(0.2, 0.8) 
+        else if probControl ==#10 3#10 then discrete(0.3, 0.7)
+        else if probControl ==#10 4#10 then discrete(0.4, 0.6)
+        else if probControl ==#10 5#10 then discrete(0.5, 0.5)
+        else if probControl ==#10 6#10 then discrete(0.6, 0.4)
+        else if probControl ==#10 7#10 then discrete(0.7, 0.3)
+        else if probControl ==#10 8#10 then discrete(0.8, 0.2)
+        else discrete(0.9, 0.1) 
+    
+    else 
+        if probAll ==#10 0#10 then discrete(0.0, 1.0) 
+        else if probAll ==#10 1#10 then discrete(0.1, 0.9) 
+        else if probAll ==#10 2#10 then discrete(0.2, 0.8) 
+        else if probAll ==#10 3#10 then discrete(0.3, 0.7)
+        else if probAll ==#10 4#10 then discrete(0.4, 0.6)
+        else if probAll ==#10 5#10 then discrete(0.5, 0.5)
+        else if probAll ==#10 6#10 then discrete(0.6, 0.4)
+        else if probAll ==#10 7#10 then discrete(0.7, 0.3)
+        else if probAll ==#10 8#10 then discrete(0.8, 0.2)
+        else discrete(0.9, 0.1) in
+
+
+let treatedGroup9 = 
+    if isEffective ==#2 1#2 then 
+        if probTreated ==#10 0#10 then discrete(0.0, 1.0) 
+        else if probTreated ==#10 1#10 then discrete(0.1, 0.9) 
+        else if probTreated ==#10 2#10 then discrete(0.2, 0.8) 
+        else if probTreated ==#10 3#10 then discrete(0.3, 0.7)
+        else if probTreated ==#10 4#10 then discrete(0.4, 0.6)
+        else if probTreated ==#10 5#10 then discrete(0.5, 0.5)
+        else if probTreated ==#10 6#10 then discrete(0.6, 0.4)
+        else if probTreated ==#10 7#10 then discrete(0.7, 0.3)
+        else if probTreated ==#10 8#10 then discrete(0.8, 0.2)
+        else discrete(0.9, 0.1) 
+    
+    else 
+        if probAll ==#10 0#10 then discrete(0.0, 1.0) 
+        else if probAll ==#10 1#10 then discrete(0.1, 0.9) 
+        else if probAll ==#10 2#10 then discrete(0.2, 0.8) 
+        else if probAll ==#10 3#10 then discrete(0.3, 0.7)
+        else if probAll ==#10 4#10 then discrete(0.4, 0.6)
+        else if probAll ==#10 5#10 then discrete(0.5, 0.5)
+        else if probAll ==#10 6#10 then discrete(0.6, 0.4)
+        else if probAll ==#10 7#10 then discrete(0.7, 0.3)
+        else if probAll ==#10 8#10 then discrete(0.8, 0.2)
+        else discrete(0.9, 0.1) in
+
+treatedGroup0 <#2 1#2 

@@ -4,15 +4,15 @@ from sppl.compilers.sppl_to_python import SPPL_Compiler
 # Original n,k = 20
 
 compiler = SPPL_Compiler('''
-n = 4
-k = 4
+n = 10
+k = 10
+controlGroup = array(n)
+treatedGroup = array(n)
+                         
 isEffective ~= bernoulli(p=.5)
 probControl ~= randint(low=0, high=k)
 probTreated ~= randint(low=0, high=k)
 probAll ~= randint(low=0, high=k)
-
-controlGroup = array(n)
-treatedGroup = array(n)
 
 if (isEffective == 1):
     for i in range(n):
@@ -28,6 +28,6 @@ else:
                            ''')
 
 namespace = compiler.execute_module()
-e  = Id('controlGroup[0]')
+e  = Id('treatedGroup[0]')
 event = (e < 1)
 print(namespace.model.prob(event))

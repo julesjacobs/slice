@@ -538,6 +538,13 @@ let rec translate_to_sppl (env : (string * string) list) ?(target_var:string opt
             let val1 = assert_float_const arg1 in
             let val2 = assert_float_const arg2 in
             Printf.sprintf "%s ~= exponpow(b=%f, scale=%f)" assign_var val1 val2 (* Assuming arg1=shape_b, arg2=scale *)
+        | Distr1 (DPoisson, mu) ->
+            let mu = assert_float_const mu in
+            Printf.sprintf "%s ~= poisson(mu=%f)" assign_var mu
+        | Distr2 (DBinomial, arg1, arg2) -> 
+            let val1 = assert_float_const arg1 in
+            let val2 = assert_float_const arg2 in
+            Printf.sprintf "%s ~= binomial(n=%f, p=%f)" assign_var val1 val2 
       in
       ([stmt], assign_var)
   | Ast.ExprNode(DistrCase cases) ->

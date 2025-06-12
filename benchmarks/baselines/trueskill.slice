@@ -1,0 +1,35 @@
+let perfB1 = binomial(0.9, 100) in
+let _1 = observe(98 <= perfB1) in
+
+let skillA = poisson(100) in
+let _2 = observe(77 <= skillA && skillA < 80) in
+
+let result = 
+    if skillA <= 77 then 
+        let perfA1 = binomial(0.9, 77) in 
+            if perfB1 <= 98 then
+                if perfA1 > 98 then 1.0 else 0.0
+            else if perfB1 <= 99 then
+                if perfA1 > 99 then 1.0 else 0.0
+            else
+                if perfA1 > 100 then 1.0 else 0.0
+
+    else if skillA <= 78 then
+        let perfA1 = binomial(0.9, 78) in 
+            if perfB1 <= 98 then
+                if perfA1 > 98 then 1.0 else 0.0
+            else if perfB1 <= 99 then
+                if perfA1 > 99 then 1.0 else 0.0
+            else
+                if perfA1 > 100 then 1.0 else 0.0
+
+    else 
+        let perfA1 = binomial(0.9, 79) in 
+            if perfB1 <= 98 then
+                if perfA1 > 98 then 1.0 else 0.0
+            else if perfB1 <= 99 then
+                if perfA1 > 99 then 1.0 else 0.0
+            else
+                if perfA1 > 100 then 1.0 else 0.0 
+
+in result < 0.5

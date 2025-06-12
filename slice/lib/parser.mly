@@ -57,6 +57,8 @@ open Ast
 %token GUMBELONE
 %token GUMBELTWO
 %token EXPPOW
+%token POISSON
+%token BINOMIAL
 %token ITERATE
 
 %start <Ast.expr> prog
@@ -222,6 +224,10 @@ atomic_expr:
     { ExprNode (Sample (Distr2 (DGumbel2, mu, beta_param))) }
   | EXPPOW LPAREN arg1 = app_expr COMMA arg2 = app_expr RPAREN
     { ExprNode (Sample (Distr2 (DExppow, arg1, arg2))) }
+  | POISSON LPAREN mu = app_expr RPAREN
+    { ExprNode (Sample (Distr1 (DPoisson, mu))) }
+  | BINOMIAL LPAREN arg1 = app_expr COMMA arg2 = app_expr RPAREN
+    { ExprNode (Sample (Distr2 (DBinomial, arg1, arg2))) }
   | LPAREN RPAREN { ExprNode Unit } 
   | LPAREN el = expr_comma_list RPAREN (* New rule for (e1), (e1,e2), (e1,e2,e3), etc. *)
     { 

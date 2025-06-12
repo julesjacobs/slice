@@ -1,38 +1,42 @@
 \section{Evaluation}\label{sec:evaluation}
-This section confirms that the performance of \Slice{} is competitive with existing state-of-the-art exact and approximate inference solvers. In particular, we evaluate \Slice{} against SPPL~\cite{Saad2021SPPL}, an exact inference solver for continuous programs, and HyBit, an approximate inference solver for continuous programs. The evaluation consists of three sets of programs. First is a series of synthetic benchmarks designed to test the asymptotic scaling of our system against SPPL. Second is a set of benchmarks for verifying fairness properties of decision trees, as characterizing the fairness of classification algorithms is an interesting application area of probabilistic programs in machine learning. Lastly, we evaluate \Slice{} on a series of small baseline programs commonly used to test PPLs in the literature. 
+\todo[inline]{Might need to rerun the benchmarks on a better machine, as Roulette is too slow right now. Also want to add in bit blast to the results, currently it's way too slow to execute on my machine.}
+
+This section confirms that the performance of \Slice{} is competitive with existing state-of-the-art exact and approximate inference solvers for hybrid probabilistic programs. In particular, we evaluate \Slice{} using Dice and Roulette backends against the exact inference solver SPPL~\cite{Saad2021SPPL} and the approximate inference solver HyBit~\cite{Garg2024BitBlast} on various benchmarks. Our evaluation consists of three sets of programs. First is a series of synthetic benchmarks designed to test the how well \Slice{} scales asymptotically compared to SPPL. Second is a set of benchmarks for verifying fairness properties of decision trees. Lastly, we evaluate \Slice{} on a series of small baseline programs commonly used to test PPLs in the literature. 
 
 \subsection{Experimental Setup}\label{sec:experimenal-setup}
-All experiments were run on a ..., using the original version of Dice (2020) from Holtzen et. al.~\cite{Holtzen2020Dice}. Each experiment was carried out using a consistent-effort approach, with the goal of determining the most effective encoding for the program in each language and making sure that programs were equivalent across all systems. 
+All experiments were run on a ..., using the original version of Dice (2020) from Holtzen et. al.~\cite{Holtzen2020Dice} and the most recent version of Roulette that relies on Racket 8.13 and Rosette 4.1. Each experiment was carried out using a consistent-effort approach, with the goal of determining the most effective encoding for the program in each language and making sure that programs were equivalent across all languages. 
 
 \subsection{Synthetic benchmarks}\label{sec:synthetic-benchmarks}
-To evaluate the asymptotic performance of \Slice{}, we designed seven synthetic benchmarks that stress-test different aspects of probabilistic programs with continuous distributions. Each benchmark generates programs that grow linearly in size in the number of comparison tests (e.g. number of $<$ operators) to measure how execution time scales. This bears resemblence to how scalability is tested for discrete PPLs in the litearture: by growing the program by adding one additional layer to the chain of \texttt{flips} that depends on the previous. Doing so results in a path enumeration that grows exponentially in the number of layers. We generate programs of varying structure:
+To evaluate the asymptotic performance of \Slice{}, we designed seven synthetic benchmarks that stress-test different variants of probabilistic programs with continuous distributions. Currently, there are no benchmarks in the literature that test scaling of continuous programs, and we seek to close this gap. Each benchmark generates programs that grow linearly in size in the number of comparison tests (e.g. number of $<$ operators) to measure how execution time scales. This bears resemblence to how scalability is tested for discrete PPLs in the litearture: by growing the program by adding one additional layer to the chain of \texttt{flips} that depends on the previous. Doing so results in a path enumeration that grows exponentially in the number of layers. We generate programs of varying structure:
 
 \subsubsection{Conditional Independence.} 
-If a variable \texttt{z} is conditionally independent of \texttt{x} given \texttt{y}, then \texttt{y} acts as a kind of interface between \texttt{x} and \texttt{z} that allows inference to be split into two separate analyses. Bayesian networks use conditional independence to compactly represent complex distributions, and these independence relationships capture essential structure in many real-world applications. We test programs where each variable's distribution depends on comparisons with previous variables, specifically when:
+If a variable \texttt{z} is conditionally independent of \texttt{x} given \texttt{y}, then \texttt{y} acts as a kind of interface between \texttt{x} and \texttt{z} that allows inference to be split into two separate analyses. Bayesian networks use conditional independence to compactly represent complex distributions, for example. We test programs where each variable's distribution depends on comparisons with previous variables, specifically when:
 
 \begin{itemize}
-\item Each variable depends on its immediate predecessor through conditional statements. This creates a chain of dependencies where $x_i$ depends on whether $x_{i-1} < c$ for some constant $c$. See Figure~\ref{fig:cond-benchmarks-a}.
-\item Each variable depends on a randomly chosen previous variable through conditional statements. This creates a more complex dependency graph, a chain of dependencies where $x_i$ depends on whether $x_1, ..., x_{i-1}$ chosen uniformly at random is $< c$ for some constant $c$. See Figures~\ref{fig:cond-benchmarks-b} and~\ref{fig:cond-benchmarks-c}.
+\item Each variable depends on its immediate predecessor variable through conditional statements. This creates a chain of dependencies where $x_i$ depends on whether $x_{i-1} < c$ for some constant $c$. See Figure~\ref{fig:cond-benchmarks-a}.
+\item Each variable depends on a randomly chosen predecessor variable through conditional statements. This creates a chain of dependencies where $x_i$ depends on whether $x_1, ..., x_{i-1}$ chosen uniformly at random is $< c$ for some constant $c$, but note this could lead to unused variables. See Figures~\ref{fig:cond-benchmarks-b} and~\ref{fig:cond-benchmarks-c}, where the former guarantees unique distributions for each variable whereas the latter generates random ones.
 \end{itemize}
 
 \input{figures/scaling-conditional}
 
 \subsubsection{Alternating Guards.}
 We test programs with alternating comparison patterns,
-where the control flow depends on earlier random variables. This pattern is characteristic of hierarchical or history-dependent probabilistic systems. Specifically, we test when:
+where the control flow depends on earlier random variables. This pattern is characteristic of hierarchical or history-dependent probabilistic programs. Specifically, we test when:
 
 \begin{itemize}
-\item Variables in conditionals alternate based on a guard span parameter. For example, with span 3, guards cycle through $x_1, x_2, x_3, x_1, x_2, x_3, ...$ See Figure~\ref{fig:alt-benchmarks-a}. This may lead to many unused code fragments, however. This led us to generate programs whose if-else bodies depend on the immediate predecessor variable. See Figures~\ref{fig:alt-benchmarks-b} and~\ref{fig:alt-benchmarks-c}.
+\item Variables in conditionals alternate based on a guard span parameter. For example, with span 3, guards cycle through $x_1, x_2, x_3, x_1, x_2, x_3, ...$ See Figure~\ref{fig:alt-benchmarks-a}. Since such programs may have unused variables, we remedy this by generating programs whose if-else bodies depend on the immediate predecessor variable; see Figures~\ref{fig:alt-benchmarks-b} and~\ref{fig:alt-benchmarks-c}.
 
-\item Variables in conditionals alternate based on a guard span parameter, but we add randomization in the selection of continuous distributions in the if-else bodies. See Figure~\ref{fig:alt-benchmarks-d}.
+\item Variables in conditionals alternate based on a guard span parameter, but we randomly choose the guard span parameter in each iteration instead of it being deterministically chosen as before. See Figure~\ref{fig:alt-benchmarks-d}.
 \end{itemize}
 
 \input{figures/scaling-alternating}
 
-\paragraph{Results.} The scaling experiments demonstrate that Slice maintains near-linear scaling behavior while SPPL exhibits exponential growth and times out on larger programs. Across all seven benchmarks, Slice+Dice execution time remains under 0.5 seconds even for programs with 90+ variables and comparisons, while SPPL times out (at 300s) for programs as small as 20-30 variables. The Slice compilation phase alone (dark blue line) shows essentially constant time, indicating that the type-directed discretization algorithm scales extremely well.
+\paragraph{Results.} We generate programs of size 1-50 with step size 5 in each iteration for the conditional independence tests, and for the alternating guards tests, we generate programs of size 1-100 with step size 5 and 1 for the program size and guard span, respectively. We specify a timeout of 300s. The scaling experiments demonstrate that Slice maintains near-linear scaling behavior while SPPL exhibits significantly faster growth and times out on larger programs. Across all seven benchmarks, Slice+Dice execution time remains under 0.5 seconds even for programs with 90+ comparisons, while SPPL times out (at 300s) for programs as small as 20-30 in size. The Slice compilation phase alone (dark blue line) shows essentially constant time, indicating that the type-directed discretization algorithm scales extremely well.
+
+\subsection{Fairness Benchmarks}
+Characterizing the fairness of classification algorithms is an interesting application in machine learning. 
 
 
-\subsubsection{Decision Tree Benchmarks}
 We evaluate Slice on decision tree models from the FairSquare suite with the following results:
 
 \begin{table}[!t]

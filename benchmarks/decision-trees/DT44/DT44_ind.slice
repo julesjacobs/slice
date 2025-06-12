@@ -14,8 +14,8 @@ let sex = discrete(0.3307, 0.6693) in
 
 let capital_gain = gaussian(1077.6488, 54542539.1784) in
 
-let _ = observe(sex <#2 1#2) in
-let _ = observe(age > 18) in
+let _1 = observe(sex <#2 1#2) in
+let _2 = observe(age > 18) in
 
 let t =
   if relationship ==#6 0#6 then

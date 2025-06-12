@@ -19,6 +19,8 @@ type cdistr =
   | Gumbel2  of float * float             (** Gumbel2(a, b)                         *)
   | Rayleigh of float                     (** Rayleigh(sigma)                       *)
   | Exppow   of float * float             (** Exponential Power (a, b)              *)
+  | Poisson   of float                    (** Poisson(mu)                           *)
+  | Binomial   of float * int             (** Binomial(p, n)                        *)
 
 (* Initialize GSL random number generator *)
 let rng = Gsl.Rng.make (Gsl.Rng.default ())
@@ -45,6 +47,8 @@ let cdistr_cdf dist x =
   | Gumbel2 (a, b)          -> Gsl.Cdf.gumbel2_P ~x:x ~a ~b
   | Rayleigh sigma          -> Gsl.Cdf.rayleigh_P ~x:x ~sigma
   | Exppow (a, b)           -> Gsl.Cdf.exppow_P ~x:x ~a ~b
+  | Poisson mu              -> Gsl.Cdf.poisson_P ~k:(int_of_float x) ~mu
+  | Binomial (p, n)         -> Gsl.Cdf.binomial_P ~k:(int_of_float x) ~p ~n
 
 let cdistr_sample dist =
   match dist with
@@ -82,6 +86,10 @@ let cdistr_sample dist =
       Gsl.Randist.rayleigh rng ~sigma
   | Exppow (a, b) ->
       Gsl.Randist.exppow rng ~a ~b
+  | Poisson mu ->
+      float_of_int (Gsl.Randist.poisson rng ~mu)
+  | Binomial (p,n) ->
+      float_of_int (Gsl.Randist.binomial rng ~p ~n)
 
 let string_of_single_arg_dist_kind (kind: Ast.single_arg_dist_kind) : string =
   match kind with
@@ -92,6 +100,7 @@ let string_of_single_arg_dist_kind (kind: Ast.single_arg_dist_kind) : string =
   | Ast.DChi2        -> "chi2"
   | Ast.DLogistic    -> "logistic"
   | Ast.DRayleigh    -> "rayleigh"
+  | Ast.DPoisson     -> "poisson"
 
 let string_of_two_arg_dist_kind (kind: Ast.two_arg_dist_kind) : string =
   match kind with
@@ -105,6 +114,7 @@ let string_of_two_arg_dist_kind (kind: Ast.two_arg_dist_kind) : string =
   | Ast.DGumbel1     -> "gumbel1"
   | Ast.DGumbel2     -> "gumbel2"
   | Ast.DExppow      -> "exppow"
+  | Ast.DBinomial    -> "binomial"
 
 let get_cdistr_from_single_arg_kind (kind: Ast.single_arg_dist_kind) (arg1: float) : (cdistr, string) result =
   match kind with
@@ -129,6 +139,9 @@ let get_cdistr_from_single_arg_kind (kind: Ast.single_arg_dist_kind) (arg1: floa
   | Ast.DRayleigh -> 
       if arg1 <= 0.0 then Error "Rayleigh sigma must be positive"
       else Ok (Rayleigh arg1)
+  | Ast.DPoisson -> 
+      if arg1 <= 0.0 then Error "Poisson mu must be positive"
+      else Ok (Poisson arg1)
 
 let get_cdistr_from_two_arg_kind (kind: Ast.two_arg_dist_kind) (arg1: float) (arg2: float) : (cdistr, string) result =
   match kind with
@@ -162,3 +175,6 @@ let get_cdistr_from_two_arg_kind (kind: Ast.two_arg_dist_kind) (arg1: float) (ar
   | Ast.DExppow -> 
       if arg1 <= 0.0 || arg2 <= 0.0 then Error "Exppow a and b must be positive"
       else Ok (Exppow (arg1, arg2))
+  | Ast.DBinomial -> 
+      if arg1 <= 0.0 || arg2 <= 0.0 then Error "Binomial a and b must be positive"
+      else Ok (Binomial (arg1, int_of_float arg2))

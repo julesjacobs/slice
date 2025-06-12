@@ -60,8 +60,8 @@ let relationship =
         0.0417: 0#6, 0.1624: 1#6, 0.3976: 2#6,
         0.2606: 3#6, 0.0356: 4#6, 0.1021: 5#6) in
 
-let _ = observe(sex <#2 1#2) in
-let _ = observe(age > 18) in
+let _1 = observe(sex <#2 1#2) in
+let _2 = observe(age > 18) in
 
 let t =
   if relationship ==#6 0#6 then
