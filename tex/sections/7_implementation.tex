@@ -1,10 +1,6 @@
 \section{Implementation}\label{sec:implementation}
 
-We have implemented \Slice{} as an OCaml-based compiler that transforms continuous probabilistic programs into discrete ones, which can then be analyzed using exact inference engines. The implementation consists of two main components: the \Slice{} compiler (\texttt{slice}) and the Dice inference engine~\cite{Holtzen2020Dice}.
-
-\subsection{Architecture Overview}
-
-Figure~\ref{fig:architecture} shows the overall architecture of the \Slice{} system.
+We have implemented \Slice{} as an OCaml-based compiler that transforms continuous probabilistic programs into discrete ones, which can then be analyzed using discrete exact inference engines, leveraging their benefits. At a high-level, our implementation consists of two main components: the \Slice{} compiler (\texttt{slice}) and an off-the-shelf discrete inference engine. Between these two components lies a conversion module that transforms the discretized program specfied in our syntax to a syntax compatible with a discrete inference backend, such as Dice and Roulette which we currently support. Figure~\ref{fig:architecture} shows the overall architecture of the \Slice{} system.
 
 \input{figures/architecture}
 
@@ -35,7 +31,7 @@ Figure~\ref{fig:architecture} shows the overall architecture of the \Slice{} sys
     \item Transforms comparisons to operate on interval indices
 \end{enumerate}
 
-\paragraph{Code Generation} The \texttt{to\_dice.ml} module generates Dice source code from the discretized AST. It handles the translation of \Slice{} constructs to their Dice equivalents, including special handling for finite types that become integers in Dice.
+\paragraph{Code Generation} The \texttt{to\_dice.ml} and \texttt{to\_roulette.ml} module generates Dice and Roulette source code from the discretized AST, respectively. It handles the translation of \Slice{} constructs to their Dice and Roulette equivalents, including special handling for finite types that become integers in Dice.
 
 \paragraph{Runtime and Evaluation} The implementation includes:
 \begin{itemize}
@@ -44,16 +40,10 @@ Figure~\ref{fig:architecture} shows the overall architecture of the \Slice{} sys
     \item Support for multiple output formats (Dice, SPPL)
 \end{itemize}
 
-\subsection{Integration with Dice}
+\subsection{Integration with Backends}
+We currently allow \Slice{} to be compatible to two different discrete inference engines: Dice provides exact inference for discrete probabilistic programs using binary decision diagrams (BDDs) and weighted model counting, and Roulette provides exact inference for discrete programs using an SMT solver with the aim of providing more expressivity. To work seamlessly with Dice, \Slice{} successfully maps 1) discrete distributions to Dice's \texttt{discrete} construct, 2) finite types to bounded integers of the form \texttt{int(size, value)}, and 3) observations to Dice's conditioning primitives. To work seamlessly with Roulette, \Slice{} successfully maps 1) discrete distributions to a chain of if-else statements with \texttt{flip}s, as Roulette currently does not support such a \texttt{discrete} construct, and 2) data structures, higher order functions, recursion, and mutable state as was previously unsupported by Dice to their Roulette counterparts. Finally, tying everything together is the \texttt{slice.py} script that automates the complete workflow, piping the output of \Slice{} directly to Dice or Roulette for inference.
 
-The Dice inference engine~\cite{Holtzen2020Dice} provides exact inference for discrete probabilistic programs using Binary Decision Diagrams (BDDs) and weighted model counting. Our discretized programs are designed to work seamlessly with Dice's capabilities:
-\begin{itemize}
-    \item Discrete distributions map directly to Dice's \texttt{discrete} construct
-    \item Finite types become bounded integers
-    \item Observations translate to Dice's conditioning primitives
-\end{itemize}
-
-The complete workflow is automated through the \texttt{slice.py} script, which pipes the output of \Slice{} directly to Dice for inference.
+\input{figures/to-dice-roulette.tex}
 
 \subsection{Engineering Considerations}
 
