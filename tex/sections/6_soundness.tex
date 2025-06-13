@@ -388,42 +388,41 @@ Similar rules apply for $\leq$, $\logand$, $\logor$, and other binary operations
 
 \subsubsection{Probabilistic Distributions}
 
-For sampling expressions, we map to the corresponding probability distributions:
-\kevin{double check if type system should ensure the side conditions}
+For sampling expressions, we map to the corresponding probability distributions. Undefined sampling is interpreted as divergence. 
 
 \begin{align*}
 \sem{ \uniform(v_1, v_2) } &= \begin{cases}
 \text{Uniform}_{[v_1, v_2)}  & \text{if $v_1$ and $v_2$ are float constants with $v_1 < v_2$} \\
 %
-\delta_\error & \text{otherwise}
+\delta_{\uniform(v_1, v_2)} & \text{otherwise}
 \end{cases}
 \\
 \sem{ \gaussian(v_\mu, v_\sigma) } &= 
  \begin{cases}
 	\mathcal{N}(v_\mu, v_\sigma^2)  & \text{if $v_\mu$ and $v_\sigma$ are float constants with $v_\sigma > 0$} \\
 	%
-	\delta_\error & \text{otherwise}
+	\delta_{\gaussian(v_\mu, v_\sigma)} & \text{otherwise}
 \end{cases}
 \\
 \sem{ \exponential(v_\lambda) } &= 
  \begin{cases}
 	\text{Exp}(v_\lambda)   & \text{if $v_\lambda$ is a float constant with $v_\lambda > 0$} \\
 	%
-	\delta_\error & \text{otherwise}
+	\delta_{\exponential(v_\lambda)} & \text{otherwise}
 \end{cases}
 \\
 \sem{ \betafn(v_\alpha, v_\beta) } &= 
  \begin{cases}
 	\text{Beta}(v_\alpha, v_\beta)   & \text{if $v_\alpha$ and $v_\beta$ are float constants with $v_\alpha > 0$ and $v_\beta > 0$} \\
 	%
-	\delta_\error & \text{otherwise}
+	\delta_{\betafn(v_\alpha, v_\beta)} & \text{otherwise}
 \end{cases}
 \\
 \sem{ \discrete(v_0, \ldots, v_n) } &= %\sum_{i=0}^n p_i \cdot \delta_i
 \begin{cases}
 	\sum_{i=0}^n v_i \cdot \delta_i & \text{if the $v_i$ a are non-negative float constants with $\sum_i v_i = 1$} \\
 	%
-	\delta_\error  & \text{otherwise}
+	\delta_{\discrete(v_0, \ldots, v_n)}  & \text{otherwise}
 \end{cases}
 \end{align*}
 \kevin{double check discrete}
@@ -491,10 +490,17 @@ The probabilistic semantics gives:
 %\end{proof}
 %
 %
-\kevin{we will need some relation to nondet semantics. lets see whether we need to add error and obsfail.}
-\begin{theorem}
-	\label{thm:small-step-well-typed}
-	If $\expr : \tau$, then $\sem{\expr}(\{ \error \}) = 0$.
+\kevin{Let's see whether nondet semantics requires similar treatment of undefied sampling.}
+\kevin{keep an eye on everything being measurable (will mostly be trivial due to nice construction of measure space)}
+\begin{theorem}[Almost-Sure Progress and Preservation]
+	\label{thm:small-step-progress-preservation} We have 
+	%
+	\begin{itemize}
+		\item Almost-sure progress: If $\expr : \tau$, then $\sem{\expr}(\{ \error \}) = 0$.
+		%
+		\item Almost-sure preservation: If $\expr : \tau$, then $\sem{\expr}(\{ \expr' ~|~ \expr' : \tau \}) = 1$.
+	\end{itemize}
+	
 \end{theorem}
 %
 \begin{proof}
@@ -512,15 +518,22 @@ For every $\expr \in \exprs$ and all $n \in \mathbb{N}$, we define the distribut
 	\begin{cases}
 		\delta_\expr & \text{if $n=0$} \\
 		%
-		\bigsemstep{\expr}{n-1} \monbind \sem{\cdot} & \text{if $n>0$}~.
+		\bigsemstep{\expr}{n-1} \monbind  \lambda \expr'. \sem{\expr'} & \text{if $n>0$}~.
 	\end{cases}
 \]
 %
+Write 
+%
+\[
+	\nonvals = \{\expr \in \exprs ~|~ \expr~\text{is not a value} \}~.
+\]
 \begin{definition}[Big-Step Semantics of Expressions]
 	Let $\expr \in \exprs$. The \emph{big-step semantics of $\expr$} is 
 	%
 	\[
-		\bigsem{\expr} ~{}={}~ \lim_{n \to \infty} \bigsemstep{\expr}{n} \in \distextexprs~.
+		\bigsem{\expr} ~{}={}~ \lim_{n \to \infty} \lambda \measset.
+		%
+		\bigsemstep{\expr}{n}(\measset)  - \bigsemstep{\expr}{n}(\measset \cap \nonvals)
 	\]
 \end{definition}
 %
