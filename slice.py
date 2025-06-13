@@ -289,15 +289,19 @@ class BenchmarkRunner:
         # Calculate speedups
         speedups = []
         for benchmark, times in sorted(benchmarks.items()):
-            if 'slice' in times and 'sppl' in times:
-                speedup = times['sppl'] / times['slice']
+            if 'slice-dice' in times and 'slice-roulette' in times and 'sppl' in times:
+            # Calculate speedups relative to SPPL
+                dice_speedup = times['sppl'] / times['slice-dice']
+                roulette_speedup = times['sppl'] / times['slice-roulette']
                 speedups.append({
                     'benchmark': benchmark,
-                    'slice_time': times['slice'],
+                    'slice_time_dice': times['slice-dice'],
+                    'slice_time_roulette': times['slice-roulette'],
                     'sppl_time': times['sppl'],
-                    'speedup': speedup
+                    'dice_speedup': dice_speedup,
+                    'roulette_speedup': roulette_speedup
                 })
-                print(f"  {benchmark}: {speedup:.1f}x speedup")
+                print(f"  {benchmark}: {dice_speedup:.1f}x dice speedup, {roulette_speedup:.1f}x roulette speedup")
         
         return speedups
     
@@ -341,16 +345,19 @@ class BenchmarkRunner:
             
         latex_file = self.output_dir / "results_table.tex"
         with open(latex_file, 'w') as f:
-            f.write("\\begin{tabular}{lrrr}\n")
+            f.write("\\begin{tabular}{lrrrr}\n")
             f.write("\\toprule\n")
-            f.write("Benchmark & Slice (s) & SPPL (s) & Speedup \\\\\n")
+            f.write("Benchmark & Slice+Dice (s) & Slice+Roulette (s) & SPPL (s) & Speedup \\\\\n")
             f.write("\\midrule\n")
             
             for s in speedups:
+                # Display the max speedup time between dice and roulette
+                max_speedup = max(s['dice_speedup'], s['roulette_speedup'])
                 f.write(f"{s['benchmark']} & "
-                       f"{s['slice_time']:.3f} & "
+                       f"{s['slice_time_dice']:.3f} & "
+                       f"{s['slice_time_roulette']:.3f} & "
                        f"{s['sppl_time']:.3f} & "
-                       f"{s['speedup']:.1f}× \\\\\n")
+                       f"{max_speedup:.1f}× \\\\\n")
             
             f.write("\\bottomrule\n")
             f.write("\\end{tabular}\n")

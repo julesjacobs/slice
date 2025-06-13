@@ -1,0 +1,103 @@
+% Listings setup
+\lstset{
+  basicstyle=\scriptsize\ttfamily,
+  breaklines=true,
+  columns=fullflexible,
+  frame=none,
+  backgroundcolor=\color{gray!5},
+  showstringspaces=false
+}
+
+% Saveboxes for code blocks
+\newsavebox{\boxone}
+\begin{lrbox}{\boxone}
+\begin{minipage}{5.2cm}
+\begin{lstlisting}
+let g = gaussian(0, 1) in
+let check = g < 0.1 in
+let x = if check then
+    uniform(0, 0.2)
+  else
+    uniform(0.8, 1.0) in
+x < 0.15
+\end{lstlisting}
+\end{minipage}
+\end{lrbox}
+
+\newsavebox{\boxtwo}
+\begin{lrbox}{\boxtwo}
+\begin{minipage}{5.2cm}
+\begin{lstlisting}
+let g = discrete(0.539828: 0#2, 0.460172: 1#2) in
+let check = g <#2 1#2 in
+  let x = if check then
+        discrete(0.75: 0#2, 0.25: 1#2)
+      else
+        discrete(0: 0#2, 1: 1#2) in
+    x <#2 1#2
+\end{lstlisting}
+\end{minipage}
+\end{lrbox}
+
+\newsavebox{\boxthree}
+\begin{lrbox}{\boxthree}
+\begin{minipage}{5.2cm}
+\begin{lstlisting}
+let g = discrete(0.539828, 0.460172) in
+let check = g < int(1,1) in
+  let x = if check then
+        discrete(0.75, 0.25)
+      else
+        discrete(0., 1.) in
+    x < int(1,1)
+\end{lstlisting}
+\end{minipage}
+\end{lrbox}
+
+\newsavebox{\boxfour}
+\begin{lrbox}{\boxfour}
+\begin{minipage}{5.2cm}
+\begin{lstlisting}
+(define g (if (flip 0.539828) 0 1))
+(define check (< g 1))
+(define x (if check 
+               (if (flip 0.75) 0 1) 
+               (if (flip 0.0) 0 1)))
+(< x 1)
+\end{lstlisting}
+\end{minipage}
+\end{lrbox}
+
+
+\begin{center}
+\begin{tikzpicture}[
+    box/.style={
+    draw,
+    thick,
+    align=left,
+    inner sep=4pt,
+    minimum width=5.4cm,
+    minimum height=2.5cm
+    },
+    arrow/.style={
+    -{Latex[length=2.5mm]},
+    thick
+    }
+]
+
+    % Top row
+    \node[box] (box1) {\usebox{\boxone}};
+    \node[box, right=1.6cm of box1] (box2) {\usebox{\boxtwo}};
+
+    % Bottom row: tightly packed under box2
+    \coordinate (belowcenter) at ($(box2.south) + (0,-2.2cm)$);
+    \node[box, anchor=north east] (box3) at ($(belowcenter) + (-2.0cm, 0)$) {\usebox{\boxthree}};
+    \node[box, anchor=north west] (box4) at ($(belowcenter) + (-1.0cm, 0)$) {\usebox{\boxfour}};
+
+    % Arrows
+    \draw[arrow] (box1) -- (box2);
+    \draw[arrow] (box2.south) -- (box3.north);
+    \draw[arrow] (box2.south) -- (box4.north);
+
+\end{tikzpicture}
+\end{center}
