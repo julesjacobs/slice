@@ -1,3 +1,7 @@
+\newcommand{\Nats}{\mathbb{N}}
+\newcommand{\Reals}{\mathbb{R}}
+\newcommand{\PosRealsInf}{\Reals^{\infty}}
+
 % Macros for language keywords to be used in math mode
 \newcommand{\letkw}{\textnormal{\ttfamily\bfseries let}}
 \newcommand{\inkw}{\textnormal{\ttfamily\bfseries in}}
@@ -29,6 +33,8 @@
 
 % Semantics
 \newcommand{\dist}[1]{\mathcal{D}\left( #1 \right)}
+\newcommand{\probmeas}{\mu}
+\newcommand{\discup}{\mathbin{\dot{\cup}{}}}
 \newcommand{\exprs}{\textnormal{Expr}}
 \newcommand{\extexprs}{{\overline{\textnormal{Expr}}}}
 \newcommand{\distextexprs}{\mathcal{D} \big( \extexprs \big)}
@@ -37,9 +43,11 @@
 \newcommand{\error}{\textnormal{error}}
 \newcommand{\sem}[1]{\llbracket #1  \rrbracket}
 \newcommand{\bigsemstep}[2]{\langle #1  \rangle_{#2}}
+\newcommand{\bigsemstepterm}[2]{\langle #1  \rangle_{#2}^{\downarrow}}
 \newcommand{\bigsem}[1]{\langle #1  \rangle}
 \newcommand{\measset}{A}
 \newcommand{\nonvals}{N}
+\newcommand{\vals}{V}
 
 \newcommand{\monunit}{\textnormal{return}}
 \newcommand{\monbind}{\ensuremath{\ensuremath{\gg\!\!=}}}

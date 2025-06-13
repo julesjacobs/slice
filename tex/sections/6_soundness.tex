@@ -492,6 +492,8 @@ The probabilistic semantics gives:
 %
 \kevin{Let's see whether nondet semantics requires similar treatment of undefied sampling.}
 \kevin{keep an eye on everything being measurable (will mostly be trivial due to nice construction of measure space)}
+
+
 \begin{theorem}[Almost-Sure Progress and Preservation]
 	\label{thm:small-step-progress-preservation} We have 
 	%
@@ -522,22 +524,55 @@ For every $\expr \in \exprs$ and all $n \in \mathbb{N}$, we define the distribut
 	\end{cases}
 \]
 %
-Write 
+Let $\vals$ be the measurable set of all values and write $\nonvals = \expr \setminus \vals$, which is also measurable.
 %
-\[
-	\nonvals = \{\expr \in \exprs ~|~ \expr~\text{is not a value} \}~.
-\]
+%
+\begin{lemma}[Basic Properties of $\bigsemstep{\cdot}{n}$]
+	\label{lem:props:bigstepsem}
+	Let $\expr \in \exprs$ and $n \in \mathbb{N}$. We have
+	\begin{enumerate}
+		\item\label{lem:props:bigstepsem1} $\bigsemstep{\expr}{n}(\{\error\}) \leq \bigsemstep{\expr}{n+1}(\{\error\})$
+		%
+		\item\label{lem:props:bigstepsem2} $\bigsemstep{\expr}{n}(\{\obsfail\}) \leq \bigsemstep{\expr}{n+1}(\{\obsfail\})$
+		%
+		\item\label{lem:props:bigstepsem3} $\bigsemstep{\expr}{n}(\nonvals) \geq \bigsemstep{\expr}{n+1}(\nonvals)$.
+	\end{enumerate}
+\end{lemma}
+%
+\begin{proof}
+	By induction on $n$, using that for $\expr' \in \{ \error,\obsfail,\val \}$, we have $\sem{\expr'} = \delta_{\expr'}$.
+\end{proof}
+%
+%
+Given $\expr\in\extexprs$ and $n\in\Nats$, define $\bigsemstepterm{\expr}{n} = \lambda \measset. \bigsemstep{\expr}{n}(\measset \setminus \nonvals)$. \kevin{submeasure}
 \begin{definition}[Big-Step Semantics of Expressions]
 	Let $\expr \in \exprs$. The \emph{big-step semantics of $\expr$} is 
 	%
 	\[
 		\bigsem{\expr} ~{}={}~ \lim_{n \to \infty} \lambda \measset.
 		%
-		\bigsemstep{\expr}{n}(\measset)  - \bigsemstep{\expr}{n}(\measset \cap \nonvals)
-	\]
+		\bigsemstepterm{\expr}{n}~.
+	\]\kevin{submeasure}
 \end{definition}
 %
-The above limit is to be understood pointwise and well-defined since...
+The above limit is to be understood pointwise and exists by the monotone convergence theorem:  Since $\extexprs$ is the disjoint union 
+%
+\[
+	 \exprs \discup  \{ \error \} \discup \{ \obsfail \} 
+	 \quad {}={} \quad
+	 \nonvals \discup \vals \discup \{ \error \} \discup \{ \obsfail \}~,
+\]
+%
+every $\probmeas \in \distextexprs$ is the disjoint union of some measurable sets $\measset_{\nonvals} \subseteq \nonvals, \measset_{\vals}\subseteq\vals, \measset_{\error}\subseteq \{\error\},\measset_{\obsfail}\subseteq\{\obsfail\}$. 
+\kevin{I'll have to think about this}
+%
+%\begin{align*}
+%	\bigsemstepterm{\expr}{n}(\measset) = 
+%	\bigsemstepterm{\expr}{n}(\nonvals) 
+%	+\bigsemstepterm{\expr}{n}(\vals) 
+%	+\bigsemstepterm{\expr}{n}(\measset) 
+%	+\bigsemstepterm{\expr}{n}(\measset) 
+%\end{align*}
 
 \subsection{Measure Space on Expressions}
 
