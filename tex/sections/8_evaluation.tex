@@ -33,10 +33,10 @@ where the control flow depends on earlier random variables. This pattern is char
 
 \paragraph{Results.} We generate programs of size 1-50 with step size 5 in each iteration for the conditional independence tests, and for the alternating guards tests, we generate programs of size 1-100 with step size 5 and 1 for the program size and guard span, respectively. We specify a timeout of 300s. The scaling experiments demonstrate that Slice maintains near-linear scaling behavior while SPPL exhibits significantly faster growth and times out on larger programs. Across all seven benchmarks, Slice+Dice execution time remains under 0.5 seconds even for programs with 90+ comparisons, while SPPL times out (at 300s) for programs as small as 20-30 in size. The Slice compilation phase alone (dark blue line) shows essentially constant time, indicating that the type-directed discretization algorithm scales extremely well.
 
-\subsection{Fairness Benchmarks}
+\subsection{Fairness Benchmarks}\label{sec:fairness-benchmarks}
 Characterizing the fairness of classification algorithms is an interesting application in machine learning~\cite{Dwork2012FairnessAwareness}. FairSquare~\cite{albarghouthi2017fairsquare} and VeriFair~\cite{Bastani2019VeriFair} are two solvers that obtain fairness judgments for large-scale decision-making programs. Prior to SPPL, they were state-of-the-art for verifying the fairness of decision tree classifiers, neural network classifiers, and support vector machine classifiers. We evaluate performance on the decision tree benchmarks, as \Slice cannot solve the neural network and support vector machine benchmarks as they contain multivariate transforms, and show that \Slice{} beats SPPL in performance on such benchmarks.
 
-Table 1 shows the results. The first column shows the decision making program ($DT_n$ means ``decision tree'' with $n$ conditionals), and the remaining columns display the execution times in seconds of Slice with Dice, Slice with Roulette, and SPPL respectively. The measurements indicate that SPPL consistently obtains probability estimates in milliseconds, with up to about 200x in speedup compared to SPPL. Although FairSquare and VeriFair can compute approximate probabilities that enable them to express more fairness problems, their cost is that their runtime on the decision trees is higher and less predictable than \Slice{} and SPPL which can compute exact probabilities efficiently.
+Table 1 shows the results. The first column shows the decision making program ($DT_n$ means ``decision tree'' with $n$ conditionals), and the remaining columns display the execution times in seconds of Slice with Dice, Slice with Roulette, and SPPL respectively. The last column measures the speedup of \Slice{} over SPPL, where we take the max between Dice and Roulette speedups. The measurements indicate that SPPL consistently obtains probability estimates in milliseconds, with up to about 200x in speedup compared to SPPL. Although FairSquare and VeriFair can compute approximate probabilities that enable them to express more fairness problems, their cost is that their runtime on the decision trees is higher and less predictable than \Slice{} and SPPL which can compute exact probabilities efficiently.
 
 \begin{table}[!t]
 \centering
@@ -44,24 +44,24 @@ Table 1 shows the results. The first column shows the decision making program ($
 \toprule
 Benchmark & Slice+Dice (s) & Slice+Roulette (s) & SPPL (s) & Speedup \\
 \midrule
-DT4\_ind & 0.007 & & 0.335 & 45.6× \\
-DT4\_bn1 & 0.008 & & 0.335 & 42.8× \\
-DT4\_bn2 & 0.007 & & 0.340 & 46.3× \\
-DT14\_ind & 0.008 & & 0.324 & 43.0× \\
-DT14\_bn1 & 0.010 & & 0.341 & 35.8× \\
-DT14\_bn2 & 0.011 & & 0.356 & 33.3× \\
-DT16\_ind & 0.008 & & 0.339 & 44.4× \\
-DT16\_bn1 & 0.009 & & 0.349 & 38.3× \\
-DT16\_bn2 & 0.011 & & 0.339 & 30.7× \\
-DT44\_ind & 0.011 & & 0.349 & 31.1× \\
-DT44\_bn1 & 0.016 & & 0.363 & 22.9× \\
-DT44\_bn2 & 0.016 & & 0.354 & 22.1× \\
+DT4\_bn1 & 0.211 & 2.726 & 3.406 & 16.2× \\
+DT4\_bn2 & 0.212 & 2.742 & 3.465 & 16.3× \\
+DT4\_ind & 0.197 & 2.665 & 3.306 & 16.8× \\
+DT14\_bn1 & 0.232 & 2.929 & 3.547 & 15.3× \\
+DT14\_bn2 & 0.232 & 2.925 & 4.055 & 17.5× \\
+DT14\_ind & 0.215 & 2.743 & 3.365 & 15.7× \\
+DT16\_bn1 & 0.227 & 2.952 & 3.667 & 16.2× \\
+DT16\_bn2 & 0.230 & 3.064 & 3.624 & 15.8× \\
+DT16\_ind & 0.213 & 2.848 & 3.517 & 16.5× \\
+DT44\_bn1 & 0.273 & 3.806 & 3.967 & 14.5× \\
+DT44\_bn2 & 0.277 & 3.586 & 3.934 & 14.2× \\
+DT44\_ind & 0.243 & 3.067 & 3.686 & 15.1× \\
 \bottomrule
 \end{tabular}
 \caption{Execution times (seconds) for decision tree benchmarks}
 \end{table}
 
-\subsection{Simple Baselines}
+\subsection{Simple Baselines}\label{sec:baseline-benchmarks}
 We finally evaluate \Slice{} on a set of benchmarks that were introduced by~\cite{gehr2016psi}. We evaluate \Slice{} on the hybrid programs in these benchmarks. The results are shown in Table 2. We omit the runs of PSI in the table due to its significally slower performance than SPPL on all benchmarks. The first column in the table gives the benchmark name, and the remaining columns display the execution times in seconds of Slice with Dice, Slice with Roulette, and SPPL respectively. As both SPPL and \Slice{} are restricted languages, in order to test a broader range of programs, we converted several benchmarks with parameters inside distributions that depend on continuous random choices to a discretized version. The time taken by \Slice{} to solve these problems is nearly instant in all cases. 
 
 \begin{table}[!t]
