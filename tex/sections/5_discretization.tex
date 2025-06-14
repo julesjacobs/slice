@@ -25,10 +25,10 @@ The transformation $\texttt{discretize}(e)$ is defined recursively on the struct
 \paragraph{Continuous Distributions} For a distribution $d$ with type $\float[B; V]$ where $B = \{b_1, \ldots, b_n\}$:
 \begin{enumerate}
     \item Extract numeric thresholds $c_1 < \cdots < c_n$ from bounds in $B$
-    \item Define $n+1$ intervals: $I_0 = (-\infty, c_1)$, $I_1 = [c_1, c_2)$, \ldots, $I_n = [c_n, +\infty)$
+    \item Let $\text{CDF}_d(b_i)$ be the measure of the distribution $d$ on the interval $(-\infty, c_i)$ if $b_i =\ <\!\!c_i$ and on the interval $(-\infty, c_i]$ if $b_i =\ \leq\!\!c_i$. Take $\text{CDF}_d(b_{0}) = 0$ and $\text{CDF}_d(b_{n+1}) = 1$.
     \item Calculate probability mass for each interval using the CDF:
-    \[ p_i = \text{CDF}_d(\text{right}_i) - \text{CDF}_d(\text{left}_i) \]
-    \item Generate $\discrete(p_0, \ldots, p_n)$ returning interval indices
+    \[ p_i = \text{CDF}_d(b_i) - \text{CDF}_d(b_{i-1}) \]
+    \item Generate $\discrete(p_1, \ldots, p_{n+1})$ returning interval indices.
 \end{enumerate}
 
 If $B = \top$, the distribution remains continuous.
@@ -36,51 +36,32 @@ If $B = \top$, the distribution remains continuous.
 \paragraph{Comparisons} For $e_1 < e_2$ where both have type $\float[B; V]$:
 \begin{itemize}
     \item If $B = \top$: comparison remains as $\texttt{discretize}(e_1) < \texttt{discretize}(e_2)$
-    \item If $B = \{b_1, \ldots, b_n\}$: becomes $\texttt{discretize}(e_1) \finlt{n+1} \texttt{discretize}(e_2)$
+    \item If $B = \{b_1, \ldots, b_n\}$: becomes $\texttt{discretize}(e_1) \finlt{n+1} \texttt{discretize}(e_2)$ (or, $\leq$ becomes $\finleq{n+1}$)
 \end{itemize}
 
-The finite comparison $\finlt{n+1}$ operates on interval indices modulo $n+1$.
+The finite comparison $\finlt{n+1}$ operates on interval indices.
 
 \paragraph{Structural Constructs} All other constructs are discretized recursively:
 \begin{itemize}
-    \item Variables, constants, and discrete distributions pass through unchanged
-    \item Let bindings, conditionals, pairs, functions preserve structure
-    \item Boolean operations, lists, references maintain their semantics
+    \item Variables pass through unchanged, though their type may change
+    \item Let bindings, conditionals, pairs, etc., recursively discretize subexpressions
 \end{itemize}
 
-\subsection{Variable Distribution Parameters}
-
-A key challenge arises when distribution parameters are not constant. Consider:
-\begin{lstlisting}
-let scale = discrete(0.5, 0.5) in
-let x = if scale = 0 then exponential(1.0) 
-        else exponential(2.0) in
-x < 3.0
-\end{lstlisting}
-
-During type inference, the parameter to \texttt{exponential} has type $\float[B_{\text{param}}; \{1.0, 2.0\}]$. The implementation generates runtime dispatch code that:
-\begin{enumerate}
-    \item Evaluates the parameter expression
-    \item Matches against possible constant values from the value bag
-    \item Applies appropriate discretization for each case
-\end{enumerate}
-
-This ensures correct discretization even when distribution parameters depend on runtime values.
-
-\subsection{Implementation Details}
-
-The discretization algorithm:
+\paragraph{Effect of discretization on types} The types change as follows:
 \begin{itemize}
-    \item Uses the GNU Scientific Library (GSL) for CDF calculations
-    \item Handles floating-point precision by clamping probabilities to $[0,1]$
-    \item Validates that discretized probabilities sum to approximately 1.0
-    \item Generates finite types $\text{fin}(n)$ for discretized values
-    \item Preserves comparison semantics through interval index comparisons
+    \item $\texttt{discretize}(\float[B; V]) = \fin(n+1)$ if $B = \{b_1, \ldots, b_n\}$
+    \item $\texttt{discretize}(\float[B; V]) = \float$ if $B = \top$
+    \item $\texttt{discretize}(A \to B) = \texttt{discretize}(A) \to \texttt{discretize}(B)$
+    \item $\texttt{discretize}(A \times B) = \texttt{discretize}(A) \times \texttt{discretize}(B)$
+    \item $\texttt{discretize}(\texttt{list}(A)) = \texttt{list}(\texttt{discretize}(A))$
+    \item $\texttt{discretize}(\texttt{ref}(A)) = \texttt{ref}(\texttt{discretize}(A))$
+    \item Other types remain unchanged.
 \end{itemize}
+
 
 \subsection{Example}
 
-Consider the program from Section~\ref{sec:type-inference}:
+Consider the following program:
 \begin{lstlisting}
 let x = uniform(0.0, 1.0) in
 if x < 0.5 then 
@@ -98,4 +79,29 @@ After type inference, \texttt{x} has type $\float[\{<0.5, <0.7\}; \top]$. Discre
 \end{enumerate}
 
 The discretized program preserves the original semantics while enabling exact inference.
+
+\subsection{Variable Distribution Parameters}
+
+A key challenge arises when distribution parameters are not constant.
+For variable distribution parameters, we use the value bag $V$ in $\float[B; V]$ to reconstruct the appropriate distribution to compute the CDF on.
+Due to the typing rules, each interval induced by $B$ can contain at most one value from $V$. This means that we can uniquely reconstruct the original floating point number from the interval index, by a series of conditionals.
+The distribution can then be discretized as if its parameters were constant in each branch of the conditionals.
+
+Consider the following program:
+\begin{lstlisting}
+let scale = discrete(0.5, 0.5) in
+let x = if scale = 0 then exponential(1.0) 
+        else exponential(2.0) in
+x < 3.0
+\end{lstlisting}
+
+During type inference, the parameter to \texttt{exponential} has type $\float[B_{\text{param}}; \{1.0, 2.0\}]$. The implementation generates runtime dispatch code that:
+\begin{enumerate}
+    \item Evaluates the parameter expression
+    \item Matches against possible constant values from the value bag
+    \item Applies appropriate discretization for each case
+\end{enumerate}
+
+This ensures correct discretization even when distribution parameters depend on runtime values.
+
 
