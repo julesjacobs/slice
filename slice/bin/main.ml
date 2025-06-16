@@ -127,9 +127,13 @@ let process_file ~print_all ~to_sppl ~backend filename : ( ((int * int * int) * 
       
       let texpr = Slice.Inference.infer expr in 
       let final_type = fst texpr in 
+
+
+      (* Discretize FIRST to make sure return type is not discretized *)
+      let discretized_expr = Slice.Discretization.discretize_top texpr in
+
       if print_all then Printf.printf "Typed AST (Pretty):\n%s\n\n" (Slice.Pretty.string_of_texpr texpr);
       
-      let discretized_expr = Slice.Discretization.discretize_top texpr in
       if print_all then (
         Printf.printf "Discretized Program (Pretty):\n%s\n\n" (Slice.Pretty.string_of_expr discretized_expr);
         let backend_code = match backend with
