@@ -4,7 +4,7 @@ After type inference, each float-typed expression carries refinement information
 
 \subsection{Overview}
 
-The discretization process transforms continuous distributions into discrete ones based on the comparison points collected during type inference. The key insight is that if a program only compares a continuous value against certain thresholds, we can partition the continuous range into intervals separated by these thresholds and track only which interval contains the value.
+The discretization process transforms continuous distributions into discrete ones based on the comparison points collected during type inference. The key insight is that if a program only compares a continuous value against certain thresholds, we can partition the continuous range into intervals separated by these finite thresholds and track only which interval contains the value. If a continuous value is compared against another continuous value, or if a continuous value is not compared against any value, proper discretization cannot be performed for that expression and its original semantics is preserved.
 
 For each expression with type $\float[B; V]$:
 \begin{itemize}
@@ -14,7 +14,15 @@ For each expression with type $\float[B; V]$:
 
 \subsection{Discretization Rules}
 
-The transformation $\texttt{discretize}(e)$ is defined recursively on the structure of typed expressions:
+The transformation $\texttt{discretize}(e)$ is defined recursively on the structure of typed expressions. We first define the types of expressions $\texttt{discretize}(e)$ produces, which is either a fully discretized or a partially discretized program. A fully discretized program contains only discrete distributions.
+
+\begin{definition} [Full discretization]\label{def:full-discr}
+    A program can be \textit{fully discretized} by \Slice{} if all its expressions are either discrete (in the trivial case) and/or co-discrete.
+\end{definition}
+
+\begin{definition} [Partial discretization]\label{def:partial-discr}
+    A program can only be \textit{partially discretized} by \Slice{} if there exists any co-continuous expression.
+\end{definition}
 
 \paragraph{Float Constants} For a constant $c$ with type $\float[B; V]$:
 \begin{itemize}
