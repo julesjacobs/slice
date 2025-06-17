@@ -1,25 +1,25 @@
 \section{Type Inference}\label{sec:type-inference}
 
-Type inference for \Slice{} assigns types to every subexpression while simultaneously collecting comparison points that will guide the discretization process. The type system tracks both traditional type information and refinement information specific to floating-point values. The main challenge is that the typing rules are not syntax directed, which we address in this section by using a constraint-based approach.
+Type inference for \Slice{} assigns types to every subexpression while simultaneously collecting bounds that will guide the discretization process. The type system tracks both traditional type information and refinement information specific to floating-point values. The main challenge is that the typing rules are not syntax directed, which we address in this section by using a constraint-based approach.
 
 \paragraph{Overview.}
 The inference algorithm performs type checking and constraint generation in a single pass over the AST. For float types $\float[B; V]$, it maintains two separate refinement components:
 \begin{itemize}
-    \item The \emph{bound bag} $B$ collects comparison bounds (e.g., $<\!\!0.5$, $\leq\!\!1.2$) from sites where the expression is compared
-    \item The \emph{value bag} $V$ tracks concrete float constants that flow to the expression
+    \item The \emph{bound set} $B$ collects bounds (e.g., $<\!\!0.5$, $\leq\!\!1.2$) from sites where the expression is compared
+    \item The \emph{value set} $V$ tracks concrete float constants that flow to the expression
 \end{itemize}
 
-Both components start at the bottom of their respective lattices ($\emptyset$) and monotonically accumulate information through constraint propagation. The implementation maintains bags as mutable references with attached listeners that propagate updates immediately when new information becomes available. The listeners of a bag are triggered when the lattice value goes up in the lattice (it can never go down; the changes are always monotone).
+Both components start at the bottom of their respective lattices ($\emptyset$) and monotonically accumulate information through constraint propagation. The implementation maintains sets as mutable references with attached listeners that propagate updates immediately when new information becomes available. The listeners of a set are triggered when the lattice value goes up in the lattice (it can never go down; the changes are always monotone).
 For instance, to maintain the constraint $B_1 \leq B_2$, the system registers a listener that propagates updates from $B_1$ to $B_2$ when $B_1$ goes up.
 
-\paragraph{Basic constraints between bags.}
-We maintain three types of constraints between bags:
+\paragraph{Basic constraints between sets.}
+We maintain three types of constraints between sets:
 \begin{description}
     \item[Order:] $B_1 \sqsubseteq B_2$ means that $B_1$ is lower than or equal to $B_2$ in the lattice order. This is enforced with a listener on $B_1$ that increases $B_2$ to maintain the constraint.
     \item[Answerability:] $B \textit{ answers} \leq\!\!V$ or $B \textit{ answers} <\!\!V$ means that $B$ contains $\leq\!\!v$ or $<\!\!v$ for every $v \in V$. This is enforced with a listener on $V$ that adds the corresponding bound to $B$.
-    \item[Distinguishability:] $B \textit{ distinguishes } V$ means that every interval in $B$ has at most one point in $V$. This is enforced with a listener on $V$ that adds $\leq\!\!v$ to $B$ for every $v \in V$. Note that this may not lead to the coarsest possible bound bag, but it is sound.
+    \item[Distinguishability:] $B \textit{ distinguishes } V$ means that every interval in $B$ has at most one point in $V$. This is enforced with a listener on $V$ that adds $\leq\!\!v$ to $B$ for every $v \in V$. Note that this may not lead to the coarsest possible bound set, but it is sound.
 \end{description}
-In each case, if the bag is set to $\top$, we propagate the required $\top$ to the other bag.
+In each case, if the set is set to $\top$, we propagate the required $\top$ to the other set.
 
 \paragraph{Subtyping constraints between types.}
 To maintain subtyping constraints $\tau_1 <: \tau_2$ between types, we recurse into the types according to the rules in \Cref{fig:subtyping}. Whenever one of the sides is a type variable, we instantiate it with the corresponding type of the other side, and add subtyping constraints according to the rules. When both sides are type variables, we add listeners to the type variables that propagate the subtyping constraints whenever one side is instantiated. To enforce equality between types, we enforce subtyping both ways.
@@ -73,7 +73,7 @@ Other constructs follow standard typing rules:
 We formalize the above notions in a way that will allow us to in the next section characterize the types of programs our discretization method supports. We first define what it means for a given distribution to be co-discrete or co-continuous. 
 
 \begin{definition} [Co-discrete]\label{def:co-discrete}
-    An expression is \textit{co-discrete} if it contains a non-empty, finite set of comparison bounds in its bound bag $B$ in $\float[B;V]$.
+    An expression is \textit{co-discrete} if it contains a non-empty, finite set of bounds in its bound set $B$ in $\float[B;V]$.
 \end{definition}
 
 \begin{definition} [Co-continuous]\label{def:co-continuous}
@@ -130,7 +130,7 @@ The bags are then solved in the following manner:
     \end{itemize}
     All bound bags are therefore in two equivalence classes: $B_{12}$ ($= B_1 = B_2$) and $B_{xy}$ ($=B_x=B_y=B_3=B_4=B_5=B_6=B_7$).
 
-    \item \textbf{Value bag propagation:}
+    \item \textbf{Value set propagation:}
     Value bags are joined at `if` expressions.
     \begin{itemize}
         \item For `x`, $V_x$ is the join of $V_3$ and $V_4$, so $V_x = \top \sqcup \top = \top$.
@@ -146,7 +146,7 @@ The bags are then solved in the following manner:
     \end{itemize}
 
     \item \textbf{Solution:}
-    Combining all constraints on $B_{xy}$ ($=B_x=B_y=B_3=B_4=B_5=B_6=B_7$) gives the final bound bag: $\{ \leq\!0.3, <\!1.5, \leq\!1.8 \}$. The bag $B_{12}$ ($=B_1=B_2$) for the first comparison is $\{ <\!0.5 \}$.
+    Combining all constraints on $B_{xy}$ ($=B_x=B_y=B_3=B_4=B_5=B_6=B_7$) gives the final bound set: $\{ \leq\!0.3, <\!1.5, \leq\!1.8 \}$. The set $B_{12}$ ($=B_1=B_2$) for the first comparison is $\{ <\!0.5 \}$.
 \end{enumerate}
 
 This results in the following fully annotated program:

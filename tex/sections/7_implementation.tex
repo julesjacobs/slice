@@ -10,24 +10,24 @@ The \Slice{} compiler consists of approximately 3,400 lines of OCaml code (inclu
 
 % \paragraph{Parser and Lexer} The frontend uses OCaml's Menhir parser generator to parse \texttt{.slice} source files. The parser (\texttt{parser.mly}) defines the concrete syntax and produces an abstract syntax tree (AST) represented by the \texttt{expr} type. The lexer (\texttt{lexer.mll}) handles tokenization, including special tokens for finite type comparisons (e.g., \texttt{<\#n}).
 
-% \paragraph{Type Inference} The type inference module (\texttt{inference.ml}) implements the two-bag type system described in Section~\ref{sec:type-inference}. It uses a constraint-based approach with unification to infer types while collecting comparison bounds. The implementation features:
+% \paragraph{Type Inference} The type inference module (\texttt{inference.ml}) implements the two-set type system described in Section~\ref{sec:type-inference}. It uses a constraint-based approach with unification to infer types while collecting bounds. The implementation features:
 % \begin{itemize}
 %     \item A union-find data structure for managing bags efficiently
 %     \item Listener patterns for propagating constraints between related expressions
 %     \item Subtyping rules that ensure proper information flow
 % \end{itemize}
 
-% \paragraph{Bags Module} The \texttt{bags.ml} module provides the lattice-based data structures for tracking bounds and values. It implements:
+% \paragraph{Sets Module} The \texttt{sets.ml} module provides the lattice-based data structures for tracking bounds and values. It implements:
 % \begin{itemize}
-%     \item Generic bag operations (union, equality checking)
-%     \item Specialized \texttt{BoundBag} for comparison bounds ($<c$, $\leq c$)
-%     \item \texttt{FloatBag} for tracking concrete float values
+%     \item Generic set operations (union, equality checking)
+%     \item Specialized \texttt{BoundSet} for bounds ($<c$, $\leq c$)
+%     \item \texttt{FloatSet} for tracking concrete float values
 %     \item Efficient representation using either finite sets or $\top$
 % \end{itemize}
 
 % \paragraph{Discretization} The discretization module (\texttt{discretization.ml}) transforms typed continuous programs into discrete ones. For each continuous distribution, it:
 % \begin{enumerate}
-%     \item Extracts comparison thresholds from the bound bag
+%     \item Extracts thresholds from the bound set
 %     \item Computes interval probabilities using distribution CDFs
 %     \item Generates equivalent discrete distributions
 %     \item Transforms comparisons to operate on interval indices

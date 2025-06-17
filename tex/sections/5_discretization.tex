@@ -4,7 +4,7 @@ After type inference, each float-typed expression carries refinement information
 
 \subsection{Overview}
 
-The discretization process transforms continuous distributions into discrete ones based on the comparison points collected during type inference. The key insight is that if a program only compares a continuous value against certain thresholds, we can partition the continuous range into intervals separated by these finite thresholds and track only which interval contains the value. If a continuous value is compared against another continuous value, or if a continuous value is not compared against any value, proper discretization cannot be performed for that expression and its original semantics is preserved.
+The discretization process transforms continuous distributions into discrete ones based on the bounds collected during type inference. The key insight is that if a program only compares a continuous value against certain thresholds, we can partition the continuous range into intervals separated by these finite thresholds and track only which interval contains the value. If a continuous value is compared against another continuous value, or if a continuous value is not compared against any value, proper discretization cannot be performed for that expression and its original semantics is preserved.
 
 For each expression with type $\float[B; V]$:
 \begin{itemize}
@@ -91,7 +91,7 @@ The discretized program preserves the original semantics while enabling exact in
 \subsection{Variable Distribution Parameters}
 
 A key challenge arises when distribution parameters are not constant.
-For variable distribution parameters, we use the value bag $V$ in $\float[B; V]$ to reconstruct the appropriate distribution to compute the CDF on.
+For variable distribution parameters, we use the value set $V$ in $\float[B; V]$ to reconstruct the appropriate distribution to compute the CDF on.
 Due to the typing rules, each interval induced by $B$ can contain at most one value from $V$. This means that we can uniquely reconstruct the original floating point number from the interval index, by a series of conditionals.
 The distribution can then be discretized as if its parameters were constant in each branch of the conditionals.
 
@@ -106,7 +106,7 @@ x < 3.0
 During type inference, the parameter to \texttt{exponential} has type $\float[B_{\text{param}}; \{1.0, 2.0\}]$. The implementation generates runtime dispatch code that:
 \begin{enumerate}
     \item Evaluates the parameter expression
-    \item Matches against possible constant values from the value bag
+    \item Matches against possible constant values from the value set
     \item Applies appropriate discretization for each case
 \end{enumerate}
 
