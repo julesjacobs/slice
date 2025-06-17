@@ -257,18 +257,18 @@ and string_of_asample ?(indent=0) dist_exp =
 
 and string_of_ty = function
   | TBool -> "bool"
-  | TFloat (bound_bag_ref, const_bag_ref) ->
+  | TFloat (cut_bag_ref, const_bag_ref) ->
       let bounds_str = 
-        match BoundLat.get bound_bag_ref with
+        match CutLat.get cut_bag_ref with
         | Top -> "T"
         | Finite bound_set ->
-            if BoundSet.is_empty bound_set then ""
+            if CutSet.is_empty bound_set then ""
             else
-              let string_of_bound = function 
+              let string_of_cut = function 
                 | Lats.Less c -> Printf.sprintf "<%g" c 
                 | Lats.LessEq c -> Printf.sprintf "<=%g" c 
               in
-              String.concat "," (List.map string_of_bound (BoundSet.elements bound_set))
+              String.concat "," (List.map string_of_cut (CutSet.elements bound_set))
       in
       let consts_str = 
         match FloatLat.get const_bag_ref with

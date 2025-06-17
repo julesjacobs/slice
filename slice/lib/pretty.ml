@@ -354,20 +354,20 @@ and string_of_aexpr_node ?(indent=0) (TAExprNode ae_node) : string =
 (* Pretty printer for types *)
 and string_of_ty = function
   | TBool -> Printf.sprintf "%sbool%s" type_color reset_color
-  | TFloat (bound_bag_ref, const_bag_ref) ->
+  | TFloat (cut_bag_ref, const_bag_ref) ->
       let bounds_str = 
-        match BoundLat.get bound_bag_ref with
+        match CutLat.get cut_bag_ref with
         | Top -> "T"
         | Finite bound_set ->
-            if BoundSet.is_empty bound_set then ""
+            if CutSet.is_empty bound_set then ""
             else
-              let string_of_bound = function 
+              let string_of_cut = function 
                 | Lats.Less c -> Printf.sprintf "<%g" c 
                 | Lats.LessEq c -> Printf.sprintf "<=%g" c 
               in
-              let elements = BoundSet.elements bound_set in
+              let elements = CutSet.elements bound_set in
               (* Join with comma, no space. Removed internal colors *)
-              String.concat "," (List.map string_of_bound elements)
+              String.concat "," (List.map string_of_cut elements)
       in
       let consts_str = 
         match FloatLat.get const_bag_ref with

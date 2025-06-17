@@ -12,14 +12,14 @@ let find_index pred lst =
 
 (* ======== Helper for Constant Discretization ======== *)
 
-let get_const_idx_and_modulus (f : float) (bound_set_from_context : BoundSet.t) : int * int =
-  let cuts_as_bounds = BoundSet.elements bound_set_from_context in
-  let modulus = 1 + List.length cuts_as_bounds in
-  (* The index of the float is equal to the index of the first bound that is satisfied *)
-  let idx = find_index (fun bound -> Lats.satisfies_bound f bound) cuts_as_bounds in
+let get_const_idx_and_modulus (f : float) (cut_set_from_context : CutSet.t) : int * int =
+  let cuts = CutSet.elements cut_set_from_context in
+  let modulus = 1 + List.length cuts in
+  (* The index of the float is equal to the index of the first cut that is satisfied *)
+  let idx = find_index (fun cut -> Lats.satisfies_cut f cut) cuts in
   let idx = match idx with
     | Some i -> i 
-    | None -> modulus - 1 (* If no bound is satisfied, we're in the last interval *)
+    | None -> modulus - 1 (* If no cut is satisfied, we're in the last interval *)
   in
   (idx, modulus)
 
@@ -52,16 +52,16 @@ let discretize (e : texpr) : expr =
       | Ast.TFloat (b, _) -> b
       | _ -> failwith ("Type error: " ^ op_name ^ " expects float on right operand"))
     in
-    let val1 = Lats.BoundLat.get b1 in
-    let val2 = Lats.BoundLat.get b2 in
-    if not (Lats.BoundSetContents.equal val1 val2) then 
+    let val1 = Lats.CutLat.get b1 in
+    let val2 = Lats.CutLat.get b2 in
+    if not (Lats.CutSetContents.equal val1 val2) then 
       failwith ("Internal error: " ^ op_name ^ " operands have different bound bag values despite elaboration");
 
     (match val1 with 
       | Lats.Top -> 
           ExprNode (Cmp (cmp_op, aux te1, aux te2, flipped))
       | Lats.Finite bound_set -> 
-          let n = 1 + List.length (Lats.BoundSet.elements bound_set) in
+          let n = 1 + List.length (Lats.CutSet.elements bound_set) in
           let d1 = aux te1 in
           let d2 = aux te2 in 
           ExprNode (FinCmp (cmp_op, d1, d2, n, flipped))
@@ -71,13 +71,13 @@ let discretize (e : texpr) : expr =
   let rec aux ((ty, TAExprNode ae_node) : texpr) : expr =
     match ae_node with
     | Const f -> 
-        let bounds_bag_ref = (match Ast.force ty with
+        let cuts_bag_ref = (match Ast.force ty with
           | Ast.TFloat (b, _) -> b (* Extract bounds bag *)
           | _ -> failwith "Type error: Const expects float") in
-        (match Lats.BoundLat.get bounds_bag_ref with
+        (match Lats.CutLat.get cuts_bag_ref with
          | Lats.Top -> ExprNode (Const f) (* Keep original if Top *)
-         | Lats.Finite bound_set_from_context ->
-            let idx, modulus = get_const_idx_and_modulus f bound_set_from_context in
+         | Lats.Finite cut_set_from_context ->
+            let idx, modulus = get_const_idx_and_modulus f cut_set_from_context in
               ExprNode (FinConst (idx, modulus))
         )
 
@@ -91,12 +91,12 @@ let discretize (e : texpr) : expr =
 
     | Sample dist_exp ->
         let outer_sample_ty = ty in (* Type of the Sample expression itself *)
-        let bounds_bag_of_outer_sample =
+        let cuts_bag_of_outer_sample =
           match Ast.force outer_sample_ty with
           | Ast.TFloat (b, _) -> b
           | _ -> failwith "Internal error: Sample expression's type is not TFloat during discretize"
         in
-        let set_or_top_val = Lats.BoundLat.get bounds_bag_of_outer_sample in
+        let set_or_top_val = Lats.CutLat.get cuts_bag_of_outer_sample in
         
           (match set_or_top_val with
         | Lats.Top -> 
@@ -110,14 +110,14 @@ let discretize (e : texpr) : expr =
             let texpr_arg2_discretized = aux texpr_arg2 in
             ExprNode (Sample (Distr2 (kind, texpr_arg1_discretized, texpr_arg2_discretized)))
           )
-        | Lats.Finite outer_bound_set -> 
+        | Lats.Finite outer_cut_set -> 
           (* Outer Sample's bounds are Finite, proceed with interval-based discretization *)
-          let outer_cuts_as_bounds = Lats.BoundSet.elements outer_bound_set in
-          let overall_modulus = 1 + List.length outer_cuts_as_bounds in 
+          let outer_cuts = Lats.CutSet.elements outer_cut_set in
+          let overall_modulus = 1 + List.length outer_cuts in 
           if overall_modulus <= 0 then failwith "Internal error: Sample modulus must be positive";
 
           let final_expr_producer (concrete_distr : Distributions.cdistr) : expr =
-            let get_float_val_from_bound (b: Lats.bound) : float = 
+            let get_float_val_from_cut (b: Lats.cut) : float = 
               match b with Lats.Less f -> f | Lats.LessEq f -> f
             in
 
@@ -125,18 +125,18 @@ let discretize (e : texpr) : expr =
               (* k_idx is the discrete outcome index, from 0 to overall_modulus - 1 *)
               let left_for_cdf = 
                 if k_idx = 0 then neg_infinity
-                else get_float_val_from_bound (List.nth outer_cuts_as_bounds (k_idx - 1))
+                else get_float_val_from_cut (List.nth outer_cuts (k_idx - 1))
               in
               let right_for_cdf =
                 if k_idx = overall_modulus - 1 then infinity
-                else get_float_val_from_bound (List.nth outer_cuts_as_bounds k_idx)
+                else get_float_val_from_cut (List.nth outer_cuts k_idx)
               in
               (* Ensure left <= right. If bounds imply same float val, interval is [v,v] -> prob should be 0 by CDF diff *)
               (min left_for_cdf right_for_cdf, max left_for_cdf right_for_cdf)
             ) in
             let probs = List.map (fun (l,r) -> prob_cdistr_interval l r concrete_distr) intervals_for_probs in
             if List.exists (fun p -> p < -0.0001 || p > 1.0001) probs then
-                failwith ("Internal error: generated probabilities are invalid: " ^ Pretty.string_of_float_list probs ^ " for distribution " ^ Pretty.string_of_cdistr concrete_distr ^ Printf.sprintf " with %d outer bounds." (List.length outer_cuts_as_bounds));
+                failwith ("Internal error: generated probabilities are invalid: " ^ Pretty.string_of_float_list probs ^ " for distribution " ^ Pretty.string_of_cdistr concrete_distr ^ Printf.sprintf " with %d outer bounds." (List.length outer_cuts));
             let sum_probs = List.fold_left (+.) 0.0 probs in
             (* Allow for small floating point inaccuracies in probability sum;
                individual probabilities are clamped to [0,1] later. *)
@@ -165,14 +165,14 @@ let discretize (e : texpr) : expr =
             | _ -> None
           in
 
-          let get_param_modulus_and_cuts (param_texpr : texpr) : (int * Lats.bound list) option =
+          let get_param_modulus_and_cuts (param_texpr : texpr) : (int * Lats.cut list) option =
             let param_ty, _ = param_texpr in
             match Ast.force param_ty with
             | TFloat (b_bag, _) -> 
-              (match Lats.BoundLat.get b_bag with
+              (match Lats.CutLat.get b_bag with
                | Top -> None 
                | Finite bs_set -> 
-                 let cuts = Lats.BoundSet.elements bs_set in 
+                 let cuts = Lats.CutSet.elements bs_set in 
                  let modulus = 1 + List.length cuts in
                  if modulus <= 0 then None else Some (modulus, cuts))
             | _ -> None
@@ -208,7 +208,7 @@ let discretize (e : texpr) : expr =
               (default_expr_for_this_param : expr) : expr =
 
             match get_possible_floats_from_param param_texpr, get_param_modulus_and_cuts param_texpr with
-            | Some possible_floats, Some (param_modulus, param_actual_bound_cuts_as_bounds) ->
+            | Some possible_floats, Some (param_modulus, param_actual_cuts) ->
                 if List.length possible_floats = 0 then default_expr_for_this_param
                 else if List.length possible_floats = 1 then 
                   build_body_fn (List.hd possible_floats)
@@ -220,8 +220,8 @@ let discretize (e : texpr) : expr =
                   in
                   let match_arms = List.map (fun f_val ->
                     let param_consts_bag_for_f = Lats.FloatLat.create (Finite (FloatSet.singleton f_val)) in
-                    let param_bounds_bag_for_f = Lats.BoundLat.create (Finite (Lats.BoundSet.of_list param_actual_bound_cuts_as_bounds)) in
-                    let texpr_const_f_val = (TFloat(param_bounds_bag_for_f, param_consts_bag_for_f), TAExprNode (Const f_val)) in
+                    let param_cuts_bag_for_f = Lats.CutLat.create (Finite (Lats.CutSet.of_list param_actual_cuts)) in
+                    let texpr_const_f_val = (TFloat(param_cuts_bag_for_f, param_consts_bag_for_f), TAExprNode (Const f_val)) in
                     let target_finconst_expr = aux texpr_const_f_val in
                     let body = build_body_fn f_val in
                     (target_finconst_expr, body)
@@ -398,6 +398,6 @@ let discretize (e : texpr) : expr =
 let discretize_top (e : texpr) : expr =
   (* First set the bound bags to top in the top-level return type *)
   let (return_type, _) = e in
-  Ast.set_bound_bags_to_top return_type;
+  Ast.set_cut_bags_to_top return_type;
   (* Then discretize *)
   discretize e

@@ -58,7 +58,7 @@ type meta =
 and meta_ref = meta ref
 and ty =
   | TBool
-  | TFloat of BoundLat.bag * FloatLat.bag (* Store bag REFERENCES, not contents *)
+  | TFloat of CutLat.bag * FloatLat.bag (* Store bag REFERENCES, not contents *)
   | TPair of ty * ty
   | TFun of ty * ty
   | TFin of int
@@ -89,24 +89,24 @@ let assign (m : meta_ref) (t : ty) : unit =
   | Unknown fs -> m := Known t; List.iter (fun f -> f t) fs
 
 (* Function to recursively set all bound bags in float types to top *)
-let rec set_bound_bags_to_top (t : ty) : unit =
+let rec set_cut_bags_to_top (t : ty) : unit =
   match force t with
-  | TFloat (bound_bag, _float_bag) ->
+  | TFloat (cut_bag, _float_bag) ->
       (* Set the bound bag to Top using leq with a Top bag *)
-      BoundLat.leq (BoundLat.create Top) bound_bag
+      CutLat.leq (CutLat.create Top) cut_bag
   | TPair (t1, t2) ->
-      set_bound_bags_to_top t1;
-      set_bound_bags_to_top t2
+      set_cut_bags_to_top t1;
+      set_cut_bags_to_top t2
   | TFun (t1, t2) ->
-      set_bound_bags_to_top t1;
-      set_bound_bags_to_top t2
+      set_cut_bags_to_top t1;
+      set_cut_bags_to_top t2
   | TList t' ->
-      set_bound_bags_to_top t'
+      set_cut_bags_to_top t'
   | TRef t' ->
-      set_bound_bags_to_top t'
+      set_cut_bags_to_top t'
   | TMeta r ->
       (* For unresolved type variables, set up a listener to handle future resolution *)
-      listen r (fun resolved_t -> set_bound_bags_to_top resolved_t)
+      listen r (fun resolved_t -> set_cut_bags_to_top resolved_t)
   | TBool | TFin _ | TUnit ->
       (* Base types without nested types - nothing to do *)
       ()

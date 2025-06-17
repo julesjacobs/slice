@@ -8,12 +8,12 @@ type ('elt, 'set) set_or_top =
 (* == Float Set == *)
 module FloatSet = Set.Make(struct type t = float let compare = compare end)
 
-(* == Bound Type == *)
-type bound = 
+(* == Cut Type == *)
+type cut = 
   | Less of float   (* < c *)
   | LessEq of float (* <= c *)
 
-let compare_bound b1 b2 = 
+let compare_cut b1 b2 = 
   match b1, b2 with
   | Less c1, Less c2 -> compare c1 c2
   | LessEq c1, LessEq c2 -> compare c1 c2
@@ -24,18 +24,18 @@ let compare_bound b1 b2 =
       let cmp = compare c1 c2 in
       if cmp = 0 then 1 else cmp
 
-let satisfies_bound f bound =
-  match bound with
+let satisfies_cut f cut =
+  match cut with
   | Less c -> f < c
   | LessEq c -> f <= c
 
 
-(* == Bound Set == *)
-module BoundOrder = struct
-  type t = bound
-  let compare = compare_bound
+(* == Cut Set == *)
+module CutOrder = struct
+  type t = cut
+  let compare = compare_cut
 end
-module BoundSet = Set.Make(BoundOrder)
+module CutSet = Set.Make(CutOrder)
 
 (* == Adapters for Lat == *)
 module FloatSetContents : Lat with type t = (float, FloatSet.t) set_or_top = struct
@@ -53,52 +53,52 @@ module FloatSetContents : Lat with type t = (float, FloatSet.t) set_or_top = str
     | _, _ -> false
 end
 
-module BoundSetContents : Lat with type t = (bound, BoundSet.t) set_or_top = struct
-  type t = (bound, BoundSet.t) set_or_top
+module CutSetContents : Lat with type t = (cut, CutSet.t) set_or_top = struct
+  type t = (cut, CutSet.t) set_or_top
   let union v1 v2 = 
     match v1, v2 with
     | Top, _ -> Top
     | _, Top -> Top
-    | Finite s1, Finite s2 -> Finite (BoundSet.union s1 s2)
+    | Finite s1, Finite s2 -> Finite (CutSet.union s1 s2)
 
   let equal v1 v2 =
     match v1, v2 with
     | Top, Top -> true
-    | Finite s1, Finite s2 -> BoundSet.equal s1 s2
+    | Finite s1, Finite s2 -> CutSet.equal s1 s2
     | _, _ -> false
 end
 
 (* == Lat Instantiations == *)
 module FloatLat = Make(FloatSetContents)
 
-(* Original BoundLat module *)
-module OriginalBoundLat = Make(BoundSetContents)
+(* Original CutLat module *)
+module OriginalCutLat = Make(CutSetContents)
 
-(* Extended BoundLat module to include add_all *)
-module BoundLat = struct
-  include OriginalBoundLat (* Include all existing functionality *)
+(* Extended CutLat module to include add_all *)
+module CutLat = struct
+  include OriginalCutLat (* Include all existing functionality *)
 
-  (* Function to add all floats from a FloatSet as LessEq bounds to a BoundLat *)
+  (* Function to add all floats from a FloatSet as LessEq cuts to a CutLat *)
   let add_all (float_s : FloatSet.t) (b_bag : bag) : unit =
     let current_content = get b_bag in
     match current_content with
     | Top -> () (* If the bag is already Top, no change or cannot add *)
-    | Finite current_bound_set ->
-        (* Create a set of new bounds from the float set *)
-        let new_bounds_to_add = 
-          FloatSet.fold (fun f acc_set -> BoundSet.add (LessEq f) acc_set) float_s BoundSet.empty 
+    | Finite current_cut_set ->
+        (* Create a set of new cuts from the float set *)
+        let new_cuts_to_add = 
+          FloatSet.fold (fun f acc_set -> CutSet.add (LessEq f) acc_set) float_s CutSet.empty 
         in
-        (* The potential new state of the bound set *)
-        let potentially_updated_bound_set = BoundSet.union current_bound_set new_bounds_to_add in
+        (* The potential new state of the cut set *)
+        let potentially_updated_cut_set = CutSet.union current_cut_set new_cuts_to_add in
         (* Only update if there's an actual change *)
-        if not (BoundSet.equal current_bound_set potentially_updated_bound_set) then
+        if not (CutSet.equal current_cut_set potentially_updated_cut_set) then
           (* Use leq with a temporary bag to ensure listeners are triggered *)
-          let temp_bag_with_new_state = create (Finite potentially_updated_bound_set) in
+          let temp_bag_with_new_state = create (Finite potentially_updated_cut_set) in
           leq temp_bag_with_new_state b_bag
 end
 
-let fresh_bound_bag () : BoundLat.bag =
-  BoundLat.create (Finite BoundSet.empty)
+let fresh_cut_bag () : CutLat.bag =
+  CutLat.create (Finite CutSet.empty)
 
 let fresh_float_bag () : FloatLat.bag =
   FloatLat.create (Finite FloatSet.empty)
