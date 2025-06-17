@@ -5,20 +5,20 @@
 The syntax of the \Slice{} language is shown in Figure~\ref{fig:grammar}.
 Beyond basic functional constructs, the language includes the following constructs:
 \begin{itemize}
-    \item \textbf{Discrete distributions}: The $\discrete(p_0, \ldots, p_{n-1})$ construct returns a finite type value $\finconst{k}{n}$ with probability $p_k$.
+    \item \textbf{Discrete distributions}: The $\discrete(p_0, \ldots, p_{n-1})$ construct returns a finite type value $\finconst{k}{n}$ \kevin{let's maybe explain the types first?  $\finconst{k}{n}$ is not introduced} with probability $p_k$.
     \item \textbf{Continuous distributions}: The implementation supports distributions including uniform, Gaussian, exponential, beta, gamma, Laplace, Cauchy, and others.
-    \item \textbf{Observations}: The $\text{observe}(e)$ construct conditions the program on a boolean expression $e$ being true.
+    \item \textbf{Observations}: The $\text{observe}(e)$ construct conditions the program \kevin{execution} on a boolean expression $e$ being true.
     \item \textbf{Other features}: Features such as lists, recursion, and mutable references are supported.
 \end{itemize}
 
-When we discretize continuous programs, we convert expressions involving continuous distributions into expressions with discrete distributions over the corresponding finite type, and convert less-than comparisons into less-than-or-equal comparisons on the corresponding cuted integer values.
+When we discretize continuous programs, we convert expressions involving continuous distributions into expressions with discrete distributions over the corresponding finite type, and convert less-than comparisons into less-than-or-equal comparisons on the corresponding cutted integer values.
 
 \subsection{Type System}\label{sec:type-system}
 
 We introduce a type system that analyzes both the cuts and concrete values of floating point expressions. We have the following types:
 \begin{itemize}
     \item Standard types: $\textbf{int}$, $\textbf{bool}$, $\tau_1 * \tau_2$, $\tau_1 \rightarrow \tau_2$, $\textbf{unit}$, $\textbf{list}(\tau)$, $\textbf{ref}(\tau)$, etc. \kevin{can we make "etc." concrete?}
-    \item $\fin{n}$: finite type with values $\{\finconst{0}{n}, \finconst{1}{n}, \ldots, \finconst{(n-1)}{n}\}$ \kevin{introduce \# notation}
+    \item $\fin{n}$: finite type with values $\{\finconst{0}{n}, \finconst{1}{n}, \ldots, \finconst{(n-1)}{n}\}$ \kevin{let's explain why we distinguish $1$ from $1_{\# n}$}
     \item \float$[B; V]$: floating point type with cut set $B$ and value set $V$ that are elements of the lattice structure described below.
 \end{itemize}
 
@@ -31,8 +31,15 @@ We use a join-semilattice with the following structure, given a domain $D$:
     \item Bottom: $\text{Finite}(\emptyset)$
     \item Top: $\top$
 \end{itemize}
+%
+\kevin{Why do we write "Finite" in $\text{Finite}(S)$?}
 
-In $\float$[B; V], $V$ is a lattice element with domain $\R$, and $B$ is a lattice element with domain $<\!\!x$ and $\leq\!\!x$ for all $x \in \R$.
+In $\float$[B; V], $V$ is a lattice element with domain $\R$, and $B$ is a lattice element with domain 
+%
+\[
+\{ <\!\!x ~|~ x \in \R \}	\cup \{ \leq\!\!x ~|~ x \in \R \}~.
+\]
+%$<\!\!x$ and $\leq\!\!x$ for all $x \in \R$.
 The lattice structure enables type inference to systematically collect and propagate information about both how values are used (cuts) and what values they can take (values).
 
 \input{figures/lattice}
@@ -57,7 +64,7 @@ The rule states that the argument $\Gamma \vdash e : \float[B; V]$ with the cons
     $B$ distinguishes $V$ if every interval in $B$ contains at most one value in $V$, or $B = \top$.
 \end{definition}
 Intuitively $V$ contains the possible values that the float expression can take on, and $B$ distinguishes $V$ if the continuous quantity can be fully recovered by the discretized program.
-For example, if $B = \{<\!\!0.5, \leq\!\!0.8\}$ and $V = \{0.2, 0.7\}$, then $B$ distinguishes $V$. The intervals induced by $B$ are $(-\infty, 0.5)$, $[0.5, 0.8]$, and $(0.8, \infty)$. The first interval contains $0.2$, the second contains $0.7$, and the third contains no values from $V$, so the condition holds. In contrast, if $V = \{0.2, 0.3\}$, $B$ would not distinguish $V$ because both values lie in the first interval $(-\infty, 0.5)$.
+For example, if $B = \{<\!\!0.5, \leq\!\!0.8\}$ and $V = \{0.2, 0.7\}$, then $B$ distinguishes $V$. The intervals induced by $B$ are $(-\infty, 0.5)$, $[0.5, 0.8]$, and $(0.8, \infty)$. The first interval contains $0.2$, the second contains $0.7$, and the third contains no values from $V$, so the condition holds. In contrast, if $V = \{0.2, 0.3\}$, $B$ would not distinguish $V$ because both values lie in the first interval $(-\infty, 0.5)$.\kevin{given these intuitions, let's explain why the rule actually makes sense}
 
 Note that if $e$ is a constant, then $V = \{e\}$ and $B = \emptyset$ distinguishes $V$ (because $V$ is a singleton set, so there are no two elements that could lie in the same interval).
 If $V = \top$ then $V$ essentially contains all possible real values, so we must also have $B = \top$ in that case.
