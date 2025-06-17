@@ -17,8 +17,8 @@ When we discretize continuous programs, we convert expressions involving continu
 
 We introduce a type system that analyzes both the cuts and concrete values of floating point expressions. We have the following types:
 \begin{itemize}
-    \item Standard types: $\textbf{int}$, $\textbf{bool}$, $\tau_1 * \tau_2$, $\tau_1 \rightarrow \tau_2$, $\textbf{unit}$, $\textbf{list}(\tau)$, $\textbf{ref}(\tau)$, etc.
-    \item $\fin{n}$: finite type with values $\{\finconst{0}{n}, \finconst{1}{n}, \ldots, \finconst{(n-1)}{n}\}$
+    \item Standard types: $\textbf{int}$, $\textbf{bool}$, $\tau_1 * \tau_2$, $\tau_1 \rightarrow \tau_2$, $\textbf{unit}$, $\textbf{list}(\tau)$, $\textbf{ref}(\tau)$, etc. \kevin{can we make "etc." concrete?}
+    \item $\fin{n}$: finite type with values $\{\finconst{0}{n}, \finconst{1}{n}, \ldots, \finconst{(n-1)}{n}\}$ \kevin{introduce \# notation}
     \item \float$[B; V]$: floating point type with cut set $B$ and value set $V$ that are elements of the lattice structure described below.
 \end{itemize}
 
