@@ -25,13 +25,13 @@
 \definecolor{typecolor}{HTML}{4169E1} % RoyalBlue
 \newcommand{\codetype}[1]{\textcolor{typecolor}{\ttfamily\small#1}}
 % Macros for float type notation with proper braces
-% Use \ftb{bounds}{values} for float type with both bounds and values
-% Use \ft{bounds} for float type with bounds and T for values
+% Use \ftb{cuts}{values} for float type with both cuts and values
+% Use \ft{cuts} for float type with cuts and T for values
 % Use \ftt for float[T; T]
 \newcommand{\ftb}[2]{\codetype{float[\{#1\}; \{#2\}]}}  % Both bags have values
-\newcommand{\ft}[1]{\codetype{float[\{#1\}; T]}}        % Bounds only, values are T
+\newcommand{\ft}[1]{\codetype{float[\{#1\}; T]}}        % Cuts only, values are T
 \newcommand{\ftt}{\codetype{float[T; T]}}               % Both bags are T
-\newcommand{\ftv}[1]{\codetype{float[T; \{#1\}]}}       % Bounds are T, values specified
+\newcommand{\ftv}[1]{\codetype{float[T; \{#1\}]}}       % Cuts are T, values specified
 % Macros for finite type operations and boolean operators
 \newcommand{\finconst}[2]{#1_{\##2}}                    % k_{#n}
 \newcommand{\finlt}[1]{<_{\#{#1}}}                      % <#n with subscript

@@ -4,12 +4,12 @@ After type inference, each float-typed expression carries refinement information
 
 \subsection{Overview}
 
-The discretization process transforms continuous distributions into discrete ones based on the bounds collected during type inference. The key insight is that if a program only compares a continuous value against certain thresholds, we can partition the continuous range into intervals separated by these finite thresholds and track only which interval contains the value. If a continuous value is compared against another continuous value, or if a continuous value is not compared against any value, proper discretization cannot be performed for that expression and its original semantics is preserved.
+The discretization process transforms continuous distributions into discrete ones based on the cuts collected during type inference. The key insight is that if a program only compares a continuous value against certain thresholds, we can partition the continuous range into intervals separated by these finite thresholds and track only which interval contains the value. If a continuous value is compared against another continuous value, or if a continuous value is not compared against any value, proper discretization cannot be performed for that expression and its original semantics is preserved.
 
 For each expression with type $\float[B; V]$:
 \begin{itemize}
-    \item If $B = \top$ (unbounded), the expression remains continuous
-    \item If $B = \{b_1, \ldots, b_n\}$ (finite bounds), we create $n+1$ intervals
+    \item If $B = \top$ (uncuted), the expression remains continuous
+    \item If $B = \{b_1, \ldots, b_n\}$ (finite cuts), we create $n+1$ intervals
 \end{itemize}
 
 \subsection{Discretization Rules}
@@ -32,7 +32,7 @@ The transformation $\texttt{discretize}(e)$ is defined recursively on the struct
 
 \paragraph{Continuous Distributions} For a distribution $d$ with type $\float[B; V]$ where $B = \{b_1, \ldots, b_n\}$:
 \begin{enumerate}
-    \item Extract numeric thresholds $c_1 < \cdots < c_n$ from bounds in $B$
+    \item Extract numeric thresholds $c_1 < \cdots < c_n$ from cuts in $B$
     \item Let $\text{CDF}_d(b_i)$ be the measure of the distribution $d$ on the interval $(-\infty, c_i)$ if $b_i =\ <\!\!c_i$ and on the interval $(-\infty, c_i]$ if $b_i =\ \leq\!\!c_i$. Take $\text{CDF}_d(b_{0}) = 0$ and $\text{CDF}_d(b_{n+1}) = 1$.
     \item Calculate probability mass for each interval using the CDF:
     \[ p_i = \text{CDF}_d(b_i) - \text{CDF}_d(b_{i-1}) \]

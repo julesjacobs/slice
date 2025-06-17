@@ -1,11 +1,11 @@
 \section{Type Inference}\label{sec:type-inference}
 
-Type inference for \Slice{} assigns types to every subexpression while simultaneously collecting bounds that will guide the discretization process. The type system tracks both traditional type information and refinement information specific to floating-point values. The main challenge is that the typing rules are not syntax directed, which we address in this section by using a constraint-based approach.
+Type inference for \Slice{} assigns types to every subexpression while simultaneously collecting cuts that will guide the discretization process. The type system tracks both traditional type information and refinement information specific to floating-point values. The main challenge is that the typing rules are not syntax directed, which we address in this section by using a constraint-based approach.
 
 \paragraph{Overview.}
 The inference algorithm performs type checking and constraint generation in a single pass over the AST. For float types $\float[B; V]$, it maintains two separate refinement components:
 \begin{itemize}
-    \item The \emph{bound set} $B$ collects bounds (e.g., $<\!\!0.5$, $\leq\!\!1.2$) from sites where the expression is compared
+    \item The \emph{cut set} $B$ collects cuts (e.g., $<\!\!0.5$, $\leq\!\!1.2$) from sites where the expression is compared
     \item The \emph{value set} $V$ tracks concrete float constants that flow to the expression
 \end{itemize}
 
@@ -16,8 +16,8 @@ For instance, to maintain the constraint $B_1 \leq B_2$, the system registers a 
 We maintain three types of constraints between sets:
 \begin{description}
     \item[Order:] $B_1 \sqsubseteq B_2$ means that $B_1$ is lower than or equal to $B_2$ in the lattice order. This is enforced with a listener on $B_1$ that increases $B_2$ to maintain the constraint.
-    \item[Answerability:] $B \textit{ answers} \leq\!\!V$ or $B \textit{ answers} <\!\!V$ means that $B$ contains $\leq\!\!v$ or $<\!\!v$ for every $v \in V$. This is enforced with a listener on $V$ that adds the corresponding bound to $B$.
-    \item[Distinguishability:] $B \textit{ distinguishes } V$ means that every interval in $B$ has at most one point in $V$. This is enforced with a listener on $V$ that adds $\leq\!\!v$ to $B$ for every $v \in V$. Note that this may not lead to the coarsest possible bound set, but it is sound.
+    \item[Answerability:] $B \textit{ answers} \leq\!\!V$ or $B \textit{ answers} <\!\!V$ means that $B$ contains $\leq\!\!v$ or $<\!\!v$ for every $v \in V$. This is enforced with a listener on $V$ that adds the corresponding cut to $B$.
+    \item[Distinguishability:] $B \textit{ distinguishes } V$ means that every interval in $B$ has at most one point in $V$. This is enforced with a listener on $V$ that adds $\leq\!\!v$ to $B$ for every $v \in V$. Note that this may not lead to the coarsest possible cut set, but it is sound.
 \end{description}
 In each case, if the set is set to $\top$, we propagate the required $\top$ to the other set.
 
@@ -28,7 +28,7 @@ To maintain subtyping constraints $\tau_1 <: \tau_2$ between types, we recurse i
     \item \textbf{Base types}: Must match exactly (\bool{}, \intty{}, $\text{fin}(n)$, $\text{unit}$)
     \item \textbf{Float types}: $\float[B_1; V_1] <: \float[B_2; V_2]$ requires:
         \begin{itemize}
-            \item $B_1 = B_2$ (bound bags must be equal for safe discretization)
+            \item $B_1 = B_2$ (cut bags must be equal for safe discretization)
             \item $V_1 \sqsubseteq V_2$ (values flow covariantly)
         \end{itemize}
     \item \textbf{Structural types}: 
@@ -44,7 +44,7 @@ The algorithm traverses the AST, generating types and constraints according to t
 
 \paragraph{Basic Expressions}
 \begin{itemize}
-    \item Float constants $c$ start with type $\float[\emptyset; \{c\}]$ (empty bounds, singleton value set)
+    \item Float constants $c$ start with type $\float[\emptyset; \{c\}]$ (empty cuts, singleton value set)
     \item Boolean constants get type \bool{}, finite constants $\finconst{k}{n}$ get type $\text{fin}(n)$
     \item Variables look up their type in the environment
 \end{itemize}
@@ -73,7 +73,7 @@ Other constructs follow standard typing rules:
 We formalize the above notions in a way that will allow us to in the next section characterize the types of programs our discretization method supports. We first define what it means for a given distribution to be co-discrete or co-continuous. 
 
 \begin{definition} [Co-discrete]\label{def:co-discrete}
-    An expression is \textit{co-discrete} if it contains a non-empty, finite set of bounds in its bound set $B$ in $\float[B;V]$.
+    An expression is \textit{co-discrete} if it contains a non-empty, finite set of cuts in its cut set $B$ in $\float[B;V]$.
 \end{definition}
 
 \begin{definition} [Co-continuous]\label{def:co-continuous}
@@ -117,10 +117,10 @@ The bags are then solved in the following manner:
     \item \textbf{Initial bags:}
     Float constants get singleton value bags: $V_2=\{0.5\}$, $V_5=\{1.5\}$, $V_6=\{1.8\}$, $V_7=\{0.3\}$.
     Continuous distributions get $\top$ value bags: $V_1=V_3=V_4=\top$.
-    All bound bags start empty.
+    All cut bags start empty.
 
     \item \textbf{Subtyping and equality constraints:}
-    The type inference enforces equality on bound bags for subexpressions involved in comparisons or belonging to different branches of an `if` statement.
+    The type inference enforces equality on cut bags for subexpressions involved in comparisons or belonging to different branches of an `if` statement.
     \begin{itemize}
         \item From `uniform(0,1) < 0.5`: $B_1 = B_2$.
         \item From the `if` expression assigned to `x`: $B_3 = B_4 = B_x$.
@@ -128,7 +128,7 @@ The bags are then solved in the following manner:
         \item From `1.5 < x`: $B_5 = B_x$.
         \item From `x <= y`: $B_x = B_y$.
     \end{itemize}
-    All bound bags are therefore in two equivalence classes: $B_{12}$ ($= B_1 = B_2$) and $B_{xy}$ ($=B_x=B_y=B_3=B_4=B_5=B_6=B_7$).
+    All cut bags are therefore in two equivalence classes: $B_{12}$ ($= B_1 = B_2$) and $B_{xy}$ ($=B_x=B_y=B_3=B_4=B_5=B_6=B_7$).
 
     \item \textbf{Value set propagation:}
     Value bags are joined at `if` expressions.
@@ -138,7 +138,7 @@ The bags are then solved in the following manner:
     \end{itemize}
 
     \item \textbf{Answerability constraints:}
-    Comparisons generate answerability constraints which populate the bound bags.
+    Comparisons generate answerability constraints which populate the cut bags.
     \begin{itemize}
         \item `uniform(0,1) < 0.5`: Adds the constraint ``$B_1$ answers $<\!\!V_2$'', which means $B_1$ must contain $<\!0.5$. Since $B_1=B_2$, both become $\{<0.5\}$.
         \item `1.5 < x`: Adds ``$B_x$ answers $< V_5$'', which adds $<\ 1.5$ to $B_x$ (and all bags equal to it).
@@ -146,7 +146,7 @@ The bags are then solved in the following manner:
     \end{itemize}
 
     \item \textbf{Solution:}
-    Combining all constraints on $B_{xy}$ ($=B_x=B_y=B_3=B_4=B_5=B_6=B_7$) gives the final bound set: $\{ \leq\!0.3, <\!1.5, \leq\!1.8 \}$. The set $B_{12}$ ($=B_1=B_2$) for the first comparison is $\{ <\!0.5 \}$.
+    Combining all constraints on $B_{xy}$ ($=B_x=B_y=B_3=B_4=B_5=B_6=B_7$) gives the final cut set: $\{ \leq\!0.3, <\!1.5, \leq\!1.8 \}$. The set $B_{12}$ ($=B_1=B_2$) for the first comparison is $\{ <\!0.5 \}$.
 \end{enumerate}
 
 This results in the following fully annotated program:
@@ -163,5 +163,5 @@ This results in the following fully annotated program:
     x <= y
 \end{lstlisting}
 
-This example shows how comparison points accumulate in the value and bound bags through the constraint propagation mechanism, even when comparisons appear in different branches of the program. Note that all expressions in this example are co-discrete. A simple change at the end of the program from $x \leq y$ to $y$ would have rendered the expressions $1.8$, $0.3$, and $y$ co-continuous, of the types $\float[; 1.8]$, $\float[; 0.3]$, and $\float[; 0.3, 1.8]$ respectively.
+This example shows how comparison points accumulate in the value and cut bags through the constraint propagation mechanism, even when comparisons appear in different branches of the program. Note that all expressions in this example are co-discrete. A simple change at the end of the program from $x \leq y$ to $y$ would have rendered the expressions $1.8$, $0.3$, and $y$ co-continuous, of the types $\float[; 1.8]$, $\float[; 0.3]$, and $\float[; 0.3, 1.8]$ respectively.
 
