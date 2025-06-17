@@ -17,7 +17,7 @@ This approach has an important limitation: one can only fully discretize program
 The approach scales to complex programs and language features. The \Slice{} language itself is a statically-typed functional language that supports a rich set of features, including higher-order functions, recursion, pairs, lists, and even mutable references. Our transformation handles all of these features, allowing programmers to write expressive, high-level models that can still be analyzed with exact discrete inference—provided that continuous variables are only compared to constants, not to each other.
 
 \paragraph{Contributions.}
-We present and evaluate our framework for type-directed discretization via the following contributions:
+After introducing \Slice{} by example (\Cref{sec:examples}), we present and evaluate our framework for type-directed discretization via the following contributions:
 
 \begin{description}
     \item[Type System (\Cref{sec:language})] We introduce a novel type system that identifies which expressions are discretizable by analyzing how they are compared against constant values throughout the program.
