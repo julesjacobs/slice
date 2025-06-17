@@ -1,5 +1,5 @@
 open Ast
-open Bags (* Open Bags to get FloatSet and access Set modules and Bound type *)
+open Lats (* Open Bags to get FloatSet and access Set modules and Bound type *)
 module Util = Util
 
 let extract_fin_modulus (ExprNode e) : int option =
@@ -267,19 +267,19 @@ and string_of_ty = function
   | TBool -> "bool"
   | TFloat (bound_bag_ref, const_bag_ref) ->
       let bounds_str = 
-        match BoundBag.get bound_bag_ref with
+        match BoundLat.get bound_bag_ref with
         | Top -> "T"
         | Finite bound_set ->
             if BoundSet.is_empty bound_set then ""
             else
               let string_of_bound = function 
-                | Bags.Less c -> Printf.sprintf "<%g" c 
-                | Bags.LessEq c -> Printf.sprintf "<=%g" c 
+                | Lats.Less c -> Printf.sprintf "<%g" c 
+                | Lats.LessEq c -> Printf.sprintf "<=%g" c 
               in
               String.concat "," (List.map string_of_bound (BoundSet.elements bound_set))
       in
       let consts_str = 
-        match FloatBag.get const_bag_ref with
+        match FloatLat.get const_bag_ref with
         | Top -> "T"
         | Finite float_set ->
             if FloatSet.is_empty float_set then ""

@@ -50,7 +50,7 @@ and 'a sample =
 
 type expr = ExprNode of expr expr_generic
 
-open Bags
+open Lats
 
 type meta =
   | Unknown of (ty -> unit) list
@@ -58,7 +58,7 @@ type meta =
 and meta_ref = meta ref
 and ty =
   | TBool
-  | TFloat of BoundBag.bag * FloatBag.bag (* Store bag REFERENCES, not contents *)
+  | TFloat of BoundLat.bag * FloatLat.bag (* Store bag REFERENCES, not contents *)
   | TPair of ty * ty
   | TFun of ty * ty
   | TFin of int
@@ -93,7 +93,7 @@ let rec set_bound_bags_to_top (t : ty) : unit =
   match force t with
   | TFloat (bound_bag, _float_bag) ->
       (* Set the bound bag to Top using leq with a Top bag *)
-      BoundBag.leq (BoundBag.create Top) bound_bag
+      BoundLat.leq (BoundLat.create Top) bound_bag
   | TPair (t1, t2) ->
       set_bound_bags_to_top t1;
       set_bound_bags_to_top t2

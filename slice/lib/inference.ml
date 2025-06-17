@@ -1,7 +1,7 @@
 (* Type inference and elaboration for continuous dice *)
 
 open Ast
-open Bags
+open Lats
 
 module StringMap = Map.Make(String)
 
@@ -14,8 +14,8 @@ let rec sub_type (t_sub : ty) (t_super : ty) : unit =
   | TUnit, TUnit -> ()
   (* Structural Cases *)
   | TFloat (b1, c1), TFloat (b2, c2) -> 
-      Bags.BoundBag.eq b1 b2;  (* Bounds must be consistent *) 
-      Bags.FloatBag.leq c1 c2  (* Constants flow sub -> super *) 
+      Lats.BoundLat.eq b1 b2;  (* Bounds must be consistent *) 
+      Lats.FloatLat.leq c1 c2  (* Constants flow sub -> super *) 
   | TPair(a1, b1), TPair(a2, b2) -> 
       sub_type a1 a2; (* Covariant *) 
       sub_type b1 b2  (* Covariant *) 
@@ -33,7 +33,7 @@ let rec sub_type (t_sub : ty) (t_super : ty) : unit =
       Ast.assign r (TPair (a_meta, b_meta)); sub_type t_sub t_super
     | TFun (_, _) -> let a_meta = Ast.fresh_meta () in let b_meta = Ast.fresh_meta () in
       Ast.assign r (TFun (a_meta, b_meta)); sub_type t_sub t_super
-    | TFloat (_, _) -> let b_bag = Bags.fresh_bound_bag () in let c_bag = Bags.fresh_float_bag () in
+    | TFloat (_, _) -> let b_bag = Lats.fresh_bound_bag () in let c_bag = Lats.fresh_float_bag () in
       Ast.assign r (TFloat (b_bag, c_bag)); sub_type t_sub t_super
     | TUnit -> Ast.assign r TUnit (* Handle TUnit for t_super *)
     | TList _ -> let elem_meta = Ast.fresh_meta () in 
@@ -50,7 +50,7 @@ let rec sub_type (t_sub : ty) (t_super : ty) : unit =
       Ast.assign r (TPair (a_meta, b_meta)); sub_type t_sub t_super
     | TFun (_, _) -> let a_meta = Ast.fresh_meta () in let b_meta = Ast.fresh_meta () in
       Ast.assign r (TFun (a_meta, b_meta)); sub_type t_sub t_super
-    | TFloat (_, _) -> let b_bag = Bags.fresh_bound_bag () in let c_bag = Bags.fresh_float_bag () in
+    | TFloat (_, _) -> let b_bag = Lats.fresh_bound_bag () in let c_bag = Lats.fresh_float_bag () in
       Ast.assign r (TFloat (b_bag, c_bag)); sub_type t_sub t_super
     | TUnit -> Ast.assign r TUnit (* Handle TUnit for t_sub *)
     | TList _ -> let elem_meta = Ast.fresh_meta () in 
@@ -83,8 +83,8 @@ let infer (e : expr) : texpr =
     match e_node with
     | Const f -> 
       (* Constant float: Create bag refs *) 
-      let bounds_bag_ref = Bags.BoundBag.create (Finite BoundSet.empty) in 
-      let consts_bag_ref = Bags.FloatBag.create (Finite (FloatSet.singleton f)) in
+      let bounds_bag_ref = Lats.BoundLat.create (Finite BoundSet.empty) in 
+      let consts_bag_ref = Lats.FloatLat.create (Finite (FloatSet.singleton f)) in
       (TFloat (bounds_bag_ref, consts_bag_ref), TAExprNode (Const f))
     | BoolConst b ->
       (TBool, TAExprNode (BoolConst b))
@@ -102,47 +102,47 @@ let infer (e : expr) : texpr =
       (t2, TAExprNode (Let (x, (t1,a1), (t2,a2))))
 
     | Sample dist_exp ->
-      let bounds_bag_ref = Bags.BoundBag.create (Finite BoundSet.empty) in 
-      let consts_bag_ref = Bags.FloatBag.create Top in 
+      let bounds_bag_ref = Lats.BoundLat.create (Finite BoundSet.empty) in 
+      let consts_bag_ref = Lats.FloatLat.create Top in 
 
       (* Helper to propagate float constants from an argument to its own bound bag *)
-      let add_floats_to_boundbag (float_bag : FloatBag.bag) (bound_bag : BoundBag.bag) =
+      let add_floats_to_boundbag (float_bag : FloatLat.bag) (bound_bag : BoundLat.bag) =
         let listener () =
-          let v = Bags.FloatBag.get float_bag in
+          let v = Lats.FloatLat.get float_bag in
           (match v with
-          | Finite s -> Bags.BoundBag.add_all s bound_bag
-            | Top -> Bags.BoundBag.leq (Bags.BoundBag.create Top) bound_bag)
+          | Finite s -> Lats.BoundLat.add_all s bound_bag
+            | Top -> Lats.BoundLat.leq (Lats.BoundLat.create Top) bound_bag)
         in
-        Bags.FloatBag.listen float_bag listener
+        Lats.FloatLat.listen float_bag listener
       in
 
       (* Helper to make the output distribution's bound bag Top if any input's bound bag becomes Top *)
       let make_output_top_if_input_boundbag_is_top input_bound_bag =
         let listener () =
-          let v = Bags.BoundBag.get input_bound_bag in
+          let v = Lats.BoundLat.get input_bound_bag in
           (match v with
-          | Top -> Bags.BoundBag.leq (Bags.BoundBag.create Top) bounds_bag_ref (* bounds_bag_ref is from Sample scope *)
+          | Top -> Lats.BoundLat.leq (Lats.BoundLat.create Top) bounds_bag_ref (* bounds_bag_ref is from Sample scope *)
           | _ -> ())
         in
-        Bags.BoundBag.listen input_bound_bag listener
+        Lats.BoundLat.listen input_bound_bag listener
       in
 
       (* Helper to make an input's bound bag Top if the output distribution's bound bag becomes Top *)
       let make_input_top_if_output_boundbag_is_top input_bound_bag output_bound_bag =
         let listener () =
-          let v = Bags.BoundBag.get output_bound_bag in
+          let v = Lats.BoundLat.get output_bound_bag in
           (match v with
-          | Top -> Bags.BoundBag.leq (Bags.BoundBag.create Top) input_bound_bag
+          | Top -> Lats.BoundLat.leq (Lats.BoundLat.create Top) input_bound_bag
           | _ -> ())
         in
-        Bags.BoundBag.listen output_bound_bag listener
+        Lats.BoundLat.listen output_bound_bag listener
       in
 
       (match dist_exp with
       | Distr1 (dist_kind, arg_e) ->
           let t_arg, a_arg = aux env arg_e in
-          let t_arg_bound_bag = Bags.fresh_bound_bag () in
-          let t_arg_float_bag = Bags.fresh_float_bag () in
+          let t_arg_bound_bag = Lats.fresh_bound_bag () in
+          let t_arg_float_bag = Lats.fresh_float_bag () in
           (try unify t_arg (Ast.TFloat (t_arg_bound_bag, t_arg_float_bag))
            with Failure msg -> 
             let kind_str = Pretty.string_of_expr_indented (ExprNode (Sample (Distr1 (dist_kind, arg_e)))) in 
@@ -158,10 +158,10 @@ let infer (e : expr) : texpr =
       | Distr2 (dist_kind, arg1_e, arg2_e) ->
         let t1, a1 = aux env arg1_e in
         let t2, a2 = aux env arg2_e in
-        let t1_bound_bag = Bags.fresh_bound_bag () in
-        let t1_float_bag = Bags.fresh_float_bag () in
-        let t2_bound_bag = Bags.fresh_bound_bag () in
-        let t2_float_bag = Bags.fresh_float_bag () in
+        let t1_bound_bag = Lats.fresh_bound_bag () in
+        let t1_float_bag = Lats.fresh_float_bag () in
+        let t2_bound_bag = Lats.fresh_bound_bag () in
+        let t2_float_bag = Lats.fresh_float_bag () in
 
         (try unify t1 (Ast.TFloat (t1_bound_bag, t1_float_bag))
          with Failure msg -> 
@@ -207,9 +207,9 @@ let infer (e : expr) : texpr =
     | Cmp (cmp_op, e1, e2, flipped) ->
         let t1, a1 = aux env e1 in
         let t2, a2 = aux env e2 in
-        let b_meta = Bags.fresh_bound_bag () in (* Shared bound bag for unification *)
-        let c_meta1 = Bags.fresh_float_bag () in
-        let c_meta2 = Bags.fresh_float_bag () in
+        let b_meta = Lats.fresh_bound_bag () in (* Shared bound bag for unification *)
+        let c_meta1 = Lats.fresh_float_bag () in
+        let c_meta2 = Lats.fresh_float_bag () in
         (try unify t1 (Ast.TFloat (b_meta, c_meta1)) (* Unify t1 with TFloat(b_meta, c1) *)
          with Failure msg -> failwith (Printf.sprintf "Type error in comparison left operand: %s" msg));
         (try unify t2 (Ast.TFloat (b_meta, c_meta2)) (* Unify t2 with TFloat(b_meta, c2) *)
@@ -217,50 +217,50 @@ let infer (e : expr) : texpr =
 
         (* Nested listener logic for comparison *) 
         let listener () = (* Listener takes unit *)
-          let v1 = Bags.FloatBag.get c_meta1 in (* Get value inside listener *)
-          let v2 = Bags.FloatBag.get c_meta2 in (* Get value inside listener *)
+          let v1 = Lats.FloatLat.get c_meta1 in (* Get value inside listener *)
+          let v2 = Lats.FloatLat.get c_meta2 in (* Get value inside listener *)
           match v1, v2 with
           | Top, Top ->
               (* Both Top -> BoundBag should be Top *) 
-              Bags.BoundBag.leq (Bags.BoundBag.create Top) b_meta
+              Lats.BoundLat.leq (Lats.BoundLat.create Top) b_meta
           | Finite _, Finite s2 ->
               (* Both are not Top. This means that e2 is being compared to a discrete distribution. *)
               (* Only collect the bounds from the right bag, the constant itself *)
               (* Temporarily store bounds to add *)
-              let bounds_to_add = ref Bags.BoundSet.empty in
+              let bounds_to_add = ref Lats.BoundSet.empty in
 
               FloatSet.iter (fun f -> 
                 let bound = match cmp_op with
-                  | Ast.Lt -> Bags.Less f
-                  | Ast.Le -> Bags.LessEq f
+                  | Ast.Lt -> Lats.Less f
+                  | Ast.Le -> Lats.LessEq f
                 in
-                bounds_to_add := Bags.BoundSet.add bound !bounds_to_add
+                bounds_to_add := Lats.BoundSet.add bound !bounds_to_add
               ) s2;
 
               (* Apply collected bounds to b_meta *) 
-              (match Bags.BoundBag.get b_meta with
+              (match Lats.BoundLat.get b_meta with
               | Top -> ()  (* Cannot add to Top *) 
               | Finite current_set ->
-                  let new_set = Bags.BoundSet.union current_set !bounds_to_add in
-                  if not (Bags.BoundSet.equal current_set new_set) then
-                    let temp_finite_bag = Bags.BoundBag.create (Finite new_set) in
-                    Bags.BoundBag.leq temp_finite_bag b_meta
+                  let new_set = Lats.BoundSet.union current_set !bounds_to_add in
+                  if not (Lats.BoundSet.equal current_set new_set) then
+                    let temp_finite_bag = Lats.BoundLat.create (Finite new_set) in
+                    Lats.BoundLat.leq temp_finite_bag b_meta
               )
           | _, _ ->
               (* Only one is Top. This means that e2 is being compared to a continuous distribution. *)
               (* Add bounds from Finite bags. *)
               (* Temporarily store bounds to add *) 
-              let bounds_to_add = ref Bags.BoundSet.empty in
+              let bounds_to_add = ref Lats.BoundSet.empty in
 
               (* Collect bounds from right bag (c_meta2) *) 
               (match v2 with
                | Finite s2 ->
                    FloatSet.iter (fun f -> 
                      let bound = match cmp_op with
-                       | Ast.Lt -> Bags.Less f
-                       | Ast.Le -> Bags.LessEq f
+                       | Ast.Lt -> Lats.Less f
+                       | Ast.Le -> Lats.LessEq f
                      in
-                     bounds_to_add := Bags.BoundSet.add bound !bounds_to_add
+                     bounds_to_add := Lats.BoundSet.add bound !bounds_to_add
                    ) s2
                | Top -> ()
               );
@@ -270,30 +270,30 @@ let infer (e : expr) : texpr =
                | Finite s1 ->
                    FloatSet.iter (fun f -> 
                      let bound = match cmp_op with
-                       | Ast.Lt -> Bags.LessEq f
-                       | Ast.Le -> Bags.Less f
+                       | Ast.Lt -> Lats.LessEq f
+                       | Ast.Le -> Lats.Less f
                      in
-                     bounds_to_add := Bags.BoundSet.add bound !bounds_to_add
+                     bounds_to_add := Lats.BoundSet.add bound !bounds_to_add
                    ) s1
                | Top -> ()
               );
 
               (* Apply collected bounds to b_meta *) 
-              if not (Bags.BoundSet.is_empty !bounds_to_add) then
-                let current_bound_val = Bags.BoundBag.get b_meta in
+              if not (Lats.BoundSet.is_empty !bounds_to_add) then
+                let current_bound_val = Lats.BoundLat.get b_meta in
                 match current_bound_val with
                 | Top -> () (* Cannot add to Top *) 
                 | Finite current_set ->
-                    let new_set = Bags.BoundSet.union current_set !bounds_to_add in
-                    if not (Bags.BoundSet.equal current_set new_set) then (
+                    let new_set = Lats.BoundSet.union current_set !bounds_to_add in
+                    if not (Lats.BoundSet.equal current_set new_set) then (
                        (* Update using temporary bag and leq *) 
-                       let temp_finite_bag = Bags.BoundBag.create (Finite new_set) in
-                       Bags.BoundBag.leq temp_finite_bag b_meta
+                       let temp_finite_bag = Lats.BoundLat.create (Finite new_set) in
+                       Lats.BoundLat.leq temp_finite_bag b_meta
                     )
         in
         (* Register the combined listener on both float bags *) 
-        Bags.FloatBag.listen c_meta1 listener;
-        Bags.FloatBag.listen c_meta2 listener;
+        Lats.FloatLat.listen c_meta1 listener;
+        Lats.FloatLat.listen c_meta2 listener;
 
         (TBool, TAExprNode (Cmp (cmp_op, (t1,a1), (t2,a2), flipped))) (* Result is TBool, preserve flip flag *)
 

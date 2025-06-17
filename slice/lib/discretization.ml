@@ -1,7 +1,7 @@
 (* Discretization logic for continuous dice *)
 
 open Ast
-open Bags
+open Lats
 
 let find_index pred lst =
   let rec loop i = function
@@ -16,7 +16,7 @@ let get_const_idx_and_modulus (f : float) (bound_set_from_context : BoundSet.t) 
   let cuts_as_bounds = BoundSet.elements bound_set_from_context in
   let modulus = 1 + List.length cuts_as_bounds in
   (* The index of the float is equal to the index of the first bound that is satisfied *)
-  let idx = find_index (fun bound -> Bags.satisfies_bound f bound) cuts_as_bounds in
+  let idx = find_index (fun bound -> Lats.satisfies_bound f bound) cuts_as_bounds in
   let idx = match idx with
     | Some i -> i 
     | None -> modulus - 1 (* If no bound is satisfied, we're in the last interval *)
@@ -52,16 +52,16 @@ let discretize (e : texpr) : expr =
       | Ast.TFloat (b, _) -> b
       | _ -> failwith ("Type error: " ^ op_name ^ " expects float on right operand"))
     in
-    let val1 = Bags.BoundBag.get b1 in
-    let val2 = Bags.BoundBag.get b2 in
-    if not (Bags.BoundSetContents.equal val1 val2) then 
+    let val1 = Lats.BoundLat.get b1 in
+    let val2 = Lats.BoundLat.get b2 in
+    if not (Lats.BoundSetContents.equal val1 val2) then 
       failwith ("Internal error: " ^ op_name ^ " operands have different bound bag values despite elaboration");
 
     (match val1 with 
-      | Bags.Top -> 
+      | Lats.Top -> 
           ExprNode (Cmp (cmp_op, aux te1, aux te2, flipped))
-      | Bags.Finite bound_set -> 
-          let n = 1 + List.length (Bags.BoundSet.elements bound_set) in
+      | Lats.Finite bound_set -> 
+          let n = 1 + List.length (Lats.BoundSet.elements bound_set) in
           let d1 = aux te1 in
           let d2 = aux te2 in 
           ExprNode (FinCmp (cmp_op, d1, d2, n, flipped))
@@ -74,9 +74,9 @@ let discretize (e : texpr) : expr =
         let bounds_bag_ref = (match Ast.force ty with
           | Ast.TFloat (b, _) -> b (* Extract bounds bag *)
           | _ -> failwith "Type error: Const expects float") in
-        (match Bags.BoundBag.get bounds_bag_ref with
-         | Bags.Top -> ExprNode (Const f) (* Keep original if Top *)
-         | Bags.Finite bound_set_from_context ->
+        (match Lats.BoundLat.get bounds_bag_ref with
+         | Lats.Top -> ExprNode (Const f) (* Keep original if Top *)
+         | Lats.Finite bound_set_from_context ->
             let idx, modulus = get_const_idx_and_modulus f bound_set_from_context in
               ExprNode (FinConst (idx, modulus))
         )
@@ -96,10 +96,10 @@ let discretize (e : texpr) : expr =
           | Ast.TFloat (b, _) -> b
           | _ -> failwith "Internal error: Sample expression's type is not TFloat during discretize"
         in
-        let set_or_top_val = Bags.BoundBag.get bounds_bag_of_outer_sample in
+        let set_or_top_val = Lats.BoundLat.get bounds_bag_of_outer_sample in
         
           (match set_or_top_val with
-        | Bags.Top -> 
+        | Lats.Top -> 
           (* If outer Sample's bounds are Top - no discretization for distribution, fallback to simple recursive discretization of params *)
           (match dist_exp with 
           | Distr1 (kind, texpr_arg) -> 
@@ -110,15 +110,15 @@ let discretize (e : texpr) : expr =
             let texpr_arg2_discretized = aux texpr_arg2 in
             ExprNode (Sample (Distr2 (kind, texpr_arg1_discretized, texpr_arg2_discretized)))
           )
-        | Bags.Finite outer_bound_set -> 
+        | Lats.Finite outer_bound_set -> 
           (* Outer Sample's bounds are Finite, proceed with interval-based discretization *)
-          let outer_cuts_as_bounds = Bags.BoundSet.elements outer_bound_set in
+          let outer_cuts_as_bounds = Lats.BoundSet.elements outer_bound_set in
           let overall_modulus = 1 + List.length outer_cuts_as_bounds in 
           if overall_modulus <= 0 then failwith "Internal error: Sample modulus must be positive";
 
           let final_expr_producer (concrete_distr : Distributions.cdistr) : expr =
-            let get_float_val_from_bound (b: Bags.bound) : float = 
-              match b with Bags.Less f -> f | Bags.LessEq f -> f
+            let get_float_val_from_bound (b: Lats.bound) : float = 
+              match b with Lats.Less f -> f | Lats.LessEq f -> f
             in
 
             let intervals_for_probs = List.init overall_modulus (fun k_idx ->
@@ -157,22 +157,22 @@ let discretize (e : texpr) : expr =
             let param_ty, _ = param_texpr in
             match Ast.force param_ty with
             | Ast.TFloat (_, consts_bag_ref) ->
-              (match Bags.FloatBag.get consts_bag_ref with
-               | Bags.Finite float_set -> 
-                 if Bags.FloatSet.is_empty float_set then None 
-                 else Some (Bags.FloatSet.elements float_set |> List.sort_uniq compare)
-               | Bags.Top -> None)
+              (match Lats.FloatLat.get consts_bag_ref with
+               | Lats.Finite float_set -> 
+                 if Lats.FloatSet.is_empty float_set then None 
+                 else Some (Lats.FloatSet.elements float_set |> List.sort_uniq compare)
+               | Lats.Top -> None)
             | _ -> None
           in
 
-          let get_param_modulus_and_cuts (param_texpr : texpr) : (int * Bags.bound list) option =
+          let get_param_modulus_and_cuts (param_texpr : texpr) : (int * Lats.bound list) option =
             let param_ty, _ = param_texpr in
             match Ast.force param_ty with
             | TFloat (b_bag, _) -> 
-              (match Bags.BoundBag.get b_bag with
+              (match Lats.BoundLat.get b_bag with
                | Top -> None 
                | Finite bs_set -> 
-                 let cuts = Bags.BoundSet.elements bs_set in 
+                 let cuts = Lats.BoundSet.elements bs_set in 
                  let modulus = 1 + List.length cuts in
                  if modulus <= 0 then None else Some (modulus, cuts))
             | _ -> None
@@ -219,8 +219,8 @@ let discretize (e : texpr) : expr =
                     | None -> aux param_texpr
                   in
                   let match_arms = List.map (fun f_val ->
-                    let param_consts_bag_for_f = Bags.FloatBag.create (Finite (FloatSet.singleton f_val)) in
-                    let param_bounds_bag_for_f = Bags.BoundBag.create (Finite (Bags.BoundSet.of_list param_actual_bound_cuts_as_bounds)) in
+                    let param_consts_bag_for_f = Lats.FloatLat.create (Finite (FloatSet.singleton f_val)) in
+                    let param_bounds_bag_for_f = Lats.BoundLat.create (Finite (Lats.BoundSet.of_list param_actual_bound_cuts_as_bounds)) in
                     let texpr_const_f_val = (TFloat(param_bounds_bag_for_f, param_consts_bag_for_f), TAExprNode (Const f_val)) in
                     let target_finconst_expr = aux texpr_const_f_val in
                     let body = build_body_fn f_val in

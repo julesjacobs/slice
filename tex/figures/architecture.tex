@@ -38,7 +38,7 @@
     
     % Inside compiler
     \draw[arrow] (ast) -- node[operation] {Type Infer} (tast);
-    \node[impl, align=center] at ($(ast)!0.5!(tast) + (0,-0.3)$) {inference.ml\\bags.ml(i)};
+    \node[impl, align=center] at ($(ast)!0.5!(tast) + (0,-0.3)$) {inference.ml\\lats.ml(i)};
 
 
     \draw[arrow] (tast) -- node[operation] {Discretize} (dast);

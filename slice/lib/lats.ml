@@ -1,4 +1,4 @@
-open Bag (* Ensure this is at the top *)
+open Lat (* Ensure this is at the top *)
 
 (* Generic type representing either a finite Set or Top *) 
 type ('elt, 'set) set_or_top = 
@@ -68,17 +68,17 @@ module BoundSetContents : Lat with type t = (bound, BoundSet.t) set_or_top = str
     | _, _ -> false
 end
 
-(* == Bag Instantiations == *)
-module FloatBag = Make(FloatSetContents)
+(* == Lat Instantiations == *)
+module FloatLat = Make(FloatSetContents)
 
-(* Original BoundBag module *)
-module OriginalBoundBag = Make(BoundSetContents)
+(* Original BoundLat module *)
+module OriginalBoundLat = Make(BoundSetContents)
 
-(* Extended BoundBag module to include add_all *)
-module BoundBag = struct
-  include OriginalBoundBag (* Include all existing functionality *)
+(* Extended BoundLat module to include add_all *)
+module BoundLat = struct
+  include OriginalBoundLat (* Include all existing functionality *)
 
-  (* Function to add all floats from a FloatSet as LessEq bounds to a BoundBag *)
+  (* Function to add all floats from a FloatSet as LessEq bounds to a BoundLat *)
   let add_all (float_s : FloatSet.t) (b_bag : bag) : unit =
     let current_content = get b_bag in
     match current_content with
@@ -97,8 +97,8 @@ module BoundBag = struct
           leq temp_bag_with_new_state b_bag
 end
 
-let fresh_bound_bag () : BoundBag.bag =
-  BoundBag.create (Finite BoundSet.empty)
+let fresh_bound_bag () : BoundLat.bag =
+  BoundLat.create (Finite BoundSet.empty)
 
-let fresh_float_bag () : FloatBag.bag =
-  FloatBag.create (Finite FloatSet.empty)
+let fresh_float_bag () : FloatLat.bag =
+  FloatLat.create (Finite FloatSet.empty)
