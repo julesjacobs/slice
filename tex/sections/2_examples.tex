@@ -11,19 +11,19 @@ We start with a simple example that illustrates the core idea of \Slice{}. Consi
     uniform(0,1) < 0.5
 \end{lstlisting}
 
-\noindent \Slice{}'s type system analyzes this program and identifies that the only cut for the continuous variable is 0.5. This single cut partitions the range $\R = (-\infty, +\infty)$ into two intervals of equal probability mass: $(-\infty, 0.5)$ and $[0.5, +\infty)$. \Slice{} then transforms the program into an equivalent discrete version:
+\noindent \Slice{}'s type system analyzes this program and identifies that the only cut\kevin{what does it mean to be a cut?} for the continuous variable is 0.5. This single cut partitions the range $\R = (-\infty, +\infty)$ into two intervals of equal probability mass: $(-\infty, 0.5)$ and $[0.5, +\infty)$. \Slice{} then transforms the program into an equivalent discrete version:
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em]
     discrete(0.5, 0.5) < 1
 \end{lstlisting}
 
-\noindent Here, \texttt{discrete(0.5, 0.5)} represents a choice between two outcomes (0 or 1), each with probability 0.5. The outcome 0 corresponds to the original value being in $(-\infty, 0.5)$, and 1 corresponds to it being in $[0.5, +\infty)$. The comparison is updated to check if the outcome is less than 1, which is true only for outcome 0, correctly preserving the original program's meaning. This transformation is guided by tracking cuts, which are determined by type inference as shown in the annotated program below:
+\noindent Here, \texttt{discrete(0.5, 0.5)} represents a choice between two outcomes (0 or 1), each with probability 0.5. The outcome 0 corresponds to the original value being in $(-\infty, 0.5)$, and 1 corresponds to it being in $[0.5, +\infty)$. The comparison is updated to check if the outcome is less than 1, which is true only for outcome 0, correctly preserving the original program's meaning\kevin{make "meaning" more concrete already?}. This transformation is guided by tracking cuts, which are determined by type inference as shown in the annotated program below:
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
     (uniform(0, 1) : !{\ft{<0.5}}!) < (0.5 : !{\ftb{<0.5}{0.5}}!)
 \end{lstlisting}
 
-The type \ft{<0.5} for the uniform sample indicates that the cut set contains the cut ``$<\!\!0.5$'' and the value set is $\top$ (can take any value in the range). 
+The type \ft{<0.5} for the uniform sample indicates that the cut set contains the cut ``$<\!\!0.5$'' and the value set is $\top$ (can take any value in the range\kevin{range of what?}). 
 The type \ftb{<0.5}{0.5} for the constant $0.5$ indicates that the cut set contains $<0.5$ and the value set contains only the single value $0.5$.
 
 In general, a type \lstinline{float[cut-set; value-set]} indicates:
@@ -55,7 +55,7 @@ The constant $0.5$ on the right hand side is discretized to the constant $1$ bec
 \noindent In this program, the variable \texttt{x} is drawn from \texttt{uniform(0, 1)} and is compared against two different constants: \texttt{0.5} and \texttt{0.1}. These two cuts partition the real line $\R$ into three intervals: $(-\infty, 0.1)$, $[0.1, 0.5)$, and $[0.5, +\infty)$. Similarly, the variable \texttt{y}, drawn from \texttt{uniform(0, 2)}, is compared only with \texttt{0.1}. This single cut partitions the real line $\R$ into two intervals, $(-\infty, 0.1)$ and $[0.1, +\infty)$.
 
 
-This analysis is done by the type inference process, which collects all cuts for each continuous variable. For \texttt{x}, the type inference algorithm discovers the cuts \texttt{<0.1} and \texttt{<0.5}, giving it the type \ft{<0.1,<0.5}. For \texttt{y}, it only finds \texttt{<0.1}, giving it the type \ft{<0.1}. This information is captured in the annotated program below.
+This analysis is done by the type inference process, which collects all cuts for each continuous variable. For \texttt{x}, the type inference algorithm discovers the cuts \texttt{<0.1} and \texttt{<0.5}, giving it the type \ft{<0.1,<0.5}. For \texttt{y}, it only finds \texttt{<0.1}, giving it the type \ft{<0.1}. This information is captured in the annotated program below.\kevin{why is 0.5 also annotated with <0,1?}
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
     let x = uniform(0, 1) : !{\ft{<0.1,<0.5}}! in
@@ -96,7 +96,7 @@ Consider the following program:
     x <= y
 \end{lstlisting}
 
-\noindent This program demonstrates how cuts propagate through control flow. The type inference annotates the program as follows:
+\noindent This program demonstrates how cuts propagate through control flow \kevin{in a forward or in a backward manner? maybe indicate some example flow?}. The type inference annotates the program as follows: \kevin{why are x and y in the last line not annotated?}
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
     let x = if flip()
@@ -121,7 +121,7 @@ Consider the following program:
     x <= y
 \end{lstlisting}
 
-\noindent The four probabilities in each \texttt{discrete} distribution correspond to the probability mass in each of the four intervals. For example, \texttt{uniform(0,2)} has probability 0.15 in $(-\infty, 0.3]$, 0.6 in $(0.3, 1.5]$, 0.15 in $(1.5, 1.8]$, and 0.1 in $(1.8, +\infty)$.
+\noindent The four probabilities in each \texttt{discrete} distribution correspond to the probability mass in each of the four intervals\kevin{some remark on CDFs and how we treat irrational CDFs?}. For example, \texttt{uniform(0,2)} has probability 0.15 in $(-\infty, 0.3]$, 0.6 in $(0.3, 1.5]$, 0.15 in $(1.5, 1.8]$, and 0.1 in $(1.8, +\infty)$.
 
 \subsection{Discrete latent variable}
 
@@ -132,7 +132,7 @@ Continuous distributions can have parameters that depend on discrete random choi
     gaussian(0, x) < 0.5
 \end{lstlisting}
 
-\noindent This example shows how discrete choices can affect the parameters of continuous distributions. The type-annotated version reveals how the discrete latent variable \texttt{x} determines the standard deviation of the Gaussian:
+\noindent This example shows how discrete choices can affect the parameters of continuous distributions. The type-annotated version reveals how the discrete latent \kevin{is this standard terminology?} variable \texttt{x} determines the standard deviation of the Gaussian: \kevin{why are both $0.5$ and $1.5$ annotaed with $<=0.5, <=1.5$? Why non-strict?}
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
     let x = if flip()
@@ -195,7 +195,7 @@ Continuous distributions can have parameters that depend on discrete random choi
       if fst r then snd r else fst q
 \end{lstlisting}
 
-\noindent The type system correctly infers that cuts from both \texttt{f} and \texttt{g} (0.5 and 1.5) must be collected for the distributions in \texttt{p}, yielding type \ft{<0.5,<1.5} for both components. The discretized version preserves the higher-order structure:
+\noindent The type system correctly infers that cuts from both \texttt{f} and \texttt{g} (0.5 and 1.5) must be collected for the distributions in \texttt{p}, yielding type \ft{<0.5,<1.5} for both components. The discretized version preserves the higher-order structure: \kevin{wow :-D}
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em]
   let mappair = fun f -> fun p -> (f (fst p), f (snd p)) in
@@ -293,6 +293,7 @@ While \Slice{} is purely functional without mutable state, it provides the \text
 \subsection{Indian GPA Problem}\label{sec:gpa}
 
 This canonical example involves both discrete and continuous random variables and models a student's GPA based on nationality (India or USA) and whether they have a perfect record. The GPA is deterministic for perfect students (10.0 for India, 4.0 for USA) but drawn from a uniform distribution otherwise. The program computes the probability that a student's GPA falls below 1.0:
+\kevin{where does the first $<1$ come from?}
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
   let nationality = discrete(0.5, 0.5) in
@@ -357,7 +358,7 @@ Not all programs can be fully discretized. Consider a program where continuous v
   let y = gaussian(0, 1) in
   if flip() then x < y else y < x
 \end{lstlisting}
-
+\kevin{is there a typo? it seems that nothing happened}
 \noindent The branching condition gets discretized, but \texttt{x} and \texttt{y} remain continuous because they are only compared to each other, not to constants. This partially discretized program cannot be compiled to Dice but can still be executed using Monte Carlo simulation, potentially benefiting from the discrete branching structure.
 
 
