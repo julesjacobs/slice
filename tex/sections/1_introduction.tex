@@ -10,15 +10,7 @@ In contrast, our work automatically infers discretization points from the progra
 
 This paper introduces \Slice{}, which occupies a unique position in the PPL design space: it automatically and soundly translates a broad class of programs with continuous variables into equivalent discrete programs. This automated, sound discretization unlocks the ability to use powerful discrete exact inference engines on models that were previously out of their reach. The key insight is to analyze how continuous variables are used within the program. Specifically, \Slice{} uses a type system to track all the constant thresholds against which continuous variables are compared. These comparison points are then used to intelligently discretize the continuous distributions into a finite number of buckets. When the resulting program is purely discrete it can then be solved by an off-the-shelf exact inference engine such as Dice~\cite{Holtzen2020Dice}. This type-directed discretization allows developers to model with continuous distributions while still benefiting from the speed and precision of exact discrete inference.
 
-For instance, consider a simple program that checks if a uniform random variable is less than 0.5:
-\begin{lstlisting}[aboveskip=1em,belowskip=1em]
-    uniform(0, 1) < 0.5
-\end{lstlisting}
-\noindent \Slice{}'s type system determines that 0.5 is the only relevant "cut point." It automatically transforms the program into an equivalent discrete version:
-\begin{lstlisting}[aboveskip=1em,belowskip=1em]
-    discrete(0.5, 0.5) < 1
-\end{lstlisting}
-\noindent The continuous uniform distribution is replaced by a discrete one with two equally likely outcomes (0 and 1), and the comparison is transformed accordingly.
+For instance, \texttt{uniform(0, 1) < 0.5} is automatically transformed to \texttt{discrete(0.5, 0.5) < 1}, where the continuous uniform distribution becomes a discrete choice with two equally likely outcomes.
 
 The true power of this approach, however, lies in its ability to handle programs where these relationships are not immediately obvious. A single continuous variable might be compared against multiple different constants across separate parts of the program. Further, these constraints are propagated through complex control flow. For example, a value drawn from a continuous distribution might be returned from one branch of a conditional, passed through a higher-order function, or stored in a data structure before it is eventually compared to a constant. \Slice{}'s type inference systematically tracks these dependencies, ensuring that all relevant cut points are associated with the original distribution, regardless of how the value flows through the program. This robust, whole-program analysis is the key to handling expressive models, as we demonstrate in \Cref{sec:examples}.
 
