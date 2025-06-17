@@ -1,8 +1,7 @@
 \section{Type Inference}\label{sec:type-inference}
 
-Type inference for \Slice{} assigns types to every subexpression while simultaneously collecting cuts that will guide the discretization process. The type system tracks both traditional type information and refinement information specific to floating-point values. The main challenge is that the typing rules are not syntax directed, which we address in this section by using a constraint-based approach.
+Given a source program, \Slice{} first performs type inference on the program, assigning types to every subexpression while simultaneously collecting cuts that will guide the discretization process. The type system tracks both traditional type information and refinement information specific to floating-point values. The main challenge is that the typing rules are not syntax directed, which we address in this section by using a constraint-based approach.
 
-\paragraph{Overview.}
 The inference algorithm performs type checking and constraint generation in a single pass over the AST. For float types $\float[B; V]$, it maintains two separate refinement components:
 \begin{itemize}
     \item The \emph{cut set} $B$ collects cuts (e.g., $<\!\!0.5$, $\leq\!\!1.2$) from sites where the expression is compared
