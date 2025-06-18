@@ -72,7 +72,7 @@ Other constructs follow standard typing rules:
 We formalize the above notions in a way that will allow us to in the next section characterize the types of programs our discretization method supports. We first define what it means for a given distribution to be co-discrete or co-continuous. 
 
 \begin{definition} [Co-discrete]\label{def:co-discrete}
-    An expression is \textit{co-discrete} if it contains a non-empty, finite set of cuts in its cut set $B$ in $\float[B;V]$.
+    An expression is \textit{co-discrete} if its cut set $B$ in $\float[B;V]$ is not Top.
 \end{definition}
 
 \begin{definition} [Co-continuous]\label{def:co-continuous}
@@ -80,6 +80,13 @@ We formalize the above notions in a way that will allow us to in the next sectio
 \end{definition}
 
 \subsection{Algorithm Summary}
+\begin{enumerate}
+    \item Initialize $\float[B;V]$ type for all expressions returning floats. Specifically, float constants $c$ start with type $\float[\emptyset; \{c\}]$ (empty cuts, singleton value set) and continuous distributions start with type $\float[\emptyset; \top]$ (empty cuts, Top value set).
+    \item Subtyping \katherine{will finish}
+    \item Value set propagation
+    \item Answerability constraints for comparisons
+    \item If empty return cut set, return Top to preserve semantics
+\end{enumerate}
 
 The complete type inference creates a new type variable for every subexpression, and establishes constraints between them with a single pass over the AST. The constraints are then solved with the constraint solver, returning an AST where every single expression carries its type. In particular, expressions of type $\float[B; V]$ carry the cut points $B$. The annotated program is ready for discretization, with all comparison points captured in the refinements.
 
