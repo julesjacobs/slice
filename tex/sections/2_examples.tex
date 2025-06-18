@@ -71,8 +71,8 @@ This analysis is done by the type inference process, which collects all cuts for
 \begin{lstlisting}[aboveskip=1em,belowskip=1em]
     let x = discrete(0.2, 0.3, 0.5) in
     let y = discrete(0.05, 0.95) in
-    if x < 1 then
-      x < 2
+    if x < 2 then
+      x < 1
     else
       y < 1
 \end{lstlisting}
