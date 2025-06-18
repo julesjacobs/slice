@@ -9,8 +9,7 @@ Given a source program, \Slice{} first performs type inference on the program, a
 Both components start at the bottom of their respective lattices ($\emptyset$) and monotonically accumulate information through constraint propagation. The implementation maintains sets as mutable references with attached listeners that propagate updates immediately when new information becomes available. The listeners of a set are triggered when the lattice value goes up in the lattice (it can never go down; the changes are always monotone).
 For instance, to maintain the constraint $B_1 \leq B_2$, the system registers a listener that propagates updates from $B_1$ to $B_2$ when $B_1$ goes up.
 
-\paragraph{Basic constraints between sets.}
-We maintain three types of constraints between sets:
+\paragraph{Basic constraints between sets.} We maintain three types of constraints between sets:
 \begin{description}
     \item[Order:] $B_1 \sqsubseteq B_2$ means that $B_1$ is lower than or equal to $B_2$ in the lattice order. This is enforced with a listener on $B_1$ that increases $B_2$ to maintain the constraint.
     \item[Answerability:] $B \textit{ answers} \leq\!\!V$ or $B \textit{ answers} <\!\!V$ means that $B$ contains $\leq\!\!v$ or $<\!\!v$ for every $v \in V$. This is enforced with a listener on $V$ that adds the corresponding cut to $B$.
@@ -18,33 +17,45 @@ We maintain three types of constraints between sets:
 \end{description}
 In each case, if the set is set to $\top$, we propagate the required $\top$ to the other set.
 
+\paragraph{Subtyping and equality constraints.} To maintain subtyping constraints $\tau_1 <: \tau_2$ between types, we recurse into the types according to the rules in \Cref{fig:subtyping}. Whenever one of the sides is a type variable, we instantiate it with the corresponding type of the other side, and add subtyping constraints according to the rules. When both sides are type variables, we add listeners to the type variables that propagate the subtyping constraints whenever one side is instantiated. To enforce equality between types, we enforce subtyping both ways.
+
+\begin{itemize}
+    \item \textbf{Base types}: Must match exactly (\bool{}, \intty{}, $\text{fin}(n)$, $\text{unit}$)
+    \item \textbf{Float types}: $\float[B_1; V_1] <: \float[B_2; V_2]$ requires:
+        \begin{itemize}
+            \item $B_1 = B_2$ (cut bags must be equal for safe discretization)
+            \item $V_1 \sqsubseteq V_2$ (values flow covariantly)
+        \end{itemize}
+    \item \textbf{Structural types}: 
+        \begin{itemize}
+            \item Pairs and lists are covariant in their components
+            \item Functions are contravariant in arguments, covariant in results
+            \item References are invariant (require exact type match)
+        \end{itemize}
+\end{itemize}
+
 \subsection{Algorithm for Type Inference}
-We describe in detail our type inference algorithm. We specifically focus on how our algorithm generates and solves constraints for float types, as type checking for non-float types is standard: boolean constants get type \bool{}, finite constants $\finconst{k}{n}$ get type $\text{fin}(n)$, and variables look up their type in the enviornment. All other constructs besides distributions and float constants follow their standard typing rules. The steps of the algorithm are outlined in the following subsections.
+We describe in detail our type inference algorithm. We specifically focus on how our algorithm generates and solves constraints for float types, in particular continuous distributions and float constants, as type checking for non-float types is standard: all other constructs with non-float return values follow their standard typing rules shown in Figure~\ref{fig:typing-general}. The steps of the algorithm are outlined below.
 
 \begin{enumerate}
-    \item \textbf{Initialization of float types.} We start by initializing the $\float[B;V]$ type for all subexpressions returning floats. Specifically, float constants $c$ start with type $\float[\emptyset; \{c\}]$ (empty cut set, singleton value set) and continuous distributions start with type $\float[\emptyset; \top]$ (empty cut set, Top value set). All cut sets start empty.
-    \item \textbf{Subtyping and equality constraints.} To maintain subtyping constraints $\tau_1 <: \tau_2$ between types, we recurse into the types according to the rules in \Cref{fig:subtyping}. Whenever one of the sides is a type variable, we instantiate it with the corresponding type of the other side, and add subtyping constraints according to the rules. When both sides are type variables, we add listeners to the type variables that propagate the subtyping constraints whenever one side is instantiated. To enforce equality between types, we enforce subtyping both ways.
-
+    \item \textbf{Initialization of float types.} We start by initializing the $\float[B;V]$ type for all subexpressions that return floats. Specifically, float constants $c$ start with type $\float[\emptyset; \{c\}]$ (empty cut set, singleton value set) and continuous distributions start with type $\float[\emptyset; \top]$ (empty cut set, Top value set). All cut sets start empty.
+    \item \textbf{Answerability constraints.} Comparisons generate answerability constraints which populate cut sets. In particular, for such a comparsion $\float[B_1; V_1] < \float[B_2; V_2]$, \Slice{} adds the answerability constraint that ``$B_1$ answers $<V_2$'', meaning that $B_1$ must now contain all the values in the value set $V_2$. There are several cases that can happen. Without loss of genreality, assume that $B_1$ is the cut set that is populated with new cuts. 
+    
     \begin{itemize}
-        \item \textbf{Base types}: Must match exactly (\bool{}, \intty{}, $\text{fin}(n)$, $\text{unit}$)
-        \item \textbf{Float types}: $\float[B_1; V_1] <: \float[B_2; V_2]$ requires:
-            \begin{itemize}
-                \item $B_1 = B_2$ (cut bags must be equal for safe discretization)
-                \item $V_1 \sqsubseteq V_2$ (values flow covariantly)
-            \end{itemize}
-        \item \textbf{Structural types}: 
-            \begin{itemize}
-                \item Pairs and lists are covariant in their components
-                \item Functions are contravariant in arguments, covariant in results
-                \item References are invariant (require exact type match)
-            \end{itemize}
+        \item If $V_1$ and $V_2$ are both $\top$, $B_1 = \top$.
+        \item If $V_1$ or $V_2$ are float constants, $B_1 = V_1 \oplus V_2$.  
     \end{itemize}
-
-    \item \textbf{Answerability constraints.} Comparisons generate answerability constraints which populate the cut sets. In particular, for such a comparsion $\float[B_1; V_1] < \float[B_2; V_2]$, \Slice{} adds the constraint that ``$B_1$ answers $<V_2$'', meaning that $B_1$ must contain all the values in the value set $V_2$. 
-    \item \textbf{Solution.} Based on the subtyping rules in 2, \Slice{} deduces the final cut set for all cuts. If the return value of the expression is a float with an empty cut set, \Slice{} substitutes the cut set with a $\top$ so as to preserve the return value for partial discretization.
+    
+    \begin{enumerate}
+        \item \textbf{Equality constraints.} \Slice{} sets equality constraints between float types in comparisons and float types belonging to different branches of an if statement. In the above, $B_1 = B_2$ for the comparison.
+        \item \textbf{Value set propagation.} For every if statement, \Slice{} takes the union of the value sets in the branches of the conditional.
+        \item \textbf{Value tracking.} Because variables are implemented as mutable references, updates to their values are automatically reflected throughout the program.
+    \end{enumerate}
+    
+    \item \textbf{Solution.} \Slice{} deduces the final cut set for all cuts by combining and solving all constraints. If the return value of the expression is a float with an empty cut set, \Slice{} substitutes the cut set with a $\top$ so as to preserve the return value for partial discretization.
 \end{enumerate}
 
-In summary, the complete type inference creates a new type variable for every subexpression, and establishes constraints between them with a single pass over the AST. The constraints are then solved with the constraint solver, returning an AST where every single expression carries its type. In particular, expressions of type $\float[B; V]$ carry the cut points $B$. The annotated program is ready for discretization, with all comparison points captured in the refinements.
+In summary, the complete type inference creates a new type variable for every subexpression and establishes constraints between them with a single pass over the AST. The constraints are then solved with the constraint solver, returning an AST where every expression carries its type. In particular, expressions of type $\float[B; V]$ carry the cut points $B$. The annotated program is ready for discretization, with all comparison points captured in the refinements.
 
 \paragraph{Example.}
 Consider the type inference process for this simple program:
@@ -79,7 +90,6 @@ The bags are then solved in the following manner:
     \item \textbf{Initial bags:}
     Float constants get singleton value bags: $V_2=\{0.5\}$, $V_5=\{1.5\}$, $V_6=\{1.8\}$, $V_7=\{0.3\}$.
     Continuous distributions get $\top$ value bags: $V_1=V_3=V_4=\top$.
-    All cut bags start empty.
 
     \item \textbf{Subtyping and equality constraints:}
     The type inference enforces equality on cut bags for subexpressions involved in comparisons or belonging to different branches of an `if` statement.
@@ -125,14 +135,14 @@ This results in the following fully annotated program:
     x <= y
 \end{lstlisting}
 
-We formalize the above notions in a way that will allow us to in the next section characterize the types of programs our discretization method supports. We first define what it means for a given distribution to be co-discrete or co-continuous. 
+We formalize the above notions in a way that will allow us to in the next section characterize the types of programs our discretization method supports. We first define what it means for a given subexpression with a float type to be co-discrete or co-continuous. 
 
 \begin{definition} [Co-discrete]\label{def:co-discrete}
-    An expression is \textit{co-discrete} if its cut set $B$ in $\float[B;V]$ is not Top.
+    An subexpression is \textit{co-discrete} if its cut set is not Top.
 \end{definition}
 
 \begin{definition} [Co-continuous]\label{def:co-continuous}
-    An expression is \textit{co-continuous} if it is not co-discrete.
+    An subexpression is \textit{co-continuous} if it is not co-discrete.
 \end{definition}
 
 The above example shows how comparison points accumulate in the value and cut bags through the constraint propagation mechanism, even when comparisons appear in different branches of the program. Note that all expressions in this example are co-discrete. A simple change at the end of the program from $x \leq y$ to $y$ would have rendered the expressions $1.8$, $0.3$, and $y$ co-continuous, of the types $\float[; 1.8]$, $\float[; 0.3]$, and $\float[; 0.3, 1.8]$ respectively.
