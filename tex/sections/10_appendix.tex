@@ -1,5 +1,36 @@
 \appendix
-\section{\Slice{} Examples}
+\section{More \Slice{} Examples}\label{appen:examples}
+\subsection{Branching on multiple discrete values}
+The example in subsection~\ref{sec:examples:2} involves multiple continuous variables and conditional branches. In a similar fashion, \Slice{} can support multiple discrete values and conditional branches. Consider the program:
+
+\begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
+    let x = if flip() then 0.2 
+            else if flip() then 2.5
+            else 4.5 in 
+    x < 0.5
+\end{lstlisting}
+
+This yields the annotated program after type inference:
+
+\begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
+    let x = if flip() then (0.2 : !{\ftb{<0.5}{0.2}}!)
+            else (if flip() then (2.5 : !{\ftb{<0.5}{2.5}}!)
+            else (4.5 : !{\ftb{<0.5}{4.5}}!) 
+            : !{\ftb{<0.5}{2.5, 4.5}}!)
+            : !{\ftb{<0.5}{0.2, 2.5, 4.5}}! in
+    x : !{\ftb{<0.5}{0.2, 2.5, 4.5}}! < 0.5 : !{\ftb{<0.5}{0.5}}!
+\end{lstlisting}
+
+We deal solely with finite values in the value sets since there are no continuous distributions, and thus Top, in this example. Determining where the values in the value set fall within the values in the cut set allows us to calculate the corresponding integer indices. \codetype{\ftb{<0.5}{0.2}} corresponds to the index 0, and types \codetype{\ftb{<0.5}{2.5}}, \codetype{\ftb{<0.5}{4.5}}, and \codetype{\ftb{<0.5}{0.5}} correspond to the index 1. This in turn yields the following discretized program:
+
+\begin{lstlisting}[aboveskip=1em,belowskip=1em]
+    let x = if flip() then 0
+            else if flip() then 1
+            else 1 in
+    x < 1
+\end{lstlisting}
+
+
 \subsection{Conditioning}
 
 \Slice{} supports conditioning on events through the \texttt{observe} construct, allowing for Bayesian inference. The following program computes the probability that a uniform random variable is less than 0.2, given that it is less than 0.5:
@@ -178,4 +209,21 @@ This canonical example involves both discrete and continuous random variables an
   gpa < 1
 \end{lstlisting}
 
-\noindent Here, \texttt{uniform(0,10)} becomes \texttt{discrete(0.1, 0.9)} representing 10\% probability for $[0,1)$ and 90\% for $[1,10]$. Similarly, \texttt{uniform(0,4)} becomes \texttt{discrete(0.25, 0.75)}. Constants like 10.0 and 4.0 that fall in the interval $[1,+\infty)$ are mapped to index 1. The discretized program can then be processed by exact inference engines like Dice.
+\noindent Here, \texttt{uniform(0,10)} becomes \texttt{discrete(0.1, 0.9)} representing 10\% probability for $[0,1)$ and 90\% for $[1,10]$. Similarly, \texttt{uniform(0,4)} becomes \texttt{discrete(0.25, 0.75)}. Constants like 10.0 and 4.0 that fall in the interval $[1,+\infty)$ are mapped to index 1. The discretized program can then be processed by exact inference engines.
+
+\subsection{Partial discretization with no comparisons}
+The example in subsection~\ref{sec:examples:5} shows a program that can only be partially discretized due to continuous variables being compared directly to each other rather than to constants. If no comparisons are made with continuous distributions, the best \Slice{} can do is also a partial discretization. Consider the following example:
+
+\begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
+    let x = uniform(0,1) in
+    let y = gaussian(0,1) in
+    if y < 0.5 then beta(1,1) else uniform(0,2)
+\end{lstlisting}
+
+\subsection{Partial discretization with discrete values}
+
+\begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
+    let x = if gaussian(0,1) < 0.5 then 1.0 else 2.0 
+    in 3.0
+\end{lstlisting}
+\katherine{will finish the last two examples. want to show that we preserve top level return values}
