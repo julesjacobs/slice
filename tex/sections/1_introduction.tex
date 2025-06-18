@@ -17,14 +17,14 @@ Our approach has an important limitation: one can only fully discretize programs
 \Slice{}  scales to complex programs and language features. The \Slice{} language itself is a statically-typed functional language that supports a rich set of features, including higher-order functions, recursion, pairs, lists, and even mutable references. Our transformation handles all of these features, allowing programmers to write expressive, high-level models that can still be analyzed with exact discrete inference—provided that continuous variables are only compared to constants.
 
 \paragraph{Contributions.} After introducing \Slice{} by example (\Cref{sec:examples}), we present and evaluate our framework for type-directed discretization via the following contributions:
-\begin{description}[leftmargin=*]
+\begin{description}[leftmargin=0.3cm]
     \item[Type System (\Cref{sec:language})] We introduce a novel type system that identifies which expressions are discretizable by analyzing how they are compared against constant values throughout the program.
 
     \item[Type Inference (\Cref{sec:type-inference})] We develop a type inference algorithm that automatically collects the set of constant thresholds needed for discretization for each expression.
 
     \item[Discretization (\Cref{sec:discretization})] We present a type-directed program transformation that soundly converts continuous distributions and their comparisons into discrete counterparts.
 
-    \item[Soundness (\Cref{sec:soundness})] We prove that our discretization method is sound, establishing that the discretized program preserves the semantics of the original program. Our proof employs logical relations, a well-established technique for reasoning about program equivalences in probabilistic languages~\cite{Bizjak2015Step,Wand2018Contextual}.
+    \item[Soundness (\Cref{sec:soundness})] We prove that our discretization method is sound, establishing that discretization preserves the semantics of the original program. Our proof employs logical relations, a well-established technique for reasoning about program equivalences in probabilistic languages~\cite{Bizjak2015Step,Wand2018Contextual}.
 
     \item[Implementation (\Cref{sec:implementation})] We provide an open-source implementation of \Slice{} that compiles programs for the \Dice{} exact inference engine. Our implementation also includes a direct interpreter for partially discretized programs.
 
