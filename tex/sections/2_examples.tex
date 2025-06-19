@@ -102,7 +102,7 @@ This yields the annotated program after type inference:
     x < y
 \end{lstlisting}
 
-Only finite values exist in the value sets here since there are no continuous distributions in this example and thus no Top. By locating where each value in the value set falls relative to the cut set, we can determine the corresponding interval index for each value. \codetype{\ftb{<0.5}{0.2}} corresponds to the index 0, and types \codetype{\ftb{<0.5}{2.5}}, \codetype{\ftb{<0.5}{4.5}}, and \codetype{\ftb{<0.5}{0.5}} correspond to the index 1. The value sets in types \codetype{\ftb{<0.5}{0.2, 2.5, 4.5}} and \codetype{\ftb{<0.5}{2.5, 4.5}} arise from taking the union of the value sets from each conditional branch. This in turn yields the following discretized program:
+Only finite values exist in the value sets here since there are no continuous distributions in this example and thus no Top. By locating where each value in the value set falls relative to the cuts in the cut set, \Slice{} determine the corresponding interval index for each value. \codetype{\ftb{<0.5}{0.2}} corresponds to the index 0, and types \codetype{\ftb{<0.5}{2.5}}, \codetype{\ftb{<0.5}{4.5}}, and \codetype{\ftb{<0.5}{0.5}} correspond to the index 1. The value sets in types \codetype{\ftb{<0.5}{0.2, 2.5, 4.5}} and \codetype{\ftb{<0.5}{2.5, 4.5}} arise from taking the union of the value sets from each prior conditional branch. This in turn yields the following discretized program:
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em]
     let x = if flip() then 0
@@ -411,7 +411,7 @@ Here, \Slice{} does not identify any cuts for the subexpressions \texttt{x} and 
     : !{\ftt}!
 \end{lstlisting}
 
-An empty cut set in a float type implies $\mathbb{R}$ with no partitions, or simply the real number line, and thus the probability mass in $(-\infty, +\infty)$ is 1 for any continuous distribution. This leads to the distribution \texttt{discrete(1,0)} for \texttt{uniform(0,1)}. The following is the partially discretized program:
+An empty cut set in a float type implies $\mathbb{R}$ with no partitions, or simply the real number line, and thus the probability mass in $(-\infty, +\infty)$ is trivially 1 for any continuous distribution. This leads to \texttt{discrete(1,0)} for \texttt{uniform(0,1)}. The following is the partially discretized program:
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
   let x = discrete(1, 0)
