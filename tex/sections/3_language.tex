@@ -85,7 +85,7 @@ When we discretize continuous programs, we convert expressions involving continu
 	\end{enumerate}
 \end{definition}
 %
-Elements of $\{ <\!\!x ~|~ x \in \R \}	\cup \{ \leq\!\!x ~|~ x \in \R \}$ are called \emph{cuts}. For $B =\{ \sim_1 x_1, \ldots, \sim_n x_n \}$ a non-empty set of cuts with $x_1 \leq \ldots \leq x_n$, we define
+Elements of $\{ <\!\!x ~|~ x \in \R \}	\cup \{ \leq\!\!x ~|~ x \in \R \}$ are called \emph{cuts}. For $B =\{ \sim_1\!\!x_1, \ldots, \sim_n\!\! x_n \}$ a non-empty set of cuts with $x_1 \leq \ldots \leq x_n$, we define
 %
 \begin{align*}
 	\intervals{B} {}={} &
@@ -114,7 +114,7 @@ Elements of $\{ <\!\!x ~|~ x \in \R \}	\cup \{ \leq\!\!x ~|~ x \in \R \}$ are ca
 	 \begin{cases}
 	 	\{ (x_n, \infty) \}& \text{if $\sim_n = \leq$} \\
 	 	%
-	 	\{ [x_n, \infty)\}& \text{if $\sim_1 = <$} \\
+	 	\{ [x_n, \infty)\}& \text{if $\sim_n = <$} \\
 	 \end{cases} 
 \end{align*}
 %
@@ -194,7 +194,10 @@ To understand the typing rules, keep in mind that the $B$ set needs to be suffic
 The rule states that the argument $\Gamma \vdash e : \float[B; V]$ with the constraint that $B$ distinguishes $V$. The distinguishes predicate is defined as follows:
 \begin{definition}
     \label{def:distinguishes}
-    $B$ distinguishes $V$ if every interval in $B$ contains at most one value in $V$, or $B = \top$.
+    Let $B\in \cutsets$ and $V\in\valsets$. We say that \emph{$B$ distinguisges $V$}, if every determined  by $B$ contains at most one value in $V$, i.e., $
+    	\forall I \in \intervals{B}\colon | V \cap I|  \leq 1
+    $.
+    %$B$ distinguishes $V$ if every interval in $B$ contains at most one value in $V$, or $B = \top$.
 \end{definition}
 Intuitively $V$ contains the possible values that the float expression can take on, and $B$ distinguishes $V$ if the continuous quantity can be fully recovered by the discretized program.
 For example, if $B = \{<\!\!0.5, \leq\!\!0.8\}$ and $V = \{0.2, 0.7\}$, then $B$ distinguishes $V$. The intervals induced by $B$ are $(-\infty, 0.5)$, $[0.5, 0.8]$, and $(0.8, \infty)$. The first interval contains $0.2$, the second contains $0.7$, and the third contains no values from $V$, so the condition holds. In contrast, if $V = \{0.2, 0.3\}$, $B$ would not distinguish $V$ because both values lie in the first interval $(-\infty, 0.5)$.\kevin{given these intuitions, let's explain why the rule actually makes sense}
@@ -213,8 +216,16 @@ Similarly, if $c$ is not a literal constant, but has type $c : \float[B_2; V_2]$
 
 \kevin{I adapted the following}
 \begin{definition}
-    \label{def:answers-less}
-    $B$ answers $<\!\!V$ if $B$ contains comparisons $<\!\!v$ for every $v \in V$, or $B = \top$.
+	\label{def:answers-less}
+	Let $B\in \cutsets$ and $V\in\valsets$.
+	We say that \emph{$B$ answers $\clt{V}$}, if
+	%
+	\[
+	B = \top \quad \text{or}\quad	\text{for all $x\in V$ we have $\clt{x}\in B$}
+	~.
+	\]
+	%
+	Analogously, we say that \emph{$B$ answers $\cleq{V}$}, if the above holds with $<$ replaced by $\leq$.
 \end{definition}
 
 In the case that $B = \top$, the quantity is not discretized, so the comparison remains continuous.
@@ -225,8 +236,15 @@ It can also be the case that we have a comparison $c < e$ where the continuously
 
 \kevin{I adapted the following}
 \begin{definition}
-    \label{def:answers-less-equal}
-    $B$ answers $\leq\!\!V$ if $B$ contains comparisons $\leq\!\!v$ for every $v \in V$, or $B = \top$.
+	\label{def:answers-less-equal}
+	Let $B\in \cutsets$ and $V\in\valsets$.
+	We say that \emph{$B$ answers $\cleq{V}$}, if
+	%
+	\[
+	B = \top \quad \text{or}\quad	\text{for all $x\in V$ we have $\cleq{x}\in B$}
+	~.
+	\]
+	%
 \end{definition}
 
 For less-than-or-equal comparisons, the typing rule is similar, but with the conditions reversed.
