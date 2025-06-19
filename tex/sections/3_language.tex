@@ -193,11 +193,11 @@ To understand the typing rules, keep in mind that the $B$ set needs to be suffic
 \paragraph{Continuous distributions.} Let us first consider the typing rule for single-argument continuous distributions.
 The rule states that the argument $\Gamma \vdash e : \float[B; V]$ with the constraint that $B$ distinguishes $V$. The distinguishes predicate is defined as follows:
 \begin{definition}
-    \label{def:distinguishes}
-    Let $B\in \cutsets$ and $V\in\valsets$. We say that \emph{$B$ distinguisges $V$}, if every determined  by $B$ contains at most one value in $V$, i.e., $
-    	\forall I \in \intervals{B}\colon | V \cap I|  \leq 1
-    $.
-    %$B$ distinguishes $V$ if every interval in $B$ contains at most one value in $V$, or $B = \top$.
+	\label{def:distinguishes}
+	Let $B\in \cutsets$ and $V\in\valsets$. We say that \emph{$B$ distinguishes $V$}, if $B = \top$ or every interval $I$ induced  by $B$ contains at most one value in $V$, i.e., $
+	\forall I \in \intervals{B}\colon | V \cap I|  \leq 1
+	$.
+	%$B$ distinguishes $V$ if every interval in $B$ contains at most one value in $V$, or $B = \top$.
 \end{definition}
 Intuitively $V$ contains the possible values that the float expression can take on, and $B$ distinguishes $V$ if the continuous quantity can be fully recovered by the discretized program.
 For example, if $B = \{<\!\!0.5, \leq\!\!0.8\}$ and $V = \{0.2, 0.7\}$, then $B$ distinguishes $V$. The intervals induced by $B$ are $(-\infty, 0.5)$, $[0.5, 0.8]$, and $(0.8, \infty)$. The first interval contains $0.2$, the second contains $0.7$, and the third contains no values from $V$, so the condition holds. In contrast, if $V = \{0.2, 0.3\}$, $B$ would not distinguish $V$ because both values lie in the first interval $(-\infty, 0.5)$.\kevin{given these intuitions, let's explain why the rule actually makes sense}
