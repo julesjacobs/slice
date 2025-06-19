@@ -2,6 +2,10 @@
 
 \input{figures/grammar}
 
+\kevin{I propose to clearly separate the presentation: (1) Introduce program syntax and briefly explain each constructs (2) explain the types (3) explain the type system (including things like $\Gamma$ and what judgements mean)}
+\kevin{In particular, I propose not to mix syntax + type system with type inference. Can't this be clearly separated?}
+\kevin{(4) Explain how discretization works}
+
 The syntax of the \Slice{} language is shown in Figure~\ref{fig:grammar}.
 Beyond basic functional constructs, the language includes the following constructs:
 \begin{itemize}
@@ -11,9 +15,12 @@ Beyond basic functional constructs, the language includes the following construc
     \item \textbf{Other features}: Features such as lists, recursion, and mutable references are supported.
 \end{itemize}
 
+\kevin{Why do we talk about discretization here?}
 When we discretize continuous programs, we convert expressions involving continuous distributions into expressions with discrete distributions over the corresponding finite type, and convert less-than comparisons into less-than-or-equal comparisons on the corresponding cutted integer values.
 
 \subsection{Type System}\label{sec:type-system}
+
+\kevin{let us formalize what $\Gamma$ is}
 
 We introduce a type system that analyzes both the cuts and concrete values of floating point expressions. We have the following types:
 \begin{itemize}
@@ -23,6 +30,7 @@ We introduce a type system that analyzes both the cuts and concrete values of fl
 \end{itemize}
 
 \paragraph{Lattice Structure.} 
+\kevin{is this already necessary to understand the type system or is it just for type inference?}
 We use a join-semilattice with the following structure, given a domain $D$:
 \begin{itemize}
     \item Elements: $\{\text{Finite}(S) \mid S \text{ is a finite set over } D\} \cup \{\top\}$
