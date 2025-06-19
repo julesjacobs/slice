@@ -26,7 +26,7 @@ Beyond basic functional constructs, the language includes the following construc
 \kevin{Why do we talk about discretization here?}
 When we discretize continuous programs, we convert expressions involving continuous distributions into expressions with discrete distributions over the corresponding finite type, and convert less-than comparisons into less-than-or-equal comparisons on the corresponding cutted integer values.
 
-\subsection{Type System}\label{sec:type-system}
+\subsection{Types}\label{sec:types}
 
 \begin{definition}[Join-Semilattice]
 	Let $D$ be a set. The \emph{join-semilattice} induced by $D$ is 
@@ -140,6 +140,7 @@ With these notations at hand, we define our types.
 
 \input{figures/lattice}
 
+\subsection{Typing Rules}\label{sec:type-system}
 \kevin{comment start. we explained the following in Sec 2. let's not talk about discretization here?}
 The typing rules are split into two parts: rules specific to float types and continuous distributions (Figure~\ref{fig:typing-float}), and standard rules for all other language constructs (Figure~\ref{fig:typing-general}).
 
