@@ -55,6 +55,8 @@ We describe in detail our type inference algorithm. We specifically focus on how
     \item \textbf{Constraint solver.} Solve all constraints, resulting in an AST where every expression carries its valid type. The annotated program is ready for discretization, with all comparison points captured in the refinements.
 \end{enumerate}
 
+\input{figures/inference-code.tex}
+
 \paragraph{Example.}
 Consider the type inference process for this simple program:
 \begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]

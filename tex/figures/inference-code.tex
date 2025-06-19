@@ -1,0 +1,58 @@
+\begin{figure}
+    \begin{lstlisting}[language=OCaml]
+        let infer (e : expr) : texpr =
+            let rec aux (env : ty StringMap.t) (ExprNode e_node : expr) : texpr =
+                match e_node with
+                | Const f -> 
+                (* Constant float: Create bag refs *) 
+                let cuts_bag_ref = Lats.CutLat.create (Finite CutSet.empty) in 
+                let consts_bag_ref = Lats.FloatLat.create (Finite (FloatSet.singleton f)) in
+                (TFloat (cuts_bag_ref, consts_bag_ref), TAExprNode (Const f))
+
+                | Sample dist_exp ->
+                (* Continuous distribution: Create bag refs *)
+                let cuts_bag_ref = Lats.CutLat.create (Finite CutSet.empty) in 
+                let consts_bag_ref = Lats.FloatLat.create Top in 
+
+                | Cmp (cmp_op, e1, e2) ->
+                    let t1, a1 = aux env e1 in
+                    let t2, a2 = aux env e2 in
+                    let b_meta = Lats.fresh_cut_bag () in (* Shared bound bag for unification *)
+                    let c_meta1 = Lats.fresh_float_bag () in
+                    let c_meta2 = Lats.fresh_float_bag () in
+                    (try unify t1 (Ast.TFloat (b_meta, c_meta1)));
+                    (try unify t2 (Ast.TFloat (b_meta, c_meta2)));
+            
+                    (* Nested listener logic for comparison *) 
+                    let listener () = (* Listener takes unit *)
+                    let v1 = Lats.FloatLat.get c_meta1 in (* Get value inside listener *)
+                    let v2 = Lats.FloatLat.get c_meta2 in (* Get value inside listener *)
+                    match v1, v2 with
+                        | Top, Top -> 
+                        (* Both Top -> BoundBag should be Top *) 
+                        Lats.CutLat.leq (Lats.CutLat.create Top) b_meta
+                    | Finite _, Finite s2 ->
+                        (* Both are not Top. *)
+                        (* Only collect the cuts from the right bag, the constant itself *)
+                        (* Temporarily store cuts to add *)
+                        (* Apply collected cuts to b_meta *) 
+                    | _, _ ->
+                        (* Only one is Top. *)
+                        (* Add cuts from Finite bags. *)
+                        (* Temporarily store cuts to add *) 
+                        (* Collect cuts from right bag (c_meta2) *) 
+                        (* Collect cuts from left bag (c_meta1) *) 
+                        (* Apply collected cuts to b_meta *) 
+                  in
+                  (* Register the combined listener on both float bags *) 
+                  Lats.FloatLat.listen c_meta1 listener;
+                  Lats.FloatLat.listen c_meta2 listener;
+          
+                  (TBool, TAExprNode (Cmp (cmp_op, (t1,a1), (t2,a2))))
+    
+                | (* Other Slice constructs... *)
+
+        \end{lstlisting}
+    \caption{Pseudocode for type inference algorithm.}
+    \label{fig:inference-code}
+\end{figure}
