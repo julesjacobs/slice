@@ -1,10 +1,18 @@
 \section{The Slice Language and Type System}\label{sec:language}
-
-\input{figures/grammar}
-
 \kevin{I propose to clearly separate the presentation: (1) Introduce program syntax and briefly explain each constructs (2) explain the types (3) explain the type system (including things like $\Gamma$ and what judgements mean)}
 \kevin{In particular, I propose not to mix syntax + type system with type inference. Can't this be clearly separated?}
 \kevin{(4) Explain how discretization works}
+
+\subsection{The Slice Language}
+%
+\input{figures/grammar}
+%
+\begin{definition}[The \Slice{} Language]
+	Programs (or expressions) $\expr$ in the language \Slice{} adhere to the grammar shown in \Cref{fig:grammar}.
+\end{definition}
+\kevin{Let us briefly explain each construct ..}
+\kevin{... (i) standard constructs}
+\kevin{... (ii) probabilisic constructs}
 
 The syntax of the \Slice{} language is shown in Figure~\ref{fig:grammar}.
 Beyond basic functional constructs, the language includes the following constructs:
@@ -20,38 +28,119 @@ When we discretize continuous programs, we convert expressions involving continu
 
 \subsection{Type System}\label{sec:type-system}
 
-\kevin{let us formalize what $\Gamma$ is}
-
-We introduce a type system that analyzes both the cuts and concrete values of floating point expressions. We have the following types:
-\begin{itemize}
-    \item Standard types: $\textbf{int}$, $\textbf{bool}$, $\tau_1 * \tau_2$, $\tau_1 \rightarrow \tau_2$, $\textbf{unit}$, $\textbf{list}(\tau)$, $\textbf{ref}(\tau)$, etc. \kevin{can we make "etc." concrete?}
-    \item $\fin{n}$: finite type with values $\{\finconst{0}{n}, \finconst{1}{n}, \ldots, \finconst{(n-1)}{n}\}$ \kevin{let's explain why we distinguish $1$ from $1_{\# n}$}
-    \item \float$[B; V]$: floating point type with cut set $B$ and value set $V$ that are elements of the lattice structure described below.
-\end{itemize}
-
-\paragraph{Lattice Structure.} 
-\kevin{is this already necessary to understand the type system or is it just for type inference?}
-We use a join-semilattice with the following structure, given a domain $D$:
-\begin{itemize}
-    \item Elements: $\{\text{Finite}(S) \mid S \text{ is a finite set over } D\} \cup \{\top\}$
-    \item Ordering: $\text{Finite}(S_1) \sqsubseteq \text{Finite}(S_2)$ if $S_1 \subseteq S_2$, and $x \sqsubseteq \top$ for any $x$
-    \item Join: $\text{Finite}(S_1) \sqcup \text{Finite}(S_2) = \text{Finite}(S_1 \cup S_2)$, and $x \sqcup \top = \top$ for any $x$
-    \item Bottom: $\text{Finite}(\emptyset)$
-    \item Top: $\top$
-\end{itemize}
+\begin{definition}[Join-Semilattice]
+	Let $D$ be a set. The \emph{join-semilattice} induced by $D$ is 
+	%
+	\[
+		\lattice{D} =
+		(\latticedom ,\, \latticeleq,\, \latticesup)~,
+	\]
+	%
+	where:
+	%
+	\begin{itemize}
+		\item $\latticedom = \{ S \subset D ~\mid~ \text{$S$ finite}\} \cup \{\top\} $,
+		%
+		\item $\sqsubseteq$ is the partial prder on $\latticedom$ defined as 
+		%
+		\[
+			\latticeelem \latticeleq \latticeelem'
+			\quad\text{iff}\quad
+			\begin{cases}
+				\latticeelem \subseteq \latticeelem' &\text{if $\latticeelem\neq \top$ and $\latticeelem'\neq \top$} \\
+				%
+				\latticeelem' = \top & \text{otherwise}~,
+			\end{cases}
+		\]
+		%
+		\item $\latticesup \colon \latticedom \times \latticedom \to \latticedom$ is the join (least upper bound) operator w.r.t.\ $\latticeleq$, i.e.,%
+		%
+		\[
+			\latticeelem \latticesup \latticeelem' 
+			= 
+			\begin{cases}
+				\latticeelem \cup \latticeelem' &\text{if $\latticeelem\neq \top$ and $\latticeelem'\neq \top$} \\
+				%
+				\top & \text{otherwise}~.
+			\end{cases}
+		\]
+	\end{itemize}
+\end{definition}
 %
-\kevin{Why do we write "Finite" in $\text{Finite}(S)$?}
-
-In $\float$[B; V], $V$ is a lattice element with domain $\R$, and $B$ is a lattice element with domain 
 %
-\[
-\{ <\!\!x ~|~ x \in \R \}	\cup \{ \leq\!\!x ~|~ x \in \R \}~.
-\]
-%$<\!\!x$ and $\leq\!\!x$ for all $x \in \R$.
-The lattice structure enables type inference to systematically collect and propagate information about both how values are used (cuts) and what values they can take (values).
+\begin{definition}[Join-Semilattices of Cut- and Value Sets]
+	\phantom{a}
+	\begin{enumerate}
+		\item The \emph{join-semilattice of cut sets} is
+		%
+		\[
+			\cutsets = \lattice{\{ <\!\!x ~|~ x \in \R \}	\cup \{ \leq\!\!x ~|~ x \in \R \}}~.
+		\]
+		%
+		\item The \emph{join-semilattice of value sets} is 
+		%
+		\[
+			\valsets = \lattice{\R}~.
+		\]
+	\end{enumerate}
+\end{definition}
+%
+With these notations at hand, we define our types.
+
+\begin{definition}[Types]
+	Types $\tau$ adhere to the grammar\kevin{please complete this definition}
+	%
+	\begin{align*}
+		e {}::={} &\phantom{|} \textbf{int} 
+		\mid \textbf{bool}
+		 \mid \tau_1 * \tau_2 
+		 \mid \tau_1 \rightarrow \tau_2 
+		 \mid \textbf{unit}
+		 \mid\textbf{list}(\tau)
+		 \mid \textbf{ref}(\tau) {\color{red} etc.} \\
+		 %
+		 &| \fin{n} \\
+		 %
+		 &| \float[B; V]
+		  ~,
+	\end{align*}
+	where $n \in \Nats$, $B \in \cutsets$, and $V \in \valsets$.
+\end{definition}
+
+\kevin{Briefly explain each type and what it's supposed to mean}
+\kevin{$\fin{n}$: finite type with values $\{\finconst{0}{n}, \finconst{1}{n}, \ldots, \finconst{(n-1)}{n}\}$. let's explain why we distinguish $1$ from $1_{\# n}$}
+
+%We introduce a type system that analyzes both the cuts and concrete values of floating point expressions. We have the following types:
+%\begin{itemize}
+%    \item Standard types: $\textbf{int}$, $\textbf{bool}$, $\tau_1 * \tau_2$, $\tau_1 \rightarrow \tau_2$, $\textbf{unit}$, $\textbf{list}(\tau)$, $\textbf{ref}(\tau)$, etc. \kevin{can we make "etc." concrete?}
+%    \item $\fin{n}$: finite type with values $\{\finconst{0}{n}, \finconst{1}{n}, \ldots, \finconst{(n-1)}{n}\}$ \kevin{let's explain why we distinguish $1$ from $1_{\# n}$}
+%    \item \float$[B; V]$: floating point type with cut set $B$ and value set $V$ that are elements of the lattice structure described below.
+%\end{itemize}
+
+%\paragraph{Lattice Structure.} 
+%\kevin{is this already necessary to understand the type system or is it just for type inference?}
+%We use a join-semilattice with the following structure, given a domain $D$:
+%\begin{itemize}
+%    \item Elements: $\{\text{Finite}(S) \mid S \text{ is a finite set over } D\} \cup \{\top\}$
+%    \item Ordering: $\text{Finite}(S_1) \sqsubseteq \text{Finite}(S_2)$ if $S_1 \subseteq S_2$, and $x \sqsubseteq \top$ for any $x$
+%    \item Join: $\text{Finite}(S_1) \sqcup \text{Finite}(S_2) = \text{Finite}(S_1 \cup S_2)$, and $x \sqcup \top = \top$ for any $x$
+%    \item Bottom: $\text{Finite}(\emptyset)$
+%    \item Top: $\top$
+%\end{itemize}
+%%
+%\kevin{Why do we write "Finite" in $\text{Finite}(S)$?}
+%
+%In $\float$[B; V], $V$ is a lattice element with domain $\R$, and $B$ is a lattice element with domain 
+%%
+%\[
+%\{ <\!\!x ~|~ x \in \R \}	\cup \{ \leq\!\!x ~|~ x \in \R \}~.
+%\]
+%%$<\!\!x$ and $\leq\!\!x$ for all $x \in \R$.
+%The lattice structure enables type inference to systematically collect and propagate information about both how values are used (cuts) and what values they can take (values).
 
 \input{figures/lattice}
 
+\kevin{comment start. we explained the following in Sec 2. let's not talk about discretization here?}
 The typing rules are split into two parts: rules specific to float types and continuous distributions (Figure~\ref{fig:typing-float}), and standard rules for all other language constructs (Figure~\ref{fig:typing-general}).
 
 To understand the float typing rules, it is helpful to understand how discretization works.
@@ -60,6 +149,7 @@ A type $\float$[B; V] is discretized as follows:
     \item If $B$ is a finite set of cuts, then the type is discretized to a type $\fin{(n+1)}$ where $n$ is the number of cuts. For instance, if $B = \{<\!\!0.5, \leq\!\!0.8\}$, then the type is discretized to $\fin{3}$, where $\finconst{0}{3}$ represents the range $(-\infty, 0.5)$, $\finconst{1}{3}$ represents the range $[0.5, 0.8]$, and $\finconst{2}{3}$ represents the range $(0.8, \infty)$.
     \item If $B = \top$, then no discretization is performed, and the type remains $\float$.
 \end{itemize}
+\kevin{comment end.}
 
 To understand the typing rules, keep in mind that the $B$ set needs to be sufficiently refined (i.e., contain enough cuts) so that the discretized program has enough information to determine how the original continuous program behaved.
 
