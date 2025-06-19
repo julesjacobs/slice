@@ -102,7 +102,7 @@ This yields the annotated program after type inference:
     x < y
 \end{lstlisting}
 
-Only finite values exist in the value sets here since there are no continuous distributions in this example and thus no Top. By locating where each value in the value set falls relative to the cut set, we can determine the corresponding interval index for each value. \codetype{\ftb{<0.5}{0.2}} corresponds to the index 0, and types \codetype{\ftb{<0.5}{2.5}}, \codetype{\ftb{<0.5}{4.5}}, and \codetype{\ftb{<0.5}{0.5}} correspond to the index 1. This in turn yields the following discretized program:
+Only finite values exist in the value sets here since there are no continuous distributions in this example and thus no Top. By locating where each value in the value set falls relative to the cut set, we can determine the corresponding interval index for each value. \codetype{\ftb{<0.5}{0.2}} corresponds to the index 0, and types \codetype{\ftb{<0.5}{2.5}}, \codetype{\ftb{<0.5}{4.5}}, and \codetype{\ftb{<0.5}{0.5}} correspond to the index 1. The value sets in types \codetype{\ftb{<0.5}{0.2, 2.5, 4.5}} and \codetype{\ftb{<0.5}{2.5, 4.5}} arise from taking the union of the value sets from each conditional branch. This in turn yields the following discretized program:
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em]
     let x = if flip() then 0
@@ -364,7 +364,7 @@ This canonical example involves both discrete and continuous random variables an
 
 \noindent Here, \texttt{uniform(0,10)} becomes \texttt{discrete(0.1, 0.9)} representing 10\% probability for $[0,1)$ and 90\% for $[1,10]$. Similarly, \texttt{uniform(0,4)} becomes \texttt{discrete(0.25, 0.75)}. Constants like 10.0 and 4.0 that fall in the interval $[1,+\infty)$ are mapped to index 1.
 
-\subsection{Partial discretization for non-constant comparisons}\label{sec:examples:partial2}
+\subsection{Partial discretization for non-constant comparisons}\label{sec:examples:partial1}
 
 Not all programs can be fully discretized. Consider a program where continuous variables are compared directly to each other rather than to constants:
 
@@ -390,11 +390,10 @@ Not all programs can be fully discretized. Consider a program where continuous v
   let y = gaussian(0, 1) in
   if discrete(0.5, 0.5) < 1 then x < y else y < x
 \end{lstlisting}
-\noindent The branching condition gets discretized, but \texttt{x} and \texttt{y} remain continuous because they are only compared to each other, not to constants. This partially discretized program has its benefits: it can be fed into sampling algorithms such as MCMC which condition on discrete branches more effectively.
+\noindent The branching condition gets discretized, but \texttt{x} and \texttt{y} remain continuous because they are only compared to each other, not to constants.
 
-
-\subsection{Partial discretization with no comparisons}\label{sec:examples:partial1}
-The example in subsection~\ref{sec:examples:5} shows a program that can only be partially discretized due to continuous variables being compared directly to each other rather than to constants. If no comparisons are made with continuous distributions, the best \Slice{} can do is also a partial discretization. Consider the following example:
+\subsection{Partial discretization for continuous values without comparisons}\label{sec:examples:partial2}
+The example in subsection~\ref{sec:examples:partial1} shows a program that can only be partially discretized due to continuous variables being compared directly to each other rather than to constants. If no comparisons are made with continuous distributions, the best \Slice{} can do is also a partial discretization. Consider the following example:
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
     let x = uniform(0,1) in
@@ -402,13 +401,47 @@ The example in subsection~\ref{sec:examples:5} shows a program that can only be 
     if y < 0.5 then beta(1,1) else uniform(0,2)
 \end{lstlisting}
 
-\subsection{Partial discretization with discrete values}\label{sec:examples:partial3}
+Here, \Slice{} does not identify any cuts for the subexpressions \texttt{x} and \texttt{if y < 0.5 then beta(1,1) else uniform(0,2)}, both of which have $\top$ value sets. As a result, their cut sets are empty. Nonetheless, \Slice{} still preserves the semantics of the original program by not discretizing the return value, setting the cut set of the return values to $\top$. This is because the return value is considered part of the program’s observable behavior, so external code may perform arbitrary comparisons against it, including comparisons to real numbers not present in the program. In contrast, variables like \texttt{x}, which are never used in comparisons, can safely be discretized without affecting the program’s semantics.
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
-    let x = if gaussian(0,1) < 0.5 then 1.0 else 2.0 
+  let x = uniform(0,1) : !{\ft{}}! in
+  let y = gaussian(0,1) : !{\ft{<0.5}}! in
+  (if y < (0.5 : !{\ftb{<0.5}{0.5}}!) then beta(1,1) : !{\ftt}! 
+    else uniform(0,2) : !{\ftt}!) 
+    : !{\ftt}!
+\end{lstlisting}
+
+An empty cut set in a float type implies $\mathbb{R}$ with no partitions, or simply the real number line, and thus the probability mass in $(-\infty, +\infty)$ is 1 for any continuous distribution. This leads to the distribution \texttt{discrete(1,0)} for \texttt{uniform(0,1)}. The following is the partially discretized program:
+
+\begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
+  let x = discrete(1, 0)
+  let y = discrete(0.691462, 0.308538) in
+  if y < 1 then beta(1,1) else uniform(0,2)
+\end{lstlisting}
+
+\subsection{Partial discretization for discrete values without comparisons}\label{sec:examples:partial3}
+The prior example considers the case when no cuts exist for continuous distributions, but here we illustrate the case when no cuts exist for discrete float values. 
+
+\begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
+    let x = if flip() then 1.0 else 2.0 
     in 3.0
 \end{lstlisting}
-\katherine{will finish the last two examples. want to show that we preserve top level return values}
+
+This yields the following type-annotated program:
+
+\begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
+  let x = (if flip() then (1.0 : !{\ftb{}{1}}!) 
+          else (2.0 : !{\ftb{}{2}}!))
+          : !{\ftb{}{1,2}}!
+  in 3.0 : !{\ftv{3}}!) : !{\ftv{3}}!
+\end{lstlisting}
+
+The float constants 1.0 and 2.0 are discretized away based on their empty cut sets, while the constant 3.0 is preserved as a return value, hence the float type \codetype{\ftv{3}}. For an empty cut set, all float constants in a non-empty value set are trivially mapped to the index 0. From the type-annotated program, the partially discretized program is obtained:
+
+\begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
+  let x = if flip() then 0 else 0 in
+  in 3
+\end{lstlisting}
 
 % \subsection{Plankton}
 % This second example is an ecological model that highlights the difficulties in estimating $n$ for discrete models of plankton populations. Inference over discrete latent variables, particularly when one of those variables controls the domain of another random variable, is challenging, but Slice performs exact inference for such programs. Here, \textbf{param} is a latent discrete random variable representing the number of trials in a hypotehtical ecological setting, drawn uniformly at random from the integers between 10 and 50 inclusive. Given the latent param, a binomial distribution is used to model the number of observed plankton, in this case \textbf{planktonCount}.
