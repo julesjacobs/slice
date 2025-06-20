@@ -4,7 +4,7 @@
             let rec aux (env : ty StringMap.t) (ExprNode e_node : expr) : texpr =
                 match e_node with
                 | Const f -> 
-                (* Constant float: Create bag refs *) 
+                (* Float constant: Create bag refs *) 
                 let cuts_bag_ref = Lats.CutLat.create (Finite CutSet.empty) in 
                 let consts_bag_ref = Lats.FloatLat.create (Finite (FloatSet.singleton f)) in
                 (TFloat (cuts_bag_ref, consts_bag_ref), TAExprNode (Const f))
@@ -14,6 +14,19 @@
                 let cuts_bag_ref = Lats.CutLat.create (Finite CutSet.empty) in 
                 let consts_bag_ref = Lats.FloatLat.create Top in 
 
+                | If (e1, e2, e3) ->
+                    let t1, a1 = aux env e1 in
+                    (try sub_type t1 Ast.TBool (* Condition must be bool *) 
+                    with Failure msg -> failwith ("Type error in If condition: " ^ msg));
+                    let t2, a2 = aux env e2 in
+                    let t3, a3 = aux env e3 in
+                    let result_ty = Ast.fresh_meta () in (* Fresh meta for the result *) 
+                    (try 
+                    sub_type t2 result_ty; (* Enforce true_branch <: result *) 
+                    sub_type t3 result_ty  (* Enforce false_branch <: result *) 
+                    with Failure msg -> failwith ("Type error in If branches: " ^ msg)); 
+                    (result_ty, TAExprNode (If ((t1,a1), (t2,a2), (t3,a3))))
+                    
                 | Cmp (cmp_op, e1, e2) ->
                     let t1, a1 = aux env e1 in
                     let t2, a2 = aux env e2 in
@@ -31,24 +44,24 @@
                         | Top, Top -> 
                         (* Both Top -> BoundBag should be Top *) 
                         Lats.CutLat.leq (Lats.CutLat.create Top) b_meta
-                    | Finite _, Finite s2 ->
-                        (* Both are not Top. *)
-                        (* Only collect the cuts from the right bag, the constant itself *)
-                        (* Temporarily store cuts to add *)
-                        (* Apply collected cuts to b_meta *) 
-                    | _, _ ->
-                        (* Only one is Top. *)
-                        (* Add cuts from Finite bags. *)
-                        (* Temporarily store cuts to add *) 
-                        (* Collect cuts from right bag (c_meta2) *) 
-                        (* Collect cuts from left bag (c_meta1) *) 
-                        (* Apply collected cuts to b_meta *) 
-                  in
-                  (* Register the combined listener on both float bags *) 
-                  Lats.FloatLat.listen c_meta1 listener;
-                  Lats.FloatLat.listen c_meta2 listener;
-          
-                  (TBool, TAExprNode (Cmp (cmp_op, (t1,a1), (t2,a2))))
+                        | Finite _, Finite s2 ->
+                            (* Both are not Top. *)
+                            (* Only collect the cuts from the right bag, the constant itself *)
+                            (* Temporarily store cuts to add *)
+                            (* Apply collected cuts to b_meta *) 
+                        | _, _ ->
+                            (* Only one is Top. *)
+                            (* Add cuts from Finite bags. *)
+                            (* Temporarily store cuts to add *) 
+                            (* Collect cuts from right bag (c_meta2) *) 
+                            (* Collect cuts from left bag (c_meta1) *) 
+                            (* Apply collected cuts to b_meta *) 
+                    in
+                    (* Register the combined listener on both float bags *) 
+                    Lats.FloatLat.listen c_meta1 listener;
+                    Lats.FloatLat.listen c_meta2 listener;
+            
+                    (TBool, TAExprNode (Cmp (cmp_op, (t1,a1), (t2,a2))))
     
                 | (* Other Slice constructs... *)
 

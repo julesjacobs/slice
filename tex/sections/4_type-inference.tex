@@ -9,50 +9,44 @@ Given a source program, \Slice{} first performs type inference on the program, a
 Both components start at the bottom of their respective lattices ($\emptyset$) and monotonically accumulate information through constraint propagation. The implementation maintains sets as mutable references with attached listeners that propagate updates immediately when new information becomes available. The listeners of a set are triggered when the lattice value goes up in the lattice (it can never go down; the changes are always monotone).
 For instance, to maintain the constraint $B_1 \leq B_2$, the system registers a listener that propagates updates from $B_1$ to $B_2$ when $B_1$ goes up.
 
-\paragraph{Basic constraints between sets.} We maintain three types of constraints between sets:
-\begin{description}
-    \item[Order:] $B_1 \sqsubseteq B_2$ means that $B_1$ is lower than or equal to $B_2$ in the lattice order. This is enforced with a listener on $B_1$ that increases $B_2$ to maintain the constraint.
-    \item[Answerability:] $B \textit{ answers} \leq\!\!V$ or $B \textit{ answers} <\!\!V$ means that $B$ contains $\leq\!\!v$ or $<\!\!v$ for every $v \in V$. This is enforced with a listener on $V$ that adds the corresponding cut to $B$.
-    \item[Distinguishability:] $B \textit{ distinguishes } V$ means that every interval in $B$ has at most one point in $V$. This is enforced with a listener on $V$ that adds $\leq\!\!v$ to $B$ for every $v \in V$. Note that this may not lead to the coarsest possible cut set, but it is sound.
-\end{description}
-In each case, if the set is set to $\top$, we propagate the required $\top$ to the other set.
+% \paragraph{Subtyping and equality constraints.} To maintain subtyping constraints $\tau_1 <: \tau_2$ between types, we recurse into the types according to the rules in \Cref{fig:subtyping}. Whenever one of the sides is a type variable, we instantiate it with the corresponding type of the other side, and add subtyping constraints according to the rules. When both sides are type variables, we add listeners to the type variables that propagate the subtyping constraints whenever one side is instantiated. To enforce equality between types, we enforce subtyping both ways.
 
-\paragraph{Subtyping and equality constraints.} To maintain subtyping constraints $\tau_1 <: \tau_2$ between types, we recurse into the types according to the rules in \Cref{fig:subtyping}. Whenever one of the sides is a type variable, we instantiate it with the corresponding type of the other side, and add subtyping constraints according to the rules. When both sides are type variables, we add listeners to the type variables that propagate the subtyping constraints whenever one side is instantiated. To enforce equality between types, we enforce subtyping both ways.
-
-\begin{itemize}
-    \item \textbf{Base types}: Must match exactly (\bool{}, \intty{}, $\text{fin}(n)$, $\text{unit}$)
-    \item \textbf{Float types}: $\float[B_1; V_1] <: \float[B_2; V_2]$ requires:
-        \begin{itemize}
-            \item $B_1 = B_2$ (cut bags must be equal for safe discretization)
-            \item $V_1 \sqsubseteq V_2$ (values flow covariantly)
-        \end{itemize}
-    \item \textbf{Structural types}: 
-        \begin{itemize}
-            \item Pairs and lists are covariant in their components
-            \item Functions are contravariant in arguments, covariant in results
-            \item References are invariant (require exact type match)
-        \end{itemize}
-\end{itemize}
+% \begin{itemize}
+%     \item \textbf{Base types}: Must match exactly (\bool{}, \intty{}, $\text{fin}(n)$, $\text{unit}$)
+%     \item \textbf{Float types}: $\float[B_1; V_1] <: \float[B_2; V_2]$ requires:
+%         \begin{itemize}
+%             \item $B_1 = B_2$ (cut bags must be equal for safe discretization)
+%             \item $V_1 \sqsubseteq V_2$ (values flow covariantly)
+%         \end{itemize}
+%     \item \textbf{Structural types}: 
+%         \begin{itemize}
+%             \item Pairs and lists are covariant in their components
+%             \item Functions are contravariant in arguments, covariant in results
+%             \item References are invariant (require exact type match)
+%         \end{itemize}
+% \end{itemize}
 
 \subsection{Algorithm for Type Inference}
-We describe in detail our type inference algorithm. We specifically focus on how our algorithm generates and solves constraints for float types, in particular continuous distributions and float constants, as type checking for non-float types is standard: all other constructs with non-float return values follow their standard typing rules shown in Figure~\ref{fig:typing-general}. The steps of the algorithm are outlined below.
+We describe in detail our type inference algorithm. We specifically focus on how our algorithm generates and solves constraints for float types, in particular continuous distributions and float constants, as type checking for non-float types is standard: all other constructs with non-float return values follow their standard typing rules shown in Figure~\ref{fig:typing-general}. The high-level steps of the algorithm are outlined below, and the pseudocode for the algorithm is outlined in Figure~\ref{fig:inference-code} \katherine{need to cut}.
 
 \begin{enumerate}
-    \item \textbf{Initialization of float types.} Start by initializing the $\float[B;V]$ type for all subexpressions that return floats. Specifically, float constants $c$ start with type $\float[\emptyset; \{c\}]$ (empty cut set, singleton value set) and continuous distributions start with type $\float[\emptyset; \top]$ (empty cut set, Top value set). All cut sets start empty. 
+    \item \textbf{Initialization of float types.} Start by initializing the $\float[B;V]$ type for all subexpressions that return floats. Specifically, float constants $c$ start with type $\float[\emptyset; \{c\}]$ (empty cut set, singleton value set) and continuous distributions start with type $\float[\emptyset; \top]$ (empty cut set, Top value set). 
     
-    \item \textbf{Value set propagation for value sets.} For every if-else statement, take the union of the value sets in the branches of the conditional, where anything unioned with $\top$ is $\top$.
+    \item \textbf{Constraints for conditionals.} Let $V_1, V_2$ and $B_1, B_2$ be the value sets and cut sets of the if- and else- branches in a conditional statment, respectively. Let $V$ and $B$ be the value set and cut set of the entire conditional. Then, $V = V_1 \latticesup V_2$ and $B = B_1 = B_2$.
     
-    \item \textbf{Answerability constraints for cut sets.} Comparisons generate answerability constraints which populate cut sets. In particular, $\float[B_1; V_1] < \float[B_2; V_2]$ generates the answerability constraint ``$B_1$ answers $<V_2$''. Without loss of generality, assume that $B_1$ is the cut set that is populated with new cuts. There are several cases that can happen:
+    \item \textbf{Constraints for comparisons.} Comparisons generate answerability constraints which populate cut sets as well as equality constraints between cut sets.
+    \begin{enumerate}
+        \item \textbf{Answerability constraints.} In particular, $\float[B_1; V_1] < \float[B_2; V_2]$ generates the answerability constraint ``$B_1$ answers $<V_2$''. 
+        \begin{itemize}
+            \item If $V_1 = V_2 = \top$, then $B_1 = \top$.
+            \item If $V_1 \neq \top$ and $V_2 = \top$, then $B_1 = V_1$. If $V_2 \neq \top$ and $V_1 = \top$, then $B_1 = V_2$.
+            \item If $V_1 \neq \top$ and $V_2 \neq \top$, then $B_1 = V_2$.  
+        \end{itemize}
+
+        \item \textbf{Equality constraints for comparisons.} In particular, for $\float[B_1; V_1] < \float[B_2; V_2]$, set $B_1 = B_2$. 
+    \end{enumerate}
     
-    \begin{itemize}
-        \item If $V_1 = V_2 = \top$, then $B_1 = \top$.
-        \item If $V_1 \neq \top$ and $V_2 = \top$, then $B_1 = V_1$. If $V_2 \neq \top$ and $V_1 = \top$, then $B_1 = V_2$.
-        \item If $V_1 \neq \top$ and $V_2 \neq \top$, then $B_1 = V_2$.  
-    \end{itemize}
-    
-    \item \textbf{Equality constraints for cut sets.} Set equality constraints between the cut sets of float types in comparisons. In particular, for $\float[B_1; V_1] < \float[B_2; V_2]$, set $B_1 = B_2$. For any variable with a newly updated cut set, set equality constraints for all subexpressions of that variable.
-    
-    \item \textbf{Constraint solver.} Solve all constraints, resulting in an AST where every expression carries its valid type. The annotated program is ready for discretization, with all comparison points captured in the refinements.
+    \item \textbf{Constraint solver.} Solving all constraints results in an annotated program ready for discretization, with all comparison points captured in the refinements.
 \end{enumerate}
 
 \input{figures/inference-code.tex}
@@ -88,32 +82,28 @@ The bags are then solved in the following manner:
 
 \begin{enumerate}
     \item \textbf{Initialization:}
-    Float constants get singleton values in their value sets: $V_2=\{0.5\}$, $V_5=\{1.5\}$, $V_6=\{1.8\}$, $V_7=\{0.3\}$. Continuous distributions get $\top$ values in their value sets: $V_1=V_3=V_4=\top$. All cut sets start empty: $B_1 = B_2 = ... = B_7 = \emptyset$.
+    Float constants get singleton values in their value sets: $V_2=\{0.5\}$, $V_5=\{1.5\}$, $V_6=\{1.8\}$, $V_7=\{0.3\}$. Continuous distributions get $\top$ values in their value sets: $V_1=V_3=V_4=\top$.
 
-    \item \textbf{Value set propagation:} 
-    Set $V_x = V_3 \cup V_4 = \top$, and set $V_y = V_6 \cup V_7 = \{1.8, 0.3\}$.
+    \item \textbf{Constraints for conditionals:} 
+    Set $V_x = V_3 \latticesup V_4 = \top$ and $V_y = V_6 \latticesup V_7 = \{1.8, 0.3\}$. Set $B_x = B_3 = B_4$ and $B_y = B_6 = B_7$.
 
-    \item \textbf{Answerability constraints:}
+    \item \textbf{Constraints for comparisons:}
     Comparisons generate answerability constraints which populate the cut bags: 
     \begin{itemize}
-        \item `uniform(0,1) < 0.5`: Adds the constraint ``$B_1$ answers $<\!\!V_2$'', or $B_1 = V_2$ since $V_1 = \top$. 
-        \item `1.5 < x`: Adds ``$B_5$ answers $< V_x$'', or $B_5 = V_5$ since $V_x = \top$.  
-        \item `x <= y`: Adds ``$B_x$ answers $\leq V_y$'', or $B_x = V_y$ since $V_x = \top$.
+        \item `uniform(0,1) < 0.5`: Set $B_1 = V_2$ since $V_1 = \top$. 
+        \item `1.5 < x`: Set $B_5 = V_5$ since $V_x = \top$.  
+        \item `x <= y`: Set $B_x = V_y$ since $V_x = \top$.
     \end{itemize}
-
-    \item \textbf{Equality constraints:}
-    The type inference enforces equality on cut bags for subexpressions involved in comparisons or belonging to different branches of an `if` statement.
+   Enforce equality on cut bags for subexpressions involved in comparisons:
     \begin{itemize}
         \item From `uniform(0,1) < 0.5`: $B_1 = B_2$.
-        \item From the `if` expression assigned to `x`: $B_3 = B_4 = B_x$.
-        \item From the `if` expression assigned to `y`: $B_6 = B_7 = B_y$.
         \item From `1.5 < x`: $B_5 = B_x$.
         \item From `x <= y`: $B_x = B_y$.
     \end{itemize}
-    All cut bags are therefore in two equivalence classes: $B_{12}$ ($= B_1 = B_2$) and $B_{xy}$ ($=B_x=B_y=B_3=B_4=B_5=B_6=B_7$).
 
     \item \textbf{Solver:}
-    Combining all constraints on $B_{xy}$ ($=B_x=B_y=B_3=B_4=B_5=B_6=B_7$) gives the final cut set: $\{ \leq\!0.3, <\!1.5, \leq\!1.8 \}$. The set $B_{12}$ ($=B_1=B_2$) for the first comparison is $\{ <\!0.5 \}$.
+    All cut bags are therefore in two equivalence classes: $B_{12}$ ($= B_1 = B_2$) and $B_{xy}$ ($=B_x=B_y=B_3=B_4=B_5=B_6=B_7$).
+    Combining all constraints on $B_{xy}$ gives the final cut set: $\{ \leq\!0.3, <\!1.5, \leq\!1.8 \}$. The set $B_{12}$ for the first comparison is $\{ <\!0.5 \}$.
 \end{enumerate}
 
 This results in the following fully annotated program:
