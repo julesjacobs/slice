@@ -4,26 +4,17 @@
 %
 \input{figures/grammar}
 %
+\Slice{} extends a simple first-order functional language with support for making probabilistic choices. \Slice{} supports standard programming language constructs such as constants, variables, comparisons, boolean operations, conditionals, for loops, pairs, and lists. Additional constructs include first-class functions, surely-terminating recursion, mutable state, and first-class observations enabling \Slice{} to support Bayesian reasoning in the presence of evidence. In particular, $\text{observe}(e)$ conditions the program execution on a boolean expression $e$ being true. For probabilistic constructs, \Slice{} supports a wide variety of continuous and discrete distributions. Continuous distributions can be further characterized by the number of parameters they take in: \Slice{} supports continuous distributions with one argument (exponential, laplace, etc.) or two arguments (uniform, gaussian, beta, gamma, etc.).
+\katherine{might want to make a comment about support for arithmetic.}
+
+% \item \textbf{Discrete distributions}: The $\discrete(p_0, \ldots, p_{n-1})$ construct returns a finite type value $\finconst{k}{n}$ \kevin{let's maybe explain the types first?  $\finconst{k}{n}$ is not introduced} with probability $p_k$.
+
 \begin{definition}[The \Slice{} Language]
 	Programs (or expressions) $\expr$ in the language \Slice{} adhere to the grammar shown in \Cref{fig:grammar}.
 \end{definition}
-\kevin{Let us briefly explain each construct ..}
-\kevin{... (i) standard constructs}
-\kevin{... (ii) probabilisic constructs}
-
-The syntax of the \Slice{} language is shown in Figure~\ref{fig:grammar}.
-Beyond basic functional constructs, the language includes the following constructs:
-\begin{itemize}
-    \item \textbf{Discrete distributions}: The $\discrete(p_0, \ldots, p_{n-1})$ construct returns a finite type value $\finconst{k}{n}$ \kevin{let's maybe explain the types first?  $\finconst{k}{n}$ is not introduced} with probability $p_k$.
-    \item \textbf{Continuous distributions}: The implementation supports distributions including uniform, Gaussian, exponential, beta, gamma, Laplace, Cauchy, and others.
-    \item \textbf{Observations}: The $\text{observe}(e)$ construct conditions the program \kevin{execution} on a boolean expression $e$ being true.
-    \item \textbf{Other features}: Features such as lists, recursion, and mutable references are supported.
-\end{itemize}
-
-When we discretize continuous programs, we convert expressions involving continuous distributions into expressions with discrete distributions over the corresponding finite type, and convert less-than comparisons into less-than-or-equal comparisons on the corresponding cutted integer values.
 
 \subsection{Types}\label{sec:types}
-
+This subsection describes the types that \Slice{} supports.
 \kevin{I omit the Finite(...) annotations in the following but we can reintroduce it.}
 \begin{definition}[Join-Semilattice]
 	Let $D$ be a set. The \emph{join-semilattice} induced by $D$ is 
@@ -123,7 +114,7 @@ and $\intervals{\emptyset} = \emptyset$.
 With these notations at hand, we define our types.
 
 \begin{definition}[Types]
-	Types $\tau$ adhere to the grammar\kevin{please complete this definition}
+	Types $\tau$ adhere to the grammar:
 	%
 	\begin{align*}
 		e {}::={} &\phantom{|} \textbf{int} 
@@ -142,8 +133,7 @@ With these notations at hand, we define our types.
 	where $n \in \Nats$, $B \in \cutsets$, and $V \in \valsets$.
 \end{definition}
 
-\kevin{Briefly explain each type and what it's supposed to mean}
-\kevin{$\fin{n}$: finite type with values $\{\finconst{0}{n}, \finconst{1}{n}, \ldots, \finconst{(n-1)}{n}\}$. let's explain why we distinguish $1$ from $1_{\# n}$}
+\Slice{} supports the following: boolean types, pair/tuple types of the form $\tau_1 * \tau_2$ where $\tau_1, \tau_2$ are types, function types of the form $\tau_1 \rightarrow \tau_2$ where $\tau_1$ is an argument type and $\tau_2$ is a return type, unit types for expressions with no explicit return type, list types containing elements of a given type, and reference/mutable types containing a value of a given type. Additionally, we define $\fin{n}$ as a finite type with values $\{\finconst{0}{n}, \finconst{1}{n}, \ldots, \finconst{(n-1)}{n}\}$, where $i_{\# n}$ is an integer type. We define $\float[B; V]$ as a float type with a cut set $B$ and value set $V$ for discretization. Note that $i$ is different from $i_{\# n}$: the former is a float type while the latter is an integer type. This distinction is important since BDD-based exact discrete inference engines require all variables to range over finite domains.
 
 %We introduce a type system that analyzes both the cuts and concrete values of floating point expressions. We have the following types:
 %\begin{itemize}
@@ -203,9 +193,9 @@ Intuitively $V$ contains the possible values that the float expression can take 
 For example, if $B = \{<\!\!0.5, \leq\!\!0.8\}$ and $V = \{0.2, 0.7\}$, then $B$ distinguishes $V$. The intervals induced by $B$ are $(-\infty, 0.5)$, $[0.5, 0.8]$, and $(0.8, \infty)$. The first interval contains $0.2$, the second contains $0.7$, and the third contains no values from $V$, so the condition holds. In contrast, if $V = \{0.2, 0.3\}$, $B$ would not distinguish $V$ because both values lie in the first interval $(-\infty, 0.5)$.\kevin{given these intuitions, let's explain why the rule actually makes sense}
 
 Note that if $e$ is a constant, then $V = \{e\}$ and $B = \emptyset$ distinguishes $V$ (because $V$ is a singleton set, so there are no two elements that could lie in the same interval).
-If $V = \top$ then $V$ essentially contains all possible real values, so we must also have $B = \top$ in that case.
+If $V = \top$ then $V$ essentially contains all possible real values, so we must also have $B = \top$ in that case. \katherine{comment about when $V= \top$ and $B = \emptyset$, this can happen during partial discretization}
 
-The rule for two-argument continuous distributions is similar, but the argument $\Gamma \vdash e_1 : \float[B_1; V_1]$ and $\Gamma \vdash e_2 : \float[B_2; V_2]$ with the constraint that $B_1$ and $B_2$ distinguish $V_1$ and $V_2$ respectively.
+The rule for two-argument continuous distributions is similar, but the argument $\Gamma \vdash e_1 : \float[B_1; V_1]$ and $\Gamma \vdash e_2 : \float[B_2; V_2]$ with the constraint that $B_1$ and $B_2$ distinguish $V_1$ and $V_2$ respectively. The same typing rule for the uniform distribution is used for all other two-argument continuous distributions.
 
 
 
