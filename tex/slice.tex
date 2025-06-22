@@ -94,12 +94,13 @@
 }
 
 \lstdefinelanguage{OCaml}{
-    morekeywords={let, in, if, then, else, fst, snd, fun},
-    morekeywords=[3]{bool, float, int},
+    morekeywords={let, in, if, then, else, fst, snd, fun, match, rec},
     basicstyle=\ttfamily\small,
-    keywordstyle=\bfseries,
-    commentstyle=\itshape,
+    keywordstyle=\bfseries,                            % default keywords
+    keywordstyle=[3]\color{pink}\bfseries,           % types in pink
+    commentstyle=\color{green!50!black}\itshape,
     stringstyle=\ttfamily,
+    morecomment=[s]{(*}{*)}, % OCaml-style comments
     lineskip=-1pt,                
     aboveskip=0.1em,                
     belowskip=0.1em,
