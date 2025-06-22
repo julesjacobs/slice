@@ -40,9 +40,10 @@ We describe in detail our type inference algorithm. We specifically focus on how
     \begin{enumerate}
         \item \textbf{Answerability constraints.} 
         \begin{itemize}
-            \item If $V_1 = V_2 = \top$, then $B_1 = \top$.
-            \item If $V_1 \neq \top$ and $V_2 = \top$, then $B_1 = V_1$. If $V_2 \neq \top$ and $V_1 = \top$, then $B_1 = V_2$.
-            \item If $V_1 \neq \top$ and $V_2 \neq \top$, then $B_1 = V_2$.  
+            \item If $V_1 = V_2 = \top$, then $B_1 = B_1 \latticesup \top$.
+            \item If $V_1 \neq \top$ and $V_2 = \top$, then $B_1 = B_1 \; \latticesup \clt{V_1}$. 
+            \item If $V_2 \neq \top$ and $V_1 = \top$, then $B_1 = B_1 \; \latticesup \clt{V_2}$.
+            \item If $V_1 \neq \top$ and $V_2 \neq \top$, then $B_1 = B_1 \; \latticesup \clt{V_2}$.  
         \end{itemize}
 
         \item \textbf{Equality constraints for comparisons.} Set $B_1 = B_2$. 
@@ -90,7 +91,7 @@ The bags are then solved in the following manner:
     Set $B_x = B_3 = B_4$ and $B_y = B_6 = B_7$.
 
     \item \textbf{Constraints for comparisons:}
-    Comparisons generate answerability constraints which populate the cut bags: Set $B_1 = V_2$, $B_5 = V_5$, and $B_x = V_y$. Enforce equality on cut bags for expressions involved in comparisons: Set $B_1 = B_2$, $B_5 = B_x$, and $B_x = B_y$.
+    Comparisons generate answerability constraints which populate the cut bags: Set $B_1 = B_1 \; \latticesup \clt{V_2}$, $B_5 = B_5 \; \latticesup \clt{V_5}$, and $B_x = B_x \; \latticesup \cleq{V_y}$. Enforce equality on cut bags for expressions involved in comparisons: Set $B_1 = B_2$, $B_5 = B_x$, and $B_x = B_y$.
 
     \item \textbf{Solver:}
     All cut bags are therefore in two equivalence classes: $B_{12}$ ($= B_1 = B_2$) and $B_{xy}$ ($=B_x=B_y=B_3=B_4=B_5=B_6=B_7$).

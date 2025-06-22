@@ -19,12 +19,12 @@
             | Less (e1, e2) ->
                 let t1, a1 = aux env e1 in (* Assume t1 = TFloat(B1, V1) *)
                 let t2, a2 = aux env e2 in (* Assume t2 = TFloat(B2, V2) *)
-                let B =
+                let B = 
                     match V1, V2 with
-                    | T, T -> T
-                    | Finite _, Finite V2 -> V2
-                    | Finite V1, T -> V1
-                    | T, Finite V2 -> V2
+                    | T, T -> B1 $\latticesup$ T
+                    | Finite V1, T -> B1 $\latticesup$ $\clt{V1}$
+                    | T, Finite V2 -> B1 $\latticesup$ $\clt{V2}$
+                    | Finite _, Finite V2 -> B1 $\latticesup$ $\clt{V2}$
                 in
                 (TBool, TAExprNode (Less (TFloat(B,V1), a1), (TFloat(B,V2), a2)))
 
