@@ -5,7 +5,7 @@
             match e_node with
             | Const f ->
                 (TFloat($\emptyset$, f), TAExprNode (Const f))
-            
+
             | Let (x, e1, e2) ->
                 let t1, a1 = aux env e1 in
                 let env' = StringMap.add x t1 env in
@@ -15,7 +15,7 @@
             | Var x ->
                 t = StringMap.find x env in 
                 (t, TAExprNode (Var x))
-            
+
             | Less (e1, e2) ->
                 let t1, a1 = aux env e1 in (* Assume t1 = TFloat(B1, V1) *)
                 let t2, a2 = aux env e2 in (* Assume t2 = TFloat(B2, V2) *)
@@ -27,14 +27,14 @@
                     | T, Finite V2 -> V2
                 in
                 (TBool, TAExprNode (Less (TFloat(B,V1), a1), (TFloat(B,V2), a2)))
-            
+
             | If (e1, e2, e3) ->
                 let t1, a1 = aux env e1 in (* Assume t1 = TBool *)
                 let t2, a2 = aux env e2 in (* Assume t2 = TFloat(B2, V2) *)
                 let t3, a3 = aux env e3 in (* Assume t3 = TFloat(B3, V3) *)
-                let t = TFloat(B2, V2) $<:$ TFloat(B3, V3) in
+                let t = TFloat(B2, V2 $\latticesup$ V3) in (* Assume B1 = B2, t1 <: t, and t2 <: t *)
                 (t, TAExprNode (If ((t1, a1), (t2, a3), (t3, a3))))
-            
+
             | Uniform (e1, e2) ->
                 let t1, a1 = aux env e1 in (* Assume t1 = TFloat(B1, V1) *)
                 let t2, a2 = aux env e2 in (* Assume t2 = TFloat(B2, V2) *)
