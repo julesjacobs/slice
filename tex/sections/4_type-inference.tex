@@ -51,7 +51,7 @@ We describe in detail our type inference algorithm. We specifically focus on how
     
     \item \textbf{Constraint solver.} Solving all constraints results in an annotated program with all comparison points captured in the refinements.
     
-    \item \textbf{Constraints for return values (for partial discretization).} Assuming the return type of a program is of type $\float[B; V]$, if $B = \emptyset$ after solving for all constraints, set $B = \top$ and re-run the constraint solver.
+    \item \textbf{Constraints for return values (for partial discretization).} If the return type of the program has type $\float[B; V]$ and $B = \emptyset$ after solving for all constraints, set $B = \top$ and re-run the constraint solver.
 \end{enumerate}
 
 \input{figures/inference-code.tex}
