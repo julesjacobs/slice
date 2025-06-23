@@ -14,7 +14,8 @@
 \end{definition}
 
 \subsection{Types}\label{sec:types}
-This subsection describes the types that \Slice{} supports.
+We formalize the types that \Slice{} supports. As a first step, we introduce induced join-semilattices --- lattice structures that determine how typing information is merged when programs branch.
+%
 \kevin{I omit the Finite(...) annotations in the following but we can reintroduce it.}
 \begin{definition}[Induced Join-Semilattice]
 	Let $D$ be a set. The \emph{join-semilattice} induced by $D$ is 
@@ -57,6 +58,7 @@ This subsection describes the types that \Slice{} supports.
 	Notice that $\emptyset$ is the bottom element of $\lattice{D}$.
 \end{definition}
 %
+With this notion at hand, we define the following central objects:
 %
 \begin{definition}[Join-Semilattices of Cut- and Value Sets]
 	\phantom{a}
@@ -76,7 +78,8 @@ This subsection describes the types that \Slice{} supports.
 	\end{enumerate}
 \end{definition}
 %
-Elements of $\{ <\!\!x ~|~ x \in \R \}	\cup \{ \leq\!\!x ~|~ x \in \R \}$ are called \emph{cuts}. For $B =\{ \sim_1\!\!x_1, \ldots, \sim_n\!\! x_n \}$ a non-empty set of cuts with $x_1 \leq \ldots \leq x_n$, we define
+Elements of $\{ <\!\!x ~|~ x \in \R \}	\cup \{ \leq\!\!x ~|~ x \in \R \}$ are called \emph{cuts}. Cut sets induce intervals partitioning the reals as follows:
+ For $B =\{ \sim_1\!\!x_1, \ldots, \sim_n\!\! x_n \}$ a non-empty set of cuts with $x_1 \leq \ldots \leq x_n$, we define
 %
 \begin{align*}
 	\intervals{B} {}={} &
@@ -105,14 +108,13 @@ Elements of $\{ <\!\!x ~|~ x \in \R \}	\cup \{ \leq\!\!x ~|~ x \in \R \}$ are ca
 	 \begin{cases}
 	 	\{ (x_n, \infty) \}& \text{if $\sim_n = \leq$} \\
 	 	%
-	 	\{ [x_n, \infty)\}& \text{if $\sim_n = <$} \\
+	 	\{ [x_n, \infty)\}& \text{if $\sim_n = <$} ~.
 	 \end{cases} 
 \end{align*}
 %
-and $\intervals{\emptyset} = \emptyset$.
-
-With these notations at hand, we define our types.
-
+For $B = \emptyset$, we set $\intervals{\emptyset} = \emptyset$. \kevin{$B=\top$?}
+We are now in a position to define our types.
+%
 \begin{definition}[Types]
 	Types $\tau$ adhere to the grammar:
 	%
