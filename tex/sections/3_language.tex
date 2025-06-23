@@ -135,8 +135,13 @@ We are now in a position to define our types.
 	\end{align*}
 	where $n \in \Nats$, $B \in \cutsets$, and $V \in \valsets$.
 \end{definition}
+%
+Let us first briefly go over the standard types:  $\textbf{int}$ is the type of integers, $\textbf{bool}$ is the type of Booleans, $\tau_1 * \tau_2$ is the type of (ordered) pairs of $\tau_1$ and $\tau_2$, $\tau_1 \rightarrow \tau_2$ is the type of functions from $\tau_1$ to $\tau_2$, $\textbf{unit}$ is the unit type, and $\textbf{list}(\tau)$ (resp.\ $\textbf{ref}(\tau)$) is the type of lists (resp.\ references) containing elements of $\tau$.
 
-\Slice{} supports the following: boolean types, pair/tuple types of the form $\tau_1 * \tau_2$ where $\tau_1, \tau_2$ are types, function types of the form $\tau_1 \rightarrow \tau_2$ where $\tau_1$ is an argument type and $\tau_2$ is a return type, unit types for expressions with no explicit return type, list types containing elements of a given type, and reference/mutable types containing a value of a given type. Additionally, we define $\fin{n}$ as a finite type with values $\{\finconst{0}{n}, \finconst{1}{n}, \ldots, \finconst{(n-1)}{n}\}$, where $i_{\# n}$ is an integer type. We define $\float[B; V]$ as a float type with a cut set $B$ and value set $V$ for discretization. Note that $i$ is different from $i_{\# n}$: the former is a float type while the latter is an integer type. This distinction is important since BDD-based exact discrete inference engines require all variables to range over finite domains.
+For every $n \in\Nats$, $\fin{n}$ is the finite type with values $\{\finconst{0}{n}, \finconst{1}{n}, \ldots, \finconst{(n-1)}{n}\}$, i.e., the natural numbers up to $n-1$, where the index ${\#n}$ indicates that those integers stem from a finite type. This information is crucial for inference backends such as \Dice{}.
+
+The type $\float[B; V]$ deserves special attention. First, it indicates that a given expression evaluates to a real number. The cut set $B$ and the value set $V$ carry additional information crucial for discretization. Intuitively ... maybe do in next section, let's see
+% Additionally, we define $\fin{n}$ as a finite type with values $\{\finconst{0}{n}, \finconst{1}{n}, \ldots, \finconst{(n-1)}{n}\}$, where $i_{\# n}$ is an integer type. We define $\float[B; V]$ as a float type with a cut set $B$ and value set $V$ for discretization. Note that $i$ is different from $i_{\# n}$: the former is a float type while the latter is an integer type. This distinction is important since BDD-based exact discrete inference engines require all variables to range over finite domains.
 
 %We introduce a type system that analyzes both the cuts and concrete values of floating point expressions. We have the following types:
 %\begin{itemize}
