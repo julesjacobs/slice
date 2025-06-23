@@ -1,12 +1,12 @@
 \begin{figure}
 \begin{mathpar}
     \inferrule[\textsc{Sub-Refl}]
-    {\ }
+    {\tau\in\{\intty,\bool,\fin{n}\}}
     {\tau <: \tau}
 
-    \inferrule[\textsc{Sub-Trans}]
-    {\tau_1 <: \tau_2 \and \tau_2 <: \tau_3}
-    {\tau_1 <: \tau_3}
+%    \inferrule[\textsc{Sub-Trans}]
+%    {\tau_1 <: \tau_2 \and \tau_2 <: \tau_3}
+%    {\tau_1 <: \tau_3}
 
     \inferrule[\textsc{Sub-Float}]
     {B_1 = B_2 \and V_1 \sqsubseteq V_2}
