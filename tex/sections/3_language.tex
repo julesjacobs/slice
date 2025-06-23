@@ -16,7 +16,7 @@
 \subsection{Types}\label{sec:types}
 This subsection describes the types that \Slice{} supports.
 \kevin{I omit the Finite(...) annotations in the following but we can reintroduce it.}
-\begin{definition}[Join-Semilattice]
+\begin{definition}[Induced Join-Semilattice]
 	Let $D$ be a set. The \emph{join-semilattice} induced by $D$ is 
 	%
 	\[
@@ -215,7 +215,7 @@ Similarly, if $c$ is not a literal constant, but has type $c : \float[B_2; V_2]$
 	~.
 	\]
 	%
-	Analogously, we say that \emph{$B$ answers $\cleq{V}$}, if the above holds with $<$ replaced by $\leq$.
+	%Analogously, we say that \emph{$B$ answers $\cleq{V}$}, if the above holds with $<$ replaced by $\leq$.
 \end{definition}
 
 In the case that $B = \top$, the quantity is not discretized, so the comparison remains continuous.
