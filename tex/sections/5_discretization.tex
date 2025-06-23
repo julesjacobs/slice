@@ -64,7 +64,7 @@ The finite comparison $\finlt{n+1}$ operates on interval indices.
     \item $\texttt{discretize}(\float[B; V]) = \float$ if $B = \top$
     \item $\texttt{discretize}(A \to B) = \texttt{discretize}(A) \to \texttt{discretize}(B)$
     \item $\texttt{discretize}(A \times B) = \texttt{discretize}(A) \times \texttt{discretize}(B)$
-    \item $\texttt{discretize}(\texttt{list}(A)) = \texttt{list}(\texttt{discretize}(A))$
+    \item $\texttt{discretize}(\listty{A}) = \listty{\texttt{discretize}(A)}$
     \item $\texttt{discretize}(\texttt{ref}(A)) = \texttt{ref}(\texttt{discretize}(A))$
     \item Other types remain unchanged.
 \end{itemize}

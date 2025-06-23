@@ -100,17 +100,17 @@
 
     \inferrule[\textsc{Nil}]
     {\ }
-    {\Gamma \vdash \text{nil} : \text{list}(\tau)}
+    {\Gamma \vdash \text{nil} : \listty{\tau}}
 
     \inferrule[\textsc{Cons}]
     {\Gamma \vdash e_1 : \tau \\
-     \Gamma \vdash e_2 : \text{list}(\tau)}
-    {\Gamma \vdash e_1 :: e_2 : \text{list}(\tau)}
+     \Gamma \vdash e_2 : \listty{\tau}}
+    {\Gamma \vdash e_1 :: e_2 : \listty{\tau}}
 
     \inferrule[\textsc{Match}]
-    {\Gamma \vdash e : \text{list}(\tau_1) \\
+    {\Gamma \vdash e : \listty{\tau_1} \\
      \Gamma \vdash e_1 : \tau_2 \\
-     \Gamma, h: \tau_1, t: \text{list}(\tau_1) \vdash e_2 : \tau_2}
+     \Gamma, h: \tau_1, t: \listty{\tau_1} \vdash e_2 : \tau_2}
     {\Gamma \vdash \text{match}\; e\; \text{with}\; \text{nil} \rightarrow e_1 \mid h :: t \rightarrow e_2\; \text{end} : \tau_2}
 
     \inferrule[\textsc{Ref}]
