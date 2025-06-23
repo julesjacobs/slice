@@ -39,7 +39,7 @@ E ::= &\; [\cdot] \\
     | &\; (E, e) \mid (v, E) \\
     | &\; \fstkw \; E \mid \sndkw \; E \\
     | &\; E \; e \mid v \; E \\
-    | &\; \text{observe}\; E \\
+    | &\; \observekw\; E \\
     | &\; E; e \\
     | &\; E :: e \mid v :: E \\
     | &\; \text{match}\; E \; \text{with}\; \ldots \\
@@ -171,11 +171,11 @@ For continuous distributions, the small-step relation returns the set of all pos
 \begin{mathpar}
 \inferrule[\textsc{ObserveTrue}]
 {\ }
-{\text{observe}\; \text{true} \rightarrow \{()\}}
+{\observekw\; \text{true} \rightarrow \{()\}}
 
 \inferrule[\textsc{ObserveFalse}]
 {\ }
-{\text{observe}\; \text{false} \rightarrow \emptyset}
+{\observekw\; \text{false} \rightarrow \emptyset}
 \end{mathpar}
 
 Note that observing a false condition results in an empty set, representing program termination without producing a value.
@@ -434,11 +434,11 @@ Note that for continuous distributions, we have an implicit coercion from distri
 Observations condition the distribution:
 
 \begin{align*}
-\sem{ \text{observe}\; e } &= \sem{ e } \gg\!= \lambda v. \sem{ \text{observe}\; v } \\
-%\sem{ \text{observe}\; \text{true} } &= \delta_{()} \\
-%\sem{ \text{observe}\; \text{false} } &= \bot
+\sem{ \observekw\; e } &= \sem{ e } \gg\!= \lambda v. \sem{ \observekw\; v } \\
+%\sem{ \observekw\; \text{true} } &= \delta_{()} \\
+%\sem{ \observekw\; \text{false} } &= \bot
 %
-\sem{ \text{observe}\; v} &=
+\sem{ \observekw\; v} &=
 \begin{cases}
 	\delta_{()}  & \text{if $v=\true$} \\
 	%
