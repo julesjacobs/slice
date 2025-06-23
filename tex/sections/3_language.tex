@@ -16,7 +16,6 @@
 \subsection{Types}\label{sec:types}
 We formalize the types that \Slice{} supports. As a first step, we introduce induced join-semilattices --- lattice structures that determine how typing information is merged when programs branch.
 %
-\kevin{I omit the Finite(...) annotations in the following but we can reintroduce it.}
 \begin{definition}[Induced Join-Semilattice]
 	Let $D$ be a set. The \emph{join-semilattice} induced by $D$ is 
 	%
@@ -78,7 +77,7 @@ With this notion at hand, we define the following central objects:
 	\end{enumerate}
 \end{definition}
 %
-These lattice structures are exemplified in \Cref{fig:lattice}.
+%These lattice structures are exemplified in \Cref{fig:lattice}.
 Elements of $\{ <\!\!x ~|~ x \in \R \}	\cup \{ \leq\!\!x ~|~ x \in \R \}$ are called \emph{cuts}. Cut sets induce intervals partitioning the reals as follows:
  Given a non-empty cut set $B =\{ \sim_1\!\!x_1, \ldots, \sim_n\!\! x_n \}$ with $x_1 \leq \ldots \leq x_n$, we define
 %
@@ -113,11 +112,10 @@ Elements of $\{ <\!\!x ~|~ x \in \R \}	\cup \{ \leq\!\!x ~|~ x \in \R \}$ are ca
 	 \end{cases} 
 \end{align*}
 %
-For $B = \emptyset$, we set $\intervals{\emptyset} = \{(-\infty,\infty)\}$. \kevin{$B=\top$?}
-We are now in a position to define our types.
+Moreover, we let $\intervals{\emptyset} = \{(-\infty,\infty)\}$ and $\intervals{\top} = 2^\Reals$. This leads us to our types:
 %
 \begin{definition}[Types]
-	Types $\tau$ adhere to the grammar:
+	Types $\tau$ adhere to the grammar
 	%
 	\begin{align*}
 		\tau {}::={} &\phantom{|} \textbf{int} 
@@ -126,21 +124,24 @@ We are now in a position to define our types.
 		 \mid \tau_1 \rightarrow \tau_2 
 		 \mid \textbf{unit}
 		 \mid\listty{\tau}
-		 \mid \textbf{ref}(\tau) \\
+		 \mid \textbf{ref}(\tau) 
+		 \tag{standard types}\\
 		 %
-		 &| \fin{n} \\
+		 &|~ \fin{n} 
+		 \tag{finite value types}\\
 		 %
-		 &| \float[B; V]
+		 &|~ \float[B; V]
+		 \tag{float types}
 		  ~,
 	\end{align*}
 	where $n \in \Nats$, $B \in \cutsets$, and $V \in \valsets$.
 \end{definition}
 %
-Let us first briefly go over the standard types:  $\textbf{int}$ is the type of integers, $\textbf{bool}$ is the type of Booleans, $\tau_1 * \tau_2$ is the type of (ordered) pairs of $\tau_1$ and $\tau_2$, $\tau_1 \rightarrow \tau_2$ is the type of functions from $\tau_1$ to $\tau_2$, $\textbf{unit}$ is the unit type, and $\listty{\tau}$ (resp.\ $\textbf{ref}(\tau)$) is the type of lists (resp.\ references) containing elements of $\tau$.
+Let us first briefly go over the standard types:  $\textbf{int}$ is the type of integers, $\textbf{bool}$ is the type of Booleans, $\tau_1 * \tau_2$ is the type of (ordered) pairs of $\tau_1$ and $\tau_2$, $\tau_1 \rightarrow \tau_2$ is the type of functions from $\tau_1$ to $\tau_2$, $\textbf{unit}$ is the unit type, and $\listty{\tau}$ (resp.\ $\textbf{ref}(\tau)$) is the type of lists (resp.\ references) over $\tau$.
 
-For every $n \in\Nats$, $\fin{n}$ is the finite type with values $\{\finconst{0}{n}, \finconst{1}{n}, \ldots, \finconst{(n-1)}{n}\}$, i.e., the natural numbers up to $n-1$, where the index ${\#n}$ indicates that those integers stem from a finite type. This information is crucial for inference backends such as \Dice{}.
+$\fin{n}$ is the finite type with values $\{\finconst{0}{n}, \finconst{1}{n}, \ldots, \finconst{(n-1)}{n}\}$, i.e., the natural numbers up to $n-1$, where the index ${\#n}$ indicates that those integers stem from a finite type. This information is crucial for inference backends such as \Dice{}, which rely on values being drawn from a finite domain.
 
-The type $\float[B; V]$ deserves special attention. First, it indicates that a given expression evaluates to a real number. The cut set $B$ and the value set $V$ carry additional information crucial for discretization. Intuitively ... maybe do in next section, let's see
+The type $\float[B; V]$ deserves special attention. First, it indicates that a given expression evaluates to a real number. The cut set $B$ and the value set $V$ carry additional information crucial for discretization. Intuitively, the cut set $B$ is an overapproximation of the values the expression of type $\float[B; V]$ will be compared to during program execution (where $\clt{x}$ indicates a non-strict and $\cleq{x}$ indicates a strict comparison), and $V$ is an overapproximation of the values the expression can take. If $B=\top$, then we have no information whatsoever on the values the expression is going to be compared to. Similarly, if $V=\top$, we don't to what real the expression evaluates to.
 % Additionally, we define $\fin{n}$ as a finite type with values $\{\finconst{0}{n}, \finconst{1}{n}, \ldots, \finconst{(n-1)}{n}\}$, where $i_{\# n}$ is an integer type. We define $\float[B; V]$ as a float type with a cut set $B$ and value set $V$ for discretization. Note that $i$ is different from $i_{\# n}$: the former is a float type while the latter is an integer type. This distinction is important since BDD-based exact discrete inference engines require all variables to range over finite domains.
 
 %We introduce a type system that analyzes both the cuts and concrete values of floating point expressions. We have the following types:
@@ -171,7 +172,8 @@ The type $\float[B; V]$ deserves special attention. First, it indicates that a g
 %%$<\!\!x$ and $\leq\!\!x$ for all $x \in \R$.
 %The lattice structure enables type inference to systematically collect and propagate information about both how values are used (cuts) and what values they can take (values).
 
-\input{figures/lattice}
+\kevin{commented out lattice figure for now}
+%\input{figures/lattice}
 
 \subsection{Typing Rules}\label{sec:type-system}
 The typing rules are split into two parts: rules specific to float types and continuous distributions (Figure~\ref{fig:typing-float}), and standard rules for all other language constructs (Figure~\ref{fig:typing-general}).
