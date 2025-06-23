@@ -32,7 +32,7 @@ In a single pass over the AST, the inference algorithm performs type checking, a
 We describe in detail our type inference algorithm. We specifically focus on how our algorithm generates and solves constraints for float types, as type checking for non-float types is straightforward and follows the conventional typing rules presented in Figure~\ref{fig:typing-general}. To elucidate our type inference algorithm, we focus on a small but representative subset of the \Slice{} language that captures the core features needed to demonstrate how the algorithm operates over the full language. In particular, our subset language allows for constants, variables, let bindings, uniform distributions, comparisons, and conditionals, all of which involve float types, either as their return type or within the return type of a subexpression. All other constructs not included in our subset language preserve their structure during type inference. The high-level steps of the algorithm are outlined below, and the pseudocode for the algorithm is outlined in Figure~\ref{fig:inference-code}.
 
 \begin{enumerate}
-    \item \textbf{Initialization of float types.} Initialize $\float[B;V]$ for all floating-point expressions. Ensure float constants $c$ start with type $\float[\emptyset; \{c\}]$ (empty cut set, singleton value set), uniform distributions start with type $\float[\emptyset; \top]$ (empty cut set, Top value set), variables share the same type instance (so any update to a variable is immediately reflected wherever used), conditionals start with type $\float[\emptyset; \{V_1 \latticesup V_2\}]$ assuming the true and false branches of the conditional are float types $\float[\emptyset; V_1]$ and $\float[\emptyset; V_2]$ respectively, and let statements are assigned the type of their most recent binding.
+    \item \textbf{Initialization of float types.} Initialize $\float[B;V]$ for all floating-point expressions. Ensure float constants $c$ start with type $\float[\emptyset; \{c\}]$ (empty cut set, singleton value set), uniform distributions start with type $\float[\emptyset; \top]$ (empty cut set, Top value set), variables share the same type instance (so any update to a variable is immediately reflected wherever used), conditionals start with type $\float[\emptyset; \{V_1 \latticesup V_2\}]$ assuming the true and false branches of the conditional are float types $\float[\emptyset; V_1]$ and $\float[\emptyset; V_2]$ respectively, and let statements share the same type instance of their most recent binding (so any updates are immediately propagated). All cut sets start empty.
     
     \item \textbf{Constraints for conditionals.} Let $B_1, B_2$ be the cut sets of the true and false branches in a conditional with float types $\float[B_1; V_1]$ and $\float[B_2; V_2]$ respectively. Let $B$ be the cut set of the entire conditional. Then, $B = B_1 = B_2$.
 
@@ -49,7 +49,9 @@ We describe in detail our type inference algorithm. We specifically focus on how
         \item \textbf{Equality constraints for comparisons.} Set $B_1 = B_2$. 
     \end{enumerate}
     
-    \item \textbf{Constraint solver.} Solving all constraints results in an annotated program ready for discretization, with all comparison points captured in the refinements.
+    \item \textbf{Constraint solver.} Solving all constraints results in an annotated program with all comparison points captured in the refinements.
+    
+    \item \textbf{Constraints for return values (for partial discretization).} Assuming the return type of a program is of type $\float[B; V]$, if $B = \emptyset$ after solving for all constraints, set $B = \top$ and re-run the constraint solver.
 \end{enumerate}
 
 \input{figures/inference-code.tex}
@@ -81,7 +83,7 @@ This obtains the following annotated program with unknown bags:
     (x : !{\codetype{float[$B_x$; $V_x$]}}!) <= (y : !{\codetype{float[$B_y$; $V_y$]}}!)
 \end{lstlisting}
 
-The bags are then solved in the following manner:
+The bags are then solved in the following manner. We omit the annotations for the \textbf{bool} types for clarity and conciseness:
 
 \begin{enumerate}
     \item \textbf{Initialization:}
@@ -122,5 +124,5 @@ We formalize the above notions in a way that will allow us to in the next sectio
     An subexpression is \textit{co-continuous} if it is not co-discrete.
 \end{definition}
 
-The above example shows how comparison points accumulate in the value and cut bags through the constraint propagation mechanism, even when comparisons appear in different branches of the program. Note that all expressions in this example are co-discrete. A simple change at the end of the program from $x \leq y$ to $y$ would have rendered the expressions $1.8$, $0.3$, and $y$ co-continuous, of the types $\float[; 1.8]$, $\float[; 0.3]$, and $\float[; 0.3, 1.8]$ respectively.
+The above example shows how comparison points accumulate in the cut and value sets through the constraint propagation mechanism, even when comparisons appear in different branches of the program. Note that all expressions in this example are co-discrete. A simple change at the end of the program from $x \leq y$ to $y$ would have rendered the expressions $1.8$, $0.3$, and $y$ co-continuous, with types \codetype{\ftv{1.8}}, \codetype{\ftv{0.3}}, and \codetype{\ftv{0.3, 1.8}}, respectively. These types are obtained after the return type constraint is applied: since $y$ is the return value and its cut set $B_y$ remains empty after constraint solving, the system sets $B_y = \top$.
 
