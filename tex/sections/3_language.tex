@@ -113,14 +113,14 @@ Elements of $\{ <\!\!x ~|~ x \in \R \}	\cup \{ \leq\!\!x ~|~ x \in \R \}$ are ca
 	 \end{cases} 
 \end{align*}
 %
-For $B = \emptyset$, we set $\intervals{\emptyset} = \emptyset$. \kevin{$B=\top$?}
+For $B = \emptyset$, we set $\intervals{\emptyset} = \{(-\infty,\infty)\}$. \kevin{$B=\top$?}
 We are now in a position to define our types.
 %
 \begin{definition}[Types]
 	Types $\tau$ adhere to the grammar:
 	%
 	\begin{align*}
-		e {}::={} &\phantom{|} \textbf{int} 
+		\tau {}::={} &\phantom{|} \textbf{int} 
 		\mid \textbf{bool}
 		 \mid \tau_1 * \tau_2 
 		 \mid \tau_1 \rightarrow \tau_2 
@@ -213,6 +213,7 @@ To understand the typing rules for less-than and less-than-or-equal comparisons,
 Similarly, if $c$ is not a literal constant, but has type $c : \float[B_2; V_2]$, then $c$ can take on values in $V_2$. Therefore, if $V = \{v_1, v_2, \dots, v_n\}$ then $B_1$ must contain the comparisons $<\!\!v_1, <\!\!v_2, \dots, <\!\!v_n$. This motivates the following definition:
 
 \kevin{I adapted the following}
+\kevin{get rid of implicit $x\not\in\top$}
 \begin{definition}
 	\label{def:answers-less}
 	Let $B\in \cutsets$ and $V\in\valsets$.
