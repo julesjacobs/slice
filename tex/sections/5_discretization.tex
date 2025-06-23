@@ -1,13 +1,13 @@
 \section{Discretization}\label{sec:discretization}
 
-After type inference, each float-typed expression carries refinement information in its $\float[B; V]$ type. The discretization transformation uses this information to convert continuous probabilistic programs into discrete ones that can be analyzed exactly. The key insight is that if an expression with a float type $\float[B; V]$ is co-discrete, we can partition the continuous range $(-\infty, +\infty)$ into intervals separated by the cuts $\clt{x_1}, ..., \clt{x_n} \in B$ to obtain $\intervals{B}$, giving us the finite type $\fin{n+1}$ where $n$ is the number of cuts. Then, depending on $V$: 
+After type inference, each float-typed expression carries refinement information in its $\float[B; V]$ type. The discretization transformation uses this information to convert continuous probabilistic programs into discrete ones that can be analyzed exactly. The key insight is that if an expression with a float type $\float[B; V]$ is co-discrete, we can partition the continuous range $(-\infty, +\infty)$ into intervals separated by the cuts $\clt{x_1}, ..., \clt{x_n} \in B$ to obtain $\intervals{B}$, giving the finite type $\fin{n+1}$ where $n$ is the number of cuts, where $\finconst{0}{n+1}$ is mapped to $(-\infty, x_1)$, $\finconst{1}{n+1}$ is mapped to $(x_1, x_2)$, and so on until $\finconst{n}{n+1}$ is mapped to $(x_n, +\infty)$. Then, depending on $V$: 
 
 \begin{itemize}
-    \item if $V = \top$: The probability of each outcome in in $\fin{n+1}$ is the probability mass of the original continuous distribution within the corresponding interval. This gives the discrete distribution $\discrete(p_0, \ldots, p_{n-1})$ which returns a finite type value $\finconst{k}{n}$ with probability $p_k$.
-    \item if $V = \{c\}$: The float constant $c$ is mapped to an integer index $k$ depending on where $c$ lies in \intervals{B}. The finite type value $\finconst{k}{n}$ is returned.
+    \item if $V = \top$: Each value in $\fin{n+1}$ occurs with the probability mass of the original continuous distribution within the corresponding interval. This gives a $\discrete(p_0, \ldots, p_{n})$ distribution, which returns a finite type value $\finconst{k}{n+1}$ with probability $p_k$.
+    
+    \item if $V = \{c_1, ..., c_n\}$: Each float constant $c \in {c_1, ..., c_n}$ is assigned an integer index $k$ corresponding to the interval in $\intervals{B}$ that contains $c$. For each $c$, the finite type value $\finconst{k}{n+1}$ is returned.
 \end{itemize}
 
-% \item \textbf{Discrete distributions}: The $\discrete(p_0, \ldots, p_{n-1})$ construct returns a finite type value $\finconst{k}{n}$ \kevin{let's maybe explain the types first?  $\finconst{k}{n}$ is not introduced} with probability $p_k$.
 
 If an expression with a float type is co-continuous, proper discretization cannot be performed for that expression and as a result \Slice{} preserves its original semantics.
 
