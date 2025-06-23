@@ -39,12 +39,12 @@
                 let t1, a1 = aux env e1 in (* Assume t1 = TFloat(B1, V1) *)
                 let t2, a2 = aux env e2 in (* Assume t2 = TFloat(B2, V2) *)
                 let t = TFloat($\emptyset$, T) in 
-                add_floats_to_cutbag V1 B1;
-                add_floats_to_cutbag V2 B2;
-                make_output_top_if_input_cutbag_is_top B1;
-                make_output_top_if_input_cutbag_is_top B2;
-                make_input_top_if_output_cutbag_is_top B1 t;
-                make_input_top_if_output_cutbag_is_top B2 t;
+                add_floats_to_cutset V1 B1;
+                add_floats_to_cutset V2 B2;
+                make_output_cutset_top_if_input_cutset_is_top B1;
+                make_output_cutset_top_if_input_cutset_is_top B2;
+                make_input_cutset_top_if_output_cutset_is_top B1 t;
+                make_input_cutset_top_if_output_cutset_is_top B2 t;
                 (t, TAExprNode (Uniform ((t1, a1), (t2, a2))))
 
             | (* Other Slice constructs... *)
