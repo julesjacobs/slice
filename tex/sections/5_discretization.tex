@@ -1,59 +1,15 @@
 \section{Discretization}\label{sec:discretization}
 
-After type inference, each float-typed expression carries refinement information in its $\float[B; V]$ type. The discretization transformation uses this information to convert continuous probabilistic programs into discrete ones that can be analyzed exactly. We describe our discretization method in terms of probability spaces. In a general sense, a discretization function takes as input a probability space $(\Omega, \Sigma, \mu)$ and outputs a discrete probability space $(\Omega_D, \Sigma_D, \mu_D)$ where $\mu_D$ is a countable set. Let $\mathbb{R}$ denote the set of all real numbers and $\mathcal{B}(\mathbb{R})$ the Borel $\sigma$-algebra of subsets of $\mathbb{R}$. For the output probability space, denote $P(S)$ to refer to the power set of set $S$, a $\sigma$-algebra. We describe how our sample space is discretized:
-
-\begin{definition}[Discretization function for distributions]
-    Let $\clt{b_1}, ... \clt{b_n}$ be cuts in $B$. Let $S = \intervals{B}$. Let $\pi$ be a continuous distribution with support $[l,r]$. The discretization function for distributions takes as input a probability space $(\mathbb{R}, \mathcal{B}(\mathbb{R}), \mu)$, a cut set $B$, and a continuous distribution $\pi$ and outputs a discrete probability space $(S, P(S), \mu_D)$, where the probability measure $\mu_D$ is defined as: 
-    \[
-    \Pr[\{S_i\}] =
-    \begin{cases}
-        \text{cdf}_{\pi}(b_1) - \text{cdf}_{\pi}(\max(-\infty, l)), & \text{ if } i = 0 \\
-        \text{cdf}_{\pi}(\min(r, +\infty)) - \text{cdf}_{\pi}(b_n), & \text{ if } i = n \\
-        \text{cdf}_{\pi}(b_{i+1}) - \text{cdf}_{\pi}(b_i), & \text{ if otherwise}
-    \end{cases}
-    \]
-\end{definition}
-
-\begin{example}
-    Let $\pi$ be the uniform distribution on the unit interval $[0,1]$. Take the input probability space to be $(\mathbb{R}, \mathcal{B}(\mathbb{R}), \mu)$. Let $B = \{\clt{0.5}, \clt{0.8}, \clt{0.9}\}$. Consider the function $d_1$ that takes $\pi$ as input and outputs the probability space $(S, P(S), \mu_D)$ where $S = \{(-\infty, 0.5), [0.5, 0.8), [0.8, 0.9), [0.9, +\infty)\}$ and $\mu_D$ is a probability measure on $P(S)$. The probability measure $\mu_D$ is thus: $\Pr[\{S_0\}] = 0.5$, $\Pr[\{S_1\}] = 0.3$, $\Pr[\{S_2\}] = 0.1$, and $\Pr[\{S_3\}] = 0.1$. $d_1$ is thus a valid discretization function for $\pi$.
-\end{example}
-
-Note that the above definition is only valid for continuous distributions with float type $\float[B;V]$, where $V = \top$. Float constants get different treatment, and we define a discretization function for them:
-
-\begin{definition}[Discretization function for constants]
-    Let $\clt{b_1}, ..., \clt{b_n}$ be cuts in $B$. The discretization function for constants takes as input a set of float constants $S$ and outputs a set of integers $S'$ where $\forall s \in S$, maps $s$ to $k$ such that $s \in \intervals{B}_k$, where $k$ is 0-indexed.
-\end{definition}
-
-\begin{example}
-    Let $S = \{0.3, 1.8\}$ be a set of float constants. Let $B = \{\cleq{0.3}, \clt{1.5}, \cleq{1.8}\}$ and hence, $\intervals{B} = \{(-\infty, 0.3], (0.3, 1.5), [1.5, 1.8], (1.8, +\infty)\}$. Consider the function $d_2$ that takes $S$ as input and outputs the set of integers $S' = \{0, 2\}$. Since $0.3 \in \intervals{B}_0 = (-\infty, 0.3]$ and $1.5 \in \intervals{B}_2 = [1.5, 1.8]$, $d_2$ is thus a valid discretization function for $S$.
-\end{example}
-
-
-\subsection{Algorithm for Discretization}
-We now describe our discretization algorithm as it is implemented in \Slice{}. Note that \Slice{} only attempts to discretize away expressions with float type $\float[B;V]$, while expressions of all other types preserve their original types across the discretization. We let $d_1$ denote the discretization function for distributions and $d_2$ denote the discretization function for constants. Note that $d_1$ is only applied to float types with $V = \top$ and $d_2$ is only applied to float types with a finite $V$. Now, for a given $e : \float[B;V]$, let $(S, P(S), \mu_D)$ be the probability space obtained from $d_1((\mathbb{R}, \mathcal{B}(\mathbb{R}), \mu), B, e)$ where $|B| = n$, and $S' = \{k_1, ..., k_i\}$ be the integer set obtained from $d_2(V)$ where $|V| = i$. The discretization function for \Slice{}, \texttt{discretize(e)} : $\float[B;V] \mapsto \fin{|B|+1}$ is defined as the following:
-
-\[
-\texttt{discretize(e)} = 
-\begin{cases}
-    e, & \text{ if } B = \top \\
-    \discrete(\Pr[\{S_0\}], \Pr[\{S_1\}], ... \Pr[\{S_n\}]), & \text{ if } B \neq \top \text{ and } V = \top \\
-    \finconst{k}{n+1}^1, \finconst{k}{n+1}^2, ... \finconst{k}{n+1}^i, & \text{ if } B \neq \top \text{ and } V \neq \top
-\end{cases}
-\]
-
-The function \texttt{discretize(e)} is recursively applied to every expression with a float type in the type-annotated program. For cdfs that have invalid parameters, such as a uniform distribution with support $[l, r]$ where $l > r$, a runtime error is generated from our implementation. All constructs preserve their structure during the discretization process: variables pass through unchanged though their type may change, and let bindings, comparisons, conditionals, pairs, etc. all recursively discretize their subexpressions.
-
-
-The key insight is that if an expression with a float type $\float[B; V]$ is co-discrete, we can partition $\mathbb{R}$ into intervals separated by the cuts $\clt{x_1}, ..., \clt{x_n} \in B$ to obtain $\intervals{B}$, giving the finite type $\fin{n+1}$ where $n$ is the number of cuts, where $\finconst{0}{n+1}$ is mapped to $(-\infty, x_1)$, $\finconst{1}{n+1}$ is mapped to $(x_1, x_2)$, and so on until $\finconst{n}{n+1}$ is mapped to $(x_n, +\infty)$. Then, depending on $V$: 
+After type inference, each float-typed expression carries refinement information in its $\float[B; V]$ type. The discretization transformation uses this information to convert continuous probabilistic programs into discrete ones that can be analyzed exactly. The key insight is that if an expression with a float type $\float[B; V]$ is co-discrete, we can partition $\mathbb{R}$ into intervals separated by the cuts $\clt{x_1}, ..., \clt{x_n} \in B$ to obtain $\intervals{B}$, giving the finite type $\fin{n+1}$ where $n$ is the number of cuts, where $\finconst{0}{n+1}$ is mapped to $(-\infty, x_1)$, $\finconst{1}{n+1}$ is mapped to $(x_1, x_2)$, and so on until $\finconst{n}{n+1}$ is mapped to $(x_n, +\infty)$. Then, depending on $V$: 
 
 \begin{itemize}
-    \item if $V = \top$: Each value in $\fin{n+1}$ occurs with the probability mass of the original continuous distribution within the corresponding interval. This gives a $\discrete(p_0, \ldots, p_{n})$ distribution, which returns a finite type value $\finconst{k}{n+1}$ with probability $p_k$.
+    \item if $V = \top$: The expression must be a continuous distribution. Each value in $\fin{n+1}$ occurs with the probability mass $p_k$ of the continuous distribution within the corresponding interval in \intervals{B}. This gives a $\discrete(p_0, \ldots, p_{n})$ distribution, which returns a finite type value $\finconst{k}{n+1}$ with probability $p_k$.
     
-    \item if $V = \{c_1, ..., c_n\}$: Each float constant $c \in {c_1, ..., c_n}$ is assigned an integer index $k$ corresponding to the interval in $\intervals{B}$ that contains $c$. For each $c$, the finite type value $\finconst{k}{n+1}$ is returned.
+    \item if $V = \{c_1, ..., c_n\}$: The expression must be a float constant. Each float constant $c \in \{c_1, ..., c_n\}$ is assigned an integer $k$ corresponding to the interval index in $\intervals{B}$ that contains $c$. For each $c$, the finite type value $\finconst{k}{n+1}$ is returned.
 \end{itemize}
 
 
-If an expression with a float type is co-continuous, proper discretization cannot be performed for that expression and as a result \Slice{} preserves its original semantics.
+If an expression with a float type is co-continuous, proper discretization cannot be performed for that expression and as a result \Slice{} preserves its original semantics. 
 
 \subsection{Discretization Rules}
 
@@ -66,6 +22,142 @@ The transformation $\texttt{discretize}(e)$ is defined recursively on the struct
 \begin{definition} [Partial discretization]\label{def:partial-discr}
     A program can only be \textit{partially discretized} by \Slice{} if there exist any co-continuous expressions.
 \end{definition}
+
+\subsection{Algorithm for Discretization}
+We now describe more formally our discretization algorithm as it is implemented in \Slice{}. Note that \Slice{} only attempts to discretize away expressions with float type $\float[B;V]$, while expressions of all other types preserve their original types across the discretization. Like in section~\ref{sec:type-inference}, we focus on the same subset language of \Slice{}, enough to capture how our algorithm operates over the full language. We define a function \texttt{discretize($e$)} and show how it is recursively applied to most expressions $e$ in our subset language. Variables pass through unchanged though their type may change, and let bindings, comparisons, and conditionals preserve their structure. The crux of our discretization algorithm happens when float constants or continuous distributions are encountered in the AST traversal. We let $\text{CDF}(b_i)$ be the measure of a uniform distribution on the interval $(-\infty, c_i)$ if $b_i =\ <\!\!c_i$ and on the interval $(-\infty, c_i]$ if $b_i =\ \leq\!\!c_i$ and take $\text{CDF}_d(b_{0}) = 0$ and $\text{CDF}_d(b_{n+1}) = 1$. Note that a distribution must be valid before trying to compute its cdf: for distributions that have invalid parameters, such as a uniform distribution with parameters $l, r$ where $l > r$, a runtime error is generated from our implementation. Figure~\ref{fig:discretization-code} shows the algorithm. 
+
+\input{figures/discretization-code.tex}
+
+\paragraph{Example.} Consider the same example as before, now with type annotations:
+
+\begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
+    let x = if (uniform(0,1) : !{\ft{<0.5}}!) < (0.5 : !{\ftb{<0.5}{0.5}}!)
+            then (uniform(0,2) : !{\ft{<=0.3,<1.5,<=1.8}}!)
+            else (uniform(0,4) : !{\ft{<=0.3,<1.5,<=1.8}}!)
+            : !{\ft{<=0.3,<1.5,<=1.8}}! in
+    let y = if (1.5 : !{\ftb{<=0.3,<1.5,<=1.8}{1.5}}!) < x
+            then (1.8 : !{\ftb{<=0.3,<1.5,<=1.8}{1.8}}!)
+            else (0.3 : !{\ftb{<=0.3,<1.5,<=1.8}{0.3}}!)
+            : !{\ftb{<=0.3,<1.5,<=1.8}{0.3,1.8}}! in
+    x <= y
+\end{lstlisting}
+
+The discretization algorithm traverses down the AST and tries to discretize each expression with a float-type. As a result, $\uniform(0,1)$ : \codetype{\ft{<0.5}} is discretized to $\discrete(0.5, 0.5)$, $\uniform(0,2)$ : \codetype{\ft{<=0.3,<1.5,<=1.8}} is discretized to $\discrete(0.15, 0.6, 0.15, 0.1)$, and $\uniform(0,4)$ : \codetype{\ft{<=0.3,<1.5,<=1.8}} is discretized to $\discrete(0.075, 0.3, 0.075, 0.55)$. Float constants 1.5, 1.8, and 0.3, all of which have cut set \{<=0.3,<1.5,<=1.8\} are discretized to 1, 2, and 0 respectively. Since all expressions are co-discrete, the resulting fully discretized program is:
+
+\begin{lstlisting}[aboveskip=1em,belowskip=1em]
+    let x = if discrete(0.5, 0.5) then
+        discrete(0.15, 0.6, 0.15, 0.1)
+      else
+        discrete(0.075, 0.3, 0.075, 0.55) in
+    let y = if 1 > x then 2 else 0 in
+    x <= y
+\end{lstlisting}
+
+\subsection{Variable Distribution Parameters}
+
+A key challenge arises when distribution parameters are not constant.
+For variable distribution parameters, say $e_1$ and $e_2$ we use the value sets $V_1$ in $e_1$ : $\float[B_1; V_1]$ or $V_2$ in $e_2$ : $\float[B_2; V_2]$ to reconstruct the appropriate distribution to compute the CDF on.
+Due to the typing rules, each interval induced by $B$ can contain at most one value from $V$; this is the dinguishability constraint. This means that we can uniquely reconstruct the original floating point number from the interval index, by a series of conditionals.
+The distribution can then be discretized as if its parameters were constant in each branch of the conditionals.
+
+\paragraph{Example.} Consider the following program with type annotations:
+\begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
+    let scale = if (uniform(0,1) : !{\ft{<0.5}}!) < (0.5 : !{\ftb{<0.5}{0.5}}!) 
+    then (1.0 : !{\ftb{<=1.0, <=2.0}{1.0}}!) 
+    else (2.0 : !{\ftb{<=1.0, <=2.0}{2.0}}!)
+    : !{\ftb{<=1.0, <=2.0}{1.0, 2.0}}! in
+    (uniform(0, scale) : !{\ft{<1.0}}!) < (1.0 : !{\ftb{<1.0}{1.0}}!)
+\end{lstlisting}
+
+During type inference, the second parameter to \texttt{uniform} has type $\float[B_{\text{param}}; \{1.0, 2.0\}]$. Note that $B_{\text{param}}$ properly distinguishes \{1.0, 2.0\}. The implementation generates runtime dispatch code that evaluates the parameter expression, matches against possible constant values from the value set, and applies appropriate discretization for each case. The float constants 0.5, 1.0, and 2.0 are mapped to integers 1, 0, and 1 respectively. Since each expression is co-discrete, the resulting fully discretized program is:
+
+\begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
+    let scale = if discrete(0.5, 0.5) < 1 
+                then 0 else 1
+    if scale == 0 then discrete(1, 0) else discrete(0.5, 0.5)
+    < 1
+\end{lstlisting}
+
+\discrete(1,0) is from the discretization of $\uniform(0, 1.0)$ : \codetype{{\ft{<1.0}}} and \discrete(0.5, 0.5) is from the discretization of $\uniform(0, 2.0)$ : \codetype{{\ft{<1.0}}}. Our algorithm ensures correct discretization even when distribution parameters depend on runtime values.
+
+\paragraph{Effect of discretization on types} The types change as follows:
+\begin{itemize}
+    \item $\texttt{discretize}(\float[B; V]) = \fin{n+1}$ if $B = \{b_1, \ldots, b_n\}$
+    \item $\texttt{discretize}(\float[B; V]) = \float$ if $B = \top$
+    \item $\texttt{discretize}(A \to B) = \texttt{discretize}(A) \to \texttt{discretize}(B)$
+    \item $\texttt{discretize}(A \times B) = \texttt{discretize}(A) \times \texttt{discretize}(B)$
+    \item $\texttt{discretize}(\listty{A}) = \listty{\texttt{discretize}(A)}$
+    \item $\texttt{discretize}(\texttt{ref}(A)) = \texttt{ref}(\texttt{discretize}(A))$
+    \item Other types remain unchanged.
+\end{itemize}
+    
+
+    
+
+
+
+
+
+
+
+
+
+
+% We describe our discretization method in terms of probability spaces. In a general sense, a discretization function takes as input a probability space $(\Omega, \Sigma, \mu)$ and outputs a discrete probability space $(\Omega_D, \Sigma_D, \mu_D)$ where $\mu_D$ is a countable set. Let $\mathbb{R}$ denote the set of all real numbers and $\mathcal{B}(\mathbb{R})$ the Borel $\sigma$-algebra of subsets of $\mathbb{R}$. For the output probability space, denote $P(S)$ to refer to the power set of set $S$, a $\sigma$-algebra. We describe how our sample space is discretized:
+
+% \begin{definition}[Discretization function for distributions]
+%     Let $\clt{b_1}, ... \clt{b_n}$ be cuts in $B$. Let $S = \intervals{B}$. Let $\pi$ be a continuous distribution with support $[l,r]$. The discretization function for distributions takes as input a probability space $(\mathbb{R}, \mathcal{B}(\mathbb{R}), \mu)$, a cut set $B$, and a continuous distribution $\pi$ and outputs a discrete probability space $(S, P(S), \mu_D)$, where the probability measure $\mu_D$ is defined as: 
+%     \[
+%     \Pr[\{S_i\}] =
+%     \begin{cases}
+%         \text{cdf}_{\pi}(b_1) - \text{cdf}_{\pi}(\max(-\infty, l)), & \text{ if } i = 0 \\
+%         \text{cdf}_{\pi}(\min(r, +\infty)) - \text{cdf}_{\pi}(b_n), & \text{ if } i = n \\
+%         \text{cdf}_{\pi}(b_{i+1}) - \text{cdf}_{\pi}(b_i), & \text{ if otherwise}
+%     \end{cases}
+%     \]
+% \end{definition}
+
+% \begin{example}
+%     Let $\pi$ be the uniform distribution on the unit interval $[0,1]$. Take the input probability space to be $(\mathbb{R}, \mathcal{B}(\mathbb{R}), \mu)$. Let $B = \{\clt{0.5}, \clt{0.8}, \clt{0.9}\}$. Consider the function $d_1$ that takes $\pi$ as input and outputs the probability space $(S, P(S), \mu_D)$ where $S = \{(-\infty, 0.5), [0.5, 0.8), [0.8, 0.9), [0.9, +\infty)\}$ and $\mu_D$ is a probability measure on $P(S)$. The probability measure $\mu_D$ is thus: $\Pr[\{S_0\}] = 0.5$, $\Pr[\{S_1\}] = 0.3$, $\Pr[\{S_2\}] = 0.1$, and $\Pr[\{S_3\}] = 0.1$. $d_1$ is thus a valid discretization function for $\pi$.
+% \end{example}
+
+% Note that the above definition is only valid for continuous distributions with float type $\float[B;V]$, where $V = \top$. Float constants get different treatment, and we define a discretization function for them:
+
+% \begin{definition}[Discretization function for constants]
+%     Let $\clt{b_1}, ..., \clt{b_n}$ be cuts in $B$. The discretization function for constants takes as input a set of float constants $S$ and outputs a set of integers $S'$ where $\forall s \in S$, maps $s$ to $k$ such that $s \in \intervals{B}_k$, where $k$ is 0-indexed.
+% \end{definition}
+
+% \begin{example}
+%     Let $S = \{0.3, 1.8\}$ be a set of float constants. Let $B = \{\cleq{0.3}, \clt{1.5}, \cleq{1.8}\}$ and hence, $\intervals{B} = \{(-\infty, 0.3], (0.3, 1.5), [1.5, 1.8], (1.8, +\infty)\}$. Consider the function $d_2$ that takes $S$ as input and outputs the set of integers $S' = \{0, 2\}$. Since $0.3 \in \intervals{B}_0 = (-\infty, 0.3]$ and $1.5 \in \intervals{B}_2 = [1.5, 1.8]$, $d_2$ is thus a valid discretization function for $S$.
+% \end{example}
+
+
+% \subsection{Algorithm for Discretization}
+% We now describe our discretization algorithm as it is implemented in \Slice{}. Note that \Slice{} only attempts to discretize away expressions with float type $\float[B;V]$, while expressions of all other types preserve their original types across the discretization. We let $d_1$ denote the discretization function for distributions and $d_2$ denote the discretization function for constants. Note that $d_1$ is only applied to float types with $V = \top$ and $d_2$ is only applied to float types with a finite $V$. Now, for a given $e : \float[B;V]$, let $(S, P(S), \mu_D)$ be the probability space obtained from $d_1((\mathbb{R}, \mathcal{B}(\mathbb{R}), \mu), B, e)$ where $|B| = n$, and $S' = \{k_1, ..., k_i\}$ be the integer set obtained from $d_2(V)$ where $|V| = i$. The discretization function for \Slice{}, \texttt{discretize(e)} : $\float[B;V] \mapsto \fin{|B|+1}$ is defined as the following:
+
+% \[
+% \texttt{discretize(e)} = 
+% \begin{cases}
+%     e, & \text{ if } B = \top \\
+%     \discrete(\Pr[\{S_0\}], \Pr[\{S_1\}], ... \Pr[\{S_n\}]), & \text{ if } B \neq \top \text{ and } V = \top \\
+%     \finconst{k}{n+1}^1, \finconst{k}{n+1}^2, ... \finconst{k}{n+1}^i, & \text{ if } B \neq \top \text{ and } V \neq \top
+% \end{cases}
+% \]
+
+% The function \texttt{discretize(e)} is recursively applied to every expression with a float type in the type-annotated program. For cdfs that have invalid parameters, such as a uniform distribution with support $[l, r]$ where $l > r$, a runtime error is generated from our implementation. All constructs preserve their structure during the discretization process: variables pass through unchanged though their type may change, and let bindings, comparisons, conditionals, pairs, etc. all recursively discretize their subexpressions.
+
+
+% The key insight is that if an expression with a float type $\float[B; V]$ is co-discrete, we can partition $\mathbb{R}$ into intervals separated by the cuts $\clt{x_1}, ..., \clt{x_n} \in B$ to obtain $\intervals{B}$, giving the finite type $\fin{n+1}$ where $n$ is the number of cuts, where $\finconst{0}{n+1}$ is mapped to $(-\infty, x_1)$, $\finconst{1}{n+1}$ is mapped to $(x_1, x_2)$, and so on until $\finconst{n}{n+1}$ is mapped to $(x_n, +\infty)$. Then, depending on $V$: 
+
+% \begin{itemize}
+%     \item if $V = \top$: Each value in $\fin{n+1}$ occurs with the probability mass of the original continuous distribution within the corresponding interval. This gives a $\discrete(p_0, \ldots, p_{n})$ distribution, which returns a finite type value $\finconst{k}{n+1}$ with probability $p_k$.
+    
+%     \item if $V = \{c_1, ..., c_n\}$: Each float constant $c \in {c_1, ..., c_n}$ is assigned an integer index $k$ corresponding to the interval in $\intervals{B}$ that contains $c$. For each $c$, the finite type value $\finconst{k}{n+1}$ is returned.
+% \end{itemize}
+
+
+% If an expression with a float type is co-continuous, proper discretization cannot be performed for that expression and as a result \Slice{} preserves its original semantics.
+
 
 
 % \subsection{Algorithm for Discretization}
@@ -114,49 +206,49 @@ The transformation $\texttt{discretize}(e)$ is defined recursively on the struct
 % \end{itemize}
 
 
-\subsection{Example}
+% \subsection{Example}
 
-Consider the following program:
-\begin{lstlisting}
-let x = uniform(0.0, 1.0) in
-if x < 0.5 then 
-  if x < 0.7 then 1 else 2
-else 3
-\end{lstlisting}
+% Consider the following program:
+% \begin{lstlisting}
+% let x = uniform(0.0, 1.0) in
+% if x < 0.5 then 
+%   if x < 0.7 then 1 else 2
+% else 3
+% \end{lstlisting}
 
-After type inference, \texttt{x} has type $\float[\{<0.5, <0.7\}; \top]$. Discretization:
-\begin{enumerate}
-    \item Extracts thresholds: $\{0.5, 0.7\}$
-    \item Creates intervals: $I_0 = (-\infty, 0.5)$, $I_1 = [0.5, 0.7)$, $I_2 = [0.7, \infty)$
-    \item Calculates probabilities: $p_0 = 0.5$, $p_1 = 0.2$, $p_2 = 0.3$
-    \item Generates: \texttt{let x = discrete(0.5, 0.2, 0.3) in ...}
-    \item Transforms comparisons: \texttt{x < 0.5} becomes \texttt{x}$\finlt{3}$\texttt{1}, \texttt{x < 0.7} becomes \texttt{x}$\finlt{3}$\texttt{2}
-\end{enumerate}
+% After type inference, \texttt{x} has type $\float[\{<0.5, <0.7\}; \top]$. Discretization:
+% \begin{enumerate}
+%     \item Extracts thresholds: $\{0.5, 0.7\}$
+%     \item Creates intervals: $I_0 = (-\infty, 0.5)$, $I_1 = [0.5, 0.7)$, $I_2 = [0.7, \infty)$
+%     \item Calculates probabilities: $p_0 = 0.5$, $p_1 = 0.2$, $p_2 = 0.3$
+%     \item Generates: \texttt{let x = discrete(0.5, 0.2, 0.3) in ...}
+%     \item Transforms comparisons: \texttt{x < 0.5} becomes \texttt{x}$\finlt{3}$\texttt{1}, \texttt{x < 0.7} becomes \texttt{x}$\finlt{3}$\texttt{2}
+% \end{enumerate}
 
-The discretized program preserves the original semantics while enabling exact inference.
+% The discretized program preserves the original semantics while enabling exact inference.
 
-\subsection{Variable Distribution Parameters}
+% \subsection{Variable Distribution Parameters}
 
-A key challenge arises when distribution parameters are not constant.
-For variable distribution parameters, we use the value set $V$ in $\float[B; V]$ to reconstruct the appropriate distribution to compute the CDF on.
-Due to the typing rules, each interval induced by $B$ can contain at most one value from $V$. This means that we can uniquely reconstruct the original floating point number from the interval index, by a series of conditionals.
-The distribution can then be discretized as if its parameters were constant in each branch of the conditionals.
+% A key challenge arises when distribution parameters are not constant.
+% For variable distribution parameters, we use the value set $V$ in $\float[B; V]$ to reconstruct the appropriate distribution to compute the CDF on.
+% Due to the typing rules, each interval induced by $B$ can contain at most one value from $V$. This means that we can uniquely reconstruct the original floating point number from the interval index, by a series of conditionals.
+% The distribution can then be discretized as if its parameters were constant in each branch of the conditionals.
 
-Consider the following program:
-\begin{lstlisting}
-let scale = discrete(0.5, 0.5) in
-let x = if scale = 0 then exponential(1.0) 
-        else exponential(2.0) in
-x < 3.0
-\end{lstlisting}
+% Consider the following program:
+% \begin{lstlisting}
+% let scale = discrete(0.5, 0.5) in
+% let x = if scale = 0 then exponential(1.0) 
+%         else exponential(2.0) in
+% x < 3.0
+% \end{lstlisting}
 
-During type inference, the parameter to \texttt{exponential} has type $\float[B_{\text{param}}; \{1.0, 2.0\}]$. The implementation generates runtime dispatch code that:
-\begin{enumerate}
-    \item Evaluates the parameter expression
-    \item Matches against possible constant values from the value set
-    \item Applies appropriate discretization for each case
-\end{enumerate}
+% During type inference, the parameter to \texttt{exponential} has type $\float[B_{\text{param}}; \{1.0, 2.0\}]$. The implementation generates runtime dispatch code that:
+% \begin{enumerate}
+%     \item Evaluates the parameter expression
+%     \item Matches against possible constant values from the value set
+%     \item Applies appropriate discretization for each case
+% \end{enumerate}
 
-This ensures correct discretization even when distribution parameters depend on runtime values.
+% This ensures correct discretization even when distribution parameters depend on runtime values.
 
 

@@ -105,7 +105,7 @@ This results in the following fully annotated program:
 \begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
     let x = if (uniform(0,1) : !{\ft{<0.5}}!) < (0.5 : !{\ftb{<0.5}{0.5}}!)
             then (uniform(0,2) : !{\ft{<=0.3,<1.5,<=1.8}}!)
-            else (gaussian(0,1) : !{\ft{<=0.3,<1.5,<=1.8}}!)
+            else (uniform(0,4) : !{\ft{<=0.3,<1.5,<=1.8}}!)
             : !{\ft{<=0.3,<1.5,<=1.8}}! in
     let y = if (1.5 : !{\ftb{<=0.3,<1.5,<=1.8}{1.5}}!) < x
             then (1.8 : !{\ftb{<=0.3,<1.5,<=1.8}{1.8}}!)

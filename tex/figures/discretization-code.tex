@@ -1,0 +1,67 @@
+\begin{figure}[t]
+    \centering
+    \begin{align}
+        \texttt{discretize}(c) &= 
+        \begin{cases}
+            c, & \text{if } B = \top \\
+            \finconst{k}{n+1} \text{ such that } c \in \intervals{B}_k, & \text{if } B = \{\clt{b_1}, \ldots, \clt{b_n}\}
+        \end{cases} \\
+        \texttt{discretize}(\letkw\; x = e_1\; \inkw\; e_2) 
+            &= \letkw\; x = \texttt{discretize}(e_1)\; \inkw\; \texttt{discretize}(e_2) \\
+        \texttt{discretize}(e_1 < e_2) 
+            &= \texttt{discretize}(e_1) < \texttt{discretize}(e_2) \\
+        \texttt{discretize}(\ifkw\; e_1\; \thenkw\; e_2\; \elsekw\; e_3) 
+            &= \ifkw\; \texttt{discretize}(e_1) \notag \\ 
+            &\quad \thenkw\; \texttt{discretize}(e_2)\; \elsekw\; \texttt{discretize}(e_3) \\
+        \texttt{discretize}(x) &= x 
+    \end{align}
+
+    \vspace{1em}
+    
+    \begin{align}
+        &\texttt{discretize}(\uniform(e_1, e_2)) \notag \\
+        &= 
+        \begin{cases}
+            \uniform(e_1, e_2), & \text{if } B = \top \\
+            \begin{aligned}
+                \discrete(p_0, \ldots, p_n) \text{ where } \\
+                p_k = \text{CDF}(b_{k+1}) - \text{CDF}(b_k)
+            \end{aligned}
+            & 
+            \begin{aligned}
+                \text{if } B = \{\clt{b_1}, \ldots, \clt{b_n}\} \\
+                \text{and } e_1, e_2 \in \mathbb{R}
+            \end{aligned} \\
+            \begin{cases}
+                \ifkw\; e_2 = \texttt{discretize}(v_1)\; \thenkw \\
+                \quad \texttt{discretize}(\uniform(v_1, e_2)) \\
+                \ldots \\
+                \elsekw\; \ifkw\; e_2 = \texttt{discretize}(v_{n-1})\; \thenkw \\
+                \quad \texttt{discretize}(\uniform(v_{n-1}, e_2)) \\
+                \elsekw \\
+                \quad \texttt{discretize}(\uniform(v_n, e_2))
+            \end{cases}
+            &
+            \begin{aligned}
+                \text{if } V_1 = \{v_1, \ldots, v_n\}, \\
+                \text{and } e_2 \in \mathbb{R}
+            \end{aligned} \\
+            \begin{cases}
+                \ifkw\; e_1 = \texttt{discretize}(v_1)\; \thenkw \\
+                \quad \texttt{discretize}(\uniform(e_1, v_1)) \\
+                \ldots \\
+                \elsekw\; \ifkw\; e_1 = \texttt{discretize}(v_{n-1})\; \thenkw \\
+                \quad \texttt{discretize}(\uniform(e_1, v_{n-1})) \\
+                \elsekw \\
+                \quad \texttt{discretize}(\uniform(e_1, v_n))
+            \end{cases}
+            &
+            \begin{aligned}
+                \text{if } e_1 \in \mathbb{R}, \\
+                \text{and } V_2 = \{v_1, \ldots, v_n\}
+            \end{aligned}
+        \end{cases}
+    \end{align}
+    \caption{Discretization function for \textsc{Slice}.}
+    \label{fig:discretization-code}
+\end{figure}
