@@ -3,28 +3,45 @@
 After type inference, each float-typed expression carries refinement information in its $\float[B; V]$ type. The discretization transformation uses this information to convert continuous probabilistic programs into discrete ones that can be analyzed exactly. We describe our discretization method in terms of probability spaces. In a general sense, a discretization function takes as input a probability space $(\Omega, \Sigma, \mu)$ and outputs a discrete probability space $(\Omega_D, \Sigma_D, \mu_D)$ where $\mu_D$ is a countable set. Let $\mathbb{R}$ denote the set of all real numbers and $B(\mathbb{R})$ the Borel $\sigma$-algebra of subsets of $\mathbb{R}$. For the output probability space, denote $P(S)$ to refer to the power set of set $S$, a $\sigma$-algebra. We describe how our sample space is discretized:
 
 \begin{definition}[Discretization function for distributions]
-    Let $\clt{b_1}, ... \clt{b_n}$ be cuts in $B$. Let $S = \intervals{B}$. Let $\pi$ be a continuous distribution with support $[l,r]$. The discretization function takes as input a probability space $(\mathbb{R}, B(\mathbb{R}), \mu)$ and outputs a discrete probability space $(S, P(S), \mu_D)$, where the probability measure $\mu_D$ is defined as: 
+    Let $\clt{b_1}, ... \clt{b_n}$ be cuts in $B$. Let $S = \intervals{B}$. Let $\pi$ be a continuous distribution with support $[l,r]$. The discretization function for distributions takes as input a probability space $(\mathbb{R}, B(\mathbb{R}), \mu)$, a cut set $B$, and a continuous distribution $\pi$ and outputs a discrete probability space $(S, P(S), \mu_D)$, where the probability measure $\mu_D$ is defined as: 
     \[
     \Pr[\{S_i\}] =
     \begin{cases}
-        \text{cdf}_{\pi}(b_1) - \text{cdf}_{\pi}(\max(-\infty, l)), & \text{ if } i = 1 \\
-        \text{cdf}_{\pi}(\min(r, +\infty)) - \text{cdf}_{\pi}(b_n), & \text{ if } i = n+1 \\
+        \text{cdf}_{\pi}(b_1) - \text{cdf}_{\pi}(\max(-\infty, l)), & \text{ if } i = 0 \\
+        \text{cdf}_{\pi}(\min(r, +\infty)) - \text{cdf}_{\pi}(b_n), & \text{ if } i = n \\
         \text{cdf}_{\pi}(b_{i+1}) - \text{cdf}_{\pi}(b_i), & \text{ if otherwise}
     \end{cases}
     \]
 \end{definition}
 
-\paragraph{Example.} Let $\pi$ be the uniform distribution on the unit interval $[0,1]$. Take the input probability space to be $(\mathbb{R}, B(\mathbb{R}), \mu)$. Let $B = \{\clt{0.5}, \clt{0.8}, \clt{0.9}\}$. Consider the function $d_1$ that takes $\pi$ as input and outputs the probability space $(S, P(S), \mu_D)$ where $S = \{(-\infty, 0.5), [0.5, 0.8), [0.8, 0.9), [0.9, +\infty)\}$ and $\mu_D$ is a probability measure on $P(S)$. The probability measure $\mu_D$ is thus: $S_1 = 0.5$, $S_2 = 0.3$, $S_3 = 0.1$, and $S_4 = 0.1$. $d_1$ is thus a valid discretization function for $\pi$.
+\begin{example}
+    Let $\pi$ be the uniform distribution on the unit interval $[0,1]$. Take the input probability space to be $(\mathbb{R}, B(\mathbb{R}), \mu)$. Let $B = \{\clt{0.5}, \clt{0.8}, \clt{0.9}\}$. Consider the function $d_1$ that takes $\pi$ as input and outputs the probability space $(S, P(S), \mu_D)$ where $S = \{(-\infty, 0.5), [0.5, 0.8), [0.8, 0.9), [0.9, +\infty)\}$ and $\mu_D$ is a probability measure on $P(S)$. The probability measure $\mu_D$ is thus: $\Pr[\{S_0\}] = 0.5$, $\Pr[\{S_1\}] = 0.3$, $\Pr[\{S_2\}] = 0.1$, and $\Pr[\{S_3\}] = 0.1$. $d_1$ is thus a valid discretization function for $\pi$.
+\end{example}
 
+Note that the above definition is only valid for continuous distributions with float type $\float[B;V]$, where $V = \top$. Float constants get different treatment, and we define a discretization function for them:
 
 \begin{definition}[Discretization function for constants]
-    
+    Let $\clt{b_1}, ..., \clt{b_n}$ be cuts in $B$. The discretization function for constants takes as input a set of float constants $S$ and outputs a set of integers $S'$ where $\forall s \in S$, maps $s$ to $k$ such that $s \in \intervals{B}_k$, where $k$ is 0-indexed.
 \end{definition}
 
+\begin{example}
+    Let $S = \{0.3, 1.8\}$ be a set of float constants. Let $B = \{\cleq{0.3}, \clt{1.5}, \cleq{1.8}\}$ and hence, $\intervals{B} = \{(-\infty, 0.3], (0.3, 1.5), [1.5, 1.8], (1.8, +\infty)\}$. Consider the function $d_2$ that takes $S$ as input and outputs the set of integers $S' = \{0, 2\}$. Since $0.3 \in \intervals{B}_0 = (-\infty, 0.3]$ and $1.5 \in \intervals{B}_2 = [1.5, 1.8]$, $d_2$ is thus a valid discretization function for $S$.
+\end{example}
 
 
+\subsection{Algorithm for Discretization}
+We now describe our discretization algorithm as it is implemented in \Slice{}. Note that \Slice{} only attempts to discretize away expressions with float type $\float[B;V]$, while expressions of all other types preserve their original types across the discretization. We let $d_1$ denote the discretization function for distributions and $d_2$ denote the discretization function for constants. Note that $d_1$ is only applied to float types with $V = \top$ and $d_2$ is only applied to float types with a finite $V$. Let $(S, P(S), \mu_D)$ be the probability space obtained from $d_1$ and $S'$ be the integer set obtained from $d_2$. Now, for a given $e : \float[B;V]$, we have the following:
 
+\[
+\texttt{discretize(e)} = 
+\begin{cases}
+    e, & \text{ if } B = \top \\
+    \discrete(\Pr[\{S_0\}], \Pr[\{S_1\}], ... \Pr[\{S_n\}]), & \text{ if } B \neq \top \text{ and } V = \top \\
+    S', & \text{ if } B \neq \top \text{ and } V \neq \top
+\end{cases}
+\]
 
+The function \texttt{discretize(e)} is recursively applied to every expression with a float type in the type-annotated program. For cdfs that have invalid parameters, such as a uniform distribution with support $[l, r]$ where $l > r$, a runtime error is generated from our implementation. All constructs preserve their structure during the discretization process: variables pass through unchanged though their type may change, and let bindings, comparisons, conditionals, pairs, etc. all recursively discretize their subexpressions.
 
 
 The key insight is that if an expression with a float type $\float[B; V]$ is co-discrete, we can partition $\mathbb{R}$ into intervals separated by the cuts $\clt{x_1}, ..., \clt{x_n} \in B$ to obtain $\intervals{B}$, giving the finite type $\fin{n+1}$ where $n$ is the number of cuts, where $\finconst{0}{n+1}$ is mapped to $(-\infty, x_1)$, $\finconst{1}{n+1}$ is mapped to $(x_1, x_2)$, and so on until $\finconst{n}{n+1}$ is mapped to $(x_n, +\infty)$. Then, depending on $V$: 
@@ -50,51 +67,51 @@ The transformation $\texttt{discretize}(e)$ is defined recursively on the struct
     A program can only be \textit{partially discretized} by \Slice{} if there exist any co-continuous expressions.
 \end{definition}
 
-\subsection{Algorithm for Discretization}
-\katherine{to do}
+
+% \subsection{Algorithm for Discretization}
 
 
-\paragraph{Float Constants} For a constant $c$ with type $\float[B; V]$:
-\begin{itemize}
-    \item If $B = \top$: remains as constant $c$
-    \item If $B = \{b_1, \ldots, b_n\}$: becomes $\finconst{k}{n+1}$ where $k$ is the index of the interval containing $c$
-\end{itemize}
+% \paragraph{Float Constants} For a constant $c$ with type $\float[B; V]$:
+% \begin{itemize}
+%     \item If $B = \top$: remains as constant $c$
+%     \item If $B = \{b_1, \ldots, b_n\}$: becomes $\finconst{k}{n+1}$ where $k$ is the index of the interval containing $c$
+% \end{itemize}
 
-\paragraph{Continuous Distributions} For a distribution $d$ with type $\float[B; V]$ where $B = \{b_1, \ldots, b_n\}$:
-\begin{enumerate}
-    \item Extract numeric thresholds $c_1 < \cdots < c_n$ from cuts in $B$
-    \item Let $\text{CDF}_d(b_i)$ be the measure of the distribution $d$ on the interval $(-\infty, c_i)$ if $b_i =\ <\!\!c_i$ and on the interval $(-\infty, c_i]$ if $b_i =\ \leq\!\!c_i$. Take $\text{CDF}_d(b_{0}) = 0$ and $\text{CDF}_d(b_{n+1}) = 1$.
-    \item Calculate probability mass for each interval using the CDF:
-    \[ p_i = \text{CDF}_d(b_i) - \text{CDF}_d(b_{i-1}) \]
-    \item Generate $\discrete(p_1, \ldots, p_{n+1})$ returning interval indices.
-\end{enumerate}
+% \paragraph{Continuous Distributions} For a distribution $d$ with type $\float[B; V]$ where $B = \{b_1, \ldots, b_n\}$:
+% \begin{enumerate}
+%     \item Extract numeric thresholds $c_1 < \cdots < c_n$ from cuts in $B$
+%     \item Let $\text{CDF}_d(b_i)$ be the measure of the distribution $d$ on the interval $(-\infty, c_i)$ if $b_i =\ <\!\!c_i$ and on the interval $(-\infty, c_i]$ if $b_i =\ \leq\!\!c_i$. Take $\text{CDF}_d(b_{0}) = 0$ and $\text{CDF}_d(b_{n+1}) = 1$.
+%     \item Calculate probability mass for each interval using the CDF:
+%     \[ p_i = \text{CDF}_d(b_i) - \text{CDF}_d(b_{i-1}) \]
+%     \item Generate $\discrete(p_1, \ldots, p_{n+1})$ returning interval indices.
+% \end{enumerate}
 
-If $B = \top$, the distribution remains continuous.
+% If $B = \top$, the distribution remains continuous.
 
-\paragraph{Comparisons} For $e_1 < e_2$ where both have type $\float[B; V]$:
-\begin{itemize}
-    \item If $B = \top$: comparison remains as $\texttt{discretize}(e_1) < \texttt{discretize}(e_2)$
-    \item If $B = \{b_1, \ldots, b_n\}$: becomes $\texttt{discretize}(e_1) \finlt{n+1} \texttt{discretize}(e_2)$ (or, $\leq$ becomes $\finleq{n+1}$)
-\end{itemize}
+% \paragraph{Comparisons} For $e_1 < e_2$ where both have type $\float[B; V]$:
+% \begin{itemize}
+%     \item If $B = \top$: comparison remains as $\texttt{discretize}(e_1) < \texttt{discretize}(e_2)$
+%     \item If $B = \{b_1, \ldots, b_n\}$: becomes $\texttt{discretize}(e_1) \finlt{n+1} \texttt{discretize}(e_2)$ (or, $\leq$ becomes $\finleq{n+1}$)
+% \end{itemize}
 
-The finite comparison $\finlt{n+1}$ operates on interval indices.
+% The finite comparison $\finlt{n+1}$ operates on interval indices.
 
-\paragraph{Structural Constructs} All other constructs are discretized recursively:
-\begin{itemize}
-    \item Variables pass through unchanged, though their type may change
-    \item Let bindings, conditionals, pairs, etc., recursively discretize subexpressions
-\end{itemize}
+% \paragraph{Structural Constructs} All other constructs are discretized recursively:
+% \begin{itemize}
+%     \item Variables pass through unchanged, though their type may change
+%     \item Let bindings, conditionals, pairs, etc., recursively discretize subexpressions
+% \end{itemize}
 
-\paragraph{Effect of discretization on types} The types change as follows:
-\begin{itemize}
-    \item $\texttt{discretize}(\float[B; V]) = \fin(n+1)$ if $B = \{b_1, \ldots, b_n\}$
-    \item $\texttt{discretize}(\float[B; V]) = \float$ if $B = \top$
-    \item $\texttt{discretize}(A \to B) = \texttt{discretize}(A) \to \texttt{discretize}(B)$
-    \item $\texttt{discretize}(A \times B) = \texttt{discretize}(A) \times \texttt{discretize}(B)$
-    \item $\texttt{discretize}(\listty{A}) = \listty{\texttt{discretize}(A)}$
-    \item $\texttt{discretize}(\texttt{ref}(A)) = \texttt{ref}(\texttt{discretize}(A))$
-    \item Other types remain unchanged.
-\end{itemize}
+% \paragraph{Effect of discretization on types} The types change as follows:
+% \begin{itemize}
+%     \item $\texttt{discretize}(\float[B; V]) = \fin(n+1)$ if $B = \{b_1, \ldots, b_n\}$
+%     \item $\texttt{discretize}(\float[B; V]) = \float$ if $B = \top$
+%     \item $\texttt{discretize}(A \to B) = \texttt{discretize}(A) \to \texttt{discretize}(B)$
+%     \item $\texttt{discretize}(A \times B) = \texttt{discretize}(A) \times \texttt{discretize}(B)$
+%     \item $\texttt{discretize}(\listty{A}) = \listty{\texttt{discretize}(A)}$
+%     \item $\texttt{discretize}(\texttt{ref}(A)) = \texttt{ref}(\texttt{discretize}(A))$
+%     \item Other types remain unchanged.
+% \end{itemize}
 
 
 \subsection{Example}
