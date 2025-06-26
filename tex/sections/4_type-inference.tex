@@ -56,7 +56,7 @@ We describe in detail our type inference algorithm. We specifically focus on how
 
 \input{figures/inference-code.tex}
 
-\paragraph{Example.}
+\begin{example}\label{ex:type-inference}
 Consider the type inference process for this simple program:
 \begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
     let x = if uniform(0,1) < 0.5 
@@ -113,6 +113,7 @@ This results in the following fully annotated program:
             : !{\ftb{<=0.3,<1.5,<=1.8}{0.3,1.8}}! in
     x <= y
 \end{lstlisting}
+\end{example}
 
 We formalize the above notions in a way that will allow us to in the next section characterize the types of programs our discretization method supports. We first define what it means for a given subexpression with a float type to be co-discrete or co-continuous. 
 

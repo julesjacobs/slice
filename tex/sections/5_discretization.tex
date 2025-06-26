@@ -1,11 +1,11 @@
 \section{Discretization}\label{sec:discretization}
 
-After type inference, each float-typed expression carries refinement information in its $\float[B; V]$ type. The discretization transformation uses this information to convert continuous probabilistic programs into discrete ones that can be analyzed exactly. The key insight is that if an expression with a float type $\float[B; V]$ is co-discrete, we can partition $\mathbb{R}$ into intervals separated by the cuts $\clt{x_1}, ..., \clt{x_n} \in B$ to obtain $\intervals{B}$, giving the finite type $\fin{n+1}$ where $n$ is the number of cuts, where $\finconst{0}{n+1}$ is mapped to $(-\infty, x_1)$, $\finconst{1}{n+1}$ is mapped to $(x_1, x_2)$, and so on until $\finconst{n}{n+1}$ is mapped to $(x_n, +\infty)$. Then, depending on $V$: 
+After type inference, each float-typed expression carries refinement information in its $\float[B; V]$ type. The discretization transformation uses this information to convert continuous probabilistic programs into discrete ones that can be analyzed exactly. The key insight is that if an expression with a float type $\float[B; V]$ is co-discrete, we can partition $\mathbb{R}$ into intervals separated by the cuts $\clt{x_1}, ..., \clt{x_n} \in B$ to obtain $\intervals{B}$, giving the finite type $\fin{n+1}$ where $n$ is the number of cuts: $\intervals{B}_k$ is mapped to $\finconst{k}{n+1}$ for each $k = 0, ..., n$. Then, depending on $V$: 
 
 \begin{itemize}
-    \item if $V = \top$: The expression must be a continuous distribution. Each value in $\fin{n+1}$ occurs with the probability mass $p_k$ of the continuous distribution within the corresponding interval in \intervals{B}. This gives a $\discrete(p_0, \ldots, p_{n})$ distribution, which returns a finite type value $\finconst{k}{n+1}$ with probability $p_k$.
+    \item if $V = \top$: The expression must be a continuous distribution. Each value in $\fin{n+1}$ occurs with the probability mass $p_k$ of the continuous distribution within $\intervals{B}_k$. This gives a $\discrete(p_0, \ldots, p_{n})$ distribution, which returns a finite type value $\finconst{k}{n+1}$ with probability $p_k$.
     
-    \item if $V = \{c_1, ..., c_n\}$: The expression must be a float constant. Each float constant $c \in \{c_1, ..., c_n\}$ is assigned an integer $k$ corresponding to the interval index in $\intervals{B}$ that contains $c$. For each $c$, the finite type value $\finconst{k}{n+1}$ is returned.
+    \item if $V = \{c_1, ..., c_n\}$: The expression must be a float constant. Each float constant $c \in \{c_1, ..., c_n\}$ is assigned an integer $k$ such that $c \in \intervals{B}_k$ . For each $c$, the finite type value $\finconst{k}{n+1}$ is returned.
 \end{itemize}
 
 
@@ -13,7 +13,7 @@ If an expression with a float type is co-continuous, proper discretization canno
 
 \subsection{Discretization Rules}
 
-The transformation $\texttt{discretize}(e)$ is defined recursively on the structure of typed expressions. We first define the types of expressions $\texttt{discretize}(e)$ produces, which is either a fully discretized or a partially discretized program. A fully discretized program contains only discrete distributions.
+The transformation $\texttt{discretize}(e)$ is defined recursively on the structure of typed expressions. We first define the programs our discretization method produces, which are either fully discretized or partially discretized programs. A fully discretized program contains only discrete distributions.
 
 \begin{definition} [Full discretization]\label{def:full-discr}
     A program can be \textit{fully discretized} by \Slice{} if all its expressions are either discrete (in the trivial case) and/or co-discrete.
@@ -24,11 +24,12 @@ The transformation $\texttt{discretize}(e)$ is defined recursively on the struct
 \end{definition}
 
 \subsection{Algorithm for Discretization}
-We now describe more formally our discretization algorithm as it is implemented in \Slice{}. Note that \Slice{} only attempts to discretize away expressions with float type $\float[B;V]$, while expressions of all other types preserve their original types across the discretization. Like in section~\ref{sec:type-inference}, we focus on the same subset language of \Slice{}, enough to capture how our algorithm operates over the full language. We define a function \texttt{discretize($e$)} and show how it is recursively applied to most expressions $e$ in our subset language. Variables pass through unchanged though their type may change, and let bindings, comparisons, and conditionals preserve their structure. The crux of our discretization algorithm happens when float constants or continuous distributions are encountered in the AST traversal. We let $\text{CDF}(b_i)$ be the measure of a uniform distribution on the interval $(-\infty, c_i)$ if $b_i =\ <\!\!c_i$ and on the interval $(-\infty, c_i]$ if $b_i =\ \leq\!\!c_i$ and take $\text{CDF}_d(b_{0}) = 0$ and $\text{CDF}_d(b_{n+1}) = 1$. Note that a distribution must be valid before trying to compute its cdf: for distributions that have invalid parameters, such as a uniform distribution with parameters $l, r$ where $l > r$, a runtime error is generated from our implementation. Figure~\ref{fig:discretization-code} shows the algorithm. 
+We now describe more formally our discretization algorithm as it is implemented in \Slice{}. Note that \Slice{} only attempts to discretize away expressions with float type $\float[B;V]$, while expressions of all other types preserve their original types and semantics across the discretization. Like in section~\ref{sec:type-inference}, we focus on the same subset language of \Slice{}, enough to capture how our algorithm operates over the full language. We define a function \texttt{discretize($e$)} and show how it is recursively applied to expressions in our subset language. Variables pass through unchanged though their type may change, and let bindings, comparisons, and conditionals preserve their structure. The crux of our discretization algorithm lies when float constants or continuous distributions are encountered in the AST traversal. We let $\text{CDF}(b_i)$ be the measure of a uniform distribution on the interval $(-\infty, c_i)$ if $b_i =\ <\!\!c_i$ and on the interval $(-\infty, c_i]$ if $b_i =\ \leq\!\!c_i$ and take $\text{CDF}_d(b_{0}) = 0$ and $\text{CDF}_d(b_{n+1}) = 1$. Note that a distribution must be valid before trying to compute its cdf: for distributions that have invalid parameters, such as a uniform distribution with parameters $l, r$ where $l > r$, a runtime error is generated from our implementation. Figure~\ref{fig:discretization-code} shows the algorithm. 
 
 \input{figures/discretization-code.tex}
 
-\paragraph{Example.} Consider the same example as before, now with type annotations:
+\begin{example}\label{ex:discretization}
+ Consider the program in Example~\ref{ex:type-inference}, now with type annotations:
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
     let x = if (uniform(0,1) : !{\ft{<0.5}}!) < (0.5 : !{\ftb{<0.5}{0.5}}!)
@@ -42,7 +43,7 @@ We now describe more formally our discretization algorithm as it is implemented 
     x <= y
 \end{lstlisting}
 
-The discretization algorithm traverses down the AST and tries to discretize each expression with a float-type. As a result, $\uniform(0,1)$ : \codetype{\ft{<0.5}} is discretized to $\discrete(0.5, 0.5)$, $\uniform(0,2)$ : \codetype{\ft{<=0.3,<1.5,<=1.8}} is discretized to $\discrete(0.15, 0.6, 0.15, 0.1)$, and $\uniform(0,4)$ : \codetype{\ft{<=0.3,<1.5,<=1.8}} is discretized to $\discrete(0.075, 0.3, 0.075, 0.55)$. Float constants 1.5, 1.8, and 0.3, all of which have cut set \{<=0.3,<1.5,<=1.8\} are discretized to 1, 2, and 0 respectively. Since all expressions are co-discrete, the resulting fully discretized program is:
+The discretization algorithm traverses down the AST and tries to discretize each expression with a float-type. The let bindings for \texttt{x} and \texttt{y}, comparisons, and conditionals are structurally preserved. The discretization function is applied to the subexpressions in these contructs. $\uniform(0,1)$ : \codetype{\ft{<0.5}} is discretized to $\discrete(0.5, 0.5)$, $\uniform(0,2)$ : \codetype{\ft{<=0.3,<1.5,<=1.8}} is discretized to $\discrete(0.15, 0.6, 0.15, 0.1)$, and $\uniform(0,4)$ : \codetype{\ft{<=0.3,<1.5,<=1.8}} is discretized to $\discrete(0.075, 0.3, 0.075, 0.55)$. Float constants 1.5, 1.8, and 0.3, all of which have cut set \{<=0.3,<1.5,<=1.8\}, are discretized to 1, 2, and 0 respectively. Since all expressions are co-discrete, the resulting fully discretized program is:
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em]
     let x = if discrete(0.5, 0.5) then
@@ -52,6 +53,7 @@ The discretization algorithm traverses down the AST and tries to discretize each
     let y = if 1 > x then 2 else 0 in
     x <= y
 \end{lstlisting}
+\end{example}
 
 \subsection{Variable Distribution Parameters}
 
