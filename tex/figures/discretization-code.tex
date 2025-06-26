@@ -37,28 +37,28 @@
                 \quad \texttt{discretize}(\uniform(v_1, e_2)) \\
                 \ldots \\
                 \elsekw\; \ifkw\; e_2 = \texttt{discretize}(v_{n-1})\; \thenkw \\
-                \quad \texttt{discretize}(\uniform(v_{n-1}, e_2)) \\
+                \quad \texttt{discretize}(\uniform(v_{m-1}, e_2)) \\
                 \elsekw \\
-                \quad \texttt{discretize}(\uniform(v_n, e_2))
+                \quad \texttt{discretize}(\uniform(v_m, e_2))
             \end{cases}
             &
             \begin{aligned}
-                \text{if } V_1 = \{v_1, \ldots, v_n\}, \\
-                \text{and } e_2 \in \mathbb{R}
+                \text{if } B = \{\clt{b_1}, \ldots, \clt{b_n}\} \\
+                \text{and } V_1 = \{v_1, \ldots, v_m\}
             \end{aligned} \\
             \begin{cases}
                 \ifkw\; e_1 = \texttt{discretize}(v_1)\; \thenkw \\
                 \quad \texttt{discretize}(\uniform(e_1, v_1)) \\
                 \ldots \\
                 \elsekw\; \ifkw\; e_1 = \texttt{discretize}(v_{n-1})\; \thenkw \\
-                \quad \texttt{discretize}(\uniform(e_1, v_{n-1})) \\
+                \quad \texttt{discretize}(\uniform(e_1, v_{m-1})) \\
                 \elsekw \\
-                \quad \texttt{discretize}(\uniform(e_1, v_n))
+                \quad \texttt{discretize}(\uniform(e_1, v_m))
             \end{cases}
             &
             \begin{aligned}
-                \text{if } e_1 \in \mathbb{R}, \\
-                \text{and } V_2 = \{v_1, \ldots, v_n\}
+                \text{if } B = \{\clt{b_1}, \ldots, \clt{b_n}\} \\
+                \text{and } V_2 = \{v_1, \ldots, v_m\}
             \end{aligned}
         \end{cases}
     \end{align}
