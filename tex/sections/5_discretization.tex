@@ -1,6 +1,6 @@
 \section{Discretization}\label{sec:discretization}
 
-After type inference, each float-typed expression carries refinement information in its $\float[B; V]$ type. The discretization transformation uses this information to convert continuous probabilistic programs into discrete ones that can be analyzed exactly. The key insight is that if an expression with a float type $\float[B; V]$ is co-discrete, we can partition $\mathbb{R}$ into intervals separated by the cuts $\clt{x_1}, ..., \clt{x_n} \in B$ to obtain $\intervals{B}$, giving the finite type $\fin{n+1}$ where $n$ is the number of cuts: $\intervals{B}_k$ is mapped to $\finconst{k}{n+1}$ for each $k = 0, ..., n$. Then, depending on $V$: 
+After type inference, each float-typed expression carries refinement information in its $\float[B; V]$ type. The discretization transformation uses this information to convert continuous probabilistic programs into discrete ones that can be analyzed exactly. The key insight is that if an expression with a float type $\float[B; V]$ is co-discrete, we can partition $\mathbb{R}$ into intervals separated by the cuts in $B$ to obtain $\intervals{B}$, giving the finite type $\fin{n+1}$ where $n$ is the number of cuts: $\intervals{B}_k$ is mapped to $\finconst{k}{n+1}$ for each $k = 0, ..., n$. Then, depending on $V$: 
 
 \begin{itemize}
     \item if $V = \top$: The expression must be a continuous distribution. Each value in $\fin{n+1}$ occurs with the probability mass $p_k$ of the continuous distribution within $\intervals{B}_k$. This gives a $\discrete(p_0, \ldots, p_{n})$ distribution, which returns a finite type value $\finconst{k}{n+1}$ with probability $p_k$.
@@ -24,7 +24,7 @@ The transformation $\texttt{discretize}(e)$ is defined recursively on the struct
 \end{definition}
 
 \subsection{Algorithm for Discretization}
-We now describe more formally our discretization algorithm as it is implemented in \Slice{}. Note that \Slice{} only attempts to discretize away expressions with float type $\float[B;V]$, while expressions of all other types preserve their original types and semantics across the discretization. Like in section~\ref{sec:type-inference}, we focus on the same subset language of \Slice{}, enough to capture how our algorithm operates over the full language. We define a function \texttt{discretize($e$)} and show how it is recursively applied to expressions in our subset language. Variables pass through unchanged though their type may change, and let bindings, comparisons, and conditionals preserve their structure. The crux of our discretization algorithm lies when float constants or continuous distributions are encountered in the AST traversal. We let $\text{CDF}(b_i)$ be the measure of a uniform distribution on the interval $(-\infty, c_i)$ if $b_i =\ <\!\!c_i$ and on the interval $(-\infty, c_i]$ if $b_i =\ \leq\!\!c_i$ and take $\text{CDF}_d(b_{0}) = 0$ and $\text{CDF}_d(b_{n+1}) = 1$. Note that a distribution must be valid before trying to compute its cdf: for distributions that have invalid parameters, such as a uniform distribution with parameters $l, r$ where $l > r$, a runtime error is generated from our implementation. Figure~\ref{fig:discretization-code} shows the algorithm. 
+We now describe more formally our discretization algorithm as it is implemented in \Slice{}. Note that \Slice{} only attempts to discretize away expressions with float type $\float[B;V]$, while expressions of all other types preserve their original types and semantics across the discretization. Like in section~\ref{sec:type-inference}, we focus on the same subset language of \Slice{}, enough to capture how our algorithm operates over the full language. We define a function \texttt{discretize($e$)} and show how it is recursively applied to expressions in our subset language. Variables pass through unchanged though their type may change, and let bindings, comparisons, and conditionals preserve their structure. The crux of our discretization algorithm lies when float constants or continuous distributions are encountered in the AST traversal. We let $\text{CDF}(b_i)$ be the measure of a uniform distribution on the interval $(-\infty, c_i)$ if $b_i =\ <\!\!c_i$ and on the interval $(-\infty, c_i]$ if $b_i =\ \leq\!\!c_i$ and take $\text{CDF}(b_{0}) = 0$ and $\text{CDF}(b_{n+1}) = 1$. Note that a distribution must be valid to compute its cdf: for distributions with invalid parameters, such as $\uniform(l,r)$ where $l > r$, our implementation generates a runtime error. Figure~\ref{fig:discretization-code} shows the algorithm, which takes in a typed program and outputs a new (untyped) program. 
 
 \input{figures/discretization-code.tex}
 
@@ -43,7 +43,7 @@ We now describe more formally our discretization algorithm as it is implemented 
     x <= y
 \end{lstlisting}
 
-The discretization algorithm traverses down the AST and tries to discretize each expression with a float-type. The let bindings for \texttt{x} and \texttt{y}, comparisons, and conditionals are structurally preserved. The discretization function is applied to the subexpressions in these contructs. $\uniform(0,1)$ : \codetype{\ft{<0.5}} is discretized to $\discrete(0.5, 0.5)$, $\uniform(0,2)$ : \codetype{\ft{<=0.3,<1.5,<=1.8}} is discretized to $\discrete(0.15, 0.6, 0.15, 0.1)$, and $\uniform(0,4)$ : \codetype{\ft{<=0.3,<1.5,<=1.8}} is discretized to $\discrete(0.075, 0.3, 0.075, 0.55)$. Float constants 1.5, 1.8, and 0.3, all of which have cut set \{<=0.3,<1.5,<=1.8\}, are discretized to 1, 2, and 0 respectively. Since all expressions are co-discrete, the resulting fully discretized program is:
+The discretization algorithm traverses down the AST and tries to discretize each expression with a float-type. The let bindings for \texttt{x} and \texttt{y}, comparisons, and conditionals are structurally preserved; the discretization function is applied to their subexpressions. Variables pass through unchanged. $\uniform(0,1)$ : \codetype{\ft{<0.5}} is discretized to $\discrete(0.5, 0.5)$, $\uniform(0,2)$ : \codetype{\ft{<=0.3,<1.5,<=1.8}} is discretized to $\discrete(0.15, 0.6, 0.15, 0.1)$, and $\uniform(0,4)$ : \codetype{\ft{<=0.3,<1.5,<=1.8}} is discretized to $\discrete(0.075, 0.3, 0.075, 0.55)$. Float constants 1.5, 1.8, and 0.3 are discretized to 1, 2, and 0, respectively. Since all expressions are co-discrete, the resulting fully discretized program is:
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em]
     let x = if discrete(0.5, 0.5) then
@@ -58,29 +58,31 @@ The discretization algorithm traverses down the AST and tries to discretize each
 \subsection{Variable Distribution Parameters}
 
 A key challenge arises when distribution parameters are not constant.
-For variable distribution parameters, say $e_1$ and $e_2$ we use the value sets $V_1$ in $e_1$ : $\float[B_1; V_1]$ or $V_2$ in $e_2$ : $\float[B_2; V_2]$ to reconstruct the appropriate distribution to compute the CDF on.
+For such parameters, say $e_1 : \float[B_1; V_1]$ and $e_2 : \float[B_2; V_2]$, we use the value sets $V_1$ in $e_1$ or $V_2$ in $e_2$, depending on which parameter(s) is non-constant, to reconstruct the appropriate distribution to compute the CDF on.
 Due to the typing rules, each interval induced by $B$ can contain at most one value from $V$; this is the dinguishability constraint. This means that we can uniquely reconstruct the original floating point number from the interval index, by a series of conditionals.
 The distribution can then be discretized as if its parameters were constant in each branch of the conditionals.
 
-\paragraph{Example.} Consider the following program with type annotations:
-\begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
-    let scale = if (uniform(0,1) : !{\ft{<0.5}}!) < (0.5 : !{\ftb{<0.5}{0.5}}!) 
-    then (1.0 : !{\ftb{<=1.0, <=2.0}{1.0}}!) 
-    else (2.0 : !{\ftb{<=1.0, <=2.0}{2.0}}!)
-    : !{\ftb{<=1.0, <=2.0}{1.0, 2.0}}! in
-    (uniform(0, scale) : !{\ft{<1.0}}!) < (1.0 : !{\ftb{<1.0}{1.0}}!)
-\end{lstlisting}
+\begin{example}
+    Consider the following program with type annotations:
+    \begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
+        (uniform(0, 
+            (if (uniform(0,1) : !{\ft{<0.5}}!) < (0.5 : !{\ftb{<0.5}{0.5}}!) 
+            then (1.0 : !{\ftb{<=1.0, <=2.0}{1.0}}!) 
+            else (2.0 : !{\ftb{<=1.0, <=2.0}{2.0}}!)) 
+            : !{\ftb{<=1.0, <=2.0}{1.0, 2.0}}!)) 
+        < 1.0 : !{\ftb{<1.0}{1.0}}!
+    \end{lstlisting}
 
-During type inference, the second parameter to \texttt{uniform} has type $\float[B_{\text{param}}; \{1.0, 2.0\}]$. Note that $B_{\text{param}}$ properly distinguishes \{1.0, 2.0\}. The implementation generates runtime dispatch code that evaluates the parameter expression, matches against possible constant values from the value set, and applies appropriate discretization for each case. The float constants 0.5, 1.0, and 2.0 are mapped to integers 1, 0, and 1 respectively. Since each expression is co-discrete, the resulting fully discretized program is:
+    During type inference, the second parameter of the uniform distirbution has type $\float[B_{\text{param}}; \{1.0, 2.0\}]$. Note that $B_{\text{param}}$ properly distinguishes \{1.0, 2.0\}. The implementation generates runtime dispatch code that evaluates the parameter expression, matches against possible constant values from the value set, and applies appropriate discretization for each case. The new let binding for fresh2 is created so each value in $\{1.0, 2.0\}$ can be uniquely identified and handled efficiently within the discretization logic. The float constants 0.5, 1.0, and 2.0 are mapped to integers 1, 0, and 1 respectively. Since each expression is co-discrete, the resulting fully discretized program is:
 
-\begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
-    let scale = if discrete(0.5, 0.5) < 1 
-                then 0 else 1
-    if scale == 0 then discrete(1, 0) else discrete(0.5, 0.5)
-    < 1
-\end{lstlisting}
+    \begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
+        let fresh2 = if discrete(0.5, 0.5) < 1 
+                     then 0 else 1 in 
+        if fresh2 == 0 then discrete(1, 0) else discrete(0.5, 0.5) < 1 
+    \end{lstlisting}
 
-\discrete(1,0) is from the discretization of $\uniform(0, 1.0)$ : \codetype{{\ft{<1.0}}} and \discrete(0.5, 0.5) is from the discretization of $\uniform(0, 2.0)$ : \codetype{{\ft{<1.0}}}. Our algorithm ensures correct discretization even when distribution parameters depend on runtime values.
+    In the second conditional, \discrete(1,0) is obtained from the discretization of $\uniform(0, 1.0)$ : \codetype{{\ft{<1.0}}} and \discrete(0.5, 0.5) is obtained from the discretization of $\uniform(0, 2.0)$ : \codetype{{\ft{<1.0}}}. Our algorithm ensures correct discretization even when distribution parameters depend on runtime values.
+\end{example}
 
 \paragraph{Effect of discretization on types} The types change as follows:
 \begin{itemize}
