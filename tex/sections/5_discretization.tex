@@ -73,7 +73,7 @@ The distribution can then be discretized as if its parameters were constant in e
         < 1.0 : !{\ftb{<1.0}{1.0}}!
     \end{lstlisting}
 
-    During type inference, the second parameter of the uniform distirbution has type $\float[B_{\text{param}}; \{1.0, 2.0\}]$. Note that $B_{\text{param}}$ properly distinguishes \{1.0, 2.0\}. The implementation generates runtime dispatch code that evaluates the parameter expression, matches against possible constant values from the value set, and applies appropriate discretization for each case. The new let binding for fresh2 is created so each value in $\{1.0, 2.0\}$ can be uniquely identified and handled efficiently within the discretization logic. The float constants 0.5, 1.0, and 2.0 are mapped to integers 1, 0, and 1 respectively. Since each expression is co-discrete, the resulting fully discretized program is:
+    During type inference, the second parameter of uniform has type $\float[B_{\text{param}}; \{1.0, 2.0\}]$. Note that $B_{\text{param}}$ properly distinguishes \{1.0, 2.0\}. The implementation generates runtime dispatch code that evaluates the parameter expression, matches against possible constant values from the value set, and applies appropriate discretization for each case. The new let binding for fresh2 is created so each value in $\{1.0, 2.0\}$ can be uniquely identified and handled efficiently within the discretization logic. The float constants 0.5, 1.0, and 2.0 are mapped to integers 1, 0, and 1 respectively. Since each expression is co-discrete, the resulting fully discretized program is:
 
     \begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
         let fresh2 = if discrete(0.5, 0.5) < 1 
