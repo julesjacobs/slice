@@ -1,12 +1,48 @@
 \section{Type Inference}\label{sec:type-inference}
 
-Given a source program, \Slice{} first performs type inference on the program, assigning types to every subexpression while simultaneously collecting cuts in $B$ and values in $V$ that will guide the discretization process for every subexpression with the $\float[B;V]$ type. The type system tracks both traditional type information and refinement information specific to floating-point values. For float types $\float[B; V]$, two separate refinement components are maintained:
-\begin{itemize}
-    \item The \emph{cut set} $B$ collects cuts (e.g., $<\!\!0.5$, $\leq\!\!1.2$) from sites where the expression is compared
-    \item The \emph{value set} $V$ tracks concrete float constants that flow to the expression or $\top$ 
-\end{itemize}
+\jules{Define the goal of type inference: annotate each subexpression with its type}
 
-In a single pass over the AST, the inference algorithm performs type checking, and specifically for floating-point values, fomulates type checking as a constraint satisfaction problem in order to obtain the proper cuts and values in $B$ and $V$, respectively, for discretization.
+\jules{Important concept: type inference does a single pass over the expression and generates constraints over unknowns, which are then solved to find solutions for the unknowns}
+
+\subsection{Constraint Language and Solvers}
+
+\jules{We have two general constraint types: subtyping constraints, and lower level constraints between $B$ and $V$ lattice elements}
+
+\paragraph{Lattice constraints.}
+
+\jules{Explain the state of B,V lattice variables and how they increase monotonically}
+
+\jules{List the types of B,V constraints we have, and how their solver works}
+
+\paragraph{Subtyping constraints.}
+
+\jules{Explain the state of type metavariables and how they are instantiated}
+
+\jules{Explain the subtyping constraints and how their solver works}
+
+\paragraph{Top-level ``Don't-Discretize'' constraint.}
+
+\jules{Explain the extra top level constraint that the return value is not discretized}
+
+\subsection{Constraint Generation}
+
+\jules{Explain which constraints are generated for each type of expression}
+
+\jules{Explain that the constraint generator also returns a new expression in which all subexpressions are annotated (pair of expression and not yet instantiated type variable), we have a set of constraints among those type variables.}
+
+\subsection{Final type inference}
+
+\jules{Wrap up by explaining how the constraint solver then fills in all those type variables, and we have a fully annotated program ready for the next step: discretization}
+
+
+
+% Given a source program, \Slice{} first performs type inference on the program, assigning types to every subexpression while simultaneously collecting cuts in $B$ and values in $V$ that will guide the discretization process for every subexpression with the $\float[B;V]$ type. The type system tracks both traditional type information and refinement information specific to floating-point values. For float types $\float[B; V]$, two separate refinement components are maintained:
+% \begin{itemize}
+%     \item The \emph{cut set} $B$ collects cuts (e.g., $<\!\!0.5$, $\leq\!\!1.2$) from sites where the expression is compared
+%     \item The \emph{value set} $V$ tracks concrete float constants that flow to the expression or $\top$ 
+% \end{itemize}
+
+% In a single pass over the AST, the inference algorithm performs type checking and generates constraints between all the $V$ and $B$ sets, which are then solved to obtain the proper cuts for discretization.
 
 % Both components start at the bottom of their respective lattices ($\emptyset$) and monotonically accumulate information through constraint propagation. The implementation maintains sets as mutable references with attached listeners that propagate updates immediately when new information becomes available. The listeners of a set are triggered when the lattice value goes up in the lattice (it can never go down; the changes are always monotone).
 % For instance, to maintain the constraint $B_1 \leq B_2$, the system registers a listener that propagates updates from $B_1$ to $B_2$ when $B_1$ goes up.
@@ -28,102 +64,102 @@ In a single pass over the AST, the inference algorithm performs type checking, a
 %         \end{itemize}
 % \end{itemize}
 
-\subsection{Algorithm for Type Inference}
-We describe in detail our type inference algorithm. We specifically focus on how our algorithm generates and solves constraints for float types, as type checking for non-float types is straightforward and follows the conventional typing rules presented in Figure~\ref{fig:typing-general}. To elucidate our type inference algorithm, we focus on a small but representative subset of the \Slice{} language that captures the core features needed to demonstrate how the algorithm operates over the full language. In particular, our subset language allows for constants, variables, let bindings, uniform distributions, comparisons, and conditionals, all of which involve float types, either as their return type or within the return type of a subexpression. All other constructs not included in our subset language preserve their structure during type inference. The high-level steps of the algorithm are outlined below, and the pseudocode for the algorithm is outlined in Figure~\ref{fig:inference-code}.
+% \subsection{Algorithm for Type Inference}
+% We describe in detail our type inference algorithm. We specifically focus on how our algorithm generates and solves constraints for float types, as type checking for non-float types is straightforward and follows the conventional typing rules presented in Figure~\ref{fig:typing-general}. To elucidate our type inference algorithm, we focus on a small but representative subset of the \Slice{} language that captures the core features needed to demonstrate how the algorithm operates over the full language. In particular, our subset language allows for constants, variables, let bindings, uniform distributions, comparisons, and conditionals, all of which involve float types, either as their return type or within the return type of a subexpression. All other constructs not included in our subset language preserve their structure during type inference. The high-level steps of the algorithm are outlined below, and the pseudocode for the algorithm is outlined in Figure~\ref{fig:inference-code}.
 
-\begin{enumerate}
-    \item \textbf{Initialization of float types.} Initialize $\float[B;V]$ for all floating-point expressions. Ensure float constants $c$ start with type $\float[\emptyset; \{c\}]$ (empty cut set, singleton value set), uniform distributions start with type $\float[\emptyset; \top]$ (empty cut set, Top value set), variables share the same type instance (so any update to a variable is immediately reflected wherever used), conditionals start with type $\float[\emptyset; \{V_1 \latticesup V_2\}]$ assuming the true and false branches of the conditional are float types $\float[\emptyset; V_1]$ and $\float[\emptyset; V_2]$ respectively, and let statements share the same type instance of their most recent binding (so any updates are immediately propagated). All cut sets start empty.
+% \begin{enumerate}
+%     \item \textbf{Initialization of float types.} Initialize $\float[B;V]$ for all floating-point expressions. Ensure float constants $c$ start with type $\float[\emptyset; \{c\}]$ (empty cut set, singleton value set), uniform distributions start with type $\float[\emptyset; \top]$ (empty cut set, Top value set), variables share the same type instance (so any update to a variable is immediately reflected wherever used), conditionals start with type $\float[\emptyset; \{V_1 \latticesup V_2\}]$ assuming the true and false branches of the conditional are float types $\float[\emptyset; V_1]$ and $\float[\emptyset; V_2]$ respectively, and let statements share the same type instance of their most recent binding (so any updates are immediately propagated). All cut sets start empty.
     
-    \item \textbf{Constraints for conditionals.} Let $B_1, B_2$ be the cut sets of the true and false branches in a conditional with float types $\float[B_1; V_1]$ and $\float[B_2; V_2]$ respectively. Let $B$ be the cut set of the entire conditional. Then, $B = B_1 = B_2$.
+%     \item \textbf{Constraints for conditionals.} Let $B_1, B_2$ be the cut sets of the true and false branches in a conditional with float types $\float[B_1; V_1]$ and $\float[B_2; V_2]$ respectively. Let $B$ be the cut set of the entire conditional. Then, $B = B_1 = B_2$.
 
-    \item \textbf{Constraints for comparisons.} Comparisons generate answerability constraints which populate cut sets as well as equality constraints between cut sets. Assume $e_1 < e_2$ where $e_1 : \float[B_1; V_1]$ and $e_2 : \float[B_2; V_2]$.
-    \begin{enumerate}
-        \item \textbf{Answerability constraints.} 
-        \begin{itemize}
-            \item If $V_1 = V_2 = \top$, then $B_1 = B_1 \latticesup \top$.
-            \item If $V_1 \neq \top$ and $V_2 = \top$, then $B_1 = B_1 \; \latticesup \clt{V_1}$. 
-            \item If $V_2 \neq \top$ and $V_1 = \top$, then $B_1 = B_1 \; \latticesup \clt{V_2}$.
-            \item If $V_1 \neq \top$ and $V_2 \neq \top$, then $B_1 = B_1 \; \latticesup \clt{V_2}$.  
-        \end{itemize}
+%     \item \textbf{Constraints for comparisons.} Comparisons generate answerability constraints which populate cut sets as well as equality constraints between cut sets. Assume $e_1 < e_2$ where $e_1 : \float[B_1; V_1]$ and $e_2 : \float[B_2; V_2]$.
+%     \begin{enumerate}
+%         \item \textbf{Answerability constraints.} 
+%         \begin{itemize}
+%             \item If $V_1 = V_2 = \top$, then $B_1 = B_1 \latticesup \top$.
+%             \item If $V_1 \neq \top$ and $V_2 = \top$, then $B_1 = B_1 \; \latticesup \clt{V_1}$. 
+%             \item If $V_2 \neq \top$ and $V_1 = \top$, then $B_1 = B_1 \; \latticesup \clt{V_2}$.
+%             \item If $V_1 \neq \top$ and $V_2 \neq \top$, then $B_1 = B_1 \; \latticesup \clt{V_2}$.  
+%         \end{itemize}
 
-        \item \textbf{Equality constraints for comparisons.} Set $B_1 = B_2$. 
-    \end{enumerate}
+%         \item \textbf{Equality constraints for comparisons.} Set $B_1 = B_2$. 
+%     \end{enumerate}
     
-    \item \textbf{Constraint solver.} Solving all constraints results in an annotated program with all comparison points captured in the refinements.
+%     \item \textbf{Constraint solver.} Solving all constraints results in an annotated program with all comparison points captured in the refinements.
     
-    \item \textbf{Constraints for return values (for partial discretization).} If the return type of the program has type $\float[B; V]$ and $B = \emptyset$ after solving for all constraints, set $B = \top$ and re-run the constraint solver.
-\end{enumerate}
+%     \item \textbf{Constraints for return values (for partial discretization).} If the return type of the program has type $\float[B; V]$ and $B = \emptyset$ after solving for all constraints, set $B = \top$ and re-run the constraint solver.
+% \end{enumerate}
 
-\input{figures/inference-code.tex}
+% \input{figures/inference-code.tex}
 
-\begin{example}\label{ex:type-inference}
-Consider the type inference process for this simple program:
-\begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
-    let x = if uniform(0,1) < 0.5 
-            then uniform(0,2) 
-            else uniform(0,4) in
-    let y = if 1.5 < x
-            then 1.8
-            else 0.3 in
-    x <= y
-\end{lstlisting}
+% \begin{example}\label{ex:type-inference}
+% Consider the type inference process for this simple program:
+% \begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
+%     let x = if uniform(0,1) < 0.5 
+%             then uniform(0,2) 
+%             else uniform(0,4) in
+%     let y = if 1.5 < x
+%             then 1.8
+%             else 0.3 in
+%     x <= y
+% \end{lstlisting}
 
-The inference proceeds as follows. First, we create a new type variable for every subexpression. Second, the constraint solver finds the types of the subexpressions.
-This obtains the following annotated program with unknown bags:
+% The inference proceeds as follows. First, we create a new type variable for every subexpression. Second, the constraint solver finds the types of the subexpressions.
+% This obtains the following annotated program with unknown bags:
 
-\begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
-    let x = if (uniform(0,1) : !{\codetype{float[$B_1$; $V_1$]}}!) < (0.5 : !{\codetype{float[$B_2$; $V_2$]}}!)
-            then (uniform(0,2) : !{\codetype{float[$B_3$; $V_3$]}}!)
-            else (uniform(0,4) : !{\codetype{float[$B_4$; $V_4$]}}!)
-            : !{\codetype{float[$B_x$; $V_x$]}}! in
-    let y = if (1.5 : !{\codetype{float[$B_5$; $V_5$]}}!) < (x : !{\codetype{float[$B_x$; $V_x$]}}!)
-            then (1.8 : !{\codetype{float[$B_6$; $V_6$]}}!)
-            else (0.3 : !{\codetype{float[$B_7$; $V_7$]}}!)
-            : !{\codetype{float[$B_y$; $V_y$]}}! in
-    (x : !{\codetype{float[$B_x$; $V_x$]}}!) <= (y : !{\codetype{float[$B_y$; $V_y$]}}!)
-\end{lstlisting}
+% \begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
+%     let x = if (uniform(0,1) : !{\codetype{float[$B_1$; $V_1$]}}!) < (0.5 : !{\codetype{float[$B_2$; $V_2$]}}!)
+%             then (uniform(0,2) : !{\codetype{float[$B_3$; $V_3$]}}!)
+%             else (uniform(0,4) : !{\codetype{float[$B_4$; $V_4$]}}!)
+%             : !{\codetype{float[$B_x$; $V_x$]}}! in
+%     let y = if (1.5 : !{\codetype{float[$B_5$; $V_5$]}}!) < (x : !{\codetype{float[$B_x$; $V_x$]}}!)
+%             then (1.8 : !{\codetype{float[$B_6$; $V_6$]}}!)
+%             else (0.3 : !{\codetype{float[$B_7$; $V_7$]}}!)
+%             : !{\codetype{float[$B_y$; $V_y$]}}! in
+%     (x : !{\codetype{float[$B_x$; $V_x$]}}!) <= (y : !{\codetype{float[$B_y$; $V_y$]}}!)
+% \end{lstlisting}
 
-The bags are then solved in the following manner. We omit the annotations for the \textbf{bool} types for clarity and conciseness:
+% The bags are then solved in the following manner. We omit the annotations for the \textbf{bool} types for clarity and conciseness:
 
-\begin{enumerate}
-    \item \textbf{Initialization:}
-    Float constants get singleton values in their value sets: $V_2=\{0.5\}$, $V_5=\{1.5\}$, $V_6=\{1.8\}$, $V_7=\{0.3\}$. Continuous distributions get $\top$ values in their value sets: $V_1=V_3=V_4=\top$. The references $\float[B_x; V_x]$ and $\float[B_y; V_x]$ are used for \texttt{x} and \texttt{y} respectively. For conditionals, set $V_x = V_3 \latticesup V_4 = \top$ and $V_y = V_6 \latticesup V_7 = \{1.8, 0.3\}$. All cut sets start empty.
+% \begin{enumerate}
+%     \item \textbf{Initialization:}
+%     Float constants get singleton values in their value sets: $V_2=\{0.5\}$, $V_5=\{1.5\}$, $V_6=\{1.8\}$, $V_7=\{0.3\}$. Continuous distributions get $\top$ values in their value sets: $V_1=V_3=V_4=\top$. The references $\float[B_x; V_x]$ and $\float[B_y; V_x]$ are used for \texttt{x} and \texttt{y} respectively. For conditionals, set $V_x = V_3 \latticesup V_4 = \top$ and $V_y = V_6 \latticesup V_7 = \{1.8, 0.3\}$. All cut sets start empty.
 
-    \item \textbf{Constraints for conditionals:} 
-    Set $B_x = B_3 = B_4$ and $B_y = B_6 = B_7$.
+%     \item \textbf{Constraints for conditionals:} 
+%     Set $B_x = B_3 = B_4$ and $B_y = B_6 = B_7$.
 
-    \item \textbf{Constraints for comparisons:}
-    Comparisons generate answerability constraints which populate the cut bags: Set $B_1 = B_1 \; \latticesup \clt{V_2}$, $B_5 = B_5 \; \latticesup \clt{V_5}$, and $B_x = B_x \; \latticesup \cleq{V_y}$. Enforce equality on cut bags for expressions involved in comparisons: Set $B_1 = B_2$, $B_5 = B_x$, and $B_x = B_y$.
+%     \item \textbf{Constraints for comparisons:}
+%     Comparisons generate answerability constraints which populate the cut bags: Set $B_1 = B_1 \; \latticesup \clt{V_2}$, $B_5 = B_5 \; \latticesup \clt{V_5}$, and $B_x = B_x \; \latticesup \cleq{V_y}$. Enforce equality on cut bags for expressions involved in comparisons: Set $B_1 = B_2$, $B_5 = B_x$, and $B_x = B_y$.
 
-    \item \textbf{Solver:}
-    All cut bags are therefore in two equivalence classes: $B_{12}$ ($= B_1 = B_2$) and $B_{xy}$ ($=B_x=B_y=B_3=B_4=B_5=B_6=B_7$).
-    Combining all constraints on $B_{xy}$ gives the final cut set: $\{ \leq\!0.3, <\!1.5, \leq\!1.8 \}$. The set $B_{12}$ for the first comparison is $\{ <\!0.5 \}$.
-\end{enumerate}
+%     \item \textbf{Solver:}
+%     All cut bags are therefore in two equivalence classes: $B_{12}$ ($= B_1 = B_2$) and $B_{xy}$ ($=B_x=B_y=B_3=B_4=B_5=B_6=B_7$).
+%     Combining all constraints on $B_{xy}$ gives the final cut set: $\{ \leq\!0.3, <\!1.5, \leq\!1.8 \}$. The set $B_{12}$ for the first comparison is $\{ <\!0.5 \}$.
+% \end{enumerate}
 
-This results in the following fully annotated program:
+% This results in the following fully annotated program:
 
-\begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
-    let x = if (uniform(0,1) : !{\ft{<0.5}}!) < (0.5 : !{\ftb{<0.5}{0.5}}!)
-            then (uniform(0,2) : !{\ft{<=0.3,<1.5,<=1.8}}!)
-            else (uniform(0,4) : !{\ft{<=0.3,<1.5,<=1.8}}!)
-            : !{\ft{<=0.3,<1.5,<=1.8}}! in
-    let y = if (1.5 : !{\ftb{<=0.3,<1.5,<=1.8}{1.5}}!) < x
-            then (1.8 : !{\ftb{<=0.3,<1.5,<=1.8}{1.8}}!)
-            else (0.3 : !{\ftb{<=0.3,<1.5,<=1.8}{0.3}}!)
-            : !{\ftb{<=0.3,<1.5,<=1.8}{0.3,1.8}}! in
-    x <= y
-\end{lstlisting}
-\end{example}
+% \begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
+%     let x = if (uniform(0,1) : !{\ft{<0.5}}!) < (0.5 : !{\ftb{<0.5}{0.5}}!)
+%             then (uniform(0,2) : !{\ft{<=0.3,<1.5,<=1.8}}!)
+%             else (uniform(0,4) : !{\ft{<=0.3,<1.5,<=1.8}}!)
+%             : !{\ft{<=0.3,<1.5,<=1.8}}! in
+%     let y = if (1.5 : !{\ftb{<=0.3,<1.5,<=1.8}{1.5}}!) < x
+%             then (1.8 : !{\ftb{<=0.3,<1.5,<=1.8}{1.8}}!)
+%             else (0.3 : !{\ftb{<=0.3,<1.5,<=1.8}{0.3}}!)
+%             : !{\ftb{<=0.3,<1.5,<=1.8}{0.3,1.8}}! in
+%     x <= y
+% \end{lstlisting}
+% \end{example}
 
-We formalize the above notions in a way that will allow us to in the next section characterize the types of programs our discretization method supports. We first define what it means for a given subexpression with a float type to be co-discrete or co-continuous. 
+% We formalize the above notions in a way that will allow us to in the next section characterize the types of programs our discretization method supports. We first define what it means for a given subexpression with a float type to be co-discrete or co-continuous. 
 
-\begin{definition} [Co-discrete]\label{def:co-discrete}
-    An subexpression is \textit{co-discrete} if its cut set is not Top.
-\end{definition}
+% \begin{definition} [Co-discrete]\label{def:co-discrete}
+%     An subexpression is \textit{co-discrete} if its cut set is not Top.
+% \end{definition}
 
-\begin{definition} [Co-continuous]\label{def:co-continuous}
-    An subexpression is \textit{co-continuous} if it is not co-discrete.
-\end{definition}
+% \begin{definition} [Co-continuous]\label{def:co-continuous}
+%     An subexpression is \textit{co-continuous} if it is not co-discrete.
+% \end{definition}
 
-The above example shows how comparison points accumulate in the cut and value sets through the constraint propagation mechanism, even when comparisons appear in different branches of the program. Note that all expressions in this example are co-discrete. A simple change at the end of the program from $x \leq y$ to $y$ would have rendered the expressions $1.8$, $0.3$, and $y$ co-continuous, with types \codetype{\ftv{1.8}}, \codetype{\ftv{0.3}}, and \codetype{\ftv{0.3, 1.8}}, respectively. These types are obtained after the return type constraint is applied: since $y$ is the return value and its cut set $B_y$ remains empty after constraint solving, the system sets $B_y = \top$.
+% The above example shows how comparison points accumulate in the cut and value sets through the constraint propagation mechanism, even when comparisons appear in different branches of the program. Note that all expressions in this example are co-discrete. A simple change at the end of the program from $x \leq y$ to $y$ would have rendered the expressions $1.8$, $0.3$, and $y$ co-continuous, with types \codetype{\ftv{1.8}}, \codetype{\ftv{0.3}}, and \codetype{\ftv{0.3, 1.8}}, respectively. These types are obtained after the return type constraint is applied: since $y$ is the return value and its cut set $B_y$ remains empty after constraint solving, the system sets $B_y = \top$.
 
