@@ -24,12 +24,34 @@ The transformation $\texttt{discretize}(e)$ is defined recursively on the struct
 \end{definition}
 
 \subsection{Algorithm for Discretization}
-We now describe more formally our discretization algorithm as it is implemented in \Slice{}. Note that \Slice{} only attempts to discretize away expressions with float type $\float[B;V]$, while expressions of all other types preserve their original types and semantics across the discretization. Like in section~\ref{sec:type-inference}, we focus on the same subset language of \Slice{}, enough to capture how our algorithm operates over the full language. We define a function \texttt{discretize($e$)} and show how it is recursively applied to expressions in our subset language. Variables pass through unchanged though their type may change, and let bindings, comparisons, and conditionals preserve their structure. The crux of our discretization algorithm lies when float constants or continuous distributions are encountered in the AST traversal. We let $\text{CDF}(b_i)$ be the measure of a uniform distribution on the interval $(-\infty, c_i)$ if $b_i =\ <\!\!c_i$ and on the interval $(-\infty, c_i]$ if $b_i =\ \leq\!\!c_i$ and take $\text{CDF}(b_{0}) = 0$ and $\text{CDF}(b_{n+1}) = 1$. Note that a distribution must be valid to compute its cdf: for distributions with invalid parameters, such as $\uniform(l,r)$ where $l > r$, our implementation generates a runtime error. Figure~\ref{fig:discretization-code} shows the algorithm, which takes in a typed program and outputs a new (untyped) program. 
+\katherine{Add if the program is well-typed then $B \neq \top$ and $V = \top$ cannot occur. In other words, if $V = \top$, then it must be the case that $B = \top$. Add a proof or just state it.}
+We now describe more formally our discretization algorithm as it is implemented in \Slice{}. Note that \Slice{} only attempts to discretize away expressions with float type $\float[B;V]$, while expressions of all other types preserve their original semantics across the discretization. Like in section~\ref{sec:type-inference}, we focus on the same subset language of \Slice{}, enough to capture how our algorithm operates over the full language. 
+
+We define a discretization function $\mathcal{D}\sem{e : \tau}$ and show how it is recursively applied to expressions in our subset language. Variables, let bindings, comparisons, and conditionals all preserve their structure. The crux of our discretization algorithm lies when float constants or continuous distributions are encountered in the AST traversal. Given $B = \{\sim_1\!\!b_1, \ldots, \sim_n\!\!b_n\}$, we let $\text{CDF}(b_i)$ be the measure of a uniform distribution on the interval $(-\infty, b_i)$ if $\sim_i =\ <$ and on the interval $(-\infty, b_i]$ if $\sim_i =\ \leq$. We take $\text{CDF}(b_{0}) = 0$ and $\text{CDF}(b_{n+1}) = 1$. Note that a distribution must be valid before computing its CDF: for distributions with invalid parameters, such as $\uniform(l,r)$ where $l > r$, our implementation generates a runtime error. Figure~\ref{fig:discretization-code} shows the algorithm, which takes in a typed program and outputs a new program. 
+
+\begin{figure}[t]
+    \centering
+    \begin{align*}
+        \mathcal{D}\sem{\tau} &= 
+        \begin{cases}
+            \fin{n+1}, & \text{if } \tau = \float[B; V] \text{ and } B = \{b_1, \ldots, b_n\} \\[0.5em]
+            \float, & \text{if } \tau = \float[B; V] \text{ and } B = \top \\[0.5em]
+            \mathcal{D}\sem{A} \to \mathcal{D}\sem{B}, & \text{if } \tau = A \to B \\[0.5em]
+            \mathcal{D}\sem{A} \times \mathcal{D}\sem{B}, & \text{if } \tau = A \times B \\[0.5em]
+            \listty{\mathcal{D}\sem{A}}, & \text{if } \tau = \listty{A} \\[0.5em]
+            \texttt{ref}(\mathcal{D}\sem{A}), & \text{if } \tau = \texttt{ref}(A) \\[0.5em]
+            \tau, & \text{otherwise}
+        \end{cases}
+    \end{align*}
+    \caption{Transformation of types under $\mathcal{D}$, where $\mathcal{D}$ acts on types.}
+    \label{fig:semantics}
+\end{figure}
+
 
 \input{figures/discretization-code.tex}
 
 \begin{example}\label{ex:discretization}
- Consider the program in Example~\ref{ex:type-inference}, now with type annotations:
+ Consider the program with type annotations:
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
     let x = if (uniform(0,1) : !{\ft{<0.5}}!) < (0.5 : !{\ftb{<0.5}{0.5}}!)
@@ -73,27 +95,16 @@ The distribution can then be discretized as if its parameters were constant in e
         < 1.0 : !{\ftb{<1.0}{1.0}}!
     \end{lstlisting}
 
-    During type inference, the second parameter of uniform has type $\float[B_{\text{param}}; \{1.0, 2.0\}]$. Note that $B_{\text{param}}$ properly distinguishes \{1.0, 2.0\}. The implementation generates runtime dispatch code that evaluates the parameter expression, matches against possible constant values from the value set, and applies appropriate discretization for each case. The new let binding for fresh2 is created so each value in $\{1.0, 2.0\}$ can be uniquely identified and handled efficiently within the discretization logic. The float constants 0.5, 1.0, and 2.0 are mapped to integers 1, 0, and 1 respectively. Since each expression is co-discrete, the resulting fully discretized program is:
+    During type inference, the second parameter of uniform has type $\float[B_{\text{param}}; \{1.0, 2.0\}]$. Note that $B_{\text{param}}$ properly distinguishes \{1.0, 2.0\}. The implementation generates runtime dispatch code that evaluates the parameter expression, matches against possible constant values from the value set, and applies appropriate discretization for each case. The new let bindings for $v_1'$ and $v_2'$ are created so each value in $\{1.0, 2.0\}$ can be uniquely identified by a finite type value and handled efficiently within the discretization logic. The float constants 0.5, 1.0, and 2.0 are mapped to integers 1, 0, and 1 respectively. Since each expression is co-discrete, the resulting fully discretized program is:
 
-    \begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
-        let fresh2 = if discrete(0.5, 0.5) < 1 
+    \begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!, mathescape]
+        let $v_2'$ = if discrete(0.5, 0.5) < 1 
                      then 0 else 1 in 
-        if fresh2 == 0 then discrete(1, 0) else discrete(0.5, 0.5) < 1 
+        if $v_2'$ == 0 then discrete(1, 0) else discrete(0.5, 0.5) < 1 
     \end{lstlisting}
 
     In the second conditional, \discrete(1,0) is obtained from the discretization of $\uniform(0, 1.0)$ : \codetype{{\ft{<1.0}}} and \discrete(0.5, 0.5) is obtained from the discretization of $\uniform(0, 2.0)$ : \codetype{{\ft{<1.0}}}. Our algorithm ensures correct discretization even when distribution parameters depend on runtime values.
 \end{example}
-
-\paragraph{Effect of discretization on types} The types change as follows:
-\begin{itemize}
-    \item $\texttt{discretize}(\float[B; V]) = \fin{n+1}$ if $B = \{b_1, \ldots, b_n\}$
-    \item $\texttt{discretize}(\float[B; V]) = \float$ if $B = \top$
-    \item $\texttt{discretize}(A \to B) = \texttt{discretize}(A) \to \texttt{discretize}(B)$
-    \item $\texttt{discretize}(A \times B) = \texttt{discretize}(A) \times \texttt{discretize}(B)$
-    \item $\texttt{discretize}(\listty{A}) = \listty{\texttt{discretize}(A)}$
-    \item $\texttt{discretize}(\texttt{ref}(A)) = \texttt{ref}(\texttt{discretize}(A))$
-    \item Other types remain unchanged.
-\end{itemize}
     
 
     

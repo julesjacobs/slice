@@ -1,92 +1,88 @@
 \begin{figure}[t]
     \centering
-    \tiny
-    
+    \footnotesize
+
     % Basic discretization rules
     \begin{align}
-        \texttt{discretize}(c : \float[B;V]) &= 
+        \mathcal{D}\sem{c : \float[B;V]} &=
         \begin{cases}
-            c & \text{if } B = \top \\[0.5em]
-            \finconst{k}{n+1} \text{ such that } c \in \intervals{B}_k & \text{if } B \neq \top
+            c & \text{if } B = \top, \\
+            \finconst{k}{n+1} \text{ such that } c \in \intervals{B}_k & \text{if } B \neq \top.
         \end{cases}
     \end{align}
-    
+
     \vspace{0.5em}
-    
+
     \begin{align}
-        \texttt{discretize}((\letkw\; x = e_1 : \tau_1\; \inkw\; e_2 : \tau_2) : \tau_2) 
-            &= \letkw\; x = \texttt{discretize}(e_1 : \tau_1)\; \inkw\; \texttt{discretize}(e_2 : \tau_2)
-    \end{align}
-    
-    \begin{align}
-        \texttt{discretize}((e_1 : \float[B_1; V_1] < e_2 : \float[B_2; V_2]) : \bool) 
-            &= \texttt{discretize}(e_1 : \float[B_1; V_1]) < \texttt{discretize}(e_2 : \float[B_2; V_2])
+        \mathcal{D}\sem{\letkw\; x = e_1 : \tau_1\; \inkw\; e_2 : \tau_2 : \tau_2} &=
+        \letkw\; x = \mathcal{D}\sem{e_1 : \tau_1}\; \inkw\; \mathcal{D}\sem{e_2 : \tau_2}.
     \end{align}
 
     \begin{align}
-        \texttt{discretize}((e_1 : \float[B_1; V_1] \leq e_2 : \float[B_2; V_2]) : \bool) 
-            &= \texttt{discretize}(e_1 : \float[B_1; V_1]) \leq \texttt{discretize}(e_2 : \float[B_2; V_2])
+        \mathcal{D}\sem{(e_1 : \float[B_1;V_1] < e_2 : \float[B_2;V_2]) : \bool} &=
+        \mathcal{D}\sem{e_1 : \float[B_1;V_1]} < \mathcal{D}\sem{e_2 : \float[B_2;V_2]}.
     \end{align}
-    
+
     \begin{align}
-        \texttt{discretize}((\ifkw\; e_1 : \bool\; \thenkw\; e_2 : \tau\; \elsekw\; e_3 : \tau) : \tau) 
-            &= \ifkw\; \texttt{discretize}(e_1 : \bool)\; \thenkw\; \texttt{discretize}(e_2 : \tau) \notag \\
-            &\quad \elsekw\; \texttt{discretize}(e_3 : \tau)
+        \mathcal{D}\sem{(e_1 : \float[B_1;V_1] \leq e_2 : \float[B_2;V_2]) : \bool} &=
+        \mathcal{D}\sem{e_1 : \float[B_1;V_1]} \leq \mathcal{D}\sem{e_2 : \float[B_2;V_2]}.
     \end{align}
-    
+
     \begin{align}
-        \texttt{discretize}(x : \tau) &= x 
+        \mathcal{D}\sem{(\ifkw\; e_1 : \bool\; \thenkw\; e_2 : \tau\; \elsekw\; e_3 : \tau) : \tau} &=
+        \ifkw\; \mathcal{D}\sem{e_1 : \bool}\; \thenkw\; \mathcal{D}\sem{e_2 : \tau} \notag \\
+        &\quad \elsekw\; \mathcal{D}\sem{e_3 : \tau}.
     \end{align}
-    
+
+    \begin{align}
+        \mathcal{D}\sem{x : \tau} &= x.
+    \end{align}
+
     \vspace{1em}
-    
+
     % Uniform distribution discretization
     \begin{align}
-        \texttt{discretize}(\uniform(e_1 : \float[B_1;V_1], e_2 : \float[B_2;V_2]) : \float[B;V]) &=
+        \mathcal{D}\sem{\uniform(e_1 : \float[B_1;V_1], e_2 : \float[B_2;V_2]) : \float[B;V]} &
+    \end{align}
+
+    \begin{align}
+        =
         \begin{cases}
-            \uniform(\texttt{discretize}(e_1 : \float[B_1;V_1]), \\
-            \texttt{ discretize}(e_2 : \float[B_2;V_2])) & \text{if } B = \top \\[2.5em]
+            \texttt{Error: Uniform $e_1 > e_2$} 
+            & \text{if } e_1, e_2 \in \mathbb{R}, e_1 > e_2 \\[1em]
+            \uniform(\mathcal{D}\sem{e_1 : \float[B_1;V_1]}, \mathcal{D}\sem{e_2 : \float[B_2;V_2]}) 
+            & \text{if } B = \top, \\[1.5em]
             \begin{aligned}
                 &\discrete(p_0, \ldots, p_n) \\
                 &\text{ where } p_k = \text{CDF}(b_{k+1}) - \text{CDF}(b_k)
             \end{aligned}
             & 
             \begin{aligned}
-                &\text{if } B \neq \top \\
-                &\text{and } e_1, e_2 \in \mathbb{R}
+                &\text{if } B \neq \top, \\
+                &B = \{\sim_1\!\!b_1, \ldots, \sim_n\!\!b_n\},\\
+                &e_1, e_2 \in \mathbb{R}
             \end{aligned} \\[2.5em]
             \begin{aligned}
-                & \letkw \; \text{fresh1} = \texttt{discretize}(e_1 : \float[B_1; V_1]) \; \inkw \\
-                &\ifkw\; \text{fresh1} == 0\; \thenkw \\
-                &\quad \texttt{discretize}(\uniform(v_1, e_2 : \float[B_2; V_2])) \\
-                &\elsekw\; \ifkw\; \text{fresh1} == 1\; \thenkw \\
-                &\quad \texttt{discretize}(\uniform(v_2, e_2 : \float[B_2; V_2])) \\
+                &\letkw \; v_1' = \mathcal{D}\sem{e_1 : \float[B_1; V_1]} \; \inkw \\
+                &\letkw \; v_2' = \mathcal{D}\sem{e_2 : \float[B_2; V_2]} \; \inkw \\
+                &\ifkw\; v_1' == 0\; \&\& \; v_2' == 0\; \thenkw \\
+                &\quad \mathcal{D}\sem{\uniform(v_1, w_1)} \\
+                &\vdots \\
+                &\elsekw\; \ifkw\; v_1' == i\; \&\& \; v_2' == j\; \thenkw \\
+                &\quad \mathcal{D}\sem{\uniform(v_{i+1}, w_{j+1})} \\
                 &\vdots \\
                 &\elsekw \\
-                &\quad \texttt{discretize}(\uniform(v_n, e_2))
+                &\quad \mathcal{D}\sem{\uniform(v_n, w_m)}
             \end{aligned}
             &
             \begin{aligned}
-                &\text{if } B \neq \top \\
-                &\text{and } V_1 = \{v_1, \ldots, v_n\}
-            \end{aligned} \\[6.5em]
-            \begin{aligned}
-                & \letkw \; \text{fresh2} = \texttt{discretize}(e_2 : \float[B_2; V_2]) \; \inkw \\
-                &\ifkw\; \text{fresh2} == 0\; \thenkw \\
-                &\quad \texttt{discretize}(\uniform(e_1 : \float[B_1; V_1], v_1)) \\
-                &\elsekw\; \ifkw\; \text{fresh2} == 1\; \thenkw \\
-                &\quad \texttt{discretize}(\uniform(e_1 : \float[B_1; V_1], v_2)) \\
-                &\vdots \\
-                &\elsekw \\
-                &\quad \texttt{discretize}(\uniform(e_1, v_n))
-            \end{aligned}
-            &
-            \begin{aligned}
-                &\text{if } B \neq \top \\
-                &\text{and } V_2 = \{v_1, \ldots, v_n\}
+                &\text{if } B \neq \top, \\
+                &V_1 = \{v_1, \ldots, v_n\}, \\
+                &V_2 = \{w_1, \ldots, w_m\}
             \end{aligned}
         \end{cases}
     \end{align}
-    \caption{Discretization function for \textsc{Slice}. If $e_1$ and $e_2$ are variables in \texttt{discretize($\uniform(e_1, e_2)$)}, the let bindings for fresh1 and fresh2 are in fact unnecessary; the nested \texttt{if} statements can directly use $e_1$ and $e_2$ in their guards.}
+
+    \caption{Discretization function for \textsc{Slice}. If $e_1$ and $e_2$ are variables in \texttt{discretize($\uniform(e_1, e_2)$)}, the let bindings for v1' and v2' are in fact unnecessary; the nested \texttt{if} statements can directly use $e_1$ and $e_2$ in their guards.}
     \label{fig:discretization-code}
 \end{figure}
