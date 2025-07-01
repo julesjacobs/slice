@@ -1,0 +1,57 @@
+// Function to compute average score 
+var calculateAverageScore = function(output) {
+  var scores = map(function(sample) { return sample.score; }, output.samples);
+  var sum = reduce(function(total, score) { return total + score; }, 0, scores);
+  return sum / output.samples.length;
+};
+
+
+// Actual HMM logic
+var transition = function(s) {
+  // Transition using a manually constructed bimodal distribution
+  var u = uniform(0, 1);
+  return s < 0.5
+    ? (u < 0.5 ? uniform(0,100) : uniform(0,200)) // Bimodal: Two separate Gaussians
+    : (u < 0.5 ? uniform(0,200) : uniform(0,400)); // Another bimodal setup
+};
+
+var observe = function(s) {
+  return s < 0.5 ? uniform(0,2) : uniform(0,4);
+};
+
+var hmm = function(n, total_steps) {
+  var prev = (n == 1) ? {states: [0], observations: []} : hmm(n - 1, total_steps);
+  
+  if (n == total_steps) {
+    // Append a single final state and observation at the end
+    var s = prev.states[prev.states.length - 1];
+    var finalState = s < 0.5 ? uniform(0,100) : uniform(0,200);
+    var finalObs = s < 0.5 ? uniform(0,100) : uniform(0,150);
+    return {
+      states: prev.states.concat([finalState]),
+      observations: prev.observations.concat([finalObs])
+    };
+  } else {
+    // Build the sequence for n steps
+    var newState = transition(prev.states[prev.states.length - 1]);
+    var newObs = observe(newState);
+    return {
+        states: prev.states.concat([newState]),
+        observations: prev.observations.concat([newObs])
+    };
+  }
+};
+
+var model = function() {
+  var r = hmm(5, 5); // HMM with n time steps
+  return r.states;
+};
+
+// Example usage
+var smcOutput = Infer({method: 'SMC', particles: 1000, model: model});
+
+// Compute and print the average score
+console.log(smcOutput);
+var avgScore = calculateAverageScore(smcOutput);
+console.log("Average Score:", avgScore);
+
