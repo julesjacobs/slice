@@ -1,0 +1,57 @@
+// Probabilistic context-free grammar
+
+// Function to compute average score 
+var calculateAverageScore = function(output) {
+  var scores = map(function(sample) { return sample.score; }, output.samples);
+  var sum = reduce(function(total, score) { return total + score; }, 0, scores);
+  return sum / output.samples.length;
+};
+
+var pcfgTransition = function(symbol) {
+    var distr = flip(0.005);
+    // Adjust accordingly
+    var rules = {
+        'start': {rhs: [['NP', 'V', 'NP'], ['NP', 'V']], probs: distr ? [0.4, 0.6] : [0.6, 0.4]},
+        'NP': {rhs: [['A', 'NP'], ['N']], probs: distr ? [0.4, 0.6] : [0.6, 0.4]}
+    };
+    return rules[symbol].rhs[discrete(rules[symbol].probs)]
+}
+
+var preTerminal = function(symbol) {
+    return symbol == 'N' || symbol == 'V' || symbol == 'A'
+}
+
+var terminal = function(symbol) {
+    var distr = uniform(0,1);
+    var rules = {
+        'N': {words: ['John', 'soup'], probs: [distr, 1-distr]},
+        'V': {words: ['loves', 'hates', 'runs'], probs: [distr/2, distr/2, 1-distr]},
+        'A': {words: ['tall', 'salty'], probs: [distr, 1-distr]} }
+    return rules[symbol].words[discrete(rules[symbol].probs)]
+}
+
+var pcfg = function(symbol) {
+    preTerminal(symbol) ? [terminal(symbol)] : expand(pcfgTransition(symbol))
+}
+
+var expand = function(symbols) {
+    if (symbols.length == 0) {
+        return []
+    } else {
+        var f = pcfg(symbols[0])
+        return f.concat(expand(symbols.slice(1)))
+    }
+}
+
+var model = function() {
+    var y = pcfg('start')
+    return y;
+};
+
+// Example usage
+var smcOutput = Infer({method: 'SMC', particles: 1000, model: model});
+
+// Compute and print the average score
+console.log(smcOutput);
+var avgScore = calculateAverageScore(smcOutput);
+avgScore;

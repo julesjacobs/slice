@@ -12,7 +12,7 @@ var transition = function(s) {
   // Transition using a manually constructed bimodal distribution
   var u = uniform(0, 1);
   return s < 0.5
-  // Could change these distributions to make them more interesting
+  // TODO: Could change these to more interesting distributions
     ? (u < 0.5 ? uniform(0,100) : uniform(0,200))
     : (u < 0.5 ? uniform(0,200) : uniform(0,400)); 
 };
