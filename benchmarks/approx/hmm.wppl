@@ -56,6 +56,6 @@ var model = function() {
 var smcOutput = Infer({method: 'SMC', particles: 1000, model: model});
 
 // Compute and print the average score
-console.log(smcOutput);
+// console.log(smcOutput);
 var avgScore = calculateAverageScore(smcOutput);
-console.log("Average Score:", avgScore);
+avgScore;
