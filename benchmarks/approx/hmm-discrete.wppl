@@ -1,3 +1,5 @@
+// Hidden Markov Model - partially discretized
+
 // Function to compute average score 
 var calculateAverageScore = function(output) {
   var scores = map(function(sample) { return sample.score; }, output.samples);
@@ -5,14 +7,13 @@ var calculateAverageScore = function(output) {
   return sum / output.samples.length;
 };
 
-
 // Actual HMM logic
 var transition = function(s) {
   // Transition using a manually constructed bimodal distribution
   var u = flip(0.5);
   return s 
-    ? (u ? flip(0.005) : flip(0.0025)) // Bimodal: Two separate Gaussians
-    : (u ? flip(0.0025) : flip(0.00125)); // Another bimodal setup
+    ? (u ? flip(0.005) : flip(0.0025))
+    : (u ? flip(0.0025) : flip(0.00125));
 };
 
 var observe = function(s) {
@@ -25,8 +26,8 @@ var hmm = function(n, total_steps) {
   if (n == total_steps) {
     // Append a single final state and observation at the end
     var s = prev.states[prev.states.length - 1];
-    var finalState = s ? uniform(0,100) : uniform(0,200);
-    var finalObs = s ? uniform(0,100) : uniform(0,150);
+    var finalState = s ? flip(0.15) : flip(0.25);
+    var finalObs = s ? flip(0.25) : flip(0.45);
     return {
       states: prev.states.concat([finalState]),
       observations: prev.observations.concat([finalObs])
@@ -42,8 +43,11 @@ var hmm = function(n, total_steps) {
   }
 };
 
+// Get number of time steps from command line argument (default: 5)
+var timeSteps = argv.timeSteps || 5; 
+
 var model = function() {
-  var r = hmm(5, 5); // HMM with n time steps
+  var r = hmm(timeSteps, timeSteps); // Use command line argument
   return r.states;
 };
 
@@ -51,7 +55,6 @@ var model = function() {
 var smcOutput = Infer({method: 'SMC', particles: 1000, model: model});
 
 // Compute and print the average score
-console.log(smcOutput);
+// console.log(smcOutput);
 var avgScore = calculateAverageScore(smcOutput);
-console.log("Average Score:", avgScore);
-
+avgScore;
