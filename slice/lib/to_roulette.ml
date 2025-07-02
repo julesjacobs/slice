@@ -37,6 +37,18 @@ and string_of_expr_node ?(indent=0) (ExprNode expr_node) : string =
       let body_str = string_of_expr_indented ~indent:(indent+2) final_body in
       let rest_str = string_of_expr_indented ~indent e2 in
       Printf.sprintf "(define (%s %s) %s)\n%s" x params_str body_str rest_str
+    | ExprNode (LoopApp (le1, le2, n)) ->
+      let le1_str = string_of_expr_indented ~indent:(indent+2) le1 in
+      let le2_str = string_of_expr_indented ~indent:(indent+2) le2 in
+      let iter_fun_name = x ^ "_iter" in
+      let loop_fn =
+        Printf.sprintf
+          "(define (%s n state)\n  (if (= n 0)\n      state\n      (%s (sub1 n) (%s state))))"
+          iter_fun_name iter_fun_name le1_str
+      in
+      let iter_call = Printf.sprintf "(%s %d %s)" iter_fun_name n le2_str in
+      let rest_str = string_of_expr_indented ~indent e2 in
+      Printf.sprintf "%s\n(define %s %s)\n%s" loop_fn x iter_call rest_str
     | _ ->
       let e1_str = string_of_expr_indented ~indent:(indent+2) e1 in
       let e2_str = string_of_expr_indented ~indent e2 in
