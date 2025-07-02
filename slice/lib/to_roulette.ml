@@ -155,9 +155,9 @@ and string_of_expr_node ?(indent=0) (ExprNode expr_node) : string =
         (String.make indent ' ') e_nil_str
         (String.make indent ' ') y ys e_cons_str
         (String.make indent ' ')
-  | Ref e1 -> Printf.sprintf "(ref %s)" (string_of_expr_indented ~indent e1)
-  | Deref e1 -> Printf.sprintf "(!%s)" (string_of_expr_indented ~indent e1)
-  | Assign (e1, e2) -> Printf.sprintf "(%s := %s)" (string_of_expr_indented ~indent e1) (string_of_expr_indented ~indent e2)
+  | Ref e1 -> Printf.sprintf "(box %s)" (string_of_expr_indented ~indent e1)
+  | Deref e1 -> Printf.sprintf "(unbox %s)" (string_of_expr_indented ~indent e1)
+  | Assign (e1, e2) -> Printf.sprintf "(set-box! %s %s)" (string_of_expr_indented ~indent e1) (string_of_expr_indented ~indent e2)
   | Seq (e1, e2) -> Printf.sprintf "%s; %s" (string_of_expr_indented ~indent e1) (string_of_expr_indented ~indent e2)
   | Unit -> "()"
   | RuntimeError _ -> ""
