@@ -34,6 +34,17 @@
 
 \jules{Wrap up by explaining how the constraint solver then fills in all those type variables, and we have a fully annotated program ready for the next step: discretization}
 
+\subsection{Finite-cut and infinite-cut expressions}
+After type inference, each float-typed expression carries refinement information in its $\float[B;V]$ type. Now, we introduce two definitions regarding this refinement information that will allow us to in the next section characterize the types of programs we can fully or partially discretize. We define what it means for a given expression with a float type to be finite-cut or infinite-cut:
+
+\begin{definition} [Finite-cut]\label{def:finite-cut}
+    An expression $e : \float[B;V]$ is \textit{finite-cut} if $B \neq \top$.
+\end{definition}
+
+\begin{definition} [Infinite-cut]\label{def:infinite-cut}
+    An expression $e : \float[B;V]$ is \textit{infinite-cut} if $B = \top$.
+\end{definition}
+
 
 
 % Given a source program, \Slice{} first performs type inference on the program, assigning types to every subexpression while simultaneously collecting cuts in $B$ and values in $V$ that will guide the discretization process for every subexpression with the $\float[B;V]$ type. The type system tracks both traditional type information and refinement information specific to floating-point values. For float types $\float[B; V]$, two separate refinement components are maintained:
