@@ -50,7 +50,12 @@
 \newcommand{\jules}[1]{\textcolor{blue}{\textbf{Jules:} #1}}
 
 
-
+% do not indent theorems, proofs, definitions, etc.
+\makeatletter
+\def\@acmplainindent{0pt}
+\def\@acmdefinitionindent{0pt}
+\def\@proofindent{\noindent}
+\makeatother
 
 \tcbuselibrary{listingsutf8}
 

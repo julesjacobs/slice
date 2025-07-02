@@ -1,11 +1,13 @@
 \section{Discretization}\label{sec:discretization}
+\alexandra{This description needs a clear explanation that there are two parts to the discretization: types and then functions. If I understand correctly the text before the next subsection is describing what is in Figure 6. This is completely unclear now... As far as I can see Fig.6 is not mentioned anywhere? }
 
-After type inference, each float-typed expression carries refinement information in its $\float[B; V]$ type. The discretization transformation uses this information to convert continuous probabilistic programs into discrete ones that can be analyzed exactly. The key insight is that if an expression with a float type $\float[B; V]$ is co-discrete, we can partition $\mathbb{R}$ into intervals separated by the cuts in $B$ to obtain $\intervals{B}$, giving the finite type $\fin{n+1}$ where $n$ is the number of cuts: $\intervals{B}_k$ is mapped to $\finconst{k}{n+1}$ for each $k = 0, ..., n$. Then, depending on $V$: 
 
-\begin{itemize}
-    \item if $V = \top$: The expression must be a continuous distribution. Each value in $\fin{n+1}$ occurs with the probability mass $p_k$ of the continuous distribution within $\intervals{B}_k$. This gives a $\discrete(p_0, \ldots, p_{n})$ distribution, which returns a finite type value $\finconst{k}{n+1}$ with probability $p_k$.
+In this section, we describe the {\em type-directed discretization procedure} that enables the use of exact inference in many programs with continuous distributions. As described in the previous section, after type inference, each float-typed expression carries refinement information in its type $\float[B; V]$ . The key insight is that if the expression type $\float[B; V]$ is co-discrete, we can partition $\mathbb{R}$ into intervals separated by the cuts in $B$ to obtain $\intervals{B}$, giving the finite type $\fin{n+1}$ where $n$ is the number of cuts: $\intervals{B}_k$ is then mapped to $\finconst{k}{n+1}$ for each $k = 0, ..., n$. After, the procedure will analyze $V$: 
+
+\begin{itemize}[leftmargin=*]
+    \item[-] if $V = \top$: The expression must be a continuous distribution. Each value in $\fin{n+1}$ occurs with the probability mass $p_k$ of the continuous distribution within $\intervals{B}_k$. This gives a $\discrete(p_0, \ldots, p_{n})$ distribution, which returns a finite type value $\finconst{k}{n+1}$ with probability $p_k$.
     
-    \item if $V = \{c_1, ..., c_n\}$: The expression must be a float constant. Each float constant $c \in \{c_1, ..., c_n\}$ is assigned an integer $k$ such that $c \in \intervals{B}_k$ . For each $c$, the finite type value $\finconst{k}{n+1}$ is returned.
+    \item[-] if $V = \{c_1, ..., c_n\}$: The expression must be a float constant. Each float constant $c \in \{c_1, ..., c_n\}$ is assigned an integer $k$ such that $c \in \intervals{B}_k$ . For each $c$, the finite type value $\finconst{k}{n+1}$ is returned.
 \end{itemize}
 
 
@@ -23,6 +25,7 @@ The transformation $\texttt{discretize}(e)$ is defined recursively on the struct
     A program can only be \textit{partially discretized} by \Slice{} if there exist any co-continuous expressions.
 \end{definition}
 
+\alexandra{where have we defined co-discrete and co-continuous? }
 \subsection{Algorithm for Discretization}
 \katherine{Add if the program is well-typed then $B \neq \top$ and $V = \top$ cannot occur. In other words, if $V = \top$, then it must be the case that $B = \top$. Add a proof or just state it.}
 \katherine{Mention something about how >, >= operators are discretized (essentially flipped).}
