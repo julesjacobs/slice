@@ -103,7 +103,7 @@ and string_of_expr_node ?(indent=0) (ExprNode expr_node) : string =
       let e1_str = string_of_expr_indented ~indent e1 in
       let e2_str = string_of_expr_indented ~indent:(indent+2) e2 in
       let e3_str = string_of_expr_indented ~indent:(indent+2) e3 in
-      Printf.sprintf "if %s then\n%s%s\n%selse\n%s%s" e1_str next_indent_str e2_str indent_str next_indent_str e3_str
+      Printf.sprintf "(if %s then\n%s%s\n%selse\n%s%s)" e1_str next_indent_str e2_str indent_str next_indent_str e3_str
   | Pair (e1, e2) -> Printf.sprintf "(%s, %s)" (string_of_expr_indented ~indent e1) (string_of_expr_indented ~indent e2)
   | First e -> Printf.sprintf "(fst %s)" (string_of_expr_indented ~indent e)
   | Second e -> Printf.sprintf "(snd %s)" (string_of_expr_indented ~indent e)
