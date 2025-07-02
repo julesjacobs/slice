@@ -1,7 +1,7 @@
 \section{Slice by Example}\label{sec:examples}
-This section presents simple examples that highlight the key features of our probabilistic programming language \Slice{}, aiming to emphasize how \Slice{} meets the challenge of performing exact inference efficiently. \Slice{} extends a core functional language with traditional programming language constructs such as conditionals, local variables, and functions, augmented with constructs for probabilistic programming such as sampling and conditioning. Each example in the subsections is intended to showcase these features. Later in the section, we also mention an example that can only be partially discretized but nonetheless preserves the semantics across both the original and discretized program. More examples are highlighted in Appendix~\ref{appen:examples}.
+This section presents simple examples that highlight the key features of our probabilistic programming language and compiler \Slice{}, aiming to emphasize how \Slice{} meets the challenge of performing exact inference efficiently. \Slice{} extends a core functional language with traditional programming language constructs such as conditionals, local variables, and functions, augmented with constructs for probabilistic programming such as sampling and conditioning. Each example in the subsections is intended to showcase these features. Later in the section, we also mention examples that can only be partially discretized but nonetheless preserve the semantics across both the original and discretized program. %More examples are highlighted in Appendix~\ref{appen:examples}.
 
-For readability in the examples, we use \texttt{flip()} as shorthand for \texttt{uniform(0,1) < 0.5}, which represents a fair coin flip that returns true or false with equal probability. We denote a ``cut'' as any constant $c$ in a comparison such as $x < c$. Here, $c$ partitions $\mathbb{R}$ into two intervals $(-\infty, c)$ and $[c, +\infty)$.
+For readability in the examples, we use \texttt{flip()} as shorthand for \texttt{uniform(0,1) < 0.5}, which represents a fair coin flip that returns true or false with equal probability. We denote a ``cut'' as any constant $c$ in a comparison such as $x < c$, where $c$ partitions $\mathbb{R}$ into two intervals $(-\infty, c)$ and $[c, +\infty)$.
 
 \subsection{Simple branching on a uniform distribution}\label{sec:examples:1}
 
@@ -17,17 +17,17 @@ We start with a simple example that illustrates the core idea of \Slice{}. Consi
     discrete(0.5, 0.5) < 1
 \end{lstlisting}
 
-\noindent Here, \texttt{discrete(0.5, 0.5)} represents a choice between two outcomes (0 or 1), each with probability 0.5. The outcome 0 corresponds to the original value being in $(-\infty, 0.5)$, and 1 corresponds to it being in $[0.5, +\infty)$. As such, we have abstracted away the support of the uniform distribution in the original program, replacing it with a discrete choice that preserves the original program's probabilistic behavior with respect to the identified cut.
+\noindent Here, \texttt{discrete(0.5, 0.5)} represents a choice between two outcomes (0 or 1), each with probability 0.5. The outcome 0 corresponds to the original value being in $(-\infty, 0.5)$, and 1 corresponds to it being in $[0.5, +\infty)$. As such, we have abstracted away the support of the uniform distribution in the original program, replacing it with a discrete choice that preserves the original program's probabilistic behavior with respect to the identified cut. With Dice now as a backend, we can obtain the result \result{0.5}{0.5}.
 
-The transformation to the discretized program is guided by tracking cuts, which are determined by type inference as shown in the annotated program below:
+The transformation to the discretized program is guided by tracking cuts as an intermediate step, which are determined by type inference as shown in the annotated program below:
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
     (uniform(0, 1) : !{\ft{<0.5}}!) < (0.5 : !{\ftb{<0.5}{0.5}}!)
 \end{lstlisting}
 
-The type \ft{<0.5} for the uniform sample indicates that the cut set contains the cut ``$<\!\!0.5$'' and the value set is $\top$ which indicates the variable can take any value in the range $(-\infty, +\infty)$. This tells \Slice{} how to partition $\mathbb{R}$. The type \ftb{<0.5}{0.5} for the constant $0.5$ indicates that the cut set contains $<0.5$ and the value set contains only the single value $0.5$. This allows \Slice{} to determine which discrete region the constant value belongs to after partitioning $\mathbb{R}$.
+Figure~\ref{fig:float-type-def} describes what a type \lstinline{float[cut-set; value-set]} indicates. The type \ft{<0.5} for the uniform sample indicates that the cut set contains the cut ``$<\!\!0.5$'' and the value set is $\top$ which indicates the variable can take any value in the range $(-\infty, +\infty)$. This tells \Slice{} how to partition $\mathbb{R}$. The type \ftb{<0.5}{0.5} for the constant $0.5$ indicates that the cut set contains $<0.5$ and the value set contains only the single value $0.5$. This allows \Slice{} to determine which discrete region the constant value belongs to after partitioning $\mathbb{R}$. 
 
-In general, a type \lstinline{float[cut-set; value-set]} indicates:
+\begin{figure}
 \[
 \textbf{float}
 [
@@ -36,9 +36,10 @@ In general, a type \lstinline{float[cut-set; value-set]} indicates:
 \underbrace{\text{value-set}}_{\begin{array}{c}\text{set of concrete values}\\\text{(e.g., }\{0.1, 0.4, 0.5\}\text{)}\\\text{or }\top\text{ (any value)}\end{array}}
 ]
 \]
+\caption{The type \lstinline{float[cut-set; value-set]} captures two aspects of a floating-point expression: the cut set is determined by \emph{how the expression is used} (i.e., what it's compared against) and the value set is determined by \emph{what concrete values the expression can take}. The discretization is driven by the cut set: a float value with $n$ cuts is discretized into $n+1$ possible discrete values.}
+\label{fig:float-type-def}
+\end{figure}
 
-The cut set is determined by \emph{how the expression is used} (i.e., what it's compared against) and the value set is determined by \emph{what concrete values the expression can take}.
-The discretization is driven by the cut set: a float value with $n$ cuts is discretized into $n+1$ possible discrete values.
 
 \subsection{Branching on multiple continuous variables}\label{sec:examples:2}
 
@@ -77,7 +78,7 @@ This analysis is done by the type inference process, which collects all cuts for
       y < 1
 \end{lstlisting}
 
-Note that the original constant $0.5$ is discretized in two different ways: for $x < 0.5$ it is discretized to $2$ and for $y < 0.5$ it is discretized to $1$. This is because the constant $0.5$ falls in the third interval of the split $\R = (-\infty, 0.2) \cup [0.2, 0.5) \cup [0.5, +\infty)$ for $x$ and the second interval for the split $\R = (-\infty, 0.5) \cup [0.5, +\infty)$ for $y$.
+This results in the output \result{0.225}{0.775}. Note that the original constant $0.5$ is discretized in two different ways: for $x < 0.5$ it is discretized to $2$ and for $y < 0.5$ it is discretized to $1$. This is because the constant $0.5$ falls in the third interval of the split $\R = (-\infty, 0.2) \cup [0.2, 0.5) \cup [0.5, +\infty)$ for $x$ and the second interval for the split $\R = (-\infty, 0.5) \cup [0.5, +\infty)$ for $y$. 
 
 \subsection{Branching on multiple discrete values}\label{sec:examples:3}
 The example in subsection~\ref{sec:examples:2} involves multiple continuous variables and conditional branches. In a similar fashion, \Slice{} can support multiple discrete values and conditional branches. Consider the program:
@@ -111,6 +112,8 @@ Only finite values exist in the value sets here since there are no continuous di
     let y = 1
     x < y
 \end{lstlisting}
+
+This gives a final output of \result{0.5}{0.5}.
 
 \subsection{If else with continuous values}\label{sec:examples:4}
 
@@ -152,7 +155,7 @@ Consider the following program:
     x <= y
 \end{lstlisting}
 
-\noindent The four probabilities in each \texttt{discrete} distribution correspond to the probability mass in each of the four intervals\kevin{some remark on CDFs and how we treat irrational CDFs?}. For example, \texttt{uniform(0,2)} has probability 0.15 in $(-\infty, 0.3]$, 0.6 in $(0.3, 1.5]$, 0.15 in $(1.5, 1.8]$, and 0.1 in $(1.8, +\infty)$.
+\noindent This gives the output \result{0.8416}{0.1584}. The four probabilities in each \texttt{discrete} distribution correspond to the probability mass in each of the four intervals\kevin{some remark on CDFs and how we treat irrational CDFs?}. For example, \texttt{uniform(0,2)} has probability 0.15 in $(-\infty, 0.3]$, 0.6 in $(0.3, 1.5]$, 0.15 in $(1.5, 1.8]$, and 0.1 in $(1.8, +\infty)$. 
 
 \subsection{Discrete latent variable}\label{sec:examples:5}
 
@@ -183,6 +186,8 @@ Continuous distributions can have parameters that depend on discrete random choi
         discrete(0.630559, 0.369441)) < 1
 \end{lstlisting}
 
+This gives the output \result{0.73595}{0.26405}.
+
 
 \subsection{Conditioning}\label{sec:examples:6}
 
@@ -210,7 +215,7 @@ Continuous distributions can have parameters that depend on discrete random choi
     x < 1
 \end{lstlisting}
 
-\noindent In the discrete version, the observation \texttt{x < 2} rules out the case where \texttt{x = 2} (corresponding to the original interval $[0.5, +\infty)$), effectively conditioning on \texttt{x} being in $[0.0, 0.5)$.
+\noindent This results in the output \result{0.4}{0.6}. In the discrete version, the observation \texttt{x < 2} rules out the case where \texttt{x = 2} (corresponding to the original interval $[0.5, +\infty)$), effectively conditioning on \texttt{x} being in $[0.0, 0.5)$.
 
 \subsection{Higher-order functions}\label{sec:examples:7}
 
@@ -241,7 +246,7 @@ Continuous distributions can have parameters that depend on discrete random choi
       if fst r then snd r else fst q
 \end{lstlisting}
 
-\noindent The continuous distributions are discretized into three-valued discrete distributions based on the intervals $(-\infty, 0.5)$, $[0.5, 1.5)$, and $[1.5, +\infty)$, while the functional structure remains intact.
+\noindent Dice does not support exact inference for higher-order functions, but Roulette does, hence the output distribution \result{0.53636}{0.46364}. The continuous distributions in the original program are discretized into three-valued discrete distributions based on the intervals $(-\infty, 0.5)$, $[0.5, 1.5)$, and $[1.5, +\infty)$, while the functional structure remains intact.
 
 \subsection{Sequential processes with iterate}\label{sec:examples:8}
 
@@ -272,6 +277,8 @@ While \Slice{} is purely functional without mutable state, it provides the \text
     iterate(weather_transition, discrete(0.5, 0.5), 3) in
   weather_after_3_days < 1
 \end{lstlisting}
+
+This results in the output \result{0.5334}{0.4666}, which can be obtained from either Dice or Roulette as they both support bounded iteration.
 
 
 \subsection{Mutable state}\label{sec:examples:9}

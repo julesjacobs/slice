@@ -1,0 +1,5 @@
+let x = if uniform(0,1) < 0.5 then 0.2
+        else if uniform(0,1) < 0.5 then 2.5
+        else 4.5 in
+let y = 0.5 in
+x < y
