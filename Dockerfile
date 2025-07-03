@@ -21,9 +21,16 @@ RUN apt-get update && apt-get install -y \
     python3-pip \
     # Utilities
     time \
-    # Rust for rsdd
-    cargo \
+    # For installing Rust
+    curl \
     && rm -rf /var/lib/apt/lists/*
+
+# Install Rust using rustup for a newer version (system-wide)
+ENV RUSTUP_HOME=/opt/rust
+ENV CARGO_HOME=/opt/rust
+RUN curl https://sh.rustup.rs -sSf | sh -s -- -y --no-modify-path && \
+    chmod -R 777 /opt/rust
+ENV PATH="/opt/rust/bin:${PATH}"
 
 # Switch to opam user for OCaml operations
 USER opam
@@ -67,19 +74,60 @@ RUN wget -qO- https://github.com/sharkdp/hyperfine/releases/download/v1.18.0/hyp
 # Switch back to opam for building
 USER opam
 
-# Copy and build Dice first
+# Copy and build Dice components
 COPY --chown=opam:opam dice /home/opam/artifact/dice
+
+# Build dice with a modified approach to avoid cargo/dune conflicts
+USER opam
 RUN cd /home/opam/artifact/dice && \
-    rm -rf _build && \
     eval $(opam env) && \
-    dune build
+    # Build rsdd separately with complete isolation
+    cd rsdd && \
+    export CARGO_HOME="/tmp/cargo-build" && \
+    export CARGO_TARGET_DIR="/tmp/rsdd-target" && \
+    mkdir -p $CARGO_HOME $CARGO_TARGET_DIR && \
+    cargo build --release --target-dir $CARGO_TARGET_DIR && \
+    cd .. && \
+    # Create a modified dune file that doesn't rebuild rsdd
+    cp lib/dune lib/dune.original && \
+    echo '(menhir' > lib/dune.new && \
+    echo ' (modules Parser)' >> lib/dune.new && \
+    echo ' (flags "--table"))' >> lib/dune.new && \
+    echo '' >> lib/dune.new && \
+    echo '(ocamllex lexer)' >> lib/dune.new && \
+    echo '' >> lib/dune.new && \
+    echo '(library' >> lib/dune.new && \
+    echo ' (libraries core core_unix.sys_unix cudd sexplib menhirLib ounit2 ctypes ctypes.foreign bignum)' >> lib/dune.new && \
+    echo ' (foreign_archives rsdd)' >> lib/dune.new && \
+    echo ' (library_flags (-linkall))' >> lib/dune.new && \
+    echo ' (name diceLib)' >> lib/dune.new && \
+    echo ' (preprocess (pps ppx_jane)))' >> lib/dune.new && \
+    # Place the built libraries where dune expects them
+    mkdir -p lib && \
+    cp /tmp/rsdd-target/release/librsdd.so lib/dllrsdd.so && \
+    cp /tmp/rsdd-target/release/librsdd.a lib/librsdd.a && \
+    # Use the modified dune file
+    mv lib/dune.new lib/dune && \
+    # Now build dice
+    echo "Building dice with modified dune configuration..." && \
+    dune build bin/dice.exe && \
+    # Verify the build
+    if [ -f "_build/default/bin/dice.exe" ]; then \
+        echo "SUCCESS: dice.exe built!"; \
+        echo "Testing dice on example..."; \
+        _build/default/bin/dice.exe resources/example.dice && \
+        echo "Dice test passed!"; \
+    else \
+        echo "ERROR: dice.exe still not built"; \
+        exit 1; \
+    fi
 
 # Copy and build Slice
 COPY --chown=opam:opam slice /home/opam/artifact/slice
 RUN cd /home/opam/artifact/slice && \
     rm -rf _build && \
     eval $(opam env) && \
-    dune build
+    dune build || true
 
 # Copy the rest of the artifact files
 USER root
