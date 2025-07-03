@@ -90,7 +90,7 @@ The distribution can then be discretized as if its parameters were constant in e
 \end{example}
     
 \subsection{Effect of Discretization on Float Types}
-In the best case scenario, when all expressions in a given program are finite-cut, \Slice{} fully discretizes the program. In this case, all float typed expressions in the original program are transformed to finite typed expressions after applying $\mathcal{D}$. If some expressions in a given program are infinite-cut, \Slice{} can only partially discretize the program; it discretizes away only those finite-cut expressions present in the program, if any. The infinite-cut expressions are preserved across $\mathcal{D}$, along with their original float types. Figure~\ref{fig:discretization-types} formalizes this, how types are  transformed under $\mathcal{D}$. We assume that $\mathcal{D}\sem{.}$ is overloaded: it acts on expressions as shown in Figure~\ref{fig:discretization-code} as well as types as shown in Figure~\ref{fig:discretization-types}.
+In the best case scenario, when all expressions in a given program are finite-cut, \Slice{} fully discretizes the program. In this case, all float typed expressions in the original program are transformed to finite typed expressions after applying $\mathcal{D}$. When some expressions in a given program are infinite-cut, \Slice{} partially discretizes the program; it discretizes away only those finite-cut expressions present in the program, if any. All infinite-cut expressions maintain their original float types after applying $\mathcal{D}$. Figure~\ref{fig:discretization-types} formalizes the transformation of types under $\mathcal{D}$. We assume that $\mathcal{D}\sem{.}$ is overloaded: it acts on expressions as shown in Figure~\ref{fig:discretization-code} as well as types as shown in Figure~\ref{fig:discretization-types}. 
 
 \begin{figure}[t]
     \centering
@@ -109,5 +109,19 @@ In the best case scenario, when all expressions in a given program are finite-cu
     \caption{Transformation of types under $\mathcal{D}$, where $\mathcal{D}$ acts on types.}
     \label{fig:discretization-types}
 \end{figure}
+
+
+We give a lemma stating the relationship between the original program's types and the discretized program's types:
+
+\begin{lemma}[Type Transformation under Discretization]\label{lemma:type-transformations}
+    Let $e : \tau$ be a typed expression, $\mathcal{D}\sem{e : \tau}$ be the discretization function as defined in Figure~\ref{fig:discretization-code}, and $\mathcal{D}\sem{\tau}$ be the type transformation function as defined in Figure~\ref{fig:discretization-types}. Then, the discretized expression $\mathcal{D}\sem{e : \tau}$ has type $\mathcal{D}\sem{\tau}$. That is,
+    \[
+    \mathcal{D}\sem{e : \tau} : \mathcal{D}\sem{\tau}.
+    \]
+\end{lemma}
+
+\begin{proof}
+    
+\end{proof}
 
 For example, $\mathcal{D}$ applied to $\uniform(0,1)$ : \codetype{\ft{<0.5}} results in the discrete distribution $\discrete(0.5, 0.5)$. Hence, $\mathcal{D}$ maps the type of the finite-cut expression $\uniform(0,1)$ : \codetype{\ft{<0.5}} from $\float[B;V]$ to $\fin{2}$. $\mathcal{D}$ applied to $\uniform(0,1)$ : \codetype{\ftt} results in the original distribution $\uniform(0,1)$. Hence, $\mathcal{D}$ maps the type of the infinite-cut expression $\uniform(0,1)$ : \codetype{\ftt} from $\float[B;V]$ to $\float$.
