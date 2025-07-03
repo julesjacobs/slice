@@ -155,7 +155,7 @@ Consider the following program:
     x <= y
 \end{lstlisting}
 
-\noindent This gives the output \result{0.8416}{0.1584}. The four probabilities in each \texttt{discrete} distribution correspond to the probability mass in each of the four intervals\kevin{some remark on CDFs and how we treat irrational CDFs?}. For example, \texttt{uniform(0,2)} has probability 0.15 in $(-\infty, 0.3]$, 0.6 in $(0.3, 1.5]$, 0.15 in $(1.5, 1.8]$, and 0.1 in $(1.8, +\infty)$. 
+\noindent This gives the output \result{0.8416}{0.1584}. The four probabilities in each \texttt{discrete} distribution correspond to the probability mass in each of the four intervals. For example, \texttt{uniform(0,2)} has probability 0.15 in $(-\infty, 0.3]$, 0.6 in $(0.3, 1.5]$, 0.15 in $(1.5, 1.8]$, and 0.1 in $(1.8, +\infty)$. Note that a continuous distribution must be valid in order for its cumulative distribution function (CDF) to be well-defined, and thus for probability mass to be meaningfully assigned to each interval.  It is also normal for some intervals to receive 0 or 1 probability mass—for example, if the entire distribution lies within a single interval and not others.
 
 \subsection{Discrete latent variable}\label{sec:examples:5}
 
@@ -232,7 +232,7 @@ This gives the output \result{0.73595}{0.26405}.
       if fst r then snd r else fst q
 \end{lstlisting}
 
-\noindent The type system correctly infers that cuts from both \texttt{f} and \texttt{g} (0.5 and 1.5) must be collected for the distributions in \texttt{p}, yielding type \ft{<0.5,<1.5} for both components. The discretized version preserves the higher-order structure: \kevin{wow :-D}
+\noindent The type system correctly infers that cuts from both \texttt{f} and \texttt{g} (0.5 and 1.5) must be collected for the distributions in \texttt{p}, yielding type \ft{<0.5,<1.5} for both components. The discretized version preserves the higher-order structure: 
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em]
   let mappair = fun f -> fun p -> (f (fst p), f (snd p)) in
@@ -328,7 +328,7 @@ This results in the output \result{0.5334}{0.4666}, which can be obtained from e
   map check_threshold measurements
 \end{lstlisting}
 
-\noindent This gives an output of distributions of lists: $\{\textit{true,true,true}: 0.115341, \textit{true,true,false}: 0.234199, ...\}$. The closure \texttt{check\_threshold} lexically captures the stochastic \texttt{threshold} value, which is randomly chosen to be either 0.3 or 0.7. The type system correctly infers that both threshold values (0.3 and 0.7) must be included as cuts for all Gaussian measurements, yielding type \ft{<0.3,<0.7} for list elements. This demonstrates how \Slice{} handles higher-order functions with captured stochastic values while maintaining sound discretization.
+\noindent This gives an output of distributions of lists: $\{\textit{true,true,true}: 0.115341, \textit{true,true,false}: 0.234199, ...\}$ when run with Roulette. The closure \texttt{check\_threshold} lexically captures the stochastic \texttt{threshold} value, which is randomly chosen to be either 0.3 or 0.7. The type system correctly infers that both threshold values (0.3 and 0.7) must be included as cuts for all Gaussian measurements, yielding type \ft{<0.3,<0.7} for list elements. This demonstrates how \Slice{} handles higher-order functions with captured stochastic values while maintaining sound discretization.
 
 
 \subsection{Indian GPA Problem}\label{sec:gpa}
