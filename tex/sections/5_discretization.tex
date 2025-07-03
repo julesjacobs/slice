@@ -153,19 +153,19 @@ The distribution can then be discretized as if its parameters were constant in e
 \end{example}
     
 \subsection{Effect of Discretization on Float Types}
-In the best case scenario, when all expressions in a given program are finite-cut, \Slice{} fully discretizes the program. In this case, all float typed expressions in the original program are transformed to finite typed expressions after applying $\mathcal{D}$. When some expressions in a given program are infinite-cut, \Slice{} partially discretizes the program; it discretizes away only those finite-cut expressions present in the program, if any. All infinite-cut expressions maintain their original float types after applying $\mathcal{D}$. Figure~\ref{fig:discretization-types} formalizes the transformation of types under $\mathcal{D}$. We assume that $\mathcal{D}\sem{.}$ is overloaded: it acts on expressions as shown in Figure~\ref{fig:discretization-code} as well as types as shown in Figure~\ref{fig:discretization-types}. 
+In the best case scenario, when all expressions in a given program are finite-cut, \Slice{} fully discretizes the program. In this case, all float typed expressions in the original program are transformed to finite typed expressions after applying $\mathcal{D}$. When some expressions in a given program are infinite-cut, \Slice{} partially discretizes the program; it discretizes away only those finite-cut expressions present in the program, if any. All infinite-cut expressions maintain their original float types after applying $\mathcal{D}$. Figure~\ref{fig:discretization-types} formalizes the transformation of types under $\mathcal{D}$. We assume that $\discretize{.}$ is overloaded: it acts on expressions as shown in Figure~\ref{fig:discretization-code} as well as types as shown in Figure~\ref{fig:discretization-types}. 
 
 \begin{figure}[t]
     \centering
     \begin{align*}
-        \mathcal{D}\sem{\tau} &= 
+        \discretize{\tau} &= 
         \begin{cases}
-            \fin{n+1}, & \text{if } \tau = \float[B; V] \text{ and } B = \{b_1, \ldots, b_n\} \\[0.5em]
+            \fin{n+1}, & \text{if } \tau = \float[B; V] \text{ and } B = \{\sim_1\!\!b_1, \ldots, \sim_n\!\!b_n\} \\[0.5em]
             \float, & \text{if } \tau = \float[B; V] \text{ and } B = \top \\[0.5em]
-            \mathcal{D}\sem{A} \to \mathcal{D}\sem{B}, & \text{if } \tau = A \to B \\[0.5em]
-            \mathcal{D}\sem{A} \times \mathcal{D}\sem{B}, & \text{if } \tau = A \times B \\[0.5em]
-            \listty{\mathcal{D}\sem{A}}, & \text{if } \tau = \listty{A} \\[0.5em]
-            \texttt{ref}(\mathcal{D}\sem{A}), & \text{if } \tau = \texttt{ref}(A) \\[0.5em]
+            \discretize{A} \to \discretize{B}, & \text{if } \tau = A \to B \\[0.5em]
+            \discretize{A} \times \discretize{B}, & \text{if } \tau = A \times B \\[0.5em]
+            \listty{\discretize{A}}, & \text{if } \tau = \listty{A} \\[0.5em]
+            \texttt{ref}(\discretize{A}), & \text{if } \tau = \texttt{ref}(A) \\[0.5em]
             \tau, & \text{otherwise}
         \end{cases}
     \end{align*}
@@ -177,9 +177,9 @@ In the best case scenario, when all expressions in a given program are finite-cu
 We give a lemma stating the relationship between the original program's types and the discretized program's types:
 
 \begin{lemma}[Type Transformation under Discretization]\label{lemma:type-transformations}
-    Let $e : \tau$ be a typed expression, $\mathcal{D}\sem{e : \tau}$ be the discretization function as defined in Figure~\ref{fig:discretization-code}, and $\mathcal{D}\sem{\tau}$ be the type transformation function as defined in Figure~\ref{fig:discretization-types}. Then, the discretized expression $\mathcal{D}\sem{e : \tau}$ has type $\mathcal{D}\sem{\tau}$. That is,
+    Let $e : \tau$ be a typed expression, $\discretize{e : \tau}$ be the discretization function as defined in Figure~\ref{fig:discretization-code}, and $\discretize{\tau}$ be the type transformation function as defined in Figure~\ref{fig:discretization-types}. Then, the discretized expression $\discretize{e : \tau}$ has type $\discretize{\tau}$. That is,
     \[
-    \mathcal{D}\sem{e : \tau} : \mathcal{D}\sem{\tau}.
+    \discretize{e : \tau} :\discretize{\tau}.
     \]
 \end{lemma}
 
