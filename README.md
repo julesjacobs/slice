@@ -6,28 +6,29 @@ Slice is a probabilistic programming language that automatically discretizes con
 
 ### Using Docker (Recommended)
 
+Use the provided wrapper script `slice-docker`:
+
 ```bash
-# Build the Docker image
-docker build -t slice .
+# First, make the script executable (one time only)
+chmod +x slice-docker
 
-# Run an example (Dice backend only - Roulette requires Racket which is not included)
-docker run --rm slice python3 slice.py --dice run examples/paper/2.1_simple_uniform.slice
+# Run any .slice file in your current directory
+./slice-docker yourprogram.slice
 
-# Run benchmarks (Dice backend only)
-docker run --rm slice python3 slice.py --dice benchmark
+# Run with verbose output
+./slice-docker yourprogram.slice --print-all
+
+# Convert to SPPL format
+./slice-docker yourprogram.slice --to-sppl
+
+# Run examples from the repository
+./slice-docker examples/paper/2.1_simple_uniform.slice
 
 # Get help
-docker run --rm slice python3 slice.py --help
+./slice-docker
 ```
 
-#### Running Your Own .slice Programs with Docker
-
-To run your own `.slice` files, mount your current directory and use the `/data` prefix:
-
-```bash
-# Run a .slice file from your current directory
-docker run --rm -v "$(pwd):/data" slice python3 slice.py --dice run /data/yourprogram.slice
-```
+The wrapper script automatically handles Docker setup and file mounting for you.
 
 ### Local Installation
 

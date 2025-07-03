@@ -1,0 +1,39 @@
+#!/bin/bash
+# Simple wrapper script for running Slice in Docker
+# Usage: ./slice-docker yourfile.slice [options]
+
+# Docker image to use
+IMAGE="julesjacobs/slice:latest"
+
+# Check if Docker is installed
+if ! command -v docker &> /dev/null; then
+    echo "Error: Docker is not installed or not in PATH."
+    echo ""
+    echo "Please install Docker from: https://docs.docker.com/get-docker/"
+    echo ""
+    echo "On macOS: Install Docker Desktop"
+    echo "On Ubuntu/Debian: sudo apt-get install docker.io"
+    echo "On other systems: See https://docs.docker.com/engine/install/"
+    exit 1
+fi
+
+# Check if Docker daemon is running
+if ! docker info &> /dev/null; then
+    echo "Error: Docker daemon is not running."
+    echo ""
+    echo "Please start Docker:"
+    echo "  - On macOS/Windows: Start Docker Desktop"
+    echo "  - On Linux: sudo systemctl start docker"
+    exit 1
+fi
+
+
+if [ $# -eq 0 ]; then
+    docker run --rm "$IMAGE" python3 slice.py --help
+else
+    # Extract the filename (first argument)
+    FILE="$1"
+    shift
+    # Run with Docker, mounting current directory to /data
+    docker run --rm -v "$(pwd):/data" -w /data "$IMAGE" python3 slice.py --dice run "$FILE" "$@"
+fi
