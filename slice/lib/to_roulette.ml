@@ -124,16 +124,23 @@ and string_of_expr_node ?(indent=0) (ExprNode expr_node) : string =
   | First e -> Printf.sprintf "(first %s)" (string_of_expr_indented ~indent e)
   | Second e -> Printf.sprintf "(second %s)" (string_of_expr_indented ~indent e)
   | Fun (_, _) -> ""
-  | FuncApp (e1, e2) -> 
+  | FuncApp (e1, e2) ->
     let rec collect_args expr acc =
       match expr with
-      | ExprNode (FuncApp (inner_e1, inner_e2)) -> collect_args inner_e1 (inner_e2 :: acc)
+      | ExprNode (FuncApp (inner_e1, inner_e2)) ->
+          collect_args inner_e1 (acc @ [inner_e2])  (* preserve order *)
       | _ -> (expr, acc)
     in
     let (func, args) = collect_args e1 [e2] in
-    let func_str = string_of_expr_indented ~indent func in
-    let args_str = String.concat " " (List.map (string_of_expr_indented ~indent) args) in
-    Printf.sprintf "(%s %s)" func_str args_str
+    let rec nest func args =
+      match args with
+      | [] -> string_of_expr_indented ~indent func
+      | hd :: tl ->
+          let inner = nest func tl in
+          let arg_str = string_of_expr_indented ~indent hd in
+          Printf.sprintf "(%s %s)" inner arg_str
+    in
+    nest func args
   | LoopApp (e1, e2, n) -> Printf.sprintf "iterate(%s,%s,%d)" (string_of_expr_indented ~indent e1) (string_of_expr_indented ~indent e2) n
   | FinConst (k, _) -> 
       Printf.sprintf "%d" k
@@ -141,16 +148,16 @@ and string_of_expr_node ?(indent=0) (ExprNode expr_node) : string =
   | Observe e1 -> Printf.sprintf "(observe! %s)" (string_of_expr_indented ~indent e1)
   | Fix (f, x, e) -> 
       let e_str = string_of_expr_indented ~indent:(indent+2) e in
-      Printf.sprintf "fix %s %s := %s" f x e_str
-  | Nil -> "nil"
+      Printf.sprintf "(define (%s %s) (%s))%s" f x e_str f
+  | Nil -> "'()"
   | Cons (e1, e2) -> 
-      Printf.sprintf "%s :: %s"
+      Printf.sprintf "(cons %s %s)"
         (string_of_expr_indented ~indent e1) (string_of_expr_indented ~indent e2)
   | MatchList (e1, e_nil, y, ys, e_cons) ->
       let e1_str = string_of_expr_indented ~indent:(indent+2) e1 in
       let e_nil_str = string_of_expr_indented ~indent:(indent+2) e_nil in
       let e_cons_str = string_of_expr_indented ~indent:(indent+4) e_cons in
-      Printf.sprintf "match %s with\n%s  | nil -> %s\n%s  | %s :: %s -> %s\n%send"
+      Printf.sprintf "match %s\n%s  ['() %s]\n%s  [(cons %s %s) %s]\n%s"
         e1_str 
         (String.make indent ' ') e_nil_str
         (String.make indent ' ') y ys e_cons_str
