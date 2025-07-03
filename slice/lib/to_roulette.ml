@@ -125,22 +125,9 @@ and string_of_expr_node ?(indent=0) (ExprNode expr_node) : string =
   | Second e -> Printf.sprintf "(second %s)" (string_of_expr_indented ~indent e)
   | Fun (_, _) -> ""
   | FuncApp (e1, e2) ->
-    let rec collect_args expr acc =
-      match expr with
-      | ExprNode (FuncApp (inner_e1, inner_e2)) ->
-          collect_args inner_e1 (acc @ [inner_e2])  (* preserve order *)
-      | _ -> (expr, acc)
-    in
-    let (func, args) = collect_args e1 [e2] in
-    let rec nest func args =
-      match args with
-      | [] -> string_of_expr_indented ~indent func
-      | hd :: tl ->
-          let inner = nest func tl in
-          let arg_str = string_of_expr_indented ~indent hd in
-          Printf.sprintf "(%s %s)" inner arg_str
-    in
-    nest func args
+    let e1_str = string_of_expr_indented ~indent e1 in
+    let e2_str = string_of_expr_indented ~indent e2 in
+    Printf.sprintf "(%s %s)" e1_str e2_str
   | LoopApp (e1, e2, n) -> Printf.sprintf "iterate(%s,%s,%d)" (string_of_expr_indented ~indent e1) (string_of_expr_indented ~indent e2) n
   | FinConst (k, _) -> 
       Printf.sprintf "%d" k

@@ -17,7 +17,7 @@ We start with a simple example that illustrates the core idea of \Slice{}. Consi
     discrete(0.5, 0.5) < 1
 \end{lstlisting}
 
-\noindent Here, \texttt{discrete(0.5, 0.5)} represents a choice between two outcomes (0 or 1), each with probability 0.5. The outcome 0 corresponds to the original value being in $(-\infty, 0.5)$, and 1 corresponds to it being in $[0.5, +\infty)$. As such, we have abstracted away the support of the uniform distribution in the original program, replacing it with a discrete choice that preserves the original program's probabilistic behavior with respect to the identified cut. With Dice now as a backend, we can obtain the result \result{0.5}{0.5}.
+\noindent Here, \texttt{discrete(0.5, 0.5)} represents a choice between two outcomes (0 or 1), each with probability 0.5. The outcome 0 corresponds to the original value being in $(-\infty, 0.5)$, and 1 corresponds to it being in $[0.5, +\infty)$. As such, we have abstracted away the support of the uniform distribution in the original program, replacing it with a discrete choice that preserves the original program's probabilistic behavior with respect to the identified cut. With \Dice now as a backend, we can obtain the result \result{0.5}{0.5}.
 
 The transformation to the discretized program is guided by tracking cuts as an intermediate step, which are determined by type inference as shown in the annotated program below:
 
@@ -195,7 +195,7 @@ This gives the output \result{0.73595}{0.26405}.
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
     let x = uniform(0.0, 1.0) in
-    observe (x < 0.5);
+    let _ = observe (x < 0.5) in
     x < 0.2
 \end{lstlisting}
 
@@ -203,7 +203,7 @@ This gives the output \result{0.73595}{0.26405}.
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
     let x = (uniform(0.0, 1.0) : !{\ft{<0.2,<0.5}}!) in
-    observe (x < (0.5 : !{\ftb{<0.2,<0.5}{0.5}}!));
+    let _ = observe (x < (0.5 : !{\ftb{<0.2,<0.5}{0.5}}!)) in
     x < (0.2 : !{\ftb{<0.2,<0.5}{0.2}}!)
 \end{lstlisting}
 
@@ -211,7 +211,7 @@ This gives the output \result{0.73595}{0.26405}.
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em]
     let x = discrete(0.2, 0.3, 0.5) in
-    observe (x < 2);
+    let _ = observe (x < 2) in
     x < 1
 \end{lstlisting}
 
@@ -246,7 +246,7 @@ This gives the output \result{0.73595}{0.26405}.
       if fst r then snd r else fst q
 \end{lstlisting}
 
-\noindent Dice does not support exact inference for higher-order functions, but Roulette does, hence the output distribution \result{0.53636}{0.46364}. The continuous distributions in the original program are discretized into three-valued discrete distributions based on the intervals $(-\infty, 0.5)$, $[0.5, 1.5)$, and $[1.5, +\infty)$, while the functional structure remains intact.
+\noindent \Dice does not support exact inference for higher-order functions, but \Roulette does, hence the output distribution \result{0.53636}{0.46364}. The continuous distributions in the original program are discretized into three-valued discrete distributions based on the intervals $(-\infty, 0.5)$, $[0.5, 1.5)$, and $[1.5, +\infty)$, while the functional structure remains intact.
 
 \subsection{Sequential processes with iterate}\label{sec:examples:8}
 
@@ -278,33 +278,35 @@ While \Slice{} is purely functional without mutable state, it provides the \text
   weather_after_3_days < 1
 \end{lstlisting}
 
-This results in the output \result{0.5334}{0.4666}, which can be obtained from either Dice or Roulette as they both support bounded iteration.
+This results in the output \result{0.5334}{0.4666}, which can be obtained from either \Dice or \Roulette as they both support bounded iteration.
 
 
 \subsection{Mutable state}\label{sec:examples:9}
 
 \Slice{} supports mutable references, allowing imperative-style updates within a probabilistic context. This example models temperature that can be updated based on weather events:
 
-\begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
+\begin{lstlisting}[aboveskip=1em,belowskip=1em]
   let temperature = ref (uniform(15.0, 25.0)) in
-  (if flip() then
+  let weather_event = (if flip() then
       (* Cold front moves in *)
       temperature := gaussian(10.0, 2.0)
-  else
-      ());
+    else
+      temperature := gaussian(0.0, 1.0)) in
   !temperature < 12.0
 \end{lstlisting}
 
 \noindent The reference \texttt{temperature} initially holds a uniform temperature between 15°C and 25°C. With 50\% probability, a cold front updates it to a Gaussian-distributed temperature centered at 10°C. The type system tracks that the dereferenced value will be compared to 12.0, ensuring proper discretization of both the initial uniform distribution and the potential Gaussian update, both with float types \ft{<12}:
 
-\begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
-    let temperature = ref (discrete(0, 1)) in
-    (if flip() then
-        temperature := discrete(0.841345, 0.158655)
+\begin{lstlisting}[aboveskip=1em,belowskip=1em]
+  let temperature = ref (discrete(0, 1)) in
+  let weather_event = (if flip() then
+      temperature := discrete(0.841345, 0.158655)
     else
-        ()); 
-    !temperature < 1
+    temperature := discrete(1, 0)) in 
+  !temperature < 1
 \end{lstlisting}
+
+\Dice does not support exact inference for mutable state, but \Roulette does, hence the output distribution \result{0.92067}{0.07933}.
 
 \subsection{Lists and recursion}\label{sec:examples:10}
 
@@ -326,13 +328,12 @@ This results in the output \result{0.5334}{0.4666}, which can be obtained from e
   map check_threshold measurements
 \end{lstlisting}
 
-\noindent The closure \texttt{check\_threshold} lexically captures the stochastic \texttt{threshold} value, which is randomly chosen to be either 0.3 or 0.7. The type system correctly infers that both threshold values (0.3 and 0.7) must be included as cuts for all Gaussian measurements, yielding type \ft{<0.3,<0.7} for list elements. This demonstrates how \Slice{} handles higher-order functions with captured stochastic values while maintaining sound discretization.
+\noindent This gives an output of distributions of lists: $\{\textit{true,true,true}: 0.115341, \textit{true,true,false}: 0.234199, ...\}$. The closure \texttt{check\_threshold} lexically captures the stochastic \texttt{threshold} value, which is randomly chosen to be either 0.3 or 0.7. The type system correctly infers that both threshold values (0.3 and 0.7) must be included as cuts for all Gaussian measurements, yielding type \ft{<0.3,<0.7} for list elements. This demonstrates how \Slice{} handles higher-order functions with captured stochastic values while maintaining sound discretization.
 
 
 \subsection{Indian GPA Problem}\label{sec:gpa}
 
 This canonical example involves both discrete and continuous random variables and models a student's GPA based on nationality (India or USA) and whether they have a perfect record. The GPA is deterministic for perfect students (10.0 for India, 4.0 for USA) but drawn from a uniform distribution otherwise. The program computes the probability that a student's GPA falls below 1.0:
-\kevin{where does the first $<1$ come from?}
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
   let nationality = discrete(0.5, 0.5) in
@@ -369,7 +370,7 @@ This canonical example involves both discrete and continuous random variables an
   gpa < 1
 \end{lstlisting}
 
-\noindent Here, \texttt{uniform(0,10)} becomes \texttt{discrete(0.1, 0.9)} representing 10\% probability for $[0,1)$ and 90\% for $[1,10]$. Similarly, \texttt{uniform(0,4)} becomes \texttt{discrete(0.25, 0.75)}. Constants like 10.0 and 4.0 that fall in the interval $[1,+\infty)$ are mapped to index 1.
+\noindent This gives the output \result{0.17325}{0.82675}. Here, \texttt{uniform(0,10)} becomes \texttt{discrete(0.1, 0.9)} representing 10\% probability for $[0,1)$ and 90\% for $[1,10]$. Similarly, \texttt{uniform(0,4)} becomes \texttt{discrete(0.25, 0.75)}. Constants 10.0 and 4.0 in the branches of the conditionals fall into the second interval in the partition $(-\infty, 1) \cup [1,+\infty)$ and are thus both mapped to index 1 in the discretized program.
 
 \subsection{Partial discretization for non-constant comparisons}\label{sec:examples:partial1}
 
