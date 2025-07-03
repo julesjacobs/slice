@@ -18,9 +18,15 @@ docker run --rm slice python3 slice.py --dice benchmark
 
 # Get help
 docker run --rm slice python3 slice.py --help
+```
 
-# Run a local .slice file
-docker run --rm -v "$(pwd):/workspace" -w /workspace slice python3 /app/slice.py --dice run yourfile.slice
+#### Running Your Own .slice Programs with Docker
+
+To run your own `.slice` files, mount your current directory and use the `/data` prefix:
+
+```bash
+# Run a .slice file from your current directory
+docker run --rm -v "$(pwd):/data" slice python3 slice.py --dice run /data/yourprogram.slice
 ```
 
 ### Local Installation

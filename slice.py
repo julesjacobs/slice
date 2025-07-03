@@ -573,7 +573,7 @@ class SliceCLI:
         if 'slice' in components:
             print("1. Testing Slice...")
             result = self.run_command(
-                "cd slice && dune exec -- bin/main.exe examples/coin.slice",
+                "cd slice && dune exec -- bin/main.exe ../examples/tutorial/coin.slice",
                 check=False
             )
             if result.returncode == 0:
@@ -832,9 +832,9 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  python3 slice.py run examples/coin.slice                      # Run with both backends
-  python3 slice.py --dice run examples/coin.slice               # Run with Dice backend only
-  python3 slice.py --roulette run examples/coin.slice           # Run with Roulette backend only
+  python3 slice.py run examples/tutorial/coin.slice             # Run with both backends
+  python3 slice.py --dice run examples/tutorial/coin.slice      # Run with Dice backend only
+  python3 slice.py --roulette run examples/tutorial/coin.slice  # Run with Roulette backend only
   python3 slice.py test                                         # Test installation
   python3 slice.py benchmark                                    # Run all benchmarks
   python3 slice.py examples --list                              # List examples
