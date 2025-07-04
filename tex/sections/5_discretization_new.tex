@@ -46,14 +46,14 @@
 		$\letkw \; v_1' = \discretize{e_1 : \float[B_1; V_1]} \; \inkw $\\
 		&$\begin{array}{@{\!\!\!\!\!\!\!}ll}
 			&\letkw \; v_2' = \discretize{e_2 : \float[B_2; V_2]} \; \inkw \\
-			&\ifkw\; v_1' == 0\; \&\& \; v_2' == 0\; \thenkw \\
-			&\quad \discretize{\uniform(v_1, w_1)} \\
+			&\ifkw\; v_1' == 0\; \logand \; v_2' == 0\; \thenkw \\
+			&\quad \discretize{\uniform(v_1, w_1) : \float[B;V]} \\
 			&\vdots \\
-			&\elsekw\; \ifkw\; v_1' == i\; \&\& \; v_2' == j\; \thenkw \\
-			&\quad \discretize{\uniform(v_{i+1}, w_{j+1})} \\
+			&\elsekw\; \ifkw\; v_1' == i\; \logand \; v_2' == j\; \thenkw \\
+			&\quad \discretize{\uniform(v_{i+1}, w_{j+1}) : \float[B;V]} \\
 			&\vdots \\
 			&\elsekw \\
-			&\quad \discretize{\uniform(v_n, w_m)}
+			&\quad \discretize{\uniform(v_n, w_m) : \float[B;V]}
 		\end{array}
 		$
 	\end{tabular}
@@ -100,7 +100,7 @@ Now consider the discretized expression obtained from computing $\discretize{e: 
 	(x \finlt{3} \finconst{1}{3})  \logor x  \fingeq{3} \finconst{2}{3})~.
 \]
 %
-The probabilities appearing in $\discrete(\ldots)$ are determined by the cumulative distribution function (CDF) of the uniform distribution over $(0,1)$, indeed ensuring that the probability of $x$ evaluating to $\finconst{k}{3}$ in $\discretize{e: \bool}$ \emph{coincides} with the probability of $x$ evaluating to a value in $\intervals{B}_k$ in $e$. Hence, the constant $0.3$ in $e$ can be replaced by the constant $\finconst{1}{3}$ in $\discretize{e: \bool}$, and similarly for $0.5$. Consequently, it is evident that $e$ and $\discretize{e: \bool}$ are semantically equivalent. 
+The probabilities appearing in $\discrete(\ldots)$ are determined by the cumulative distribution function (CDF) of the uniform distribution over $(0,1)$, indeed ensuring that the probability of $x$ evaluating to $\finconst{k}{3}$ in $\discretize{e: \bool}$ \emph{coincides} with the probability of $x$ evaluating to a value in $\intervals{B}_k$ in $e$. Hence, the constant $0.3$ in $e$ can be replaced by the constant $\finconst{1}{3}$ in $\discretize{e: \bool}$, and similarly for $0.5$, and it is evident that $e$ and $\discretize{e: \bool}$ are semantically equivalent. 
 \end{example}
 %
 Crucially, the \emph{answers} constraint in the premise of the typing rules for comparisons (cf.\ \Cref{fig:typing-float}) ensures that $B$ is a correct and sufficiently fine-grained partitioning of $\Reals$, i.e., there is an injective function
@@ -111,12 +111,38 @@ $
 %
 such that $c$ is an (open) endpoint of  $\text{ToConst}(c)$ for all $c \in\{0.3,0.5\}$. Let us now consider the next example.
 %
+\kevin{fonts}
 \begin{example}
-	If the arguments to a uniform sampling are non-constant, the situation becomes more challenging.
+	If the arguments to a uniform sampling are non-constant, the situation becomes more challenging. Consider the following typed expression $e$ (again only showing relevant types):
 	%
-	\begin{align}
-		blabla
-	\end{align}
+	\begin{align*}
+		&\letkw\; x =  \ifkw \; 
+		(\uniform(0, 1) : \text{\ftn{$\{\clt{0.5}\}$}} )
+		< 0.5 \; \\
+		%
+		&\phantom{\letkw\; x ={} } \thenkw \; (10 : \text{\ftbn{$\{\cleq{10},\cleq{20}\}$}{$\{10,20\}$}}) \; \elsekw \; (20 : \text{\ftbn{$\{\cleq{10},\cleq{20}\}$}{$\{10,20\}$}}) \; \inkw\; \\
+		%
+		&(\uniform(0,(x :  \text{\ftbn{$\{\cleq{10},\cleq{20}\}$}{$\{10,20\}$}})) : \text{\ftn{$\{\clt{5}\}$}} ) < 5~.
+	\end{align*}
+	%
+	Why can this expression be discretized even though the argument to the second uniform sampling instruction is non-constant? The typing information $(x :  \text{\ftbn{$\{\cleq{10},\cleq{20}\}$}{$\{10,20\}$}})$ correctly informs us about the fact that \emph{$x$ can only take the values $10$ and $20$}. Consequentely, $x$ (and the $\ifkw$-expression generating it) can be discretized to a finite type $\fin{3}$ such that the probability of the resulting discrete expression evaluating to $\finconst{0}{3}$ (resp.\ $\finconst{1}{3}$) \emph{coincides} with the probability of the continuous expression evaluating to $10$ (resp.\ $20$). Let us (partially) apply $\discretize{e: \bool}$, resulting in:
+	%
+	\begin{align*}
+			&\letkw \; x = \ifkw\; \discrete(0.5,0.5) < 1\; \thenkw \; \finconst{0}{3}\; \elsekw\;\finconst{1}{3} \inkw \\
+			%
+			 &\qquad \big(\letkw \; v_1' = 0\; \inkw  \\
+			 %
+			 &\qquad \phantom{\big(}\letkw \; v_2' = x\; \inkw \\
+			 %
+			 &\qquad \phantom{\big(} \ifkw\; v_1' == 0\; \logand \; v_2' == 0\; \thenkw \; \discretize{\uniform(0,10) : \text{\ftn{$\{\clt{5}\}$}}} \\
+			 %
+			 &\qquad \phantom{\big(} \elsekw \; \discretize{\uniform(0,20) : \text{\ftn{$\{\clt{5}\}$}}} \big) \\
+			 %
+			 &\finlt{2} \\
+			 %
+			  &\qquad\discretize{ 5 : \text{\ftn{$\{\clt{5}\}$}} }
+			 %
+	\end{align*}
 \end{example}
 %
 \begin{example}
