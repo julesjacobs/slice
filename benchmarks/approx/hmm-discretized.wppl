@@ -23,7 +23,7 @@ var computeTVD = function(dist1, dist2) {
 var expectedModel = function(timeSteps) {
   return function() {
     var transition = function(s) {
-      return s ? flip(0.308538) : flip(0.691462);
+      return s ? flip(0.308538) : flip(0.000003398);
     };
 
     var observe = function(s) {
@@ -58,7 +58,7 @@ var expectedModel = function(timeSteps) {
 var model = function(timeSteps) {
   return function() {
     var transition = function(s) {
-      return s ? flip(0.308538) : flip(0.691462);
+      return s ? flip(0.308538) : flip(0.000003398);
     };
 
     var observe = function(s) {
