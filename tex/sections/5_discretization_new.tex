@@ -72,6 +72,7 @@ the probability that $e$ evaluates to a value in $\intervals{B}_i$ \emph{coincid
 %
 
 \begin{example}
+	\label{ex:discretize_simple}
 The simplest setting is a uniform distribution whose outcomes are compared to constants. Consider the following typed expression $e: \bool$, where we omit irrelevant types:
 	%
 %
@@ -143,6 +144,8 @@ such that $c$ is an (open) endpoint of  $\text{ToConst}(c)$ for all $c \in\{0.3,
 			  &\qquad\discretize{ 5 : \text{\ftn{$\{\clt{5}\}$}} }
 			 %
 	\end{align*}
+	%
+	The continuous $\uniform(0,x)$ expression is replaced by a case distinction on the discretizations of $\uniform(0,10)$ and $\uniform(0,20)$, where each of these cases is indeed executed with probability $0.5$. Since this reduces the remaining discretization process to discretizing expressions with \emph{constant parameters onlt}, the remaining steps are completely analogous to Example \Cref{ex:discretize_simple}.
 \end{example}
 %
 \begin{example}
