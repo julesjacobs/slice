@@ -31,6 +31,8 @@
 % Use \ftt for float[T; T]
 \newcommand{\ftb}[2]{\codetype{float[\{#1\}; \{#2\}]}}  % Both bags have values
 \newcommand{\ft}[1]{\codetype{float[\{#1\}; T]}}        % Cuts only, values are T
+\newcommand{\ftbn}[2]{\codetype{float[#1; #2]}}  % Both bags have values
+\newcommand{\ftn}[1]{\codetype{float[#1; T]}}        % Cuts only, values are T
 \newcommand{\ftt}{\codetype{float[T; T]}}               % Both bags are T
 \newcommand{\ftv}[1]{\codetype{float[T; \{#1\}]}}       % Cuts are T, values specified
 % Macros for finite type operations and boolean operators

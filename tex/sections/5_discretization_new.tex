@@ -63,9 +63,51 @@
 %
 In this section, we describe our type-directed discretization algorithm alongside illustrative examples. The setting is the following: Given a typed expression $e : \tau$ compute --- guided by the type annotations --- a (partially) \emph{discretized} expression $\discretize{e : \tau}$ such that $e$ and $\discretize{e : \tau}$ are \emph{semantically equivalent}, i.e., they produce the same distribution.
 
-$\discretize{e : \tau}$ is defined recursively on $e : \tau$ as shown in \Cref{fig:discretization-code}, where we focus on continuous uniform distributions. For other distributions, this procedure is completely analogous. Before we go into the details, let us get some intuition on how we use the type annotation to discretize expressions. The type system is designed in such a way that 
+$\discretize{e : \tau}$ is defined recursively on $e : \tau$ as shown in \Cref{fig:discretization-code}, where we focus on continuous uniform distributions. For other distributions, this procedure is completely analogous. Naturally, the only sub-expressions which are actually replaced by $\discretize{\cdot}$ are float constants and uniform samplings. Before we go into the details, let us get some intuition on how we use the type annotation to discretize expressions. The type system is designed in such a way that every typed sub-expression of the form 
+$e = \uniform(e_1, e_2 ): \float[B;V]$ with $B=\{\sim_1\!\!b_1, \ldots, \sim_n\!\!b_n\} \neq \top$ 
 %
-\begin{center}
-	Every typed sub-expression of the form ${\uniform(e_1, e_2 ): \float[B;V]}$ with $B=\{as\}$
-\end{center}
+can be \emph{discretized} to an expression $e' : \fin{n+1}$ such that 
+%
+the probability that $e$ evaluates to a value in $\intervals{B}_i$ \emph{coincides} with the probability that $e'$ evaluates to $\finconst{k}{i}$. Moreover, this information is \emph{all we need} to ensure semantic equivalence of the continuous and the (partially) discretized expression. In particular, if \emph{all} $\float[B;V]$-typed subexpressions are finite-cut, then the given expression can be \emph{fully discretized}.  Let us start with simple examples before considering more intricate ones.
+%
+
+\begin{example}
+The simplest setting is a uniform distribution whose outcomes are compared to constant. Consider the following typed expression $e: \bool$, where we omit irrelevant types:
+	%
+%
+%
+\begin{align*}
+	&\letkw\; x = (\uniform(0, 1) : \text{\ftn{$B$}})\; \inkw\; \\
+	&(x : \text{\ftn{$B$}} < 0.3 : \text{\ftbn{$B$}{$\{0.3\}$}}) \logor (x : \text{\ftn{$B$}} \geq 0.5 : \text{\ftbn{$B$}{$\{0.3\}$}})
+\end{align*}
+%
+where $B= \{ \clt{0.3},\clt{0.5} \}$. Now, why and how can we discretized this program using the type information? The cut set $B$ correctly informs us that the probability of the comparisons evaluating to $\true$ is completely determined by the probability of $x$ evaluating to one of the intervals 
+%
+\[
+	\intervals{B}_0 = (-\infty, 0.3) 
+	\qquad 
+	\intervals{B}_1 =[0.3, 0.5) 
+	\qquad 
+	\intervals{B}_2 =[0.5, \infty)
+\]
+%
+induced by $B$. Hence, all expressions of type $\text{\ftbn{$B$}{$\ldots$}}$ can be discretized to expressions of the finite type $\fin{3}$, where $\finconst{k}{3}$ represents the $k$-th interval $\intervals{B}_k$ induced by $B$ for $k \in \{0,1,2\}$. 
+
+Now consider the discretized expression obtained from computing $\discretize{e: \bool}$ given by 
+%
+\[
+	\letkw\; x = \uniform(0, 1)\; \inkw\; 
+	x : \text{\ftn{$B$}} < 0.3  \logor x : \geq 0.5
+\]
+\end{example}
+%
+\begin{example}
+	Mixing continuous and dirac
+\end{example}
+%
+\begin{example}
+	Non-constant parameters
+\end{example}
+
+\kevin{Can be discretized if all finite-but}
 
