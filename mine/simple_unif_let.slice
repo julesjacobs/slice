@@ -1,0 +1,1 @@
+let x = uniform (0,1) in x <0.3 || x >= 0.5 
