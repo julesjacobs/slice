@@ -83,13 +83,14 @@ class BenchmarkRunner:
                 # Docker environment - binaries in PATH
                 slice_cmd = f"main.exe {os.path.abspath(slice_file)} > output.dice"
                 dice_cmd = "dice.exe output.dice -show-size -flip-lifting"
+                full_cmd = f"{slice_cmd} && {dice_cmd}"
             else:
                 # Local environment
                 slice_cmd = f"cd slice && ./_build/default/bin/main.exe {os.path.abspath(slice_file)} | tee ../output.dice"
                 cd_out = "cd .."
                 dice_cmd = "cd dice && ./_build/default/bin/dice.exe '../output.dice' -show-size -flip-lifting"
+                full_cmd = f"{slice_cmd} && {cd_out} && {dice_cmd}"
             
-            full_cmd = f"{slice_cmd} && {cd_out} && {dice_cmd}"
             return self.run_command(full_cmd)
 
         if backend == 'roulette':
@@ -572,7 +573,7 @@ class SliceCLI:
         if 'slice' in components:
             print("1. Testing Slice...")
             result = self.run_command(
-                "cd slice && dune exec -- bin/main.exe examples/coin.slice",
+                "cd slice && dune exec -- bin/main.exe ../examples/tutorial/coin.slice",
                 check=False
             )
             if result.returncode == 0:
@@ -831,9 +832,9 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  python3 slice.py run examples/coin.slice                      # Run with both backends
-  python3 slice.py --dice run examples/coin.slice               # Run with Dice backend only
-  python3 slice.py --roulette run examples/coin.slice           # Run with Roulette backend only
+  python3 slice.py run examples/tutorial/coin.slice             # Run with both backends
+  python3 slice.py --dice run examples/tutorial/coin.slice      # Run with Dice backend only
+  python3 slice.py --roulette run examples/tutorial/coin.slice  # Run with Roulette backend only
   python3 slice.py test                                         # Test installation
   python3 slice.py benchmark                                    # Run all benchmarks
   python3 slice.py examples --list                              # List examples

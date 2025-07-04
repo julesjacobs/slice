@@ -6,19 +6,29 @@ Slice is a probabilistic programming language that automatically discretizes con
 
 ### Using Docker (Recommended)
 
+Use the provided wrapper script `slice-docker`:
+
 ```bash
-# Build the Docker image
-docker build -t slice .
+# First, make the script executable (one time only)
+chmod +x slice-docker
 
-# Run an example
-docker run --rm slice python3 slice.py run examples/paper/simple_uniform.slice
+# Run any .slice file in your current directory
+./slice-docker yourprogram.slice
 
-# Run benchmarks
-docker run --rm slice python3 slice.py benchmark
+# Run with verbose output
+./slice-docker yourprogram.slice --print-all
+
+# Convert to SPPL format
+./slice-docker yourprogram.slice --to-sppl
+
+# Run examples from the repository
+./slice-docker examples/paper/2.1_simple_uniform.slice
 
 # Get help
-docker run --rm slice python3 slice.py --help
+./slice-docker
 ```
+
+The wrapper script automatically handles Docker setup and file mounting for you.
 
 ### Local Installation
 
@@ -38,7 +48,11 @@ cd dice && dune build && cd ..
 pip install matplotlib sppl
 
 # Run an example
-python3 slice.py run examples/paper/simple_uniform.slice
+python3 slice.py run examples/paper/2.1_simple_uniform.slice
+
+# Optional: Install Racket for Roulette backend support
+# See: https://racket-lang.org/
+# After installing Racket, install Roulette: raco pkg install roulette
 ```
 
 ## Usage
