@@ -184,7 +184,27 @@ We give a lemma stating the relationship between the original program's types an
 \end{lemma}
 
 \begin{proof}
+    By structural induction on the expression $e$ and its type derivation. 
     
+    \textbf{Case 1:} $e = c : \float[B;V]$
+    \begin{itemize}
+        \item If $B = \top$, then $\discretize{e : \tau} = c$, and $\discretize{\tau} = \float$. Since $c$ is a constant of type $\float$, the result is well-typed.
+        \item If $B \neq \top$, then $\discretize{e : \tau} = \finconst{k}{n+1}$ for some $k$ such that $c \in \intervals{B}_k$, and $\discretize{\tau} = \fin{n+1}$. The constant $\finconst{k}{n+1}$ has type $\fin{n+1}$ as defined by the typing rules in Figure~\ref{fig:typing-general}.
+    \end{itemize}
+
+    \textbf{Case 2:} $e = \uniform(e_1, e_2) : \float[B;V]$
+    \begin{itemize}
+        \item If $B = \top$, then the expression remains a uniform distribution, so $\discretize{e : \tau}$ has type $\float = \discretize{\float[B;V]}$.
+        \item If $B \neq \top$, the result is a $\discrete(p_0,...,p_n)$ distribution over $\fin{n+1}$, which matches $\discretize{\float[B;V]} = \fin{n+1}$.
+    \end{itemize}
+
+    \textbf{Case 3:} $e = \letkw \; x = e_1 \; \inkw \; e_2 : \tau$
+    \begin{itemize}
+        \item From the typing rules, we know that $e_1 : \tau_1$ and $e_2 : \tau$ under $x : \tau_1$. By induction, $\discretize{e_1} : \discretize{\tau_1}$ and $\discretize{e_2} : \discretize{\tau}$. Hence, $\letkw \; x = \discretize{e_1} \; \inkw \; \discretize{e_2} : \discretize{\tau}$.
+    \end{itemize}
+
+    \textbf{Finish other cases...}
+
 \end{proof}
 
 For example, $\mathcal{D}$ applied to $\uniform(0,1)$ : \codetype{\ft{<0.5}} results in the discrete distribution $\discrete(0.5, 0.5)$. Hence, $\mathcal{D}$ maps the type of the finite-cut expression $\uniform(0,1)$ : \codetype{\ft{<0.5}} from $\float[B;V]$ to $\fin{2}$. $\mathcal{D}$ applied to $\uniform(0,1)$ : \codetype{\ftt} results in the original distribution $\uniform(0,1)$. Hence, $\mathcal{D}$ maps the type of the infinite-cut expression $\uniform(0,1)$ : \codetype{\ftt} from $\float[B;V]$ to $\float$.
