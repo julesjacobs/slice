@@ -37,7 +37,7 @@ We define a discretization function $\mathcal{D}\sem{e : \tau}$ that takes in ty
 
 \begin{figure}[t]
     \centering
-    \footnotesize
+    \scriptsize
 
     % Basic discretization rules
     \begin{tabular}{l||l}
@@ -63,7 +63,7 @@ We define a discretization function $\mathcal{D}\sem{e : \tau}$ that takes in ty
        $ {(\ifkw\; e_1 : \bool\; \thenkw\; e_2 : \tau\; \elsekw\; e_3 : \tau) : \tau}$ &
         $\ifkw\; \mathcal{D}\sem{e_1 : \bool}\; \thenkw\; \mathcal{D}\sem{e_2 : \tau} \elsekw\; \mathcal{D}\sem{e_3 : \tau}$
 \\[2ex]
-       $ {\uniform(e_1, e_2 ): \float[B;V]} $&\\ 
+       $ {\uniform(e_1 : \float[B_1;V_1], e_2 : \float[B_2;V_2]): \float[B;V]} $&\\ 
       \qquad $ \text{if } e_1, e_2 \in \mathbb{R}, e_1 > e_2 $ & $\texttt{Error: Uniform $e_1 > e_2$} $   \\[2ex]
        \qquad      $B=\top$ & $\uniform(\mathcal{D}\sem{e_1 : \float[B_1;V_1]}, \mathcal{D}\sem{e_2 : \float[B_2;V_2]}) $\\[2ex]
         \qquad       $\text{if } B \neq \top, 
@@ -224,15 +224,15 @@ We give a lemma stating the relationship between the original program's types an
     \textbf{Case 6:} $e = (\uniform(e_1, e_2) : \float[B;V])$
 
     \begin{itemize}
-        \item If $B = \top$, then:
+        \item If $B = \top$, then $\discretize{\float[B;V]} = \float$, and thus:
         \[
-            \discretize{\uniform(e_1, e_2)} = \uniform(\discretize{e_1}, \discretize{e_2}) : \float
+            \discretize{\uniform(e_1, e_2) : \float[B;V]} = \uniform(\discretize{e_1 : \tau_1}, \discretize{e_2 : \tau_2}) : \float
         \]
-        and by the inductive hypothesis, both $e_1$ and $e_2$ are well-typed, so the result is well-typed under the float rule.
+        and by the inductive hypothesis, both $e_1$ and $e_2$ with their respective types $\tau_1 = \float[B_1; V_1]$ and $\tau_2 = \float[B_2; V_2]$ are well-typed, so the result is well-typed under the float rule.
 
-        \item If $B \neq \top$ and $e_1, e_2 \in \mathbb{R}$, then:
+        \item If $B \neq \top$ and $e_1, e_2 \in \mathbb{R}$, then $\discretize{\float[B;V]} = \fin{n+1}$, and thus:
         \[
-            \discretize{\uniform(e_1, e_2)} = \discrete(p_0, \ldots, p_n) : \fin{n+1}
+            \discretize{\uniform(e_1, e_2) : \float[B;V]} = \discrete(p_0, \ldots, p_n) : \fin{n+1}
         \]
         and each $p_k = \text{CDF}(b_{k+1}) - \text{CDF}(b_k)$ satisfies $p_k \in [0,1]$ and $\sum p_k = 1$, so this is well-typed as a finite distribution.
 
