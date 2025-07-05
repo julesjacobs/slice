@@ -81,17 +81,17 @@ We define a discretization function $\mathcal{D}\sem{e : \tau}$ that takes in ty
             &$\begin{array}{@{\!\!\!\!\!\!\!}ll}
                 &\letkw \; v_2' = \mathcal{D}\sem{e_2 : \float[B_2; V_2]} \; \inkw \\
                 &\ifkw\; v_1' == 0\; \&\& \; v_2' == 0\; \thenkw \\
-                &\quad \mathcal{D}\sem{\uniform(v_1, w_1)} \\
+                &\quad \mathcal{D}\sem{\uniform(v_1, w_1) : \float[B;V]} \\
                 &\vdots \\
                 &\elsekw\; \ifkw\; v_1' == i\; \&\& \; v_2' == j\; \thenkw \\
-                &\quad \mathcal{D}\sem{\uniform(v_{i+1}, w_{j+1})} \\
+                &\quad \mathcal{D}\sem{\uniform(v_{i+1}, w_{j+1}) : \float[B;V]} \\
                 &\vdots \\
                 &\elsekw \\
-                &\quad \mathcal{D}\sem{\uniform(v_n, w_m)}
+                &\quad \mathcal{D}\sem{\uniform(v_n, w_m) : \float[B;V]}
             \end{array}
             $
     \end{tabular}
-    \caption{Discretization function for \textsc{Slice}. For the $\uniform$ distribution case, we explicitly handle $B = \top$, which implies $V = \top$ and vice versa, as per Theorem~\ref{thm:distinguishes-top}. As such, there is no need to separately consider the case where $V = \top$.}
+    \caption{Discretization function for \textsc{Slice}, where $\text{CDF}(b_{0}) = 0$ and $\text{CDF}(b_{n+1}) = 1$. For the $\uniform$ distribution case, we explicitly handle $B = \top$, which implies $V = \top$ and vice versa, as per Theorem~\ref{thm:distinguishes-top}. As such, there is no need to separately consider the case where $V = \top$. For all other language constructs, $\discretize{\cdot}$ straightforwardly recurses on their structure.}
     \label{fig:discretization-code}
 \end{figure}
 
