@@ -176,7 +176,7 @@ In the best case scenario, when all expressions in a given program are finite-cu
 
 We give a lemma stating the relationship between the original program's types and the discretized program's types:
 
-\begin{lemma}[Type Transformation under Discretization]\label{lemma:type-transformations}
+\begin{lemma}[Type Transformation under Discretization]\label{lem:type-transformations}
     Let $\Gamma \vdash e : \tau$ be a well-typed expression in \Slice{}, where $\Gamma$ is a typing environment assigning types to variables. Let $\discretize{e : \tau}$ be the discretization function as defined in Figure~\ref{fig:discretization-code}, and $\discretize{\tau}$ be the type transformation function as defined in Figure~\ref{fig:discretization-types}. Then,
     \[
     \discretize{\Gamma} \vdash \discretize{e : \tau} : \discretize{\tau}
@@ -257,4 +257,34 @@ We give a lemma stating the relationship between the original program's types an
 
 \end{proof}
 
-For example, $\mathcal{D}$ applied to $\uniform(0,1)$ : \codetype{\ft{<0.5}} results in the discrete distribution $\discrete(0.5, 0.5)$. Hence, $\mathcal{D}$ maps the type of the finite-cut expression $\uniform(0,1)$ : \codetype{\ft{<0.5}} from $\float[B;V]$ to $\fin{2}$. $\mathcal{D}$ applied to $\uniform(0,1)$ : \codetype{\ftt} results in the original distribution $\uniform(0,1)$. Hence, $\mathcal{D}$ maps the type of the infinite-cut expression $\uniform(0,1)$ : \codetype{\ftt} from $\float[B;V]$ to $\float$.
+\begin{example}[Type transformation under discretization]
+Let us consider the simplest example (base case) of how the finite-cut expression $\uniform(0, 1)$ : \codetype{\ft{<0.25, <0.75}} is discretized and its type transformed. This expression represents a continuous uniform distribution over the interval $[0,1]$ that is refined with two comparison-based cuts at $\clt{0.25}$ and $\clt{0.75}$. The original type of the expression is:
+
+\[
+\tau = \text{\ft{<0.25, <0.75}}.
+\]
+
+Applying the discretization function $\discretize{e : \tau}$ to this expression yields:
+
+\[
+\discretize{\uniform(0,1) : \tau} = \discrete(0.25, 0.5, 0.25)
+\]
+
+where the probabilities in the discrete distribution are computed from the CDF of the uniform distribution over each of the three intervals induced by $B = \{\clt{0.25}, \clt{0.75}\}$. Now applying the type transformation function $\discretize{\tau}$ to this type yields:
+
+\[
+\discretize{\tau} = \fin{3}.
+\]
+
+Thus, before discretization, we have the typing judgment:
+\[
+\Gamma \vdash \uniform(0,1) : \text{\ft{<0.25, <0.75}}
+\]
+
+and after discretization:
+\[
+\discretize{\Gamma} \vdash \discrete(0.25,0.5,0.25) : \fin{3}
+\]
+
+demonstrating that the discretization procedure produces a well-typed expression under the transformed context and type, as stated in Lemma~\ref{lem:type-transformations}.
+\end{example}
