@@ -1,8 +1,8 @@
 \section{Implementation}\label{sec:implementation}
 
-We have implemented \Slice{} as a compiler that transforms continuous probabilistic programs into discrete ones, which, when fully discretized, can then be translated and analyzed using discrete exact inference engines. Figure~\ref{fig:architecture} shows the overall architecture of the \Slice{} system.
+We have implemented \Slice{} as a compiler that transforms continuous probabilistic programs into either fully or partially discretized forms. Fully discretized programs can be translated and analyzed using discrete exact inference engines. In contrast, partially discretized programs can be analyzed using heterogeneous inference engines, which support combining multiple inference strategies such as exact and approximate methods within a single probabilistic program.Figure~\ref{fig:architecture} shows the overall architecture of the \Slice{} system.
 
-The \Slice{} compiler consists of approximately 3,400 lines of OCaml code (including the lexer, parser, type inference engine, discretization engine, Dice/Roulette code generator, a sampling-based interpreter, and statistical testing of equivalence of continuous and discretized programs), demonstrating that powerful program transformations can be implemented concisely. The system is open-source and available at \url{https://github.com/[anonymized]}, along with benchmarks, documentation, and a Docker image.
+The \Slice{} compiler consists of approximately 3,400 lines of OCaml code (including the lexer, parser, type inference engine, discretization engine, Dice/Roulette code generator, a sampling-based interpreter, and statistical testing of equivalence of continuous and discretized programs), demonstrating that powerful program transformations can be implemented concisely. We use the OCaml GSL package~\cite{gsl} to compute the CDF of distributions. The system is open-source and available at \url{https://github.com/[anonymized]}, along with benchmarks, documentation, and a Docker image.
 
 \input{figures/architecture}
 
