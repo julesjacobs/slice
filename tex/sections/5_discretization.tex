@@ -37,7 +37,7 @@ We define a discretization function $\mathcal{D}\sem{e : \tau}$ that takes in ty
 
 \begin{figure}[t]
     \centering
-    \footnotesize
+    \scriptsize
 
     % Basic discretization rules
     \begin{tabular}{l||l}
@@ -63,7 +63,7 @@ We define a discretization function $\mathcal{D}\sem{e : \tau}$ that takes in ty
        $ {(\ifkw\; e_1 : \bool\; \thenkw\; e_2 : \tau\; \elsekw\; e_3 : \tau) : \tau}$ &
         $\ifkw\; \mathcal{D}\sem{e_1 : \bool}\; \thenkw\; \mathcal{D}\sem{e_2 : \tau} \elsekw\; \mathcal{D}\sem{e_3 : \tau}$
 \\[2ex]
-       $ {\uniform(e_1, e_2 ): \float[B;V]} $&\\ 
+       $ {\uniform(e_1 : \float[B_1;V_1], e_2 : \float[B_2;V_2]): \float[B;V]} $&\\ 
       \qquad $ \text{if } e_1, e_2 \in \mathbb{R}, e_1 > e_2 $ & $\texttt{Error: Uniform $e_1 > e_2$} $   \\[2ex]
        \qquad      $B=\top$ & $\uniform(\mathcal{D}\sem{e_1 : \float[B_1;V_1]}, \mathcal{D}\sem{e_2 : \float[B_2;V_2]}) $\\[2ex]
         \qquad       $\text{if } B \neq \top, 
@@ -81,17 +81,17 @@ We define a discretization function $\mathcal{D}\sem{e : \tau}$ that takes in ty
             &$\begin{array}{@{\!\!\!\!\!\!\!}ll}
                 &\letkw \; v_2' = \mathcal{D}\sem{e_2 : \float[B_2; V_2]} \; \inkw \\
                 &\ifkw\; v_1' == 0\; \&\& \; v_2' == 0\; \thenkw \\
-                &\quad \mathcal{D}\sem{\uniform(v_1, w_1)} \\
+                &\quad \mathcal{D}\sem{\uniform(v_1, w_1) : \float[B;V]} \\
                 &\vdots \\
                 &\elsekw\; \ifkw\; v_1' == i\; \&\& \; v_2' == j\; \thenkw \\
-                &\quad \mathcal{D}\sem{\uniform(v_{i+1}, w_{j+1})} \\
+                &\quad \mathcal{D}\sem{\uniform(v_{i+1}, w_{j+1}) : \float[B;V]} \\
                 &\vdots \\
                 &\elsekw \\
-                &\quad \mathcal{D}\sem{\uniform(v_n, w_m)}
+                &\quad \mathcal{D}\sem{\uniform(v_n, w_m) : \float[B;V]}
             \end{array}
             $
     \end{tabular}
-    \caption{Discretization function for \textsc{Slice}. For the $\uniform$ distribution case, we explicitly handle $B = \top$, which implies $V = \top$ and vice versa, as per Theorem~\ref{thm:distinguishes-top}. As such, there is no need to separately consider the case where $V = \top$.}
+    \caption{Discretization function for \textsc{Slice}, where $\text{CDF}(b_{0}) = 0$ and $\text{CDF}(b_{n+1}) = 1$. For the $\uniform$ distribution case, we explicitly handle $B = \top$, which implies $V = \top$ and vice versa, as per Theorem~\ref{thm:distinguishes-top}. As such, there is no need to separately consider the case where $V = \top$. For all other language constructs, $\discretize{\cdot}$ straightforwardly recurses on their structure.}
     \label{fig:discretization-code}
 \end{figure}
 
@@ -176,15 +176,115 @@ In the best case scenario, when all expressions in a given program are finite-cu
 
 We give a lemma stating the relationship between the original program's types and the discretized program's types:
 
-\begin{lemma}[Type Transformation under Discretization]\label{lemma:type-transformations}
-    Let $e : \tau$ be a typed expression, $\discretize{e : \tau}$ be the discretization function as defined in Figure~\ref{fig:discretization-code}, and $\discretize{\tau}$ be the type transformation function as defined in Figure~\ref{fig:discretization-types}. Then, the discretized expression $\discretize{e : \tau}$ has type $\discretize{\tau}$. That is,
+\begin{lemma}[Type Transformation under Discretization]\label{lem:type-transformations}
+    Let $\Gamma \vdash e : \tau$ be a well-typed expression in \Slice{}, where $\Gamma$ is a typing environment assigning types to variables. Let $\discretize{e : \tau}$ be the discretization function as defined in Figure~\ref{fig:discretization-code}, and $\discretize{\tau}$ be the type transformation function as defined in Figure~\ref{fig:discretization-types}. Then,
     \[
-    \discretize{e : \tau} :\discretize{\tau}.
+    \discretize{\Gamma} \vdash \discretize{e : \tau} : \discretize{\tau}
     \]
+    where $\discretize{\Gamma}$ is the pointwise transformation of types in $\Gamma$, namely $\discretize{\Gamma}(x) = \discretize{\Gamma(x)}$ for all $x \in \text{dom}(\Gamma)$.
 \end{lemma}
 
 \begin{proof}
+    We proceed by induction on the structure of the typing derivation $\Gamma \vdash e : \tau$. That is, we match each typing rule and show that it remains valid after applying $\discretize{\cdot}$ to the context, expression, and type.
     
+    \textbf{Case 1:} $e = x$
+    \begin{itemize}
+        \item We have that $\discretize{x : \tau} = x$, and since $\Gamma(x) = \tau$, we have that $\discretize{\Gamma}(x) = \discretize{\tau} = \tau$ for $x \in \text{dom}(\Gamma)$. Thus, $\discretize{\Gamma} \vdash x : \discretize{\tau}$.
+    \end{itemize}
+
+    \textbf{Case 2:} $e = (c : \float[B;V])$
+    \begin{itemize}
+        \item If $B = \top$, then $\discretize{c : \float[B;V]} = c$, and $\discretize{\float[B;V]} = \float$. As per the float typing rules in Figure~\ref{fig:typing-float}, $c$ is a constant of type $\float$.
+        \item If $B \neq \top$, then $\discretize{e : \float[B;V]} = \finconst{k}{n+1}$ for some $k$ such that $c \in \intervals{B}_k$, and $\discretize{\float[B;V]} = \fin{n+1}$. As per the typing rules in Figure~\ref{fig:typing-general}, $\finconst{k}{n+1}$ is a constant of type $\fin{n+1}$.
+    \end{itemize}
+
+    \textbf{Case 3:} $e = (\letkw \; x = e_1 : \tau_1 \; \inkw \; e_2 : \tau_2)$
+    \begin{itemize}
+        \item The \textsc{Let} typing rule is shown in Figure~\ref{fig:typing-general}. By the inductive hypothesis, we assume $\discretize{\Gamma} \vdash \discretize{e_1 : \tau_1} : \discretize{\tau_1}$ and $\discretize{\Gamma, x : \tau_1} \vdash \discretize{e_2 : \tau_2} : \discretize{\tau_2}$. Then, we can conclude:
+        \[ \discretize{\Gamma} \vdash \letkw \; x = \discretize{e_1 : \tau_1} \; \inkw \; \discretize{e_2 : \tau_2} : \discretize{\tau_2}. \]
+    \end{itemize}
+
+    \textbf{Case 4:} $e = (e_1 : \float[B_1; V_1] < e_2 : \float[B_2; V_2])$
+    \begin{itemize}
+        \item The \textsc{Less} typing rule is shown in Figure~\ref{fig:typing-float}. By the inductive hypothesis, we assume $\discretize{\Gamma} \vdash \discretize{e_1 : \tau_1} : \discretize{\tau_1}$ and $\discretize{\Gamma} \vdash \discretize{e_2 : \tau_2} : \discretize{\tau_2}$, where $\tau_1$ and $\tau_2$ are $\float[B_1;V_1]$ and $\float[B_2;V_2]$, respectively. Since both discretized expressions are either floats or finite-typed values, the comparison remains well-typed under standard typing rules:
+        \[
+        \discretize{\Gamma} \vdash \discretize{e_1 : \float[B_1; V_1]} < \discretize{e_2 : \float[B_2; V_2]} : \discretize{\bool}.
+        \]
+    \end{itemize}
+
+    \textbf{Case 5:} $e = (\ifkw\; e_1 : \bool \; \thenkw\; e_2 : \tau \; \elsekw\; e_3 : \tau)$
+
+    \begin{itemize}
+        \item The \textsc{If} typing rule is shown in Figure~\ref{fig:typing-general}. By the inductive hypothesis, we assume $\discretize{\Gamma} \vdash \discretize{e_1 : \bool} : \discretize{\bool}$, $\discretize{\Gamma} \vdash \discretize{e_2 : \tau} : \discretize{\tau}$, and $ \discretize{\Gamma} \vdash \discretize{e_3 : \tau} : \discretize{\tau}$. Then, we can conclude:
+        \[
+            \discretize{\Gamma} \vdash \ifkw\; \discretize{e_1 : \bool} \; \thenkw\; \discretize{e_2 : \tau} \; \elsekw\; \discretize{e_3 : \tau} : \discretize{\tau}
+        \]
+    \end{itemize}
+
+    \textbf{Case 6:} $e = (\uniform(e_1, e_2) : \float[B;V])$
+
+    \begin{itemize}
+        \item If $B = \top$, then $\discretize{\float[B;V]} = \float$, and thus:
+        \[
+            \discretize{\uniform(e_1, e_2) : \float[B;V]} = \uniform(\discretize{e_1 : \tau_1}, \discretize{e_2 : \tau_2}) : \float
+        \]
+        and by the inductive hypothesis, both $e_1$ and $e_2$ with their respective types $\tau_1 = \float[B_1; V_1]$ and $\tau_2 = \float[B_2; V_2]$ are well-typed, so the result is well-typed under the float rule.
+
+        \item If $B \neq \top$ and $e_1, e_2 \in \mathbb{R}$, then $\discretize{\float[B;V]} = \fin{n+1}$, and thus:
+        \[
+            \discretize{\uniform(e_1, e_2) : \float[B;V]} = \discrete(p_0, \ldots, p_n) : \fin{n+1}
+        \]
+        and each $p_k = \text{CDF}(b_{k+1}) - \text{CDF}(b_k)$ satisfies $p_k \in [0,1]$ and $\sum p_k = 1$, so this is well-typed as a finite distribution.
+
+        \item If $B \neq \top$, and $e_1$ or $e_2$ is variable, then the algorithm generates conditionals to evaluate the possible values from $V_1$ and $V_2$ using fresh variables $v_1'$ and $v_2'$, and dispatches to an appropriate discretization of $\uniform$ with constant parameters in each branch. Each branch is well-typed by the inductive hypothesis, and the full expression is well-typed via the typing rules for conditionals and finite types.
+    \end{itemize}
+
+    % \textbf{Case 7:} Compound types (functions, pairs, lists, references)
+
+    % \begin{itemize}
+    %     \item These follow directly by applying $\discretize{\cdot}$ recursively on the subcomponents of the type and expression. By the inductive hypothesis on each subterm, the transformed expression is well-typed under the transformed type. For instance:
+    %     \begin{itemize}
+    %         \item If $\tau = A \to B$, then $\discretize{\tau} = \discretize{A} \to \discretize{B}$ and function abstraction preserves typing.
+    %         \item If $\tau = A \times B$, then $\discretize{e} = (\discretize{e_1}, \discretize{e_2})$ is typed under $\discretize{A} \times \discretize{B}$.
+    %         \item Likewise for lists $\listty{A}$ and references $\texttt{ref}(A)$.
+    %     \end{itemize}
+    % \end{itemize}
+
+    Hence, each case of the typing derivation is preserved under $\discretize{\cdot}$, which acts on expressions $e : \tau$, types $\tau$, and the context $\Gamma$. Therefore,
+    \[
+    \discretize{\Gamma} \vdash \discretize{e : \tau} : \discretize{\tau}.
+    \]
+
 \end{proof}
 
-For example, $\mathcal{D}$ applied to $\uniform(0,1)$ : \codetype{\ft{<0.5}} results in the discrete distribution $\discrete(0.5, 0.5)$. Hence, $\mathcal{D}$ maps the type of the finite-cut expression $\uniform(0,1)$ : \codetype{\ft{<0.5}} from $\float[B;V]$ to $\fin{2}$. $\mathcal{D}$ applied to $\uniform(0,1)$ : \codetype{\ftt} results in the original distribution $\uniform(0,1)$. Hence, $\mathcal{D}$ maps the type of the infinite-cut expression $\uniform(0,1)$ : \codetype{\ftt} from $\float[B;V]$ to $\float$.
+\begin{example}[Type transformation under discretization]
+Let us consider the simplest example (base case) of how the finite-cut expression $\uniform(0, 1)$ : \codetype{\ft{<0.25, <0.75}} is discretized and its type transformed. This expression represents a continuous uniform distribution over the interval $[0,1]$ that is refined with two comparison-based cuts at $\clt{0.25}$ and $\clt{0.75}$. The original type of the expression is:
+
+\[
+\tau = \text{\ft{<0.25, <0.75}}.
+\]
+
+Applying the discretization function $\discretize{e : \tau}$ to this expression yields:
+
+\[
+\discretize{\uniform(0,1) : \tau} = \discrete(0.25, 0.5, 0.25)
+\]
+
+where the probabilities in the discrete distribution are computed from the CDF of the uniform distribution over each of the three intervals induced by $B = \{\clt{0.25}, \clt{0.75}\}$. Now applying the type transformation function $\discretize{\tau}$ to this type yields:
+
+\[
+\discretize{\tau} = \fin{3}.
+\]
+
+Thus, before discretization, we have the typing judgment:
+\[
+\Gamma \vdash \uniform(0,1) : \text{\ft{<0.25, <0.75}}
+\]
+
+and after discretization:
+\[
+\discretize{\Gamma} \vdash \discrete(0.25,0.5,0.25) : \fin{3}
+\]
+
+demonstrating that the discretization procedure produces a well-typed expression under the transformed context and type, as stated in Lemma~\ref{lem:type-transformations}.
+\end{example}

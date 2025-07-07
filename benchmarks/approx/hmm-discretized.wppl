@@ -1,0 +1,100 @@
+// Continuous-Time hidden markov model
+// USAGE: $ webppl hmm-discretized.wppl -- --timeSteps <number> --samples <number>
+
+// Function to compute average score 
+var calculateAverageScore = function(output) {
+  var scores = map(function(sample) { return Math.exp(sample.score); }, output.samples);
+  var sum = reduce(function(total, score) { return total + score; }, 0, scores);
+  return sum / output.samples.length;
+};
+
+// Calculate Total Variation Distance
+var computeTVD = function(dist1, dist2) {
+  return 0.5 * sum(
+    map(function(x) {
+      var p = Math.exp(dist1.score(x));
+      var q = Math.exp(dist2.score(x));
+      return Math.abs(p - q);
+    }, dist1.support())
+  );
+};
+
+// Parameterized expected model
+var expectedModel = function(timeSteps) {
+  return function() {
+    var transition = function(s) {
+      return s ? flip(0.308538) : flip(0.000003398);
+    };
+
+    var observe = function(s) {
+      return s ? 0 : 1;
+    };
+
+    var hmm = function(n, total_steps) {
+      var prev = (n == 1) ? {states: [0], observations: []} : hmm(n - 1, total_steps);
+      if (n == total_steps) {
+        var finalState = transition(prev.states[prev.states.length - 1]);
+        var finalObs = finalState ? discrete([0.4, 0.3, 0.2, 0.1]) : discrete([0.1, 0.3, 0.2, 0.4]);
+        return {
+          states: prev.states.concat([finalState]),
+          observations: prev.observations.concat([finalObs])
+        };
+      } else {
+        var newState = transition(prev.states[prev.states.length - 1]);
+        var newObs = observe(newState);
+        return {
+          states: prev.states.concat([newState]),
+          observations: prev.observations.concat([newObs])
+        };
+      }
+    };
+
+    var r = hmm(timeSteps, timeSteps);
+    return r.observations;
+  };
+};
+
+// Parameterized actual model
+var model = function(timeSteps) {
+  return function() {
+    var transition = function(s) {
+      return s ? flip(0.308538) : flip(0.000003398);
+    };
+
+    var observe = function(s) {
+      return s ? 0 : 1;
+    };
+
+    var hmm = function(n, total_steps) {
+      var prev = (n == 1) ? {states: [0], observations: []} : hmm(n - 1, total_steps);
+      if (n == total_steps) {
+        var finalState = transition(prev.states[prev.states.length - 1]);
+        var finalObs = finalState ? discrete([0.4, 0.3, 0.2, 0.1]) : discrete([0.1, 0.3, 0.2, 0.4]);
+        return {
+          states: prev.states.concat([finalState]),
+          observations: prev.observations.concat([finalObs])
+        };
+      } else {
+        var newState = transition(prev.states[prev.states.length - 1]);
+        var newObs = observe(newState);
+        return {
+          states: prev.states.concat([newState]),
+          observations: prev.observations.concat([newObs])
+        };
+      }
+    };
+
+    var r = hmm(timeSteps, timeSteps);
+    return r.observations;
+  };
+};
+
+var timeSteps = argv.timeSteps || 5; 
+var samples = argv.samples || 100;
+
+// Example usage
+var expectedOutput = Infer({method: 'enumerate', model: expectedModel(timeSteps)});
+var smcOutput = Infer({method: 'MCMC', samples: samples, burn: 200, model: model(timeSteps)});
+
+var tvd = computeTVD(expectedOutput, smcOutput);
+tvd;

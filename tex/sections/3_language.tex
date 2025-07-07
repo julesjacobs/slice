@@ -226,39 +226,36 @@ The rule for two-argument continuous distributions is similar, but the argument 
 
 
 \paragraph{Comparisons.} 
-To understand the typing rules for less-than and less-than-or-equal comparisons, let us first consider a comparison $e < c$ where $c$ is a constant and $e$ is a continuously ranging quantity. Intuitively, if $e : \float[B_1; V_1]$ is discretized, then it must still contain enough information to determine whether $e < c$ is true or false. Therefore, $B_1$ must contain the comparison $<\!\!c$.
+To understand the typing rules for less-than and less-than-or-equal comparisons, let us first consider a comparison $e < c$ where $c$ is a constant and $e$ is a continuously ranging quantity, where $e : \float[B_1; \top]$ and $c : \float[B_2; \{c\}]$. Intuitively, if $e$ is discretized, then it must still contain enough information to determine whether $e < c$ is true or false. Therefore, $B_1$ must contain the comparison $<\!\!c$.
 
-Similarly, if $c$ is not a literal constant, but has type $c : \float[B_2; V_2]$ where $V_2$ is a finite set of constants, then $c$ can take on values in $V_2$. Therefore, if $V = \{v_1, v_2, \dots, v_n\}$ then $B_1$ must contain the comparisons $<\!\!v_1, <\!\!v_2, \dots, <\!\!v_n$. This motivates the following definition:
+Similarly, if $c$ is not a literal constant, but has type $c : \float[B_2; \{v_1, v_2, \dots, v_n\}]$ where $V_2$ is a finite set of constants, then $c$ can take on values in $V_2$. Therefore, $B_1$ must contain the comparisons $<\!\!v_1, <\!\!v_2, \dots, <\!\!v_n$. This motivates the following definition:
 
-\kevin{I adapted the following}
-\kevin{get rid of implicit $x\not\in\top$}
 \begin{definition}
 	\label{def:answers-less}
 	Let $B\in \cutsets$ and $V\in\valsets$.
 	We say that \emph{$B$ answers $\clt{V}$}, if
 	%
 	\[
-	B = \top \quad \text{or}\quad	\text{for all $x\in V$ we have $\clt{x}\in B$}
+	B = \top \text{ iff } V = \top \quad \text{or}\quad	\text{for all $x\in V$ we have $\clt{x}\in B$}
 	~.
 	\]
 	%
 	%Analogously, we say that \emph{$B$ answers $\cleq{V}$}, if the above holds with $<$ replaced by $\leq$.
 \end{definition}
 
-In the case that $B = \top$, the quantity is not discretized, so the comparison remains continuous.
+Note that $B = \top$ iff $V = \top$ accounts for comparisons where a continuously ranging expression is compared against arbitrary real values not statically known, such as other continuous distributions, so no finite set of cuts can suffice. In this case, the quantity cannot be discretized, and the comparison remains continuous. 
 
-Lastly, in order to be able to perform the comparison on the discrete values, we insist that $B_1 = B_2$, ensuring that $e$ and $c$ are discretized to the same representation, and $<$ can be discretized to $\finleq{k}$.
+Additionally, we insist that $B_1 = B_2$. This symmetry ensures that the comparison is always well-typed and meaningful, either as a comparison between two discretized values in the same finite domain, or as a comparison between two real-valued, undiscretized quantities. For example, it ensures that $e$ and $c$ are discretized to the same representation, and $<$ can be discretized to $\finleq{k}$. 
 
 It can also be the case that we have a comparison $c < e$ where the continuously ranging quantity $e : \float[B_2; V_2]$ is on the right hand side. In this case, $B_2$ must answer $c\!\!<$, that is, it must contain a comparison $\leq\!\!c$. To make this explicit, consider $2.3 < e$. We can answer this precisely when $B_2$ contains an intervals $(-\infty, 2.3]$ and $(2.3, +\infty)$: the comparison $2.3 < e$ is true if $e$ is in the second interval, and false if $e$ is in the first interval. Of course, it is also ok if $B_2$ is even more precise, as long as it contains the comparison $\leq\!\!2.3$.
 
-\kevin{I adapted the following}
 \begin{definition}
 	\label{def:answers-less-equal}
 	Let $B\in \cutsets$ and $V\in\valsets$.
 	We say that \emph{$B$ answers $\cleq{V}$}, if
 	%
 	\[
-	B = \top \quad \text{or}\quad	\text{for all $x\in V$ we have $\cleq{x}\in B$}
+	B = \top \text{ iff } V = \top \quad \text{or}\quad	\text{for all $x\in V$ we have $\cleq{x}\in B$}
 	~.
 	\]
 	%

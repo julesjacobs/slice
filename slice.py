@@ -465,10 +465,13 @@ class SliceCLI:
             if subprocess.run("which main.exe", shell=True, capture_output=True).returncode != 0:
                 # Not in PATH, use local build
                 slice_binary = "./slice/_build/default/bin/main.exe"
-            
-            slice_cmd = f"{slice_binary} '{file_abs}'"
+
             if args.print_all:
                 slice_cmd = f"{slice_binary} --print-all '{file_abs}'"
+                result = self.run_command(slice_cmd)
+                print(result.stdout)
+
+            slice_cmd = f"{slice_binary} '{file_abs}'"
             
             if args.to_sppl:
                 slice_cmd = f"{slice_binary} --to-sppl '{file_abs}'"
@@ -521,10 +524,13 @@ class SliceCLI:
                 # Not in PATH, use local build
                 slice_binary = "./slice/_build/default/bin/main.exe --backend roulette"
             
-            slice_cmd = f"{slice_binary} '{file_abs}'"
             if args.print_all:
                 slice_cmd = f"{slice_binary} --print-all '{file_abs}'"
+                result = self.run_command(slice_cmd)
+                print(result.stdout)
             
+            slice_cmd = f"{slice_binary} '{file_abs}'"
+
             if args.to_sppl:
                 slice_cmd = f"{slice_binary} --to-sppl '{file_abs}'"
                 result = self.run_command(slice_cmd)
@@ -535,7 +541,7 @@ class SliceCLI:
             slice_output = result.stdout
             slice_output = "#lang roulette/example/disrupt\n" + result.stdout
             
-            if args.no_dice:
+            if args.no_roulette:
                 print(slice_output)
                 return
             
@@ -820,6 +826,7 @@ class SliceCLI:
                 file=str(example_path),
                 output=None,
                 no_dice=False,
+                no_roulette=False,
                 print_all=False,
                 to_sppl=False,
                 dice_args=None
@@ -835,10 +842,15 @@ Examples:
   python3 slice.py run examples/tutorial/coin.slice             # Run with both backends
   python3 slice.py --dice run examples/tutorial/coin.slice      # Run with Dice backend only
   python3 slice.py --roulette run examples/tutorial/coin.slice  # Run with Roulette backend only
+  python3 slice.py run examples/tutorial/coin.slice             # Run with both Dice and Roulette
   python3 slice.py test                                         # Test installation
   python3 slice.py benchmark                                    # Run all benchmarks
   python3 slice.py examples --list                              # List examples
   python3 slice.py run file.slice --to-sppl                     # Convert to SPPL
+
+  python3 slice.py [--dice | --roulette] run file.slice                                                  # Prints output only
+  python3 slice.py [--dice | --roulette] run --print-all file.slice                                      # Prints type annotations and output
+  python3 slice.py [--dice | --roulette] run --print-all [--no-dice | --no-roulette] file.slice          # Prints type annotations only
         """
     )
     
@@ -857,6 +869,7 @@ Examples:
     run_parser.add_argument('file', help='Path to .slice file')
     run_parser.add_argument('--output', '-o', help='Save output to file')
     run_parser.add_argument('--no-dice', action='store_true', help='Only run slice, skip dice')
+    run_parser.add_argument('--no-roulette', action='store_true', help='Only run slice, skip roulette')
     run_parser.add_argument('--print-all', action='store_true', help='Print all intermediate steps')
     run_parser.add_argument('--to-sppl', action='store_true', help='Convert to SPPL instead of running')
     run_parser.add_argument('--dice-args', help='Additional arguments for dice')

@@ -46,26 +46,121 @@
 		$\letkw \; v_1' = \discretize{e_1 : \float[B_1; V_1]} \; \inkw $\\
 		&$\begin{array}{@{\!\!\!\!\!\!\!}ll}
 			&\letkw \; v_2' = \discretize{e_2 : \float[B_2; V_2]} \; \inkw \\
-			&\ifkw\; v_1' == 0\; \&\& \; v_2' == 0\; \thenkw \\
-			&\quad \discretize{\uniform(v_1, w_1)} \\
+			&\ifkw\; v_1' == 0\; \logand \; v_2' == 0\; \thenkw \\
+			&\quad \discretize{\uniform(v_1, w_1) : \float[B;V]} \\
 			&\vdots \\
-			&\elsekw\; \ifkw\; v_1' == i\; \&\& \; v_2' == j\; \thenkw \\
-			&\quad \discretize{\uniform(v_{i+1}, w_{j+1})} \\
+			&\elsekw\; \ifkw\; v_1' == i\; \logand \; v_2' == j\; \thenkw \\
+			&\quad \discretize{\uniform(v_{i+1}, w_{j+1}) : \float[B;V]} \\
 			&\vdots \\
 			&\elsekw \\
-			&\quad \discretize{\uniform(v_n, w_m)}
+			&\quad \discretize{\uniform(v_n, w_m) : \float[B;V]}
 		\end{array}
 		$
 	\end{tabular}
-	\caption{Discretization function for \textsc{Slice}. If $e_1$ and $e_2$ are variables in \texttt{discretize($\uniform(e_1, e_2)$)}, the let bindings for v1' and v2' are in fact unnecessary; the nested \texttt{if} statements can directly use $e_1$ and $e_2$ in their guards.}
+	\caption{Discretization function for \textsc{Slice}, where $\text{CDF}(b_{0}) = 0$ and $\text{CDF}(b_{n+1}) = 1$. For the $\uniform$ distribution case, we explicitly handle $B = \top$, which implies $V = \top$ and vice versa, as per Theorem~\ref{thm:distinguishes-top}. As such, there is no need to separately consider the case where $V = \top$. For all other language constructs, $\discretize{\cdot}$ straightforwardly recurses on their structure.}
 	\label{fig:discretization-code}
 \end{figure}
 %
 In this section, we describe our type-directed discretization algorithm alongside illustrative examples. The setting is the following: Given a typed expression $e : \tau$ compute --- guided by the type annotations --- a (partially) \emph{discretized} expression $\discretize{e : \tau}$ such that $e$ and $\discretize{e : \tau}$ are \emph{semantically equivalent}, i.e., they produce the same distribution.
 
-$\discretize{e : \tau}$ is defined recursively on $e : \tau$ as shown in \Cref{fig:discretization-code}, where we focus on continuous uniform distributions. For other distributions, this procedure is completely analogous. Before we go into the details, let us get some intuition on how we use the type annotation to discretize expressions. The type system is designed in such a way that 
+$\discretize{e : \tau}$ is defined recursively on $e : \tau$ as shown in \Cref{fig:discretization-code}, where we focus on continuous uniform distributions. For other distributions, this procedure is completely analogous. Naturally, the only sub-expressions which are actually replaced by $\discretize{\cdot}$ are float constants and uniform samplings. Before we go into the details, let us get some intuition on how we use the type annotation to discretize expressions. The type system is designed in such a way that every typed sub-expression of the form 
+$e = \uniform(e_1, e_2 ): \float[B;V]$ with $B=\{\sim_1\!\!b_1, \ldots, \sim_n\!\!b_n\} \neq \top$ 
 %
-\begin{center}
-	Every typed sub-expression of the form ${\uniform(e_1, e_2 ): \float[B;V]}$ with $B=\{as\}$
-\end{center}
+can be \emph{discretized} to an expression $e' : \fin{n+1}$ such that 
+%
+the probability that $e$ evaluates to a value in $\intervals{B}_i$ \emph{coincides} with the probability that $e'$ evaluates to $\finconst{k}{i}$. Moreover, this information is \emph{all we need} to ensure semantic equivalence of the continuous and the (partially) discretized expression. In particular, if \emph{all} $\float[B;V]$-typed subexpressions are finite-cut, then the given expression can be \emph{fully discretized}.  Let us start with simple examples before considering more intricate ones.
+%
 
+\begin{example}
+	\label{ex:discretize_simple}
+The simplest setting is a uniform distribution whose outcomes are compared to constants. Consider the following typed expression $e: \bool$, where we omit irrelevant types:
+	%
+%
+%
+\begin{align*}
+	&\letkw\; x = (\uniform(0, 1) : \text{\ftn{$B$}})\; \inkw\; \\
+	&(x : \text{\ftn{$B$}} < 0.3 : \text{\ftbn{$B$}{$\{0.3\}$}}) \logor (x : \text{\ftn{$B$}} \geq 0.5 : \text{\ftbn{$B$}{$\{0.3\}$}})
+\end{align*}
+%
+where $B= \{ \clt{0.3},\clt{0.5} \}$. Now, why and how can we discretized this program using the type information? The cut set $B$ correctly informs us that the probability of the comparisons evaluating to $\true$ is completely determined by the probability of $x$ evaluating to one of the intervals 
+%
+\[
+	\intervals{B}_0 = (-\infty, 0.3) 
+	\qquad 
+	\intervals{B}_1 =[0.3, 0.5) 
+	\qquad 
+	\intervals{B}_2 =[0.5, \infty)
+\]
+%
+induced by $B$. Hence, all expressions of type $\text{\ftbn{$B$}{$\ldots$}}$ can be discretized to expressions of the finite type $\fin{3}$, where $\finconst{k}{3}$ represents the $k$-th interval $\intervals{B}_k$ induced by $B$ for $k \in \{0,1,2\}$. 
+
+Now consider the discretized expression obtained from computing $\discretize{e: \bool}$ given by 
+%
+\[
+	\letkw\; x = \discrete(0.3, 0.2, 0.5)\; \inkw\; 
+	(x \finlt{3} \finconst{1}{3})  \logor x  \fingeq{3} \finconst{2}{3})~.
+\]
+%
+The probabilities appearing in $\discrete(\ldots)$ are determined by the cumulative distribution function (CDF) of the uniform distribution over $(0,1)$, indeed ensuring that the probability of $x$ evaluating to $\finconst{k}{3}$ in $\discretize{e: \bool}$ \emph{coincides} with the probability of $x$ evaluating to a value in $\intervals{B}_k$ in $e$. Hence, the constant $0.3$ in $e$ can be replaced by the constant $\finconst{1}{3}$ in $\discretize{e: \bool}$, and similarly for $0.5$, and it is evident that $e$ and $\discretize{e: \bool}$ are semantically equivalent. 
+\end{example}
+%
+Crucially, the \emph{answers} constraint in the premise of the typing rules for comparisons (cf.\ \Cref{fig:typing-float}) ensures that $B$ is a correct and sufficiently fine-grained partitioning of $\Reals$, i.e., there is an injective function
+%
+$
+	\text{ToInts} \colon \{0.3, 0.5\} \to \intervals{B}
+$
+%
+such that $c$ is an (open) endpoint of  $\text{ToInts}(c)$ for all $c \in\{0.3,0.5\}$. Let us now consider the next example.
+%
+\kevin{fonts}
+\begin{example}
+	If the arguments to a uniform sampling are non-constant, the situation becomes more challenging. Consider the following typed expression $e : \bool$ (again only showing relevant types):
+	%
+	\begin{align*}
+		&\letkw\; x =  \ifkw \; 
+		(\uniform(0, 1) : \text{\ftn{$\{\clt{0.5}\}$}} )
+		< 0.5 \; \\
+		%
+		&\phantom{\letkw\; x ={} } \thenkw \; (10 : \text{\ftbn{$\{\cleq{10},\cleq{20}\}$}{$\{10,20\}$}}) \; \elsekw \; (20 : \text{\ftbn{$\{\cleq{10},\cleq{20}\}$}{$\{10,20\}$}}) \; \inkw\; \\
+		%
+		&(\uniform(0,(x :  \text{\ftbn{$\{\cleq{10},\cleq{20}\}$}{$\{10,20\}$}})) : \text{\ftn{$\{\clt{5}\}$}} ) < 5~.
+	\end{align*}
+	%
+	Why can this expression be discretized even though the argument to the second uniform sampling instruction is non-constant? The typing information $(x :  \text{\ftbn{$\{\cleq{10},\cleq{20}\}$}{$\{10,20\}$}})$ correctly informs us about the fact that \emph{$x$ can only take the values $10$ and $20$}. Consequentely, $x$ (and the $\ifkw$-expression generating it) can be discretized to a finite type $\fin{3}$ such that the probability of the resulting discrete expression evaluating to $\finconst{0}{3}$ (resp.\ $\finconst{1}{3}$) \emph{coincides} with the probability of the continuous expression evaluating to $10$ (resp.\ $20$). Let us (partially) apply $\discretize{e: \bool}$, resulting in:
+	%
+	\begin{align*}
+			&\letkw \; x = \ifkw\; \discrete(0.5,0.5) < 1\; \thenkw \; \finconst{0}{3}\; \elsekw\;\finconst{1}{3} \; \inkw \\
+			%
+			 &\qquad \big(\letkw \; v_1' = 0\; \inkw  \; \letkw \; v_2' = x\; \inkw \\
+			 %
+			 &\qquad \phantom{\big(} \ifkw\; v_1' == 0\; \logand \; v_2' == 0\; \thenkw \; \discretize{\uniform(0,10) : \text{\ftn{$\{\clt{5}\}$}}} \\
+			 %
+			 &\qquad \phantom{\big(} \elsekw \; \discretize{\uniform(0,20) : \text{\ftn{$\{\clt{5}\}$}}} \big) %\\
+			 %
+			 %&
+			 \finlt{2}% \\
+			 %
+			  %&\qquad
+			  \discretize{ 5 : \text{\ftn{$\{\clt{5}\}$}} }
+			 %
+	\end{align*}
+	%
+	The continuous $\uniform(0,x)$-expression is replaced by a case distinction on the discretizations of $\uniform(0,10)$ and $\uniform(0,20)$, where each of these cases is indeed executed with the correct probability $0.5$. Since this reduces the remaining discretization process to discretizing expressions with \emph{constant parameters only}, the remaining steps are completely analogous to \Cref{ex:discretize_simple}.
+\end{example}
+%
+Crucially, the \emph{distinguishes} constraints in the \textsc{Continuous}-rules from \Cref{fig:typing-float} ensure that, for finite-cut sampling expressions, it will always be the case that the parameter expressions can take only finitely many values, and that the cut sets are fine-grained enough to recover the values the parameter expressions evaluate to as demonstrated in the preceding example.
+
+The same intuition applies to discretizable comparisons $e_1 < e_2$, where \emph{both} expressions are non-constant but finite-cut. The \emph{answers} constraints in the rule \textsc{Less} (resp.\ \textsc{Less-Equal}) ensures that at least one of $e_1$ and $e_2$ evaluates to finitely many values only, so that discretization reduces to the case where at least one of the expressions is constant. We illustrative arising subleties with a final example.\kevin{not correct, polish}
+%
+\begin{example}
+	Consider the following typed expression ($(e_1 < e_2) : \bool$) given by
+	%
+	\begin{align*}
+		&\qquad \\
+		&\leq \\
+		&\qquad() \\
+	\end{align*}
+\end{example}
+
+
+\kevin{incporporate discretization of types and theorem}
