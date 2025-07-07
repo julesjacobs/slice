@@ -1,0 +1,26 @@
+sample fn trans (s) {
+  if s < 0.5 then ~uniform(0.0, 2.0) else ~uniform(0.0, 4.0)
+}
+
+sample fn obs (s) {
+  if s < 0.5 then ~uniform(0.0, 6.0) else ~uniform(0.0, 8.0)
+}
+
+sample fn hmm (n : Int) {
+    ix <- 0;
+    states <- [0];
+    observations <- [];
+    while ix < n {
+        newState <- trans(states[ix]);
+        newObs <- obs(newState);
+        states <- push(states, newState);
+        observations <- push(observations, newObs);
+        ix <- ix + 1;
+        true
+    };
+    observations
+}
+
+sample {
+    hmm(10)
+}

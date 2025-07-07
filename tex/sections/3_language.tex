@@ -209,17 +209,9 @@ We now obtain the following theorems:
 	If $B$ distinguishes $V$, then $V = \{c\}$ if and only if $B = \emptyset$.
 \end{theorem}
 
-\begin{proof}
-	Follows directly from Definition~\ref{def:distinguishes}. Since $V$ is a singleton set, and there can be no two elements that lie in the same interval, it must be the case that $\intervals{B} = \{(-\infty, +\infty)\}$, which means that $B = \emptyset$.
-\end{proof}
-
 \begin{theorem}\label{thm:distinguishes-top}
 	If $B$ distinguishes $V$, then $V = \top$ if and only if $B = \top$.
 \end{theorem}
-
-\begin{proof}
-	Suppose by contradiction that $B \neq \top$ but $B$ distinguishes $V = \top$. Since $B \neq \top$, the set $\intervals{B}$ partitions $\mathbb{R}$ into finitely many intervals. However, since $V = \top$ represents the set of all real numbers, and there are uncountably many real values, it is impossible for every interval in $\intervals{B}$ to contain at most one element from $V$. In particular, at least one interval must contain more than one value from $V$, violating the condition in Definition~\ref{def:distinguishes}. Therefore, $B = \top$.
-\end{proof}
 
 The rule for two-argument continuous distributions is similar, but the argument $\Gamma \vdash e_1 : \float[B_1; V_1]$ and $\Gamma \vdash e_2 : \float[B_2; V_2]$ with the constraint that $B_1$ and $B_2$ distinguish $V_1$ and $V_2$ respectively. The same typing rule for the uniform distribution is used for all other two-argument continuous distributions.
 
@@ -263,9 +255,9 @@ It can also be the case that we have a comparison $c < e$ where the continuously
 
 For less-than-or-equal comparisons, the typing rule is similar, but with the conditions reversed.
 
-\input{figures/typing-general}
+\input{figures/typing-general-core}
 
-The typing rules for the other constructs are standard, and are shown in Figure~\ref{fig:typing-general}.
+The typing rules for the other constructs are standard, and are shown in Appendix~\ref{appen:typing-rules}.
 
 \paragraph{Subtyping.}
 The type system includes a subtyping relation that captures when one type can be safely used in place of another. The subtyping rules are shown in Figure~\ref{fig:subtyping}. For float types $\float[B;V]$, subtyping follows the lattice ordering on $V$: an expression known to range over some set of values can also be considered to range over a superset of those values. For $B$ we require equality to make sure that the discretized representation of the expression cannot be changed by subtyping.
