@@ -64,11 +64,12 @@
 In this section, we describe our type-directed discretization algorithm alongside illustrative examples. The setting is the following: Given a typed expression $e : \tau$ compute --- guided by the type annotations --- a (partially) \emph{discretized} expression $\discretize{e : \tau}$ such that $e$ and $\discretize{e : \tau}$ are \emph{semantically equivalent}, i.e., they produce the same distribution.
 
 $\discretize{e : \tau}$ is defined recursively on $e : \tau$ as shown in \Cref{fig:discretization-code}, where we focus on continuous uniform distributions. For other distributions, this procedure is completely analogous. Naturally, the only sub-expressions which are actually replaced by $\discretize{\cdot}$ are float constants and uniform samplings. Before we go into the details, let us get some intuition on how we use the type annotation to discretize expressions. The type system is designed in such a way that every typed sub-expression of the form 
-$e = \uniform(e_1, e_2 ): \float[B;V]$ with $B=\{\sim_1\!\!b_1, \ldots, \sim_n\!\!b_n\} \neq \top$ 
+$e = \uniform(e_1, e_2 )$ of type  $\float[B;V]$ with $B=\{\sim_1\!\!b_1, \ldots, \sim_n\!\!b_n\} \neq \top$ 
 %
 can be \emph{discretized} to an expression $e' : \fin{n+1}$ such that 
 %
-the probability that $e$ evaluates to a value in $\intervals{B}_i$ \emph{coincides} with the probability that $e'$ evaluates to $\finconst{k}{i}$. Moreover, this information is \emph{all we need} to ensure semantic equivalence of the continuous and the (partially) discretized expression. In particular, if \emph{all} $\float[B;V]$-typed subexpressions are finite-cut, then the given expression can be \emph{fully discretized}.  Let us start with simple examples before considering more intricate ones.
+the probability that $e$ evaluates to a value in $\intervals{B}_i$ \emph{coincides} with the probability that $e'$ evaluates to $\finconst{k}{i}$. %Moreover, this information is \emph{all we need} to ensure semantic equivalence of the continuous and the (partially) discretized expression. 
+In particular, if \emph{all} $\float[B;V]$-typed subexpressions are finite-cut, then the given expression can be \emph{fully discretized}.  Let us start with simple examples before considering more intricate ones.
 %
 
 \begin{example}
@@ -153,14 +154,61 @@ Crucially, the \emph{distinguishes} constraints in the \textsc{Continuous}-rules
 The same intuition applies to discretizable comparisons $e_1 < e_2$, where \emph{both} expressions are non-constant but finite-cut. The \emph{answers} constraints in the rule \textsc{Less} (resp.\ \textsc{Less-Equal}) ensures that at least one of $e_1$ and $e_2$ evaluates to finitely many values only, so that discretization reduces to the case where at least one of the expressions is constant. We illustrative arising subleties with a final example.\kevin{not correct, polish}
 %
 \begin{example}
-	Consider the following typed expression ($(e_1 < e_2) : \bool$) given by
+	Consider the following typed expression ($(e_1 \leq e_2) : \bool$) given by
 	%
 	\begin{align*}
-		&\qquad \\
+		&(\ifkw\;\discrete(0.5,0.5) \finlt{2} \finconst{1}{2} \; \thenkw \; 
+		(\uniform(0,10) : \text{\ftn{$B$}})
+		\; \elsekw \; (2.5 : \text{\ftbn{$B$}{$2.5$}})) \\
 		&\leq \\
-		&\qquad() \\
+		&(\ifkw\;\discrete(0.5,0.5) \finlt{2} \finconst{1}{2} \; \thenkw \; 
+		(2.5 : \text{\ftbn{$B$}{$2.5$}})
+		 \; \elsekw \; 
+		 (3.5 : \text{\ftbn{$B$}{$3.5$}})~,
 	\end{align*}
+	%
+	where $B = \{\cleq{2.5}, \cleq{3.5}\}$, and where $e_1 : \text{\ftn{$B$}}$ and $e_2 : \text{\ftbn{$B$}{$2.5,3.5$}}$. Intuitively, $e_1$ samples from a mixture of a uniform and a dirac distribution, whereas $e_2$ samples from a finite distribution. Why can can $e_1 \leq e_2$ be discretized even though neither $e_1$ nor $e_2$ is a constant? The reason is that, as suggested by it's type, $e_2$ can only take finitely many values in $\{2.5,3.5\}$. Let us apply $\discretize{.}$ and see what happens:
+	%
+	%
+	\begin{align*}
+		&(\ifkw \; \discrete(0.5,0.5) \finlt{2} \finconst{1}{2} \; \thenkw \; \discrete(0.25,0.1,0.65) \; \elsekw \; \finconst{0}{3})\\
+		%
+		&\leq \\
+		%
+		& (\ifkw \; \discrete(0.5,0.5) \finlt{2} \finconst{1}{2} \; \thenkw \;  \finconst{0}{3} \; \elsekw \; \finconst{1}{3})
+	\end{align*}
+	%
+	Notice that the probability of $e_1$ evaluating to some value in $(-\infty, 2.5]$ indeed \emph{coincides} with the probability of $e_1's$ discretization evaluating to $\finconst{0}{3}$. For $e_2$, on the other hand, the probability of it evaluating to $2.5$ (resp.\ $3.5$) \emph{coincides} with the probability of its discretization evaluating to $\finconst{0}{3}$ (resp.\ $\finconst{1}{3}$). It is for this reason that we indeed produce a semantically equivalent discretization of $e_1 \leq e_2$.
 \end{example}
 
 
-\kevin{incporporate discretization of types and theorem}
+
+
+\subsection{Type stuff}
+%
+\begin{figure}[t]
+	\centering
+	\begin{align*}
+		\discretize{\tau} &= 
+		\begin{cases}
+			\fin{n+1}, & \text{if } \tau = \float[B; V] \text{ and } B = \{\sim_1\!\!b_1, \ldots, \sim_n\!\!b_n\} \\[0.5em]
+			\float, & \text{if } \tau = \float[B; V] \text{ and } B = \top \\[0.5em]
+			\discretize{A} \to \discretize{B}, & \text{if } \tau = A \to B \\[0.5em]
+			\discretize{A} \times \discretize{B}, & \text{if } \tau = A \times B \\[0.5em]
+			\listty{\discretize{A}}, & \text{if } \tau = \listty{A} \\[0.5em]
+			\texttt{ref}(\discretize{A}), & \text{if } \tau = \texttt{ref}(A) \\[0.5em]
+			\tau, & \text{otherwise}
+		\end{cases}
+	\end{align*}
+	\caption{Transformation of types under $\mathcal{D}$, where $\mathcal{D}$ acts on types.}
+	\label{fig:discretization-types}
+\end{figure}
+%
+%
+\begin{lemma}[Type Transformation under Discretization]\label{lem:type-transformations}
+	Let $\Gamma \vdash e : \tau$ be a well-typed expression in \Slice{}, where $\Gamma$ is a typing environment assigning types to variables. Let $\discretize{e : \tau}$ be the discretization function as defined in Figure~\ref{fig:discretization-code}, and $\discretize{\tau}$ be the type transformation function as defined in Figure~\ref{fig:discretization-types}. Then,
+	\[
+	\discretize{\Gamma} \vdash \discretize{e : \tau} : \discretize{\tau}
+	\]
+	where $\discretize{\Gamma}$ is the pointwise transformation of types in $\Gamma$, namely $\discretize{\Gamma}(x) = \discretize{\Gamma(x)}$ for all $x \in \text{dom}(\Gamma)$.
+\end{lemma}
