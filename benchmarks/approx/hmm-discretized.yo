@@ -1,0 +1,26 @@
+exact fn trans(s : Bool) -> Bool {
+  if s then flip(0.7) else flip(0.3)
+}
+
+exact fn obs(s : Bool) -> Bool {
+  if s then flip(0.9) else flip(0.1)
+}
+
+sample fn hmm (n : Int) {
+    ix <- 0;
+    states <- [true];
+    observations <- [];
+    while ix < n {
+        newState <- exact(trans(states[ix]));
+        newObs <- exact(obs(newState));
+        states <- push(states, newState);
+        observations <- push(observations, newObs);
+        ix <- ix + 1;
+        true
+    };
+    observations
+}
+
+sample {
+    hmm(4)
+}
