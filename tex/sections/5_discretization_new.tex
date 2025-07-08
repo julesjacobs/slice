@@ -184,8 +184,8 @@ The same intuition applies to discretizable comparisons $e_1 < e_2$, where \emph
 
 
 
-\subsection{Type stuff}
-\kevin{TODO: rename!!}
+\subsection{Discretization of Types}
+We conclude this section by extending the discretization function $\discretize{\cdot}$ formally to types. \Cref{fig:discretization-types} shows to that type $\discretize{\tau}$ a type $\tau$ is discretzied. We then obtain the following natural result regarding the transformation of types when applying $\discretize{\cdot}$ to programs:
 %
 \begin{figure}[t]
 	\centering
@@ -207,9 +207,11 @@ The same intuition applies to discretizable comparisons $e_1 < e_2$, where \emph
 %
 %
 \begin{lemma}[Type Transformation under Discretization]\label{lem:type-transformations}
-	Let $\Gamma \vdash e : \tau$ be a well-typed expression in \Slice{}, where $\Gamma$ is a typing environment assigning types to variables. Let $\discretize{e : \tau}$ be the discretization function as defined in Figure~\ref{fig:discretization-code}, and $\discretize{\tau}$ be the type transformation function as defined in Figure~\ref{fig:discretization-types}. Then,
+	Let $\Gamma \vdash e : \tau$ be a well-typed expression in \Slice{}, where $\Gamma$ is a typing environment assigning types to variables. Let $\discretize{e : \tau}$ be the discretization function from Figure~\ref{fig:discretization-code}, and $\discretize{\tau}$ be the type transformation function as defined in Figure~\ref{fig:discretization-types}. Then,
 	\[
 	\discretize{\Gamma} \vdash \discretize{e : \tau} : \discretize{\tau}
 	\]
-	where $\discretize{\Gamma}$ is the pointwise transformation of types in $\Gamma$, namely $\discretize{\Gamma}(x) = \discretize{\Gamma(x)}$ for all $x \in \text{dom}(\Gamma)$.
+	where $\discretize{\Gamma}$ transforms all types in $\Gamma$, i.e., $\discretize{\Gamma}(x) = \discretize{\Gamma(x)}$ for all $x \in \textnormal{dom}(\Gamma)$.
 \end{lemma}
+%
+\kevin{katherine: plese add ref to proof}
