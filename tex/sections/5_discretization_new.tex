@@ -59,7 +59,7 @@
 		\end{array}
 		$
 	\end{tabular}
-	\caption{Discretization function for \textsc{Slice}, where $\text{CDF}(b_{0}) = 0$ and $\text{CDF}(b_{n+1}) = 1$. For the $\uniform$ distribution case, we explicitly handle $B = \top$, which implies $V = \top$ and vice versa, as per Theorem~\ref{thm:distinguishes-top}. As such, there is no need to separately consider the case where $V = \top$. For all other language constructs, $\discretize{\cdot}$ straightforwardly recurses on their structure.}
+	\caption{Discretization function for \textsc{Slice}, where $\text{CDF}(b_{0}) = 0$ and $\text{CDF}(b_{n+1}) = 1$. For the $\uniform$ distribution case, we explicitly handle $B = \top$, which implies $V = \top$ and vice versa (cf.\ Theorem~\ref{thm:distinguishes-top}), i.e., there is no need to separately consider the case where $V = \top$. For all other language constructs, $\discretize{\cdot}$ straightforwardly recurses on their structure.}
 	\label{fig:discretization-code}
 \end{figure}
 %

@@ -144,6 +144,16 @@ $\fin{n}$ is the finite type with values $\{\finconst{0}{n}, \finconst{1}{n}, \l
 The type $\float[B; V]$ deserves special attention. First, it indicates that a given expression evaluates to a real number. The cut set $B$ and the value set $V$ carry additional information crucial for discretization. Intuitively, the cut set $B$ is an overapproximation of the values the expression of type $\float[B; V]$ will be compared to during program execution (where $\cleq{x}$ indicates a non-strict and $\clt{x}$ indicates a strict comparison), and $V$ is an overapproximation of the values the expression can take. If $B = \top$, then the expression is compared to a continuous value (an infinite number of values), such as a continuous distribution. If $B = \emptyset$, then the expression is never compared to a concrete value during program execution. If $V=\top$, then the expression can take on any value in $\R$.
 
 We note that in the last two partial discretization examples from Section~\ref{sec:examples}, the returned expressions have a cut set of $B = \top$. This reflects a key design decision in \Slice{}: when a program cannot be fully discretized, we conservatively preserve the full real-valued behavior of any expression that contributes directly to observable output. In such cases, $B = \top$ also serves as a marker that an expression may be subject to external comparisons at runtime, including comparisons against arbitrary real values not syntactically present in the program.
+
+Finally, we introduce the following notions:
+%
+\begin{definition} [Finite-Cut Expressions]\label{def:finite-cut}
+	An expression $e : \float[B;V]$ is \textit{finite-cut} if $B \neq \top$.
+\end{definition}
+
+\begin{definition} [Infinite-Cut Expressions]\label{def:infinite-cut}
+	An expression $e : \float[B;V]$ is \textit{infinite-cut} if $B = \top$.
+\end{definition}
 % Additionally, we define $\fin{n}$ as a finite type with values $\{\finconst{0}{n}, \finconst{1}{n}, \ldots, \finconst{(n-1)}{n}\}$, where $i_{\# n}$ is an integer type. We define $\float[B; V]$ as a float type with a cut set $B$ and value set $V$ for discretization. Note that $i$ is different from $i_{\# n}$: the former is a float type while the latter is an integer type. This distinction is important since BDD-based exact discrete inference engines require all variables to range over finite domains.
 
 %We introduce a type system that analyzes both the cuts and concrete values of floating point expressions. We have the following types:
