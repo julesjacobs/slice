@@ -251,12 +251,14 @@ Similarly, if $c$ is not a literal constant, but has type $c : \float[B_2; V_2]$
 	%Analogously, we say that \emph{$B$ answers $\cleq{V}$}, if the above holds with $<$ replaced by $\leq$.
 \end{definition}
 
-Note that $B = \top$ iff $V = \top$ accounts for comparisons where a continuously ranging expression is compared against arbitrary real values not statically known, such as other continuous distributions, so no finite set of cuts can suffice, in which case no discretization can be performed.
+Note that $B = \top$ iff $V = \top$ accounts for comparisons where a continuously ranging expression is compared against arbitrary real values not statically known, such as other continuous distributions, in which case no discretization can be performed.
+Additionally, we insist that $B_1 = B_2$, which ensures that both comparants will be discretized (if at all) to the same type, or not discretized at all.
 
-Additionally, we insist that $B_1 = B_2$. This symmetry ensures that the comparison is always well-typed and meaningful, either as a comparison between two discretized values in the same finite domain, or as a comparison between two real-valued, undiscretized quantities. For example, it ensures that $e$ and $c$ are discretized to the same representation, and $<$ can be discretized to $\finleq{k}$. 
+%This symmetry ensures that the comparison is always well-typed and meaningful, either as a comparison between two discretized values in the same finite domain, or as a comparison between two real-valued, undiscretized quantities. For example, it ensures that $e$ and $c$ are discretized to the same representation, and $<$ can be discretized to $\finleq{k}$. 
 
-It can also be the case that we have a comparison $c < e$ where the continuously ranging quantity $e : \float[B_2; V_2]$ is on the right hand side. In this case, $B_2$ must answer $c\!\!<$, that is, it must contain a comparison $\leq\!\!c$. To make this explicit, consider $2.3 < e$. We can answer this precisely when $B_2$ contains an intervals $(-\infty, 2.3]$ and $(2.3, +\infty)$: the comparison $2.3 < e$ is true if $e$ is in the second interval, and false if $e$ is in the first interval. Of course, it is also ok if $B_2$ is even more precise, as long as it contains the comparison $\leq\!\!2.3$.
+It can also be the case that we have a comparison $c < e$ where the continuously ranging quantity $e : \float[B_2; V_2]$ is on the right hand side. In this case, $B_2$ must answer $c\!\!<$, that is, it must contain a comparison $\leq\!\!c$. To make this explicit, consider $2.3 < e$. We can answer this precisely when $B_2$ contains an intervals $(-\infty, 2.3]$ and $(2.3, +\infty)$: the comparison $2.3 < e$ is true if $e$ is in the second interval, and false if $e$ is in the first interval. $B_2$ may, of course, be even more fine-grained.
 
+Finally, For non-strict comparisons, the typing rule is analogous:
 \begin{definition}
 	\label{def:answers-less-equal}
 	Let $B\in \cutsets$ and $V\in\valsets$.
@@ -269,14 +271,13 @@ It can also be the case that we have a comparison $c < e$ where the continuously
 	%
 \end{definition}
 
-For less-than-or-equal comparisons, the typing rule is similar, but with the conditions reversed.
+
 
 \input{figures/typing-general-core}
 
 The typing rules for the other constructs are standard, and are shown in Appendix~\ref{appen:typing-rules}.
 
-\kevin{also breifly explain Fig 4}
-
+\kevin{say sth on Fig 4}
 \paragraph{Subtyping.}
 The type system includes a subtyping relation that captures when one type can be safely used in place of another. The subtyping rules are shown in Figure~\ref{fig:subtyping}. For float types $\float[B;V]$, subtyping follows the lattice ordering on $V$: an expression known to range over some set of values can also be considered to range over a superset of those values. For $B$ we require equality to make sure that the discretized representation of the expression cannot be changed by subtyping.
 
