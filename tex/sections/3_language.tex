@@ -26,10 +26,12 @@ We formalize the types that \Slice{} supports. As a first step, we introduce ind
 	%
 	where:
 	%
-	\begin{itemize}
-		\item $\latticedom = \{ S \subseteq D ~\mid~ \text{$S$ finite}\} \cup \{\top\} $,
+	%\begin{itemize}
+		%\item 
+		$\latticedom = \{ S \subseteq D ~\mid~ \text{$S$ finite}\} \cup \{\top\}$,
 		%
-		\item $\sqsubseteq$ is the partial order on $\latticedom$ defined as 
+		%\item 
+		$\sqsubseteq$ is the partial order on $\latticedom$ defined as 
 		%
 		\[
 			\latticeelem \latticeleq \latticeelem'
@@ -41,7 +43,8 @@ We formalize the types that \Slice{} supports. As a first step, we introduce ind
 			\end{cases}
 		\]
 		%
-		\item $\latticesup \colon \latticedom \times \latticedom \to \latticedom$ is the join (least upper bound) operator w.r.t.\ $\latticeleq$, i.e.,%
+		%\item 
+		$\latticesup \colon \latticedom \times \latticedom \to \latticedom$ is the join (least upper bound) operator w.r.t.\ $\latticeleq$, i.e.,%
 		%
 		\[
 			\latticeelem \latticesup \latticeelem' 
@@ -52,28 +55,28 @@ We formalize the types that \Slice{} supports. As a first step, we introduce ind
 				\top & \text{otherwise}~.
 			\end{cases}
 		\]
-	\end{itemize}
+	%\end{itemize}
 	%
-	Notice that $\emptyset$ is the bottom element of $\lattice{D}$.
 \end{definition}
 %
-With this notion at hand, we define the following central objects:
+Notice that $\emptyset$ is the bottom element of $\lattice{D}$.
+We now introduce the following central objects:
 %
 \begin{definition}[Join-Semilattices of Cut- and Value Sets]
 	\phantom{a}
 	\begin{enumerate}
 		\item The \emph{join-semilattice of cut sets} is
 		%
-		\[
-			\cutsets = \lattice{\{ <\!\!x ~|~ x \in \R \}	\cup \{ \leq\!\!x ~|~ x \in \R \}}~.
-		\]
+		$
+			\cutsets = \lattice{\{ <\!\!x ~|~ x \in \R \}	\cup \{ \leq\!\!x ~|~ x \in \R \}}.
+		$
 		%
 		%
 		\item The \emph{join-semilattice of value sets} is 
 		%
-		\[
-			\valsets = \lattice{\R}~.
-		\]
+		$
+			\valsets = \lattice{\R}.
+		$
 	\end{enumerate}
 \end{definition}
 %
