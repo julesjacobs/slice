@@ -66,16 +66,12 @@
 In this section, we describe our type-directed discretization algorithm alongside illustrative examples. The setting is the following: Given a typed expression $e : \tau$ compute --- guided by the type annotations --- a (partially) \emph{discretized} expression $\discretize{e : \tau}$ such that $e$ and $\discretize{e : \tau}$ are \emph{semantically equivalent}, i.e., they produce the same distribution.
 
 $\discretize{e : \tau}$ is defined recursively on $e : \tau$ as shown in \Cref{fig:discretization-code}, where we focus on continuous uniform distributions. For other distributions, this procedure is completely analogous. Naturally, the only sub-expressions which are actually replaced by $\discretize{\cdot}$ are float constants and uniform samplings. Before we go into the details, let us get some intuition on how we use the type annotation to discretize expressions. The type system is designed in such a way that every typed sub-expression of the form 
-$e : \float[B;V]$ with $B=\{\sim_1\!\!b_1, \ldots, \sim_n\!\!b_n\} \neq \top$ 
+$e = \uniform(e_1, e_2 )$ of type  $\float[B;V]$ with $B=\{\sim_1\!\!b_1, \ldots, \sim_n\!\!b_n\} \neq \top$ 
 %
-can be \emph{discretized} to an expression $e' : \fin{n+1}$ such that:
+can be \emph{discretized} to an expression $e' : \fin{n+1}$ such that 
 %
-\begin{itemize}
-	\item if $V = \top$, then the probability that $e$ evaluates to a value in $\intervals{B}_k$ \emph{coincides} with the probability that $e'$ evaluates to $\finconst{k}{n+1}$; and
-	\item if $V = \{c_1, ..., c_m\}$, then each $c \in V$ in $e$ is \emph{mapped} to $\finconst{k}{n+1}$ in $e'$, where $c \in \intervals{B}_k$.
-\end{itemize}
-%Moreover, this information is \emph{all we need} to ensure semantic equivalence of the continuous and the (partially) discretized expression. 
-In particular, if \emph{all} $\float[B;V]$-typed subexpressions are finite-cut, then the given expression can be \emph{fully discretized}. If any $\float[B;V]$-typed subexpressions are infinite-cut, then the given expression can only be \emph{partially discretized}. Let us start with simple examples before considering more intricate ones.
+the probability that $e$ evaluates to a value in $\intervals{B}_i$ \emph{coincides} with the probability that $e'$ evaluates to $\finconst{k}{i}$. %Moreover, this information is \emph{all we need} to ensure semantic equivalence of the continuous and the (partially) discretized expression. 
+In particular, if \emph{all} $\float[B;V]$-typed subexpressions are finite-cut, then the given expression can be \emph{fully discretized}.  Let us start with simple examples before considering more intricate ones.
 %
 
 \begin{example}
