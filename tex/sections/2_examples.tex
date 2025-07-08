@@ -44,7 +44,7 @@ Figure~\ref{fig:float-type-def} describes the intuitive meaning of a type \lstin
 
 \subsection{Branching on multiple continuous variables}\label{sec:examples:2}
 
-\noindent Let us now consider a more complex example with multiple continuous variables and conditionals
+\noindent Let us now consider a more complex example with multiple continuous variables and conditionals:
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em]
     let x = uniform(0, 1) in
@@ -55,7 +55,7 @@ Figure~\ref{fig:float-type-def} describes the intuitive meaning of a type \lstin
 \noindent In this program, the variable \texttt{x} is drawn from \texttt{uniform(0, 1)} and is compared against two different constants: \texttt{0.5} and \texttt{0.2}. These two cuts partition the real line $\R$ into three intervals: $(-\infty, 0.2)$, $[0.2, 0.5)$, and $[0.5, +\infty)$. Similarly, the variable \texttt{y}, drawn from \texttt{uniform(0, 2)}, is compared only with \texttt{0.1}. This single cut partitions the real line $\R$ into two intervals, $(-\infty, 0.1)$ and $[0.1, +\infty)$.
 
 
-This analysis is done by the type inference process, which collects all cuts for each continuous variable. For \texttt{x}, the type inference algorithm discovers the cuts \texttt{<0.2} and \texttt{<0.5}, giving it the type \ft{<0.2,<0.5}. For \texttt{y}, it only finds \texttt{<0.1}, giving it the type \ft{<0.1}. This information is captured in the annotated program below.
+This analysis is done by the type inference process, which collects all cuts for each continuous variable. For \texttt{x}, the type inference algorithm discovers the cuts \texttt{<0.2} and \texttt{<0.5}, giving it the type \ft{<0.2,<0.5}. For \texttt{y}, it only finds \texttt{<0.1}, giving it the type \ft{<0.1}. This information is captured in the annotated program below (omitting the types for $x$ and $y$):
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
     let x = uniform(0, 1) : !{\ft{<0.2,<0.5}}! in
