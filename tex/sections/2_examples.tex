@@ -6,19 +6,19 @@ For readability in the examples, we use \texttt{flip()} as shorthand for \texttt
 
 \subsection{Simple branching on a uniform distribution}\label{sec:examples:1}
 
-We start with a simple example that illustrates the core idea of \Slice{}. Consider the following program, which models a fair coin flip by checking if a random number from a uniform distribution is less than 0.5:
+We start with a simple example that illustrates the core idea of \Slice{}. Consider the following program, which models a fair coin flip by comparing the outcome of a uniform sampling to $0.5$:
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em]
     uniform(0,1) < 0.5
 \end{lstlisting}
 
-\noindent \Slice{}'s type system analyzes this program and identifies that the only cut for the continuous distribution is 0.5. This single cut partitions the range $\R = (-\infty, +\infty)$ into two intervals of equal probability mass: $(-\infty, 0.5)$ and $[0.5, +\infty)$. \Slice{} then transforms the program into an equivalent discrete version:
+\noindent \Slice{}'s type system analyzes this program and identifies that the only cut for the continuous distribution is 0.5. This single cut partitions the reals $\R = (-\infty, +\infty)$ into two intervals of equal probability mass: $(-\infty, 0.5)$ and $[0.5, +\infty)$. \Slice{} uses this information to compute a discretization:
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em]
     discrete(0.5, 0.5) < 1
 \end{lstlisting}
 
-\noindent Here, \texttt{discrete(0.5, 0.5)} represents a choice between two outcomes (0 or 1), each with probability 0.5. The outcome 0 corresponds to the original value being in $(-\infty, 0.5)$, and 1 corresponds to it being in $[0.5, +\infty)$. As such, we have abstracted away the support of the uniform distribution in the original program, replacing it with a discrete choice that preserves the original program's probabilistic behavior with respect to the identified cut. With \Dice now as a backend, we can obtain the result \result{0.5}{0.5}.
+\noindent Here, \texttt{discrete(0.5, 0.5)} represents a choice between two outcomes (0 or 1), each with probability 0.5. The outcome 0 corresponds to the original value being in $(-\infty, 0.5)$, and 1 corresponds to it being in $[0.5, +\infty)$. As such, we have abstracted away the support of the uniform distribution in the original program, replacing it with a discrete choice that preserves the original program's probabilistic behavior with respect to the identified cut. Now, using \Dice dice as a backend for exact inference of discrete probabilistic program, we can obtain the result \result{0.5}{0.5}.
 
 The transformation to the discretized program is guided by tracking cuts as an intermediate step, which are determined by type inference as shown in the annotated program below:
 
@@ -26,7 +26,7 @@ The transformation to the discretized program is guided by tracking cuts as an i
     (uniform(0, 1) : !{\ft{<0.5}}!) < (0.5 : !{\ftb{<0.5}{0.5}}!)
 \end{lstlisting}
 
-Figure~\ref{fig:float-type-def} describes what a type \lstinline{float[cut-set; value-set]} indicates. The type \ft{<0.5} for the uniform sample indicates that the cut set contains the cut ``$<\!\!0.5$'' and the value set is $\top$ which indicates the variable can take any value in the range $(-\infty, +\infty)$. This tells \Slice{} how to partition $\mathbb{R}$. The type \ftb{<0.5}{0.5} for the constant $0.5$ indicates that the cut set contains $<0.5$ and the value set contains only the single value $0.5$. This allows \Slice{} to determine which discrete region the constant value belongs to after partitioning $\mathbb{R}$. 
+Figure~\ref{fig:float-type-def} describes the intuitive meaning of a type \lstinline{float[cut-set; value-set]}. \ft{<0.5} for the uniform sample indicates that the cut set contains the cut ``$<\!\!0.5$'' and the value set is $\top$ which indicates the variable can take any value in the range $(-\infty, +\infty)$. This tells \Slice{} how to partition $\mathbb{R}$. The type \ftb{<0.5}{0.5} for the constant $0.5$ indicates that the cut set contains $<0.5$ and the value set contains only the single value $0.5$. This allows \Slice{} to determine to which discrete region the constant $0.5$ belongs to after partitioning $\mathbb{R}$. 
 
 \begin{figure}
 \[
@@ -37,14 +37,14 @@ Figure~\ref{fig:float-type-def} describes what a type \lstinline{float[cut-set; 
 \underbrace{\text{value-set}}_{\begin{array}{c}\text{set of concrete values}\\\text{(e.g., }\{0.1, 0.4, 0.5\}\text{)}\\\text{or }\top\text{ (any value)}\end{array}}
 ]
 \]
-\caption{The type \lstinline{float[cut-set; value-set]} captures two aspects of a floating-point expression: the cut set is determined by \emph{how the expression is used} (i.e., what it's compared against) and the value set is determined by \emph{what concrete values the expression can take}. The discretization is driven by the cut set: a float value with $n$ cuts is discretized into $n+1$ possible discrete values.}
+\caption{The type \lstinline{float[cut-set; value-set]} captures two aspects of a floating-point expression: the cut set is determined by \emph{how the expression is used} (i.e., what it's compared against) and the value set is determined by \emph{what concrete values the expression can take}. The discretization is driven by the cut set: a float value with $n$ cuts is discretized into $n+1$ possible discrete values, each value corresponding to one real-valued interval.}
 \label{fig:float-type-def}
 \end{figure}
 
 
 \subsection{Branching on multiple continuous variables}\label{sec:examples:2}
 
-\noindent Now let's consider a more complex example with multiple continuous variables and conditional branches:
+\noindent Let us now consider a more complex example with multiple continuous variables and conditionals
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em]
     let x = uniform(0, 1) in
