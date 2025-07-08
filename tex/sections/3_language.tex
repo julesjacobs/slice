@@ -1,17 +1,17 @@
 \section{The Slice Language and Type System}\label{sec:language}
+In this section, we detail our functional probabilistic programming language (\Cref{sec:sub_language}), its types (\Cref{sec:types}), and its type system tracking information crucial for discretization (\Cref{sec:type-system}).
 
 \subsection{The Slice Language}
+\label{sec:sub_language}
 %
 \input{figures/grammar}
 %
-\Slice{} extends a simple first-order functional language with support for making probabilistic choices. \Slice{} supports standard programming language constructs such as constants, variables, comparisons, boolean operations, conditionals, for loops, pairs, and lists. Additional constructs include first-class functions, surely-terminating recursion, mutable state, and first-class observations enabling \Slice{} to support Bayesian reasoning in the presence of evidence. In particular, $\observekw(e)$ conditions the program execution on a boolean expression $e$ being true. For probabilistic constructs, \Slice{} supports a wide variety of continuous and discrete distributions. Continuous distributions can be further characterized by the number of parameters they take in: \Slice{} supports continuous distributions with one argument (exponential, laplace, etc.) or two arguments (uniform, gaussian, beta, gamma, etc.).
-\katherine{might want to make a comment about support for arithmetic.}
+The syntax of \emph{expressions} (or \emph{programs}) in the \Slice{} language is shown in \Cref{fig:grammar}.
+\Slice{} extends a simple first-order functional language with support for making probabilistic choices. Most of the constructs are standard: \Slice{} supports constants, variables, comparisons, Boolean operations, conditionals, for loops, pairs, and lists. Constants of the form $\finconst{k}{n}$ denote integer constants from the finite domain $\{\finconst{0}{n}, \finconst{1}{n}, \ldots, \finconst{(n-1)}{n}\}$, which we detail in the next section.
+Additional constructs include first-class functions, surely-terminating recursion, mutable state, and first-class observations, enabling Bayesian reasoning in the presence of evidence. In particular, $\observekw(e)$ conditions the program execution on a Boolean expression $e$ being true. For probabilistic constructs, \Slice{} supports a wide variety of continuous and discrete distributions. Continuous distributions can be further characterized by the number of parameters they take in: \Slice{} supports continuous distributions with one argument (exponential, laplace, etc.) or two arguments (uniform, gaussian, beta, gamma, etc.).
 
 % \item \textbf{Discrete distributions}: The $\discrete(p_0, \ldots, p_{n-1})$ construct returns a finite type value $\finconst{k}{n}$ \kevin{let's maybe explain the types first?  $\finconst{k}{n}$ is not introduced} with probability $p_k$.
 
-\begin{definition}[The \Slice{} Language]
-	Programs (or expressions) $\expr$ in the language \Slice{} adhere to the grammar shown in \Cref{fig:grammar}.
-\end{definition}
 
 \subsection{Types}\label{sec:types}
 We formalize the types that \Slice{} supports. As a first step, we introduce induced join-semilattices --- lattice structures that determine how typing information is merged when programs branch.
@@ -82,7 +82,7 @@ Elements of $\{ <\!\!x ~|~ x \in \R \}	\cup \{ \leq\!\!x ~|~ x \in \R \}$ are ca
  Given a non-empty cut set $B =\{ \sim_1\!\!x_1, \ldots, \sim_n\!\! x_n \}$ with $x_1 \leq \ldots \leq x_n$, we define
 %
 \begin{align*}
-	\intervals{B} {}={} &
+	\intervals{B} \quad{}={}\quad &
 	\begin{cases}
 		 \{ (-\infty, x_1) \}& \text{if $\sim_1 = <$} \\
 		 %
@@ -103,7 +103,7 @@ Elements of $\{ <\!\!x ~|~ x \in \R \}	\cup \{ \leq\!\!x ~|~ x \in \R \}$ are ca
 	 	\{ (x_i, x_{i+1}] \}& \text{if $\sim_i = \leq$ and $\sim_{i+1} = \leq$} \\
 	 \end{cases} \\
 	 %
-	 & {}\cup~~
+	 & {}\cup~~~
 	 %
 	 \begin{cases}
 	 	\{ (x_n, \infty) \}& \text{if $\sim_n = \leq$} \\
@@ -112,7 +112,7 @@ Elements of $\{ <\!\!x ~|~ x \in \R \}	\cup \{ \leq\!\!x ~|~ x \in \R \}$ are ca
 	 \end{cases} 
 \end{align*}
 %
-Moreover, we let $\intervals{\emptyset} = \{(-\infty,\infty)\}$ and $\intervals{\top} = 2^\Reals$. We denote $\intervals{B}_i$ to be the $i$-th interval of $\intervals{B}$. Throughout the paper, we assume $\intervals{B}$ is 0-indexed, so $i \in \{0,...,n\}$. This leads us to our types:
+Moreover, we let $\intervals{\emptyset} = \{(-\infty,\infty)\}$ and $\intervals{\top} = 2^\Reals$, i.e., $\top$ induces the most fine-grained partitioning of $\Reals$. We denote by $\intervals{B}_i$ the $i$-th interval of $\intervals{B}$, assuming $\intervals{B}$ is $0$-indexed, i.e., $i \in \{0,...,n\}$. This leads us to our types:
 %
 \begin{definition}[Types]
 	Types $\tau$ adhere to the grammar
@@ -143,7 +143,7 @@ $\fin{n}$ is the finite type with values $\{\finconst{0}{n}, \finconst{1}{n}, \l
 
 The type $\float[B; V]$ deserves special attention. First, it indicates that a given expression evaluates to a real number. The cut set $B$ and the value set $V$ carry additional information crucial for discretization. Intuitively, the cut set $B$ is an overapproximation of the values the expression of type $\float[B; V]$ will be compared to during program execution (where $\cleq{x}$ indicates a non-strict and $\clt{x}$ indicates a strict comparison), and $V$ is an overapproximation of the values the expression can take. If $B = \top$, then the expression is compared to a continuous value (an infinite number of values), such as a continuous distribution. If $B = \emptyset$, then the expression is never compared to a concrete value during program execution. If $V=\top$, then the expression can take on any value in $\R$.
 
-We note that in the last two partial discretization examples in Section~\ref{sec:examples}, the returned expressions have a cut set of $B = \top$. This reflects a key design decision in \Slice{}: when a program cannot be fully discretized, we conservatively preserve the full real-valued behavior of any expression that contributes directly to observable output. In such cases, $B = \top$ also serves as a marker that an expression may be subject to external comparisons at runtime, including comparisons against arbitrary real values not syntactically present in the program.
+We note that in the last two partial discretization examples from Section~\ref{sec:examples}, the returned expressions have a cut set of $B = \top$. This reflects a key design decision in \Slice{}: when a program cannot be fully discretized, we conservatively preserve the full real-valued behavior of any expression that contributes directly to observable output. In such cases, $B = \top$ also serves as a marker that an expression may be subject to external comparisons at runtime, including comparisons against arbitrary real values not syntactically present in the program.
 % Additionally, we define $\fin{n}$ as a finite type with values $\{\finconst{0}{n}, \finconst{1}{n}, \ldots, \finconst{(n-1)}{n}\}$, where $i_{\# n}$ is an integer type. We define $\float[B; V]$ as a float type with a cut set $B$ and value set $V$ for discretization. Note that $i$ is different from $i_{\# n}$: the former is a float type while the latter is an integer type. This distinction is important since BDD-based exact discrete inference engines require all variables to range over finite domains.
 
 %We introduce a type system that analyzes both the cuts and concrete values of floating point expressions. We have the following types:
@@ -174,7 +174,7 @@ We note that in the last two partial discretization examples in Section~\ref{sec
 %%$<\!\!x$ and $\leq\!\!x$ for all $x \in \R$.
 %The lattice structure enables type inference to systematically collect and propagate information about both how values are used (cuts) and what values they can take (values).
 
-\kevin{commented out lattice figure for now}
+%\kevin{commented out lattice figure for now}
 %\input{figures/lattice}
 
 \subsection{Typing Rules}\label{sec:type-system}
