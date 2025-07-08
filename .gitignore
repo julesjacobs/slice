@@ -29,3 +29,5 @@ tex/slice.pdf
 tex/slice.synctex.gz
 CLAUDE.md
 build.log
+tex/.DS_Store
+*.log

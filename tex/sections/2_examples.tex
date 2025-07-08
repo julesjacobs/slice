@@ -1,7 +1,9 @@
+\input{figures/architecture.tex}
+
 \section{Slice by Example}\label{sec:examples}
 This section presents simple examples that highlight the key features of our probabilistic programming language and compiler \Slice{}, aiming to emphasize how \Slice{} meets the challenge of performing exact inference efficiently. \Slice{} extends a core functional language with traditional programming language constructs such as conditionals, local variables, and functions, augmented with constructs for probabilistic programming such as sampling and conditioning. Each example in the subsections is intended to showcase these features. Later in the section, we also mention examples that can only be partially discretized but nonetheless preserve the semantics across both the original and discretized program. %More examples are highlighted in Appendix~\ref{appen:examples}.
 
-For readability in the examples, we use \texttt{flip()} as shorthand for \texttt{uniform(0,1) < 0.5}, which represents a fair coin flip that returns true or false with equal probability. We denote a ``cut'' as any constant $c$ in a comparison such as $x < c$, where $c$ partitions $\mathbb{R}$ into two intervals $(-\infty, c)$ and $[c, +\infty)$.
+For readability, we use \texttt{flip()} as a shorthand for \texttt{uniform(0,1) < 0.5}, which represents a fair coin flip that returns true or false with equal probability. We denote a ``cut'' as any constant $c$ in a comparison such as $x < c$, where $c$ partitions $\mathbb{R}$ into two intervals $(-\infty, c)$ and $[c, +\infty)$.
 
 \subsection{Simple branching on a uniform distribution}\label{sec:examples:1}
 
