@@ -10,7 +10,7 @@ Closely related is the work of \citet{Holtzen2018Abstraction} who use abstract i
 Their approach is distributionally sound, but it relies on the user to provide a set of predicates to abstract the program with.
 In contrast, our work automatically infers discretization points from the program itself.
 
-For instance, our type system would enable automatically transforming \texttt{uniform(0, 1) < 0.5} to \texttt{discrete(0.5, 0.5) < 1}, where the continuous uniform distribution becomes a discrete choice with two equally likely outcomes.
+For instance, our type system would enable automatically transforming \uniform(0, 1) < 0.5 to \discrete(0.5, 0.5) < 1, where the continuous uniform distribution becomes a discrete choice with two equally likely outcomes.
 
 The true power of our approach, however, lies in its ability to handle programs where these relationships are not immediately obvious. A single continuous variable might be compared against multiple different constants across separate parts of the program. Further, these constraints are propagated through complex control flow. For example, a value drawn from a continuous distribution might be returned from one branch of a conditional, passed through a higher-order function, or stored in a data structure before it is eventually compared to a constant. \Slice{}'s type inference systematically tracks these dependencies, ensuring that all relevant cuts are associated with the original distribution, regardless of how the value flows through the program. This robust, whole-program analysis is the key to handling expressive models, as we demonstrate in \Cref{sec:examples}.
 
