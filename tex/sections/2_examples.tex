@@ -52,10 +52,10 @@ Figure~\ref{fig:float-type-def} describes the intuitive meaning of a type \lstin
     if x < 0.5 then x < 0.2 else y < 0.1
 \end{lstlisting}
 
-\noindent In this program, the variable \texttt{x} is drawn from \uniform(0, 1) and is compared against two different constants: $0.5$ and $0.2$. These two cuts partition the real line $\R$ into three intervals: $(-\infty, 0.2)$, $[0.2, 0.5)$, and $[0.5, +\infty)$. Similarly, the variable \texttt{y}, drawn from \uniform(0, 2), is compared only with $0.1$. This single cut partitions the real line $\R$ into two intervals, $(-\infty, 0.1)$ and $[0.1, +\infty)$.
+\noindent In this program, the variable $x$ is drawn from \uniform(0, 1) and is compared against two different constants: $0.5$ and $0.2$. These two cuts partition the real line $\R$ into three intervals: $(-\infty, 0.2)$, $[0.2, 0.5)$, and $[0.5, +\infty)$. Similarly, the variable $y$, drawn from \uniform(0, 2), is compared only with $0.1$. This single cut partitions the real line $\R$ into two intervals, $(-\infty, 0.1)$ and $[0.1, +\infty)$.
 
 
-This analysis is done by the type inference process, which collects all cuts for each continuous variable. For \texttt{x}, the type inference algorithm discovers the cuts $\clt{0.2}$ and $\clt{0.5}$, giving it the type \ft{<0.2,<0.5}. For \texttt{y}, it only finds \texttt{<0.1}, giving it the type \ft{<0.1}. This information is captured in the annotated program below (omitting the types for $x$ and $y$):
+This analysis is done by the type inference process, which collects all cuts for each continuous variable. For $x$, the type inference algorithm discovers the cuts $\clt{0.2}$ and $\clt{0.5}$, giving it the type \ft{<0.2,<0.5}. For $y$, it only finds $\clt{0.1}$, giving it the type \ft{<0.1}. This information is captured in the annotated program below (omitting the types for $x$ and $y$):
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
     let x = uniform(0, 1) : !{\ft{<0.2,<0.5}}! in
@@ -67,8 +67,8 @@ This analysis is done by the type inference process, which collects all cuts for
 \end{lstlisting}
 
 
-\Slice{} replaces the continuous distribution for \texttt{x} with a discrete one that has three outcomes, where the probability of each outcome is the probability mass of the original uniform distribution within the corresponding interval. This results in \discrete(0.2, 0.3, 0.5).
-\Slice{} replaces the continuous distribution for \texttt{y} with a discrete one that has two outcomes, where the probability of each outcome is the probability mass of the original uniform distribution within the corresponding interval. This results in \discrete(0.05, 0.95). The comparisons in the program are then transformed to operate on the integer indices of these new discrete intervals, leading to the following discretization:
+\Slice{} replaces the continuous distribution for $x$ with a discrete one that has three outcomes, where the probability of each outcome is the probability mass of the original uniform distribution within the corresponding interval. This results in \discrete(0.2, 0.3, 0.5).
+\Slice{} replaces the continuous distribution for $y$ with a discrete one that has two outcomes, where the probability of each outcome is the probability mass of the original uniform distribution within the corresponding interval. This results in \discrete(0.05, 0.95). The comparisons in the program are then transformed to operate on the integer indices of these new discrete intervals, leading to the following discretization:
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em]
     let x = discrete(0.2, 0.3, 0.5) in
@@ -129,7 +129,7 @@ Consider the following program:
     x <= y
 \end{lstlisting}
 
-\noindent This program demonstrates how cuts propagate through the control flow. \Slice{} makes a forward pass through the program, and as the float constants 1.5, 1.8, and 0.3 subsequently appear in \texttt{y}, the cut sets of the preceding sampling instructions are populated accordingly. The $x \leq y$ comparison at the end renders the cut sets of all subexpressions to be the same: 1.5, 1.8, and 0.3 are the cuts for \texttt{x} hence the type \codetype{\ft{<=0.3,<1.5,<=1.8}} for all subexpressions in the let statement of \texttt{x}, and proper indices for the partitioned intervals must be determined hence float types of the form \codetype{{\ftb{<=0.3,<1.5,<=1.8}{\ldots}}} for all subexpressions in the let statement of \texttt{y}. The type inference annotates the program as follows:
+\noindent This program demonstrates how cuts propagate through the control flow. \Slice{} makes a forward pass through the program, and as the float constants 1.5, 1.8, and 0.3 subsequently appear in $y$, the cut sets of the preceding sampling instructions are populated accordingly. The $x \leq y$ comparison at the end renders the cut sets of all subexpressions to be the same: 1.5, 1.8, and 0.3 are the cuts for $x$ hence the type \codetype{\ft{<=0.3,<1.5,<=1.8}} for all subexpressions in the let statement of $x$, and proper indices for the partitioned intervals must be determined hence float types of the form \codetype{{\ftb{<=0.3,<1.5,<=1.8}{\ldots}}} for all subexpressions in the let statement of $y$. The type inference annotates the program as follows:
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
     let x = if flip()
@@ -143,7 +143,7 @@ Consider the following program:
     x <= y
 \end{lstlisting}
 
-\noindent Notice that all cuts from the entire program (0.3, 1.5, and 1.8) are collected for the variable \texttt{x}, regardless of which branch is taken. These cuts with type \codetype{<=0.3,<1.5,<=1.8} split the real line into four intervals: $(-\infty, 0.3]$, $(0.3, 1.5)$, $[1.5, 1.8]$, and $(1.8, +\infty)$. Note that 1.5 is excluded from the second interval and included in the third because it comes from a strict `<` comparison. The integer index 1 in the guard of the if statement for \texttt{y} is obtained from the type \codetype{\ftb{<=0.3,<1.5,<=1.8}{1.5}}, 2 is obtained from the type \codetype{\ftb{<=0.3,<1.5,<=1.8}{1.8}}, and 0 is obtained from the type \codetype{\ftb{<=0.3,<1.5,<=1.8}{0.3}}. The discretized version becomes:
+\noindent Notice that all cuts from the entire program (0.3, 1.5, and 1.8) are collected for the variable $x$, regardless of which branch is taken. These cuts with type \codetype{<=0.3,<1.5,<=1.8} split the real line into four intervals: $(-\infty, 0.3]$, $(0.3, 1.5)$, $[1.5, 1.8]$, and $(1.8, +\infty)$. Note that 1.5 is excluded from the second interval and included in the third because it comes from a strict `<` comparison. The integer index 1 in the guard of the if statement for $y$ is obtained from the type \codetype{\ftb{<=0.3,<1.5,<=1.8}{1.5}}, 2 is obtained from the type \codetype{\ftb{<=0.3,<1.5,<=1.8}{1.8}}, and 0 is obtained from the type \codetype{\ftb{<=0.3,<1.5,<=1.8}{0.3}}. The discretized version becomes:
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em]
     let x = if flip() then
@@ -165,7 +165,7 @@ Continuous distributions can have parameters that depend on discrete random choi
     gaussian(0, x) < 0.5
 \end{lstlisting}
 
-\noindent This example shows how discrete choices can affect the parameters of continuous distributions. The type-annotated version reveals how the variable \texttt{x} determines the standard deviation of the Gaussian:
+\noindent This example shows how discrete choices can affect the parameters of continuous distributions. The type-annotated version reveals how the variable $x$ determines the standard deviation of the Gaussian:
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
     let x = if flip()
@@ -175,7 +175,7 @@ Continuous distributions can have parameters that depend on discrete random choi
     (gaussian(0, x) : !{\ft{<0.5}}!) < (0.5 : !{\ftb{<0.5}{0.5}}!)
 \end{lstlisting}
 
-\noindent Since the variable \texttt{x} is later used as a parameter to the Gaussian distribution, \Slice{} generates a separate case for each possible value that \texttt{x} can take (namely 0.5 and 1.5). To support this, the type system uses non-strict inequalities in the cut sets for both 0.5 and 1.5, enabling these values to be mapped to integer indices starting from 0. Specifically, the value 0.5 corresponds to index 0 via the type \codetype{\ftb{<=0.5,<=1.5}{0.5}}, and 1.5 corresponds to index 1 via the type \codetype{\ftb{<=0.5,<=1.5}{1.5}}. The resulting discretized program then branches on these integer values and instantiates the corresponding discrete distribution of the Gaussian, depending on which standard deviation was selected by the initial flip.
+\noindent Since the variable $x$ is later used as a parameter to the Gaussian distribution, \Slice{} generates a separate case for each possible value that $x$ can take (namely 0.5 and 1.5). To support this, the type system uses non-strict inequalities in the cut sets for both 0.5 and 1.5, enabling these values to be mapped to integer indices starting from 0. Specifically, the value 0.5 corresponds to index 0 via the type \codetype{\ftb{<=0.5,<=1.5}{0.5}}, and 1.5 corresponds to index 1 via the type \codetype{\ftb{<=0.5,<=1.5}{1.5}}. The resulting discretized program then branches on these integer values and instantiates the corresponding discrete distribution of the Gaussian, depending on which standard deviation was selected by the initial flip.
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em]
     let x = if flip() then 0 else 1 in
@@ -214,7 +214,7 @@ This gives the output \result{0.73595}{0.26405}.
     x < 1
 \end{lstlisting}
 
-\noindent This results in the output \result{0.4}{0.6}. In the discrete version, the observation \texttt{x < 2} rules out the case where \texttt{x = 2} (corresponding to the original interval $[0.5, +\infty)$), effectively conditioning on \texttt{x} being in $[0.0, 0.5)$.
+\noindent This results in the output \result{0.4}{0.6}. In the discrete version, the observation $x < 2$ rules out the case where $x = 2$ (corresponding to the original interval $[0.5, +\infty)$), effectively conditioning on $x$ being in $[0.0, 0.5)$.
 
 \subsection{Higher-order functions}\label{sec:examples:7}
 
@@ -264,7 +264,7 @@ While \Slice{} is purely functional without mutable state, it provides the \text
   weather_after_3_days < 0.5  (* Is it sunny? *)
 \end{lstlisting}
 
-\noindent The \texttt{iterate} function applies the weather transition function three times, starting from a random initial weather state. Each iteration represents one day, with values below 0.5 representing sunny weather and values above 0.5 representing rain. Sunny days tend to stay sunny (uniform between 0.2 and 0.4), while rainy days tend to stay rainy (Gaussian centered at 0.7). The type system ensures that all cuts are properly collected across the iterations, e.g. yielding type \ft{<0.5} for \texttt{today}, \uniform(0.2,0.4), \gaussian(0.7,0.1), and \texttt{weather\_after\_three\_days} each. This enables accurate discretization of this sequential process:
+\noindent The \texttt{iterate} function applies the weather transition function three times, starting from a random initial weather state. Each iteration represents one day, with values below 0.5 representing sunny weather and values above 0.5 representing rain. Sunny days tend to stay sunny (uniform between 0.2 and 0.4), while rainy days tend to stay rainy (Gaussian centered at 0.7). The type system ensures that all cuts are properly collected across the iterations, e.g. yielding type \ft{<0.5} for \textit{today}, \uniform(0.2,0.4), \gaussian(0.7,0.1), and \textit{weather\_after\_three\_days} each. This enables accurate discretization of this sequential process:
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
   let weather_transition = fun today -> 
@@ -327,7 +327,7 @@ This results in the output \result{0.5334}{0.4666}, which can be obtained from e
   map check_threshold measurements
 \end{lstlisting}
 
-\noindent This gives an output of distributions of lists: $\{\textit{true,true,true}: 0.115341, \textit{true,true,false}: 0.234199, ...\}$ when run with Roulette. The closure \texttt{check\_threshold} lexically captures the stochastic \texttt{threshold} value, which is randomly chosen to be either 0.3 or 0.7. The type system correctly infers that both threshold values (0.3 and 0.7) must be included as cuts for all Gaussian measurements, yielding type \ft{<0.3,<0.7} for list elements. This demonstrates how \Slice{} handles higher-order functions with captured stochastic values while maintaining sound discretization.
+\noindent This gives an output of distributions of lists: $\{\textit{true,true,true}: 0.115341, \textit{true,true,false}: 0.234199, ...\}$ when run with Roulette. The closure \textit{check\_threshold} lexically captures the stochastic \textit{threshold} value, which is randomly chosen to be either 0.3 or 0.7. The type system correctly infers that both threshold values (0.3 and 0.7) must be included as cuts for all Gaussian measurements, yielding type \ft{<0.3,<0.7} for list elements. This demonstrates how \Slice{} handles higher-order functions with captured stochastic values while maintaining sound discretization.
 
 
 \subsection{Indian GPA Problem}\label{sec:gpa}
@@ -381,7 +381,7 @@ Not all programs can be fully discretized. Consider a program where continuous v
   if uniform(0,1) < 0.5 then x < y else y < x
 \end{lstlisting}
 
-\noindent The type-annotated version reveals that \texttt{x} and \texttt{y} have type \ftt, indicating that no finite set of cuts suffices:
+\noindent The type-annotated version reveals that $x$ and $y$ have type \ftt, indicating that no finite set of cuts suffices:
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
   let x = (uniform(0, 1) : !{\ftt}!) in
@@ -397,7 +397,7 @@ Not all programs can be fully discretized. Consider a program where continuous v
   let y = gaussian(0, 1) in
   if discrete(0.5, 0.5) < 1 then x < y else y < x
 \end{lstlisting}
-\noindent The branching condition gets discretized, but \texttt{x} and \texttt{y} remain continuous because they are only compared to each other, not to constants.
+\noindent The branching condition gets discretized, but $x$ and $y$ remain continuous because they are only compared to each other, not to constants.
 
 \subsection{Partial discretization for continuous values without comparisons}\label{sec:examples:partial2}
 The example in subsection~\ref{sec:examples:partial1} shows a program that can only be partially discretized due to continuous variables being compared directly to each other rather than to constants. If no comparisons are made with continuous distributions, the best \Slice{} can do is also a partial discretization. Consider the following example:
@@ -408,7 +408,7 @@ The example in subsection~\ref{sec:examples:partial1} shows a program that can o
     if y < 0.5 then beta(1,1) else uniform(0,2)
 \end{lstlisting}
 
-Here, \Slice{} does not identify any cuts for the subexpressions \texttt{x} and \ifkw\; $y < 0.5$ \thenkw\; \betafn(1,1) \elsekw\; \uniform(0,2), both of which have $\top$ value sets. As a result, their cut sets are empty. Nonetheless, \Slice{} still preserves the semantics of the original program by not discretizing the return value, setting the cut set of the return values to $\top$. This is because the return value is considered part of the program’s observable behavior, so external code may perform arbitrary comparisons against it, including comparisons to real numbers not present in the program. In contrast, variables like \texttt{x}, which are never used in comparisons, can safely be discretized without affecting the program’s semantics.
+Here, \Slice{} does not identify any cuts for the subexpressions $x$ and \ifkw\; $y < 0.5$ \thenkw\; \betafn(1,1) \elsekw\; \uniform(0,2), both of which have $\top$ value sets. As a result, their cut sets are empty. Nonetheless, \Slice{} still preserves the semantics of the original program by not discretizing the return value, setting the cut set of the return values to $\top$. This is because the return value is considered part of the program’s observable behavior, so external code may perform arbitrary comparisons against it, including comparisons to real numbers not present in the program. In contrast, variables like $x$, which are never used in comparisons, can safely be discretized without affecting the program’s semantics.
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
   let x = uniform(0,1) : !{\ft{}}! in
@@ -418,7 +418,7 @@ Here, \Slice{} does not identify any cuts for the subexpressions \texttt{x} and 
     : !{\ftt}!
 \end{lstlisting}
 
-An empty cut set in a float type implies $\mathbb{R}$ with no partitions, or simply the real number line, and thus the probability mass in $(-\infty, +\infty)$ is trivially 1 for any continuous distribution. This leads to \texttt{discrete(1,0)} for \texttt{uniform(0,1)}. The following is the partially discretized program:
+An empty cut set in a float type implies $\mathbb{R}$ with no partitions, or simply the real number line, and thus the probability mass in $(-\infty, +\infty)$ is trivially 1 for any continuous distribution. This leads to \discrete(1,0) for \uniform(0,1). The following is the partially discretized program:
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
   let x = discrete(1, 0)
