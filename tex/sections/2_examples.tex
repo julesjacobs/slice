@@ -68,7 +68,7 @@ This analysis is done by the type inference process, which collects all cuts for
 
 
 \Slice{} replaces the continuous distribution for \texttt{x} with a discrete one that has three outcomes, where the probability of each outcome is the probability mass of the original uniform distribution within the corresponding interval. This results in \texttt{discrete(0.2, 0.3, 0.5)}.
-\Slice{} replaces the continuous distribution for \texttt{y} with a discrete one that has two outcomes, where the probability of each outcome is the probability mass of the original uniform distribution within the corresponding interval. This results in \texttt{discrete(0.05, 0.95)}. The comparisons in the program are then transformed to operate on the integer indices of these new discrete intervals, leading to the following discretized program:
+\Slice{} replaces the continuous distribution for \texttt{y} with a discrete one that has two outcomes, where the probability of each outcome is the probability mass of the original uniform distribution within the corresponding interval. This results in \texttt{discrete(0.05, 0.95)}. The comparisons in the program are then transformed to operate on the integer indices of these new discrete intervals, leading to the following discretization:
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em]
     let x = discrete(0.2, 0.3, 0.5) in
@@ -79,17 +79,16 @@ This analysis is done by the type inference process, which collects all cuts for
       y < 1
 \end{lstlisting}
 
-This results in the output \result{0.225}{0.775}. Note that the original constant $0.5$ is discretized in two different ways: for $x < 0.5$ it is discretized to $2$ and for $y < 0.5$ it is discretized to $1$. This is because the constant $0.5$ falls in the third interval of the split $\R = (-\infty, 0.2) \cup [0.2, 0.5) \cup [0.5, +\infty)$ for $x$ and the second interval for the split $\R = (-\infty, 0.5) \cup [0.5, +\infty)$ for $y$. 
+Using \Dice{}, this yields the output \result{0.225}{0.775}. Note that the original constant $0.5$ is discretized in two different ways: for $x < 0.5$ it is discretized to $2$ and for $y < 0.5$ it is discretized to $1$. This is because the constant $0.5$ falls in the third interval of the split $(-\infty, 0.2) \cup [0.2, 0.5) \cup [0.5, +\infty)$ for $x$ and the second interval for the split $(-\infty, 0.5) \cup [0.5, +\infty)$ for $y$. 
 
 \subsection{Branching on multiple discrete values}\label{sec:examples:3}
-The example in subsection~\ref{sec:examples:2} involves multiple continuous variables and conditional branches. In a similar fashion, \Slice{} can support multiple discrete values and conditional branches. Consider the program:
+The example in Section~\ref{sec:examples:2} involves multiple continuous variables and conditional branches. In a similar fashion, \Slice{} supports multiple discrete values and conditionals. Consider the program:
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
     let x = if flip() then 0.2 
             else if flip() then 2.5
             else 4.5 in 
-    let y = 0.5 in
-    x < y
+    let y = 0.5 in x < y
 \end{lstlisting}
 
 This yields the annotated program after type inference:
@@ -100,8 +99,7 @@ This yields the annotated program after type inference:
             else (4.5 : !{\ftb{<0.5}{4.5}}!) 
             : !{\ftb{<0.5}{2.5, 4.5}}!)
             : !{\ftb{<0.5}{0.2, 2.5, 4.5}}! in
-    let y = 0.5 : !{\ftb{<0.5}{0.5}}!
-    x < y
+    let y = 0.5 : !{\ftb{<0.5}{0.5}}! in x < y
 \end{lstlisting}
 
 Only finite values exist in the value sets here since there are no continuous distributions in this example and thus no Top. By locating where each value in the value set falls relative to the cuts in the cut set, \Slice{} determine the corresponding interval index for each value. \codetype{\ftb{<0.5}{0.2}} corresponds to the index 0, and types \codetype{\ftb{<0.5}{2.5}}, \codetype{\ftb{<0.5}{4.5}}, and \codetype{\ftb{<0.5}{0.5}} correspond to the index 1. The value sets in types \codetype{\ftb{<0.5}{0.2, 2.5, 4.5}} and \codetype{\ftb{<0.5}{2.5, 4.5}} arise from taking the union of the value sets from each prior conditional branch. This in turn yields the following discretized program:
@@ -114,7 +112,7 @@ Only finite values exist in the value sets here since there are no continuous di
     x < y
 \end{lstlisting}
 
-This gives a final output of \result{0.5}{0.5}.
+Using \Dice{}, this yields the output \result{0.5}{0.5}.
 
 \subsection{If else with continuous values}\label{sec:examples:4}
 
