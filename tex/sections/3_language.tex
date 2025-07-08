@@ -275,6 +275,7 @@ For less-than-or-equal comparisons, the typing rule is similar, but with the con
 
 The typing rules for the other constructs are standard, and are shown in Appendix~\ref{appen:typing-rules}.
 
+\kevin{also breifly explain Fig 4}
 \paragraph{Subtyping.}
 The type system includes a subtyping relation that captures when one type can be safely used in place of another. The subtyping rules are shown in Figure~\ref{fig:subtyping}. For float types $\float[B;V]$, subtyping follows the lattice ordering on $V$: an expression known to range over some set of values can also be considered to range over a superset of those values. For $B$ we require equality to make sure that the discretized representation of the expression cannot be changed by subtyping.
 
