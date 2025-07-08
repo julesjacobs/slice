@@ -114,10 +114,10 @@ Only finite values exist in the value sets here since there are no continuous di
 
 Using \Dice{}, this yields the output \result{0.5}{0.5}.
 
-\subsection{If else with continuous values}\label{sec:examples:4}
+\subsection{Branching on Continuous Values}\label{sec:examples:4}
 
 In the program above, we always directly compare the continuous samples to constants.
-However, the discretization process still works if the continuous samples and constants flow through the program, for instance via an if-else statement.
+However, the discretization process still works if the continuous samples and constants flow through the program, for instance via a conditional.
 Consider the following program:
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
@@ -129,7 +129,7 @@ Consider the following program:
     x <= y
 \end{lstlisting}
 
-\noindent This program demonstrates how cuts propagate through the control flow. \Slice{} makes a forward pass through the program, and as the float constants 1.5, 1.8, and 0.3 subsequently appear in \texttt{y}, the cut sets of the earlier subexpressions are refined. The $x \leq y$ comparison at the end renders the cut sets of all subexpressions to be the same: 1.5, 1.8, and 0.3 are the cuts for \texttt{x} hence the type \codetype{\ft{<=0.3,<1.5,<=1.8}} for all subexpressions of \texttt{x}, and proper indices for the partitioned intervals must be determined hence float types of the form \codetype{{\ftb{<=0.3,<1.5,<=1.8}{\ldots}}} for all subexpressions of \texttt{y}. The type inference annotates the program as follows:
+\noindent This program demonstrates how cuts propagate through the control flow. \Slice{} makes a forward pass through the program, and as the float constants 1.5, 1.8, and 0.3 subsequently appear in \texttt{y}, the cut sets of the preceding sampling instructions are populated accordingly. The $x \leq y$ comparison at the end renders the cut sets of all subexpressions to be the same: 1.5, 1.8, and 0.3 are the cuts for \texttt{x} hence the type \codetype{\ft{<=0.3,<1.5,<=1.8}} for all subexpressions of \texttt{x}, and proper indices for the partitioned intervals must be determined hence float types of the form \codetype{{\ftb{<=0.3,<1.5,<=1.8}{\ldots}}} for all subexpressions of \texttt{y}. The type inference annotates the program as follows:
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
     let x = if flip()
