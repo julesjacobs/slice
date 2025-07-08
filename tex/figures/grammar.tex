@@ -10,9 +10,9 @@ e ::= &\; x \mid c \mid \text{true} \mid \text{false} \mid \finconst{k}{n} \mid 
     | &\; (e_1, e_2) \mid \fstkw \; e \mid \sndkw \; e & \text{pairs} \\
     | &\; \funkw \; x \; \rightarrow \; e \mid e_1 \; e_2 \mid \text{fix}\; f\; x := e & \text{functions} \\
     | &\; \observekw\; e \mid e_1; e_2 & \text{effects} \\
-    | &\; \text{nil} \mid e_1 :: e_2 \mid \text{match}\; e\; \text{with}\; \ldots & \text{lists} \\
+    | &\; \text{nil} \mid e_1 :: e_2 \mid ( \text{match} \; e \; \text{with} \mid \; \text{nil} \rightarrow e_{\text{nil}} \mid e_1 :: e_2 \rightarrow e_{\text{cons}} \text{ end}) & \text{lists} \\
     | &\; \text{ref}\; e \mid\ !e \mid e_1 := e_2 & \text{references}
 \end{align*}
-\caption{Syntax of the \Slice{} language. \kevin{can we get rid of $...$? :D}}
+\caption{Syntax of the \Slice{} language. \Slice{} supports a variety of continuous distributions with one and two parameters; for a full list of supported distributions, see Appendix~\ref{appen:supported-distributions}.}
 \label{fig:grammar}
 \end{figure}

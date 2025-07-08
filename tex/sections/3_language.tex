@@ -1,17 +1,17 @@
 \section{The Slice Language and Type System}\label{sec:language}
+In this section, we detail our functional probabilistic programming language (\Cref{sec:sub_language}), its types (\Cref{sec:types}), and its type system tracking information crucial for performing type-directed discretization (\Cref{sec:type-system}).
 
 \subsection{The Slice Language}
+\label{sec:sub_language}
 %
 \input{figures/grammar}
 %
-\Slice{} extends a simple first-order functional language with support for making probabilistic choices. \Slice{} supports standard programming language constructs such as constants, variables, comparisons, boolean operations, conditionals, for loops, pairs, and lists. Additional constructs include first-class functions, surely-terminating recursion, mutable state, and first-class observations enabling \Slice{} to support Bayesian reasoning in the presence of evidence. In particular, $\observekw(e)$ conditions the program execution on a boolean expression $e$ being true. For probabilistic constructs, \Slice{} supports a wide variety of continuous and discrete distributions. Continuous distributions can be further characterized by the number of parameters they take in: \Slice{} supports continuous distributions with one argument (exponential, laplace, etc.) or two arguments (uniform, gaussian, beta, gamma, etc.).
-\katherine{might want to make a comment about support for arithmetic.}
+The syntax of \emph{expressions} (or \emph{programs}) in the \Slice{} language is shown in \Cref{fig:grammar}.
+\Slice{} extends a simple first-order functional language with support for making probabilistic choices. Most of the constructs are standard: \Slice{} supports constants, variables, comparisons, Boolean operations, conditionals, for loops, pairs, and lists. Constants of the form $\finconst{k}{n}$ denote integer constants from the finite domain $\{\finconst{0}{n}, \finconst{1}{n}, \ldots, \finconst{(n-1)}{n}\}$, which we detail in the next section.
+Additional constructs include first-class functions, surely-terminating recursion, mutable state, and first-class observations, enabling Bayesian reasoning in the presence of evidence. In particular, $\observekw(e)$ conditions the program execution on a Boolean expression $e$ being true. For probabilistic constructs, \Slice{} supports a wide variety of continuous and discrete distributions. Continuous distributions can be further characterized by the number of parameters they take in: \Slice{} supports continuous distributions with one argument (exponential, laplace, etc.) or two arguments (uniform, gaussian, beta, gamma, etc.). \kevin{get rid of "etc" and "..."}
 
 % \item \textbf{Discrete distributions}: The $\discrete(p_0, \ldots, p_{n-1})$ construct returns a finite type value $\finconst{k}{n}$ \kevin{let's maybe explain the types first?  $\finconst{k}{n}$ is not introduced} with probability $p_k$.
 
-\begin{definition}[The \Slice{} Language]
-	Programs (or expressions) $\expr$ in the language \Slice{} adhere to the grammar shown in \Cref{fig:grammar}.
-\end{definition}
 
 \subsection{Types}\label{sec:types}
 We formalize the types that \Slice{} supports. As a first step, we introduce induced join-semilattices --- lattice structures that determine how typing information is merged when programs branch.
@@ -19,17 +19,19 @@ We formalize the types that \Slice{} supports. As a first step, we introduce ind
 \begin{definition}[Induced Join-Semilattice]
 	Let $D$ be a set. The \emph{join-semilattice} induced by $D$ is 
 	%
-	\[
+	$
 		\lattice{D} =
 		(\latticedom ,\, \latticeleq,\, \latticesup)~,
-	\]
+	$
 	%
-	where:
+	where
 	%
-	\begin{itemize}
-		\item $\latticedom = \{ S \subseteq D ~\mid~ \text{$S$ finite}\} \cup \{\top\} $,
+	%\begin{itemize}
+		%\item 
+		$\latticedom = \{ S \subseteq D ~\mid~ \text{$S$ finite}\} \cup \{\top\}$,
 		%
-		\item $\sqsubseteq$ is the partial order on $\latticedom$ defined as 
+		%\item 
+		$\sqsubseteq$ is the partial order on $\latticedom$ defined as 
 		%
 		\[
 			\latticeelem \latticeleq \latticeelem'
@@ -41,7 +43,8 @@ We formalize the types that \Slice{} supports. As a first step, we introduce ind
 			\end{cases}
 		\]
 		%
-		\item $\latticesup \colon \latticedom \times \latticedom \to \latticedom$ is the join (least upper bound) operator w.r.t.\ $\latticeleq$, i.e.,%
+		%\item 
+		and where $\latticesup \colon \latticedom \times \latticedom \to \latticedom$ is the join (least upper bound) operator w.r.t.\ $\latticeleq$, i.e.,%
 		%
 		\[
 			\latticeelem \latticesup \latticeelem' 
@@ -52,28 +55,28 @@ We formalize the types that \Slice{} supports. As a first step, we introduce ind
 				\top & \text{otherwise}~.
 			\end{cases}
 		\]
-	\end{itemize}
+	%\end{itemize}
 	%
-	Notice that $\emptyset$ is the bottom element of $\lattice{D}$.
 \end{definition}
 %
-With this notion at hand, we define the following central objects:
+Notice that $\emptyset$ is the bottom element of $\lattice{D}$.
+We now introduce the following central objects:
 %
 \begin{definition}[Join-Semilattices of Cut- and Value Sets]
 	\phantom{a}
 	\begin{enumerate}
 		\item The \emph{join-semilattice of cut sets} is
 		%
-		\[
-			\cutsets = \lattice{\{ <\!\!x ~|~ x \in \R \}	\cup \{ \leq\!\!x ~|~ x \in \R \}}~.
-		\]
+		$
+			\cutsets = \lattice{\{ <\!\!x ~|~ x \in \R \}	\cup \{ \leq\!\!x ~|~ x \in \R \}}.
+		$
 		%
 		%
 		\item The \emph{join-semilattice of value sets} is 
 		%
-		\[
-			\valsets = \lattice{\R}~.
-		\]
+		$
+			\valsets = \lattice{\R}.
+		$
 	\end{enumerate}
 \end{definition}
 %
@@ -82,7 +85,7 @@ Elements of $\{ <\!\!x ~|~ x \in \R \}	\cup \{ \leq\!\!x ~|~ x \in \R \}$ are ca
  Given a non-empty cut set $B =\{ \sim_1\!\!x_1, \ldots, \sim_n\!\! x_n \}$ with $x_1 \leq \ldots \leq x_n$, we define
 %
 \begin{align*}
-	\intervals{B} {}={} &
+	\intervals{B} \quad{}={}\quad &
 	\begin{cases}
 		 \{ (-\infty, x_1) \}& \text{if $\sim_1 = <$} \\
 		 %
@@ -103,7 +106,7 @@ Elements of $\{ <\!\!x ~|~ x \in \R \}	\cup \{ \leq\!\!x ~|~ x \in \R \}$ are ca
 	 	\{ (x_i, x_{i+1}] \}& \text{if $\sim_i = \leq$ and $\sim_{i+1} = \leq$} \\
 	 \end{cases} \\
 	 %
-	 & {}\cup~~
+	 & {}\cup~~~
 	 %
 	 \begin{cases}
 	 	\{ (x_n, \infty) \}& \text{if $\sim_n = \leq$} \\
@@ -112,7 +115,7 @@ Elements of $\{ <\!\!x ~|~ x \in \R \}	\cup \{ \leq\!\!x ~|~ x \in \R \}$ are ca
 	 \end{cases} 
 \end{align*}
 %
-Moreover, we let $\intervals{\emptyset} = \{(-\infty,\infty)\}$ and $\intervals{\top} = 2^\Reals$. We denote $\intervals{B}_i$ to be the $i$-th interval of $\intervals{B}$. Throughout the paper, we assume $\intervals{B}$ is 0-indexed, so $i \in \{0,...,n\}$. This leads us to our types:
+Moreover, we let $\intervals{\emptyset} = \{(-\infty,\infty)\}$ and $\intervals{\top} = 2^\Reals$, i.e., $\top$ induces the most fine-grained partitioning of $\Reals$. We denote by $\intervals{B}_i$ the $i$-th interval of $\intervals{B}$, assuming $\intervals{B}$ is $0$-indexed, i.e., $i \in \{0,...,n\}$. This leads us to our types:
 %
 \begin{definition}[Types]
 	Types $\tau$ adhere to the grammar
@@ -143,7 +146,16 @@ $\fin{n}$ is the finite type with values $\{\finconst{0}{n}, \finconst{1}{n}, \l
 
 The type $\float[B; V]$ deserves special attention. First, it indicates that a given expression evaluates to a real number. The cut set $B$ and the value set $V$ carry additional information crucial for discretization. Intuitively, the cut set $B$ is an overapproximation of the values the expression of type $\float[B; V]$ will be compared to during program execution (where $\cleq{x}$ indicates a non-strict and $\clt{x}$ indicates a strict comparison), and $V$ is an overapproximation of the values the expression can take. If $B = \top$, then the expression is compared to a continuous value (an infinite number of values), such as a continuous distribution. If $B = \emptyset$, then the expression is never compared to a concrete value during program execution. If $V=\top$, then the expression can take on any value in $\R$.
 
-We note that in the last two partial discretization examples in Section~\ref{sec:examples}, the returned expressions have a cut set of $B = \top$. This reflects a key design decision in \Slice{}: when a program cannot be fully discretized, we conservatively preserve the full real-valued behavior of any expression that contributes directly to observable output. In such cases, $B = \top$ also serves as a marker that an expression may be subject to external comparisons at runtime, including comparisons against arbitrary real values not syntactically present in the program.
+We note that in the last two partial discretization examples from Section~\ref{sec:examples}, the returned expressions have a cut set of $B = \top$. This reflects a key design decision in \Slice{}: when a program cannot be fully discretized, we conservatively preserve the full real-valued behavior of any expression that contributes directly to its output. In such cases, $B = \top$ also serves as a marker that an expression may be subject to external comparisons at runtime, including comparisons against arbitrary real values not syntactically present in the program.
+
+Finally, we say that an expression $e : \float[B;V]$ is \textit{finite-cut} (\emph{infinite-cut}) if $B \neq \top$ ($B=\top$). 
+%\begin{definition} [Finite-Cut Expressions]\label{def:finite-cut}
+%	An expression $e : \float[B;V]$ is \textit{finite-cut} if $B \neq \top$.
+%\end{definition}
+%
+%\begin{definition} [Infinite-Cut Expressions]\label{def:infinite-cut}
+%	An expression $e : \float[B;V]$ is \textit{infinite-cut} if $B = \top$.
+%\end{definition}
 % Additionally, we define $\fin{n}$ as a finite type with values $\{\finconst{0}{n}, \finconst{1}{n}, \ldots, \finconst{(n-1)}{n}\}$, where $i_{\# n}$ is an integer type. We define $\float[B; V]$ as a float type with a cut set $B$ and value set $V$ for discretization. Note that $i$ is different from $i_{\# n}$: the former is a float type while the latter is an integer type. This distinction is important since BDD-based exact discrete inference engines require all variables to range over finite domains.
 
 %We introduce a type system that analyzes both the cuts and concrete values of floating point expressions. We have the following types:
@@ -174,53 +186,57 @@ We note that in the last two partial discretization examples in Section~\ref{sec
 %%$<\!\!x$ and $\leq\!\!x$ for all $x \in \R$.
 %The lattice structure enables type inference to systematically collect and propagate information about both how values are used (cuts) and what values they can take (values).
 
-\kevin{commented out lattice figure for now}
+%\kevin{commented out lattice figure for now}
 %\input{figures/lattice}
 
 \subsection{Typing Rules}\label{sec:type-system}
-The typing rules are split into two parts: rules specific to float types and continuous distributions (Figure~\ref{fig:typing-float}), and standard rules for all other language constructs (Figure~\ref{fig:typing-general}).
+The typing rules are split into three parts: Rules specific to float types and continuous distributions (Figure~\ref{fig:typing-float}), standard rules for all other language constructs (Figure~\ref{fig:typing-general}), and subtyping rules (\Cref{fig:subtyping}).
 
 To understand the float typing rules, it is helpful to understand how discretization works.
 A type $\float$[B; V] is discretized as follows:
-\begin{itemize}
-    \item If $B$ is a finite set of cuts, then the type is discretized to a type $\fin{n+1}$ where $n$ is the number of cuts. For instance, if $B = \{<\!\!0.5, \leq\!\!0.8\}$, then the type is discretized to $\fin{3}$, where $\finconst{0}{3}$ represents the range $(-\infty, 0.5)$, $\finconst{1}{3}$ represents the range $[0.5, 0.8]$, and $\finconst{2}{3}$ represents the range $(0.8, \infty)$.
-    \item If $B = \top$, then no discretization is performed, and the type remains $\float$.
-\end{itemize}
+%\begin{itemize}
+    %\item 
+    If $B \neq\top$ is a finite set of cuts, then the type is discretized to a type $\fin{n+1}$ where $n+1 = |\intervals{B}|$ is the number of intervals induced by $B$. For instance, if $B = \{<\!\!0.5, \leq\!\!0.8\}$, then the type is discretized to $\fin{3}$, where $\finconst{0}{3}$ represents the interval $(-\infty, 0.5)$, $\finconst{1}{3}$ represents the interval $[0.5, 0.8]$, and $\finconst{2}{3}$ represents the interval $(0.8, \infty)$.
+    %\item 
+    If $B = \top$, then no discretization is performed, and the type remains $\float$.
+%\end{itemize}
 
-To understand the typing rules, keep in mind that the $B$ set needs to be sufficiently refined (i.e., contain enough cuts) so that the discretized program has enough information to determine how the original continuous program behaved.
+To understand the typing rules, keep in mind that the $B$ set needs to be sufficiently fine-grained --- i.e., contain enough cuts --- so that the discretized program has enough information to determine how the original continuous program behaved.
 
 \input{figures/typing-float}
 
-\paragraph{Continuous distributions.} Let us first consider the typing rule for single-argument continuous distributions.
+\paragraph{Continuous distributions.} Let us first consider the typing rule \textsc{Continuous-1} for single-argument continuous distributions.
 The rule states that the argument $\Gamma \vdash e : \float[B; V]$ with the constraint that $B$ distinguishes $V$. The distinguishes predicate is defined as follows:
 \begin{definition}
 	\label{def:distinguishes}
-	Let $B\in \cutsets$ and $V\in\valsets$. We say that \emph{$B$ distinguishes $V$}, if $B = \top$ or every interval $I$ induced  by $B$ contains at most one value in $V$, i.e., $
+	Let $B\in \cutsets$ and $V\in\valsets$. We say that \emph{$B$ distinguishes $V$}, if $B = \top$ or ($V \neq \top$ and every interval $I$ induced  by $B$ contains at most one value in $V$, i.e., $
 	\forall I \in \intervals{B}\colon | V \cap I|  \leq 1
-	$.
+	$).
 	%$B$ distinguishes $V$ if every interval in $B$ contains at most one value in $V$, or $B = \top$.
 \end{definition}
-Intuitively $V$ contains the possible values that the float expression can take on, and $B$ distinguishes $V$ if the continuous quantity can be fully recovered by the discretized program.
-For example, if $B = \{<\!\!0.5, \leq\!\!0.8\}$ and $V = \{0.2, 0.7\}$, then $B$ distinguishes $V$. The intervals induced by $B$ are $(-\infty, 0.5)$, $[0.5, 0.8]$, and $(0.8, \infty)$. The first interval contains $0.2$, the second contains $0.7$, and the third contains no values from $V$, so the condition holds. In contrast, if $V = \{0.2, 0.3\}$, $B$ would not distinguish $V$ because both values lie in the first interval $(-\infty, 0.5)$. Distinguishability is crucial in distributions because discretization typically causes a loss of information: in general, many real values may map to the same discrete value. However, if each interval induced by the cut set contains at most one possible value from $V$, then the original real value can be uniquely recovered from its discretized form. This property is important for parameters of distributions, where recovering the exact real-valued input is necessary to preserve the program's semantics, such as the example in~\ref{sec:examples:5}. There, the standard deviation of a Gaussian is chosen from a discrete set of possible values, and because the cut set distinguishes these values, the program can accurately track which parameter was selected and produce a faithful discretized version of the distribution.
-
-We now obtain the following theorems:
+%
+The intuition is the following: In order to discretize $\exponential(e)$, it must be the case that $e$ can only take on finitely many values, and that those values can be fully recovered by the discretized program. This means that $\exponential(e)$ cannot be discretized if $e: \float[B; V]$ with $V=\top$. If, however, $V \neq \top$, then the finite set $V$ contains all the values $e$ can take. In that case, if $B$ distinguished $V$, then $B$ will be fine-grained enough to fully recover $e$'s values in the discretization. We will detail this further in \Cref{sec:discretization}. The following observations will be useful in the sequel:
 
 \begin{theorem}\label{thm:distinguishes-singleton}
-	If $B$ distinguishes $V$, then $V = \{c\}$ if and only if $B = \emptyset$.
+	If $B$ distinguishes $V$, then $\exists c \colon V = \{c\}$ if and only if $B = \emptyset$.
 \end{theorem}
 
 \begin{theorem}\label{thm:distinguishes-top}
 	If $B$ distinguishes $V$, then $V = \top$ if and only if $B = \top$.
 \end{theorem}
+%\kevin{double-check and maybe ref to example in sec 2, let's see}
+%Intuitively $V$ contains the possible values that the float expression can take on, and $B$ distinguishes $V$ if the continuous quantity can be fully recovered by the discretized program.
+%For example, if $B = \{<\!\!0.5, \leq\!\!0.8\}$ and $V = \{0.2, 0.7\}$, then $B$ distinguishes $V$. The intervals induced by $B$ are $(-\infty, 0.5)$, $[0.5, 0.8]$, and $(0.8, \infty)$. The first interval contains $0.2$, the second contains $0.7$, and the third contains no values from $V$, so the condition holds. In contrast, if $V = \{0.2, 0.3\}$, $B$ would not distinguish $V$ because both values lie in the first interval $(-\infty, 0.5)$. Distinguishability is crucial in distributions because discretization typically causes a loss of information: in general, many real values may map to the same discrete value. However, if each interval induced by the cut set contains at most one possible value from $V$, then the original real value can be uniquely recovered from its discretized form. This property is important for parameters of distributions, where recovering the exact real-valued input is necessary to preserve the program's semantics, such as the example in~\ref{sec:examples:5}. There, the standard deviation of a Gaussian is chosen from a discrete set of possible values, and because the cut set distinguishes these values, the program can accurately track which parameter was selected and produce a faithful discretized version of the distribution.
+%
+%We now obtain the following theorems:
 
-The rule for two-argument continuous distributions is similar, but the argument $\Gamma \vdash e_1 : \float[B_1; V_1]$ and $\Gamma \vdash e_2 : \float[B_2; V_2]$ with the constraint that $B_1$ and $B_2$ distinguish $V_1$ and $V_2$ respectively. The same typing rule for the uniform distribution is used for all other two-argument continuous distributions.
+The rule for two-argument continuous distributions is analogous: for the two arguments $\Gamma \vdash e_1 : \float[B_1; V_1]$ and $\Gamma \vdash e_2 : \float[B_2; V_2]$ we require that $B_1$ (resp.\ $B_2$) distinguishes $V_1$ (resp.\ $V_2$). 
 
 
 
 \paragraph{Comparisons.} 
-To understand the typing rules for less-than and less-than-or-equal comparisons, let us first consider a comparison $e < c$ where $c$ is a constant and $e$ is a continuously ranging quantity, where $e : \float[B_1; \top]$ and $c : \float[B_2; \{c\}]$. Intuitively, if $e$ is discretized, then it must still contain enough information to determine whether $e < c$ is true or false. Therefore, $B_1$ must contain the comparison $<\!\!c$.
-
-Similarly, if $c$ is not a literal constant, but has type $c : \float[B_2; \{v_1, v_2, \dots, v_n\}]$ where $V_2$ is a finite set of constants, then $c$ can take on values in $V_2$. Therefore, $B_1$ must contain the comparisons $<\!\!v_1, <\!\!v_2, \dots, <\!\!v_n$. This motivates the following definition:
+To understand the typing rules for less-than and less-than-or-equal comparisons, let us first consider a comparison $e < c$ where $c$ is a constant and $e$ is a continuously ranging quantity, i.e., $e : \float[B_1; \top]$ and $c : \float[B_2; \{c\}]$. Intuitively, if $e$ is discretized, then it must still contain enough information to determine whether $e < c$ is true or false. Therefore, $B_1$ must contain the comparison $<\!\!c$.
+Similarly, if $c$ is not a literal constant, but has type $c : \float[B_2; V_2]$ where $V_2 = \{v_1, v_2, \dots, v_n\}$ is a finite set of constants, then $c$ can take on values in $V_2$. Therefore, $B_1$ must contain the comparisons $<\!\!v_1, <\!\!v_2, \dots, <\!\!v_n$. This motivates the following definition:
 
 \begin{definition}
 	\label{def:answers-less}
@@ -235,12 +251,14 @@ Similarly, if $c$ is not a literal constant, but has type $c : \float[B_2; \{v_1
 	%Analogously, we say that \emph{$B$ answers $\cleq{V}$}, if the above holds with $<$ replaced by $\leq$.
 \end{definition}
 
-Note that $B = \top$ iff $V = \top$ accounts for comparisons where a continuously ranging expression is compared against arbitrary real values not statically known, such as other continuous distributions, so no finite set of cuts can suffice. In this case, the quantity cannot be discretized, and the comparison remains continuous. 
+Note that $B = \top$ iff $V = \top$ accounts for comparisons where a continuously ranging expression is compared against arbitrary real values not statically known, such as other continuous distributions, in which case no discretization can be performed.
+Additionally, we insist that $B_1 = B_2$, which ensures that both comparants will be discretized to the same type, or not discretized at all.
 
-Additionally, we insist that $B_1 = B_2$. This symmetry ensures that the comparison is always well-typed and meaningful, either as a comparison between two discretized values in the same finite domain, or as a comparison between two real-valued, undiscretized quantities. For example, it ensures that $e$ and $c$ are discretized to the same representation, and $<$ can be discretized to $\finleq{k}$. 
+%This symmetry ensures that the comparison is always well-typed and meaningful, either as a comparison between two discretized values in the same finite domain, or as a comparison between two real-valued, undiscretized quantities. For example, it ensures that $e$ and $c$ are discretized to the same representation, and $<$ can be discretized to $\finleq{k}$. 
 
-It can also be the case that we have a comparison $c < e$ where the continuously ranging quantity $e : \float[B_2; V_2]$ is on the right hand side. In this case, $B_2$ must answer $c\!\!<$, that is, it must contain a comparison $\leq\!\!c$. To make this explicit, consider $2.3 < e$. We can answer this precisely when $B_2$ contains an intervals $(-\infty, 2.3]$ and $(2.3, +\infty)$: the comparison $2.3 < e$ is true if $e$ is in the second interval, and false if $e$ is in the first interval. Of course, it is also ok if $B_2$ is even more precise, as long as it contains the comparison $\leq\!\!2.3$.
+It can also be the case that we have a comparison $c < e$ where the continuously ranging quantity $e : \float[B_2; V_2]$ is on the right hand side. In this case, $B_2$ must answer $c\!\!<$, i.e., it must contain a comparison $\leq\!\!c$. To make this explicit, consider $2.3 < e$. We can answer this precisely when $B_2$ contains an intervals $(-\infty, 2.3]$ and $(2.3, +\infty)$: the comparison $2.3 < e$ is true if $e$ is in the second interval, and false if $e$ is in the first interval. $B_2$ may, of course, be even more fine-grained.
 
+Finally, For non-strict comparisons, the typing rule is analogous:
 \begin{definition}
 	\label{def:answers-less-equal}
 	Let $B\in \cutsets$ and $V\in\valsets$.
@@ -253,13 +271,14 @@ It can also be the case that we have a comparison $c < e$ where the continuously
 	%
 \end{definition}
 
-For less-than-or-equal comparisons, the typing rule is similar, but with the conditions reversed.
+
 
 \input{figures/typing-general-core}
 
-The typing rules for the other constructs are standard, and are shown in Appendix~\ref{appen:typing-rules}.
+All other typing rules are standard and depicted in Figure \ref{fig:typing-general} and Appendix~\ref{appen:typing-rules}, respectively.
+
 
 \paragraph{Subtyping.}
-The type system includes a subtyping relation that captures when one type can be safely used in place of another. The subtyping rules are shown in Figure~\ref{fig:subtyping}. For float types $\float[B;V]$, subtyping follows the lattice ordering on $V$: an expression known to range over some set of values can also be considered to range over a superset of those values. For $B$ we require equality to make sure that the discretized representation of the expression cannot be changed by subtyping.
+The type system includes a subtyping relation that captures when one type can be replaced by another. The subtyping rules are shown in Figure~\ref{fig:subtyping}. For float types $\float[B;V]$, subtyping follows the lattice ordering on $V$: An expression known to range over some set of values can also be considered to range over a superset of those values. For $B$, we require equality to make sure that the discretized representation of the expression is not changed by subtyping.
 
 \input{figures/subtyping}
