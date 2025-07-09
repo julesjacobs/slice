@@ -113,21 +113,55 @@ The type inference rules closely mirror the typing rules in Figure~\ref{fig:typi
 \end{example}
 
 \subsection{Constraint Solving}
-Once constraint generation completes, we obtain a system of constraints over cut sets $B$ and value sets $V$ for each float-typed expression in the program. The goal of the constraint solving phase is to assign concrete sets to each $B$ and $V$ that satisfy all generated constraints. Solving proceeds by interpreting the constraints as equations or inclusions over sets of floats, and applying a standard fixpoint algorithm to propagate equalities and bounds through the constraint graph.
+Once constraint generation completes, we obtain a system of constraints over type variables, cut sets $B$, and value sets $V$. The constraint solving phase proceeds in two steps:
 
-The most common constraint forms involve equality ($C_1 = C_2$) and least upper bound operations ($V_1 \latticesup V_2 = V_3$), which correspond to set equality and union, respectively. For instance, a constraint of the form $V_1 \latticesup V_2 = V_3$ is solved by setting $V_3$ to the union of $V_1$ and $V_2$, while constraints such as $B = \clt{V}$ arising from comparisons are handled by computing the cut set of the corresponding value set. We solve constraints incrementally, propagating information until reaching a stable fixed point. For example, if we learn that $V_1 = \{0.3\}$ and $V_2 = \{1.8\}$, then the constraint $V_1 \latticesup V_2 = V_3$ allows us to conclude $V_3 = \{0.3, 1.8\}$. This, in turn, may determine $B_3 = \clt{V_3} = {\clt{0.3}, \clt{1.8}}$, which might then resolve other constraints downstream. The solving phase terminates when no further changes can be made to any $B$ or $V$ set.
+\begin{enumerate}
+    \item \textbf{Subtyping reduction}: We first process all subtyping constraints of the form $\subtype{\tau_1}{\tau_2}$. Since subtyping for float types follows the rule $\subtype{\float[B_1;V_1]}{\float[B_2;V_2]}$ if and only if $B_1 = B_2$ and $V_1 \sqsubseteq V_2$, we reduce each subtyping constraint into corresponding equality and subset constraints on the cut sets and value sets. In general, subtyping elimination continues until we have only constraints among $B$'s and $V$'s.
+    
+    \item \textbf{Lattice constraint solving}: After subtyping reduction, we are left with constraints purely over cut sets and value sets—equalities, subset relations, and the specialized constraints like $\distinguishes{B}{V}$, $\answerslt{B}{V_1}{V_2}$, and $\has{V}{c}$. These constraints are solved using a monotone fixpoint algorithm for lattices over the cut sets and value sets.
+\end{enumerate}
 
-\paragraph{Preserving observable output for partial discretization.} \katherine{todo}
+\paragraph{Lattice Solving}
 
-\begin{example}
-    From the previous example, we obtained the following constraints:
+The lattice solver keeps track of the current contents of all $B$ and $V$ variables.
+Initially, all $B$ and $V$ variables are set to $\emptyset$.
+During the solving process, the variables may go up in the lattice to a finite set, or to $\top$.
 
-    \begin{enumerate}
-        \item $B_1 = B_2 = B_3$ and $V_1 \latticesup V_2 = V_3$ 
-        \item $B_4 = B_3$ and $B_4 = B_4\; \latticesup \clt{V_4}$
-        \item $B_5 = B_6 = B_7$ and $V_5 \latticesup V_6 = V_7$ 
-        \item $V_1 = V_2 = \top$, $V_4 = \{1.5\}$, $V_5 = \{1.8\}$, $V_6 = \{0.3\}$
-        \item $B_3 = B_7$ and $B_3 = B_3\; \latticesup \cleq{V_7}$
-    \end{enumerate}
+Each of the constraints is handled as follows:
 
-\end{example}
+\begin{itemize}
+    \item \textbf{Equality constraints} ($B_1 = B_2$ or $V_1 = V_2$): We unify the variables, treating them as the same variable throughout the solving process. Any update to one variable is immediately reflected in all variables unified with it.
+    
+    \item \textbf{Subset constraints} ($B_1 \sqsubseteq B_2$ or $V_1 \sqsubseteq V_2$): We ensure that the contents of the first variable are always a subset of the second. When $B_1$ or $V_1$ is updated, we propagate the changes to $B_2$ or $V_2$ by taking the least upper bound.
+    
+    \item \textbf{Value containment} ($\has{V}{c}$): We update $V$ to include the constant $c$, i.e., $V := V \sqcup \{c\}$. If $V$ is already $\top$, the constraint is trivially satisfied.
+    
+    \item \textbf{Top assignment} ($V = \top$): We immediately set $V$ to $\top$, representing that the value set contains all possible float values.
+    
+    \item \textbf{Distinguishability} ($\distinguishes{B}{V}$): This constraint ensures that the cut set $B$ can distinguish between all values in $V$. If $V$ is a finite set $\{v_1, ..., v_n\}$ with $n > 1$, we require that $B$ contains at least $n-1$ cuts to separate these values. If the cuts do not separate the values at the current solver state, we insert additional cuts to make that so. There is no canonical way to do this, so we use a simple heuristic: we insert a cut $\clt{x}$ for each value $x \in V$ that is not already separated by existing cuts.
+    
+    If $B = \top$, the constraint is trivially satisfied.
+    
+    \item \textbf{Less-than answerability} ($\answerslt{B}{V_1}{V_2}$): Intuitively, this constraint ensures that $B$ contains enough cuts to answer all possible comparisons of the form ``$v_1 < v_2$'' where $v_1 \in V_1$ and $v_2 \in V_2$.
+    If $B = \top$, the constraint is trivially satisfied.
+    Otherwise, we again have a heuristic choice: we add a cut $\clt{v}$ for each value $v \in V_2$ (if $V_2 \neq \top$) and $\cleq{v}$ for each value $v \in V_1$ (if $V_1 \neq \top$). If $V_1$ and $V_2$ are both $\top$, we set $B$ to $\top$.
+    
+    \item \textbf{Less-equal answerability} ($\answersleq{B}{V_1}{V_2}$): Analogous to less-than.
+\end{itemize}
+
+The solver repeatedly processes constraints until reaching a fixed point, where no constraint causes any further updates to the variables. The monotonicity of the lattice operations ensures that this process terminates.
+
+This procedure may add more cuts to $B$'s than strictly necessary, but it never sets $B=\top$ unless that is the only way to satisfy all constraints. In other words, the discretization itself may be suboptimal in terms of the number of cuts, but if discretization is possible, it always succeeds.
+
+% \begin{example}
+%     From the previous example, we obtained the following constraints:
+
+%     \begin{enumerate}
+%         \item $B_1 = B_2 = B_3$ and $V_1 \latticesup V_2 = V_3$ 
+%         \item $B_4 = B_3$ and $B_4 = B_4\; \latticesup \clt{V_4}$
+%         \item $B_5 = B_6 = B_7$ and $V_5 \latticesup V_6 = V_7$ 
+%         \item $V_1 = V_2 = \top$, $V_4 = \{1.5\}$, $V_5 = \{1.8\}$, $V_6 = \{0.3\}$
+%         \item $B_3 = B_7$ and $B_3 = B_3\; \latticesup \cleq{V_7}$
+%     \end{enumerate}
+
+% \end{example}
