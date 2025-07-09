@@ -409,15 +409,15 @@ Not all programs can be fully discretized. Consider a program where continuous v
 \noindent The branching condition gets discretized, but $x$ and $y$ remain continuous.
 
 \subsection{Partial Discretization for Continuous Values without Comparisons}\label{sec:examples:partial2}
-The example in subsection~\ref{sec:examples:partial1} shows a program that can only be partially discretized due to continuous variables being compared directly to each other rather than to constants. If no comparisons are made with continuous distributions, the best \Slice{} can do is also a partial discretization. Consider the following example:
+The previous example shows a program that can only be partially discretized due to continuous variables being compared directly to each other rather than to constants. If no comparisons are made with continuous distributions, the best \Slice{} can do is also a partial discretization. Consider:
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
     let x = uniform(0,1) in
     let y = gaussian(0,1) in
     if y < 0.5 then beta(1,1) else uniform(0,2)
 \end{lstlisting}
-
-Here, \Slice{} does not identify any cuts for the subexpressions $x$ and \ifkw\; $y < 0.5$ \thenkw\; \betafn(1,1) \elsekw\; \uniform(0,2), both of which have $\top$ value sets. As a result, their cut sets are empty. Nonetheless, \Slice{} still preserves the semantics of the original program by not discretizing the return value, setting the cut set of the return values to $\top$. This is because the return value is considered part of the program’s observable behavior, so external code may perform arbitrary comparisons against it, including comparisons to real numbers not present in the program. In contrast, variables like $x$, which are never used in comparisons, can safely be discretized without affecting the program’s semantics.
+\noindent
+Here, \Slice{} does not identify any cuts for the subexpressions $x$ and \ifkw\; $y < 0.5$ \thenkw\; \betafn(1,1) \elsekw\; \uniform(0,2). \Slice{} still preserves the semantics of the original program by not discretizing the return value, setting the cut set of the return values to $\top$. This is because the return value is considered part of the program’s observable behavior, so external code may perform arbitrary comparisons against it, including comparisons to real numbers not present in the program. However, the variables $x$ and $y$ are never used in comparisons, and can hence be discretized:
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
   let x = uniform(0,1) : !{\ft{}}! in
