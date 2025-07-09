@@ -4,7 +4,7 @@ In this section, we describe our type inference algorithm, where the goal is to 
 
 \subsection{Constraint Generation}
 
-We use a constraint language as shown in Figure~\ref{fig:constraints-grammar} to express requirements over type structure and float refinements. We adopt the framework presented in~\cite{Odersky1999ConstrainedTypes}, introducing a new judgment of form $C, \Gamma \vdash e : \tau$, which reads as \emph{in the environment $\Gamma$, $e$ has type $\tau$ and produces the set of constraints $C$}. The inference rules formalize what constraint $C$ must be generated (and later solved) for a given expression $e$ to have inferred type $\tau$. Figure~\ref{fig:type-inference} gives the constraint generation rules for \Slice{}. We focus on a small but representative subset of constructs in \Slice{}, but enough to capture the core features needed to demonstrate how contraints are generated over the full language.
+We use a constraint language as shown in Figure~\ref{fig:constraints-grammar} to express requirements over type structure and float refinements. We adopt the framework presented in~\cite{Odersky1999ConstrainedTypes}, introducing a new judgment of form $\Gamma \vdash e : \tau \mid C$, which reads as \emph{in the environment $\Gamma$, $e$ has type $\tau$ and produces the set of constraints $C$}. In this judgment, $\Gamma$ and $e$ are inputs to the type inference algorithm, while $\tau$ and $C$ are outputs—the algorithm infers the type $\tau$ for expression $e$ and generates the constraints $C$ that must be satisfied for this typing to be valid. The inference rules formalize what constraint $C$ must be generated (and later solved) for a given expression $e$ to have inferred type $\tau$. Figure~\ref{fig:type-inference} gives the constraint generation rules for \Slice{}. We focus on a small but representative subset of constructs in \Slice{}, but enough to capture the core features needed to demonstrate how contraints are generated over the full language.
 
 Several constraint generation rules warrant special attention, which we now mention. First, the \textsc{TVar} rule states that variables get the same type throughout the program. In particular, once a variable is assigned a float type with a specific cut set and value set, every use of that variable is constrained to respect those same refinements. Additionally, note that for the \textsc{TLess} and \textsc{TLessEq} rules, there is an implicit $B_1 = B_2$ in the constraint; this is enforced by the answers constraint which takes in the single shared cut set $B$ among the two subexpressions. And finally, for space, we only show the constraint generation rule for a continuous distribution with one argument; however, the rule for a two-argument distributions is completely analogous, as constraints are generated independently for both arguments.
 
@@ -13,14 +13,12 @@ Several constraint generation rules warrant special attention. The \textsc{TFloa
 
 \begin{figure}[!t]
     \begin{align*}
-    C ::= &\; \tau_1 <: \tau_2  \text{ (subtyping)} \\
-          &\mid \distinguishes{B}{V}  \text{ (distinguishability)} \\
-          &\mid \answerslt{B}{V_1}{V_2}  \text{ (less-than answerability)} \\
-          &\mid \answersleq{B}{V_1}{V_2}  \text{ (less-equal answerability)} \\
-          &\mid \has{V}{c}  \text{ (value containment)} \\
-          &\mid C_1 \land C_2   \text{ (conjunction)}
-    C &\; ::= \top \mid \{c_1,\ldots,c_n\} \mid B  \mid V \mid C_1 = C_2  \text{ (type equality)} \mid C_1 \land C_2   \text{ (conjunction)} \mid C_1 \latticesup C_2 \text{ (join)} \\
-    | &\; \distinguishes{C_1}{C_2} \mid \answerslt{C_1}{C_2}{C_3} \mid \answersleq{C_1}{C_2}{C_3} \mid \has{C_1}{C_2} \mid \subtype{\tau_1}{\tau_2}
+    C ::= &\; \tau_1 <: \tau_2  \text{\quad (subtyping)} \\
+          &\mid \distinguishes{B}{V}  \text{\quad (distinguishability)} \\
+          &\mid \answerslt{B}{V_1}{V_2}  \text{\quad (less-than answerability)} \\
+          &\mid \answersleq{B}{V_1}{V_2}  \text{\quad (less-equal answerability)} \\
+          &\mid \has{V}{c}  \text{\quad (value containment)} \\
+          &\mid C_1, C_2   \text{\quad (conjunction)}
     \end{align*}
 \caption{Syntax for our constraint language. The constraints directly correspond to the semantic requirements in our type system: subtyping constraints ensure type compatibility, $\distinguishes{B}{V}$ ensures that distribution parameters can be recovered after discretization, $\answerslt{B}{V_1}{V_2}$ and $\answersleq{B}{V_1}{V_2}$ ensure that comparison results can be determined after discretization, and $\has{V}{c}$ ensures that constants are properly tracked in value sets.}
 \caption{Syntax for our constraint language. As we want \Slice{} to propogate information about comparisons and possible value ranges into float types, our syntax is over the cut sets $B \in \cutsets$ and value sets $V \in \valsets$. For the $\subtype{\tau_1}{\tau_2}$ constraint, we assume $\tau_1$ and $\tau_2$ are float types $\float[B_1;V_1]$ and $\float[B_2;V_2]$, respectively, and hence follow the \textsc{Sub-Float} relation in Figure~\ref{fig:subtyping}.}
