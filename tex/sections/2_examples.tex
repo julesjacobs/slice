@@ -163,14 +163,15 @@ Consider the following program:
 
 \subsection{Discrete Latent Variable}\label{sec:examples:5}
 
-Continuous distributions can have parameters that depend on discrete random choices. In this example, a Gaussian distribution's standard deviation is determined by a random choice between two values:
+Continuous distributions can have parameters that depend on discrete random choices. In this example, a Gaussian distribution's standard deviation is determined by a such a random choice:
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
     let x = if flip() then 0.5 else 1.5 in
     gaussian(0, x) < 0.5
 \end{lstlisting}
 
-\noindent This example shows how discrete choices can affect the parameters of continuous distributions. The type-annotated version reveals how the variable $x$ determines the standard deviation of the Gaussian:
+\noindent %This example shows how discrete choices can affect the parameters of continuous distributions. 
+The type-annotations reveal how the variable $x$ determines the standard deviation of the Gaussian:
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
     let x = if flip()
@@ -189,13 +190,14 @@ Continuous distributions can have parameters that depend on discrete random choi
     else
         discrete(0.630559, 0.369441)) < 1
 \end{lstlisting}
-
-This gives the output \result{0.73595}{0.26405}.
+%
+\noindent
+Using \Dice{}, this yields the output \result{0.73595}{0.26405}.
 
 
 \subsection{Conditioning}\label{sec:examples:6}
 
-\Slice{} supports conditioning on events through the $\observekw$ construct, allowing for Bayesian inference. The following program computes the probability that a uniform random variable is less than 0.2, given that it is less than 0.5:
+\Slice{} supports conditioning on events through the $\observekw$ construct, allowing for Bayesian inference. The following program models the conditional probability that a uniform random variable is less than 0.2, given that it is less than 0.5:
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
     let x = uniform(0.0, 1.0) in
@@ -203,7 +205,7 @@ This gives the output \result{0.73595}{0.26405}.
     x < 0.2
 \end{lstlisting}
 
-\noindent The type-annotated version shows how observation points become cuts:
+\noindent The type annotations show how observation points become cuts:
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
     let x = (uniform(0.0, 1.0) : !{\ft{<0.2,<0.5}}!) in
@@ -211,7 +213,7 @@ This gives the output \result{0.73595}{0.26405}.
     x < (0.2 : !{\ftb{<0.2,<0.5}{0.2}}!)
 \end{lstlisting}
 
-\noindent The discretized version preserves the conditioning semantics:
+\noindent The discretized program correctly preserves the conditional probability:
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em]
     let x = discrete(0.2, 0.3, 0.5) in
