@@ -390,7 +390,7 @@ Not all programs can be fully discretized. Consider a program where continuous v
   if uniform(0,1) < 0.5 then x < y else y < x
 \end{lstlisting}
 
-\noindent The type-annotated version reveals that $x$ and $y$ have type \ftt, indicating that no finite set of cuts suffices:
+\noindent The type-annotated version reveals that $x$ and $y$ have type \ftt, indicating that no finite set of cuts suffices to fully preserve the semantics of the above program:
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
   let x = (uniform(0, 1) : !{\ftt}!) in
@@ -399,14 +399,14 @@ Not all programs can be fully discretized. Consider a program where continuous v
   then x < y else y < x
 \end{lstlisting}
 
-\noindent \Slice{} performs partial discretization, discretizing only the parts it can:
+\noindent \Slice{} performs partial discretization, i.e., it discretizes only where it is possible:
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em]
   let x = uniform(0, 1) in
   let y = gaussian(0, 1) in
   if discrete(0.5, 0.5) < 1 then x < y else y < x
 \end{lstlisting}
-\noindent The branching condition gets discretized, but $x$ and $y$ remain continuous because they are only compared to each other, not to constants.
+\noindent The branching condition gets discretized, but $x$ and $y$ remain continuous.
 
 \subsection{Partial Discretization for Continuous Values without Comparisons}\label{sec:examples:partial2}
 The example in subsection~\ref{sec:examples:partial1} shows a program that can only be partially discretized due to continuous variables being compared directly to each other rather than to constants. If no comparisons are made with continuous distributions, the best \Slice{} can do is also a partial discretization. Consider the following example:
