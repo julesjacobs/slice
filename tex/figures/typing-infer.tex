@@ -10,12 +10,12 @@
     
         \inferrule[\textsc{TContinuous-1}]
         {\Gamma \vdash e : \float[B_1; V_1] \mid C}
-        {\Gamma \vdash \exponential(e) : \float[B; \top] \mid C, \distinguishes{B_1}{V_1}}
+        {\Gamma \vdash \exponential(e) : \float[B; V] \mid C, \distinguishes{B_1}{V_1}, V = \top}
 
-        % \inferrule[\textsc{TContinuous-2}]
-        % {\ C_1, \Gamma \mid e_1 : \float[B_1; V_1] \\
-        %    C_2, \Gamma \mid e_2 : \float[B_2; V_2] }
-        % {C_1 \land C_2 \land V = \top \land B_1 =\; \cleq{V_1} \land B_2 =\; \cleq{V_2}, \Gamma \mid \uniform(e_1, e_2) : \float[B; \top]}
+        \inferrule[\textsc{TContinuous-2}]
+        {\Gamma \vdash e_1 : \float[B_1; V_1] \mid C_1 \\
+         \Gamma \vdash e_2 : \float[B_2; V_2] \mid C_2}
+        {\Gamma \vdash \uniform(e_1, e_2) : \float[B; V] \mid C_1, C_2, \distinguishes{B_1}{V_1}, \distinguishes{B_2}{V_2}, V = \top}
     
         \inferrule[\textsc{TIf}]
         {\Gamma \vdash e_1 : \bool \mid C_1 \\
