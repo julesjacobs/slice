@@ -221,11 +221,13 @@ Using \Dice{}, this yields the output \result{0.73595}{0.26405}.
     x < 1
 \end{lstlisting}
 
-\noindent This results in the output \result{0.4}{0.6}. In the discrete version, the observation $x < 2$ rules out the case where $x = 2$ (corresponding to the original interval $[0.5, +\infty)$), effectively conditioning on $x$ being in $[0.0, 0.5)$.
+\noindent
+%This results in the output \result{0.4}{0.6}. 
+In the discrete version, the observation $x < 2$ rules out the case where $x = 2$ (corresponding to the original interval $[0.5, +\infty)$), effectively conditioning on $x$ being in $[0.0, 0.5)$.
 
 \subsection{Higher-Order Functions}\label{sec:examples:7}
 
-\Slice{} supports higher-order functions, enabling functional programming patterns with probabilistic computations. This example shows a higher-order function \texttt{mappair} that applies a function to both elements of a pair:
+\Slice{} supports higher-order functions, enabling functional programming patterns with probabilistic computations. The following function \texttt{mappair} applies a function to both elements of a pair:
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
   let mappair = fun f -> fun p -> (f (fst p), f (snd p)) in
@@ -238,7 +240,7 @@ Using \Dice{}, this yields the output \result{0.73595}{0.26405}.
       if fst r then snd r else fst q
 \end{lstlisting}
 
-\noindent The type system correctly infers that cuts from both \texttt{f} and \texttt{g} (0.5 and 1.5) must be collected for the distributions in \texttt{p}, yielding type \ft{<0.5,<1.5} for both components. The discretized version preserves the higher-order structure: 
+\noindent The type system correctly infers that cuts from both \texttt{f} and \texttt{g} (0.5 and 1.5) must be collected for the distributions in \texttt{p}, yielding type the \ft{<0.5,<1.5} for both components. The discretized program preserves the higher-order structure: 
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em]
   let mappair = fun f -> fun p -> (f (fst p), f (snd p)) in
@@ -252,7 +254,7 @@ Using \Dice{}, this yields the output \result{0.73595}{0.26405}.
       if fst r then snd r else fst q
 \end{lstlisting}
 
-\noindent \Dice does not support exact inference for higher-order functions, but \Roulette does, hence the output distribution \result{0.53636}{0.46364}. The continuous distributions in the original program are discretized into three-valued discrete distributions based on the intervals $(-\infty, 0.5)$, $[0.5, 1.5)$, and $[1.5, +\infty)$, while the functional structure remains intact.
+\noindent \Dice does not support exact inference for higher-order functions, but \Roulette does, and applying it yileds the output \result{0.53636}{0.46364}. The continuous distributions in the original program are discretized into three-valued discrete distributions based on the intervals $(-\infty, 0.5)$, $[0.5, 1.5)$, and $[1.5, +\infty)$, while the functional structure remains intact.
 
 \subsection{Sequential Processes with Iterate}\label{sec:examples:8}
 
