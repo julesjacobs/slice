@@ -318,7 +318,7 @@ This results in the output \result{0.5334}{0.4666}, which can be obtained from e
 
 \subsection{Lists and Recursion}\label{sec:examples:10}
 
-\Slice{} supports lists and pattern matching, enabling functional list processing with probabilistic elements. This example demonstrates closures capturing stochastic values:
+\Slice{} supports lists and pattern matching, enabling functional list processing with probabilistic elements. The following example demonstrates closures capturing stochastic values:
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
   let map = fun f -> fix loop lst :=
@@ -336,7 +336,7 @@ This results in the output \result{0.5334}{0.4666}, which can be obtained from e
   map check_threshold measurements
 \end{lstlisting}
 
-\noindent This gives an output of distributions of lists: $\{\textit{true,true,true}: 0.115341, \textit{true,true,false}: 0.234199, ...\}$ when run with Roulette. The closure \textit{check\_threshold} lexically captures the stochastic \textit{threshold} value, which is randomly chosen to be either 0.3 or 0.7. The type system correctly infers that both threshold values (0.3 and 0.7) must be included as cuts for all Gaussian measurements, yielding type \ft{<0.3,<0.7} for list elements. This demonstrates how \Slice{} handles higher-order functions with captured stochastic values while maintaining sound discretization.
+\noindent This gives an output of distributions of lists: $\{\textit{true,true,true}: 0.115341, \textit{true,true,false}: 0.234199, ...\}$ when run with Roulette. The closure \textit{check\_threshold} lexically captures the stochastic \textit{threshold} value, which is randomly chosen to be either 0.3 or 0.7. The type system correctly infers that both threshold values (0.3 and 0.7) must be included as cuts for all Gaussian measurements, yielding the type \ft{<0.3,<0.7} for list elements. This demonstrates how \Slice{} handles higher-order functions with captured stochastic values while maintaining sound discretization.
 
 
 \subsection{Indian GPA Problem}\label{sec:gpa}
@@ -378,7 +378,7 @@ This canonical example involves both discrete and continuous random variables an
   gpa < 1
 \end{lstlisting}
 
-\noindent This gives the output \result{0.17325}{0.82675}. Here, \uniform(0,10) becomes \discrete(0.1, 0.9) representing 10\% probability for $[0,1)$ and 90\% for $[1,10]$. Similarly, \uniform(0,4) becomes \discrete(0.25, 0.75). Constants 10.0 and 4.0 in the branches of the conditionals fall into the second interval in the partition $(-\infty, 1) \cup [1,+\infty)$ and are thus both mapped to index 1 in the discretized program.
+\noindent This gives the output \result{0.17325}{0.82675}. Here, \uniform(0,10) becomes \discrete(0.1, 0.9) representing 10\% probability for $[0,1)$ and 90\% for $[1,10]$. Similarly, \uniform(0,4) becomes \discrete(0.25, 0.75). Constants 10.0 and 4.0 fall into the second interval in the partition $(-\infty, 1) \cup [1,+\infty)$ and are thus both mapped to index 1 in the discretized program.
 
 \subsection{Partial Discretization for non-constant Comparisons}\label{sec:examples:partial1}
 
