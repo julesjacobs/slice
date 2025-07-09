@@ -2,16 +2,20 @@
     \begin{mathpar}
         \inferrule[\textsc{TFloat-Const}]
         {\ }
-        {C \land B = \emptyset \land V = \{c\}, \Gamma \vdash c : \float[B;V]}
+        {C \land V = \{c\}, \Gamma \vdash c : \float[B;V]}
+
+        \inferrule[\textsc{TVar}]
+        {\ }
+        {C, \Gamma, x: \tau \vdash x : \tau}
     
         \inferrule[\textsc{TContinuous-1}]
         {\ C, \Gamma \vdash e : \float[B_1; V_1]}
-        {C \land B = \top \text{ if } B_1 = \top \text{ else } B = \emptyset \land V = \top, \Gamma \vdash \exponential(e) : \float[B; V]}
+        {C \land B = \top \text{ if } B_1 = \top \land V = \top, \Gamma \vdash \exponential(e) : \float[B; V]}
 
         \inferrule[\textsc{TContinuous-2}]
         {\ C_1, \Gamma \vdash e_1 : \float[B_1; V_1] \\
            C_2, \Gamma \vdash e_2 : \float[B_2; V_2] }
-        {C_1 \land C_2 \land B = \top \text{ if } B_1 = \top \text{ or } B_2 = \top \text{ else } B = \emptyset \land V = \top, \Gamma \vdash \uniform(e_1, e_2) : \float[B; \top]}
+        {C_1 \land C_2 \land B = \top \text{ if } B_1 = \top \text{ or } B_2 = \top \land V = \top, \Gamma \vdash \uniform(e_1, e_2) : \float[B; \top]}
     
         \inferrule[\textsc{TIf}]
         {C_1, \Gamma \vdash e_1 : \bool \\
