@@ -5,16 +5,16 @@
 \section{Typing Rules for Full \Slice{} Language}\label{appen:typing-rules}
 \input{figures/typing-general-all.tex}
 
-\section{Proofs for Distinguishability}
-\subsection{Proof of Lemma~\ref{thm:distinguishes-singleton}}
-\begin{proof}
-	Follows directly from Definition~\ref{def:distinguishes}. Since $V$ is a singleton set, and there can be no two elements that lie in the same interval, it must be the case that $\intervals{B} = \{(-\infty, +\infty)\}$, which means that $B = \emptyset$.
-\end{proof}
+% \section{Proofs for Distinguishability}
+% \subsection{Proof of Lemma~\ref{thm:distinguishes-singleton}}
+% \begin{proof}
+% 	Follows directly from Definition~\ref{def:distinguishes}. Since $V$ is a singleton set, and there can be no two elements that lie in the same interval, it must be the case that $\intervals{B} = \{(-\infty, +\infty)\}$, which means that $B = \emptyset$.
+% \end{proof}
 
-\subsection{Proof of Lemma~\ref{thm:distinguishes-top}}
-\begin{proof}
-	Suppose by contradiction that $B \neq \top$ but $B$ distinguishes $V = \top$. Since $B \neq \top$, the set $\intervals{B}$ partitions $\mathbb{R}$ into finitely many intervals. However, since $V = \top$ represents the set of all real numbers, and there are uncountably many real values, it is impossible for every interval in $\intervals{B}$ to contain at most one element from $V$. In particular, at least one interval must contain more than one value from $V$, violating the condition in Definition~\ref{def:distinguishes}. Therefore, $B = \top$.
-\end{proof}
+% \subsection{Proof of Lemma~\ref{thm:distinguishes-top}}
+% \begin{proof}
+% 	Suppose by contradiction that $B \neq \top$ but $B$ distinguishes $V = \top$. Since $B \neq \top$, the set $\intervals{B}$ partitions $\mathbb{R}$ into finitely many intervals. However, since $V = \top$ represents the set of all real numbers, and there are uncountably many real values, it is impossible for every interval in $\intervals{B}$ to contain at most one element from $V$. In particular, at least one interval must contain more than one value from $V$, violating the condition in Definition~\ref{def:distinguishes}. Therefore, $B = \top$.
+% \end{proof}
 
 \section{Proofs for Discretization}
 \subsection{Proof of Lemma~\ref{lem:type-transformations}}

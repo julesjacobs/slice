@@ -208,79 +208,93 @@ To understand the typing rules, keep in mind that the $B$ set needs to be suffic
 \input{figures/typing-float}
 
 \paragraph{Continuous distributions.} Let us first consider the typing rule \textsc{Continuous-1} for single-argument continuous distributions.
-The rule states that the argument $\Gamma \vdash e : \float[B; V]$ with the constraint that $B$ distinguishes $V$. The distinguishes predicate is defined as follows:
+The rule states that the argument $\Gamma \vdash e : \float[B; V]$ with the constraint that $\distinguishes{B}{V}$. The distinguishes predicate is defined as follows:
 \begin{definition}
 	\label{def:distinguishes}
-	Let $B\in \cutsets$ and $V\in\valsets$. We say that \emph{$B$ distinguishes $V$}, if $B = \top$ or ($V \neq \top$ and every interval $I$ induced  by $B$ contains at most one value in $V$, i.e., $
+	Let $B\in \cutsets$ and $V\in\valsets$. We say that \emph{$\distinguishes{B}{V}$}, if $B = \top$ or ($V \neq \top$ and every interval $I$ induced  by $B$ contains at most one value in $V$, i.e., $
 	\forall I \in \intervals{B}\colon | V \cap I|  \leq 1
 	$).
 	%$B$ distinguishes $V$ if every interval in $B$ contains at most one value in $V$, or $B = \top$.
 \end{definition}
 %
-The intuition is the following: In order to discretize $\exponential(e)$, it must be the case that $e$ can only take on finitely many values, and that those values can be fully recovered by the discretized program. This means that $\exponential(e)$ cannot be discretized if $e: \float[B; V]$ with $V=\top$. If, however, $V \neq \top$, then the finite set $V$ contains all the values $e$ can take. In that case, if $B$ distinguished $V$, then $B$ will be fine-grained enough to fully recover $e$'s values in the discretization. We will detail this further in \Cref{sec:discretization}. The following observations will be useful in the sequel:
+The intuition is the following: In order to discretize $\exponential(e)$, it must be the case that $e$ can only take on finitely many values, and that those values can be fully recovered by the discretized program. This means that $\exponential(e)$ cannot be discretized if $e: \float[B; V]$ with $V=\top$. If, however, $V \neq \top$, then the finite set $V$ contains all the values $e$ can take. In that case, if $\distinguishes{B}{V}$, then $B$ will be fine-grained enough to fully recover $e$'s values in the discretization. We will detail this further in \Cref{sec:discretization}. 
 
-\begin{theorem}\label{thm:distinguishes-singleton}
-	If $B$ distinguishes $V$, then $\exists c \colon V = \{c\}$ if and only if $B = \emptyset$.
-\end{theorem}
+% The following observations will be useful in the sequel:
 
-\begin{theorem}\label{thm:distinguishes-top}
-	If $B$ distinguishes $V$, then $V = \top$ if and only if $B = \top$.
-\end{theorem}
+% \begin{theorem}\label{thm:distinguishes-singleton}
+% 	If $\distinguishes{B}{V}$, then $\exists c \colon V = \{c\}$ if and only if $B = \emptyset$.
+% \end{theorem}
+
+% \begin{theorem}\label{thm:distinguishes-top}
+% 	If $\distinguishes{B}{V}$, then $V = \top$ if and only if $B = \top$.
+% \end{theorem}
 %\kevin{double-check and maybe ref to example in sec 2, let's see}
-%Intuitively $V$ contains the possible values that the float expression can take on, and $B$ distinguishes $V$ if the continuous quantity can be fully recovered by the discretized program.
-%For example, if $B = \{<\!\!0.5, \leq\!\!0.8\}$ and $V = \{0.2, 0.7\}$, then $B$ distinguishes $V$. The intervals induced by $B$ are $(-\infty, 0.5)$, $[0.5, 0.8]$, and $(0.8, \infty)$. The first interval contains $0.2$, the second contains $0.7$, and the third contains no values from $V$, so the condition holds. In contrast, if $V = \{0.2, 0.3\}$, $B$ would not distinguish $V$ because both values lie in the first interval $(-\infty, 0.5)$. Distinguishability is crucial in distributions because discretization typically causes a loss of information: in general, many real values may map to the same discrete value. However, if each interval induced by the cut set contains at most one possible value from $V$, then the original real value can be uniquely recovered from its discretized form. This property is important for parameters of distributions, where recovering the exact real-valued input is necessary to preserve the program's semantics, such as the example in~\ref{sec:examples:5}. There, the standard deviation of a Gaussian is chosen from a discrete set of possible values, and because the cut set distinguishes these values, the program can accurately track which parameter was selected and produce a faithful discretized version of the distribution.
+%Intuitively $V$ contains the possible values that the float expression can take on, and $\distinguishes{B}{V}$ if the continuous quantity can be fully recovered by the discretized program.
+%For example, if $B = \{<\!\!0.5, \leq\!\!0.8\}$ and $V = \{0.2, 0.7\}$, then $\distinguishes{B}{V}$. The intervals induced by $B$ are $(-\infty, 0.5)$, $[0.5, 0.8]$, and $(0.8, \infty)$. The first interval contains $0.2$, the second contains $0.7$, and the third contains no values from $V$, so the condition holds. In contrast, if $V = \{0.2, 0.3\}$, $B$ would not distinguish $V$ because both values lie in the first interval $(-\infty, 0.5)$. Distinguishability is crucial in distributions because discretization typically causes a loss of information: in general, many real values may map to the same discrete value. However, if each interval induced by the cut set contains at most one possible value from $V$, then the original real value can be uniquely recovered from its discretized form. This property is important for parameters of distributions, where recovering the exact real-valued input is necessary to preserve the program's semantics, such as the example in~\ref{sec:examples:5}. There, the standard deviation of a Gaussian is chosen from a discrete set of possible values, and because the cut set distinguishes these values, the program can accurately track which parameter was selected and produce a faithful discretized version of the distribution.
 %
 %We now obtain the following theorems:
 
-The rule for two-argument continuous distributions is analogous: for the two arguments $\Gamma \vdash e_1 : \float[B_1; V_1]$ and $\Gamma \vdash e_2 : \float[B_2; V_2]$ we require that $B_1$ (resp.\ $B_2$) distinguishes $V_1$ (resp.\ $V_2$). 
+The rule for two-argument continuous distributions is analogous: for the two arguments $\Gamma \vdash e_1 : \float[B_1; V_1]$ and $\Gamma \vdash e_2 : \float[B_2; V_2]$ we require that $\distinguishes{B_1}{V_1}$ and $\distinguishes{B_2}{V_2}$. 
 
 
 
 \paragraph{Comparisons.} 
-To understand the typing rules for less-than and less-than-or-equal comparisons, let us first consider a comparison $e < c$ where $c$ is a constant and $e$ is a continuously ranging quantity, i.e., $e : \float[B_1; \top]$ and $c : \float[B_2; \{c\}]$. Intuitively, if $e$ is discretized, then it must still contain enough information to determine whether $e < c$ is true or false. Therefore, $B_1$ must contain the comparison $<\!\!c$.
-Similarly, if $c$ is not a literal constant, but has type $c : \float[B_2; V_2]$ where $V_2 = \{v_1, v_2, \dots, v_n\}$ is a finite set of constants, then $c$ can take on values in $V_2$. Therefore, $B_1$ must contain the comparisons $<\!\!v_1, <\!\!v_2, \dots, <\!\!v_n$. This motivates the following definition:
+To understand the typing rules for less-than and less-than-or-equal comparisons, let us first consider a comparison $e < c$ where $c$ is a constant and $e$ is a continuously ranging quantity, i.e., $e : \float[B_1; \top]$ and $c : \float[B_2; \{c\}]$. Intuitively, \textbf{if $e$ is discretized, then it must still contain enough information to determine whether $e < c$ is true or false}. Therefore, $B_1$ must contain the comparison $<\!\!c$.
+Similarly, if $c$ is not a literal constant, but has type $c : \float[B_2; V_2]$ where $V_2 = \{v_1, v_2, \dots, v_n\}$ is a finite set of constants, then $c$ can take on values in $V_2$. Therefore, $B_1$ must contain the comparisons $<\!\!v_1, <\!\!v_2, \dots, <\!\!v_n$.
+
+It can also be the case that we have a comparison $c < e$ where the continuously ranging quantity $e : \float[B_2; V_2]$ is on the right hand side. In this case, $B_2$ must answer $c\!\!<$, i.e., it must contain a comparison $\leq\!\!c$. To make this explicit, consider $2.3 < e$. We can answer this precisely when $B_2$ contains an intervals $(-\infty, 2.3]$ and $(2.3, +\infty)$: the comparison $2.3 < e$ is true if $e$ is in the second interval, and false if $e$ is in the first interval. $B_2$ may, of course, be even more fine-grained.
+
+
+In general, the typing rule for $e_1 < e_2$ requires that the expressions share a bound set $B$, and that their respective value sets $V_1, V_2$ are related in a way that allows the comparison to be determined after discretization, via the $\answerslt{B}{V_1}{V_2}$ relation:
 
 \begin{definition}
 	\label{def:answers-less}
-	Let $B\in \cutsets$ and $V\in\valsets$.
-	We say that \emph{$B$ answers $\clt{V}$}, if
-	%
-	\[
-	B = \top \text{ iff } V = \top \quad \text{or}\quad	\text{for all $x\in V$ we have $\clt{x}\in B$}
-	~.
-	\]
-	%
-	%Analogously, we say that \emph{$B$ answers $\cleq{V}$}, if the above holds with $<$ replaced by $\leq$.
+	Let $B\in \cutsets$ and $V_1, V_2 \in\valsets$.
+	We say that \emph{$\answerslt{B}{V_1}{V_2}$}, if any of the following conditions hold:
+	\begin{enumerate}
+		\item $B = \top$
+		\item $B \neq \top$ and $V_2 \neq \top$ and $\forall x \in V_1,\ \clt{x} \in B$
+		\item $B \neq \top$ and $V_1 \neq \top$ and $\forall x \in V_2,\ \cleq{x} \in B$
+	\end{enumerate}
 \end{definition}
+
+This definition is subtle and it requires some explanation to understand why it makes sense and ensures that the comparison result can still be determined after discretization.
+
+To understand this definition, we first want to introduce two different perspectives on the $B$ set. The first perspective is that $B$ specifies a set of intervals, such that values of the expression will be mapped to their respective interval index. The second perspective is that this discretized index \emph{still contains enough information to evaluate all comparisons in $B$ when viewed as predicates}. That is, if $B$ contains $\clt{x}$ then, the discretized value of $e : \float[B; V]$ still contains enough information to answer $e < x$ precisely: if after discretization, we have an interval index below the index of $\clt{x}$, then the comparison is false, and otherwise it is true.
+
+Now we are ready to understand why if $e_1 : \float[B; V_1]$ and $e_2 : \float[B; V_2]$, then $\answerslt{B}{V_1}{V_2}$ ensures that the comparison result can still be determined after discretization:
+
+\begin{enumerate}
+	\item If $B = \top$, then no discretization is performed, and the comparison can just be performed on the real-valued expression.
+	\item If $B \neq \top$ and $V_2 \neq \top$, then the expression is discretized into intervals as determined by $B$, but in this case the right hand side can only take on values in $V_2$. In this case, all $\clt{x}$ for $x \in V_2$ must be contained in $B$, which means that the value of $e_2$ can be exactly recovered from its interval index.
+	Then, given the previous observation, we can determine the comparison result by comparing the interval index of $e_1$ to the interval index of $e_2$.
+	\item If $B \neq \top$ and $V_1 \neq \top$, then the situation is similar to the previous case.
+\end{enumerate}
 
 Note that $B = \top$ iff $V = \top$ accounts for comparisons where a continuously ranging expression is compared against arbitrary real values not statically known, such as other continuous distributions, in which case no discretization can be performed.
 Additionally, we insist that $B_1 = B_2$, which ensures that both comparants will be discretized to the same type, or not discretized at all.
 
 %This symmetry ensures that the comparison is always well-typed and meaningful, either as a comparison between two discretized values in the same finite domain, or as a comparison between two real-valued, undiscretized quantities. For example, it ensures that $e$ and $c$ are discretized to the same representation, and $<$ can be discretized to $\finleq{k}$. 
 
-It can also be the case that we have a comparison $c < e$ where the continuously ranging quantity $e : \float[B_2; V_2]$ is on the right hand side. In this case, $B_2$ must answer $c\!\!<$, i.e., it must contain a comparison $\leq\!\!c$. To make this explicit, consider $2.3 < e$. We can answer this precisely when $B_2$ contains an intervals $(-\infty, 2.3]$ and $(2.3, +\infty)$: the comparison $2.3 < e$ is true if $e$ is in the second interval, and false if $e$ is in the first interval. $B_2$ may, of course, be even more fine-grained.
 
-Finally, For non-strict comparisons, the typing rule is analogous:
+Finally, For non-strict comparisons, the rule is analogous:
 \begin{definition}
 	\label{def:answers-less-equal}
-	Let $B\in \cutsets$ and $V\in\valsets$.
-	We say that \emph{$B$ answers $\cleq{V}$}, if
-	%
-	\[
-	B = \top \text{ iff } V = \top \quad \text{or}\quad	\text{for all $x\in V$ we have $\cleq{x}\in B$}
-	~.
-	\]
-	%
+	Let $B\in \cutsets$ and $V_1, V_2 \in\valsets$.
+	We say that \emph{$\answersleq{B}{V_1}{V_2}$}, if any of the following conditions hold:
+	\begin{enumerate}
+		\item $B = \top$
+		\item $B \neq \top$ and $V_2 \neq \top$ and $\forall x \in V_1,\ \cleq{x} \in B$
+		\item $B \neq \top$ and $V_1 \neq \top$ and $\forall x \in V_2,\ \clt{x} \in B$
+	\end{enumerate}
 \end{definition}
-
-
 
 \input{figures/typing-general-core}
 
-All other typing rules are standard and depicted in Figure \ref{fig:typing-general} and Appendix~\ref{appen:typing-rules}, respectively.
-
-
 \paragraph{Subtyping.}
 The type system includes a subtyping relation that captures when one type can be replaced by another. The subtyping rules are shown in Figure~\ref{fig:subtyping}. For float types $\float[B;V]$, subtyping follows the lattice ordering on $V$: An expression known to range over some set of values can also be considered to range over a superset of those values. For $B$, we require equality to make sure that the discretized representation of the expression is not changed by subtyping.
+
+All other typing rules are standard and depicted in Figure \ref{fig:typing-general} and Appendix~\ref{appen:typing-rules}, respectively.
+
 
 \input{figures/subtyping}
