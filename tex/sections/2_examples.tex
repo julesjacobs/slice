@@ -258,7 +258,7 @@ In the discrete version, the observation $x < 2$ rules out the case where $x = 2
 
 \subsection{Sequential Processes with Iterate}\label{sec:examples:8}
 
-While \Slice{} is purely functional without mutable state, it provides the \texttt{iterate} construct to model sequential probabilistic processes. This example simulates a simple weather model where tomorrow's weather depends on today's:
+\Slice{} provides the \texttt{iterate} construct to model sequential probabilistic processes. This example simulates a simple weather model where tomorrow's weather depends on today's:
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
   let weather_transition = fun today ->
@@ -273,7 +273,7 @@ While \Slice{} is purely functional without mutable state, it provides the \text
   weather_after_3_days < 0.5  (* Is it sunny? *)
 \end{lstlisting}
 
-\noindent The \texttt{iterate} function applies the weather transition function three times, starting from a random initial weather state. Each iteration represents one day, with values below 0.5 representing sunny weather and values above 0.5 representing rain. Sunny days tend to stay sunny (uniform between 0.2 and 0.4), while rainy days tend to stay rainy (Gaussian centered at 0.7). The type system ensures that all cuts are properly collected across the iterations, e.g. yielding type \ft{<0.5} for \textit{today}, \uniform(0.2,0.4), \gaussian(0.7,0.1), and \textit{weather\_after\_three\_days} each. This enables accurate discretization of this sequential process:
+\noindent The \texttt{iterate} function applies the weather transition function three times, starting from a random initial weather state. Each iteration represents one day, with values below 0.5 representing sunny weather and values above 0.5 representing rain. Sunny days tend to stay sunny (uniform between 0.2 and 0.4), while rainy days tend to stay rainy (Gaussian centered at 0.7). The type system ensures that all cuts are properly collected across the iterations, e.g. yielding the type \ft{<0.5} for \textit{today}, \uniform(0.2,0.4), \gaussian(0.7,0.1), and \textit{weather\_after\_three\_days} each. This enables accurate discretization of this sequential process:
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
   let weather_transition = fun today -> 
@@ -285,7 +285,7 @@ While \Slice{} is purely functional without mutable state, it provides the \text
     iterate(weather_transition, discrete(0.5, 0.5), 3) in
   weather_after_3_days < 1
 \end{lstlisting}
-
+\noindent
 This results in the output \result{0.5334}{0.4666}, which can be obtained from either \Dice or \Roulette as they both support bounded iteration.
 
 
@@ -303,7 +303,7 @@ This results in the output \result{0.5334}{0.4666}, which can be obtained from e
   !temperature < 12.0
 \end{lstlisting}
 
-\noindent The reference \texttt{temperature} initially holds a uniform temperature between 15°C and 25°C. With 50\% probability, a cold front updates it to a Gaussian-distributed temperature centered at 10°C. The type system tracks that the dereferenced value will be compared to 12.0, ensuring proper discretization of both the initial uniform distribution and the potential Gaussian update, both with float types \ft{<12}:
+\noindent The reference \texttt{temperature} initially holds a uniform temperature between 15°C and 25°C. With 50\% probability, a cold front updates it to a Gaussian-distributed temperature centered at 10°C. The type system tracks that the dereferenced value will be compared to 12.0, ensuring proper discretization of both the initial uniform distribution and the potential Gaussian update:%, both with float types \ft{<12}:
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em]
   let temperature = ref (discrete(0, 1)) in
@@ -313,8 +313,8 @@ This results in the output \result{0.5334}{0.4666}, which can be obtained from e
     temperature := discrete(1, 0)) in 
   !temperature < 1
 \end{lstlisting}
-
-\Dice does not support exact inference for mutable state, but \Roulette does, hence the output distribution \result{0.92067}{0.07933}.
+\noindent
+\Roulette supports exact inference for mutable state, yielding \result{0.92067}{0.07933}.
 
 \subsection{Lists and Recursion}\label{sec:examples:10}
 
