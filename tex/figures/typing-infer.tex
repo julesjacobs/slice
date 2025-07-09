@@ -1,0 +1,38 @@
+\begin{figure}
+    \begin{mathpar}
+        \inferrule[\textsc{TFloat-Const}]
+        {\ }
+        {C \land B = \emptyset \land V = \{c\}, \Gamma \vdash c : \float[B;V]}
+    
+        \inferrule[\textsc{TContinuous-1}]
+        {\ C, \Gamma \vdash e : \float[B_1; V_1]}
+        {C \land B = \emptyset \land V = \top, \Gamma \vdash \exponential(e) : \float[B; V]}
+
+        \inferrule[\textsc{TContinuous-2}]
+        {\ C_1, \Gamma \vdash e_1 : \float[B_1; V_1] \\
+           C_2, \Gamma \vdash e_2 : \float[B_2; V_2] }
+        {C_1 \land C_2 \land B = \emptyset \land V = \top, \Gamma \vdash \uniform(e_1, e_2) : \float[B; \top]}
+    
+        \inferrule[\textsc{TIf}]
+        {C_1, \Gamma \vdash e_1 : \bool \\
+         C_2, \Gamma \vdash e_2 : \float[B_1; V_1] \\
+         C_3, \Gamma \vdash e_3 : \float[B_2; V_2]}
+        {C_1 \land C_2 \land C_3 \land B_1 = B_2 = B_3 \land V_3 = V_1 \latticesup V_2, \Gamma \vdash \ifkw \; e_1 \; \thenkw \; e_2 \; \elsekw \; e_3 : \float[B_3; V_3]}
+
+        \inferrule[\textsc{TLess}]
+        {C_1, \Gamma \vdash e_1 : \float[B_1; V_1] \and C_2, \Gamma \vdash e_2 : \float[B_2; V_2]}
+        {C_1 \land C_2 \land B_1 = B_2 \land (B_1 = \; \clt{V_2} \text{ or } B_1 = \; \cleq{V_1}), \Gamma \vdash e_1 < e_2 : \bool}
+
+        \inferrule[\textsc{TLessEq}]
+        {C_1, \Gamma \vdash e_1 : \float[B_1; V_1] \and C_2, \Gamma \vdash e_2 : \float[B_2; V_2]}
+        {C_1 \land C_2 \land B_1 = B_2 \land (B_1 = \; \cleq{V_2} \text{ or } B_1 = \; \clt{V_1}), \Gamma \vdash e_1 \leq e_2 : \bool}
+
+        \inferrule[\textsc{Let}]
+        {C_1, \Gamma \vdash e_1 : \tau_1 \\
+         C_2, \Gamma, x: \tau_1 \vdash e_2 : \tau_2}
+        {C_1 \land C_2 \land \tau_2 = \tau_3, \Gamma \vdash \letkw \; x = e_1 \; \inkw \; e_2 : \tau_3}
+
+    \end{mathpar}
+\caption{Constraint generation rules for type inference for float-typed expressions.}
+    \label{fig:type-inference}
+\end{figure}

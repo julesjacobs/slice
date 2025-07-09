@@ -1,0 +1,21 @@
+\section{Type Inference}\label{sec:type-inference-new}
+
+In this section, we describe our type inference algorithm, where the goal is to annotate each subexpression of a program with its most precise type. Specifically, we describe our type inference algorithm for expressions with float type $\float[B;V]$, showing how \Slice{} populates the cut set $B$ and value set $V$ for each expression, as these refinements determine how and whether the expression can be discretized. Type inference for all other types is standard and follows the classic Hindley-Milner type inference algorithm. For our type inference algorithm on float-typed expressions, we follow a standard two-phase approach: the first phase traverses the program once to generate a set of type constraints over unknown types; the second phase solves these constraints to produce a fully annotated program.
+
+\subsection{Constraint Generation}
+
+We use a rich constraint language, shown in Figure~\ref{fig:constraints-grammar}, to express requirements over type structure and float refinements. As we want \Slice{} to propogate information about control flow-relevant thresholds and possible value ranges, our syntax is over $B \in \cutsets$ and $V \in \valsets$. Figure~\ref{fig:type-inference} gives the constraint generation rules for \Slice{}. We introduce a new judgment of form $C, \Gamma \vdash e : \tau$, which reads as \emph{in the environment $\Gamma$, $e$ has type $\tau$ and produces the set of constrains $C$}. Note that the inference rules formalize what constraint $C$ must be generated (and later solved) for a given expression $e$ to have inferred type $\tau$.
+
+\begin{figure}[!t]
+    \begin{align*}
+    C ::= &\; \emptyset \mid \top \\
+        | &\; B  & \text{cut set} \\
+        | &\; V  & \text{value set} \\
+        | &\; C_1 = C_2  & \text{type equality} \\
+        | &\; C_1 \land C_2  & \text{conjunction} \\
+    \end{align*}
+\caption{Syntax for our constraint language. \katherine{this figure can be compressed as it takes up a lot of space.}}
+\label{fig:constraints-grammar}
+\end{figure}
+
+\input{figures/typing-infer.tex}
