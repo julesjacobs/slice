@@ -207,6 +207,9 @@ To understand the typing rules, keep in mind that the $B$ set needs to be suffic
 
 \input{figures/typing-float}
 
+\paragraph{Constants.}
+The typing rule \textsc{Float-Const} for float constants states that a constant $c$ can have type $\float[B; V]$ if $\has{V}{c}$. We define $\has{V}{c}$ to mean that either $c \in V$ or $V = \top$. This rule allows float constants to be typed flexibly: the value set $V$ must either contain the constant $c$ or be the top element $\top$ (representing all possible float values). The cut set $B$ can be arbitrary, as constants do not impose any constraints on how the continuous space should be partitioned, but their presence is recorded in $V$ to determine which values are later used in comparisons.
+
 \paragraph{Continuous distributions.} Let us first consider the typing rule \textsc{Continuous-1} for single-argument continuous distributions.
 The rule states that the argument $\Gamma \vdash e : \float[B; V]$ with the constraint that $\distinguishes{B}{V}$. The distinguishes predicate is defined as follows:
 \begin{definition}
