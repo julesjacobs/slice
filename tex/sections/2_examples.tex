@@ -6,7 +6,7 @@ This section presents simple examples that highlight the key features of our pro
 For readability, we use \texttt{flip()} as a shorthand for \texttt{uniform(0,1) < 0.5}, which represents a fair coin flip that returns true or false with equal probability. We denote a ``cut'' as any constant $c$ in a comparison such as $x < c$, where $c$ partitions $\mathbb{R}$ into two intervals $(-\infty, c)$ and $[c, +\infty)$.
 
 
-\subsection{Simple branching on a uniform distribution}\label{sec:examples:1}
+\subsection{Simple Branching on a Uniform Distribution}\label{sec:examples:1}
 
 We start with a simple example that illustrates the core idea of \Slice{}. Consider the following program, which models a fair coin flip by comparing the outcome of a uniform sampling to $0.5$:
 
@@ -44,7 +44,7 @@ Figure~\ref{fig:float-type-def} describes the intuitive meaning of a type \lstin
 \end{figure}
 
 
-\subsection{Branching on multiple continuous variables}\label{sec:examples:2}
+\subsection{Branching on Multiple Continuous Variables}\label{sec:examples:2}
 
 \noindent Let us now consider a more complex example with multiple continuous variables and conditionals:
 
@@ -83,7 +83,7 @@ This analysis is done by the type inference process, which collects all cuts for
 
 Using \Dice{}, this yields the output \result{0.225}{0.775}. Note that the original constant $0.5$ is discretized in two different ways: for $x < 0.5$ it is discretized to $2$ and for $y < 0.5$ it is discretized to $1$. This is because the constant $0.5$ falls in the third interval of the split $(-\infty, 0.2) \cup [0.2, 0.5) \cup [0.5, +\infty)$ for $x$ and the second interval for the split $(-\infty, 0.5) \cup [0.5, +\infty)$ for $y$. 
 
-\subsection{Branching on multiple discrete values}\label{sec:examples:3}
+\subsection{Branching on Multiple Discrete Values}\label{sec:examples:3}
 The example in Section~\ref{sec:examples:2} involves multiple continuous variables and conditional branches. In a similar fashion, \Slice{} supports multiple discrete values and conditionals. Consider the program:
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
@@ -158,7 +158,7 @@ Consider the following program:
 
 \noindent This gives the output \result{0.8416}{0.1584}. The four probabilities in each \discrete\; distribution correspond to the probability mass in each of the four intervals. For example, \uniform(0,2) has probability 0.15 in $(-\infty, 0.3]$, 0.6 in $(0.3, 1.5]$, 0.15 in $(1.5, 1.8]$, and 0.1 in $(1.8, +\infty)$. Note that a continuous distribution must be valid in order for its cumulative distribution function (CDF) to be well-defined, and thus for probability mass to be meaningfully assigned to each interval.  It is also normal for some intervals to receive 0 or 1 probability mass—for example, if the entire distribution lies within a single interval and not others.
 
-\subsection{Discrete latent variable}\label{sec:examples:5}
+\subsection{Discrete Latent Variable}\label{sec:examples:5}
 
 Continuous distributions can have parameters that depend on discrete random choices. In this example, a Gaussian distribution's standard deviation is determined by a random choice between two values:
 
@@ -218,7 +218,7 @@ This gives the output \result{0.73595}{0.26405}.
 
 \noindent This results in the output \result{0.4}{0.6}. In the discrete version, the observation $x < 2$ rules out the case where $x = 2$ (corresponding to the original interval $[0.5, +\infty)$), effectively conditioning on $x$ being in $[0.0, 0.5)$.
 
-\subsection{Higher-order functions}\label{sec:examples:7}
+\subsection{Higher-Order Functions}\label{sec:examples:7}
 
 \Slice{} supports higher-order functions, enabling functional programming patterns with probabilistic computations. This example shows a higher-order function \texttt{mappair} that applies a function to both elements of a pair:
 
@@ -249,7 +249,7 @@ This gives the output \result{0.73595}{0.26405}.
 
 \noindent \Dice does not support exact inference for higher-order functions, but \Roulette does, hence the output distribution \result{0.53636}{0.46364}. The continuous distributions in the original program are discretized into three-valued discrete distributions based on the intervals $(-\infty, 0.5)$, $[0.5, 1.5)$, and $[1.5, +\infty)$, while the functional structure remains intact.
 
-\subsection{Sequential processes with iterate}\label{sec:examples:8}
+\subsection{Sequential Processes with Iterate}\label{sec:examples:8}
 
 While \Slice{} is purely functional without mutable state, it provides the \texttt{iterate} construct to model sequential probabilistic processes. This example simulates a simple weather model where tomorrow's weather depends on today's:
 
@@ -282,7 +282,7 @@ While \Slice{} is purely functional without mutable state, it provides the \text
 This results in the output \result{0.5334}{0.4666}, which can be obtained from either \Dice or \Roulette as they both support bounded iteration.
 
 
-\subsection{Mutable state}\label{sec:examples:9}
+\subsection{Mutable State}\label{sec:examples:9}
 
 \Slice{} supports mutable references, allowing imperative-style updates within a probabilistic context. This example models temperature that can be updated based on weather events:
 
@@ -309,7 +309,7 @@ This results in the output \result{0.5334}{0.4666}, which can be obtained from e
 
 \Dice does not support exact inference for mutable state, but \Roulette does, hence the output distribution \result{0.92067}{0.07933}.
 
-\subsection{Lists and recursion}\label{sec:examples:10}
+\subsection{Lists and Recursion}\label{sec:examples:10}
 
 \Slice{} supports lists and pattern matching, enabling functional list processing with probabilistic elements. This example demonstrates closures capturing stochastic values:
 
@@ -373,7 +373,7 @@ This canonical example involves both discrete and continuous random variables an
 
 \noindent This gives the output \result{0.17325}{0.82675}. Here, \uniform(0,10) becomes \discrete(0.1, 0.9) representing 10\% probability for $[0,1)$ and 90\% for $[1,10]$. Similarly, \uniform(0,4) becomes \discrete(0.25, 0.75). Constants 10.0 and 4.0 in the branches of the conditionals fall into the second interval in the partition $(-\infty, 1) \cup [1,+\infty)$ and are thus both mapped to index 1 in the discretized program.
 
-\subsection{Partial discretization for non-constant comparisons}\label{sec:examples:partial1}
+\subsection{Partial Discretization for non-constant Comparisons}\label{sec:examples:partial1}
 
 Not all programs can be fully discretized. Consider a program where continuous variables are compared directly to each other rather than to constants:
 
@@ -401,7 +401,7 @@ Not all programs can be fully discretized. Consider a program where continuous v
 \end{lstlisting}
 \noindent The branching condition gets discretized, but $x$ and $y$ remain continuous because they are only compared to each other, not to constants.
 
-\subsection{Partial discretization for continuous values without comparisons}\label{sec:examples:partial2}
+\subsection{Partial Discretization for Continuous Values without Comparisons}\label{sec:examples:partial2}
 The example in subsection~\ref{sec:examples:partial1} shows a program that can only be partially discretized due to continuous variables being compared directly to each other rather than to constants. If no comparisons are made with continuous distributions, the best \Slice{} can do is also a partial discretization. Consider the following example:
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
@@ -428,7 +428,7 @@ An empty cut set in a float type implies $\mathbb{R}$ with no partitions, or sim
   if y < 1 then beta(1,1) else uniform(0,2)
 \end{lstlisting}
 
-\subsection{Partial discretization for discrete values without comparisons}\label{sec:examples:partial3}
+\subsection{Partial Discretization for Discrete Values without Comparisons}\label{sec:examples:partial3}
 The prior example considers the case when no cuts exist for continuous distributions, but here we illustrate the case when no cuts exist for discrete float values. 
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
