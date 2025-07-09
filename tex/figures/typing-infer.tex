@@ -8,14 +8,18 @@
         {\ }
         {C, \Gamma, x: \tau \vdash x : \tau}
     
-        \inferrule[\textsc{TContinuous-1}]
+        \inferrule[\textsc{TContinuous-1-Finite}]
         {\ C, \Gamma \vdash e : \float[B_1; V_1]}
-        {C \land B = \top \text{ if } B_1 = \top \land V = \top, \Gamma \vdash \exponential(e) : \float[B; V]}
+        {C \land V = \top \land B_1 =\; \cleq{V_1}, \Gamma \vdash \exponential(e) : \float[B = \{b_1,\ldots,b_n\}; V]}
 
-        \inferrule[\textsc{TContinuous-2}]
-        {\ C_1, \Gamma \vdash e_1 : \float[B_1; V_1] \\
-           C_2, \Gamma \vdash e_2 : \float[B_2; V_2] }
-        {C_1 \land C_2 \land B = \top \text{ if } B_1 = \top \text{ or } B_2 = \top \land V = \top, \Gamma \vdash \uniform(e_1, e_2) : \float[B; \top]}
+        \inferrule[\textsc{TContinuous-1-Top}]
+        {\ C, \Gamma \vdash e : \float[B_1; V_1]}
+        {C \land V = \top \land B = B_1, \Gamma \vdash \exponential(e) : \float[B = \top; V]}
+
+        % \inferrule[\textsc{TContinuous-2}]
+        % {\ C_1, \Gamma \vdash e_1 : \float[B_1; V_1] \\
+        %    C_2, \Gamma \vdash e_2 : \float[B_2; V_2] }
+        % {C_1 \land C_2 \land V = \top \land B_1 =\; \cleq{V_1} \land B_2 =\; \cleq{V_2}, \Gamma \vdash \uniform(e_1, e_2) : \float[B; \top]}
     
         \inferrule[\textsc{TIf}]
         {C_1, \Gamma \vdash e_1 : \bool \\
