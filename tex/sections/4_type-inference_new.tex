@@ -152,15 +152,67 @@ The solver repeatedly processes constraints until reaching a fixed point, where 
 
 This procedure may add more cuts to $B$'s than strictly necessary, but it never sets $B=\top$ unless that is the only way to satisfy all constraints. In other words, the discretization itself may be suboptimal in terms of the number of cuts, but if discretization is possible, it always succeeds.
 
-% \begin{example}
-%     From the previous example, we obtained the following constraints:
+\begin{example}
+    From the previous example, we obtained the constraint set:
+    \begin{align*}
+    C = &\; \has{V_1}{0.5}, \has{V_3}{0.8}, \has{V_6}{1.5}, \has{V_7}{1.8}, \has{V_8}{0.3}, \\
+        &\; V_2 = \top, V_4 = \top, \\
+        &\; \distinguishes{B_1}{V_1}, \distinguishes{B_3}{V_3}, \\
+        &\; \subtype{\float[B_2; V_2]}{\float[B_5; V_5]}, \subtype{\float[B_4; V_4]}{\float[B_5; V_5]}, \\
+        &\; \subtype{\float[B_7; V_7]}{\float[B_9; V_9]}, \subtype{\float[B_8; V_8]}{\float[B_9; V_9]}, \\
+        &\; \answerslt{B_{10}}{V_5}{V_6}, B_{10} = B_5, B_{10} = B_6, \\
+        &\; \answersleq{B_{11}}{V_5}{V_9}, B_{11} = B_5, B_{11} = B_9
+    \end{align*}
 
-%     \begin{enumerate}
-%         \item $B_1 = B_2 = B_3$ and $V_1 \latticesup V_2 = V_3$ 
-%         \item $B_4 = B_3$ and $B_4 = B_4\; \latticesup \clt{V_4}$
-%         \item $B_5 = B_6 = B_7$ and $V_5 \latticesup V_6 = V_7$ 
-%         \item $V_1 = V_2 = \top$, $V_4 = \{1.5\}$, $V_5 = \{1.8\}$, $V_6 = \{0.3\}$
-%         \item $B_3 = B_7$ and $B_3 = B_3\; \latticesup \cleq{V_7}$
-%     \end{enumerate}
+    This constraint set is solved as follows:
 
-% \end{example}
+    \textbf{Step 1: Subtyping reduction.} We replace each subtyping constraint with equality and subset constraints:
+    \begin{itemize}
+        \item $\subtype{\float[B_2; V_2]}{\float[B_5; V_5]}$ becomes $B_2 = B_5, V_2 \sqsubseteq V_5$
+        \item $\subtype{\float[B_4; V_4]}{\float[B_5; V_5]}$ becomes $B_4 = B_5, V_4 \sqsubseteq V_5$
+        \item $\subtype{\float[B_7; V_7]}{\float[B_9; V_9]}$ becomes $B_7 = B_9, V_7 \sqsubseteq V_9$
+        \item $\subtype{\float[B_8; V_8]}{\float[B_9; V_9]}$ becomes $B_8 = B_9, V_8 \sqsubseteq V_9$
+    \end{itemize}
+
+    \textbf{Step 2: Initialize.} All $B$ and $V$ variables start as $\emptyset$.
+
+    \textbf{Step 3: Process value containment.} We update:
+    $V_1 := \{0.5\}$, $V_3 := \{0.8\}$, $V_6 := \{1.5\}$, $V_7 := \{1.8\}$, $V_8 := \{0.3\}$
+
+    \textbf{Step 4: Process top assignments.} We set $V_2 := \top$ and $V_4 := \top$.
+
+    \textbf{Step 5: Process equalities.} Unifying all equality constraints:
+    \begin{itemize}
+        \item From comparisons: $B_{10} = B_5 = B_6$ and $B_{11} = B_5 = B_9$
+        \item From subtyping: $B_2 = B_5$, $B_4 = B_5$, $B_7 = B_9$, $B_8 = B_9$
+        \item Result: $B_2 = B_4 = B_5 = B_6 = B_7 = B_8 = B_9 = B_{10} = B_{11}$ (all unified)
+    \end{itemize}
+
+    \textbf{Step 6: Process subset constraints.}
+    \begin{itemize}
+        \item $V_2 \sqsubseteq V_5$: Since $V_2 = \top$, we update $V_5 := V_5 \sqcup \top = \top$
+        \item $V_4 \sqsubseteq V_5$: Already satisfied since $V_5 = \top$
+        \item $V_7 \sqsubseteq V_9$: We update $V_9 := V_9 \sqcup \{1.8\} = \{1.8\}$
+        \item $V_8 \sqsubseteq V_9$: We update $V_9 := V_9 \sqcup \{0.3\} = \{0.3, 1.8\}$
+    \end{itemize}
+
+    \textbf{Step 7: Process distinguishability.}
+    \begin{itemize}
+        \item $\distinguishes{B_1}{V_1}$: Since $|V_1| = 1$, trivially satisfied
+        \item $\distinguishes{B_3}{V_3}$: Since $|V_3| = 1$, trivially satisfied
+    \end{itemize}
+
+    \textbf{Step 8: Process answerability.}
+    \begin{itemize}
+        \item $\answerslt{B_{10}}{V_5}{V_6}$: With $V_5 = \top$ and $V_6 = \{1.5\}$, we add $\clt{1.5}$ to the unified $B$
+        \item $\answersleq{B_{11}}{V_5}{V_9}$: With $V_5 = \top$ and $V_9 = \{0.3, 1.8\}$, we add $\cleq{0.3}$ and $\cleq{1.8}$ to the unified $B$
+    \end{itemize}
+
+    \textbf{Final solution:}
+    \begin{itemize}
+        \item $B_1 = \emptyset$, $B_3 = \emptyset$
+        \item $B_2 = B_4 = B_5 = B_6 = B_7 = B_8 = B_9 = B_{10} = B_{11} = \{\clt{1.5}, \cleq{0.3}, \cleq{1.8}\}$
+        \item $V_1 = \{0.5\}$, $V_2 = \top$, $V_3 = \{0.8\}$, $V_4 = \top$, $V_5 = \top$
+        \item $V_6 = \{1.5\}$, $V_7 = \{1.8\}$, $V_8 = \{0.3\}$, $V_9 = \{0.3, 1.8\}$
+    \end{itemize}
+\end{example}
