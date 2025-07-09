@@ -7,6 +7,7 @@ In this section, we detail our functional probabilistic programming language (\C
 \input{figures/grammar}
 %
 \kevin{not higher-order?}
+\kevin{why surely-terminating?}
 The syntax of \emph{expressions} (or \emph{programs}) in the \Slice{} language is shown in \Cref{fig:grammar}.
 \Slice{} extends a simple first-order functional language with support for making probabilistic choices. Most of the constructs are standard: \Slice{} supports constants, variables, comparisons, Boolean operations, conditionals, for loops, pairs, and lists. Constants of the form $\finconst{k}{n}$ denote integer constants from the finite domain $\{\finconst{0}{n}, \finconst{1}{n}, \ldots, \finconst{(n-1)}{n}\}$, which we detail in the next section.
 Additional constructs include first-class functions, surely-terminating recursion, mutable state, and first-class observations, enabling Bayesian reasoning in the presence of evidence. In particular, $\observekw(e)$ conditions the program execution on a Boolean expression $e$ being true. For probabilistic constructs, \Slice{} supports a wide variety of continuous and discrete distributions. Continuous distributions can be further characterized by the number of parameters they take in: \Slice{} supports continuous distributions with one argument (exponential, laplace, etc.) or two arguments (uniform, gaussian, beta, gamma, etc.). A list of all supported distributions is provided in Appendix~\ref{appen:supported-distributions}.
