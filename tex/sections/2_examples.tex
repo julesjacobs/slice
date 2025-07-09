@@ -104,7 +104,7 @@ This yields the annotated program after type inference:
     let y = 0.5 : !{\ftb{<0.5}{0.5}}! in x < y
 \end{lstlisting}
 
-Only finite values exist in the value sets here since there are no continuous distributions in this example and thus no Top. By locating where each value in the value set falls relative to the cuts in the cut set, \Slice{} determine the corresponding interval index for each value. \codetype{\ftb{<0.5}{0.2}} corresponds to the index 0, and types \codetype{\ftb{<0.5}{2.5}}, \codetype{\ftb{<0.5}{4.5}}, and \codetype{\ftb{<0.5}{0.5}} correspond to the index 1. The value sets in types \codetype{\ftb{<0.5}{0.2, 2.5, 4.5}} and \codetype{\ftb{<0.5}{2.5, 4.5}} arise from taking the union of the value sets from each prior conditional branch. This in turn yields the following discretized program:
+Both $x$ and $y$ can only take on finitely many values --- a fact which is reflected by the value sets in the type annotations. By locating where each value in the value set falls relative to the cuts in the cut set, \Slice{} determines the corresponding interval index for each value. \codetype{\ftb{<0.5}{0.2}} corresponds to the index 0, and types \codetype{\ftb{<0.5}{2.5}}, \codetype{\ftb{<0.5}{4.5}}, and \codetype{\ftb{<0.5}{0.5}} correspond to the index 1. The value sets in types \codetype{\ftb{<0.5}{0.2, 2.5, 4.5}} and \codetype{\ftb{<0.5}{2.5, 4.5}} arise from taking the union of the value sets from each prior conditional branch. This in turn yields the following discretized program:
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em]
     let x = if flip() then 0
@@ -131,7 +131,9 @@ Consider the following program:
     x <= y
 \end{lstlisting}
 
-\noindent This program demonstrates how cuts propagate through the control flow. \Slice{} makes a forward pass through the program, and as the float constants 1.5, 1.8, and 0.3 subsequently appear in $y$, the cut sets of the preceding sampling instructions are populated accordingly. The $x \leq y$ comparison at the end renders the cut sets of all subexpressions to be the same: 1.5, 1.8, and 0.3 are the cuts for $x$ hence the type \codetype{\ft{<=0.3,<1.5,<=1.8}} for all subexpressions in the let statement of $x$, and proper indices for the partitioned intervals must be determined hence float types of the form \codetype{{\ftb{<=0.3,<1.5,<=1.8}{\ldots}}} for all subexpressions in the let statement of $y$. The type inference annotates the program as follows:
+\noindent This program demonstrates how cuts propagate through the control flow. \Slice{} makes a forward pass through the program, and as the float constants 1.5, 1.8, and 0.3 subsequently appear in $y$, the cut sets of the preceding sampling instructions are populated accordingly. The $x \leq y$ comparison at the end renders the cut sets of all subexpressions to be the same: 1.5, 1.8, and 0.3 are the cuts for $x$ hence the type \codetype{\ft{<=0.3,<1.5,<=1.8}} for all subexpressions in the let statement of $x$.
+%, and proper indices for the partitioned intervals must be determined hence float types of the form \codetype{{\ftb{<=0.3,<1.5,<=1.8}{\ldots}}} for all subexpressions in the let statement of $y$.
+ The type inference annotates the program as follows:
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
     let x = if flip()
@@ -145,7 +147,7 @@ Consider the following program:
     x <= y
 \end{lstlisting}
 
-\noindent Notice that all cuts from the entire program (0.3, 1.5, and 1.8) are collected for the variable $x$, regardless of which branch is taken. These cuts with type \codetype{<=0.3,<1.5,<=1.8} split the real line into four intervals: $(-\infty, 0.3]$, $(0.3, 1.5)$, $[1.5, 1.8]$, and $(1.8, +\infty)$. Note that 1.5 is excluded from the second interval and included in the third because it comes from a strict `<` comparison. The integer index 1 in the guard of the if statement for $y$ is obtained from the type \codetype{\ftb{<=0.3,<1.5,<=1.8}{1.5}}, 2 is obtained from the type \codetype{\ftb{<=0.3,<1.5,<=1.8}{1.8}}, and 0 is obtained from the type \codetype{\ftb{<=0.3,<1.5,<=1.8}{0.3}}. The discretized version becomes:
+\noindent Notice that all cuts from the entire program (0.3, 1.5, and 1.8) are collected for the variable $x$, regardless of which branch is taken. These cuts \codetype{<=0.3,<1.5,<=1.8} split the real line into four intervals: $(-\infty, 0.3]$, $(0.3, 1.5)$, $[1.5, 1.8]$, and $(1.8, +\infty)$. Note that 1.5 is excluded from the second interval and included in the third because it comes from a strict `<` comparison. The integer index 1 in the guard of the if statement for $y$ is obtained from the type \codetype{\ftb{<=0.3,<1.5,<=1.8}{1.5}}, 2 is obtained from the type \codetype{\ftb{<=0.3,<1.5,<=1.8}{1.8}}, and 0 is obtained from the type \codetype{\ftb{<=0.3,<1.5,<=1.8}{0.3}}. Applying type-directed discretization yields:
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em]
     let x = if flip() then
@@ -156,7 +158,8 @@ Consider the following program:
     x <= y
 \end{lstlisting}
 
-\noindent This gives the output \result{0.8416}{0.1584}. The four probabilities in each \discrete\; distribution correspond to the probability mass in each of the four intervals. For example, \uniform(0,2) has probability 0.15 in $(-\infty, 0.3]$, 0.6 in $(0.3, 1.5]$, 0.15 in $(1.5, 1.8]$, and 0.1 in $(1.8, +\infty)$. Note that a continuous distribution must be valid in order for its cumulative distribution function (CDF) to be well-defined, and thus for probability mass to be meaningfully assigned to each interval.  It is also normal for some intervals to receive 0 or 1 probability mass—for example, if the entire distribution lies within a single interval and not others.
+\noindent Using \Dice{}, we get \result{0.8416}{0.1584}. The four probabilities in each \discrete-expression correspond to the probability mass of each of the four intervals. For example, \uniform(0,2) has probability 0.15 in $(-\infty, 0.3]$, 0.6 in $(0.3, 1.5]$, 0.15 in $(1.5, 1.8]$, and 0.1 in $(1.8, +\infty)$. 
+%Note that a continuous distribution must be valid in order for its cumulative distribution function (CDF) to be well-defined, and thus for probability mass to be meaningfully assigned to each interval.  It is also normal for some intervals to receive 0 or 1 probability mass—for example, if the entire distribution lies within a single interval and not others.
 
 \subsection{Discrete Latent Variable}\label{sec:examples:5}
 
