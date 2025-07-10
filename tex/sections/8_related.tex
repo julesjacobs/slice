@@ -18,8 +18,8 @@ Universal or ``hybrid'' languages aim for expressiveness by embedding probabilis
 \paragraph{Probabilistic program abstraction.}
 The work of \cite{Holtzen2018Abstraction} is perhaps most similar to ours. They use abstract interpretation to transform hybrid programs into finite Boolean programs based on user-provided predicates, proving distributional soundness. However, their approach requires manual predicate selection and is limited to loop-free programs. In contrast, \Slice{} automatically infers cuts from the program text using a type system and supports recursion.
 
-\paragraph{Logical relations for probabilistic programs.}
-Our soundness proof builds on logical relations for probabilistic programs, including early work on denotational models~\cite{Kozen1981Semantics,Jones1989Probabilistic}, step-indexed relations for higher-order languages~\cite{Bizjak2015Step,Wand2018Contextual}, and program logics for verification~\cite{Barthe2009Formal,Barthe2012Privacy}. We adapt these techniques to prove discretization preserves semantics.
+% \paragraph{Logical relations for probabilistic programs.}
+% Our soundness proof builds on logical relations for probabilistic programs, including early work on denotational models~\cite{Kozen1981Semantics,Jones1989Probabilistic}, step-indexed relations for higher-order languages~\cite{Bizjak2015Step,Wand2018Contextual}, and program logics for verification~\cite{Barthe2009Formal,Barthe2012Privacy}. We adapt these techniques to prove discretization preserves semantics.
 
 \paragraph{Positioning of our work.}  
 Our contribution lies precisely at the intersection left open by the above lines of research. We propose a \emph{language-level transformation} that automatically discretizes continuous sub-programs while preserving the semantics required for exact Bayesian reasoning in the discrete fragment. When discretization successfully translates all continuous distributions, we can translate the program into the finite domain accepted by Dice (or Roulette, or ProbLog), and inherit their fast exact inference without sacrificing the modelling convenience of continuous distributions. 
