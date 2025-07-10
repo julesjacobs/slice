@@ -1,26 +1,12 @@
 \begin{figure}[h]
     \centering
-    \begin{tikzpicture}[node distance=1.6cm and 1.6cm, every node/.style={font=\small}]
-    
-    % Nodes
-    \node[draw, circle] (x1) {$x_1$};
-    \node[draw, rectangle, right=of x1] (cond1) {$x_1 < r$};
-    \node[draw, circle, right=of cond1] (x2) {$x_2$};
-    \node[draw, rectangle, right=of x2] (cond2) {$x_2 < \cdots$};
-    \node[draw, circle, right=of cond2] (xn) {$x_n$};
-    \node[draw, rectangle, right=of xn] (final) {$x_n < 0.5$};
-    
-    % Edges
-    \draw[->] (x1) -- (cond1);
-    \draw[->] (cond1) -- (x2) node[midway, above] {\scriptsize else unif()};
-    \draw[->] (x2) -- (cond2);
-    \draw[dashed, ->] (cond2) -- (xn);
-    \draw[->] (xn) -- (final);
-    
-    % Uniform labels
-    \draw[->, bend left=30] (cond1) to node[midway, above] {\scriptsize if unif()} (x2);
-    
-    \end{tikzpicture}
+    \begin{lstlisting}
+        let x_1 = unif() in 
+        let x_2 = if x1 < r1 then unif() else unif() in 
+        let x3 = if x2 < r2 ...
+        ...
+        x_n < 0.5
+    \end{lstlisting}
     \caption{A chain of nested conditionals and uniform samples, ending in a comparison $x_n < 0.5$}
     \label{fig:nested-conditionals}
     \end{figure}
