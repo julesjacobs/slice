@@ -4,9 +4,9 @@ In this section, we describe our type inference algorithm, where the goal is to 
 
 \subsection{Constraint Generation}
 
-We use a constraint language as shown in Figure~\ref{fig:constraints-grammar} to express requirements over type structure and float refinements. We adopt the framework presented in~\cite{Odersky1999ConstrainedTypes}, introducing a new judgment of form $\Gamma \vdash e : \tau \mid C$, which reads as \emph{in the environment $\Gamma$, $e$ has type $\tau$ and produces the set of constraints $C$}. In this judgment, $\Gamma$ and $e$ are inputs to the type inference algorithm, while $\tau$ and $C$ are outputs—the algorithm infers the type $\tau$ for expression $e$ and generates the constraints $C$ that must be satisfied for this typing to be valid. The inference rules formalize what constraint $C$ must be generated (and later solved) for a given expression $e$ to have inferred type $\tau$. Figure~\ref{fig:type-inference} gives the constraint generation rules for \Slice{}. We focus on a small but representative subset of constructs in \Slice{}, but enough to capture the core features needed to demonstrate how contraints are generated over the full language.
+We use a constraint language as shown in Figure~\ref{fig:constraints-grammar} to express requirements over the type structure and float refinements. We adopt the framework presented in~\cite{Odersky1999ConstrainedTypes}, introducing a new judgment of the form $\Gamma \vdash e : \tau \mid C$, which reads as \emph{in the environment $\Gamma$, $e$ has type $\tau$ and produces the set of constraints $C$}. In this judgment, $\Gamma$ and $e$ are inputs to the type inference algorithm, while $\tau$ and $C$ are outputs—the algorithm infers the type $\tau$ for expression $e$ and generates the constraints $C$ that must be satisfied for this typing to be valid. The inference rules formalize what constraint $C$ must be generated (and later solved) for a given expression $e$ to have inferred type $\tau$. Figure~\ref{fig:type-inference} gives the constraint generation rules for \Slice{}. We focus on a small but representative subset of constructs in \Slice{}, capturing the key ideas on how contraints are generated for the \emph{full} \Slice{} language.
 
-The type inference rules closely mirror the typing rules in Figure~\ref{fig:typing-float}, with two key differences. First, the inference rules generate a constraint set instead of having those constraints be part of the premises of the rules. Second, subtyping is handled in a syntax-directed way, where instead of a general subtyping rule, we bake in the subtyping relation into each rule.
+The type inference rules closely mirror the typing rules in Figure~\ref{fig:typing-float}, with two key differences: First, the inference rules generate a constraint set instead of having those constraints be part of the premises of the rules. Second, subtyping is handled in a syntax-directed way, where instead of a general subtyping rule, we bake the subtyping relation into each rule.
 
 \begin{figure}[!t]
     \begin{align*}
@@ -122,8 +122,7 @@ Once constraint generation completes, we obtain a system of constraints over typ
     \item \textbf{Lattice constraint solving}: After subtyping reduction, we are left with constraints purely over cut sets and value sets—equalities, subset relations, and the specialized constraints like $\distinguishes{B}{V}$, $\answerslt{B}{V_1}{V_2}$, and $\has{V}{c}$. These constraints are solved using a monotone fixed point algorithm for lattices over the cut sets and value sets.
 \end{enumerate}
 
-\paragraph{Lattice Solving}
-
+\paragraph{Lattice Solving.}
 The lattice solver keeps track of the current contents of all $B$ and $V$ variables.
 Initially, all $B$ and $V$ variables are set to $\emptyset$.
 During the solving process, the variables may go up in the lattice to a finite set, or to $\top$.
@@ -168,7 +167,7 @@ This procedure may add more cuts to $B$s than strictly necessary, but it never s
 
     This constraint set is solved as follows:
 
-    \textbf{Step 1: Subtyping reduction.} We replace each subtyping constraint with equality and subset constraints:
+    \emph{Step 1: Subtyping reduction.} We replace each subtyping constraint as described above:
     \begin{itemize}
         \item $\subtype{\float[B_2; V_2]}{\float[B_5; V_5]}$ becomes $B_2 = B_5, V_2 \sqsubseteq V_5$
         \item $\subtype{\float[B_4; V_4]}{\float[B_5; V_5]}$ becomes $B_4 = B_5, V_4 \sqsubseteq V_5$
@@ -176,21 +175,21 @@ This procedure may add more cuts to $B$s than strictly necessary, but it never s
         \item $\subtype{\float[B_8; V_8]}{\float[B_9; V_9]}$ becomes $B_8 = B_9, V_8 \sqsubseteq V_9$
     \end{itemize}
 
-    \textbf{Step 2: Initialize.} All $B$ and $V$ variables start as $\emptyset$.
+    \emph{Step 2: Initialize.} All $B$ and $V$ variables start as $\emptyset$.
 
-    \textbf{Step 3: Process value containment.} We update:
-    $V_1 := \{0.5\}$, $V_3 := \{0.8\}$, $V_6 := \{1.5\}$, $V_7 := \{1.8\}$, $V_8 := \{0.3\}$
+    \emph{Step 3: Process value containment.} We update:
+    \[V_1 := \{0.5\} \quad V_3 := \{0.8\} \quad V_6 := \{1.5\} \quad V_7 := \{1.8\} \quad V_8 := \{0.3\}\]
 
-    \textbf{Step 4: Process top assignments.} We set $V_2 := \top$ and $V_4 := \top$.
+    \emph{Step 4: Process top assignments.} We set $V_2 := \top$ and $V_4 := \top$.
 
-    \textbf{Step 5: Process equalities.} Unifying all equality constraints:
+    \emph{Step 5: Process equalities.} Unifying all equality constraints:
     \begin{itemize}
         \item From comparisons: $B_{10} = B_5 = B_6$ and $B_{11} = B_5 = B_9$
         \item From subtyping: $B_2 = B_5$, $B_4 = B_5$, $B_7 = B_9$, $B_8 = B_9$
         \item Result: $B_2 = B_4 = B_5 = B_6 = B_7 = B_8 = B_9 = B_{10} = B_{11}$ (all unified)
     \end{itemize}
 
-    \textbf{Step 6: Process subset constraints.}
+    \emph{Step 6: Process subset constraints.}
     \begin{itemize}
         \item $V_2 \sqsubseteq V_5$: Since $V_2 = \top$, we update $V_5 := V_5 \sqcup \top = \top$
         \item $V_4 \sqsubseteq V_5$: Already satisfied since $V_5 = \top$
@@ -198,19 +197,19 @@ This procedure may add more cuts to $B$s than strictly necessary, but it never s
         \item $V_8 \sqsubseteq V_9$: We update $V_9 := V_9 \sqcup \{0.3\} = \{0.3, 1.8\}$
     \end{itemize}
 
-    \textbf{Step 7: Process distinguishability.}
+    \emph{Step 7: Process distinguishability.}
     \begin{itemize}
         \item $\distinguishes{B_1}{V_1}$: Since $|V_1| = 1$, trivially satisfied
         \item $\distinguishes{B_3}{V_3}$: Since $|V_3| = 1$, trivially satisfied
     \end{itemize}
 
-    \textbf{Step 8: Process answerability.}
+    \emph{Step 8: Process answerability.}
     \begin{itemize}
-        \item $\answerslt{B_{10}}{V_5}{V_6}$: With $V_5 = \top$ and $V_6 = \{1.5\}$, we add $\clt{1.5}$ to the unified $B$
-        \item $\answersleq{B_{11}}{V_5}{V_9}$: With $V_5 = \top$ and $V_9 = \{0.3, 1.8\}$, we add $\cleq{0.3}$ and $\cleq{1.8}$ to the unified $B$
+        \item $\answerslt{B_{10}}{V_5}{V_6}$: With $V_5 = \top$ and $V_6 = \{1.5\}$, we add $\clt{1.5}$ to \mbox{the unified $B$}
+        \item $\answersleq{B_{11}}{V_5}{V_9}$: With $V_5 = \top$ and $V_9 = \{0.3, 1.8\}$, we add $\cleq{0.3}$ and $\cleq{1.8}$ to \mbox{the unified $B$}
     \end{itemize}
 
-    \textbf{Final solution:}
+    \emph{Final solution:}
     \begin{itemize}
         \item $B_1 = \emptyset$, $B_3 = \emptyset$
         \item $B_2 = B_4 = B_5 = B_6 = B_7 = B_8 = B_9 = B_{10} = B_{11} = \{\clt{1.5}, \cleq{0.3}, \cleq{1.8}\}$
@@ -221,4 +220,4 @@ This procedure may add more cuts to $B$s than strictly necessary, but it never s
 \end{example}
 
 \paragraph{Addtional constraint for partial discretization.} 
-When the return type of the program involves a float type, either directly, or as part of a larger compound type (such as $\float[B;V] \to \float[B';V']$), we need to add an additional constraint to the constraint set to ensure that these float types involved are not discretized. We do this by recursively going over the return type, and setting all nested $B$ sets to $\top$. This ensures that the behavior of the program is preserved after discretization, regardless of the context in which the program is used. When the return type is basic, such as $\bool$, then nothing needs to be done.
+When the return type of the program involves a float type, either directly, or as part of a larger compound type (such as $\float[B;V] \to \float[B';V']$), we need to add an additional constraint to the constraint set to ensure that these float types involved are not discretized. We do this by recursively going over the return type, and setting all nested $B$ sets to $\top$. This ensures that the observable behavior of the program is preserved after discretization, regardless of the context in which the program is used. When the return type is basic, such as $\bool$, then nothing needs to be done.
