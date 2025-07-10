@@ -26,7 +26,7 @@ We designed synthetic benchmarks that stress-test continuous program scaling by 
 \subsubsection{Conditional Independence}
 We test programs where each variable's distribution depends on comparisons with previous variables:
 
-\begin{itemize}
+\begin{itemize}[leftmargin=*]
 \item Each variable $x_i$ depends on its immediate predecessor via a conditional branch $x_{i-1} < r_{i-1}$, forming a sequential dependency chain. See Figure~\ref{fig:cond-benchmarks-a}.
 \item Each variable $x_i$ depends on a randomly selected predecessor $x_j$ (for $j < i$) via a conditional branch $x_j < r_{i-1}$. See Figures~\ref{fig:cond-benchmarks-b}.
 \item Each variable $x_i$ uses a randomized conditional expression, where the guard and both branches may involve either a randomly selected predecessor $x_j$ (for $j < i$) or a freshly sampled uniform value. See Figure~\ref{fig:cond-benchmarks-c}.
@@ -37,7 +37,7 @@ We test programs where each variable's distribution depends on comparisons with 
 \subsubsection{Alternating Guards}
 We test programs in which comparison guards alternate in a pattern:
 
-\begin{itemize}
+\begin{itemize}[leftmargin=*]
 \item Guard variables cycle with a fixed span. For example, with span 2, guards alternate as $x_1,x_2,x_1,\ldots$. See Figure~\ref{fig:alt-benchmarks-a}. Figures~\ref{fig:alt-benchmarks-b} and~\ref{fig:alt-benchmarks-c} show variants where the if and else branches are replaced with an immediate predecessor variable $x_{i-1}$ instead of a uniform distribution.
 
 \item Guard variables are selected based on a randomly chosen span at each step, rather than cycling deterministically as before. See Figure~\ref{fig:alt-benchmarks-d}.
