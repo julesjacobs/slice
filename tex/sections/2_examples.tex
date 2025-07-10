@@ -34,9 +34,9 @@ Figure~\ref{fig:float-type-def} describes the meaning of a type \lstinline{float
 \[
 \textbf{float}
 [
-\underbrace{\text{cut-set}}_{\begin{array}{c}\text{set of cuts}\\\text{(e.g., }\{<\!0.1, <\!0.5, \leq\!0.8\}\text{)}\\\text{or }\top\text{ (uncut)}\end{array}}
+\underbrace{\text{cut-set}}_{\footnotesize\begin{array}{c}\text{set of cuts}\\\text{(e.g., }\{<\!0.1, <\!0.5, \leq\!0.8\}\text{)}\\\text{or }\top\text{ (uncut)}\end{array}}
 ;
-\underbrace{\text{value-set}}_{\begin{array}{c}\text{set of concrete values}\\\text{(e.g., }\{0.1, 0.4, 0.5\}\text{)}\\\text{or }\top\text{ (any value in $\R$)}\end{array}}
+\underbrace{\text{value-set}}_{\footnotesize\begin{array}{c}\text{set of concrete values}\\\text{(e.g., }\{0.1, 0.4, 0.5\}\text{)}\\\text{or }\top\text{ (any value in $\R$)}\end{array}}
 ]
 \]
 \caption{The type \lstinline{float[cut-set; value-set]} captures two aspects of a floating-point expression: the cut set is determined by \emph{how the expression is used} (i.e., what it's compared against) and the value set is determined by \emph{what concrete values the expression can take}. The discretization is driven by the cut set: a float value with $n$ cuts is discretized into $n+1$ possible discrete values, each value corresponding to one real-valued interval.}
@@ -120,21 +120,16 @@ Using \Dice{}, this yields the output \result{0.5}{0.5}.
 
 In the program above, we always directly compare the continuous samples to constants.
 However, the discretization process still works if the continuous samples and constants flow through the program, for instance via a conditional.
-Consider the following program:
+Consider the following program, already type-annotated:
 
-\begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
-    let x = if flip() then uniform(0,2) 
-            else gaussian(0,1) in
-    let y = if 1.5 > x
-            then 1.8
-            else 0.3 in
-    x <= y
-\end{lstlisting}
-
-\noindent This program demonstrates how cuts propagate through the control flow. \Slice{} makes a forward pass through the program, and as the float constants 1.5, 1.8, and 0.3 subsequently appear in $y$, the cut sets of the preceding sampling instructions are populated accordingly. The $x \leq y$ comparison at the end renders the cut sets of all subexpressions to be the same: 1.5, 1.8, and 0.3 are the cuts for $x$ hence the type \codetype{\ft{<=0.3,<1.5,<=1.8}} for all subexpressions in the let statement of $x$.
-%, and proper indices for the partitioned intervals must be determined hence float types of the form \codetype{{\ftb{<=0.3,<1.5,<=1.8}{\ldots}}} for all subexpressions in the let statement of $y$.
- The type inference annotates the program as follows:
-
+%\begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
+%    let x = if flip() then uniform(0,2) 
+%            else gaussian(0,1) in
+%    let y = if 1.5 > x
+%            then 1.8
+%            else 0.3 in
+%    x <= y
+%\end{lstlisting}
 \begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
     let x = if flip()
             then (uniform(0,2) : !{\ft{<=0.3,<1.5,<=1.8}}!)
@@ -146,6 +141,11 @@ Consider the following program:
             : !{\ftb{<=0.3,<1.5,<=1.8}{0.3,1.8}}! in
     x <= y
 \end{lstlisting}
+\noindent This program demonstrates how cuts propagate through the control flow. \Slice{} makes a forward pass through the program, and as the float constants 1.5, 1.8, and 0.3 subsequently appear in $y$, the cut sets of the preceding sampling instructions are populated accordingly. The $x \leq y$ comparison at the end renders the cut sets of all subexpressions to be the same: 1.5, 1.8, and 0.3 are the cuts for $x$ hence the type \codetype{\ft{<=0.3,<1.5,<=1.8}} for all subexpressions in the let statement of $x$.
+%, and proper indices for the partitioned intervals must be determined hence float types of the form \codetype{{\ftb{<=0.3,<1.5,<=1.8}{\ldots}}} for all subexpressions in the let statement of $y$.
+ %The type inference annotates the program as follows:
+
+
 
 \noindent Notice that all cuts from the entire program (0.3, 1.5, and 1.8) are collected for the variable $x$, regardless of which branch is taken. These cuts \codetype{<=0.3,<1.5,<=1.8} split the real line into four intervals: $(-\infty, 0.3]$, $(0.3, 1.5)$, $[1.5, 1.8]$, and $(1.8, +\infty)$. Note that 1.5 is excluded from the second interval and included in the third because it comes from a strict `<` comparison. The integer index 1 in the guard of the if statement for $y$ is obtained from the type \codetype{\ftb{<=0.3,<1.5,<=1.8}{1.5}}, 2 is obtained from the type \codetype{\ftb{<=0.3,<1.5,<=1.8}{1.8}}, and 0 is obtained from the type \codetype{\ftb{<=0.3,<1.5,<=1.8}{0.3}}. Applying type-directed discretization yields:
 
@@ -197,15 +197,15 @@ Using \Dice{}, this yields the output \result{0.73595}{0.26405}.
 
 \subsection{Conditioning}\label{sec:examples:6}
 
-\Slice{} supports conditioning on events through the $\observekw$ construct, allowing for Bayesian inference. The following program models the conditional probability that a uniform random variable is less than 0.2, given that it is less than 0.5:
+\Slice{} supports conditioning on events through the $\observekw$ construct, allowing for Bayesian inference. The following program, already type-annotated, models the conditional probability that a uniform random variable is less than 0.2, given that it is less than 0.5:
 
-\begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
-    let x = uniform(0.0, 1.0) in
-    let _ = observe (x < 0.5) in
-    x < 0.2
-\end{lstlisting}
-
-\noindent The type annotations show how observation points become cuts:
+%\begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
+%    let x = uniform(0.0, 1.0) in
+%    let _ = observe (x < 0.5) in
+%    x < 0.2
+%\end{lstlisting}
+%
+%\noindent The type annotations show how observation points become cuts:
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
     let x = (uniform(0.0, 1.0) : !{\ft{<0.2,<0.5}}!) in
@@ -256,38 +256,6 @@ In the discrete version, the observation $x < 2$ rules out the case where $x = 2
 
 \noindent \Dice does not support exact inference for higher-order functions, but \Roulette does, and applying it yields the output \result{0.53636}{0.46364}. The continuous distributions in the original program are discretized into three-valued discrete distributions based on the intervals $(-\infty, 0.5)$, $[0.5, 1.5)$, and $[1.5, +\infty)$, while the functional structure remains intact.
 
-\subsection{Sequential Processes with Iterate}\label{sec:examples:8}
-
-\Slice{} provides the \texttt{iterate} construct to model sequential probabilistic processes. This example simulates a simple weather model where tomorrow's weather depends on today's:
-
-\begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
-  let weather_transition = fun today ->
-      if today < 0.5 then 
-          (* If sunny today, likely stays sunny *)
-          uniform(0.2, 0.4)
-      else  
-          (* If rainy today, likely stays rainy *)
-          gaussian(0.7, 0.1) in
-  let weather_after_3_days = 
-      iterate(weather_transition, uniform(0,1), 3) in
-  weather_after_3_days < 0.5  (* Is it sunny? *)
-\end{lstlisting}
-
-\noindent The \texttt{iterate} function applies the weather transition function three times, starting from a random initial weather state. Each iteration represents one day, with values below 0.5 representing sunny weather and values above 0.5 representing rain. Sunny days tend to stay sunny (uniform between 0.2 and 0.4), while rainy days tend to stay rainy (Gaussian centered at 0.7). The type system ensures that all cuts are properly collected across the iterations, e.g., yielding the type \ft{<0.5} for \textit{today}, \uniform(0.2,0.4), \gaussian(0.7,0.1), and \textit{weather\_after\_three\_days} each. This enables accurate discretization of this sequential process:
-
-\begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
-  let weather_transition = fun today -> 
-    if today < 1 then
-        discrete(1, 0)
-    else
-        discrete(0.0227501, 0.97725) in
-  let weather_after_3_days = 
-    iterate(weather_transition, discrete(0.5, 0.5), 3) in
-  weather_after_3_days < 1
-\end{lstlisting}
-\noindent
-This results in the output \result{0.5334}{0.4666}, which can be obtained from either \Dice or \Roulette as they both support bounded iteration.
-
 
 \subsection{Mutable State}\label{sec:examples:9}
 
@@ -316,27 +284,6 @@ This results in the output \result{0.5334}{0.4666}, which can be obtained from e
 \noindent
 \Roulette supports exact inference for mutable state, yielding \result{0.92067}{0.07933}.
 
-\subsection{Lists and Recursion}\label{sec:examples:10}
-
-\Slice{} supports lists and pattern matching, enabling functional list processing with probabilistic elements. The following example demonstrates closures capturing stochastic values:
-
-\begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
-  let map = fun f -> fix loop lst :=
-      match lst with
-        nil -> nil
-        | head :: tail -> (f head) :: (loop tail)
-      end in
-  (* Stochastically choose threshold *)
-  let threshold = if flip() then 0.3 else 0.7 in
-  (* Closure captures the stochastic threshold *)
-  let check_threshold = fun x -> x < threshold in
-  let measurements = gaussian(0.0, 1.0) :: 
-                    gaussian(0.5, 1.0) :: 
-                    gaussian(1.0, 1.0) :: nil in
-  map check_threshold measurements
-\end{lstlisting}
-
-\noindent This gives an output of distributions of lists: $\{\textit{true,true,true}: 0.115341, \textit{true,true,false}: 0.234199, ...\}$ when run with Roulette. The closure \textit{check\_threshold} lexically captures the stochastic \textit{threshold} value, which is randomly chosen to be either 0.3 or 0.7. The type system correctly infers that both threshold values (0.3 and 0.7) must be included as cuts for all Gaussian measurements, yielding the type \ft{<0.3,<0.7} for list elements. This demonstrates how \Slice{} handles higher-order functions with captured stochastic values while maintaining sound discretization.
 
 
 \subsection{Indian GPA Problem}\label{sec:gpa}
@@ -378,6 +325,7 @@ This example involves both discrete and continuous random variables and models a
 
 \noindent This gives the output \result{0.17325}{0.82675}. Here, \uniform(0,10) becomes \discrete(0.1, 0.9) representing 10\% probability for $[0,1)$ and 90\% for $[1,10]$. Similarly, \uniform(0,4) becomes \discrete(0.25, 0.75). Constants 10.0 and 4.0 fall into the second interval in the partition $(-\infty, 1) \cup [1,+\infty)$ and are thus both mapped to index 1 in the discretized program.
 
+We also support sequential probabilistic processes with iterate, and lists and recursion, see \Cref{ap:mot} for examples.
 \subsection{Partial Discretization for non-constant Comparisons}\label{sec:examples:partial1}
 
 Not all programs can be fully discretized. Consider a program where continuous variables are compared directly to each other rather than to constants:

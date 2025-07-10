@@ -10,17 +10,17 @@ The type inference rules closely mirror the typing rules in Figure~\ref{fig:typi
 
 \begin{figure}[!t]
     \begin{align*}
-    C ::= &\; \tau_1 <: \tau_2  \text{\quad (subtyping)} \\
-          &\mid \distinguishes{B}{V}  \text{\quad (distinguishability)} \\
-          &\mid \answerslt{B}{V_1}{V_2}  \text{\quad (less-than answerability)} \\
-          &\mid \answersleq{B}{V_1}{V_2}  \text{\quad (less-equal answerability)} \\
-          &\mid \has{V}{c}  \text{\quad (value containment)} \\
-          &\mid B_1 \sqsubseteq B_2  \text{\quad (cut set subset)} \\
-          &\mid B_1 = B_2  \text{\quad (cut set equality)} \\
-          &\mid V_1 \sqsubseteq V_2  \text{\quad (value set subset)} \\
-          &\mid V_1 = V_2  \text{\quad (value set equality)} \\
-          &\mid B_1 \equiv_{\top} B_2   \text{\quad (join only if $B_1 = \top$ or $B_2 = \top$)} \\
-          &\mid C_1, C_2   \text{\quad (conjunction)}
+    C &::= \; \tau_1 <: \tau_2  %\text{\quad (subtyping)} \\
+          \mid \distinguishes{B}{V}  %\text{\quad (distinguishability)} \\
+          \mid \answerslt{B}{V_1}{V_2}  %\text{\quad (less-than answerability)} \\
+          \mid \answersleq{B}{V_1}{V_2} % \text{\quad (less-equal answerability)} \\
+          \mid \has{V}{c} \\% \text{\quad (value containment)} \\
+          &\quad \mid B_1 \sqsubseteq B_2%  \text{\quad (cut set subset)} \\
+          \mid B_1 = B_2  %\text{\quad (cut set equality)} \\
+          \mid V_1 \sqsubseteq V_2 % \text{\quad (value set subset)} \\
+          \mid V_1 = V_2  %\text{\quad (value set equality)} \\
+          \mid B_1 \equiv_{\top} B_2   %\text{\quad (join only if $B_1 = \top$ or $B_2 = \top$)} \\
+          \mid C_1, C_2   %\text{\quad (conjunction)}
     \end{align*}
 \caption{Syntax for our constraint language. Constraints correspond to the semantic requirements in our type system: subtyping ensures type compatibility, $\distinguishes{B}{V}$ ensures that distribution parameters can be recovered after discretization, $\answerslt{B}{V_1}{V_2}$ and $\answersleq{B}{V_1}{V_2}$ ensure that comparison results can be determined after discretization, and $\has{V}{c}$ ensures that constants are properly tracked.}
 \label{fig:constraints-grammar}
@@ -60,57 +60,31 @@ The type inference rules closely mirror the typing rules in Figure~\ref{fig:typi
     Applying our constraint generation rules, we obtain the following constraints:
     
     \begin{enumerate}
-        \item From the constants using \textsc{TFloat-Const}:
-        \begin{itemize}
-            \item $\has{V_1}{0.5}$ (from literal 0.5)
-            \item $\has{V_3}{0.8}$ (from literal 0.8)
-            \item $\has{V_6}{1.5}$ (from literal 1.5)
-            \item $\has{V_7}{1.8}$ (from literal 1.8)
-            \item $\has{V_8}{0.3}$ (from literal 0.3)
-        \end{itemize}
+        \item From the constants using \textsc{TFloat-Const}:  $\has{V_1}{0.5}$ (from literal 0.5), $\has{V_3}{0.8}$ (from literal 0.8), 
+        $\has{V_6}{1.5}$ (from literal 1.5), $\has{V_7}{1.8}$ (from literal 1.8), and $\has{V_8}{0.3}$ (from literal 0.3).
         
-        \item From the exponential distributions using \textsc{TContinuous-1}:
-        \begin{itemize}
-            \item $\distinguishes{B_1}{V_1}, V_2 = \top$, $B_1 \equiv_{\top} B_2$ (from \texttt{exponential(0.5)})
-            \item $\distinguishes{B_3}{V_3}, V_4 = \top$, $B_3 \equiv_{\top} B_4$ (from \texttt{exponential(0.8)})
-        \end{itemize}
+        \item From the exponential distributions using \textsc{TContinuous-1}: $\distinguishes{B_1}{V_1}, V_2 = \top$, $B_1 \equiv_{\top} B_2$ (from \texttt{exponential(0.5)}); 
+         $\distinguishes{B_3}{V_3}, V_4 = \top$, $B_3 \equiv_{\top} B_4$ (from \texttt{exponential(0.8)}).
         
-        \item From the first \texttt{if} expression using \textsc{TIf}:
-        \begin{itemize}
-            \item $\subtype{\float[B_2; V_2]}{\float[B_5; V_5]}$
-            \item $\subtype{\float[B_4; V_4]}{\float[B_5; V_5]}$
-        \end{itemize}
+        \item From the first \texttt{if} expression using \textsc{TIf}:  $\subtype{\float[B_2; V_2]}{\float[B_5; V_5]}$ and $\subtype{\float[B_4; V_4]}{\float[B_5; V_5]}$.        
+        \item From the comparison \texttt{x < 1.5} using \textsc{TLess}: $\answerslt{B_{5}}{V_5}{V_6}$ and $B_{5} = B_6$.
         
-        \item From the comparison \texttt{x < 1.5} using \textsc{TLess}:
-        \begin{itemize}
-            \item $\answerslt{B_{10}}{V_5}{V_6}$
-            \item $B_{10} = B_5, B_{10} = B_6$ (shared cut set requirement)
-        \end{itemize}
         
-        \item From the second \texttt{if} expression using \textsc{TIf}:
-        \begin{itemize}
-            \item $\subtype{\float[B_7; V_7]}{\float[B_9; V_9]}$
-            \item $\subtype{\float[B_8; V_8]}{\float[B_9; V_9]}$
-        \end{itemize}
-        
-        \item From the final comparison \texttt{x <= y} using \textsc{TLessEq}:
-        \begin{itemize}
-            \item $\answersleq{B_{11}}{V_5}{V_9}$
-            \item $B_{11} = B_5, B_{11} = B_9$ (shared cut set requirement)
-        \end{itemize}
-    \end{enumerate}
+        \item From the second \texttt{if} expression using \textsc{TIf}: $\subtype{\float[B_7; V_7]}{\float[B_9; V_9]}$ and $\subtype{\float[B_8; V_8]}{\float[B_9; V_9]}$.        
+        \item From the final comparison \texttt{x <= y} using \textsc{TLessEq}: $\answersleq{B_{5}}{V_5}{V_9}$ and 
+           $B_{5} = B_9$.
+               \end{enumerate}
     
     The complete constraint set generated is:
-    \begin{align*}
-    C = &\; \has{V_1}{0.5}, \has{V_3}{0.8}, \has{V_6}{1.5}, \has{V_7}{1.8}, \has{V_8}{0.3}, \\
-        &\; V_2 = \top, V_4 = \top, \\
-        &\; \distinguishes{B_1}{V_1}, \distinguishes{B_3}{V_3}, \\
-        &\; B_1 \equiv_{\top} B_2, B_3 \equiv_{\top} B_4 \\
+    \begin{equation}\label{eq:cs}
+    \begin{array}{lll}
+    C = \Big\{&\; \has{V_1}{0.5}, \has{V_3}{0.8}, \has{V_6}{1.5}, \has{V_7}{1.8}, \has{V_8}{0.3}, V_2 = \top, V_4 = \top, \\
+        &\; \distinguishes{B_1}{V_1}, \distinguishes{B_3}{V_3}, B_1 \equiv_{\top} B_2, B_3 \equiv_{\top} B_4 \\
         &\; \subtype{\float[B_2; V_2]}{\float[B_5; V_5]}, \subtype{\float[B_4; V_4]}{\float[B_5; V_5]}, \\
         &\; \subtype{\float[B_7; V_7]}{\float[B_9; V_9]}, \subtype{\float[B_8; V_8]}{\float[B_9; V_9]}, \\
-        &\; \answerslt{B_{10}}{V_5}{V_6}, B_{10} = B_5, B_{10} = B_6, \\
-        &\; \answersleq{B_{11}}{V_5}{V_9}, B_{11} = B_5, B_{11} = B_9
-    \end{align*}
+        &\; \answerslt{B_{5}}{V_5}{V_6},  B_{5} = B_6, 
+         \answersleq{B_{5}}{V_5}{V_9},  B_{5} = B_9& \Big\}
+     \end{array}   \end{equation}
 \end{example}
 
 \subsection{Constraint Solving}
@@ -128,7 +102,7 @@ Initially, all $B$ and $V$ variables are set to $\emptyset$.
 During the solving process, the variables may go up in the lattice to a finite set, or to $\top$.
 Each of the constraints is handled as follows:
 
-\begin{itemize}
+\begin{itemize}[leftmargin=*]
     \item \textbf{Equality constraints} ($B_1 = B_2$ or $V_1 = V_2$): We unify the variables, treating them as the same variable throughout the solving process. Any update to one variable is immediately reflected in all variables unified with it.
     
     \item \textbf{Subset constraints} ($B_1 \sqsubseteq B_2$ or $V_1 \sqsubseteq V_2$): We ensure that the contents of the first variable are always a subset of the second. When $B_1$ or $V_1$ is updated, we propagate the changes to $B_2$ or $V_2$ by taking the least upper bound.
@@ -137,9 +111,7 @@ Each of the constraints is handled as follows:
     
     \item \textbf{Top assignment} ($V = \top$): We immediately set $V$ to $\top$, representing that the value set contains all possible float values.
     
-    \item \textbf{Distinguishability} ($\distinguishes{B}{V}$): This constraint ensures that the cut set $B$ can distinguish between all values in $V$. If $V$ is a finite set $\{v_1, ..., v_n\}$ with $n > 1$, we require that $B$ contains at least $n-1$ cuts to separate these values. If the cuts do not separate the values at the current solver state, we insert additional cuts to satisfy this condition. There is no canonical way to do this, so we use a simple heuristic: we insert a cut $\clt{x}$ for each value $x \in V$ that is not already separated by existing cuts.
-    
-    If $B = \top$, the constraint is trivially satisfied.
+    \item \textbf{Distinguishability} ($\distinguishes{B}{V}$): This constraint ensures that the cut set $B$ can distinguish between all values in $V$. If $V$ is a finite set $\{v_1, ..., v_n\}$ with $n > 1$, we require that $B$ contains at least $n-1$ cuts to separate these values. If the cuts do not separate the values at the current solver state, we insert additional cuts to satisfy this condition. There is no canonical way to do this, so we use a simple heuristic: we insert a cut $\clt{x}$ for each value $x \in V$ that is not already separated by existing cuts.  If $B = \top$, the constraint is trivially satisfied.
     
     \item \textbf{Less-than answerability} ($\answerslt{B}{V_1}{V_2}$): Intuitively, this constraint ensures that $B$ contains enough cuts to answer all possible comparisons of the form ``$v_1 < v_2$'' where $v_1 \in V_1$ and $v_2 \in V_2$.
     If $B = \top$, the constraint is trivially satisfied.
@@ -148,24 +120,10 @@ Each of the constraints is handled as follows:
     \item \textbf{Less-equal answerability} ($\answersleq{B}{V_1}{V_2}$): Analogous to less-than.
 \end{itemize}
 
-The solver repeatedly processes constraints until reaching a fixed point, where no constraint causes any further updates to the variables. The monotonicity of the lattice operations ensures that this process terminates.
-
-This procedure may add more cuts to $B$s than strictly necessary, but it never sets $B=\top$ unless that is the only way to satisfy all constraints. In other words, the discretization itself may be suboptimal in terms of the number of cuts.
+The solver repeatedly processes constraints until reaching a fixed point, where no constraint causes any further updates to the variables. The monotonicity of the lattice operations ensures that this process terminates. This procedure may add more cuts to $B$s than strictly necessary, but it never sets $B=\top$ unless that is the only way to satisfy all constraints. In other words, the discretization itself may be suboptimal in terms of the number of cuts.
 
 \begin{example}
-    From the previous example, we obtained the constraint set:
-    \begin{align*}
-    C = &\; \has{V_1}{0.5}, \has{V_3}{0.8}, \has{V_6}{1.5}, \has{V_7}{1.8}, \has{V_8}{0.3}, \\
-        &\; V_2 = \top, V_4 = \top, \\
-        &\; \distinguishes{B_1}{V_1}, \distinguishes{B_3}{V_3}, \\
-        &\; B_1 \equiv_{\top} B_2, B_3 \equiv_{\top} B_4 \\
-        &\; \subtype{\float[B_2; V_2]}{\float[B_5; V_5]}, \subtype{\float[B_4; V_4]}{\float[B_5; V_5]}, \\
-        &\; \subtype{\float[B_7; V_7]}{\float[B_9; V_9]}, \subtype{\float[B_8; V_8]}{\float[B_9; V_9]}, \\
-        &\; \answerslt{B_{10}}{V_5}{V_6}, B_{10} = B_5, B_{10} = B_6, \\
-        &\; \answersleq{B_{11}}{V_5}{V_9}, B_{11} = B_5, B_{11} = B_9
-    \end{align*}
-
-    This constraint set is solved as follows:
+    From the previous example, we obtained the constraint set displayed in \Cref{eq:cs}, which is then solved as follows:
 
     \emph{Step 1: Subtyping reduction.} We replace each subtyping constraint as described above:
     \begin{itemize}
@@ -219,5 +177,5 @@ This procedure may add more cuts to $B$s than strictly necessary, but it never s
     Since none of $B_1$, $B_2$, $B_3$, $B_4$ are $\top$, the constraints $B_1 \equiv_{\top} B_2$ and $B_3 \equiv_{\top} B_4$ are satisfied.
 \end{example}
 
-\paragraph{Addtional constraint for partial discretization.} 
-When the return type of the program involves a float type, either directly, or as part of a larger compound type (such as $\float[B;V] \to \float[B';V']$), we need to add an additional constraint to the constraint set to ensure that these float types involved are not discretized. We do this by recursively going over the return type, and setting all nested $B$ sets to $\top$. This ensures that the observable behavior of the program is preserved after discretization, regardless of the context in which the program is used. When the return type is basic, such as $\bool$, then nothing needs to be done.
+\paragraph{Additional constraint for partial discretization.} 
+When the return type of the program involves a float type, either directly, or as part of a larger compound type (such as $\float[B;V] \to \float[B';V']$), we need to add an additional constraint to ensure that these float types involved are not discretized. We do this by recursively going over the return type, and setting all nested $B$ sets to $\top$. This ensures that the observable behavior of the program is preserved after discretization, regardless of the context in which the program is used. When the return type is basic, such as $\bool$, then nothing needs to be done.

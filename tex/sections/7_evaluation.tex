@@ -12,9 +12,16 @@ The \Slice{} compiler consists of approximately 3,400 lines of OCaml code (inclu
 In what follows, we evaluate the performance of using \Slice{} with \Dice{}/\Roulette{} for exact inference on (i) a set of synthetic benchmarks and (ii) a set of benchmarks taken from the literature.
 
 \subsection{Synthetic Benchmarks}\label{sec:synthetic-benchmarks}
-We designed seven synthetic benchmarks that stress-test continuous program scaling by growing programs linearly in the number of comparison operators. We generate programs of varying structure, with representative code examples provided in Appendix~\ref{appen:synthetic-sketches} and a high-level sketch shown in Figure~\ref{fig:nested-conditionals}:
-
-\input{figures/nested-conditionals.tex}
+We designed synthetic benchmarks that stress-test continuous program scaling by growing programs linearly in the number of comparison operators. We generate programs of varying structure, with representative code examples provided in Appendix~\ref{appen:synthetic-sketches}, and high-level structure as follows:
+    \begin{lstlisting}
+        let x1 = unif() in 
+        let x2 = if x1 < r1 then unif() else unif() in 
+        let x3 = if x2 < r2 ...
+        ...
+        x_n < 0.5
+    \end{lstlisting}
+ Each program consists of a sequence of nested \texttt{if} statements, where each branch conditions on a previous variable sampled from a uniform distribution, proceeding until the final condition $x_n < 0.5$ is reached. $0 \leq r_i \leq 1$ is a random float. This construction allows us to test how well \Slice{} handles deep conditional branching and stochastic control flow.
+ %\input{figures/nested-conditionals.tex}
 
 \subsubsection{Conditional Independence}
 We test programs where each variable's distribution depends on comparisons with previous variables:
@@ -41,7 +48,7 @@ We test programs in which comparison guards alternate in a pattern:
 \subsubsection{Results}
 The program size refers to the number of comparison operations in the program. We generate programs of sizes ranging from 1 to 50, in increments of 5, for the conditional independence tests. For the alternating guard tests, we generate programs with sizes ranging from 1 to 100, increasing the program size in steps of 5 and the guard span in steps of 1. Each program is evaluated with a timeout of 300 seconds. The scaling experiments demonstrate that Slice+Dice maintains near-linear scaling behavior while SPPL exhibits significantly faster growth and times out on larger programs. The Slice compilation phase alone (dark blue line) shows essentially constant time, indicating that the type-directed discretization algorithm scales extremely well.
 
-\subsection{Existing Benchmark}\label{sec:fairness-benchmarks}
+\subsection{Existing Benchmarks}\label{sec:fairness-benchmarks}
 Characterizing the fairness of classification algorithms is an interesting application in machine learning~\cite{Dwork2012FairnessAwareness}. FairSquare~\cite{albarghouthi2017fairsquare} and VeriFair~\cite{Bastani2019VeriFair} are two solvers that obtain fairness judgments for large-scale decision-making programs. Prior to SPPL, they were state-of-the-art for verifying the fairness of decision tree classifiers, neural network classifiers, and support vector machine classifiers. We evaluate performance on the decision tree benchmarks, as \Slice cannot solve the neural network and support vector machine benchmarks as they contain multivariate transforms, and show that \Slice{} beats SPPL in performance on such benchmarks.
 
 Table 1 shows the results. The first column shows the decision making program ($DT_n$ means ``decision tree'' with $n$ conditionals), and the remaining columns display the execution times in seconds of Slice with Dice, Slice with Roulette, and SPPL respectively. The last column measures the speedup of \Slice{} over SPPL, where we take the max between Dice and Roulette speedups. The measurements indicate that \Slice{} consistently obtains probability estimates in milliseconds, with up to 200× speedup compared to SPPL. Although FairSquare and VeriFair can compute approximate probabilities that enable them to express more fairness problems, their cost is that their runtime on the decision trees is higher and less predictable than \Slice{} and SPPL which can compute exact probabilities efficiently.

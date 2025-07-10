@@ -118,7 +118,7 @@ Elements of $\{ \clt{x} ~|~ x \in \R \}	\cup \{ \cleq{x} ~|~ x \in \R \}$ are ca
 Moreover, we let $\intervals{\emptyset} = \{(-\infty,\infty)\}$ and $\intervals{\top} = 2^\Reals$, i.e., $\top$ induces the most fine-grained partitioning of $\Reals$. We denote by $\intervals{B}_i$ the $i$-th interval of $\intervals{B}$, assuming $\intervals{B}$ is $0$-indexed, i.e., $i \in \{0,...,n\}$. This leads us to our types:
 %
 \begin{definition}[Types]
-	Types $\tau$ adhere to the grammar
+	For $n \in \Nats$, $B \in \cutsets$, and $V \in \valsets$, types $\tau$ adhere to the grammar
 	%
 	\begin{align*}
 		\tau {}::={} &\phantom{|} \textbf{int} 
@@ -137,7 +137,6 @@ Moreover, we let $\intervals{\emptyset} = \{(-\infty,\infty)\}$ and $\intervals{
 		 \tag{float types}
 		  ~,
 	\end{align*}
-	where $n \in \Nats$, $B \in \cutsets$, and $V \in \valsets$.
 \end{definition}
 %
 Let us first briefly go over the standard types:  $\textbf{int}$ is the type of integers, $\textbf{bool}$ is the type of Booleans, $\tau_1 * \tau_2$ is the type of (ordered) pairs of $\tau_1$ and $\tau_2$, $\tau_1 \rightarrow \tau_2$ is the type of functions from $\tau_1$ to $\tau_2$, $\textbf{unit}$ is the unit type, and $\listty{\tau}$ (resp.\ $\textbf{ref}(\tau)$) is the type of lists (resp.\ references) over $\tau$.
