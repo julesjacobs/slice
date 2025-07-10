@@ -92,3 +92,106 @@
 \end{proof}
 
 \input{sections/6_soundness.tex}
+
+\section{Code Sketches for Synthethic Benchmarks}\label{appen:synthetic-sketches}
+\subsection{Conditional Independent Programs}
+\subsubsection{Conditional Independent (Figure~\ref{fig:cond-benchmarks-a})}
+\begin{figure}
+    \begin{lstlisting}
+        let x1 = uniform(0,1) in
+        let x2 = if x1 < 0.02127797524369223 then uniform(0,2) else uniform(0,3) in
+        let x3 = if x2 < 0.28071433142875446 then uniform(0,4) else uniform(0,5) in
+        let x4 = if x3 < 0.5860419475395264 then uniform(0,6) else uniform(0,7) in
+        let x5 = if x4 < 0.19269553925164867 then uniform(0,8) else uniform(0,9) in
+        let x6 = if x5 < 0.775821987107561 then uniform(0,10) else uniform(0,11) in
+        x6 < 0.5
+    \end{lstlisting}
+    \caption{Conditional Independent: Program of size 6}
+\end{figure}
+
+
+\subsubsection{Conditional Random 1 (Figure~\ref{fig:cond-benchmarks-b})}
+\begin{figure}
+    \begin{lstlisting}
+        let x1 = uniform(0,1) in
+        let x2 = if x1 < 0.5240176907596484 then uniform(0,2) else uniform(0,3) in
+        let x3 = if x2 < 0.842296396988118 then uniform(0,4) else uniform(0,5) in
+        let x4 = if x3 < 0.4933834187296479 then uniform(0,6) else uniform(0,7) in
+        let x5 = if x1 < 0.2759984160282654 then uniform(0,8) else uniform(0,9) in
+        let x6 = if x4 < 0.4400934019200762 then uniform(0,10) else uniform(0,11) in
+        x6 < 0.5
+    \end{lstlisting}
+    \caption{Conditional Random 1: Program of size 6}
+\end{figure}
+
+\subsubsection{Conditional Random 2 (Figure~\ref{fig:cond-benchmarks-c})}
+\begin{figure}
+    \begin{lstlisting}
+        let x1 = uniform(0, 6) in
+        let x2 = if uniform(0, 8) < 0.35 then x1 else x1 in
+        let x3 = if uniform(0, 4) < 0.36 then uniform(0, 1) else x2 in
+        let x4 = if x3 < 0.49 then uniform(0, 9) else uniform(0, 7) in
+        let x5 = if uniform(0, 5) < 0.17 then x1 else uniform(0, 5) in
+        let x6 = if uniform(0, 10) < 0.73 then x3 else uniform(0, 1) in
+        let x7 = if uniform(0, 7) < 0.25 then x6 else x5 in
+        let x8 = if uniform(0, 5) < 0.91 then uniform(0, 9) else uniform(0, 5) in
+        let x9 = if uniform(0, 4) < 0.95 then uniform(0, 2) else uniform(0, 7) in
+        let x10 = if uniform(0, 4) < 0.25 then uniform(0, 2) else uniform(0, 8) in
+        uniform(0, 7) < 0.5
+    \end{lstlisting}
+    \caption{Conditional Random 2: Program of size 10}
+\end{figure}
+
+\subsection{Alternating Guard Programs}
+\subsubsection{Alternating Guard 1 (Figure~\ref{fig:alt-benchmarks-a})}
+\begin{figure}
+    \begin{lstlisting}
+        let x1 = uniform(0,1) in
+        let x2 = if x1 < 0.24593522427346853 then uniform(0,2) else uniform(0,3) in
+        let x3 = if x2 < 0.4686888753617632 then uniform(0,4) else uniform(0,5) in
+        let x4 = if x1 < 0.07493104127514962 then uniform(0,6) else uniform(0,7) in
+        let x5 = if x2 < 0.9276561221033321 then uniform(0,8) else uniform(0,9) in
+        x5 < 0.5
+    \end{lstlisting}
+    \caption{Alternating Guard 1: Program of size 5 with guard span 2}
+\end{figure}
+
+\subsubsection{Alternating Guard 2 (Figure~\ref{fig:alt-benchmarks-b})}
+\begin{figure}
+    \begin{lstlisting}
+        let x1 = uniform(0,1) in
+        let x2 = if x1 < 0.1508340520981068 then uniform(0,2) else x1 in
+        let x3 = if x2 < 0.8288386660129474 then uniform(0,4) else x2 in
+        let x4 = if x1 < 0.8924541597029958 then uniform(0,6) else x3 in
+        let x5 = if x2 < 0.5697933654526154 then uniform(0,8) else x4 in
+        x5 < 0.5
+    \end{lstlisting}
+    \caption{Alternating Guard 2: Program of size 5 with guard span 2}
+\end{figure}
+
+\subsubsection{Alternating Guard 3 (Figure~\ref{fig:alt-benchmarks-c})}
+\begin{figure}
+    \begin{lstlisting}
+        let x1 = uniform(0,1) in
+        let x2 = if x1 < 0.4839576430388068 then uniform(0,2) else uniform(0,3) in
+        let x3 = if x2 < 0.5 then x2 else uniform(0,4) in
+        let x4 = if x1 < 0.5 then x3 else uniform(0,6) in
+        let x5 = if x2 < 0.5 then x4 else uniform(0,8) in
+        x5 < 0.5
+    \end{lstlisting}
+    \caption{Alternating Guard 3: Program of size 5 with guard span 2}
+\end{figure}
+
+\subsubsection{Random Alternating (Figure~\ref{fig:alt-benchmarks-d})}
+\begin{figure}
+    \begin{lstlisting}
+        let x1 = uniform(0,3) in
+        let x2 = if x1 < 0.2882781296166358 then uniform(0,1) else uniform(0,4) in
+        let x3 = if x2 < 0.39909381806724803 then uniform(0,3) else uniform(0,10) in
+        let x4 = if x1 < 0.0310318095749047 then uniform(0,7) else uniform(0,9) in
+        let x5 = if x2 < 0.8796036340827663 then uniform(0,5) else uniform(0,10) in
+        x5 < 0.5
+    \end{lstlisting}
+    \caption{Random Alternating: Program of size 5 with guard span 2}
+\end{figure}
+

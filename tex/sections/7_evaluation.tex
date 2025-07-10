@@ -12,7 +12,9 @@ The \Slice{} compiler consists of approximately 3,400 lines of OCaml code (inclu
 In what follows, we evaluate the performance of using \Slice{} with \Dice{}/\Roulette{} for exact inference on (i) a set of synthetic benchmarks and (ii) a set of benchmarks taken from the literature.
 
 \subsection{Synthetic Benchmarks}\label{sec:synthetic-benchmarks}
-We designed seven synthetic benchmarks that stress-test continuous program scaling by growing programs linearly in the number of comparison tests. We generate programs of varying structure:
+We designed seven synthetic benchmarks that stress-test continuous program scaling by growing programs linearly in the number of comparison tests. We generate programs of varying structure (with code sketches shown in Appendix~\ref{appen:synthetic-sketches} and an illustration shown in Figure~\ref{fig:nested-conditionals}):
+
+\input{figures/nested-conditionals.tex}
 
 \paragraph{Conditional Independence.} \kevin{provide sketches?}\kevin{measure of program size? Numberof comparisons}
 We test programs where each variable's distribution depends on comparisons with previous variables:
