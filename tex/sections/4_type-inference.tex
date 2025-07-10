@@ -6,7 +6,7 @@ In this section, we describe our type inference algorithm, where the goal is to 
 
 We use a constraint language as shown in Figure~\ref{fig:constraints-grammar} to express requirements over type structure and float refinements. We adopt the framework presented in~\cite{Odersky1999ConstrainedTypes}, introducing a new judgment of form $\Gamma \vdash e : \tau \mid C$, which reads as \emph{in the environment $\Gamma$, $e$ has type $\tau$ and produces the set of constraints $C$}. In this judgment, $\Gamma$ and $e$ are inputs to the type inference algorithm, while $\tau$ and $C$ are outputs—the algorithm infers the type $\tau$ for expression $e$ and generates the constraints $C$ that must be satisfied for this typing to be valid. The inference rules formalize what constraint $C$ must be generated (and later solved) for a given expression $e$ to have inferred type $\tau$. Figure~\ref{fig:type-inference} gives the constraint generation rules for \Slice{}. We focus on a small but representative subset of constructs in \Slice{}, but enough to capture the core features needed to demonstrate how contraints are generated over the full language.
 
-The type inference rules closely mirror the typing rules in Figure~\ref{fig:typing-rules}, with two key differences. First, the inference rules generate a constraint set instead of having those constraints be part of the premises of the rules. Second, subtyping is handled in a syntax-directed way, where instead of a general subtyping rule, we bake in the subtyping relation into each rule.
+The type inference rules closely mirror the typing rules in Figure~\ref{fig:typing-float}, with two key differences. First, the inference rules generate a constraint set instead of having those constraints be part of the premises of the rules. Second, subtyping is handled in a syntax-directed way, where instead of a general subtyping rule, we bake in the subtyping relation into each rule.
 
 \begin{figure}[!t]
     \begin{align*}
@@ -159,6 +159,7 @@ This procedure may add more cuts to $B$'s than strictly necessary, but it never 
     C = &\; \has{V_1}{0.5}, \has{V_3}{0.8}, \has{V_6}{1.5}, \has{V_7}{1.8}, \has{V_8}{0.3}, \\
         &\; V_2 = \top, V_4 = \top, \\
         &\; \distinguishes{B_1}{V_1}, \distinguishes{B_3}{V_3}, \\
+        &\; B_1 \equiv_{\top} B_2, B_3 \equiv_{\top} B_4 \\
         &\; \subtype{\float[B_2; V_2]}{\float[B_5; V_5]}, \subtype{\float[B_4; V_4]}{\float[B_5; V_5]}, \\
         &\; \subtype{\float[B_7; V_7]}{\float[B_9; V_9]}, \subtype{\float[B_8; V_8]}{\float[B_9; V_9]}, \\
         &\; \answerslt{B_{10}}{V_5}{V_6}, B_{10} = B_5, B_{10} = B_6, \\
@@ -216,6 +217,7 @@ This procedure may add more cuts to $B$'s than strictly necessary, but it never 
         \item $V_1 = \{0.5\}$, $V_2 = \top$, $V_3 = \{0.8\}$, $V_4 = \top$, $V_5 = \top$
         \item $V_6 = \{1.5\}$, $V_7 = \{1.8\}$, $V_8 = \{0.3\}$, $V_9 = \{0.3, 1.8\}$
     \end{itemize}
+    Since none of $B_1$, $B_2$, $B_3$, $B_4$ are $\top$, the constraints $B_1 \equiv_{\top} B_2$ and $B_3 \equiv_{\top} B_4$ no longer hold.
 \end{example}
 
 \paragraph{Addtional constraint for partial discretization.} 
