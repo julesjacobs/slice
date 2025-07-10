@@ -150,7 +150,7 @@ Each of the constraints is handled as follows:
 
 The solver repeatedly processes constraints until reaching a fixed point, where no constraint causes any further updates to the variables. The monotonicity of the lattice operations ensures that this process terminates.
 
-This procedure may add more cuts to $B$s than strictly necessary, but it never sets $B=\top$ unless that is the only way to satisfy all constraints. In other words, the discretization itself may be suboptimal in terms of the number of cuts, but if discretization is possible, it always succeeds.
+This procedure may add more cuts to $B$s than strictly necessary, but it never sets $B=\top$ unless that is the only way to satisfy all constraints. In other words, the discretization itself may be suboptimal in terms of the number of cuts.
 
 \begin{example}
     From the previous example, we obtained the constraint set:
