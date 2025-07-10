@@ -216,4 +216,5 @@ This procedure may add more cuts to $B$'s than strictly necessary, but it never 
     \end{itemize}
 \end{example}
 
-\paragraph{Addtional constraint for partial discretization.} We note an additional constraint for partially discretized programs: if the returned expression's cut set $B$ is empty after constraint solving, we conservatively set $B = \top$ to prevent \Slice{} from discretizing away the returned expression. This ensures that the original and discretized programs remain observationally equivalent. This change may in turn propagate to other cut sets and value sets, depending on how $B$ is constrained by or derived from them.
+\paragraph{Addtional constraint for partial discretization.} 
+When the return type of the program involves a float type, either directly, or as part of a larger compound type (such as $\float[B;V] \to \float[B';V']$), we need to add an additional constraint to the constraint set to ensure that these float types involved are not discretized. We do this by recursively going over the return type, and setting all nested $B$ sets to $\top$. This ensures that the behavior of the program is preserved after discretization, regardless of the context in which the program is used. When the return type is basic, such as $\bool$, then nothing needs to be done.
