@@ -121,7 +121,7 @@
         let x6 = if x4 < 0.4400934019200762 then uniform(0,10) else uniform(0,11) in
         x6 < 0.5
     \end{lstlisting}
-    \caption{Conditional Random 1: Program of size 6}
+    \caption{Conditional Random 1: Program of size 6. Note that this structure may lead to unused variables—that is, some previously defined $x_k$ may not influence any subsequent computation. his is intentional: by allowing such redundancy, we more realistically simulate programs with noisy or extraneous computations, and stress-test the ability of our analysis to distinguish relevant from irrelevant variables.}
 \end{figure}
 
 \subsubsection{Conditional Random 2 (Figure~\ref{fig:cond-benchmarks-c})}

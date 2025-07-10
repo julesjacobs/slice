@@ -1,12 +1,12 @@
 \begin{figure}[h]
     \centering
     \begin{lstlisting}
-        let x_1 = unif() in 
-        let x_2 = if x1 < r1 then unif() else unif() in 
+        let x1 = unif() in 
+        let x2 = if x1 < r1 then unif() else unif() in 
         let x3 = if x2 < r2 ...
         ...
         x_n < 0.5
     \end{lstlisting}
-    \caption{A chain of nested conditionals and uniform samples, ending in a comparison $x_n < 0.5$}
+    \caption{Structure of synthetic programs used in our evaluation. Each program consists of a sequence of nested \texttt{if} statements, where each branch conditions on a previous variable sampled from a uniform distribution, proceeding until the final condition $x_n < 0.5$ is reached. $r_i \in [0,1]$ is a randomly sampled value. This construction allows us to test how well \Slice{} handles deep conditional branching and stochastic control flow.}
     \label{fig:nested-conditionals}
     \end{figure}

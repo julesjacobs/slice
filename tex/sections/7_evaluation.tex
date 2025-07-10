@@ -12,32 +12,33 @@ The \Slice{} compiler consists of approximately 3,400 lines of OCaml code (inclu
 In what follows, we evaluate the performance of using \Slice{} with \Dice{}/\Roulette{} for exact inference on (i) a set of synthetic benchmarks and (ii) a set of benchmarks taken from the literature.
 
 \subsection{Synthetic Benchmarks}\label{sec:synthetic-benchmarks}
-We designed seven synthetic benchmarks that stress-test continuous program scaling by growing programs linearly in the number of comparison tests. We generate programs of varying structure (with representative code examples provided in Appendix~\ref{appen:synthetic-sketches} and an illustrative sketch shown in Figure~\ref{fig:nested-conditionals}):
+We designed seven synthetic benchmarks that stress-test continuous program scaling by growing programs linearly in the number of comparison operators. We generate programs of varying structure, with representative code examples provided in Appendix~\ref{appen:synthetic-sketches} and a high-level sketch shown in Figure~\ref{fig:nested-conditionals}:
 
 \input{figures/nested-conditionals.tex}
 
-\paragraph{Conditional Independence.} \kevin{provide sketches?}\kevin{measure of program size? Numberof comparisons}
+\subsubsection{Conditional Independence}
 We test programs where each variable's distribution depends on comparisons with previous variables:
 
 \begin{itemize}
-\item Each variable depends on its immediate predecessor variable through conditional statements. This creates a chain of dependencies where $x_i$ depends on whether $x_{i-1} < c$ for some constant $c$. See Figure~\ref{fig:cond-benchmarks-a}.
-\item Each variable depends on a randomly chosen predecessor variable through conditional statements. This creates a chain of dependencies where $x_i$ depends on whether $x_1, ..., x_{i-1}$ chosen uniformly at random is $< c$ for some constant $c$, but note this could lead to unused variables. See Figures~\ref{fig:cond-benchmarks-b} and~\ref{fig:cond-benchmarks-c}, where the former guarantees unique distributions for each variable whereas the latter generates random ones.
+\item Each variable $x_i$ depends on its immediate predecessor via a conditional branch $x_{i-1} < r_{i-1}$, forming a sequential dependency chain. See Figure~\ref{fig:cond-benchmarks-a}.
+\item Each variable $x_i$ depends on a randomly selected predecessor $x_j$ (for $j < i$) via a conditional branch $x_j < r_{i-1}$. See Figures~\ref{fig:cond-benchmarks-b} and~\ref{fig:cond-benchmarks-c}, where the former ensures unique parameters in each uniform distribution, while the latter samples such parameters randomly. 
 \end{itemize}
 
 \input{figures/scaling-conditional}
 
-\paragraph{Alternating Guards.}
-We test programs with alternating comparison patterns:
+\subsubsection{Alternating Guards}
+We test programs in which comparison guards alternate in a pattern:
 
 \begin{itemize}
-\item Variables in conditionals alternate based on a guard span parameter. For example, with span 3, guards cycle through $x_1, x_2, x_3, x_1, x_2, x_3, ...$ See Figure~\ref{fig:alt-benchmarks-a}. Since such programs may have unused variables, we remedy this by generating programs whose if-else bodies depend on the immediate predecessor variable; see Figures~\ref{fig:alt-benchmarks-b} and~\ref{fig:alt-benchmarks-c}.
+\item Guard variables cycle with a fixed span. For example, with span 2, guards alternate as $x_1,x_2,x_1,\ldots$. See Figure~\ref{fig:alt-benchmarks-a}. Figures~\ref{fig:alt-benchmarks-b} and~\ref{fig:alt-benchmarks-c} show variants where the if and else branches are replaced with an immediate predecessor variable $x_{i-1}$ instead of a uniform distribution.
 
-\item Variables in conditionals alternate based on a guard span parameter, but we randomly choose the guard span parameter in each iteration instead of it being deterministically chosen as before. See Figure~\ref{fig:alt-benchmarks-d}.
+\item Guard variables are selected based on a randomly chosen span at each step, rather than cycling deterministically as before. See Figure~\ref{fig:alt-benchmarks-d}.
 \end{itemize}
 
 \input{figures/scaling-alternating}
 
-\paragraph{Results.} We generate programs of size 1-50 with step size 5 in each iteration for the conditional independence tests. For the alternating guards, we generate programs of size 1-100 with step size 5 and 1 for the program size and guard span. We specify a timeout of 300s. The scaling experiments demonstrate that Slice maintains near-linear scaling behavior while SPPL exhibits significantly faster growth and times out on larger programs. Across all seven benchmarks, Slice+Dice execution time remains under 0.5 seconds even for programs with 90+ comparisons, while SPPL times out (at 300s) for programs as small as 20-30 in size. The Slice compilation phase alone (dark blue line) shows essentially constant time, indicating that the type-directed discretization algorithm scales extremely well.
+\subsubsection{Results}
+The program size refers to the number of comparison operations in the program. We generate programs of sizes ranging from 1 to 50, in increments of 5, for the conditional independence tests. For the alternating guard tests, we generate programs with sizes ranging from 1 to 100, increasing the program size in steps of 5 and the guard span in steps of 1. Each program is evaluated with a timeout of 300 seconds. The scaling experiments demonstrate that Slice maintains near-linear scaling behavior while SPPL exhibits significantly faster growth and times out on larger programs. Across all seven benchmarks, Slice+Dice execution time remains under 0.5 seconds even for programs with 90+ comparisons, while SPPL times out (at 300s) for programs as small as 20-30 in size. The Slice compilation phase alone (dark blue line) shows essentially constant time, indicating that the type-directed discretization algorithm scales extremely well.
 
 \subsection{Existing Benchmark}\label{sec:fairness-benchmarks}
 Characterizing the fairness of classification algorithms is an interesting application in machine learning~\cite{Dwork2012FairnessAwareness}. FairSquare~\cite{albarghouthi2017fairsquare} and VeriFair~\cite{Bastani2019VeriFair} are two solvers that obtain fairness judgments for large-scale decision-making programs. Prior to SPPL, they were state-of-the-art for verifying the fairness of decision tree classifiers, neural network classifiers, and support vector machine classifiers. We evaluate performance on the decision tree benchmarks, as \Slice cannot solve the neural network and support vector machine benchmarks as they contain multivariate transforms, and show that \Slice{} beats SPPL in performance on such benchmarks.
