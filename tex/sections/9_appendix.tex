@@ -272,3 +272,64 @@ This section contains code snippets of the programs used in the scaling experime
     \caption{Random Alternating (Figure~\ref{fig:alt-benchmarks-d}): Program of size 5 with guard span 2. Guard variables in the comparisons cycle with a fixed span of 2. The second parameter of the uniform distribution is a random integer between 0 and 10, so this may result in repeated bounds across different variables, meaning not all distributions are guaranteed to be unique.}
 \end{figure}
 
+
+\subsection{Partial Discretization for Continuous Values without Comparisons}\label{sec:examples:partial2}
+The previous example shows a program that can only be partially discretized due to continuous variables being compared directly to each other rather than to constants. If no comparisons are made with continuous distributions, the best \Slice{} can do is also a partial discretization. Consider:
+
+\begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
+    let x = uniform(0,1) in
+    let y = gaussian(0,1) in
+    if y < 0.5 then beta(1,1) else uniform(0,2)
+\end{lstlisting}
+\noindent
+Here, \Slice{} does not identify any cuts for the subexpressions $x$ and \ifkw\; $y < 0.5$ \thenkw\; \betafn(1,1) \elsekw\; \uniform(0,2). \Slice{} still preserves the semantics of the original program by not discretizing the return value, setting the cut set of the return values to $\top$. This is because the return value is considered part of the program’s observable behavior, so external code may perform arbitrary comparisons against it, including comparisons to real numbers not present in the program. However, the variables $x$ and $y$ are never used in comparisons, and can hence be discretized:
+
+%\begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
+%  let x = uniform(0,1) : !{\ft{}}! in
+%  let y = gaussian(0,1) : !{\ft{<0.5}}! in
+%  (if y < (0.5 : !{\ftb{<0.5}{0.5}}!) then beta(1,1) : !{\ftt}! 
+%    else uniform(0,2) : !{\ftt}!) 
+%    : !{\ftt}!
+%\end{lstlisting}
+%
+%An empty cut set in a float type implies $\mathbb{R}$ with no partitions, or simply the real number line, and thus the probability mass in $(-\infty, +\infty)$ is trivially 1 for any continuous distribution. This leads to \discrete(1,0) for \uniform(0,1). The following is the partially discretized program:
+
+\begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
+  let x = discrete(1, 0)
+  let y = discrete(0.691462, 0.308538) in
+  if y < 1 then beta(1,1) else uniform(0,2)
+\end{lstlisting}
+%
+%\subsection{Partial Discretization for Discrete Values without Comparisons}\label{sec:examples:partial3}
+%In the preceding example, we considered the case where no cuts exist for continuous distributions, but here we illustrate the case when no cuts exist for discrete float values. 
+%
+%\begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
+%    let x = if flip() then 1.0 else 2.0 
+%    in 3.0
+%\end{lstlisting}
+%
+%This yields the following type-annotated program:
+%
+%\begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
+%  let x = (if flip() then (1.0 : !{\ftb{}{1}}!) 
+%          else (2.0 : !{\ftb{}{2}}!))
+%          : !{\ftb{}{1,2}}!
+%  in 3.0 : !{\ftv{3}}!) : !{\ftv{3}}!
+%\end{lstlisting}
+%
+%The float constants 1.0 and 2.0 are discretized away based on their empty cut sets, while the constant 3.0 is preserved as a return value, hence the float type \codetype{\ftv{3}}. For an empty cut set, all float constants in a non-empty value set are trivially mapped to the index 0. From the type-annotated program, the partially discretized program is obtained:
+%
+%\begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
+%  let x = if flip() then 0 else 0 in
+%  in 3
+%\end{lstlisting}
+
+% \subsection{Plankton}
+% This second example is an ecological model that highlights the difficulties in estimating $n$ for discrete models of plankton populations. Inference over discrete latent variables, particularly when one of those variables controls the domain of another random variable, is challenging, but Slice performs exact inference for such programs. Here, \textbf{param} is a latent discrete random variable representing the number of trials in a hypotehtical ecological setting, drawn uniformly at random from the integers between 10 and 50 inclusive. Given the latent param, a binomial distribution is used to model the number of observed plankton, in this case \textbf{planktonCount}.
+
+% \begin{lstlisting}
+%     let param = discUniform(10,50) in
+%     let planktonCount = binomial(param, 0.5) in planktonCount < 5
+% \end{lstlisting}
+
+
