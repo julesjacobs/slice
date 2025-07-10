@@ -115,7 +115,6 @@ $
 %
 such that $c$ is an (open) endpoint of $\text{ToInts}(c)$ for all $c \in\{0.3,0.5\}$. Let us now consider the next example.
 %
-\kevin{fonts}
 \begin{example}
 	If the arguments to a uniform sampling are non-constant, the situation becomes more challenging. Consider the following typed expression $e : \bool$ (again only showing relevant types):
 	%
@@ -151,8 +150,7 @@ such that $c$ is an (open) endpoint of $\text{ToInts}(c)$ for all $c \in\{0.3,0.
 %
 Crucially, the \emph{distinguishes} constraints in the \textsc{Continuous}-rules from \Cref{fig:typing-float} ensure that, for finite-cut sampling expressions, it will always be the case that the parameter expressions can take only finitely many values, and that the cut sets are fine-grained enough to recover the values the parameter expressions evaluate to as demonstrated in the preceding example.
 
-The same intuition applies to discretizable comparisons $e_1 < e_2$, where \emph{both} expressions are non-constant but finite-cut. The \emph{answers} constraints in the rule \textsc{Less} (resp.\ \textsc{Less-Equal}) ensures that at least one of $e_1$ and $e_2$ evaluates to finitely many values only, so that discretization reduces to the case where at least one of the expressions is constant. We illustrate arising subtleties with a final example.\kevin{not correct, polish}
-%
+A similar intuition applies to discretizable comparisons $e_1 < e_2$, where \emph{both} expressions are non-constant but finite-cut. The \emph{answers} constraints in the rule \textsc{Less} (resp.\ \textsc{Less-Equal}) ensures that at least one of $e_1$ and $e_2$ evaluates to finitely many values only, which enables discretization:
 \begin{example}
 	Consider the following typed expression ($(e_1 \leq e_2) : \bool$) given by
 	%
