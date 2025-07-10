@@ -80,10 +80,11 @@ The simplest setting is a uniform distribution whose outcomes are compared to co
 	%
 %
 %
-\begin{align*}
-	&\letkw\; x = (\uniform(0, 1) : \text{\ftn{$B$}})\; \inkw\; \\
-	&(x : \text{\ftn{$B$}} < 0.3 : \text{\ftbn{$B$}{$\{0.3\}$}}) \logor (x : \text{\ftn{$B$}} \geq 0.5 : \text{\ftbn{$B$}{$\{0.5\}$}})
-\end{align*}
+\begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
+    let x = uniform(0, 1) : !{\ft{B}}! in
+    (x : !{\ft{B}}! < (0.3 : !{\ftb{B}{0.3}}!)) || 
+    (x : !{\ft{B}}! >= (0.5 : !{\ftb{B}{0.5}}!))
+\end{lstlisting}    
 %
 where $B= \{ \clt{0.3},\clt{0.5} \}$. Now, why and how can we discretized this program using the type information? The cut set $B$ correctly informs us that the probability of the comparisons evaluating to $\true$ is completely determined by the probability of $x$ evaluating to one of the intervals 
 %
@@ -99,10 +100,9 @@ induced by $B$. Hence, all expressions of type $\text{\ftbn{$B$}{$\ldots$}}$ can
 
 Now consider the discretized expression obtained from computing $\discretize{e: \bool}$ given by 
 %
-\[
-	\letkw\; x = \discrete(0.3, 0.2, 0.5)\; \inkw\; 
-	(x \finlt{3} \finconst{1}{3})  \logor x \fingeq{3} \finconst{2}{3})~.
-\]
+\begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!,mathescape]
+    let x = discrete(0.3, 0.2, 0.5) in (x <#3 1#3) || (x >=#3 2#3)
+\end{lstlisting}
 %
 The probabilities appearing in $\discrete(\ldots)$ are determined by the cumulative distribution function (CDF) of the uniform distribution over $[0,1]$, ensuring that the probability of $x$ evaluating to $\finconst{k}{3}$ in $\discretize{e: \bool}$ \emph{coincides} with the probability of $x$ evaluating to a value in $\intervals{B}_k$ in $e$. Hence, the constants $0.3$ and $0.5$ in $e$ can be replaced by the constants $\finconst{1}{3}$ and $\finconst{2}{3}$, respectively,  in $\discretize{e: \bool}$, and it is evident that $e$ and $\discretize{e: \bool}$ are semantically equivalent. 
 \end{example}
@@ -118,32 +118,31 @@ such that $c$ is an (open) endpoint of $\text{ToInts}(c)$ for all $c \in\{0.3,0.
 \begin{example}
 	If the arguments to a uniform sampling are non-constant, the situation becomes more challenging. Consider the following typed expression $e : \bool$ (again only showing relevant types):
 	%
-	\begin{align*}
-		&\letkw\; x =  (\ifkw \; 
-		(\uniform(0, 1) : \text{\ftn{$\{\clt{0.5}\}$}} )
-		< (0.5 :\text{\ftbn{$\{\clt{0.5}\}$}{$\{0.5\}$}}) \; \\
-		%
-		&\phantom{\letkw\; x ={} } \thenkw \; (10 : \text{\ftbn{$\{\cleq{10},\cleq{20}\}$}{$\{10\}$}}) \; 
-		\elsekw \; (20 : \text{\ftbn{$\{\cleq{10},\cleq{20}\}$}{$\{20\}$}})) \\
-		%
-		&\phantom{\letkw\; x ={} } : \text{\ftbn{$\{\cleq{10},\cleq{20}\}$}{$\{10,20\}$}} \\
-		&\inkw\; \\
-		%
-		&(\uniform(0,(x :  \text{\ftbn{$\{\cleq{10},\cleq{20}\}$}{$\{10,20\}$}})) : \text{\ftn{$\{\clt{5}\}$}} ) < (5 :\text{\ftbn{$\{\clt{5}\}$}{$\{5\}$}})~.
-	\end{align*}	
+    \begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
+	let x = (
+		if uniform(0, 1) : !{\ft{<0.5}}! < (0.5 : !{\ftb{<0.5}{0.5}}!) then
+		10 : !{\ftb{<=10,<=20}{10}}!
+		else
+		20 : !{\ftb{<=10,<=20}{20}}!
+	) : !{\ftb{<=10,<=20}{10,20}}! in
+	
+	uniform(0, x : !{\ftb{<=10,<=20}{10,20}}!) : !{\ft{<5}}! 
+	< (5 : !{\ftb{<5}{5}}!)
+	\end{lstlisting}	
 	%
 	Why can this expression be discretized even though the argument to the second uniform sampling instruction is non-constant? The typing information $(x : \text{\ftbn{$\{\cleq{10},\cleq{20}\}$}{$\{10,20\}$}})$ correctly informs us about the fact that \emph{$x$ can only take the values $10$ and $20$}. Consequently, $x$ (and the $\ifkw$-expression generating it) can be discretized to a finite type $\fin{3}$ such that the probability of the resulting discrete expression evaluating to $\finconst{0}{3}$ (resp.\ $\finconst{1}{3}$) \emph{coincides} with the probability of the continuous expression evaluating to $10$ (resp.\ $20$). Let us (partially) apply $\discretize{e: \bool}$, resulting in:
 	%
-	\begin{align*}
-		&\letkw \; x = \ifkw\; \discrete(0.5,0.5) \finlt{2} \finconst{1}{2} \; \thenkw \; \finconst{0}{3} \; \elsekw \; \finconst{1}{3} \; \inkw \\
-		%
-		&\qquad \big(\letkw \; v_1' = \discretize{0 : \text{\ftbn{$\{\cleq{0}\}$}{$\{0\}$}}} \; \inkw \\
-		&\qquad\quad\; \letkw \; v_2' = \discretize{x : \text{\ftbn{$\{\cleq{10},\cleq{20}\}$}{$\{10,20\}$}}} \; \inkw \\
-		%
-		&\qquad\quad\; \ifkw\; v_1' \fineq{2} \finconst{0}{2} \; \logand \; v_2' \fineq{3} \finconst{0}{3} \; \thenkw \; \discretize{\uniform(0,10) : \text{\ftn{$\{\clt{5}\}$}}} \\
-		%
-		&\qquad\quad\; \elsekw \; \discretize{\uniform(0,20) : \text{\ftn{$\{\clt{5}\}$}}} \big) \finlt{2} \discretize{5 : \text{\ftbn{$\{\clt{5}\}$}{$\{5\}$}}}
-	\end{align*}	
+    \begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!,mathescape]
+        let x = if discrete(0.5, 0.5) <#2 1#2 then 0#3 else 1#3 in
+        (
+            let v_1' = !$\discretize{\texttt{0 : \ftb{<0}{0}}}$! in
+            let v2'  = !$\discretize{\texttt{x : \ftb{<=10,<=20}{10,20}}}$! in 
+            if v_1' ==#2 0#2 && v2' ==#3 0#3 then
+            !$\discretize{\texttt{\uniform(0,10) : \ft{<5}}}$!
+            else
+            !$\discretize{\texttt{\uniform(0,20) : \ft{<5}}}$!
+          ) <#2 !$\discretize{\texttt{5 : \ftb{<5}{5}}}$!
+        \end{lstlisting}	
 	%
 	The continuous $\uniform(0,x)$-expression is replaced by a case distinction on the discretizations of $\uniform(0,10)$ and $\uniform(0,20)$, where each of these cases is indeed executed with the correct probability $0.5$. Since this reduces the remaining discretization process to discretizing expressions with \emph{constant parameters only}, the remaining steps are completely analogous to Example~\ref{ex:discretize_simple}.
 \end{example}
@@ -154,27 +153,22 @@ A similar intuition applies to discretizable comparisons $e_1 < e_2$, where \emp
 \begin{example}
 	Consider the following typed expression ($(e_1 \leq e_2) : \bool$) given by
 	%
-	\begin{align*}
-		&(\ifkw\;\discrete(0.5,0.5) \finlt{2} \finconst{1}{2} \; \thenkw \; 
-		(\uniform(0,10) : \text{\ftn{$B$}})
-		\; \elsekw \; (2.5 : \text{\ftbn{$B$}{$\{2.5\}$}})) \\
-		&\leq \\
-		&(\ifkw\;\discrete(0.5,0.5) \finlt{2} \finconst{1}{2} \; \thenkw \; 
-		(2.5 : \text{\ftbn{$B$}{$\{2.5\}$}})
-		 \; \elsekw \; 
-		 (3.5 : \text{\ftbn{$B$}{$\{3.5\}$}})~,
-	\end{align*}
+    \begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!,mathescape]
+	(if discrete(0.5, 0.5) <#2 1#2 then 
+		uniform(0,10) : !{\ft{B}}! else 2.5 : !{\ftb{B}{2.5}}!)
+	<=
+	(if discrete(0.5, 0.5) <#2 1#2 
+		then 2.5 : !{\ftb{B}{2.5}}! else 3.5 : !{\ftb{B}{3.5}}!)
+    \end{lstlisting}
 	%
 	where $B = \{\cleq{2.5}, \cleq{3.5}\}$, and where $e_1 : \text{\ftn{$B$}}$ and $e_2 : \text{\ftbn{$B$}{$\{2.5,3.5\}$}}$. Intuitively, $e_1$ samples from a mixture of a uniform and a dirac distribution, whereas $e_2$ samples from a finite distribution. Why can can $e_1 \leq e_2$ be discretized even though neither $e_1$ nor $e_2$ is a constant? The reason is that, as suggested by it's type, $e_2$ can only take finitely many values in $\{2.5,3.5\}$. Let us apply $\discretize{.}$ and see what happens:
 	%
 	%
-	\begin{align*}
-		&(\ifkw \; \discrete(0.5,0.5) \finlt{2} \finconst{1}{2} \; \thenkw \; \discrete(0.25,0.1,0.65) \; \elsekw \; \finconst{0}{3})\\
-		%
-		&\leq \\
-		%
-		& (\ifkw \; \discrete(0.5,0.5) \finlt{2} \finconst{1}{2} \; \thenkw \;  \finconst{0}{3} \; \elsekw \; \finconst{1}{3})
-	\end{align*}
+    \begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!,mathescape]
+        (if discrete(0.5, 0.5) <#2 1#2 then discrete(0.25, 0.1, 0.65) else 0#3)
+        <=
+        (if discrete(0.5, 0.5) <#2 1#2 then 0#3 else 1#3)
+    \end{lstlisting}
 	%
 	Notice that the probability of $e_1$ evaluating to some value in $(-\infty, 2.5]$ indeed \emph{coincides} with the probability of $e_1's$ discretization evaluating to $\finconst{0}{3}$. For $e_2$, on the other hand, the probability of it evaluating to $2.5$ (resp.\ $3.5$) \emph{coincides} with the probability of its discretization evaluating to $\finconst{0}{3}$ (resp.\ $\finconst{1}{3}$). It is for this reason that we indeed produce a semantically equivalent discretization of $e_1 \leq e_2$.
 \end{example}
