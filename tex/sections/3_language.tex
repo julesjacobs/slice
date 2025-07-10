@@ -70,7 +70,7 @@ We now introduce the following central objects:
 		\item The \emph{join-semilattice of cut sets} is
 		%
 		$
-			\cutsets = \lattice{\{ <\!\!x ~|~ x \in \R \}	\cup \{ \leq\!\!x ~|~ x \in \R \}}.
+			\cutsets = \lattice{\{ \clt{x} ~|~ x \in \R \}	\cup \{ \cleq{x} ~|~ x \in \R \}}.
 		$
 		%
 		%
@@ -83,7 +83,7 @@ We now introduce the following central objects:
 \end{definition}
 %
 %These lattice structures are exemplified in \Cref{fig:lattice}.
-Elements of $\{ <\!\!x ~|~ x \in \R \}	\cup \{ \leq\!\!x ~|~ x \in \R \}$ are called \emph{cuts}. Cut sets induce intervals partitioning the reals as follows:
+Elements of $\{ \clt{x} ~|~ x \in \R \}	\cup \{ \cleq{x} ~|~ x \in \R \}$ are called \emph{cuts}. Cut sets induce intervals partitioning the reals as follows:
  Given a non-empty cut set $B =\{ \sim_1\!\!x_1, \ldots, \sim_n\!\! x_n \}$ with $x_1 \leq \ldots \leq x_n$, we define
 %
 \begin{align*}
@@ -198,7 +198,7 @@ To understand the float typing rules, it is helpful to understand how discretiza
 A type $\float$[B; V] is discretized as follows:
 %\begin{itemize}
     %\item 
-    If $B \neq\top$ is a finite set of cuts, then the type is discretized to a type $\fin{n+1}$ where $n+1 = |\intervals{B}|$ is the number of intervals induced by $B$. For instance, if $B = \{<\!\!0.5, \leq\!\!0.8\}$, then the type is discretized to $\fin{3}$, where $\finconst{0}{3}$ represents the interval $(-\infty, 0.5)$, $\finconst{1}{3}$ represents the interval $[0.5, 0.8]$, and $\finconst{2}{3}$ represents the interval $(0.8, \infty)$.
+    If $B \neq\top$ is a finite set of cuts, then the type is discretized to a type $\fin{n+1}$ where $n+1 = |\intervals{B}|$ is the number of intervals induced by $B$. For instance, if $B = \{\clt{0.5}, \cleq{0.8}\}$, then the type is discretized to $\fin{3}$, where $\finconst{0}{3}$ represents the interval $(-\infty, 0.5)$, $\finconst{1}{3}$ represents the interval $[0.5, 0.8]$, and $\finconst{2}{3}$ represents the interval $(0.8, \infty)$.
     %\item 
     If $B = \top$, then no discretization is performed, and the type remains $\float$.
 %\end{itemize}
@@ -242,10 +242,10 @@ The rule for two-argument continuous distributions is analogous: for the two arg
 
 
 \paragraph{Comparisons.} 
-To understand the typing rules for less-than and less-than-or-equal comparisons, let us first consider a comparison $e < c$ where $c$ is a constant and $e$ is a continuously ranging quantity, i.e., $e : \float[B_1; \top]$ and $c : \float[B_2; \{c\}]$. Intuitively, \textbf{if $e$ is discretized, then it must still contain enough information to determine whether $e < c$ is true or false}. Therefore, $B_1$ must contain the comparison $<\!\!c$.
+To understand the typing rules for less-than and less-than-or-equal comparisons, let us first consider a comparison $e < c$ where $c$ is a constant and $e$ is a continuously ranging quantity, i.e., $e : \float[B_1; \top]$ and $c : \float[B_2; \{c\}]$. Intuitively, \textbf{if $e$ is discretized, then it must still contain enough information to determine whether $e < c$ is true or false}. Therefore, $B_1$ must contain the comparison $\clt{c}$.
 Similarly, if $c$ is not a literal constant, but has type $c : \float[B_2; V_2]$ where $V_2 = \{v_1, v_2, \dots, v_n\}$ is a finite set of constants, then $c$ can take on values in $V_2$. Therefore, $B_1$ must contain the comparisons $\clt{v_1}, \clt{v_2}, \dots, \clt{v_n}$.
 
-It can also be the case that we have a comparison $c < e$ where the continuously ranging quantity $e : \float[B_2; V_2]$ is on the right hand side. In this case, $B_2$ must answer $c\!\!<$, i.e., it must contain a comparison $\leq\!\!c$. To make this explicit, consider $2.3 < e$. We can answer this precisely when $B_2$ contains an intervals $(-\infty, 2.3]$ and $(2.3, +\infty)$: the comparison $2.3 < e$ is true if $e$ is in the second interval, and false if $e$ is in the first interval. $B_2$ may, of course, be even more fine-grained.
+It can also be the case that we have a comparison $c < e$ where the continuously ranging quantity $e : \float[B_2; V_2]$ is on the right hand side. In this case, $B_2$ must answer $c\!\!<$, i.e., it must contain a comparison $\cleq{c}$. To make this explicit, consider $2.3 < e$. We can answer this precisely when $B_2$ contains an intervals $(-\infty, 2.3]$ and $(2.3, +\infty)$: the comparison $2.3 < e$ is true if $e$ is in the second interval, and false if $e$ is in the first interval. $B_2$ may, of course, be even more fine-grained.
 
 
 In general, the typing rule for $e_1 < e_2$ requires that the expressions share a bound set $B$, and that their respective value sets $V_1, V_2$ are related in a way that allows the comparison to be determined after discretization, via the $\answerslt{B}{V_1}{V_2}$ relation:
