@@ -1,6 +1,6 @@
 \section{Implementation and Evaluation}\label{sec:implem_eval}
 
-We have implemented \Slice{} as a compiler that transforms continuous probabilistic programs into either fully or partially discretized programs. Fully discretized programs are translated and analyzed using the discrete exact inference engines \Dice{}~\cite{Holtzen2020Dice} and \Roulette{}~\cite{Moy2025Roulette}. Figure~\ref{fig:architecture} on page \pageref{fig:architecture} shows the overall architecture of the \Slice{} system for fully discretized programs.
+We have implemented \Slice{} as a compiler that transforms continuous probabilistic programs into either fully or partially discretized programs. Fully discretized programs are translated and analyzed using the discrete exact inference engines \Dice{} (2020)~\cite{Holtzen2020Dice} and \Roulette{}~\cite{Moy2025Roulette}. Figure~\ref{fig:architecture} on page \pageref{fig:architecture} shows the overall architecture of the \Slice{} system for fully discretized programs.
 %In contrast, partially discretized programs can be analyzed using heterogeneous inference engines, which support combining multiple inference strategies such as exact and approximate methods within a single probabilistic program. Figure~\ref{fig:architecture} shows the overall architecture of the \Slice{} system for fully discretized programs.
 
 The \Slice{} compiler consists of approximately 3,400 lines of OCaml code (including the lexer, parser, type inference and discretization engines, \Dice{}/\Roulette{} code generators, a sampling-based interpreter, and statistical equivalence checking). We use the OCaml GSL package~\cite{gsl} to compute the CDFs of the probability distributions. The system is open-source and available at \url{https://github.com/[anonymized]}, along with benchmarks, documentation, and a Docker image. All benchmarks were run within that Docker image on an Apple M3 with 16GB RAM.
@@ -9,43 +9,51 @@ The \Slice{} compiler consists of approximately 3,400 lines of OCaml code (inclu
 %As we will see through several benchmarks, the performance of \Slice{} is competitive with existing state-of-the-art exact and approximate inference solvers for hybrid probabilistic programs. In particular, we evaluate \Slice{} using \Dice{} and \Roulette{} as backends against the exact inference solver SPPL~\cite{Saad2021SPPL} and the approximate inference solver HyBit~\cite{Garg2024BitBlast} on three sets of benchmarks. First, a series of synthetic benchmarks designed to test the how well \Slice{} scales asymptotically compared to SPPL. Second, a set of benchmarks for verifying fairness properties of decision trees. Lastly, we evaluate \Slice{} on a series of small baseline programs commonly used to test PPLs in the literature. 
 %All experiments used Dice (2020) and Roulette (Racket 8.13, Rosette 4.1).
 
-In what follows, we evaluate the performance of using \Slice{} with \Dice{}/\Roulette{} for exact inference on (i) a set of synthetic benchmarks and (ii) a set of benchmarks taken from the literature.
+In what follows, we evaluate the performance of using \Slice{} with \Dice{}/\Roulette{} for exact inference on (i) a set of synthetic benchmarks and (ii) a set of benchmarks taken from the literature, comparing to the state-of-the-art tool SPPL for exact inference of continuous probabilistic programs.
 
 \subsection{Synthetic Benchmarks}\label{sec:synthetic-benchmarks}
-We designed synthetic benchmarks that stress-test continuous program scaling by growing programs linearly in the number of comparison operators. We generate programs of varying structure, with representative code examples provided in Appendix~\ref{appen:synthetic-sketches}, and high-level structure as follows:
-    \begin{lstlisting}
-        let x1 = unif() in 
-        let x2 = if x1 < r1 then unif() else unif() in 
+We designed a set of synthetic benchmarks consisting of programs that can be scaled up in size, with varying dependencies between the program variables. We provide these programs in Appendix \ref{appen:synthetic-sketches}. Schematically, the structure of these programs is:
+%
+    \begin{lstlisting}[aboveskip=1em,belowskip=1em]
+        let x1 = uniform(0,1) in 
+        let x2 = if x1 < r1 then uniform(0,2) else uniform(0,3) in 
         let x3 = if x2 < r2 ...
         ...
         x_n < 0.5
     \end{lstlisting}
- Each program consists of a sequence of nested \texttt{if} statements, where each branch conditions on a previous variable sampled from a uniform distribution, proceeding until the final condition $x_n < 0.5$ is reached. $0 \leq r_i \leq 1$ is a random float. This construction allows us to test how well \Slice{} handles deep conditional branching and stochastic control flow.
+%
+ Each program consists of a sequence of nested conditionals, where each branch depends on a previous variable sampled from a uniform distribution, proceeding until the final condition $x_n < 0.5$ is reached. Here $0 \leq r_i \leq 1$ are fixed float constants. With these programs, we evaluate how \Slice{} scales for deep conditional branching and stochastic control flow.
+ 
+The programs in \Cref{fig:cond-benchmarks-a} follow the scheme depicted above where the program size is $n$, i.e., the number of comparisons performed. In \Cref{fig:cond-benchmarks-b}, each $x_i$ does not necessarily depend on $x_{i-1}$ but on some randomly chosen predecessor\footnote{We generate these programs in a randomized manner with a fixed seed for reproducability}. In \Cref{fig:cond-benchmarks-c}, we additionally choose at random whether the guards of the conditionals and the branches are either some predecessor variable $x_i$ or a  $\uniform$-sampling instruction.
  %\input{figures/nested-conditionals.tex}
 
-\subsubsection{Conditional Independence}
-We test programs where each variable's distribution depends on comparisons with previous variables:
-
-\begin{itemize}
-\item Each variable $x_i$ depends on its immediate predecessor via a conditional branch $x_{i-1} < r_{i-1}$, forming a sequential dependency chain. See Figure~\ref{fig:cond-benchmarks-a}.
-\item Each variable $x_i$ depends on a randomly selected predecessor $x_j$ (for $j < i$) via a conditional branch $x_j < r_{i-1}$. See Figures~\ref{fig:cond-benchmarks-b}.
-\item Each variable $x_i$ uses a randomized conditional expression, where the guard and both branches may involve either a randomly selected predecessor $x_j$ (for $j < i$) or a freshly sampled uniform value. See Figure~\ref{fig:cond-benchmarks-c}.
-\end{itemize}
+%\subsubsection{Conditional Independence}
+%We test programs where each variable's distribution depends on comparisons with previous variables:
+%
+%\begin{itemize}
+%\item Each variable $x_i$ depends on its immediate predecessor via a conditional branch $x_{i-1} < r_{i-1}$, forming a sequential dependency chain. See Figure~\ref{fig:cond-benchmarks-a}.
+%\item Each variable $x_i$ depends on a randomly selected predecessor $x_j$ (for $j < i$) via a conditional branch $x_j < r_{i-1}$. See Figures~\ref{fig:cond-benchmarks-b}.
+%\item Each variable $x_i$ uses a randomized conditional expression, where the guard and both branches may involve either a randomly selected predecessor $x_j$ (for $j < i$) or a freshly sampled uniform value. See Figure~\ref{fig:cond-benchmarks-c}.
+%\end{itemize}
 
 \input{figures/scaling-conditional}
 
-\subsubsection{Alternating Guards}
-We test programs in which comparison guards alternate in a pattern:
+The programs in \Cref{fig:alt-benchmarks-a} also follow the scheme depicted above but where the variables used in the guards cycle with a fixed span size of $m$. For instance, for $m=2$, the pattern is $x_1,x_2,x_1,\ldots$. The programs in \Cref{fig:alt-benchmarks-b,fig:alt-benchmarks-c,fig:alt-benchmarks-d} follow a similar pattern, see Appendix~\ref{appen:synthetic-sketches} for details.
 
-\begin{itemize}
-\item Guard variables cycle with a fixed span. For example, with span 2, guards alternate as $x_1,x_2,x_1,\ldots$. See Figure~\ref{fig:alt-benchmarks-a}. Figures~\ref{fig:alt-benchmarks-b} and~\ref{fig:alt-benchmarks-c} show variants where the if and else branches are replaced with an immediate predecessor variable $x_{i-1}$ instead of a uniform distribution.
+We depict the runtime (in seconds) of (i) SPPL (ii) \Slice{} (discretization only) (iii) \Slice{}+\Dice{} (disctretization and subsequent inference using \Dice{}), and (iv) \Slice{}+\Roulette{} (discretization and subsequent inference using \Roulette{}). The time-out is 300 seconds.
 
-\item Guard variables are selected based on a randomly chosen span at each step, rather than cycling deterministically as before. See Figure~\ref{fig:alt-benchmarks-d}.
-\end{itemize}
+%\subsubsection{Alternating Guards}
+%We test programs in which comparison guards alternate in a pattern:
+%
+%\begin{itemize}
+%\item Guard variables cycle with a fixed span. For example, with span 2, guards alternate as $x_1,x_2,x_1,\ldots$. See Figure~\ref{fig:alt-benchmarks-a}. Figures~\ref{fig:alt-benchmarks-b} and~\ref{fig:alt-benchmarks-c} show variants where the if and else branches are replaced with an immediate predecessor variable $x_{i-1}$ instead of a uniform distribution.
+%
+%\item Guard variables are selected based on a randomly chosen span at each step, rather than cycling deterministically as before. See Figure~\ref{fig:alt-benchmarks-d}.
+%\end{itemize}
 
 \input{figures/scaling-alternating}
 
-\subsubsection{Results}
+\paragraph{Results.}
 The program size refers to the number of comparison operations in the program. We generate programs of sizes ranging from 1 to 50, in increments of 5, for the conditional independence tests. For the alternating guard tests, we generate programs with sizes ranging from 1 to 100, increasing the program size in steps of 5 and the guard span in steps of 1. Each program is evaluated with a timeout of 300 seconds. The scaling experiments demonstrate that Slice+Dice maintains near-linear scaling behavior while SPPL exhibits significantly faster growth and times out on larger programs. The Slice compilation phase alone (dark blue line) shows essentially constant time, indicating that the type-directed discretization algorithm scales extremely well.
 
 \subsection{Existing Benchmarks}\label{sec:fairness-benchmarks}
