@@ -125,7 +125,7 @@ The solver repeatedly processes constraints until reaching a fixed point, where 
 \begin{example}
     From the previous example, we obtained the constraint set displayed in \Cref{eq:cs}, which is then solved as follows:
 
-    \emph{Step 1: Subtyping reduction.} We replace each subtyping constraint as described above:
+ \noindent   \emph{Step 1: Subtyping reduction.} We replace each subtyping constraint as described above:
     \begin{itemize}
         \item $\subtype{\float[B_2; V_2]}{\float[B_5; V_5]}$ becomes $B_2 = B_5, V_2 \sqsubseteq V_5$
         \item $\subtype{\float[B_4; V_4]}{\float[B_5; V_5]}$ becomes $B_4 = B_5, V_4 \sqsubseteq V_5$
@@ -133,48 +133,29 @@ The solver repeatedly processes constraints until reaching a fixed point, where 
         \item $\subtype{\float[B_8; V_8]}{\float[B_9; V_9]}$ becomes $B_8 = B_9, V_8 \sqsubseteq V_9$
     \end{itemize}
 
-    \emph{Step 2: Initialize.} All $B$ and $V$ variables start as $\emptyset$.
+  \noindent   \emph{Step 2: Initialize.} All $B$ and $V$ variables start as $\emptyset$.
 
-    \emph{Step 3: Process value containment.} We update:
+ \noindent    \emph{Step 3: Process value containment.} We update:
     \[V_1 := \{0.5\} \quad V_3 := \{0.8\} \quad V_6 := \{1.5\} \quad V_7 := \{1.8\} \quad V_8 := \{0.3\}\]
 
-    \emph{Step 4: Process top assignments.} We set $V_2 := \top$ and $V_4 := \top$.
+ \noindent    \emph{Step 4: Process top assignments.} We set $V_2 := \top$ and $V_4 := \top$.
 
-    \emph{Step 5: Process equalities.} Unifying all equality constraints:
-    \begin{itemize}
-        \item From comparisons: $B_{10} = B_5 = B_6$ and $B_{11} = B_5 = B_9$
-        \item From subtyping: $B_2 = B_5$, $B_4 = B_5$, $B_7 = B_9$, $B_8 = B_9$
-        \item Result: $B_2 = B_4 = B_5 = B_6 = B_7 = B_8 = B_9 = B_{10} = B_{11}$ (all unified)
-    \end{itemize}
+  \noindent   \emph{Step 5: Process equalities.} Unifying all equality constraints: from comparisons: $B_5 = B_6$ and $B_5 = B_9$;
+       from subtyping: $B_2 = B_5$, $B_4 = B_5$, $B_7 = B_9$, $B_8 = B_9$; result: $B_2 = B_4 = B_5 = B_6 = B_7 = B_8 = B_9$.
+       
+   \noindent  \emph{Step 6: Process subset constraints.}
+ For $V_2 \sqsubseteq V_5$: since $V_2 = \top$, we update $V_5 := V_5 \sqcup \top = \top$. For
+ $V_4 \sqsubseteq V_5$: already satisfied since $V_5 = \top$. For 
+$V_7 \sqsubseteq V_9$: we update $V_9 := V_9 \sqcup \{1.8\} = \{1.8\}$. For 
+ $V_8 \sqsubseteq V_9$: we update $V_9 := V_9 \sqcup \{0.3\} = \{0.3, 1.8\}$.
 
-    \emph{Step 6: Process subset constraints.}
-    \begin{itemize}
-        \item $V_2 \sqsubseteq V_5$: Since $V_2 = \top$, we update $V_5 := V_5 \sqcup \top = \top$
-        \item $V_4 \sqsubseteq V_5$: Already satisfied since $V_5 = \top$
-        \item $V_7 \sqsubseteq V_9$: We update $V_9 := V_9 \sqcup \{1.8\} = \{1.8\}$
-        \item $V_8 \sqsubseteq V_9$: We update $V_9 := V_9 \sqcup \{0.3\} = \{0.3, 1.8\}$
-    \end{itemize}
+  \noindent   \emph{Step 7: Process distinguishability. }
+ For $\distinguishes{B_1}{V_1}$: since $|V_1| = 1$, trivially satisfied. For $\distinguishes{B_3}{V_3}$: since $|V_3| = 1$, trivially satisfied.
 
-    \emph{Step 7: Process distinguishability.}
-    \begin{itemize}
-        \item $\distinguishes{B_1}{V_1}$: Since $|V_1| = 1$, trivially satisfied
-        \item $\distinguishes{B_3}{V_3}$: Since $|V_3| = 1$, trivially satisfied
-    \end{itemize}
+\noindent    \emph{Step 8: Process answerability.} For $\answerslt{B_{5}}{V_5}{V_6}$: with $V_5 = \top$ and $V_6 = \{1.5\}$, we add $\clt{1.5}$ to \mbox{$B$}. For $\answersleq{B_{5}}{V_5}{V_9}$: with $V_5 = \top$ and $V_9 = \{0.3, 1.8\}$, we add $\cleq{0.3}$ and $\cleq{1.8}$ to \mbox{$B$}.
 
-    \emph{Step 8: Process answerability.}
-    \begin{itemize}
-        \item $\answerslt{B_{10}}{V_5}{V_6}$: With $V_5 = \top$ and $V_6 = \{1.5\}$, we add $\clt{1.5}$ to \mbox{the unified $B$}
-        \item $\answersleq{B_{11}}{V_5}{V_9}$: With $V_5 = \top$ and $V_9 = \{0.3, 1.8\}$, we add $\cleq{0.3}$ and $\cleq{1.8}$ to \mbox{the unified $B$}
-    \end{itemize}
-
-    \emph{Final solution:}
-    \begin{itemize}
-        \item $B_1 = \emptyset$, $B_3 = \emptyset$
-        \item $B_2 = B_4 = B_5 = B_6 = B_7 = B_8 = B_9 = B_{10} = B_{11} = \{\clt{1.5}, \cleq{0.3}, \cleq{1.8}\}$
-        \item $V_1 = \{0.5\}$, $V_2 = \top$, $V_3 = \{0.8\}$, $V_4 = \top$, $V_5 = \top$
-        \item $V_6 = \{1.5\}$, $V_7 = \{1.8\}$, $V_8 = \{0.3\}$, $V_9 = \{0.3, 1.8\}$
-    \end{itemize}
-    Since none of $B_1$, $B_2$, $B_3$, $B_4$ are $\top$, the constraints $B_1 \equiv_{\top} B_2$ and $B_3 \equiv_{\top} B_4$ are satisfied.
+  \noindent \emph{Final solution:}  $B_1 = \emptyset$, $B_3 = \emptyset$,  $B_2 = B_4 = B_5 = B_6 = B_7 = B_8 = B_9 = \{\clt{1.5}, \cleq{0.3}, \cleq{1.8}\}$, 
+ $V_1 = \{0.5\}$, $V_2 = \top$, $V_3 = \{0.8\}$, $V_4 = \top$, $V_5 = \top$, $V_6 = \{1.5\}$, $V_7 = \{1.8\}$, $V_8 = \{0.3\}$, $V_9 = \{0.3, 1.8\}$.    Since none of $B_1$, $B_2$, $B_3$, $B_4$ are $\top$, the constraints $B_1 \equiv_{\top} B_2$ and $B_3 \equiv_{\top} B_4$ are satisfied.
 \end{example}
 
 \paragraph{Additional constraint for partial discretization.} 
