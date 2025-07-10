@@ -18,7 +18,7 @@
 
 \section{Proofs for Discretization}
 \subsection{Proof of Lemma~\ref{lem:type-transformations}}
-\begin{proof}
+\begin{proof}\label{proof:type-transformations}
     We proceed by induction on the structure of the typing derivation $\Gamma \vdash e : \tau$. That is, we match each typing rule and show that it remains valid after applying $\discretize{\cdot}$ to the context, expression, and type.
     
     \textbf{Case 1:} $e = x$

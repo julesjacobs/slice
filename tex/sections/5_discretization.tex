@@ -206,7 +206,7 @@ We conclude this section by extending the discretization function $\discretize{\
 \end{figure}
 %
 %
-\begin{lemma}[Type Transformation under Discretization]\label{lem:type-transformations}
+\begin{lemma}[Discretization Is Well-Typed]\label{lem:type-transformations}
 	Let $\Gamma \vdash e : \tau$ be a well-typed expression in \Slice{}, where $\Gamma$ is a typing environment assigning types to variables. Let $\discretize{e : \tau}$ be the discretization function from Figure~\ref{fig:discretization-code}, and $\discretize{\tau}$ be the type transformation function as defined in Figure~\ref{fig:discretization-types}. Then,
 	\[
 	\discretize{\Gamma} \vdash \discretize{e : \tau} : \discretize{\tau}
@@ -214,4 +214,6 @@ We conclude this section by extending the discretization function $\discretize{\
 	where $\discretize{\Gamma}$ transforms all types in $\Gamma$, i.e., $\discretize{\Gamma}(x) = \discretize{\Gamma(x)}$ for all $x \in \textnormal{dom}(\Gamma)$.
 \end{lemma}
 %
-\kevin{katherine: plese add ref to proof}
+\begin{proof}
+	See Appendix~\ref{proof:type-transformations}.
+\end{proof}

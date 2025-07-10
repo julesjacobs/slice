@@ -293,7 +293,7 @@ def build_random_alternating_guard_slice(comparison_count, guard_span):
 
 
 def main(): 
-    program, last_var = build_conditional_random_independent_slice_1(10)
+    program, last_var = build_alternating_guard_slice_3(10, 4)
     print(program)
     # print(last_var)
 
