@@ -22,7 +22,6 @@ The type inference rules closely mirror the typing rules in Figure~\ref{fig:typi
           &\mid C_1, C_2   \text{\quad (conjunction)}
     \end{align*}
 \caption{Syntax for our constraint language. The constraints directly correspond to the semantic requirements in our type system: subtyping constraints ensure type compatibility, $\distinguishes{B}{V}$ ensures that distribution parameters can be recovered after discretization, $\answerslt{B}{V_1}{V_2}$ and $\answersleq{B}{V_1}{V_2}$ ensure that comparison results can be determined after discretization, and $\has{V}{c}$ ensures that constants are properly tracked in value sets.}
-\caption{Syntax for our constraint language. As we want \Slice{} to propogate information about comparisons and possible value ranges into float types, our syntax is over the cut sets $B \in \cutsets$ and value sets $V \in \valsets$. For the $\subtype{\tau_1}{\tau_2}$ constraint, we assume $\tau_1$ and $\tau_2$ are float types $\float[B_1;V_1]$ and $\float[B_2;V_2]$, respectively, and hence follow the \textsc{Sub-Float} relation in Figure~\ref{fig:subtyping}.}
 \label{fig:constraints-grammar}
 \end{figure}
 
@@ -216,3 +215,5 @@ This procedure may add more cuts to $B$'s than strictly necessary, but it never 
         \item $V_6 = \{1.5\}$, $V_7 = \{1.8\}$, $V_8 = \{0.3\}$, $V_9 = \{0.3, 1.8\}$
     \end{itemize}
 \end{example}
+
+\paragraph{Addtional constraint for partial discretization.} We note an additional constraint for partially discretized programs: if the returned expression's cut set $B$ is empty after constraint solving, we conservatively set $B = \top$ to prevent \Slice{} from discretizing away the returned expression. This ensures that the original and discretized programs remain observationally equivalent. This change may in turn propagate to other cut sets and value sets, depending on how $B$ is constrained by or derived from them.
