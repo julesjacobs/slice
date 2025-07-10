@@ -34,9 +34,9 @@ Figure~\ref{fig:float-type-def} describes the meaning of a type \lstinline{float
 \[
 \textbf{float}
 [
-\underbrace{\text{cut-set}}_{\footnotesize\begin{array}{c}\text{set of cuts}\\\text{(e.g., }\{<\!0.1, <\!0.5, \leq\!0.8\}\text{)}\\\text{or }\top\text{ (uncut)}\end{array}}
+\underbrace{\text{cut-set}}_{\footnotesize\begin{array}{c}\text{set of cuts}\text{ (e.g., }\{<\!0.1, <\!0.5, \leq\!0.8\}\text{)}\\\text{or }\top\text{ (uncut)}\end{array}}
 ;
-\underbrace{\text{value-set}}_{\footnotesize\begin{array}{c}\text{set of concrete values}\\\text{(e.g., }\{0.1, 0.4, 0.5\}\text{)}\\\text{or }\top\text{ (any value in $\R$)}\end{array}}
+\underbrace{\text{value-set}}_{\footnotesize\begin{array}{c}\text{set of concrete values }\text{(e.g., }\{0.1, 0.4, 0.5\}\text{)}\\\text{or }\top\text{ (any value in $\R$)}\end{array}}
 ]
 \]
 \caption{The type \lstinline{float[cut-set; value-set]} captures two aspects of a floating-point expression: the cut set is determined by \emph{how the expression is used} (i.e., what it's compared against) and the value set is determined by \emph{what concrete values the expression can take}. The discretization is driven by the cut set: a float value with $n$ cuts is discretized into $n+1$ possible discrete values, each value corresponding to one real-valued interval.}
@@ -75,10 +75,7 @@ This analysis is done by the type inference process, which collects all cuts for
 \begin{lstlisting}[aboveskip=1em,belowskip=1em]
     let x = discrete(0.2, 0.3, 0.5) in
     let y = discrete(0.05, 0.95) in
-    if x < 2 then
-      x < 1
-    else
-      y < 1
+    if x < 2 then x < 1 else  y < 1
 \end{lstlisting}
 
 Using \Dice{}, this yields the output \result{0.225}{0.775}. Note that the original constant $0.5$ is discretized differently: for $x < 0.5$ it is discretized to $2$ and for $y < 0.5$ it is discretized to $1$. This is because the constant $0.5$ falls in the third interval of the split $(-\infty, 0.2) \cup [0.2, 0.5) \cup [0.5, +\infty)$ for $x$ and the second interval for the split $(-\infty, 0.5) \cup [0.5, +\infty)$ for $y$. 
@@ -166,29 +163,25 @@ Consider the following program, already type-annotated:
 Continuous distributions can have parameters that depend on discrete random choices. In this example, a Gaussian distribution's standard deviation is determined by a such a random choice:
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
-    let x = if flip() then 0.5 else 1.5 in
-    gaussian(0, x) < 0.5
+    let x = if flip() then 0.5 else 1.5 in gaussian(0, x) < 0.5
 \end{lstlisting}
 
 \noindent %This example shows how discrete choices can affect the parameters of continuous distributions. 
 The type-annotations reveal how the variable $x$ determines the standard deviation of the Gaussian:
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
-    let x = if flip()
-            then (0.5 : !{\ftb{<=0.5,<=1.5}{0.5}}!)
-            else (1.5 : !{\ftb{<=0.5,<=1.5}{1.5}}!)
-            : !{\ftb{<=0.5,<=1.5}{0.5,1.5}}! in
-    (gaussian(0, x) : !{\ft{<0.5}}!) < (0.5 : !{\ftb{<0.5}{0.5}}!)
+    let x = if flip() then (0.5 : !{\ftb{<=0.5,<=1.5}{0.5}}!)
+                      else (1.5 : !{\ftb{<=0.5,<=1.5}{1.5}}!)
+             : !{\ftb{<=0.5,<=1.5}{0.5,1.5}}! in
+            (gaussian(0, x) : !{\ft{<0.5}}!) < (0.5 : !{\ftb{<0.5}{0.5}}!)
 \end{lstlisting}
 
-\noindent Since the variable $x$ is later used as a parameter to the Gaussian distribution, \Slice{} generates a separate case for each possible value that $x$ can take (namely 0.5 and 1.5). To support this, the type system uses non-strict inequalities in the cut sets for both 0.5 and 1.5, enabling these values to be mapped to integer indices starting from 0. Specifically, the value 0.5 corresponds to index 0 via the type \codetype{\ftb{<=0.5,<=1.5}{0.5}}, and 1.5 corresponds to index 1 via the type \codetype{\ftb{<=0.5,<=1.5}{1.5}}. The resulting discretized program then branches on these integer values and instantiates the corresponding discrete distribution of the Gaussian, depending on which standard deviation was selected by the initial flip.
+\noindent Since the variable $x$ is later used as a parameter to the Gaussian distribution, \Slice{} generates a separate case for each possible value that $x$ can take (namely 0.5 and 1.5). To support this, the type system uses non-strict inequalities in the cut sets, enabling these values to be mapped to integer indices starting from 0. Specifically, the value 0.5 corresponds to index 0 via the type \codetype{\ftb{<=0.5,<=1.5}{0.5}}, and 1.5 corresponds to 1 via \codetype{\ftb{<=0.5,<=1.5}{1.5}}. The resulting discretized program then branches on these values and instantiates the corresponding discrete distribution, depending on which standard deviation was selected by the initial flip.
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em]
     let x = if flip() then 0 else 1 in
-    (if x == 0 then
-        discrete(0.841345, 0.158655)
-    else
-        discrete(0.630559, 0.369441)) < 1
+    (if x == 0 then  discrete(0.841345, 0.158655)
+               else  discrete(0.630559, 0.369441)) < 1
 \end{lstlisting}
 %
 \noindent
@@ -325,7 +318,7 @@ This example involves both discrete and continuous random variables and models a
 
 \noindent This gives the output \result{0.17325}{0.82675}. Here, \uniform(0,10) becomes \discrete(0.1, 0.9) representing 10\% probability for $[0,1)$ and 90\% for $[1,10]$. Similarly, \uniform(0,4) becomes \discrete(0.25, 0.75). Constants 10.0 and 4.0 fall into the second interval in the partition $(-\infty, 1) \cup [1,+\infty)$ and are thus both mapped to index 1 in the discretized program.
 
-We also support sequential probabilistic processes with iterate, and lists and recursion, see \Cref{ap:mot} for examples.
+We also support sequential probabilistic processes with iterate, and lists and recursion, see \Cref{ap:mot} for examples of these features.
 \subsection{Partial Discretization for non-constant Comparisons}\label{sec:examples:partial1}
 
 Not all programs can be fully discretized. Consider a program where continuous variables are compared directly to each other rather than to constants:
@@ -380,7 +373,7 @@ Here, \Slice{} does not identify any cuts for the subexpressions $x$ and \ifkw\;
   let y = discrete(0.691462, 0.308538) in
   if y < 1 then beta(1,1) else uniform(0,2)
 \end{lstlisting}
-
+%
 %\subsection{Partial Discretization for Discrete Values without Comparisons}\label{sec:examples:partial3}
 %In the preceding example, we considered the case where no cuts exist for continuous distributions, but here we illustrate the case when no cuts exist for discrete float values. 
 %

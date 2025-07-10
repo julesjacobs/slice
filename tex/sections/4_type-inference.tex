@@ -126,12 +126,15 @@ The solver repeatedly processes constraints until reaching a fixed point, where 
     From the previous example, we obtained the constraint set displayed in \Cref{eq:cs}, which is then solved as follows:
 
  \noindent   \emph{Step 1: Subtyping reduction.} We replace each subtyping constraint as described above:
-    \begin{itemize}
-        \item $\subtype{\float[B_2; V_2]}{\float[B_5; V_5]}$ becomes $B_2 = B_5, V_2 \sqsubseteq V_5$
-        \item $\subtype{\float[B_4; V_4]}{\float[B_5; V_5]}$ becomes $B_4 = B_5, V_4 \sqsubseteq V_5$
-        \item $\subtype{\float[B_7; V_7]}{\float[B_9; V_9]}$ becomes $B_7 = B_9, V_7 \sqsubseteq V_9$
-        \item $\subtype{\float[B_8; V_8]}{\float[B_9; V_9]}$ becomes $B_8 = B_9, V_8 \sqsubseteq V_9$
-    \end{itemize}
+ \[
+  \subtype{\float[B_i; V_i]}{\float[B_j; V_j]}\text{ becomes }B_i = B_j, V_i \sqsubseteq V_j \qquad \text{for } (i,j) \in \{(2,5),(4,5),(7,9),(8,9)\}
+ \]
+%    \begin{itemize}
+%        \item $\subtype{\float[B_2; V_2]}{\float[B_5; V_5]}$ becomes $B_2 = B_5, V_2 \sqsubseteq V_5$
+%        \item $\subtype{\float[B_4; V_4]}{\float[B_5; V_5]}$ becomes $B_4 = B_5, V_4 \sqsubseteq V_5$
+%        \item $\subtype{\float[B_7; V_7]}{\float[B_9; V_9]}$ becomes $B_7 = B_9, V_7 \sqsubseteq V_9$
+%        \item $\subtype{\float[B_8; V_8]}{\float[B_9; V_9]}$ becomes $B_8 = B_9, V_8 \sqsubseteq V_9$
+%    \end{itemize}
 
   \noindent   \emph{Step 2: Initialize.} All $B$ and $V$ variables start as $\emptyset$.
 
