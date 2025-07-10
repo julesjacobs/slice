@@ -59,7 +59,7 @@
 		\end{array}
 		$
 	\end{tabular}
-	\caption{Discretization function for \textsc{Slice}, where $\text{CDF}(b_{0}) = 0$ and $\text{CDF}(b_{n+1}) = 1$. For the $\uniform$ distribution case, we explicitly handle $B = \top$, which implies $V = \top$ and vice versa (cf.\ Theorem~\ref{thm:distinguishes-top}), i.e., there is no need to separately consider the case where $V = \top$. For all other language constructs, $\discretize{\cdot}$ straightforwardly recurses on their structure.}
+	\caption{Discretization function, where $\text{CDF}(b_{0}) = 0$ and $\text{CDF}(b_{n+1}) = 1$. For the $\uniform$ distribution case, we explicitly handle $B = \top$, which implies $V = \top$ and vice versa, i.e., there is no need to separately consider the case where $V = \top$. For all other language constructs, $\discretize{\cdot}$ straightforwardly recurses on their structure.}
 	\label{fig:discretization-code}
 \end{figure}
 %
@@ -104,7 +104,7 @@ Now consider the discretized expression obtained from computing $\discretize{e: 
 	(x \finlt{3} \finconst{1}{3})  \logor x \fingeq{3} \finconst{2}{3})~.
 \]
 %
-The probabilities appearing in $\discrete(\ldots)$ are determined by the cumulative distribution function (CDF) of the uniform distribution over $[0,1]$, indeed ensuring that the probability of $x$ evaluating to $\finconst{k}{3}$ in $\discretize{e: \bool}$ \emph{coincides} with the probability of $x$ evaluating to a value in $\intervals{B}_k$ in $e$. Hence, the constant $0.3$ in $e$ can be replaced by the constant $\finconst{1}{3}$ in $\discretize{e: \bool}$, and the constant $0.5$ in $e$ replaced by the constant $\finconst{2}{3}$ in $\discretize{e: \bool}$, and it is evident that $e$ and $\discretize{e: \bool}$ are semantically equivalent. 
+The probabilities appearing in $\discrete(\ldots)$ are determined by the cumulative distribution function (CDF) of the uniform distribution over $[0,1]$, ensuring that the probability of $x$ evaluating to $\finconst{k}{3}$ in $\discretize{e: \bool}$ \emph{coincides} with the probability of $x$ evaluating to a value in $\intervals{B}_k$ in $e$. Hence, the constants $0.3$ and $0.5$ in $e$ can be replaced by the constants $\finconst{1}{3}$ and $\finconst{2}{3}$, respectively,  in $\discretize{e: \bool}$, and it is evident that $e$ and $\discretize{e: \bool}$ are semantically equivalent. 
 \end{example}
 %
 Crucially, the \emph{answers} constraint in the premise of the typing rules for comparisons (cf.\ \Cref{fig:typing-float}) ensures that $B$ is a correct and sufficiently fine-grained partitioning of $\Reals$, i.e., there is an injective function
