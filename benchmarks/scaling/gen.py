@@ -5,6 +5,8 @@ Note: only generates programs that grow linearly in size.
 '''
 
 import random
+random.seed(11) # random seed for reproducibility
+# round all constants in the comparisons (< c) to two decimal places
 
 ### Generate programs with conditional independence ###
 '''
@@ -16,7 +18,7 @@ def build_conditional_independent_slice(comparison_count):
     variables = [f"x{n}" for n in range(1, comparison_count + 1)]
 
     for idx in range(comparison_count):
-        rand_const = random.uniform(1e-10, 1 - 1e-10)
+        rand_const = round(random.random(), 2)
         var = variables[idx]
         if idx == 0:
             code.append(f"let {var} = uniform(0,{counter}) in")
@@ -63,7 +65,7 @@ def build_conditional_random_independent_slice_1(comparison_count):
     variables = [f"x{n}" for n in range(1, comparison_count + 1)]
 
     for idx in range(comparison_count):
-        rand_const = random.uniform(1e-10, 1 - 1e-10)
+        rand_const = round(random.random(), 2)
         var = variables[idx]
         if idx == 0:
             code.append(f"let {var} = uniform(0,{counter}) in")
@@ -114,7 +116,7 @@ def build_conditional_random_independent_slice_2(depth):
     valid_flag = [False]
     
     def prev_var_or_uniform(prev_vars):
-        if not prev_vars or random.random() < 0.5:
+        if not prev_vars or round(random.random(), 2) < 0.5:
             return g.uniform(0, random.randint(1, 10))
         else:
             return random.choice(prev_vars[-5:])
@@ -140,7 +142,7 @@ def build_conditional_random_independent_slice_2(depth):
                     valid_flag[0] = True
                         
             quantity = g.ite(
-                g.lt(guard_expr, g.const(random.uniform(1e-10, 1 - 1e-10))),
+                g.lt(guard_expr, g.const(round(random.random(), 2))),
                 thenb_expr,
                 elseb_expr
             )
@@ -183,7 +185,7 @@ def build_alternating_guard_slice_1(comparison_count, guard_span):
     variables = [f"x{n}" for n in range(1, comparison_count + 1)]
 
     for idx in range(comparison_count):
-        rand_const = random.uniform(1e-10, 1 - 1e-10)
+        rand_const = round(random.random(), 2)
         var = variables[idx]
         if idx == 0:
             code.append(f"let {var} = uniform(0,{counter}) in")
@@ -211,7 +213,7 @@ def build_alternating_guard_slice_2(comparison_count, guard_span):
     variables = [f"x{n}" for n in range(1, comparison_count + 1)]
 
     for idx in range(comparison_count):
-        rand_const = random.uniform(1e-10, 1 - 1e-10)
+        rand_const = round(random.random(), 2)
         var = variables[idx]
         if idx == 0:
             code.append(f"let {var} = uniform(0,{counter}) in")
@@ -240,7 +242,7 @@ def build_alternating_guard_slice_3(comparison_count, guard_span):
     variables = [f"x{n}" for n in range(1, comparison_count + 1)]
 
     for idx in range(comparison_count):
-        rand_const = random.uniform(1e-10, 1 - 1e-10)
+        rand_const = round(random.random(), 2)
         var = variables[idx]
         if idx == 0:
             code.append(f"let {var} = uniform(0,{counter}) in")
@@ -276,7 +278,7 @@ def build_random_alternating_guard_slice(comparison_count, guard_span):
     variables = [f"x{n}" for n in range(1, comparison_count + 1)]
 
     for idx in range(comparison_count):
-        rand_const = random.uniform(1e-10, 1 - 1e-10)
+        rand_const = round(random.random(), 2)
         var = variables[idx]
         if idx == 0:
             code.append(f"let {var} = uniform(0,{random.randint(1, 10)}) in")
@@ -293,9 +295,32 @@ def build_random_alternating_guard_slice(comparison_count, guard_span):
 
 
 def main(): 
-    program, last_var = build_alternating_guard_slice_3(10, 4)
-    print(program)
-    # print(last_var)
+    print("=== Conditional Independent ===")
+    generators = [
+        build_conditional_independent_slice,
+        build_conditional_random_independent_slice_1,
+        build_conditional_random_independent_slice_2,
+    ]
+    
+    for gen in generators:
+        print(f"--- {gen.__name__} ---")
+        program, last_var = gen(5)
+        print(program)
+        print()
+
+    print("=== Alternating Guard ===")
+    alt_generators = [
+        build_alternating_guard_slice_1,
+        build_alternating_guard_slice_2,
+        build_alternating_guard_slice_3,
+        build_random_alternating_guard_slice,
+    ]
+
+    for gen in alt_generators:
+        print(f"--- {gen.__name__} ---")
+        program, last_var = gen(5, 2)  # comparison_count=5, guard_span=2
+        print(program)
+        print()
 
 if __name__ == "__main__":
     main()

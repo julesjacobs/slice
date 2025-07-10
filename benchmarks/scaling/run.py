@@ -393,7 +393,8 @@ def test_asymptotic_scaling_2(test_func, timeout=300):
     return benchmark_results
 
 
-def generate_line_graphs(benchmark_results, output_path):
+def generate_line_graphs(benchmark_results, output_path,
+                         dice_backend=True, roulette_backend=True):
     '''
     Args:
     benchmark_results: list of tuples (prog_size, ((slice_dice, total_dice), (slice_roulette, total_roulette)), sppl_times)
@@ -403,10 +404,18 @@ def generate_line_graphs(benchmark_results, output_path):
     '''
     plt.figure(figsize=(10, 6))
     
-    # Separate data for SPPL (which may have timeouts) and Slice (which continues)
+    # Set larger font sizes globally for this figure
+    plt.rcParams.update({
+        'axes.labelsize': 18,     # axis labels
+        'axes.titlesize': 18,     # plot title (if any)
+        'xtick.labelsize': 14,    # x tick labels
+        'ytick.labelsize': 14,    # y tick labels
+        'legend.fontsize': 14,    # legend text
+        'lines.markersize': 8     # marker size
+    })
+    
     all_prog_sizes = [b[0] for b in benchmark_results]
     
-    # For SPPL, only plot non-timeout values
     sppl_prog_sizes = []
     sppl_times = []
     for b in benchmark_results:
@@ -414,29 +423,23 @@ def generate_line_graphs(benchmark_results, output_path):
             sppl_prog_sizes.append(b[0])
             sppl_times.append(b[2])
     
-    # Plot SPPL if we have data
     if sppl_times:
         plt.plot(sppl_prog_sizes, sppl_times, label="SPPL", color="red", marker='o')
     
-    # Plot slice times, default to using dice slice times if both backends are specified
     if dice_backend:
         slice_times = [b[1][0][0] for b in benchmark_results]  # slice_dice times
         plt.plot(all_prog_sizes, slice_times, label="Slice", color="darkblue", marker='s')
     
-    # Plot backend times
     if dice_backend and roulette_backend:
-        # Both backends - plot both total times
         dice_times = [b[1][0][1] for b in benchmark_results]  # total_dice times
         roulette_times = [b[1][1][1] for b in benchmark_results]  # total_roulette times
         
         plt.plot(all_prog_sizes, dice_times, label="Slice+Dice", color="lightblue", marker='^')
         plt.plot(all_prog_sizes, roulette_times, label="Slice+Roulette", color="lightgreen", marker='D')
     elif dice_backend:
-        # Only dice backend
         dice_times = [b[1][0][1] for b in benchmark_results]  # total_dice times
         plt.plot(all_prog_sizes, dice_times, label="Slice+Dice", color="lightblue", marker='^')
     elif roulette_backend:
-        # Only roulette backend
         roulette_times = [b[1][1][1] for b in benchmark_results]  # total_roulette times
         plt.plot(all_prog_sizes, roulette_times, label="Slice+Roulette", color="lightgreen", marker='D')
 
@@ -448,6 +451,7 @@ def generate_line_graphs(benchmark_results, output_path):
     plt.savefig(output_path, dpi=300, bbox_inches="tight")
     plt.show()
     print(f"Saved scaling plot to {output_path}", flush=True)
+
 
 
 print_outputs_flag = False

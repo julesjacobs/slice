@@ -7,6 +7,6 @@
         ...
         x_n < 0.5
     \end{lstlisting}
-    \caption{Structure of synthetic programs used in our evaluation. Each program consists of a sequence of nested \texttt{if} statements, where each branch conditions on a previous variable sampled from a uniform distribution, proceeding until the final condition $x_n < 0.5$ is reached. $r_i \in [0,1]$ is a randomly sampled value. This construction allows us to test how well \Slice{} handles deep conditional branching and stochastic control flow.}
+    \caption{Structure of synthetic programs used in our evaluation. Each program consists of a sequence of nested \texttt{if} statements, where each branch conditions on a previous variable sampled from a uniform distribution, proceeding until the final condition $x_n < 0.5$ is reached. $0 \leq r_i \leq 1$ is a random float. This construction allows us to test how well \Slice{} handles deep conditional branching and stochastic control flow.}
     \label{fig:nested-conditionals}
     \end{figure}

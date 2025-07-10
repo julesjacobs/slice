@@ -21,7 +21,8 @@ We test programs where each variable's distribution depends on comparisons with 
 
 \begin{itemize}
 \item Each variable $x_i$ depends on its immediate predecessor via a conditional branch $x_{i-1} < r_{i-1}$, forming a sequential dependency chain. See Figure~\ref{fig:cond-benchmarks-a}.
-\item Each variable $x_i$ depends on a randomly selected predecessor $x_j$ (for $j < i$) via a conditional branch $x_j < r_{i-1}$. See Figures~\ref{fig:cond-benchmarks-b} and~\ref{fig:cond-benchmarks-c}, where the former ensures unique parameters in each uniform distribution, while the latter samples such parameters randomly. 
+\item Each variable $x_i$ depends on a randomly selected predecessor $x_j$ (for $j < i$) via a conditional branch $x_j < r_{i-1}$. See Figures~\ref{fig:cond-benchmarks-b}.
+\item Each variable $x_i$ uses a randomized conditional expression, where the guard and both branches may involve either a randomly selected predecessor $x_j$ (for $j < i$) or a freshly sampled uniform value. See Figure~\ref{fig:cond-benchmarks-c}.
 \end{itemize}
 
 \input{figures/scaling-conditional}
