@@ -1,7 +1,7 @@
 \input{figures/architecture.tex}
 
 \section{Slice by Example}\label{sec:examples}
-This section presents simple examples that highlight the key features of our probabilistic programming language and compiler \Slice{}, aiming to emphasize how \Slice{} meets the challenge of performing exact inference efficiently. \Slice{} extends a core functional language with traditional programming language constructs such as conditionals, local variables, and functions, augmented with constructs for probabilistic programming such as sampling and conditioning. Each example in the subsections is intended to showcase these features. Later in the section, we also mention examples that can only be partially discretized but nonetheless preserve the semantics across both the original and discretized program. %More examples are highlighted in Appendix~\ref{appen:examples}.
+This section presents simple examples that highlight the key features of our language and compiler \Slice{}, aiming to emphasize how \Slice{} meets the challenge of performing exact inference efficiently. \Slice{} extends a core functional language with traditional programming language constructs such as conditionals, local variables, and functions, augmented with constructs for probabilistic programming such as sampling and conditioning. Each example in the subsections is intended to showcase these features. Later in the section, we also mention examples that can only be partially discretized but nonetheless preserve the semantics across both the original and discretized program. %More examples are highlighted in Appendix~\ref{appen:examples}.
 
 For readability, we use \texttt{flip()} as a shorthand for \texttt{uniform(0,1) < 0.5}, which represents a fair coin flip that returns true or false with equal probability. A ``cut'' is any constant $c$ in a comparison such as $x < c$, where $c$ partitions $\mathbb{R}$ into two intervals $(-\infty, c)$ and $[c, +\infty)$.
 
@@ -27,8 +27,8 @@ The transformation to the discretized program is guided by tracking cuts as an i
 \begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
     (uniform(0, 1) : !{\ft{<0.5}}!) < (0.5 : !{\ftb{<0.5}{0.5}}!)
 \end{lstlisting}
-
-Figure~\ref{fig:float-type-def} describes the meaning of a type \lstinline{float[cut set; value set]}. \ft{<0.5} for the uniform sample indicates that the cut set contains the cut ``$\clt{0.5}$'' and the value set is $\top$ which indicates the variable can take any value in the range $(-\infty, +\infty)$. This tells \Slice{} how to partition $\mathbb{R}$. The type \ftb{<0.5}{0.5} for the constant $0.5$ indicates that the cut set contains $<0.5$ and the value set contains only the single value $0.5$. This allows \Slice{} to determine to which discrete region the constant $0.5$ belongs to after partitioning $\mathbb{R}$. 
+Figure~\ref{fig:float-type-def} describes the meaning of a type \lstinline{float[cut set; value set]}.
+ \ft{<0.5} indicates then that the cut set contains ``$\clt{0.5}$'' and the value set is $\top$ which indicates the variable can take any value in $(-\infty, +\infty)$. This tells \Slice{} how to partition $\mathbb{R}$. The type \ftb{<0.5}{0.5} indicates that the cut set contains $<0.5$ and the value set contains only the single value $0.5$. This allows \Slice{} to determine to which discrete region the constant $0.5$ belongs to after partitioning $\mathbb{R}$. 
 
 \begin{figure}
 \[
@@ -366,13 +366,11 @@ This example involves both discrete and continuous random variables and models a
   let nationality = discrete(0.5, 0.5) in
   let perfect = discrete(0.01, 0.99) in
   let gpa = if nationality <= 0 then
-          if perfect <= 0 then
-            1
+          if perfect <= 0 then  1
           else
             discrete(0.1, 0.9)
         else
-          if perfect <= 0 then
-            1
+          if perfect <= 0 then  1
           else
             discrete(0.25, 0.75) in
   gpa < 1

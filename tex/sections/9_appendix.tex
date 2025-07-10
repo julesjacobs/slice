@@ -1,8 +1,40 @@
+\clearpage
 \appendix
 \section{List of Supported \Slice{} Distributions}\label{appen:supported-distributions}
-\input{figures/supported-distributions.tex}
+
+The list of distributions supported by \Slice{}, along with their probability density functions, is given in the following table.
+
+       \begin{tabular}{l l @{\qquad} l l}
+    \toprule
+    \textbf{Distribution} & \textbf{Density} & \textbf{Distribution} & \textbf{Density} \\
+    \midrule
+    Exponential & $\lambda e^{-\lambda x}$ 
+        & Uniform & $\frac{1}{b - a}$ \\
+    Laplace & $\frac{1}{2b} e^{-\frac{|x - \mu|}{b}}$ 
+        & Gaussian & $\frac{1}{\sqrt{2\pi}\sigma} e^{-\frac{(x - \mu)^2}{2\sigma^2}}$ \\
+    Cauchy & $\frac{1}{\pi \gamma \left[1 + \left(\frac{x - x_0}{\gamma}\right)^2\right]}$ 
+        & Beta & $\frac{x^{\alpha - 1}(1 - x)^{\beta - 1}}{B(\alpha, \beta)}$ \\
+    Student-T & $c \left(1 + \frac{x^2}{\nu} \right)^{-\frac{\nu + 1}{2}}$ 
+        & LogNormal & $\frac{1}{x\sigma \sqrt{2\pi}} e^{-\frac{(\ln x - \mu)^2}{2\sigma^2}}$ \\
+    Chi-squared & $\frac{1}{2^{k/2} \Gamma(k/2)} x^{k/2 - 1} e^{-x/2}$ 
+        & Gamma & $\frac{\beta^\alpha}{\Gamma(\alpha)} x^{\alpha - 1} e^{-\beta x}$ \\
+    Logistic & $\frac{e^{-(x - \mu)/s}}{s(1 + e^{-(x - \mu)/s})^2}$ 
+        & Pareto & $\frac{\alpha x_m^\alpha}{x^{\alpha + 1}}$ \\
+    Rayleigh & $\frac{x}{\sigma^2} e^{-x^2 / (2\sigma^2)}$ 
+        & Weibull & $\frac{k}{\lambda} \left( \frac{x}{\lambda} \right)^{k-1} e^{-(x/\lambda)^k}$ \\
+    & & Gumbel-1 & $\frac{1}{\beta} e^{-(z + e^{-z})}$,\quad $z = \frac{x - \mu}{\beta}$ \\
+    & & Gumbel-2 & $\frac{\alpha \beta x^{-\alpha - 1} e^{-(x/\beta)^{-\alpha}}}{\beta}$ \\
+    & & Exponentiated Power & $k \lambda x^{k - 1} e^{-(x/\lambda)^k}$ \\
+    \bottomrule
+    \end{tabular}
+
+    
+    
 
 \section{Typing Rules for Full \Slice{} Language}\label{appen:typing-rules}
+
+The typing rules for general language constructs is given in \Cref{fig:typing-general-all}.
+
 \input{figures/typing-general-all.tex}
 
 % \section{Proofs for Distinguishability}
@@ -91,7 +123,7 @@
 
 \end{proof}
 
-\input{sections/6_soundness.tex}
+%\input{sections/6_soundness.tex}
 
 \section{Code Sketches for Synthetic Benchmarks}\label{appen:synthetic-sketches}
 This section contains code snippets of the programs used in the scaling experiments in Section~\ref{sec:synthetic-benchmarks}. We implemented a Python script that automatically generates these programs based on configurable parameters such as program size, guard structure, and dependency pattern. For reproducibility, we used a fixed random seed of random.seed(11). All $r_i$ values in the generated programs, where $0 \leq r_i \leq 1$ is randomly chosen, are rounded to two decimal places.

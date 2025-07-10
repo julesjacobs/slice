@@ -22,7 +22,7 @@ The type inference rules closely mirror the typing rules in Figure~\ref{fig:typi
           &\mid B_1 \equiv_{\top} B_2   \text{\quad (join only if $B_1 = \top$ or $B_2 = \top$)} \\
           &\mid C_1, C_2   \text{\quad (conjunction)}
     \end{align*}
-\caption{Syntax for our constraint language. The constraints directly correspond to the semantic requirements in our type system: subtyping constraints ensure type compatibility, $\distinguishes{B}{V}$ ensures that distribution parameters can be recovered after discretization, $\answerslt{B}{V_1}{V_2}$ and $\answersleq{B}{V_1}{V_2}$ ensure that comparison results can be determined after discretization, and $\has{V}{c}$ ensures that constants are properly tracked in value sets.}
+\caption{Syntax for our constraint language. Constraints correspond to the semantic requirements in our type system: subtyping ensures type compatibility, $\distinguishes{B}{V}$ ensures that distribution parameters can be recovered after discretization, $\answerslt{B}{V_1}{V_2}$ and $\answersleq{B}{V_1}{V_2}$ ensure that comparison results can be determined after discretization, and $\has{V}{c}$ ensures that constants are properly tracked.}
 \label{fig:constraints-grammar}
 \end{figure}
 

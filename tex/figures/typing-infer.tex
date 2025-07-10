@@ -6,9 +6,21 @@
         {\ }
         {\Gamma \vdash c : \float[B;V] \mid \has{V}{c}}
 
+        \inferrule[\textsc{TIf}]
+        {\Gamma \vdash e_1 : \bool \mid C_1 \\
+         \Gamma \vdash e_2 : \tau_2 \mid C_2 \\
+         \Gamma \vdash e_3 : \tau_3 \mid C_3}
+        {\Gamma \vdash \ifkw \; e_1 \; \thenkw \; e_2 \; \elsekw \; e_3 : \tau_4 \mid C_1, C_2, C_3, \subtype{\tau_2}{\tau_4}, \subtype{\tau_3}{\tau_4}}
+
         \inferrule[\textsc{TVar}]
         {\ }
         {\Gamma, x: \tau \vdash x : \tau \mid \emptyset}
+        
+         \inferrule[\textsc{TLess}]
+        {\Gamma \vdash e_1 : \float[B; V_1] \mid C_1 \and \Gamma \vdash e_2 : \float[B; V_2] \mid C_2}
+        {\Gamma \vdash e_1 < e_2 : \bool \mid C_1, C_2, \answerslt{B}{V_1}{V_2}}
+
+
     
         \inferrule[\textsc{TContinuous-1}]
         {\Gamma \vdash e : \float[B_1; V_1] \mid C}
@@ -19,17 +31,8 @@
          \Gamma \vdash e_2 : \float[B_2; V_2] \mid C_2}
         {\Gamma \vdash \uniform(e_1, e_2) : \float[B; V] \mid C_1, C_2, \distinguishes{B_1}{V_1}, B_1 \equiv_{\top} B, \distinguishes{B_2}{V_2}, B_2 \equiv_{\top} B, V = \top}
     
-        \inferrule[\textsc{TIf}]
-        {\Gamma \vdash e_1 : \bool \mid C_1 \\
-         \Gamma \vdash e_2 : \tau_2 \mid C_2 \\
-         \Gamma \vdash e_3 : \tau_3 \mid C_3}
-        {\Gamma \vdash \ifkw \; e_1 \; \thenkw \; e_2 \; \elsekw \; e_3 : \tau_4 \mid C_1, C_2, C_3, \subtype{\tau_2}{\tau_4}, \subtype{\tau_3}{\tau_4}}
 
-        \inferrule[\textsc{TLess}]
-        {\Gamma \vdash e_1 : \float[B; V_1] \mid C_1 \and \Gamma \vdash e_2 : \float[B; V_2] \mid C_2}
-        {\Gamma \vdash e_1 < e_2 : \bool \mid C_1, C_2, \answerslt{B}{V_1}{V_2}}
-
-        \inferrule[\textsc{TLessEq}]
+               \inferrule[\textsc{TLessEq}]
         {\Gamma \vdash e_1 : \float[B; V_1] \mid C_1 \and \Gamma \vdash e_2 : \float[B; V_2] \mid C_2}
         {\Gamma \vdash e_1 \leq e_2 : \bool \mid C_1, C_2, \answersleq{B}{V_1}{V_2}}
 
