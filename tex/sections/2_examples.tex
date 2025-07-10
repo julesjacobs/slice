@@ -20,7 +20,7 @@ We start with a simple example that illustrates the core idea of \Slice{}. Consi
     discrete(0.5, 0.5) < 1
 \end{lstlisting}
 
-\noindent Here, \discrete(0.5, 0.5) represents a choice between two outcomes (0 or 1), each with probability 0.5. The outcome 0 corresponds to the original value being in $(-\infty, 0.5)$, and 1 corresponds to it being in $[0.5, +\infty)$. As such, we have abstracted away the support of the uniform distribution in the original program, replacing it with a discrete choice that preserves the original program's probabilistic behavior with respect to the identified cut. Now, using \Dice dice as a backend for exact inference of discrete probabilistic program, we can obtain the result \result{0.5}{0.5}.
+\noindent Here, \discrete(0.5, 0.5) represents a choice between two outcomes (0 or 1), each with probability 0.5. The outcome 0 corresponds to the original value being in $(-\infty, 0.5)$, and 1 corresponds to it being in $[0.5, +\infty)$. As such, we have abstracted away the support of the uniform distribution in the original program, replacing it with a discrete choice that preserves the original program's probabilistic behavior with respect to the identified cut. Now, using \Dice{} as a backend for exact inference of discrete probabilistic programs, we can obtain the result \result{0.5}{0.5}.
 
 The transformation to the discretized program is guided by tracking cuts as an intermediate step, which are determined by type inference as shown in the annotated program below:
 
