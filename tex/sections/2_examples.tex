@@ -28,7 +28,7 @@ The transformation to the discretized program is guided by tracking cuts as an i
     (uniform(0, 1) : !{\ft{<0.5}}!) < (0.5 : !{\ftb{<0.5}{0.5}}!)
 \end{lstlisting}
 
-Figure~\ref{fig:float-type-def} describes the meaning of a type \lstinline{float[cut-set; value-set]}. \ft{<0.5} for the uniform sample indicates that the cut set contains the cut ``$\clt{0.5}$'' and the value set is $\top$ which indicates the variable can take any value in the range $(-\infty, +\infty)$. This tells \Slice{} how to partition $\mathbb{R}$. The type \ftb{<0.5}{0.5} for the constant $0.5$ indicates that the cut set contains $<0.5$ and the value set contains only the single value $0.5$. This allows \Slice{} to determine to which discrete region the constant $0.5$ belongs to after partitioning $\mathbb{R}$. 
+Figure~\ref{fig:float-type-def} describes the meaning of a type \lstinline{float[cut set; value set]}. \ft{<0.5} for the uniform sample indicates that the cut set contains the cut ``$\clt{0.5}$'' and the value set is $\top$ which indicates the variable can take any value in the range $(-\infty, +\infty)$. This tells \Slice{} how to partition $\mathbb{R}$. The type \ftb{<0.5}{0.5} for the constant $0.5$ indicates that the cut set contains $<0.5$ and the value set contains only the single value $0.5$. This allows \Slice{} to determine to which discrete region the constant $0.5$ belongs to after partitioning $\mathbb{R}$. 
 
 \begin{figure}
 \[
@@ -39,7 +39,7 @@ Figure~\ref{fig:float-type-def} describes the meaning of a type \lstinline{float
 \underbrace{\text{value-set}}_{\begin{array}{c}\text{set of concrete values}\\\text{(e.g., }\{0.1, 0.4, 0.5\}\text{)}\\\text{or }\top\text{ (any value in $\R$)}\end{array}}
 ]
 \]
-\caption{The type \lstinline{float[cut-set; value-set]} captures two aspects of a floating-point expression: the cut set is determined by \emph{how the expression is used} (i.e., what it's compared against) and the value set is determined by \emph{what concrete values the expression can take}. The discretization is driven by the cut set: a float value with $n$ cuts is discretized into $n+1$ possible discrete values, each value corresponding to one real-valued interval.}
+\caption{The type \lstinline{float[cut set; value set]} captures two aspects of a floating-point expression: the cut set is determined by \emph{how the expression is used} (i.e., what it's compared against) and the value set is determined by \emph{what concrete values the expression can take}. The discretization is driven by the cut set: a float value with $n$ cuts is discretized into $n+1$ possible discrete values, each value corresponding to one real-valued interval.}
 \label{fig:float-type-def}
 \end{figure}
 

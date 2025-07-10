@@ -119,7 +119,7 @@ Once constraint generation completes, we obtain a system of constraints over typ
 \begin{enumerate}
     \item \textbf{Subtyping reduction}: We first process all subtyping constraints of the form $\subtype{\tau_1}{\tau_2}$. Since subtyping for float types follows the rule $\subtype{\float[B_1;V_1]}{\float[B_2;V_2]}$ if and only if $B_1 = B_2$ and $V_1 \sqsubseteq V_2$, we reduce each subtyping constraint into corresponding equality and subset constraints on the cut sets and value sets. Subtyping constraint elimination continues until we have only constraints among $B$'s and $V$'s.
     
-    \item \textbf{Lattice constraint solving}: After subtyping reduction, we are left with constraints purely over cut sets and value sets—equalities, subset relations, and the specialized constraints like $\distinguishes{B}{V}$, $\answerslt{B}{V_1}{V_2}$, and $\has{V}{c}$. These constraints are solved using a monotone fixpoint algorithm for lattices over the cut sets and value sets.
+    \item \textbf{Lattice constraint solving}: After subtyping reduction, we are left with constraints purely over cut sets and value sets—equalities, subset relations, and the specialized constraints like $\distinguishes{B}{V}$, $\answerslt{B}{V_1}{V_2}$, and $\has{V}{c}$. These constraints are solved using a monotone fixed point algorithm for lattices over the cut sets and value sets.
 \end{enumerate}
 
 \paragraph{Lattice Solving}
