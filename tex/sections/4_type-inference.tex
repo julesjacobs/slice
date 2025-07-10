@@ -19,6 +19,7 @@ The type inference rules closely mirror the typing rules in Figure~\ref{fig:typi
           &\mid B_1 = B_2  \text{\quad (cut set equality)} \\
           &\mid V_1 \sqsubseteq V_2  \text{\quad (value set subset)} \\
           &\mid V_1 = V_2  \text{\quad (value set equality)} \\
+          &\mid B_1 \equiv_{\top} B_2   \text{\quad (join only if $B_1 = \top$ or $B_2 = \top$)} \\
           &\mid C_1, C_2   \text{\quad (conjunction)}
     \end{align*}
 \caption{Syntax for our constraint language. The constraints directly correspond to the semantic requirements in our type system: subtyping constraints ensure type compatibility, $\distinguishes{B}{V}$ ensures that distribution parameters can be recovered after discretization, $\answerslt{B}{V_1}{V_2}$ and $\answersleq{B}{V_1}{V_2}$ ensure that comparison results can be determined after discretization, and $\has{V}{c}$ ensures that constants are properly tracked in value sets.}
@@ -70,8 +71,8 @@ The type inference rules closely mirror the typing rules in Figure~\ref{fig:typi
         
         \item From the exponential distributions using \textsc{TContinuous-1}:
         \begin{itemize}
-            \item $\distinguishes{B_1}{V_1}, V_2 = \top$ (from \texttt{exponential(0.5)})
-            \item $\distinguishes{B_3}{V_3}, V_4 = \top$ (from \texttt{exponential(0.8)})
+            \item $\distinguishes{B_1}{V_1}, V_2 = \top$, $B_1 \equiv_{\top} B_2$ (from \texttt{exponential(0.5)})
+            \item $\distinguishes{B_3}{V_3}, V_4 = \top$, $B_3 \equiv_{\top} B_4$ (from \texttt{exponential(0.8)})
         \end{itemize}
         
         \item From the first \texttt{if} expression using \textsc{TIf}:
@@ -104,6 +105,7 @@ The type inference rules closely mirror the typing rules in Figure~\ref{fig:typi
     C = &\; \has{V_1}{0.5}, \has{V_3}{0.8}, \has{V_6}{1.5}, \has{V_7}{1.8}, \has{V_8}{0.3}, \\
         &\; V_2 = \top, V_4 = \top, \\
         &\; \distinguishes{B_1}{V_1}, \distinguishes{B_3}{V_3}, \\
+        &\; B_1 \equiv_{\top} B_2, B_3 \equiv_{\top} B_4 \\
         &\; \subtype{\float[B_2; V_2]}{\float[B_5; V_5]}, \subtype{\float[B_4; V_4]}{\float[B_5; V_5]}, \\
         &\; \subtype{\float[B_7; V_7]}{\float[B_9; V_9]}, \subtype{\float[B_8; V_8]}{\float[B_9; V_9]}, \\
         &\; \answerslt{B_{10}}{V_5}{V_6}, B_{10} = B_5, B_{10} = B_6, \\
