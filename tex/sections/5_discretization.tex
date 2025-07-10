@@ -66,7 +66,7 @@
 In this section, we describe our type-directed discretization algorithm alongside illustrative examples. The setting is the following: Given a typed expression $e : \tau$ compute --- guided by the type annotations --- a (partially) \emph{discretized} expression $\discretize{e : \tau}$ such that $e$ and $\discretize{e : \tau}$ are \emph{semantically equivalent}, i.e., they produce the same distribution.
 
 $\discretize{e : \tau}$ is defined recursively on $e : \tau$ as shown in \Cref{fig:discretization-code}, where we focus on continuous uniform distributions. For other distributions, this procedure is completely analogous. Naturally, the only sub-expressions which are actually replaced by $\discretize{\cdot}$ are float constants and uniform samplings. Before we go into the details, let us get some intuition on how we use the type annotation to discretize expressions. The type system is designed in such a way that every typed sub-expression of the form 
-$e = \uniform(e_1, e_2 )$ of type  $\float[B;V]$ with $B=\{\sim_1\!\!b_1, \ldots, \sim_n\!\!b_n\} \neq \top$ 
+$e = \uniform(e_1, e_2 )$ of type $\float[B;V]$ with $B=\{\sim_1\!\!b_1, \ldots, \sim_n\!\!b_n\} \neq \top$ 
 %
 can be \emph{discretized} to an expression $e' : \fin{n+1}$ such that 
 %
@@ -113,7 +113,7 @@ $
 	\text{ToInts} \colon \{0.3, 0.5\} \to \intervals{B}
 $
 %
-such that $c$ is an (open) endpoint of  $\text{ToInts}(c)$ for all $c \in\{0.3,0.5\}$. Let us now consider the next example.
+such that $c$ is an (open) endpoint of $\text{ToInts}(c)$ for all $c \in\{0.3,0.5\}$. Let us now consider the next example.
 %
 \kevin{fonts}
 \begin{example}
@@ -133,7 +133,7 @@ such that $c$ is an (open) endpoint of  $\text{ToInts}(c)$ for all $c \in\{0.3,0
 		&(\uniform(0,(x :  \text{\ftbn{$\{\cleq{10},\cleq{20}\}$}{$\{10,20\}$}})) : \text{\ftn{$\{\clt{5}\}$}} ) < (5 :\text{\ftbn{$\{\clt{5}\}$}{$\{5\}$}})~.
 	\end{align*}	
 	%
-	Why can this expression be discretized even though the argument to the second uniform sampling instruction is non-constant? The typing information $(x :  \text{\ftbn{$\{\cleq{10},\cleq{20}\}$}{$\{10,20\}$}})$ correctly informs us about the fact that \emph{$x$ can only take the values $10$ and $20$}. Consequently, $x$ (and the $\ifkw$-expression generating it) can be discretized to a finite type $\fin{3}$ such that the probability of the resulting discrete expression evaluating to $\finconst{0}{3}$ (resp.\ $\finconst{1}{3}$) \emph{coincides} with the probability of the continuous expression evaluating to $10$ (resp.\ $20$). Let us (partially) apply $\discretize{e: \bool}$, resulting in:
+	Why can this expression be discretized even though the argument to the second uniform sampling instruction is non-constant? The typing information $(x : \text{\ftbn{$\{\cleq{10},\cleq{20}\}$}{$\{10,20\}$}})$ correctly informs us about the fact that \emph{$x$ can only take the values $10$ and $20$}. Consequently, $x$ (and the $\ifkw$-expression generating it) can be discretized to a finite type $\fin{3}$ such that the probability of the resulting discrete expression evaluating to $\finconst{0}{3}$ (resp.\ $\finconst{1}{3}$) \emph{coincides} with the probability of the continuous expression evaluating to $10$ (resp.\ $20$). Let us (partially) apply $\discretize{e: \bool}$, resulting in:
 	%
 	\begin{align*}
 		&\letkw \; x = \ifkw\; \discrete(0.5,0.5) \finlt{2} \finconst{1}{2} \; \thenkw \; \finconst{0}{3} \; \elsekw \; \finconst{1}{3} \; \inkw \\

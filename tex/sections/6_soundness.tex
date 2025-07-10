@@ -380,8 +380,8 @@ Similar rules apply for $\leq$, $\logand$, $\logor$, and other binary operations
 \end{cases} \\
 %
 \sem{ v_1 \finlt{n} v_1 } &= \begin{cases}
-	\delta_{\text{true}} & \text{if $v_1 = k_{1,\#n}$ and $v_2=k_{1,\#n}'$ are finite type values and}~k < k' \\
-	\delta_{\text{false}} & \text{if $v_1 = k_{1,\#n}$ and $v_2=k_{1,\#n}'$ are finite type values and}~k \geq k' \\
+	\delta_{\text{true}} & \text{if $v_1 = k_{1,\#n}$ and $v_2 = k_{1,\#n}'$ are finite type values and}~k < k' \\
+	\delta_{\text{false}} & \text{if $v_1 = k_{1,\#n}$ and $v_2 = k_{1,\#n}'$ are finite type values and}~k \geq k' \\
 	\delta_{\error} & \text{otherwise}
 \end{cases}
 \end{align*}
@@ -518,9 +518,9 @@ For every $\expr \in \exprs$ and all $n \in \mathbb{N}$, we define the distribut
 \[
 	\bigsemstep{\expr}{n} = 
 	\begin{cases}
-		\delta_\expr & \text{if $n=0$} \\
+		\delta_\expr & \text{if $n = 0$} \\
 		%
-		\bigsemstep{\expr}{n-1} \monbind  \lambda \expr'. \sem{\expr'} & \text{if $n>0$}~.
+		\bigsemstep{\expr}{n-1} \monbind  \lambda \expr'. \sem{\expr'} & \text{if $n > 0$}~.
 	\end{cases}
 \]
 %

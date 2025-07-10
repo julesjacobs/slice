@@ -214,7 +214,7 @@ The typing rule \textsc{Float-Const} for float constants states that a constant 
 The rule states that the argument $\Gamma \vdash e : \float[B; V]$ with the constraint that $\distinguishes{B}{V}$. The distinguishes predicate is defined as follows:
 \begin{definition}
 	\label{def:distinguishes}
-	Let $B\in \cutsets$ and $V\in\valsets$. We say that \emph{$\distinguishes{B}{V}$}, if $B = \top$ or ($V \neq \top$ and every interval $I$ induced  by $B$ contains at most one value in $V$, i.e., $
+	Let $B\in \cutsets$ and $V\in\valsets$. We say that \emph{$\distinguishes{B}{V}$}, if $B = \top$ or ($V \neq \top$ and every interval $I$ induced by $B$ contains at most one value in $V$, i.e., $
 	\forall I \in \intervals{B}\colon | V \cap I|  \leq 1
 	$).
 	%$B$ distinguishes $V$ if every interval in $B$ contains at most one value in $V$, or $B = \top$.
