@@ -1,217 +1,217 @@
 \section{Discretization}\label{sec:discretization}
 % \alexandra{This description needs a clear explanation that there are two parts to the discretization: types and then functions. If I understand correctly the text before the next subsection is describing what is in Figure 6. This is completely unclear now... As far as I can see Fig.6 is not mentioned anywhere? }
-
-
-In this section, we describe the {\em type-directed discretization procedure} that enables the use of exact inference in many programs with continuous distributions. As described in the previous section, after type inference, each float-typed expression carries refinement information in its type $\float[B; V]$ . We describe our discretization algorithm in subsection~\ref{subsec:discretization-alg}, with its formalization in Figure~\ref{fig:discretization-code}. The key insight of our discretization algorithm is that if an expression of type $\float[B;V]$ is finite-cut, we can partition $\mathbb{R}$ into intervals separated by the cuts in $B$ to obtain $\intervals{B}$, giving the finite type $\fin{n+1}$ where $n$ is the number of cuts: $\intervals{B}_k$ is then mapped to $\finconst{k}{n+1}$ for each $k = 0, ..., n$. After, the procedure will analyze $V$: 
-
-
-\begin{itemize}[leftmargin=*]
-    \item[-] if $V = \top$: The expression must be a continuous distribution. Each value in $\fin{n+1}$ occurs with the probability mass $p_k$ of the continuous distribution within $\intervals{B}_k$. This gives a $\discrete(p_0, \ldots, p_{n})$ distribution, which returns a finite type value $\finconst{k}{n+1}$ with probability $p_k$.
-    
-    \item[-] if $V = \{c_1, ..., c_n\}$: The expression must be a float constant. Each float constant $c \in \{c_1, ..., c_n\}$ is assigned an integer $k$ such that $c \in \intervals{B}_k$ . For each $c$, the finite type value $\finconst{k}{n+1}$ is returned.
-\end{itemize}
-
-
-If an expression with a float type is infinite-cut, proper discretization cannot be performed for that expression and as a result \Slice{} preserves the original floating-point expression. 
-
-\subsection{Discretization Rules}
-
-Our discretization method is defined recursively on the structure of typed expressions. We first define the programs our discretization method produces, which are either fully discretized or partially discretized programs. A fully discretized program contains only discrete distributions.
-
-\begin{definition} [Full discretization]\label{def:full-discr}
-    A program can be \textit{fully discretized} by \Slice{} if all its expressions are finite-cut.
-\end{definition}
-
-\begin{definition} [Partial discretization]\label{def:partial-discr}
-    A program can only be \textit{partially discretized} by \Slice{} if there exists an expression that is infinite-cut.
-\end{definition}
-
-%\alexandra{where have we defined co-discrete and co-continuous? }
-\subsection{Algorithm for Discretization}\label{subsec:discretization-alg}
-We now describe more formally our discretization algorithm as it is implemented in \Slice{}. Note that \Slice{} only attempts to discretize away expressions with float type $\float[B;V]$, while expressions of all other types preserve their original expressions and types across the discretization. Like in section~\ref{sec:type-inference}, we focus on the same subset language of \Slice{}, enough to capture how our algorithm operates over the full language. 
-
-We define a discretization function $\mathcal{D}\sem{e : \tau}$ that takes in typed expressions and show how it is recursively applied to expressions in our subset language. Variables, let bindings, comparisons, and conditionals all preserve their structure. The crux of our discretization algorithm lies when float constants or continuous distributions are encountered in the AST traversal. Given $B = \{\sim_1\!\!b_1, \ldots, \sim_n\!\!b_n\}$, we let $\text{CDF}(b_i)$ be the measure of a uniform distribution on the interval $(-\infty, b_i)$ if $\sim_i =\ <$ and on the interval $(-\infty, b_i]$ if $\sim_i =\ \leq$. We take $\text{CDF}(b_{0}) = 0$ and $\text{CDF}(b_{n+1}) = 1$. Note that a distribution must be valid before computing its CDF: for distributions with invalid parameters, such as $\uniform(l,r)$ where $l > r$, our implementation generates a runtime error. Figure~\ref{fig:discretization-code} shows the algorithm, which takes in a typed program and outputs a either fully discretized or partially discretized program. 
-
-%\input{figures/discretization-code.tex}
-
-
+%
 \begin{figure}[t]
-    \centering
-    \scriptsize
-
-    % Basic discretization rules
-    \begin{tabular}{l||l}
-    $e \colon \tau $ &  $\mathcal{D}\sem{e : \tau}$ \\
-    \hline
-    \hline
-      $ {x : \tau}$ & $x$\\[2ex]
-      $  {c : \float[B;V]}$ &
-      $  \begin{cases}
-            c & \text{if } B = \top, \\
-            \finconst{k}{n+1} \text{ such that } c \in \intervals{B}_k & \text{if } B \neq \top.
-        \end{cases}$
-\\[3ex]
-       $ {\letkw\; x = e_1 : \tau_1\; \inkw\; e_2 : \tau_2 : \tau_2}$ &
-        $\letkw\; x = \mathcal{D}\sem{e_1 : \tau_1}\; \inkw\; \mathcal{D}\sem{e_2 : \tau_2}$
-\\[2ex]
-        ${(e_1 : \float[B_1;V_1] < e_2 : \float[B_2;V_2]) : \bool} $&
-        $\mathcal{D}\sem{e_1 : \float[B_1;V_1]} < \mathcal{D}\sem{e_2 : \float[B_2;V_2]}$
-\\[2ex]
-       $ {(e_1 : \float[B_1;V_1] \leq e_2 : \float[B_2;V_2]) : \bool}$ &
-        $\mathcal{D}\sem{e_1 : \float[B_1;V_1]} \leq \mathcal{D}\sem{e_2 : \float[B_2;V_2]}$
-\\[2ex]
-       $ {(\ifkw\; e_1 : \bool\; \thenkw\; e_2 : \tau\; \elsekw\; e_3 : \tau) : \tau}$ &
-        $\ifkw\; \mathcal{D}\sem{e_1 : \bool}\; \thenkw\; \mathcal{D}\sem{e_2 : \tau} \elsekw\; \mathcal{D}\sem{e_3 : \tau}$
-\\[2ex]
-       $ {\uniform(e_1 : \float[B_1;V_1], e_2 : \float[B_2;V_2]): \float[B;V]} $&\\ 
-      \qquad $ \text{if } e_1, e_2 \in \mathbb{R}, e_1 > e_2 $ & $\texttt{Error: Uniform $e_1 > e_2$} $   \\[2ex]
-       \qquad      $B=\top$ & $\uniform(\mathcal{D}\sem{e_1 : \float[B_1;V_1]}, \mathcal{D}\sem{e_2 : \float[B_2;V_2]}) $\\[2ex]
-        \qquad       $\text{if } B \neq \top, 
-                B = \{\sim_1\!\!b_1, \ldots, \sim_n\!\!b_n\},  \text{ and }
-                e_1, e_2 \in \mathbb{R} $ 
-                &            
-            $\discrete(p_0, \ldots, p_n)$ \\[1.2ex]
-                &$\text{ where } p_k = \text{CDF}(b_{k+1}) - \text{CDF}(b_k)$
-            \\[2ex]
-       \qquad   $\text{if } B \neq \top, 
-                V_1 = \{v_1, \ldots, v_n\}, 
-                V_2 = \{w_1, \ldots, w_m\}
-           $      &
-            $\letkw \; v_1' = \mathcal{D}\sem{e_1 : \float[B_1; V_1]} \; \inkw $\\
-            &$\begin{array}{@{\!\!\!\!\!\!\!}ll}
-                &\letkw \; v_2' = \mathcal{D}\sem{e_2 : \float[B_2; V_2]} \; \inkw \\
-                &\ifkw\; v_1' == 0\; \&\& \; v_2' == 0\; \thenkw \\
-                &\quad \mathcal{D}\sem{\uniform(v_1, w_1) : \float[B;V]} \\
-                &\vdots \\
-                &\elsekw\; \ifkw\; v_1' == i\; \&\& \; v_2' == j\; \thenkw \\
-                &\quad \mathcal{D}\sem{\uniform(v_{i+1}, w_{j+1}) : \float[B;V]} \\
-                &\vdots \\
-                &\elsekw \\
-                &\quad \mathcal{D}\sem{\uniform(v_n, w_m) : \float[B;V]}
-            \end{array}
-            $
-    \end{tabular}
-    \caption{Discretization function for \textsc{Slice}, where $\text{CDF}(b_{0}) = 0$ and $\text{CDF}(b_{n+1}) = 1$. For the $\uniform$ distribution case, we explicitly handle $B = \top$, which implies $V = \top$ and vice versa, as per Theorem~\ref{thm:distinguishes-top}. As such, there is no need to separately consider the case where $V = \top$. For all other language constructs, $\discretize{\cdot}$ straightforwardly recurses on their structure.}
-    \label{fig:discretization-code}
+	\centering
+	\scriptsize
+	
+	% Basic discretization rules
+	\begin{tabular}{l||l}
+		$e \colon \tau $ &  $\discretize{e : \tau}$ \\
+		\hline
+		\hline
+		$ {x : \tau}$ & $x$\\[2ex]
+		$  {c : \float[B;V]}$ &
+		$  \begin{cases}
+			c & \text{if } B = \top, \\
+			\finconst{k}{n+1} \text{ such that } c \in \intervals{B}_k & \text{if } B \neq \top.
+		\end{cases}$
+		\\[3ex]
+		$ {\letkw\; x = e_1 : \tau_1\; \inkw\; e_2 : \tau_2 : \tau_2}$ &
+		$\letkw\; x = \discretize{e_1 : \tau_1}\; \inkw\; \discretize{e_2 : \tau_2}$
+		\\[2ex]
+		$ {(e_1 : \float[B_1;V_1] < e_2 : \float[B_2;V_2]) : \bool} $&\\ 
+		\qquad $ \text{if } B_1 = B_2 = \{b_1,\ldots,b_n\} $ & $ \discretize{e_1 : \float[B_1;V_1]} \finlt{n+1} \discretize{e_2 : \float[B_2;V_2]} $   \\[2ex]
+		\qquad      $ \text{if } B_1 = B_2 =\top$ & $ \discretize{e_1 : \float[B_1;V_1]} < \discretize{e_2 : \float[B_2;V_2]}$\\[2ex]
+		$ {(e_1 : \float[B_1;V_1] \leq e_2 : \float[B_2;V_2]) : \bool} $&\\ 
+		\qquad $ \text{if } B_1 = B_2 = \{b_1,\ldots,b_n\} $ & $ \discretize{e_1 : \float[B_1;V_1]} \finleq{n+1} \discretize{e_2 : \float[B_2;V_2]} $   \\[2ex]
+		\qquad      $ \text{if } B_1 = B_2 =\top$ & $ \discretize{e_1 : \float[B_1;V_1]} \leq \discretize{e_2 : \float[B_2;V_2]}$\\[2ex]
+		$ {(\ifkw\; e_1 : \bool\; \thenkw\; e_2 : \tau\; \elsekw\; e_3 : \tau) : \tau}$ &
+		$\ifkw\; \discretize{e_1 : \bool}\; \thenkw\; \discretize{e_2 : \tau}\; \elsekw\; \discretize{e_3 : \tau}$
+		\\[2ex]
+		$ {\uniform(e_1 : \float[B_1;V_1], e_2 : \float[B_2;V_2]): \float[B;V]} $&\\ 
+		\qquad $ \text{if } e_1, e_2 \in \mathbb{R}, e_1 > e_2 $ & $\texttt{Error: Uniform $e_1 > e_2$} $   \\[2ex]
+		\qquad      $\text{if } B=\top$ & $\uniform(\discretize{e_1 : \float[B_1;V_1]}, \discretize{e_2 : \float[B_2;V_2]}) $\\[2ex]
+		\qquad       $\text{if } B \neq \top, 
+		B = \{\sim_1\!\!b_1, \ldots, \sim_n\!\!b_n\},  \text{ and }
+		e_1, e_2 \in \mathbb{R} $ 
+		&            
+		$\discrete(p_0, \ldots, p_n)$ \\[1.2ex]
+		&$\text{ where } p_k = \text{CDF}(b_{k+1}) - \text{CDF}(b_k)$
+		\\[2ex]
+		\qquad   $\text{if } B \neq \top, 
+		B_1 = \{b_1,\ldots,b_k\}, 
+		B_2 = \{c_1,\ldots,c_l\},
+		$      \\
+		\qquad   $ 		V_1 = \{v_1, \ldots, v_n\}, 
+		V_2 = \{w_1, \ldots, w_m\}$ &
+		$\letkw \; v_1' = \discretize{e_1 : \float[B_1; V_1]} \; \inkw $\\
+		&$\begin{array}{@{\!\!\!\!\!\!\!}ll}
+			&\letkw \; v_2' = \discretize{e_2 : \float[B_2; V_2]} \; \inkw \\
+			&\ifkw\; v_1' \fineq{k+1} \finconst{0}{k+1}\; \logand \; v_2' \fineq{l+1} \finconst{0}{l+1}\; \thenkw \\
+			&\quad \discretize{\uniform(v_1, w_1) : \float[B;V]} \\
+			&\vdots \\
+			&\elsekw\; \ifkw\; v_1' \fineq{k+1} \finconst{i}{k+1}\; \logand \; v_2' \fineq{l+1} \finconst{j}{l+1}\; \thenkw \\
+			&\quad \discretize{\uniform(v_{i+1}, w_{j+1}) : \float[B;V]} \\
+			&\vdots \\
+			&\elsekw \\
+			&\quad \discretize{\uniform(v_n, w_m) : \float[B;V]}
+		\end{array}
+		$
+	\end{tabular}
+	\caption{Discretization function for \textsc{Slice}, where $\text{CDF}(b_{0}) = 0$ and $\text{CDF}(b_{n+1}) = 1$. For the $\uniform$ distribution case, we explicitly handle $B = \top$, which implies $V = \top$ and vice versa (cf.\ Theorem~\ref{thm:distinguishes-top}), i.e., there is no need to separately consider the case where $V = \top$. For all other language constructs, $\discretize{\cdot}$ straightforwardly recurses on their structure.}
+	\label{fig:discretization-code}
 \end{figure}
+%
+In this section, we describe our type-directed discretization algorithm alongside illustrative examples. The setting is the following: Given a typed expression $e : \tau$ compute --- guided by the type annotations --- a (partially) \emph{discretized} expression $\discretize{e : \tau}$ such that $e$ and $\discretize{e : \tau}$ are \emph{semantically equivalent}, i.e., they produce the same distribution.
 
-
-\begin{example}\label{ex:discretization}
- Consider the program with type annotations:
-
-\begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
-    let x = if (uniform(0,1) : !{\ft{<0.5}}!) < (0.5 : !{\ftb{<0.5}{0.5}}!)
-            then (uniform(0,2) : !{\ft{<=0.3,<1.5,<=1.8}}!)
-            else (uniform(0,4) : !{\ft{<=0.3,<1.5,<=1.8}}!)
-            : !{\ft{<=0.3,<1.5,<=1.8}}! in
-    let y = if (1.5 : !{\ftb{<=0.3,<1.5,<=1.8}{1.5}}!) < x
-            then (1.8 : !{\ftb{<=0.3,<1.5,<=1.8}{1.8}}!)
-            else (0.3 : !{\ftb{<=0.3,<1.5,<=1.8}{0.3}}!)
-            : !{\ftb{<=0.3,<1.5,<=1.8}{0.3,1.8}}! in
-    x <= y
-\end{lstlisting}
-
-The discretization algorithm traverses down the AST and tries to discretize each expression with a float-type. The let bindings for \texttt{x} and \texttt{y}, comparisons, and conditionals are structurally preserved; the discretization function is applied to their subexpressions. Variables pass through unchanged. $\uniform(0,1)$ : \codetype{\ft{<0.5}} is discretized to $\discrete(0.5, 0.5)$, $\uniform(0,2)$ : \codetype{\ft{<=0.3,<1.5,<=1.8}} is discretized to $\discrete(0.15, 0.6, 0.15, 0.1)$, and $\uniform(0,4)$ : \codetype{\ft{<=0.3,<1.5,<=1.8}} is discretized to $\discrete(0.075, 0.3, 0.075, 0.55)$. Float constants 1.5, 1.8, and 0.3 are discretized to 1, 2, and 0, respectively. Since all expressions are finite-cut, the resulting fully discretized program is:
-
-\begin{lstlisting}[aboveskip=1em,belowskip=1em]
-    let x = if discrete(0.5, 0.5) then
-        discrete(0.15, 0.6, 0.15, 0.1)
-      else
-        discrete(0.075, 0.3, 0.075, 0.55) in
-    let y = if 1 > x then 2 else 0 in
-    x <= y
-\end{lstlisting}
-\end{example}
-
-\subsection{Variable Distribution Parameters}
-
-A key challenge arises when distribution parameters are not constant.
-For such parameters, say $e_1 : \float[B_1; V_1]$ and $e_2 : \float[B_2; V_2]$, we use the value sets $V_1$ in $e_1$ or $V_2$ in $e_2$, depending on which parameter(s) is non-constant, to reconstruct the appropriate distribution to compute the CDF on.
-Due to the typing rules, each interval induced by $B$ can contain at most one value from $V$; this is the dinguishability constraint. This means that we can uniquely reconstruct the original floating point number from the interval index, by a series of conditionals.
-The distribution can then be discretized as if its parameters were constant in each branch of the conditionals.
+$\discretize{e : \tau}$ is defined recursively on $e : \tau$ as shown in \Cref{fig:discretization-code}, where we focus on continuous uniform distributions. For other distributions, this procedure is completely analogous. Naturally, the only sub-expressions which are actually replaced by $\discretize{\cdot}$ are float constants and uniform samplings. Before we go into the details, let us get some intuition on how we use the type annotation to discretize expressions. The type system is designed in such a way that every typed sub-expression of the form 
+$e = \uniform(e_1, e_2 )$ of type  $\float[B;V]$ with $B=\{\sim_1\!\!b_1, \ldots, \sim_n\!\!b_n\} \neq \top$ 
+%
+can be \emph{discretized} to an expression $e' : \fin{n+1}$ such that 
+%
+the probability that $e$ evaluates to a value in $\intervals{B}_i$ \emph{coincides} with the probability that $e'$ evaluates to $\finconst{k}{i}$. %Moreover, this information is \emph{all we need} to ensure semantic equivalence of the continuous and the (partially) discretized expression. 
+In particular, if \emph{all} $\float[B;V]$-typed subexpressions are finite-cut, then the given expression can be \emph{fully discretized}.  Let us start with simple examples before considering more intricate ones.
+%
 
 \begin{example}
-    Consider the following program with type annotations:
-    \begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
-        (uniform(0, 
-            (if (uniform(0,1) : !{\ft{<0.5}}!) < (0.5 : !{\ftb{<0.5}{0.5}}!) 
-            then (1.0 : !{\ftb{<=1.0, <=2.0}{1.0}}!) 
-            else (2.0 : !{\ftb{<=1.0, <=2.0}{2.0}}!)) 
-            : !{\ftb{<=1.0, <=2.0}{1.0, 2.0}}!)) 
-        < 1.0 : !{\ftb{<1.0}{1.0}}!
-    \end{lstlisting}
+	\label{ex:discretize_simple}
+The simplest setting is a uniform distribution whose outcomes are compared to constants. Consider the following typed expression $e: \bool$, where we omit irrelevant types:
+	%
+%
+%
+\begin{align*}
+	&\letkw\; x = (\uniform(0, 1) : \text{\ftn{$B$}})\; \inkw\; \\
+	&(x : \text{\ftn{$B$}} < 0.3 : \text{\ftbn{$B$}{$\{0.3\}$}}) \logor (x : \text{\ftn{$B$}} \geq 0.5 : \text{\ftbn{$B$}{$\{0.5\}$}})
+\end{align*}
+%
+where $B= \{ \clt{0.3},\clt{0.5} \}$. Now, why and how can we discretized this program using the type information? The cut set $B$ correctly informs us that the probability of the comparisons evaluating to $\true$ is completely determined by the probability of $x$ evaluating to one of the intervals 
+%
+\[
+	\intervals{B}_0 = (-\infty, 0.3) 
+	\qquad 
+	\intervals{B}_1 =[0.3, 0.5) 
+	\qquad 
+	\intervals{B}_2 =[0.5, \infty)
+\]
+%
+induced by $B$. Hence, all expressions of type $\text{\ftbn{$B$}{$\ldots$}}$ can be discretized to expressions of the finite type $\fin{3}$, where $\finconst{k}{3}$ represents the $k$-th interval $\intervals{B}_k$ induced by $B$ for $k \in \{0,1,2\}$. 
 
-    During type inference, the second parameter of uniform has type $\float[B_{\text{param}}; \{1.0, 2.0\}]$. Note that $B_{\text{param}}$ properly distinguishes \{1.0, 2.0\}. The implementation generates runtime dispatch code that evaluates the parameter expression, matches against possible constant values from the value set, and applies appropriate discretization for each case. The new let bindings for $v_1'$ and $v_2'$ are created so each value in $\{1.0, 2.0\}$ can be uniquely identified by a finite type value and handled efficiently within the discretization logic. The float constants 0.5, 1.0, and 2.0 are mapped to integers 1, 0, and 1 respectively. Since each expression is co-discrete, the resulting fully discretized program is:
-
-    \begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!, mathescape]
-        let $v_2'$ = if discrete(0.5, 0.5) < 1 
-                     then 0 else 1 in 
-        if $v_2'$ == 0 then discrete(1, 0) else discrete(0.5, 0.5) < 1 
-    \end{lstlisting}
-
-    In the second conditional, \discrete(1,0) is obtained from the discretization of $\uniform(0, 1.0)$ : \codetype{{\ft{<1.0}}} and \discrete(0.5, 0.5) is obtained from the discretization of $\uniform(0, 2.0)$ : \codetype{{\ft{<1.0}}}. Our algorithm ensures correct discretization even when distribution parameters depend on runtime values.
+Now consider the discretized expression obtained from computing $\discretize{e: \bool}$ given by 
+%
+\[
+	\letkw\; x = \discrete(0.3, 0.2, 0.5)\; \inkw\; 
+	(x \finlt{3} \finconst{1}{3})  \logor x  \fingeq{3} \finconst{2}{3})~.
+\]
+%
+The probabilities appearing in $\discrete(\ldots)$ are determined by the cumulative distribution function (CDF) of the uniform distribution over $[0,1]$, indeed ensuring that the probability of $x$ evaluating to $\finconst{k}{3}$ in $\discretize{e: \bool}$ \emph{coincides} with the probability of $x$ evaluating to a value in $\intervals{B}_k$ in $e$. Hence, the constant $0.3$ in $e$ can be replaced by the constant $\finconst{1}{3}$ in $\discretize{e: \bool}$, and the constant $0.5$ in $e$ replaced by the constant $\finconst{2}{3}$ in $\discretize{e: \bool}$, and it is evident that $e$ and $\discretize{e: \bool}$ are semantically equivalent. 
 \end{example}
-    
-\subsection{Effect of Discretization on Float Types}
-In the best case scenario, when all expressions in a given program are finite-cut, \Slice{} fully discretizes the program. In this case, all float typed expressions in the original program are transformed to finite typed expressions after applying $\mathcal{D}$. When some expressions in a given program are infinite-cut, \Slice{} partially discretizes the program; it discretizes away only those finite-cut expressions present in the program, if any. All infinite-cut expressions maintain their original float types after applying $\mathcal{D}$. Figure~\ref{fig:discretization-types} formalizes the transformation of types under $\mathcal{D}$. We assume that $\discretize{.}$ is overloaded: it acts on expressions as shown in Figure~\ref{fig:discretization-code} as well as types as shown in Figure~\ref{fig:discretization-types}. 
+%
+Crucially, the \emph{answers} constraint in the premise of the typing rules for comparisons (cf.\ \Cref{fig:typing-float}) ensures that $B$ is a correct and sufficiently fine-grained partitioning of $\Reals$, i.e., there is an injective function
+%
+$
+	\text{ToInts} \colon \{0.3, 0.5\} \to \intervals{B}
+$
+%
+such that $c$ is an (open) endpoint of  $\text{ToInts}(c)$ for all $c \in\{0.3,0.5\}$. Let us now consider the next example.
+%
+\kevin{fonts}
+\begin{example}
+	If the arguments to a uniform sampling are non-constant, the situation becomes more challenging. Consider the following typed expression $e : \bool$ (again only showing relevant types):
+	%
+	\begin{align*}
+		&\letkw\; x =  (\ifkw \; 
+		(\uniform(0, 1) : \text{\ftn{$\{\clt{0.5}\}$}} )
+		< (0.5 :\text{\ftbn{$\{\clt{0.5}\}$}{$\{0.5\}$}}) \; \\
+		%
+		&\phantom{\letkw\; x ={} } \thenkw \; (10 : \text{\ftbn{$\{\cleq{10},\cleq{20}\}$}{$\{10\}$}}) \; 
+		\elsekw \; (20 : \text{\ftbn{$\{\cleq{10},\cleq{20}\}$}{$\{20\}$}})) \\
+		%
+		&\phantom{\letkw\; x ={} } : \text{\ftbn{$\{\cleq{10},\cleq{20}\}$}{$\{10,20\}$}} \\
+		&\inkw\; \\
+		%
+		&(\uniform(0,(x :  \text{\ftbn{$\{\cleq{10},\cleq{20}\}$}{$\{10,20\}$}})) : \text{\ftn{$\{\clt{5}\}$}} ) < (5 :\text{\ftbn{$\{\clt{5}\}$}{$\{5\}$}})~.
+	\end{align*}	
+	%
+	Why can this expression be discretized even though the argument to the second uniform sampling instruction is non-constant? The typing information $(x :  \text{\ftbn{$\{\cleq{10},\cleq{20}\}$}{$\{10,20\}$}})$ correctly informs us about the fact that \emph{$x$ can only take the values $10$ and $20$}. Consequently, $x$ (and the $\ifkw$-expression generating it) can be discretized to a finite type $\fin{3}$ such that the probability of the resulting discrete expression evaluating to $\finconst{0}{3}$ (resp.\ $\finconst{1}{3}$) \emph{coincides} with the probability of the continuous expression evaluating to $10$ (resp.\ $20$). Let us (partially) apply $\discretize{e: \bool}$, resulting in:
+	%
+	\begin{align*}
+		&\letkw \; x = \ifkw\; \discrete(0.5,0.5) \finlt{2} \finconst{1}{2} \; \thenkw \; \finconst{0}{3} \; \elsekw \; \finconst{1}{3} \; \inkw \\
+		%
+		&\qquad \big(\letkw \; v_1' = \discretize{0 : \text{\ftbn{$\{\cleq{0}\}$}{$\{0\}$}}} \; \inkw \\
+		&\qquad\quad\; \letkw \; v_2' = \discretize{x : \text{\ftbn{$\{\cleq{10},\cleq{20}\}$}{$\{10,20\}$}}} \; \inkw \\
+		%
+		&\qquad\quad\; \ifkw\; v_1' \fineq{2} \finconst{0}{2} \; \logand \; v_2' \fineq{3} \finconst{0}{3} \; \thenkw \; \discretize{\uniform(0,10) : \text{\ftn{$\{\clt{5}\}$}}} \\
+		%
+		&\qquad\quad\; \elsekw \; \discretize{\uniform(0,20) : \text{\ftn{$\{\clt{5}\}$}}} \big) \finlt{2} \discretize{5 : \text{\ftbn{$\{\clt{5}\}$}{$\{5\}$}}}
+	\end{align*}	
+	%
+	The continuous $\uniform(0,x)$-expression is replaced by a case distinction on the discretizations of $\uniform(0,10)$ and $\uniform(0,20)$, where each of these cases is indeed executed with the correct probability $0.5$. Since this reduces the remaining discretization process to discretizing expressions with \emph{constant parameters only}, the remaining steps are completely analogous to Example~\ref{ex:discretize_simple}.
+\end{example}
+%
+Crucially, the \emph{distinguishes} constraints in the \textsc{Continuous}-rules from \Cref{fig:typing-float} ensure that, for finite-cut sampling expressions, it will always be the case that the parameter expressions can take only finitely many values, and that the cut sets are fine-grained enough to recover the values the parameter expressions evaluate to as demonstrated in the preceding example.
 
+The same intuition applies to discretizable comparisons $e_1 < e_2$, where \emph{both} expressions are non-constant but finite-cut. The \emph{answers} constraints in the rule \textsc{Less} (resp.\ \textsc{Less-Equal}) ensures that at least one of $e_1$ and $e_2$ evaluates to finitely many values only, so that discretization reduces to the case where at least one of the expressions is constant. We illustrative arising subleties with a final example.\kevin{not correct, polish}
+%
+\begin{example}
+	Consider the following typed expression ($(e_1 \leq e_2) : \bool$) given by
+	%
+	\begin{align*}
+		&(\ifkw\;\discrete(0.5,0.5) \finlt{2} \finconst{1}{2} \; \thenkw \; 
+		(\uniform(0,10) : \text{\ftn{$B$}})
+		\; \elsekw \; (2.5 : \text{\ftbn{$B$}{$2.5$}})) \\
+		&\leq \\
+		&(\ifkw\;\discrete(0.5,0.5) \finlt{2} \finconst{1}{2} \; \thenkw \; 
+		(2.5 : \text{\ftbn{$B$}{$2.5$}})
+		 \; \elsekw \; 
+		 (3.5 : \text{\ftbn{$B$}{$3.5$}})~,
+	\end{align*}
+	%
+	where $B = \{\cleq{2.5}, \cleq{3.5}\}$, and where $e_1 : \text{\ftn{$B$}}$ and $e_2 : \text{\ftbn{$B$}{$2.5,3.5$}}$. Intuitively, $e_1$ samples from a mixture of a uniform and a dirac distribution, whereas $e_2$ samples from a finite distribution. Why can can $e_1 \leq e_2$ be discretized even though neither $e_1$ nor $e_2$ is a constant? The reason is that, as suggested by it's type, $e_2$ can only take finitely many values in $\{2.5,3.5\}$. Let us apply $\discretize{.}$ and see what happens:
+	%
+	%
+	\begin{align*}
+		&(\ifkw \; \discrete(0.5,0.5) \finlt{2} \finconst{1}{2} \; \thenkw \; \discrete(0.25,0.1,0.65) \; \elsekw \; \finconst{0}{3})\\
+		%
+		&\leq \\
+		%
+		& (\ifkw \; \discrete(0.5,0.5) \finlt{2} \finconst{1}{2} \; \thenkw \;  \finconst{0}{3} \; \elsekw \; \finconst{1}{3})
+	\end{align*}
+	%
+	Notice that the probability of $e_1$ evaluating to some value in $(-\infty, 2.5]$ indeed \emph{coincides} with the probability of $e_1's$ discretization evaluating to $\finconst{0}{3}$. For $e_2$, on the other hand, the probability of it evaluating to $2.5$ (resp.\ $3.5$) \emph{coincides} with the probability of its discretization evaluating to $\finconst{0}{3}$ (resp.\ $\finconst{1}{3}$). It is for this reason that we indeed produce a semantically equivalent discretization of $e_1 \leq e_2$.
+\end{example}
+
+
+
+
+\subsection{Discretization of Types}
+We conclude this section by extending the discretization function $\discretize{\cdot}$ formally to types. \Cref{fig:discretization-types} shows to that type $\discretize{\tau}$ a type $\tau$ is discretzied. We then obtain the following natural result regarding the transformation of types when applying $\discretize{\cdot}$ to programs:
+%
 \begin{figure}[t]
-    \centering
-    \begin{align*}
-        \discretize{\tau} &= 
-        \begin{cases}
-            \fin{n+1}, & \text{if } \tau = \float[B; V] \text{ and } B = \{\sim_1\!\!b_1, \ldots, \sim_n\!\!b_n\} \\[0.5em]
-            \float, & \text{if } \tau = \float[B; V] \text{ and } B = \top \\[0.5em]
-            \discretize{A} \to \discretize{B}, & \text{if } \tau = A \to B \\[0.5em]
-            \discretize{A} \times \discretize{B}, & \text{if } \tau = A \times B \\[0.5em]
-            \listty{\discretize{A}}, & \text{if } \tau = \listty{A} \\[0.5em]
-            \texttt{ref}(\discretize{A}), & \text{if } \tau = \texttt{ref}(A) \\[0.5em]
-            \tau, & \text{otherwise}
-        \end{cases}
-    \end{align*}
-    \caption{Transformation of types under $\mathcal{D}$, where $\mathcal{D}$ acts on types.}
-    \label{fig:discretization-types}
+	\centering
+	\begin{align*}
+		\discretize{\tau} &= 
+		\begin{cases}
+			\fin{n+1}, & \text{if } \tau = \float[B; V] \text{ and } B = \{\sim_1\!\!b_1, \ldots, \sim_n\!\!b_n\} \\[0.5em]
+			\float, & \text{if } \tau = \float[B; V] \text{ and } B = \top \\[0.5em]
+			\discretize{A} \to \discretize{B}, & \text{if } \tau = A \to B \\[0.5em]
+			\discretize{A} \times \discretize{B}, & \text{if } \tau = A \times B \\[0.5em]
+			\listty{\discretize{A}}, & \text{if } \tau = \listty{A} \\[0.5em]
+			\texttt{ref}(\discretize{A}), & \text{if } \tau = \texttt{ref}(A) \\[0.5em]
+			\tau, & \text{otherwise}
+		\end{cases}
+	\end{align*}
+	\caption{Transformation of types under $\mathcal{D}$, where $\mathcal{D}$ acts on types.}
+	\label{fig:discretization-types}
 \end{figure}
-
-
-We give a lemma stating the relationship between the original program's types and the discretized program's types:
-
+%
+%
 \begin{lemma}[Type Transformation under Discretization]\label{lem:type-transformations}
-    Let $\Gamma \vdash e : \tau$ be a well-typed expression in \Slice{}, where $\Gamma$ is a typing environment assigning types to variables. Let $\discretize{e : \tau}$ be the discretization function as defined in Figure~\ref{fig:discretization-code}, and $\discretize{\tau}$ be the type transformation function as defined in Figure~\ref{fig:discretization-types}. Then,
-    \[
-    \discretize{\Gamma} \vdash \discretize{e : \tau} : \discretize{\tau}
-    \]
-    where $\discretize{\Gamma}$ is the pointwise transformation of types in $\Gamma$, namely $\discretize{\Gamma}(x) = \discretize{\Gamma(x)}$ for all $x \in \text{dom}(\Gamma)$.
+	Let $\Gamma \vdash e : \tau$ be a well-typed expression in \Slice{}, where $\Gamma$ is a typing environment assigning types to variables. Let $\discretize{e : \tau}$ be the discretization function from Figure~\ref{fig:discretization-code}, and $\discretize{\tau}$ be the type transformation function as defined in Figure~\ref{fig:discretization-types}. Then,
+	\[
+	\discretize{\Gamma} \vdash \discretize{e : \tau} : \discretize{\tau}
+	\]
+	where $\discretize{\Gamma}$ transforms all types in $\Gamma$, i.e., $\discretize{\Gamma}(x) = \discretize{\Gamma(x)}$ for all $x \in \textnormal{dom}(\Gamma)$.
 \end{lemma}
-
-\begin{example}[Type transformation under discretization]
-Let us consider the simplest example (base case) of how the finite-cut expression $\uniform(0, 1)$ : \codetype{\ft{<0.25, <0.75}} is discretized and its type transformed. This expression represents a continuous uniform distribution over the interval $[0,1]$ that is refined with two comparison-based cuts at $\clt{0.25}$ and $\clt{0.75}$. The original type of the expression is:
-
-\[
-\tau = \text{\ft{<0.25, <0.75}}.
-\]
-
-Applying the discretization function $\discretize{e : \tau}$ to this expression yields:
-
-\[
-\discretize{\uniform(0,1) : \tau} = \discrete(0.25, 0.5, 0.25)
-\]
-
-where the probabilities in the discrete distribution are computed from the CDF of the uniform distribution over each of the three intervals induced by $B = \{\clt{0.25}, \clt{0.75}\}$. Now applying the type transformation function $\discretize{\tau}$ to this type yields:
-
-\[
-\discretize{\tau} = \fin{3}.
-\]
-
-Thus, before discretization, we have the typing judgment:
-\[
-\Gamma \vdash \uniform(0,1) : \text{\ft{<0.25, <0.75}}
-\]
-
-and after discretization:
-\[
-\discretize{\Gamma} \vdash \discrete(0.25,0.5,0.25) : \fin{3}
-\]
-
-demonstrating that the discretization procedure produces a well-typed expression under the transformed context and type, as stated in Lemma~\ref{lem:type-transformations}.
-\end{example}
+%
+\kevin{katherine: plese add ref to proof}

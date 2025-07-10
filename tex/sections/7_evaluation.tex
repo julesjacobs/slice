@@ -1,7 +1,9 @@
 \section{Implementation and Evaluation}\label{sec:implem_eval}
 
-\input{sections/7_implementation}
-%\subsection{Evaluation}\label{sec:evaluation}
+We have implemented \Slice{} as a compiler that transforms continuous probabilistic programs into either fully or partially discretized programs. Fully discretized programs are translated and analyzed using the discrete exact inference engines \Dice{} (2020) and \Roulette{}. Figure~\ref{fig:architecture} on page \pageref{fig:architecture} shows the overall architecture of the \Slice{} system for fully discretized programs.
+%In contrast, partially discretized programs can be analyzed using heterogeneous inference engines, which support combining multiple inference strategies such as exact and approximate methods within a single probabilistic program. Figure~\ref{fig:architecture} shows the overall architecture of the \Slice{} system for fully discretized programs.
+
+The \Slice{} compiler consists of approximately 3,400 lines of OCaml code (including the lexer, parser, type inference and discretization engines, \Dice{}/\Roulette{} code generators, a sampling-based interpreter, and statistical equivalence checking). We use the OCaml GSL package~\cite{gsl} to compute the CDFs of the probability distributions. The system is open-source and available at \url{https://github.com/[anonymized]}, along with benchmarks, documentation, and a Docker image. All benchmarks were run within that Docker image on an Apple M3 with 16GB RAM.
 
 %\medskip
 %As we will see through several benchmarks, the performance of \Slice{} is competitive with existing state-of-the-art exact and approximate inference solvers for hybrid probabilistic programs. In particular, we evaluate \Slice{} using \Dice{} and \Roulette{} as backends against the exact inference solver SPPL~\cite{Saad2021SPPL} and the approximate inference solver HyBit~\cite{Garg2024BitBlast} on three sets of benchmarks. First, a series of synthetic benchmarks designed to test the how well \Slice{} scales asymptotically compared to SPPL. Second, a set of benchmarks for verifying fairness properties of decision trees. Lastly, we evaluate \Slice{} on a series of small baseline programs commonly used to test PPLs in the literature. 
