@@ -3,7 +3,7 @@
 \section{Slice by Example}\label{sec:examples}
 This section presents simple examples that highlight the key features of our probabilistic programming language and compiler \Slice{}, aiming to emphasize how \Slice{} meets the challenge of performing exact inference efficiently. \Slice{} extends a core functional language with traditional programming language constructs such as conditionals, local variables, and functions, augmented with constructs for probabilistic programming such as sampling and conditioning. Each example in the subsections is intended to showcase these features. Later in the section, we also mention examples that can only be partially discretized but nonetheless preserve the semantics across both the original and discretized program. %More examples are highlighted in Appendix~\ref{appen:examples}.
 
-For readability, we use \texttt{flip()} as a shorthand for \texttt{uniform(0,1) < 0.5}, which represents a fair coin flip that returns true or false with equal probability. We denote a ``cut'' as any constant $c$ in a comparison such as $x < c$, where $c$ partitions $\mathbb{R}$ into two intervals $(-\infty, c)$ and $[c, +\infty)$.
+For readability, we use \texttt{flip()} as a shorthand for \texttt{uniform(0,1) < 0.5}, which represents a fair coin flip that returns true or false with equal probability. A ``cut'' is any constant $c$ in a comparison such as $x < c$, where $c$ partitions $\mathbb{R}$ into two intervals $(-\infty, c)$ and $[c, +\infty)$.
 
 
 \subsection{Simple Branching on a Uniform Distribution}\label{sec:examples:1}
@@ -28,7 +28,7 @@ The transformation to the discretized program is guided by tracking cuts as an i
     (uniform(0, 1) : !{\ft{<0.5}}!) < (0.5 : !{\ftb{<0.5}{0.5}}!)
 \end{lstlisting}
 
-Figure~\ref{fig:float-type-def} describes the intuitive meaning of a type \lstinline{float[cut-set; value-set]}. \ft{<0.5} for the uniform sample indicates that the cut set contains the cut ``$<\!\!0.5$'' and the value set is $\top$ which indicates the variable can take any value in the range $(-\infty, +\infty)$. This tells \Slice{} how to partition $\mathbb{R}$. The type \ftb{<0.5}{0.5} for the constant $0.5$ indicates that the cut set contains $<0.5$ and the value set contains only the single value $0.5$. This allows \Slice{} to determine to which discrete region the constant $0.5$ belongs to after partitioning $\mathbb{R}$. 
+Figure~\ref{fig:float-type-def} describes the meaning of a type \lstinline{float[cut-set; value-set]}. \ft{<0.5} for the uniform sample indicates that the cut set contains the cut ``$<\!\!0.5$'' and the value set is $\top$ which indicates the variable can take any value in the range $(-\infty, +\infty)$. This tells \Slice{} how to partition $\mathbb{R}$. The type \ftb{<0.5}{0.5} for the constant $0.5$ indicates that the cut set contains $<0.5$ and the value set contains only the single value $0.5$. This allows \Slice{} to determine to which discrete region the constant $0.5$ belongs to after partitioning $\mathbb{R}$. 
 
 \begin{figure}
 \[
@@ -81,7 +81,7 @@ This analysis is done by the type inference process, which collects all cuts for
       y < 1
 \end{lstlisting}
 
-Using \Dice{}, this yields the output \result{0.225}{0.775}. Note that the original constant $0.5$ is discretized in two different ways: for $x < 0.5$ it is discretized to $2$ and for $y < 0.5$ it is discretized to $1$. This is because the constant $0.5$ falls in the third interval of the split $(-\infty, 0.2) \cup [0.2, 0.5) \cup [0.5, +\infty)$ for $x$ and the second interval for the split $(-\infty, 0.5) \cup [0.5, +\infty)$ for $y$. 
+Using \Dice{}, this yields the output \result{0.225}{0.775}. Note that the original constant $0.5$ is discretized differently: for $x < 0.5$ it is discretized to $2$ and for $y < 0.5$ it is discretized to $1$. This is because the constant $0.5$ falls in the third interval of the split $(-\infty, 0.2) \cup [0.2, 0.5) \cup [0.5, +\infty)$ for $x$ and the second interval for the split $(-\infty, 0.5) \cup [0.5, +\infty)$ for $y$. 
 
 \subsection{Branching on Multiple Discrete Values}\label{sec:examples:3}
 The example in Section~\ref{sec:examples:2} involves multiple continuous variables and conditional branches. In a similar fashion, \Slice{} supports multiple discrete values and conditionals. Consider the program:
@@ -254,7 +254,7 @@ In the discrete version, the observation $x < 2$ rules out the case where $x = 2
       if fst r then snd r else fst q
 \end{lstlisting}
 
-\noindent \Dice does not support exact inference for higher-order functions, but \Roulette does, and applying it yileds the output \result{0.53636}{0.46364}. The continuous distributions in the original program are discretized into three-valued discrete distributions based on the intervals $(-\infty, 0.5)$, $[0.5, 1.5)$, and $[1.5, +\infty)$, while the functional structure remains intact.
+\noindent \Dice does not support exact inference for higher-order functions, but \Roulette does, and applying it yields the output \result{0.53636}{0.46364}. The continuous distributions in the original program are discretized into three-valued discrete distributions based on the intervals $(-\infty, 0.5)$, $[0.5, 1.5)$, and $[1.5, +\infty)$, while the functional structure remains intact.
 
 \subsection{Sequential Processes with Iterate}\label{sec:examples:8}
 
@@ -341,7 +341,7 @@ This results in the output \result{0.5334}{0.4666}, which can be obtained from e
 
 \subsection{Indian GPA Problem}\label{sec:gpa}
 
-This canonical example involves both discrete and continuous random variables and models a student's GPA based on nationality (India or USA) and whether they have a perfect record. The GPA is deterministic for perfect students (10.0 for India, 4.0 for USA) but drawn from a uniform distribution otherwise. The program computes the probability that a student's GPA falls below 1.0:
+This example involves both discrete and continuous random variables and models a student's GPA based on nationality (India or USA) and whether they have a perfect record. The GPA is deterministic for perfect students (10.0 for India, 4.0 for USA) but drawn from a uniform distribution otherwise. The program computes the probability that a student's GPA falls below 1.0:
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
   let nationality = discrete(0.5, 0.5) in

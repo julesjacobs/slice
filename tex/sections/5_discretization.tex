@@ -70,7 +70,7 @@ $e = \uniform(e_1, e_2 )$ of type  $\float[B;V]$ with $B=\{\sim_1\!\!b_1, \ldots
 %
 can be \emph{discretized} to an expression $e' : \fin{n+1}$ such that 
 %
-the probability that $e$ evaluates to a value in $\intervals{B}_i$ \emph{coincides} with the probability that $e'$ evaluates to $\finconst{k}{i}$. %Moreover, this information is \emph{all we need} to ensure semantic equivalence of the continuous and the (partially) discretized expression. 
+the probability that $e$ evaluates to a value in $\intervals{B}_i$ \emph{coincides} with the probability that $e'$ evaluates to $\finconst{i}{n+1}$. %Moreover, this information is \emph{all we need} to ensure semantic equivalence of the continuous and the (partially) discretized expression. 
 In particular, if \emph{all} $\float[B;V]$-typed subexpressions are finite-cut, then the given expression can be \emph{fully discretized}.  Let us start with simple examples before considering more intricate ones.
 %
 
@@ -101,7 +101,7 @@ Now consider the discretized expression obtained from computing $\discretize{e: 
 %
 \[
 	\letkw\; x = \discrete(0.3, 0.2, 0.5)\; \inkw\; 
-	(x \finlt{3} \finconst{1}{3})  \logor x  \fingeq{3} \finconst{2}{3})~.
+	(x \finlt{3} \finconst{1}{3})  \logor x \fingeq{3} \finconst{2}{3})~.
 \]
 %
 The probabilities appearing in $\discrete(\ldots)$ are determined by the cumulative distribution function (CDF) of the uniform distribution over $[0,1]$, indeed ensuring that the probability of $x$ evaluating to $\finconst{k}{3}$ in $\discretize{e: \bool}$ \emph{coincides} with the probability of $x$ evaluating to a value in $\intervals{B}_k$ in $e$. Hence, the constant $0.3$ in $e$ can be replaced by the constant $\finconst{1}{3}$ in $\discretize{e: \bool}$, and the constant $0.5$ in $e$ replaced by the constant $\finconst{2}{3}$ in $\discretize{e: \bool}$, and it is evident that $e$ and $\discretize{e: \bool}$ are semantically equivalent. 
@@ -151,7 +151,7 @@ such that $c$ is an (open) endpoint of  $\text{ToInts}(c)$ for all $c \in\{0.3,0
 %
 Crucially, the \emph{distinguishes} constraints in the \textsc{Continuous}-rules from \Cref{fig:typing-float} ensure that, for finite-cut sampling expressions, it will always be the case that the parameter expressions can take only finitely many values, and that the cut sets are fine-grained enough to recover the values the parameter expressions evaluate to as demonstrated in the preceding example.
 
-The same intuition applies to discretizable comparisons $e_1 < e_2$, where \emph{both} expressions are non-constant but finite-cut. The \emph{answers} constraints in the rule \textsc{Less} (resp.\ \textsc{Less-Equal}) ensures that at least one of $e_1$ and $e_2$ evaluates to finitely many values only, so that discretization reduces to the case where at least one of the expressions is constant. We illustrative arising subleties with a final example.\kevin{not correct, polish}
+The same intuition applies to discretizable comparisons $e_1 < e_2$, where \emph{both} expressions are non-constant but finite-cut. The \emph{answers} constraints in the rule \textsc{Less} (resp.\ \textsc{Less-Equal}) ensures that at least one of $e_1$ and $e_2$ evaluates to finitely many values only, so that discretization reduces to the case where at least one of the expressions is constant. We illustrate arising subtleties with a final example.\kevin{not correct, polish}
 %
 \begin{example}
 	Consider the following typed expression ($(e_1 \leq e_2) : \bool$) given by
@@ -185,7 +185,7 @@ The same intuition applies to discretizable comparisons $e_1 < e_2$, where \emph
 
 
 \subsection{Discretization of Types}
-We conclude this section by extending the discretization function $\discretize{\cdot}$ formally to types. \Cref{fig:discretization-types} shows to that type $\discretize{\tau}$ a type $\tau$ is discretzied. We then obtain the following natural result regarding the transformation of types when applying $\discretize{\cdot}$ to programs:
+We conclude this section by extending the discretization function $\discretize{\cdot}$ formally to types. \Cref{fig:discretization-types} shows how type $\tau$ is discretized to type $\discretize{\tau}$. We then obtain the following natural result regarding the transformation of types when applying $\discretize{\cdot}$ to programs:
 %
 \begin{figure}[t]
 	\centering

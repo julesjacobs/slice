@@ -243,7 +243,7 @@ The rule for two-argument continuous distributions is analogous: for the two arg
 
 \paragraph{Comparisons.} 
 To understand the typing rules for less-than and less-than-or-equal comparisons, let us first consider a comparison $e < c$ where $c$ is a constant and $e$ is a continuously ranging quantity, i.e., $e : \float[B_1; \top]$ and $c : \float[B_2; \{c\}]$. Intuitively, \textbf{if $e$ is discretized, then it must still contain enough information to determine whether $e < c$ is true or false}. Therefore, $B_1$ must contain the comparison $<\!\!c$.
-Similarly, if $c$ is not a literal constant, but has type $c : \float[B_2; V_2]$ where $V_2 = \{v_1, v_2, \dots, v_n\}$ is a finite set of constants, then $c$ can take on values in $V_2$. Therefore, $B_1$ must contain the comparisons $<\!\!v_1, <\!\!v_2, \dots, <\!\!v_n$.
+Similarly, if $c$ is not a literal constant, but has type $c : \float[B_2; V_2]$ where $V_2 = \{v_1, v_2, \dots, v_n\}$ is a finite set of constants, then $c$ can take on values in $V_2$. Therefore, $B_1$ must contain the comparisons $\clt{v_1}, \clt{v_2}, \dots, \clt{v_n}$.
 
 It can also be the case that we have a comparison $c < e$ where the continuously ranging quantity $e : \float[B_2; V_2]$ is on the right hand side. In this case, $B_2$ must answer $c\!\!<$, i.e., it must contain a comparison $\leq\!\!c$. To make this explicit, consider $2.3 < e$. We can answer this precisely when $B_2$ contains an intervals $(-\infty, 2.3]$ and $(2.3, +\infty)$: the comparison $2.3 < e$ is true if $e$ is in the second interval, and false if $e$ is in the first interval. $B_2$ may, of course, be even more fine-grained.
 

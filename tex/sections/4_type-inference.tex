@@ -117,7 +117,7 @@ The type inference rules closely mirror the typing rules in Figure~\ref{fig:typi
 Once constraint generation completes, we obtain a system of constraints over type variables, cut sets $B$, and value sets $V$. The constraint solving phase proceeds in two steps:
 
 \begin{enumerate}
-    \item \textbf{Subtyping reduction}: We first process all subtyping constraints of the form $\subtype{\tau_1}{\tau_2}$. Since subtyping for float types follows the rule $\subtype{\float[B_1;V_1]}{\float[B_2;V_2]}$ if and only if $B_1 = B_2$ and $V_1 \sqsubseteq V_2$, we reduce each subtyping constraint into corresponding equality and subset constraints on the cut sets and value sets. In general, subtyping elimination continues until we have only constraints among $B$'s and $V$'s.
+    \item \textbf{Subtyping reduction}: We first process all subtyping constraints of the form $\subtype{\tau_1}{\tau_2}$. Since subtyping for float types follows the rule $\subtype{\float[B_1;V_1]}{\float[B_2;V_2]}$ if and only if $B_1 = B_2$ and $V_1 \sqsubseteq V_2$, we reduce each subtyping constraint into corresponding equality and subset constraints on the cut sets and value sets. Subtyping constraint elimination continues until we have only constraints among $B$'s and $V$'s.
     
     \item \textbf{Lattice constraint solving}: After subtyping reduction, we are left with constraints purely over cut sets and value sets—equalities, subset relations, and the specialized constraints like $\distinguishes{B}{V}$, $\answerslt{B}{V_1}{V_2}$, and $\has{V}{c}$. These constraints are solved using a monotone fixpoint algorithm for lattices over the cut sets and value sets.
 \end{enumerate}
@@ -138,7 +138,7 @@ Each of the constraints is handled as follows:
     
     \item \textbf{Top assignment} ($V = \top$): We immediately set $V$ to $\top$, representing that the value set contains all possible float values.
     
-    \item \textbf{Distinguishability} ($\distinguishes{B}{V}$): This constraint ensures that the cut set $B$ can distinguish between all values in $V$. If $V$ is a finite set $\{v_1, ..., v_n\}$ with $n > 1$, we require that $B$ contains at least $n-1$ cuts to separate these values. If the cuts do not separate the values at the current solver state, we insert additional cuts to make that so. There is no canonical way to do this, so we use a simple heuristic: we insert a cut $\clt{x}$ for each value $x \in V$ that is not already separated by existing cuts.
+    \item \textbf{Distinguishability} ($\distinguishes{B}{V}$): This constraint ensures that the cut set $B$ can distinguish between all values in $V$. If $V$ is a finite set $\{v_1, ..., v_n\}$ with $n > 1$, we require that $B$ contains at least $n-1$ cuts to separate these values. If the cuts do not separate the values at the current solver state, we insert additional cuts to satisfy this condition. There is no canonical way to do this, so we use a simple heuristic: we insert a cut $\clt{x}$ for each value $x \in V$ that is not already separated by existing cuts.
     
     If $B = \top$, the constraint is trivially satisfied.
     
@@ -151,7 +151,7 @@ Each of the constraints is handled as follows:
 
 The solver repeatedly processes constraints until reaching a fixed point, where no constraint causes any further updates to the variables. The monotonicity of the lattice operations ensures that this process terminates.
 
-This procedure may add more cuts to $B$'s than strictly necessary, but it never sets $B=\top$ unless that is the only way to satisfy all constraints. In other words, the discretization itself may be suboptimal in terms of the number of cuts, but if discretization is possible, it always succeeds.
+This procedure may add more cuts to $B$s than strictly necessary, but it never sets $B=\top$ unless that is the only way to satisfy all constraints. In other words, the discretization itself may be suboptimal in terms of the number of cuts, but if discretization is possible, it always succeeds.
 
 \begin{example}
     From the previous example, we obtained the constraint set:
