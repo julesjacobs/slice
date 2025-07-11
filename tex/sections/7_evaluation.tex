@@ -24,7 +24,7 @@ We designed a set of synthetic benchmarks consisting of programs that can be sca
 %
  Each program consists of a sequence of nested conditionals, where each branch depends on a previous variable sampled from a uniform distribution, proceeding until the final condition $x_n < 0.5$ is reached. Here $0 \leq r_i \leq 1$ are fixed float constants. With these programs, provided in in Appendix \ref{appen:synthetic-sketches}, we evaluate how \Slice{} scales for deep conditional branching and stochastic control flow. 
  
-The programs in \Cref{fig:cond-benchmarks-a} follow the scheme depicted above where the program size is $n$, i.e., the number of comparisons performed. In \Cref{fig:cond-benchmarks-b}, each $x_i$ does not necessarily depend on $x_{i-1}$ but on some randomly chosen predecessor\footnote{We generate these programs in a randomized manner with a fixed seed for reproducability}. In \Cref{fig:cond-benchmarks-c}, we additionally choose at random whether the guards of the conditionals and the branches are either some predecessor variable $x_i$ or a  $\uniform$-sampling instruction.
+The programs in \Cref{fig:cond-benchmarks-a} follow the scheme depicted above where the program size is $n$, i.e., the number of comparisons performed is $n$. In \Cref{fig:cond-benchmarks-b}, each $x_i$ does not necessarily depend on $x_{i-1}$ but on some randomly chosen predecessor\footnote{We generate these programs in a randomized manner with a fixed seed for reproducability}. In \Cref{fig:cond-benchmarks-c}, we additionally choose at random whether the guards of the conditionals and the branches are either some predecessor variable $x_i$ or a  $\uniform$-sampling instruction.
  %\input{figures/nested-conditionals.tex}
 
 %\subsubsection{Conditional Independence}
@@ -35,11 +35,11 @@ The programs in \Cref{fig:cond-benchmarks-a} follow the scheme depicted above wh
 %\item Each variable $x_i$ depends on a randomly selected predecessor $x_j$ (for $j < i$) via a conditional branch $x_j < r_{i-1}$. See Figures~\ref{fig:cond-benchmarks-b}.
 %\item Each variable $x_i$ uses a randomized conditional expression, where the guard and both branches may involve either a randomly selected predecessor $x_j$ (for $j < i$) or a freshly sampled uniform value. See Figure~\ref{fig:cond-benchmarks-c}.
 %\end{itemize}
-
-
+%
+%
 \input{figures/scaling-conditional}
-
-The programs in \Cref{fig:alt-benchmarks-a} also follow the scheme depicted above but where the variables used in the guards cycle with a fixed span size of $m$. For instance, for $m=2$, the pattern is $x_1,x_2,x_1,\ldots$. The programs in \Cref{fig:alt-benchmarks-b,fig:alt-benchmarks-c,fig:alt-benchmarks-d} follow a similar pattern, see Appendix~\ref{appen:synthetic-sketches} for details.
+%
+ The programs in \Cref{fig:alt-benchmarks-a} also follow the scheme depicted above but where the variables used in the guards cycle with a fixed span size of $m$. For instance, for $m=2$, the pattern is $x_1,x_2,x_1,\ldots$. The programs in \Cref{fig:alt-benchmarks-b,fig:alt-benchmarks-c,fig:alt-benchmarks-d} follow a similar pattern, see Appendix~\ref{appen:synthetic-sketches} for details.
 
 We depict the runtime (in seconds) of (i) SPPL (ii) \Slice{} (discretization only) (iii) \Slice{}+\Dice{} (discretization and subsequent inference using \Dice{}), and (iv) \Slice{}+\Roulette{} (discretization and subsequent inference using \Roulette{}). The time-out is 300 seconds.
 
@@ -101,7 +101,7 @@ Next, we evaluate the performance of our \Slice{} framework on two sets of exist
 %We finally evaluate \Slice{} on a set of benchmarks that were introduced in~\cite{gehr2016psi}. We evaluate \Slice{} on the hybrid programs in these benchmarks. The results are shown in Table 2. We omit the runs of PSI in the table due to its significally slower performance than SPPL on all benchmarks. The first column in the table gives the benchmark name, and the remaining columns display the execution times in seconds of Slice with Dice, Slice with Roulette, and SPPL respectively. As both SPPL and \Slice{} are restricted languages, in order to test a broader range of programs, we converted several benchmarks with parameters inside distributions that depend on continuous random choices to a discretized version. The time taken by \Slice{} to solve these problems is nearly instant in all cases. 
 
 \begin{table}[!t]
-\centering
+\centering \vspace{-.3cm}
 \begin{tabular}{lrrr}
     \toprule
     Benchmark & Slice+Dice (s) & Slice+Roulette (s) & SPPL (s) \\
