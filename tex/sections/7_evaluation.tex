@@ -12,9 +12,9 @@ The \Slice{} compiler consists of approximately 3,400 lines of OCaml code (inclu
 In what follows, we evaluate the performance of using \Slice{} with \Dice{}/\Roulette{} for exact inference on (i) a set of synthetic benchmarks and (ii) a set of benchmarks taken from the literature, comparing to the state-of-the-art tool SPPL for exact inference of continuous probabilistic programs.
 
 \subsection{Synthetic Benchmarks}\label{sec:synthetic-benchmarks}
-We designed a set of synthetic benchmarks consisting of programs that can be scaled up in size, with varying dependencies between the program variables. We provide these programs in Appendix \ref{appen:synthetic-sketches}. Schematically, the structure of these programs is:
+We designed a set of synthetic benchmarks consisting of programs that can be scaled up in size, with varying dependencies between the program variables. Schematically:
 %
-    \begin{lstlisting}[aboveskip=1em,belowskip=1em]
+    \begin{lstlisting}[aboveskip=0.1em,belowskip=.1em]
         let x1 = uniform(0,1) in 
         let x2 = if x1 < r1 then uniform(0,2) else uniform(0,3) in 
         let x3 = if x2 < r2 ...
@@ -22,7 +22,7 @@ We designed a set of synthetic benchmarks consisting of programs that can be sca
         x_n < 0.5
     \end{lstlisting}
 %
- Each program consists of a sequence of nested conditionals, where each branch depends on a previous variable sampled from a uniform distribution, proceeding until the final condition $x_n < 0.5$ is reached. Here $0 \leq r_i \leq 1$ are fixed float constants. With these programs, we evaluate how \Slice{} scales for deep conditional branching and stochastic control flow.
+ Each program consists of a sequence of nested conditionals, where each branch depends on a previous variable sampled from a uniform distribution, proceeding until the final condition $x_n < 0.5$ is reached. Here $0 \leq r_i \leq 1$ are fixed float constants. With these programs, provided in in Appendix \ref{appen:synthetic-sketches}, we evaluate how \Slice{} scales for deep conditional branching and stochastic control flow. 
  
 The programs in \Cref{fig:cond-benchmarks-a} follow the scheme depicted above where the program size is $n$, i.e., the number of comparisons performed. In \Cref{fig:cond-benchmarks-b}, each $x_i$ does not necessarily depend on $x_{i-1}$ but on some randomly chosen predecessor\footnote{We generate these programs in a randomized manner with a fixed seed for reproducability}. In \Cref{fig:cond-benchmarks-c}, we additionally choose at random whether the guards of the conditionals and the branches are either some predecessor variable $x_i$ or a  $\uniform$-sampling instruction.
  %\input{figures/nested-conditionals.tex}

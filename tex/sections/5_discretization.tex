@@ -177,20 +177,20 @@ A similar intuition applies to discretizable comparisons $e_1 < e_2$, where \emp
 
 
 \subsection{Discretization of Types}
-We conclude this section by extending the discretization function $\discretize{\cdot}$ formally to types. \Cref{fig:discretization-types} shows how type $\tau$ is discretized to type $\discretize{\tau}$. We then obtain the following natural result regarding the transformation of types when applying $\discretize{\cdot}$ to programs:
+We conclude this section by extending the discretization function $\discretize{\cdot}$ formally to types. \Cref{fig:discretization-types} shows how type $\tau$ is discretized to type $\discretize{\tau}$. We then obtain the following natural result, proved in Appendix~\ref{proof:type-transformations}, regarding the transformation of types when applying $\discretize{\cdot}$ to programs:
 %
 \begin{figure}[t]
 	\centering
 	\begin{align*}
 		\discretize{\tau} &= 
 		\begin{cases}
-			\fin{n+1}, & \text{if } \tau = \float[B; V] \text{ and } B = \{\sim_1\!\!b_1, \ldots, \sim_n\!\!b_n\} \\[0.5em]
-			\float, & \text{if } \tau = \float[B; V] \text{ and } B = \top \\[0.5em]
-			\discretize{A} \to \discretize{B}, & \text{if } \tau = A \to B \\[0.5em]
-			\discretize{A} \times \discretize{B}, & \text{if } \tau = A \times B \\[0.5em]
-			\listty{\discretize{A}}, & \text{if } \tau = \listty{A} \\[0.5em]
-			\texttt{ref}(\discretize{A}), & \text{if } \tau = \texttt{ref}(A) \\[0.5em]
-			\tau, & \text{otherwise}
+			\fin{n+1} & \text{if } \tau = \float[B; V] \text{ and } B = \{\sim_1\!\!b_1, \ldots, \sim_n\!\!b_n\} \\[0.5em]
+			\float & \text{if } \tau = \float[B; V] \text{ and } B = \top \\[0.5em]
+			\discretize{A} \to \discretize{B} & \text{if } \tau = A \to B \\[0.5em]
+			\discretize{A} \times \discretize{B} & \text{if } \tau = A \times B \\[0.5em]
+			\listty{\discretize{A}} & \text{if } \tau = \listty{A} \\[0.5em]
+			\texttt{ref}(\discretize{A}) & \text{if } \tau = \texttt{ref}(A) \\[0.5em]
+			\tau & \text{otherwise}\\[-1ex]
 		\end{cases}
 	\end{align*}
 	\caption{Transformation of types under $\mathcal{D}$, where $\mathcal{D}$ acts on types.}
@@ -206,6 +206,6 @@ We conclude this section by extending the discretization function $\discretize{\
 	where $\discretize{\Gamma}$ transforms all types in $\Gamma$, i.e., $\discretize{\Gamma}(x) = \discretize{\Gamma(x)}$ for all $x \in \textnormal{dom}(\Gamma)$.
 \end{lemma}
 %
-\begin{proof}
-	See Appendix~\ref{proof:type-transformations}.
-\end{proof}
+%\begin{proof}
+%	See Appendix~\ref{proof:type-transformations}.
+%\end{proof}
