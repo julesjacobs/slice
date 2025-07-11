@@ -3,7 +3,7 @@
 \section{Slice by Example}\label{sec:examples}
 This section presents simple examples that highlight the key features of our language and compiler \Slice{}, aiming to emphasize how \Slice{} meets the challenge of performing exact inference efficiently. \Slice{} extends a core functional language with traditional programming language constructs such as conditionals, local variables, and functions, augmented with constructs for probabilistic programming such as sampling and conditioning. Each example in the subsections is intended to showcase these features. Later in the section, we also mention examples that can only be partially discretized but nonetheless preserve the semantics across both the original and discretized program. %More examples are highlighted in Appendix~\ref{appen:examples}.
 
-For readability, we use \texttt{flip()} as a shorthand for \texttt{uniform(0,1) < 0.5}, which represents a fair coin flip that returns true or false with equal probability. A ``cut'' is any constant $c$ in a comparison such as $x < c$, where $c$ partitions $\mathbb{R}$ into two intervals $(-\infty, c)$ and $[c, +\infty)$.
+For readability, we use \flip() as a shorthand for \uniform(0,1) < 0.5, which represents a fair coin flip that returns true or false with equal probability. A cut $\clt{c}$ refers to any constant $c$ that appears in a comparison like $x < c$, where $c$ divides the real line $\mathbb{R}$ into two intervals: $(-\infty, c)$ and $[c, +\infty)$.
 
 
 \subsection{Simple Branching on a Uniform Distribution}\label{sec:examples:1}
@@ -14,7 +14,7 @@ We start with a simple example that illustrates the core idea of \Slice{}. Consi
     uniform(0,1) < 0.5
 \end{lstlisting}
 
-\noindent \Slice{}'s type system analyzes this program and identifies that the only cut for the continuous distribution is 0.5. This single cut partitions the reals $\R = (-\infty, +\infty)$ into two intervals of equal probability mass: $(-\infty, 0.5)$ and $[0.5, +\infty)$. \Slice{} uses this information to compute a discretization:
+\noindent \Slice{}'s type system analyzes this program and identifies that the only cut for the continuous distribution is $\clt{0.5}$. This single cut partitions the reals $\R = (-\infty, +\infty)$ into two intervals of equal probability mass: $(-\infty, 0.5)$ and $[0.5, +\infty)$. \Slice{} uses this information to compute a discretization:
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em]
     discrete(0.5, 0.5) < 1
@@ -28,7 +28,7 @@ The transformation to the discretized program is guided by tracking cuts as an i
     (uniform(0, 1) : !{\ft{<0.5}}!) < (0.5 : !{\ftb{<0.5}{0.5}}!)
 \end{lstlisting}
 Figure~\ref{fig:float-type-def} describes the meaning of a type \lstinline{float[cut set; value set]}.
- \ft{<0.5} indicates then that the cut set contains ``$\clt{0.5}$'' and the value set is $\top$ which indicates the variable can take any value in $(-\infty, +\infty)$. This tells \Slice{} how to partition $\mathbb{R}$. The type \ftb{<0.5}{0.5} indicates that the cut set contains $<0.5$ and the value set contains only the single value $0.5$. This allows \Slice{} to determine to which discrete region the constant $0.5$ belongs to after partitioning $\mathbb{R}$. 
+ \ft{<0.5} indicates then that the cut set contains $\clt{0.5}$ and the value set is $\top$ which indicates the variable can take any value in $(-\infty, +\infty)$. This tells \Slice{} how to partition $\mathbb{R}$. The type \ftb{<0.5}{0.5} indicates that the cut set contains $\clt{0.5}$ and the value set contains only the single value $0.5$. This allows \Slice{} to determine to which discrete region the constant $0.5$ belongs to after partitioning $\mathbb{R}$. 
 
 \begin{figure}
 \[
@@ -54,7 +54,7 @@ Figure~\ref{fig:float-type-def} describes the meaning of a type \lstinline{float
     if x < 0.5 then x < 0.2 else y < 0.1
 \end{lstlisting}
 
-\noindent In this program, the variable $x$ is drawn from \uniform(0, 1) and is compared against two different constants: $0.5$ and $0.2$. These two cuts partition the real line $\R$ into three intervals: $(-\infty, 0.2)$, $[0.2, 0.5)$, and $[0.5, +\infty)$. Similarly, the variable $y$, drawn from \uniform(0, 2), is compared only with $0.1$. This single cut partitions the real line $\R$ into two intervals, $(-\infty, 0.1)$ and $[0.1, +\infty)$.
+\noindent In this program, the variable $x$ is drawn from \uniform(0, 1) and is compared against two different constants: $0.5$ and $0.2$. These two cuts $\clt{0.5}$ and $\clt{0.2}$ partition the real line $\R$ into three intervals: $(-\infty, 0.2)$, $[0.2, 0.5)$, and $[0.5, +\infty)$. Similarly, the variable $y$, drawn from \uniform(0, 2), is compared only with $0.1$. This single cut $\clt{0.1}$ partitions the real line $\R$ into two intervals, $(-\infty, 0.1)$ and $[0.1, +\infty)$.
 
 
 This analysis is done by the type inference process, which collects all cuts for each continuous variable. For $x$, the type inference algorithm discovers the cuts $\clt{0.2}$ and $\clt{0.5}$, giving it the type \ft{<0.2,<0.5}. For $y$, it only finds $\clt{0.1}$, giving it the type \ft{<0.1}. This information is captured in the annotated program below (omitting the types for $x$ and $y$):
@@ -138,13 +138,13 @@ Consider the following program, already type-annotated:
             : !{\ftb{<=0.3,<1.5,<=1.8}{0.3,1.8}}! in
     x <= y
 \end{lstlisting}
-\noindent This program demonstrates how cuts propagate through the control flow. \Slice{} makes a forward pass through the program, and as the float constants 1.5, 1.8, and 0.3 subsequently appear in $y$, the cut sets of the preceding sampling instructions are populated accordingly. The $x \leq y$ comparison at the end renders the cut sets of all subexpressions to be the same: 1.5, 1.8, and 0.3 are the cuts for $x$ hence the type \codetype{\ft{<=0.3,<1.5,<=1.8}} for all subexpressions in the let statement of $x$.
+\noindent This program demonstrates how cuts propagate through the control flow. \Slice{} makes a forward pass through the program. As the float constants 1.5, 1.8, and 0.3 subsequently appear in $y$, the cut sets of the preceding sampling instructions are populated accordingly. The $x \leq y$ comparison at the end renders the cut sets of all subexpressions to be the same: $\clt{1.5}$, $\cleq{1.8}$, and $\cleq{0.3}$ are the cuts for $x$ hence the type \codetype{\ft{<=0.3,<1.5,<=1.8}} for all subexpressions in the let statement of $x$.
 %, and proper indices for the partitioned intervals must be determined hence float types of the form \codetype{{\ftb{<=0.3,<1.5,<=1.8}{\ldots}}} for all subexpressions in the let statement of $y$.
  %The type inference annotates the program as follows:
 
 
 
-\noindent Notice that all cuts from the entire program (0.3, 1.5, and 1.8) are collected for the variable $x$, regardless of which branch is taken. These cuts \codetype{<=0.3,<1.5,<=1.8} split the real line into four intervals: $(-\infty, 0.3]$, $(0.3, 1.5)$, $[1.5, 1.8]$, and $(1.8, +\infty)$. Note that 1.5 is excluded from the second interval and included in the third because it comes from a strict `<` comparison. The integer index 1 in the guard of the if statement for $y$ is obtained from the type \codetype{\ftb{<=0.3,<1.5,<=1.8}{1.5}}, 2 is obtained from the type \codetype{\ftb{<=0.3,<1.5,<=1.8}{1.8}}, and 0 is obtained from the type \codetype{\ftb{<=0.3,<1.5,<=1.8}{0.3}}. Applying type-directed discretization yields:
+\noindent Notice that all cuts from the entire program ($\cleq{0.3}$, $\clt{1.5}$, and $\cleq{1.8}$) are collected for the variable $x$, regardless of which branch is taken. These cuts split the real line into four intervals: $(-\infty, 0.3]$, $(0.3, 1.5)$, $[1.5, 1.8]$, and $(1.8, +\infty)$. Note that 1.5 is excluded from the second interval and included in the third because it comes from a strict `<` comparison. The integer index 1 in the guard of the if statement for $y$ is obtained from the type \codetype{\ftb{<=0.3,<1.5,<=1.8}{1.5}}, 2 is obtained from the type \codetype{\ftb{<=0.3,<1.5,<=1.8}{1.8}}, and 0 is obtained from the type \codetype{\ftb{<=0.3,<1.5,<=1.8}{0.3}}. Applying type-directed discretization yields:
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em]
     let x = if flip() then
@@ -233,7 +233,7 @@ In the discrete version, the observation $x < 2$ rules out the case where $x = 2
       if fst r then snd r else fst q
 \end{lstlisting}
 
-\noindent The type system correctly infers that cuts from both \texttt{f} and \texttt{g} (0.5 and 1.5) must be collected for the distributions in \texttt{p}, yielding type the \ft{<0.5,<1.5} for both components. The discretized program preserves the higher-order structure: 
+\noindent The type system correctly infers that cuts from both \texttt{f} and \texttt{g} ($\clt{0.5}$ and $\clt{1.5}$) must be collected for the distributions in \texttt{p}, yielding type the \ft{<0.5,<1.5} for both components. The discretized program preserves the higher-order structure: 
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em]
   let mappair = fun f -> fun p -> (f (fst p), f (snd p)) in
@@ -319,7 +319,7 @@ This example involves both discrete and continuous random variables and models a
 \noindent This gives the output \result{0.17325}{0.82675}. Here, \uniform(0,10) becomes \discrete(0.1, 0.9) representing 10\% probability for $[0,1)$ and 90\% for $[1,10]$. Similarly, \uniform(0,4) becomes \discrete(0.25, 0.75). Constants 10.0 and 4.0 fall into the second interval in the partition $(-\infty, 1) \cup [1,+\infty)$ and are thus both mapped to index 1 in the discretized program.
 
 We also support sequential probabilistic processes with iterate, and lists and recursion, see \Cref{ap:mot} for examples of these features.
-\subsection{Partial Discretization for non-constant Comparisons}\label{sec:examples:partial1}
+\subsection{Partial Discretization for Non-Constant Comparisons}\label{sec:examples:partial1}
 
 Not all programs can be fully discretized. Consider a program where continuous variables are compared directly to each other rather than to constants:
 

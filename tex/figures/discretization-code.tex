@@ -83,7 +83,7 @@
         \end{cases}
     \end{align}
 
-    \caption{Discretization function for \textsc{Slice}. For the $\uniform$ distribution case, we explicitly handle $B = \top$, which implies $V = \top$ and vice versa, as per Theorem~\ref{thm:distinguishes-top}. As such, there is no need to separately consider the case where $V = \top$.}
+    \caption{Discretization function for \textsc{Slice}. For the $\uniform$ distribution, the case $V = \top$ is implicit and thus there is no need to separately consider that case; all remaining cases cannot occur due to type inference how type inference is set up.}
     %If $e_1$ and $e_2$ are variables in \texttt{discretize($\uniform(e_1, e_2)$)}, the let bindings for v1' and v2' are in fact unnecessary; the nested \texttt{if} statements can directly use $e_1$ and $e_2$ in their guards.
     \label{fig:discretization-code}
 \end{figure}
