@@ -59,7 +59,7 @@
 		\end{array}
 		$
 	\end{tabular}
-	\caption{Discretization function for \textsc{Slice}. For the $\uniform$ distribution, the case $V = \top$ is implicit and thus there is no need to separately consider that case; all other cases are ruled out by the constraints enforced during type inference. For all other language constructs, $\discretize{\cdot}$ straightforwardly recurses on their structure.}
+	\caption{Discretization function, where $\text{CDF}(b_{0}) = 0$ and $\text{CDF}(b_{n+1}) = 1$. For the $\uniform$ distribution, $V = \top$ is implicit, and all other cases for the cut and value sets are ruled out by the constraints enforced during type inference. For all other language constructs, $\discretize{\cdot}$ straightforwardly recurses on their structure.}
 	\label{fig:discretization-code}
 \end{figure}
 %
