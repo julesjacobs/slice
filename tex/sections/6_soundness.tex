@@ -632,3 +632,477 @@ For continuous distributions like $\uniform(a, b)$, the implicit coercion to $\m
 
 This measure-theoretic foundation ensures that our probabilistic semantics is mathematically rigorous and that operations like conditioning (via observations) and marginalization are well-defined. 
 
+
+\subsection{Defining $\mu_e$, $\mu_{e, \discretize{e}}$, $R_{\tau}$}
+We consider a subset of our language, focusing only on let statements, conditionals, less than comparisons, and uniform and discrete distributions. 
+
+% \begin{itemize}
+% 	\item $\monunit \colon X \rightarrow \dist{X}$
+%     \item $\monbind \colon \dist{X} \times (X \to \dist{Y}) \rightarrow \dist{Y}$
+% \end{itemize}
+
+\begin{definition}[Sub-Distribution]
+	A sub-probability measure (the continuous analogue of a sub-distribution) on a measureable space $(X, \Sigma)$ is a measure $\mu: \Sigma \to [0,1]$ such that $\mu(X) \leq 1$. We write $D(X)$ for the set of all sub-probability measures of $X$. 
+\end{definition}
+
+\begin{definition}[Support]
+	The support of $\mu \in \mathcal{D}(X)$ is the set of points $x \in X$ such that every open neighborhood of $x$ has positive measure:
+	\[
+	{supp}(\mu) \triangleq \{ x \in X \mid \forall U \ni x, \; U \text{ open}, \; \mu(U) > 0 \}.
+	\]
+\end{definition}
+
+Recall the Maybe monad in Haskell:
+\begin{align*}
+	\texttt{return} &:: a \to \texttt{Maybe}\;a \\
+	\texttt{return}\;x &= \texttt{Just}\;x \\[6pt]
+	(\texttt{>>=}) &:: \texttt{Maybe}\;a \to (a \to \texttt{Maybe}\;b) \to \texttt{Maybe}\;b \\
+	mx \;\texttt{>>=}\; f &= \texttt{case}\; mx\;\texttt{ of} \\
+	&\quad \texttt{Nothing} \;\to\; \texttt{Nothing} \\
+	&\quad \texttt{Just}\;x \;\to\; f\;x
+\end{align*}
+
+We consider a probabilistic analogue of this, defined below:
+
+\begin{definition}[Probability Monad]
+
+	\begin{enumerate}
+	\item The return operator at $x \in X$ is the Dirac measure
+	\begin{align*}
+		\text{return} :: X \to \mathcal{D}(X + \bot) \\
+		\text{return} \; x = \delta_{x} \text{ for every } x \in X 
+	\end{align*}
+
+	\item The bind operator is defined by
+	\begin{align*}
+		\text{bind} : \mathcal{D}(X + \bot) \;\to\; (X \to \mathcal{D}(Y + \bot)) \;\to\; \mathcal{D}(Y + \bot) \\
+		\text{bind}(d, f) = \sum_{x \in support(d)} d(x) \cdot f_{\bot}(x) \\
+		% \text{bind}(d,f) = \int_{x \in support(d)} f_{\bot}(x) \, d\,d(x)
+	\end{align*}
+	where $f_{\bot}(\bot) = \delta_{\bot}$, $f_{\bot}(x) = f(x) \text{ for every } x \in X$.
+	\end{enumerate}
+\end{definition}
+
+\subsubsection{Small-step semantics for $e : \tau$. $Expr_{\tau} \to \mathcal{D}(Expr_{\tau} + \bot)$.}
+We assume the expressions are well-typed. Since we assume all expressions are well-typed, we do not need to explicitly consider cases where type checking fails. Moreover, certain constructs in our language are only applicable to specific types.
+{
+\footnotesize
+\begin{align*}
+	\sem{ \letkw \; x = e_1 : \tau_1 \; \inkw \; e_2 : \tau_2 : \tau_2} &= \begin{cases}
+		\delta_{e_2[v/x] : \tau_2} \quad &\text{ if } e_1 = v \\
+		\sem{ e_1 : \tau_1 } \gg\!= \lambda f. \sem{ \letkw \; x = f \; \inkw \; e_2 : \tau_2 : \tau_2} \quad &\text{ otherwise } \\
+	\end{cases} \\
+	\sem{ \ifkw \; e_1 : \bool \; \thenkw \; e_2 : \tau \; \elsekw \; e_3 : \tau : \tau} &= \begin{cases}
+		\delta_{\expr_2 : \tau}  \quad &\text{ if $e_1 = \val_1 = \true$} \\
+		\delta_{\expr_3 : \tau}  \quad &\text{ if $e_1 = \val_1 = \false$} \\
+		\sem{ e_1 : \bool} \gg\!= \lambda f. \sem{ \ifkw \; f \; \thenkw \; e_2 : \tau \; \elsekw \; e_3 : \tau : \tau} \quad &\text{ otherwise } \\
+	\end{cases} \\
+	\sem{ e_1 : \tau_1 < e_2 : \tau_2 : \bool} &= \begin{cases}
+		\delta_{\true : \bool} \quad &\text{ if } e_1 = v_1, e_2 = v_2, v_1 < v_2 \\
+		\delta_{\false : \bool} \quad &\text{ if } e_1 = v_1, e_2 = v_2, v_1 \geq v_2 \\
+		\sem{ e_1 : \tau_1 } \gg\!= \lambda f. \sem{ f < v_2 : \tau_2 : \bool} \quad &\text{ if } e_2 = v_2 \\
+		\sem{ e_2 : \tau_2 } \gg\!= \lambda f. \sem{ v_1 : \tau_1 < f : \bool} \quad &\text{ if } e_1 = v_1 \\
+		\sem{ e_1 : \tau_1 } \gg\!= \lambda f. \sem{ f < e_2 : \tau_2 : \bool} \quad &\text{ otherwise } \\
+	\end{cases} \\
+	&\text{where } \tau_1 = \tau_2 = \floattype{B}{V} \\
+	\sem{ e_1 : \tau_1 \finlt{n} e_2 : \tau_2 : \bool} &= \begin{cases}
+		\delta_{\true : \bool} \quad &\text{ if } e_1 = k_{1,\#n}, e_2 = k_{2,\#n}, k_1 < k_2 \\
+		\delta_{\false : \bool} \quad &\text{ if } e_1 = k_{1,\#n}, e_2 = k_{2,\#n}, k_1 \geq k_2 \\
+		\sem{ e_1 : \tau_1 } \gg\!= \lambda f. \sem{ f \finlt{n} k_{2,\#n} : \tau_2 : \bool} \quad &\text{ if } e_2 = k_{2,\#n} \\
+		\sem{ e_2 : \tau_2 } \gg\!= \lambda f. \sem{ k_{1,\#n} : \tau_1 \finlt{n} f : \bool} \quad &\text{ if } e_1 = k_{1,\#n} \\
+		\sem{ e_1 : \tau_1 } \gg\!= \lambda f. \sem{ f \finlt{n} e_2 : \tau_2 : \bool} \quad &\text{ otherwise } \\
+	\end{cases} \\
+	&\text{where } \tau_1 = \tau_2 = \fin{n} \\
+	\sem{ \uniform(e_1 : \tau_1, e_2 : \tau_2) : \tau } &= \begin{cases}
+		\text{Uniform}{(v_1, v_2)} \quad &\text{ if $e_1 = v_1$, $e_2 = v_2$, $v_1 \leq v_2$} \\
+		\delta_{\bot} \quad &\text{ if $e_1 = v_1$, $e_2 = v_2$, $v_1 > v_2$} \\
+		\sem{ e_1 : \tau_1 } \gg\!= \lambda f. \sem{ \uniform(f, v_2 : \tau_2) : \tau } \quad &\text{ if } e_2 = v_2 \\
+		\sem{ e_2 : \tau_2 } \gg\!= \lambda f. \sem{ \uniform(v_1 : \tau_1, f) : \tau } \quad &\text{ if } e_1 = v_1 \\
+		\sem{ e_1 : \tau_1 } \gg\!= \lambda f. \sem{ \uniform(f, e_2 : \tau_2) : \tau } \quad &\text{ otherwise } \\
+	\end{cases} \\
+	&\text{where } \tau = \floattype{B}{V} \\
+	\sem{ \discrete(v_0, \ldots, v_n) : \tau } &= \begin{cases}
+		\text{Discrete}{(v_0, \ldots, v_n)} \quad &\text{ if } \sum_i v_i = 1 \\
+		\delta_{\bot} \quad &\text{ otherwise }
+	\end{cases} \\
+	&\text{where } \tau = \fin{n} \\
+	\sem{ v : \tau } &= \delta_{v:\tau} \\
+	&\text{where } \tau = \floattype{B}{V} \\
+	\sem{ \finconst{k}{n} : \tau } &= \delta_{\finconst{k}{n} : \tau} \\
+	&\text{where } \tau = \fin{n} \\
+\end{align*}
+}
+
+\subsubsection{Relation $\relation_{\tau}$}
+We couple the continuous (and type-annotated) program $e$ appropriately with its discretized one $\discretize{e}$. Formally, the coupling relation is:
+
+\[
+\relation_{\tau}(e : \tau,e' : \tau') \iff e' : \tau' == \discretize{e : \tau} : \discretize{\tau'}.
+\]
+
+% What does this mean precisely? In particular, when the return type of $e$ is $\bool$, then the return type of $\discretize{e}$ is also $\bool$, and they have the same distribution. When the return type of $e$ is $\float$, then the return type of $\discretize{e}$ is also $\float$, and they have the same distribution. 
+
+% \begin{align*}
+% 	\{(\true,\true), (\false,\false)\} \in \relation_{\bool} \\
+% 	\{(v,v) : v \in supp(\mu)\} \in \relation_{\float} \\
+% 	\text{ where $\mu$ is the coupled distribution}
+% \end{align*}
+
+\subsubsection{Small-step semantics for $e : \tau, e' : \tau'$.  $\relation_{\tau} \to \mathcal{D}(\relation_{\tau} + \bot)$.} 
+We assume the expressions $e, e'$ are well-typed. 
+
+% \begin{definition}[Probability Monad]
+% 	\begin{enumerate}
+% 		\item The return operator is defined by
+% 		\begin{align*}
+% 			\text{return} :: (X \times X) \to \mathcal{D}((X + \bot) \times (X + \bot)) \\
+% 			\text{return} \; (x,y) = \delta_{(x,y)} \text{ for every } (x,y) \in X \times X
+% 		\end{align*}
+	
+% 		\item The bind operator is defined by
+% 		\begin{align*}
+% 			\text{bind} : \mathcal{D}((X + \bot) \times (X + \bot)) \;\to\; ((X \times X) \to \mathcal{D}(Y + \bot) \times (Y + \bot)) \;\to\; \mathcal{D}((Y + \bot) \times (Y + \bot)) \\
+% 			\text{bind}(d, f) = \sum_{(x,y) \in support(d)} d(x,y) \cdot f_{\bot}(x,y) \\
+% 		\end{align*}
+		
+% 		where: 
+% 		$f_{\bot}(x,y) =
+% 		\begin{cases}
+% 			f(x,y) &\text{ if } x \in X, y \in X \\
+% 			\delta_{(\pi_1(f(x,y)),\bot)} &\text{ if } x \in X, y = \bot \\
+% 			\delta_{(\bot,\pi_2(f(x,y)))} &\text{ if } x = \bot, y \in X \\
+% 			\delta_{(\bot,\bot)} &\text{ if } x = \bot, y = \bot \\
+% 		\end{cases}$
+% 		\end{enumerate}
+% \end{definition}
+
+{\tiny
+\allowdisplaybreaks
+\begin{align*}
+	%% let
+	\sem{ \letkw \; x = e_1 : \tau_1 \; \inkw \; e_2 : \tau_2 : \tau_2, \\[-3ex]
+	\letkw \; x' = e_1' : \tau_1' \; \inkw \; e_2' : \tau_2' : \tau_2'} &= \begin{cases}
+		\delta_{(e_2[v/x] : \tau_2, e_2'[v'/x'] : \tau_2')} \quad &\text{ if } e_1 = v, e_1' = v' \\
+		\sem{ e_1 : \tau_1, e_1' : \tau_1'} \gg\!= \lambda (f, f'). \sem{ \letkw \; x = f \; \inkw \; e_2 : \tau_2 : \tau_2, \letkw \; x' = f' \; \inkw \; e_2' : \tau_2' : \tau_2'} \quad &\text{ if } e_1 \neq v, e_1' \neq v' \\
+	\end{cases} \\
+	%% if-else
+	\sem{ \ifkw \; e_1 : \bool \; \thenkw \\
+	\; e_2 : \tau \; \elsekw \; e_3 : \tau : \tau, \\
+	\ifkw \; e_1' : \bool \; \thenkw \\[-5ex]
+	\; e_2' : \tau' \; \elsekw \; e_3' : \tau' : \tau' } &= \begin{cases}
+		\delta_{(e_2 : \tau, e_2' : \tau')}  \quad &\text{ if $e_1 = v = \true$, $e_1' = v' = \true$} \\
+		\delta_{(e_3 : \tau, e_3' : \tau')}  \quad &\text{ if $e_1 = v = \false$, $e_1' = v' = \false$} \\
+		\sem{ e_1 : \bool, e_1' : \bool } \gg\!= \lambda (f,f'). \sem{ \ifkw \; f \; \thenkw \; e_2 : \tau \; \elsekw \; e_3 : \tau : \tau, \\
+		\ifkw \; f' \; \thenkw \; e_2' : \tau' \; \elsekw \; e_3' : \tau' : \tau'} \quad &\text{ if } e_1 \neq v, e_1' \neq v' \\
+	\end{cases} \\
+	%% less than - float
+	\sem{ e_1 : \tau_1 < e_2 : \tau_2 : \bool, \\[-5ex]
+	e_1' : \tau_1 < e_2' : \tau_2 : \bool } &= \begin{cases}
+		\delta_{(v_1 < v_2 : \bool, v_1' < v_2' : \bool)} \quad &\text{ if } e_1 = v_1, e_1' = v_1', e_2 = v_2, e_2' = v_2' \\
+		\sem{ e_1 : \tau_1, e_1' : \tau_1} \gg\!= \lambda (f,f'). \sem{ f < v_2 : \tau_2, f' < v_2 : \tau_2 } \quad &\text{ if } e_1 \neq v_1, e_1' \neq v_1', e_2 = e_2' = v_2 \\
+		\sem{ e_2 : \tau_2, e_2' : \tau_2 } \gg\!= \lambda (f,f'). \sem{ v_1 : \tau_1 < f, v_1 : \tau_1 < f' } \quad &\text{ if } e_1 = e_1' = v_1, e_2 \neq v_2, e_2' \neq v_2' \\
+		\sem{ e_1 : \tau_1, e_1' : \tau_1 } \gg\!= \lambda (f,f'). \sem{ f < e_2 : \tau_2, f' < e_2' : \tau_2 } \quad &\text{ if } e_1 \neq v_1, e_1' \neq v_1', e_2 \neq v_2, e_2' \neq v_2' \\
+	\end{cases} \\
+	&\text{where } \tau_1 = \tau_2 = \floattype{B}{V}, B = \top \\
+	%% less than - fin
+	\sem{ e_1 : \tau_1 < e_2 : \tau_2 : \bool, \\[-5ex]
+	e_1' : \tau_1' \finlt{n+1} e_2' : \tau_2' : \bool } &= \begin{cases}
+		\delta_{(v_1 < v_2 : \bool, k_1 < k_2 : \bool)} \quad &\text{ if } e_1 = v_1, e_1' = k_{1,\#n+1}, e_2 = v_2, e_2' = k_{2,\#n+1} \\
+		\sem{ e_1 : \tau_1, e_1' : \tau_1' } \gg\!= \lambda (f,f'). \sem{ f < v_2 : \tau_2, f' \finlt{n+1} k_{2,\#n+1} : \tau_2' } \quad &\text{ if } e_1 \neq v_1, e_1' \neq k_{1,\#n+1}, e_2 = v_2, e_2' = k_{2,\#n+1} \\
+		\sem{ e_2 : \tau_2, e_2' : \tau_2' } \gg\!= \lambda (f,f'). \sem{ v_1 : \tau_1 < f, k_{1,\#n+1} : \tau_1' \finlt{n+1} f' } \quad &\text{ if } e_1 = v_1, e_1' = k_{1,\#n+1}, e_2 \neq v_2, e_2' \neq k_{2,\#n+1} \\
+		\sem{ e_1 : \tau_1, e_1' : \tau_1' } \gg\!= \lambda (f,f'). \sem{ f < e_2 : \tau_2, f' \finlt{n+1} e_2' : \tau_2' } \quad &\text{ if } e_1 \neq v_1, e_1' \neq k_{1,\#n+1}, e_2 \neq v_2, e_2' \neq k_{2,\#n+1} \\
+	\end{cases} \\
+	&\text{where } \tau_1 = \tau_2 = \floattype{B}{V}, B = \{\sim_1\!\!b_1, \ldots, \sim_n\!\!b_n\}, \tau_1' = \tau_2' = \fin{n+1} \\
+	%% uniform uniform
+	\sem{ \uniform(e_1 : \tau_1, e_2: \tau_2) : \tau, \\[-5ex]
+	\uniform(e_1' : \tau_1, e_2' : \tau_2) : \tau} &= \begin{cases}
+		\text{Uniform}(v_1, v_2) \gg\!= \lambda v.\delta_{(v, v)} \quad &\text{ if } e_1 = e_1' = v_1 \leq e_2 = e_2' = v_2 \\ 
+		\delta_{\bot} \quad &\text{ if } e_1 = v_1 > e_2 = v_2 \\
+		\sem{ e_1 : \tau_1, e_1' : \tau_1' } \gg\!= \lambda (f,f'). \sem{ \uniform(f, v_2 : \tau_2) : \tau, \uniform(f',v_2 : \tau_2) : \tau } \quad &\text{ if } e_1 \neq v_1, e_1' \neq v_1', e_2 = e_2' = v_2 \\
+		\sem{ e_2 : \tau_2, e_2' : \tau_2' } \gg\!= \lambda (f,f'). \sem{ \uniform(v_1 : \tau_1, f) : \tau, \uniform(v_1 : \tau_1, f') : \tau } \quad &\text{ if } e_1 = e_1' = v_1, e_2 \neq v_2, e_2' \neq v_2',\\
+		\sem{ e_1 : \tau_1, e_1' : \tau_1' } \gg\!= \lambda (f,f'). \sem{ \uniform(f, e_2 : \tau_2) : \tau, \uniform(f',e_2' : \tau_2) : \tau } \quad &\text{ if } e_1 \neq v_1, e_1' \neq v_1', e_2 \neq v_2, e_2' \neq v_2' \\
+	\end{cases} \\
+	&\text{where } \tau = \floattype{B}{V}, B = \top \\
+	%% uniform discrete
+	\sem{ \uniform(e_1 : \tau_1, e_2 : \tau_2) : \tau, \\[-5ex]
+	\discrete(v_0', \ldots, v_n') : \tau'} &= \begin{cases}
+		\text{Uniform}(v_1, v_2) \gg\!= \lambda v.\delta_{(v, i)} \text{ s.t. } v \in \intervals{B}_i \quad &\text{ if } e_1 = v_1 \leq e_2 = v_2, \sum_i v_i' = 1, \\
+		&v_i' = \text{CDF}_{\text{unif}(v_1,v_2)}(b_{i+1}) - \text{CDF}_{\text{unif}(v_1,v_2)}(b_{i}) \\
+		\delta_{\bot} \quad &\text{ if } e_1 = v_1 > e_2 = v_2 \\
+	\end{cases} \\
+		&\text{ where } \tau = \floattype{B}{V}, B = \{\sim_1\!\!b_1, \ldots, \sim_n\!\!b_n\} \neq \top, \tau' = \fin{n+1} \\
+	%% uniform discretecase
+	\sem{ \uniform(e_1 : \tau_1, e_2 : \tau_2) : \tau, \\[-5ex]
+	\texttt{DiscreteCase}(e_1' : \tau_1', e_2' : \tau_2') : \tau'} &= \begin{cases}
+		\sem{e_1, e_1' } \gg\!= \lambda(u_1, i).\sem{ e_2, e_2' } \gg\!= \lambda(u_2, j).\begin{cases}
+			% \sem{ \uniform(v_1, w_1) : \tau, \discrete(v_{000}, v_{001}, \ldots, v_{00n})} \\
+			% \text{ if } u_1 = v_1, u_1' = 0, u_2 = w_1, u_2' = 0 \\
+			% \ldots \\
+			\sem{ \uniform(u_1, u_2) : \tau, \\
+			\discrete(v_{ij0}, \ldots, v_{ijn}) : \tau'} \\
+			% \ldots \\
+			% \sem{ \uniform(v_r, w_s) : \tau, \discrete(v_{rs0}, v_{rs1}, \ldots, v_{rsn})} \\
+			% \text{ if } u_1 = v_r, u_1' = l, u_2 = w_s, u_2' = m \\
+		\end{cases} \\
+		\text{s.t. } v_{ijk} = \text{CDF}_{\text{unif}(u_1, u_2)}(b_{k+1}) - \text{CDF}_{\text{unif}(u_1, u_2)}(b_{k}) \quad &\text{if } e_1 \neq v_1 \text{ or } e_2 \neq v_2 \\
+	\end{cases} \\
+	\texttt{DiscreteCase}(e_1,e_2) &= \letkw \; v_1' = e_1 \; \inkw \\
+			&\letkw \; v_2' = e_2 \; \inkw \\
+			&\ifkw\; v_1' \fineq{l+1} \finconst{0}{l+1}\; \logand \; v_2' \fineq{m+1} \finconst{0}{m+1}\; \thenkw \\
+			&\quad \discrete(v_{000}, v_{001}, \ldots, v_{00n}) \\
+			&\vdots \\
+			&\elsekw\; \ifkw\; v_1' \fineq{l+1} \finconst{i}{l+1}\; \logand \; v_2' \fineq{m+1} \finconst{j}{m+1}\; \thenkw \\
+			&\quad \discrete(v_{ij0}, v_{ij1}, \ldots, v_{ijn}) \\
+			&\vdots \\
+			&\elsekw \\
+			&\quad \discrete(v_{rs0}, v_{rs1}, \ldots, v_{rsn}) \\
+	&\text{where } \tau = \floattype{B}{V}, B = \{\sim_1\!\!b_1, \ldots, \sim_n\!\!b_n\} \neq \top, \\
+	&\tau_1 = \floattype{B_1}{V_1}, B_1 = \{\sim_1\!\!c_1, \ldots, \sim_n\!\!c_l\}, V_1 = \{v_1, \ldots, v_r\}, \\
+	&\tau_2 = \floattype{B_2}{V_2}, B_2 = \{\sim_1\!\!d_1, \ldots, \sim_n\!\!d_m\}, V_2 = \{w_1, \ldots, w_s\} \\
+	&\tau' = \fin{n+1}, \tau_1' = \fin{l+1}, \tau_2' = \fin{m+1} \\
+	%% value float
+	\sem{ v : \tau, v' : \tau } &= \delta_{(v, v')} \text{ if } v = v' \\
+	&\text{where } \tau = \floattype{B}{V}, B = \top \\
+	%% value fin
+	\sem{ v : \tau, \finconst{k}{n} : \tau' } &= \delta_{(v, \finconst{k}{n})} \text{ if } v \in \intervals{B}_k \\
+	&\text{where } \tau = \floattype{B}{V}, B = \{\sim_1\!\!b_1, \ldots, \sim_n\!\!b_n\}, \tau' = \fin{n+1} \\
+\end{align*}
+}
+
+\subsubsection{Lemmas}
+We want to show the following lemmas for the pairing semantics:
+\begin{lemma}[Progress with Error]
+	If $(e_1 : \tau, e_1' : \tau')$, then either:
+	\begin{enumerate}
+		\item $(e_1, e_1')$ is a value pair
+		\item There exists $(e_2, e_2')$ such that $\sem{e_1,e_1'}(\{(e_2,e_2')\}) = 1$
+		\item $(e_1,e_1')$ is $\bot$
+	\end{enumerate}
+\end{lemma}
+
+\begin{lemma}[Preservation]
+	If $(e_1 : \tau, e_1' : \tau')$ and $\sem{e_1,e_1'}(\{(e_2,e_2')\}) = 1$ where $(e_2,e_2') \neq \top$, then $(e_2 : \tau, e_2' : \tau')$.
+\end{lemma}
+
+\begin{lemma}[Substitution]
+	If $\Gamma, (x : \tau_1, x' : \tau_1') \vdash (e_2 : \tau_2, e_2' : \tau_2')$ and $\Gamma \vdash (v : \tau_1, v' : \tau_1')$, then $\Gamma \vdash (e_2[v/x] : \tau_2, e_2'[v'/x'] : \tau_2')$.
+\end{lemma}
+
+\begin{lemma}
+	If $\relation(e,e')$ holds, then $\sem{ e,e' }(\{(f,f') : R(f,f')\}) = 1$. 
+\end{lemma}
+
+From the above lemmas, we can conclude that $e$ and $\discretize{e}$ are semantically equivalent, i.e., they produce the same output distribution up to discretization of float values. 
+
+
+% of two expressions executing in lockstep. We run both programs side-by-side under the coupled small-step rules and relate $(e, \discretize{e})$ by $R_{\tau}$ at every step of the execution. At termination, both programs produce values related by $R_{\tau}$, which means their distributions agree.
+
+% Configurations are of the form $(e, t, p)$, where:
+% \begin{itemize}
+% 	\item $e$ is the expression
+% 	\item $t$ is the trace (sequence of samples)
+% 	\item $p$ is the current probability weight
+% 	\item \textbf{Initial configuration:} $(e, \varepsilon, 1.0)$ where $\varepsilon$ is the empty trace
+% \end{itemize}
+
+% \subsubsection{Small-step semantics for $\mu_e$}
+% \begin{mathpar}
+% 	\inferrule[\textsc{Let}]
+% 	{\ }
+% 	{(\letkw \; x = v \; \inkw \; e, t, p) \rightarrow (\{e[v/x]\}, t, p)}
+
+% 	\inferrule[\textsc{IfTrue}]
+% 	{\ }
+% 	{(\ifkw \; \text{true} \; \thenkw \; e_1 \; \elsekw \; e_2, t, p) \rightarrow (\{e_1\}, t, p)}
+	
+% 	\inferrule[\textsc{IfFalse}]
+% 	{\ }
+% 	{(\ifkw \; \text{false} \; \thenkw \; e_1 \; \elsekw \; e_2, t, p) \rightarrow (\{e_2\}, t, p)}
+
+% 	\inferrule[\textsc{LessTrue}]
+% 	{c_1 < c_2}
+% 	{(c_1 < c_2, t, p) \rightarrow (\{\text{true}\}, t, p)}
+
+% 	\inferrule[\textsc{LessFalse}]
+% 	{c_1 \geq c_2}
+% 	{(c_1 < c_2, t, p) \rightarrow (\{\text{false}\}, t, p)}
+
+% 	\inferrule[\textsc{Uniform}]
+% 	{v_1, v_2 \text{ are float values} \\ v_1 < v_2}
+% 	{(\uniform(v_1, v_2), t, p) \rightarrow (c, t::c, p * (1/(v_2-v_1)))}
+
+% 	\inferrule[\textsc{Discrete}]
+% 	{p_0, \ldots, p_n \text{ are probabilities} \\ \sum_{i=0}^{n} p_i = 1}
+% 	{(\discrete(p_0, \ldots, p_n), t, p) \rightarrow (i, t::i, p * p_i)}
+% \end{mathpar}
+
+% \subsubsection{Small-step semantics for $\mu_{e, \discretize{e}}$}
+% \begin{mathpar}
+% 	\inferrule[\textsc{Let-2}]
+% 	{e := \letkw \; x_1 = v_1 \; \inkw \; e_1 \ e' := \letkw \; x_2 = v_2 \; \inkw \; e_2}
+% 	{((e, t, p), (e', t', p')) \rightarrow ((e_1[v_1/x_1], t, p), (e_2[v_2/x_2], t', p'))}
+	
+% 	\inferrule[\textsc{IfTrue-2}]
+% 	{e := \ifkw \; \text{true} \; \thenkw \; e_1 \; \elsekw \; e_2 \\ e' := \ifkw \; \text{true} \; \thenkw \; e_1' \; \elsekw \; e_2'}
+% 	{((e, t, p), (e', t', p')) \rightarrow ((e_1, t, p), (e_1', t', p'))}
+	
+% 	\inferrule[\textsc{IfFalse-2}]
+% 	{e := \ifkw \; \text{false} \; \thenkw \; e_1 \; \elsekw \; e_2 \\ e' := \ifkw \; \text{false} \; \thenkw \; e_1' \; \elsekw \; e_2'}
+% 	{((e, t, p), (e', t', p')) \rightarrow ((e_2, t, p), (e_2', t', p'))}
+	
+% 	\inferrule[\textsc{LessTrue-2}]
+% 	{c_1 < c_2 \\ c_1' < c_2'}
+% 	{((c_1 < c_2, t, p), (c_1' < c_2', t', p')) \rightarrow ((\text{true}, t, p), (\text{true}, t', p'))}
+	
+% 	\inferrule[\textsc{LessFalse-2}]
+% 	{c_1 \geq c_2 \\ c_1' \geq c_2'}
+% 	{((c_1 < c_2, t, p), (c_1' < c_2', t', p')) \rightarrow ((\text{false}, t, p), (\text{false}, t', p'))}
+	
+% 	\inferrule[\textsc{Uniform-Discrete-2}]
+% 	{v_1, v_2 \text{ are float values} \\ v_1 < v_2 \\ p_0, \ldots, p_n \text{ are probabilities} \\ c \sim \text{Uniform}(v_1, v_2) \\ i \sim \text{Discrete}(p_0, \ldots, p_n)}
+% 	{((\uniform(v_1, v_2), t, p), (\discrete(p_0, \ldots, p_n), t', p')) \rightarrow ((c, t::c, p \times \frac{1}{v_2 - v_1}), (i, t'::i, p' \times p_i))}
+	
+% 	\inferrule[\textsc{Uniform-Uniform-2}]
+% 	{v_1, v_2 \text{ are float values} \\ v_1 < v_2 \\ v_1', v_2' \text{ are float values} \\ v_1' < v_2' \\ c \sim \text{Uniform}(v_1, v_2) \\ c' \sim \text{Uniform}(v_1', v_2')}
+% 	{((\uniform(v_1, v_2), t, p), (\uniform(v_1', v_2'), t', p')) \rightarrow ((c, t::c, p \times \frac{1}{v_2 - v_1}), (c', t'::c', p' \times \frac{1}{v_2' - v_1'}))}
+
+% \end{mathpar}
+
+% \subsubsection{Relation $R_{\tau}(e, \discretize{e})$}
+
+% \begin{align*}
+% 	\mathcal{R_{\bool}}(e, \discretize{e}) &\iff \{(\true, \true), (\false, \false)\} \\
+% 	\mathcal{R}_{\floattype{B}{V}}(e, \discretize{e}) &\iff 
+% 	\begin{cases}
+% 		\discretize{e} = 0 \text{ if } e \in \intervals{B}_0 \\
+% 		\discretize{e} = 1 \text{ if } e \in \intervals{B}_1 \\
+% 		\ldots \\
+% 		\discretize{e} = n \text{ if } e \in \intervals{B}_n \\
+% 	\end{cases} \text{where } B = \{b_1, \ldots, b_n\} \\
+% 	\mathcal{R}_{\floattype{B}{V}}(e, \discretize{e}) &\iff e = \discretize{e} \text{ where } B = \top \\
+% 	\mathcal{R}_{\fin{n}}(e, \discretize{e}) &\iff e = \discretize{e} \\
+% 	\mathcal{R}_{\intty}(e, \discretize{e}) &\iff e = \discretize{e} \\
+% 	\mathcal{R}_{\tau_1 \times \tau_2}(e, \discretize{e}) &\iff (\pi_1(e), \pi_1(\discretize{e})) \in \mathcal{R}_{\tau_1} \land
+% 	(\pi_2(e), \pi_2(\discretize{e})) \in \mathcal{R}_{\tau_2} \\
+% 	\mathcal{R}_{\tau_1 \to \tau_2}(e, \discretize{e})
+%     &\iff \forall (v, v') \in \mathcal{R}_{\tau_1}, ((\lambda x : \tau_1. e) \; v, (\lambda x : \tau_1. \discretize{e}) \; v') \in \mathcal{R}_{\tau_2} \\
+% 	\mathcal{R}_{\listty{\tau}}(e, \discretize{e}) &\iff 
+% 	\begin{cases}
+% 		e = \text{nil} \land \discretize{e} = \text{nil} \\
+% 		e = v::vs \land \discretize{e} = v'::vs' \land (v, v') \in \mathcal{R}_{\tau} \land (vs, vs') \in \mathcal{R}_{\listty{\tau}}
+% 	\end{cases}
+% \end{align*}
+
+% \subsection{Lemmas}
+
+% \begin{enumerate}
+% 	\item $\mu_{e, \discretize{e}}(R_{\tau}) = 1$
+% 	\item $\pi_1(\mu_{e, \discretize{e}}) = \mu_e$, $\pi_2(\mu_{e, \discretize{e}}) = \mu_{\discretize{e}}$
+% \end{enumerate}
+
+% \subsection{Example}
+% \begin{figure}[h]
+% 	\centering
+% 	\begin{subfigure}[t]{0.5\textwidth}
+% 	\scriptsize % shrink so it fits
+% 	\begin{align*}
+% 		&(\texttt{let x = uniform(0,2) in} \\
+% 		&\;\;\;\texttt{if x < 0.5 then uniform(0,2)} \\
+% 		&\;\;\;\texttt{else uniform(0,4)}, \varepsilon, 1.0) \\
+% 		&\rightarrow (\texttt{if uniform(0,2) < 0.5 then} \\
+% 		&\;\;\;\texttt{uniform(0,2) else uniform(0,4)}, \varepsilon, 1.0) \quad \textsc{Let} \\
+% 		&\rightarrow (\texttt{if 0.3 < 0.5 then uniform(0,2)} \\
+% 		&\;\;\;\texttt{else uniform(0,4)}, 0.3, 0.5) \quad \textsc{Uniform} \\
+% 		&\rightarrow (\texttt{if \true then uniform(0,2)} \\
+% 		&\;\;\;\texttt{else uniform(0,4)}, 0.3, 0.5) \quad \textsc{LessTrue} \\
+% 		&\rightarrow (\texttt{uniform(0,2)}, 0.3, 0.5) \quad \textsc{IfTrue} \\
+% 		&\rightarrow (0.2, 0.3::0.2, 1/4) \quad \textsc{Uniform}
+% 	\end{align*}
+% 	\caption{Continuous version}
+% 	\end{subfigure}\hfill
+% 	\begin{subfigure}[t]{0.5\textwidth}
+% 	\scriptsize
+% 	\begin{align*}
+% 		&(\texttt{let x = discrete(0.25, 0.75) in} \\
+% 		&\;\;\;\texttt{if x < 1 then uniform(0,2)} \\
+% 		&\;\;\;\texttt{else uniform(0,4)}, \varepsilon, 1.0) \\
+% 		&\rightarrow (\texttt{if discrete(0.25, 0.75) < 1 then} \\
+% 		&\;\;\;\texttt{uniform(0,2) else uniform(0,4)}, \varepsilon, 1.0) \quad \textsc{Let} \\
+% 		&\rightarrow (\texttt{if 0 < 1 then uniform(0,2)} \\
+% 		&\;\;\;\texttt{else uniform(0,4)}, 0, 0.25) \quad \textsc{Discrete} \\
+% 		&\rightarrow (\texttt{if \true then uniform(0,2)} \\
+% 		&\;\;\;\texttt{else uniform(0,4)}, 0, 0.25) \quad \textsc{LessTrue} \\
+% 		&\rightarrow (\texttt{uniform(0,2)}, 0, 0.25) \quad \textsc{IfTrue} \\
+% 		&\rightarrow (0.2, 0::0.2, 1/8) \quad \textsc{Uniform}
+% 	\end{align*}
+% 	\caption{Discrete version}
+% 	\end{subfigure}
+% \end{figure}
+
+
+% \begin{align*}
+% 	&(\texttt{let x = uniform(0,2) in if x < 0.5 then uniform(0,2) else uniform(0,4)}, \varepsilon, 1.0) \\
+% 	&\rightarrow (\texttt{if uniform(0,2) < 0.5 then uniform(0,2) else uniform(0,4)}, \varepsilon, 1.0) \quad \textsc{Let} \\
+% 	&\rightarrow (\texttt{if 0.3 < 0.5 then uniform(0,2) else uniform(0,4)}, 0.3, 0.5) \quad \textsc{Uniform} \\
+% 	&\rightarrow (\texttt{if \true then uniform(0,2) else uniform(0,4)}, 0.3, 0.5) \quad \textsc{LessTrue} \\
+% 	&\rightarrow (\texttt{uniform(0,2)}, 0.3, 0.5) \quad \textsc{IfTrue} \\
+% 	&\rightarrow (0.2, 0.3::0.2, 1/4) \quad \textsc{Uniform} \\
+% \end{align*}
+
+% \begin{align*}
+% 	&(\texttt{let x = discrete(0.25, 0.75) in if x < 1 then uniform(0,2) else uniform(0,4)}, \varepsilon, 1.0) \\
+% 	&\rightarrow (\texttt{if discrete(0.25, 0.75) < 1 then uniform(0,2) else uniform(0,4)}, \varepsilon, 1.0) \quad \textsc{Let} \\
+% 	&\rightarrow (\texttt{if 0 < 1 then uniform(0,2) else uniform(0,4)}, 0, 0.25) \quad \textsc{Discrete} \\
+% 	&\rightarrow (\texttt{if \true then uniform(0,2) else uniform(0,4)}, 0, 0.25) \quad \textsc{LessTrue} \\
+% 	&\rightarrow (\texttt{uniform(0,2)}, 0, 0.25) \quad \textsc{IfTrue} \\
+% 	&\rightarrow (0.2, 0::0.2, 1/8) \quad \textsc{Uniform} \\
+% \end{align*}
+
+
+
+
+
+% \subsection{Contextual Equivalence}
+% We give a defintion of contextual equivalence below. Two expressions are contextually equivalent ($=_{ctx}$) if for all closing program contexts $C$, their observable aggregate behavior is the same. We take programs to be real values closed expressions, and their observable behavior consists of their measures ($\Sigma_{\R} \rightarrow \R^{+}$).
+
+
+% We give the correctness statement for our discretization; we want the original expression $e$ and the discretized expression $\discretize{e}$ to be contextually equivalent. Two expressions are contextually equivalent ($=_{ctx}$) if for all closing program contexts $C$ their observable aggregate behavior is the same. We take programs to be real values closed expressions, and their observable behavior consists of their measures ($\Sigma_{\R} \rightarrow \R^{+}$).
+
+% \begin{definition}[Contextual Equivalence / Correctness]
+% 	If $\Gamma \vdash e_1 : \tau_1$ and $\Gamma \vdash e_2 : \tau_2$, then $e_1$ and $e_2$ are contextually equivalent $(e_1 =_{ctx} e_2)$ if and only if for all contexts $C$ such that $C : \Gamma$ and $\vdash C[e_1] : \float$ and $\vdash C[e_2] : \float$ (or $\vdash C[e_1] : \bool$ and $\vdash C[e_2] : \bool$) and for all measurable sets $A \in \Sigma_{\R}$,
+
+% 	\[
+% 	\mu_{C[e_1]}(A) = \mu_{C[e_2]}(A).
+% 	\]
+% \end{definition}
+
+% $C : \Gamma$ means that $C$ provides bindings satisfying $\Gamma$ to the expression placed in its hole. 
+
+% \subsection{Logical Relation for Contextual Equivalence}
+% We develop a logical relation for proving expressions contextually equivalent. Figure~\ref{fig:logical-relation} gives the logical relation and its auxillary relations.
+
+% \begin{figure}
+% 	\begin{align*}
+% 		\Gamma \vdash e_1 \approx e_2 : \tau 
+%         &\iff \forall (\gamma_1, \gamma_2) \in \mathcal{G}\sem{\Gamma}, (e_1 \cdot \gamma_1, e_2 \cdot \gamma_2) \in \mathcal{E}\sem{\tau} \\
+% 		(r_1, r_2) \in \mathcal{V}\sem{\tau} 
+%         &\iff r_1 = r_2 \\[1ex]
+%         (\lambda x.\, e_1, \lambda x.\, e_2) \in \mathcal{V}\sem{\tau_1 \to \tau_2} 
+%         &\iff \forall (v_1, v_2) \in \mathcal{V}\sem{\tau_1},\; (e_1[x \mapsto v_1], e_2[x \mapsto v_2]) \in \mathcal{E}\sem{\tau_2} \\
+%         (\gamma_1, \gamma_2) \in \mathcal{G}\sem{\Gamma} 
+%         &\iff \gamma_1 \models \Gamma \;\wedge\; \gamma_2 \models \Gamma \;\wedge\; \forall x \in \mathrm{dom}(\Gamma), (\gamma_1(x), \gamma_2(x)) \in \mathcal{V}\sem{\Gamma(x)} \\
+%         (e_1, e_2) \in \mathcal{E}\sem{\tau} 
+%         &\iff \forall (A_1, A_2) \in \mathcal{A}\sem{\tau},\; \mu_{e_1}(A_1) = \mu_{e_2}(A_2) \\
+%         (A_1, A_2) \in \mathcal{A}\sem{\tau} 
+%         &\iff A_1, A_2 \in \Sigma\sem{\tau} \;\wedge\; \forall (v_1, v_2) \in \mathcal{V}\sem{\tau},\; (v_1 \in A_1 \iff v_2 \in A_2)
+% 	\end{align*}
+% 	\caption{Logical relation and auxiliary relations. It defines the relation $\Gamma \vdash e_1 \approx e_2 : \tau$.}
+% 	\label{fig:logical-relation}
+% \end{figure}
+
+% \begin{itemize}
+% 	\item $\mathcal{V}\sem{\tau}$ relates closed values of type $\tau$. Real values are related if they are identitcal, and functions are related if they take related inputs to related evaluation configurations.
+% 	\item $\mathcal{G}\sem{\Gamma}$ relates substitutions.
+% 	\item $\mathcal{E}\sem{\tau}$ relates closed expressions. Expressions are related if their measures agree on emasurable sets related by $\mathcal{A}\sem{\tau}$.
+% 	\item $\mathcal{A}\sem{\tau}$ relates measurable sets of values.
+% \end{itemize}
