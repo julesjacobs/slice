@@ -853,40 +853,39 @@ We assume the expressions are well-typed. Since we assume all expressions are we
 \end{lemma}
 
 \begin{proof}
-	By induction on the derivation of the closed typing judgment $\emptyset \vdash e : \tau$. We do a case analysis on the last rule used.
+	By induction on the structure of the typing derivation $e : \tau$. We do a case analysis on the last rule used.
 
-	\begin{itemize}
-		\item \textbf{Case} constant. If $e$ is a literal (numeric literal, boolean, finite), then $e$ is a value by the definition of values. The semantics have a value clause $\sem{v : \tau} = \delta_v$ or similar for the fin case. 
-		\item \textbf{Case} comparisons. From typing we have $\emptyset \vdash e_1 : \tau_1$ and $\emptyset \vdash e_2 : \tau_2$. Applying IH to $e_1$ and $e_2$, we have the following possibilities:
+		\textbf{Case} constant $v : \tau$. If $e$ is a literal (boolean, float, finite), then $e$ is a value by the definition of values. $\sem{v : \tau} = \delta_{v : \tau}$. 
+		
+		\textbf{Case} comparisons $e_1 < e_2 : \bool$. From typing we have $\Gamma \vdash e_1 : \tau_1$ and $\Gamma \vdash e_2 : \tau_2$. Applying IH to $e_1$ and $e_2$, we have the following possibilities:
 		\begin{itemize}
-			\item If either $e_1 = \bot$ or $e_2 = \bot$, the semantics has an explicit clause producing $\delta_{\bot}$. 
-			\item If both $e_1$ and $e_2$ are values $v_1$, $v_2$, the semantics has the value comparison clause that i) if $v_1 < v_2$ produce $\delta_{\true}$ or ii) if $v_1 \geq v_2$ produce $\delta_{\false}$. These are mutually exclusive. Additionally, the $\bool$ is preserved.
-			\item Otherwise, at least one operand is reducible: the semantics has clauses that step a reducible operand, stepping $e_2$ if $e_1$ is a value but $e_2$ is reducible, or stepping $e_1$ otherwise. 
+			\item If either $e_1 = \bot$ or $e_2 = \bot$, the semantics returns $\delta_{\bot}$ by definition of the monadic bind. 
+			\item If both $e_1 = v_1$ and $e_2 = v_2$ are values, the semantics has the value comparison clause that i) if $v_1 < v_2$ produce $\delta_{\true : \bool}$ or ii) if $v_1 \geq v_2$ produce $\delta_{\false : \bool}$. These are mutually exclusive. 
+			\item Otherwise, at least one $e_1,e_2$ is reducible: the semantics has clauses that step a reducible operand, stepping $e_2$ if $e_1$ is a value but $e_2$ is reducible, obtaining $\sem{v_1 : \tau_1 < e_2' : \tau_2 : \bool}$. $e_2'$ has type $\tau_2$ by the induction hypothesis. Otherwise, we step $e_1$, obtaining $\sem{e_1' : \tau_1 < e_2 : \tau_2 : \bool}$. $e_1'$ has type $\tau_1$ by the induction hypothesis.
 		\end{itemize}
 
-		\item \textbf{Case} if-else. From typing we have $\emptyset \vdash e_1 : \bool$, $\emptyset \vdash e_2 : \tau$, $\emptyset \vdash e_3 : \tau$. Applying IH to $e_1$, we have the following possibilities:
+		\textbf{Case} if-else $\ifkw \; e_1 \; \thenkw \; e_2 \; \elsekw \; e_3 : \tau$. From typing we have $\Gamma \vdash e_1 : \bool$, $\Gamma \vdash e_2 : \tau$, $\Gamma \vdash e_3 : \tau$. Applying IH to $e_1$, we have the following possibilities:
 		\begin{itemize}
-			\item If $e_1 = \bot$, otherwise clause applies. By definition of the monadic bind. The semantics returns $\bot$ as a Dirac.
-			\item If $e_1$ is a value, true or false. The semantics has clauses for such values; one of these two value branches applies uniquely. 
-			\item If $e_1$ is reducible, then the semantics has a clause that steps the guard $e_1$ and recomposes the if. The otherwise clause applies.
+			\item If $e_1 = \bot$, the semantics returns $\delta_{\bot}$ by definition of the monadic bind.
+			\item If $e_1 = v$ is a value, either $\delta_{e_2 : \tau}$ or $\delta_{e_3 : \tau}$ depending on $e_1$ true or false. One of these two value branches applies uniquely. 
+			\item If $e_1$ is reducible, then the semantics has a clause that steps the guard $e_1$, obtaining $\sem{\ifkw \; e_1' : \bool \; \thenkw \; e_2 : \tau \; \elsekw \; e_3 : \tau : \tau}$. $e_1'$ has type $\bool$ by the induction hypothesis.
 		\end{itemize}
 
-		\item \textbf{Case} let. From typing we have $\emptyset \vdash e_1 : \tau_1$ and $x : \tau_1 \vdash e_2 : \tau_2$. Applying IH to $e_1$, we get the following cases:
+		\textbf{Case} let $\letkw \; x = e_1 \; \inkw \; e_2 : \tau_2$. From typing we have $\Gamma \vdash e_1 : \tau_1$ and $x : \tau_1 \vdash e_2 : \tau_2$. Applying IH to $e_1$, we get the following cases:
 		\begin{itemize}
-			\item $e_1 = \bot$, otherwise clause applies. By definition of the monadic bind.
-			\item If $e_1$ is a value, then the sematnics contains the value substitution clause that produce $\delta_{e_2[v/x]}$. 
-			\item If $e_1$ is reducible, the semantics of let has a clause that delegates to stepping $e_1$. 
+			\item If $e_1 = \bot$, the semantics returns $\delta_{\bot}$ by definition of the monadic bind.
+			\item If $e_1 = v$ is a value, then the sematnics contains the value substitution clause that produces $\delta_{e_2[v/x] : \tau_2}$. Tying is preserved by the substitution lemma.
+			\item If $e_1$ is reducible, the semantics of let has a clause that delegates to stepping $e_1$, obtaining $\sem{\letkw \; x = e_1' : \tau_1 \; \inkw \; e_2 : \tau_2 : \tau_2}$. $e_1'$ has type $\tau_1$ by the induction hypothesis.
 		\end{itemize}
 
-		\item \textbf{Case} uniform. From typing we have $\emptyset \vdash e_1 : \tau_1$, $\emptyset \vdash e_2 : \tau_2$. Applying IH to both $e_1$ and $e_2$, we get the following cases:
+		\textbf{Case} uniform $\uniform(e_1,e_2) : \tau$. From typing we have $\Gamma \vdash e_1 : \tau_1$, $\Gamma \vdash e_2 : \tau_2$. Applying IH to both $e_1$ and $e_2$, we get the following cases:
 		\begin{itemize}
-			\item Some operand is $\bot$, otherwise and second to last case applies.
-			\item Both operands are values $v_1, v_2$. Then the semantics contains clauses: if $v_1 \leq v_2$ produce the Uniform distribution, if $v_1 > v_2$ produce $\bot$. One of these applies as they are mutually exclusive.
-			\item Otherwise, at least one operand is reducible: the semantics steps $e_2$ if $e_1$ is a value and $e_2$ is reducible, or steps $e_1$ otherwise.
+			\item If either $e_1 = \bot$ or $e_2 = \bot$, the semantics returns $\delta_{\bot}$ by defintiion of the monadic bind.
+			\item If both $e_1 = v_1$ and $e_2 = v_2$ are values, the semantics contains clauses such that i) if $v_1 \leq v_2$ produce the Uniform distribution or ii) if $v_1 > v_2$ produce $\delta_{\bot}$. One of these applies as they are mutually exclusive.
+			\item Otherwise, at least one operand is reducible: the semantics steps $e_2$ if $e_1$ is a value and $e_2$ is reducible, obtaining $\sem{\uniform(v_1 : \tau_1, e_2': tau_2) : \tau}$, where $e_2' : \tau_2$ by the induction hypothesis. Otherwise, we step $e_1$, obtaining $\sem{\uniform(e_1' : \tau_1, e_2 : \tau_2) : \tau}$, where $e_1' : \tau_1$ by the induction hypothesis.
 		\end{itemize}
 
-		\item \textbf{Case} discrete. If the list of weights sums to 1 the semantics produces the Discrete distribution, otherwise there is a clause that returns $\bot$ as a Dirac. Exactly one of those two clauses applies.
-	\end{itemize}
+		\textbf{Case} discrete $\discrete(v_0, \ldots, v_n) : \tau$. If the list of weights sums to 1 the semantics produces the Discrete distribution, otherwise $\delta_{\bot}$. Exactly one of those two clauses applies.
 \end{proof}
 
 \subsubsection{Relation $\relation_{\tau}$}
@@ -997,8 +996,8 @@ We assume the expressions $e, e'$ are well-typed.
 	&= \delta_{(v, v')} \text{ if } v = v' \\
 	&\text{where } \tau = \floattype{B}{V}, B = \top \\
 	%% value fin
-	&\sem{ v : \tau, \finconst{k}{n} : \tau' } \\
-	&= \delta_{(v, \finconst{k}{n})} \text{ if } v \in \intervals{B}_k \\
+	&\sem{ v : \tau, \finconst{k}{n+1} : \tau' } \\
+	&= \delta_{(v, \finconst{k}{n+1})} \text{ if } v \in \intervals{B}_k \\
 	&\text{where } \tau = \floattype{B}{V}, B = \{\sim_1\!\!b_1, \ldots, \sim_n\!\!b_n\}, \tau' = \fin{n+1} \\
 \end{align*}
 }
@@ -1023,7 +1022,7 @@ We want to show the following lemmas for the pairing semantics:
 \end{lemma}
 
 \begin{proof}
-	By induction on $e$. 
+	By induction on $e$. Follows from the discretization function definition.
 	\textbf{Case} $e$ constant. $\discretize{c : \floattype{B}{V}}$ is defined as:
 	\[
 		\begin{cases}
@@ -1035,7 +1034,7 @@ We want to show the following lemmas for the pairing semantics:
 
 	\textbf{Case} $e$ is a let statement $\letkw x = e_1 \inkw e_2$. $e$ is a non-value expression.
 	\[
-	\discretize{letkw x = e_1 \inkw e_2} = \letkw = \discretize{e_1} \inkw \discretize{e_2}
+	\discretize{\letkw \; x = e_1 \; \inkw \; e_2} = \letkw \; x = \discretize{e_1} \; \inkw \; \discretize{e_2}
 	\]
 	This is a let expression, a non-value.
 \end{proof}
@@ -1045,36 +1044,42 @@ We want to show the following lemmas for the pairing semantics:
 \end{lemma}
 
 \begin{proof}
+	By induction on the structure of the typing derivation $(e : \tau, e' : \tau')$.
 	
+	\textbf{Case} values. $\sem{v : \tau, v' : \tau'} = \delta_{(v,v')}$ or $\sem{v : \tau, \finconst{k}{n} : \tau'} = \delta_{(v,\finconst{k}{n+1})}$. No bind appears, so the lemma is vacuously true.
+
+	\textbf{Case} let. We have:
+	\[
+	\sem{\letkw \; x = e_1 : \tau_1 \; \inkw \; e_2 : \tau_2 : \tau_2, \letkw \; x' = e_1' : \tau_1' \; \inkw \; e_2' : \tau_2' : \tau_2} = \sem{e_1 : \tau_1,e_1' : \tau_1'} \gg\!= f
+	\]
+	with
+	\[
+	f(w,w') = 
+	\begin{cases}
+		\delta_{\bot} &w = \bot \text{ or } w' = \bot \\
+		\delta_{(e_2[w/x] : \tau_2, e_2'[w'/x'] : \tau_2')} &w = v \text{ and } w' = v'
+	\end{cases}
+	\]
+	EIther $e_1, e_1'$ are both values or both expressions. If $e_1, e_1'$ are expressions, then themselves are monadic binds, and by the induction hypohtesis, is a Dirac distribution $\delta_{b_a}$ for some $b_a \in B$.
 \end{proof}
 
 \begin{lemma}[Well-defined]
 	For all well-typed expressions $(e : \tau, e' : \tau')$ such that $\relation_{\tau}(e,e')$, $\sem{(e,e')} \in \mathcal{D}(\relation_{\tau} + \bot)$.
 \end{lemma}
 
+\begin{proof}
+	By induction on the structure of the typing derivation $e : \tau$. We do a case analysis on the last rule used.
 
+	\textbf{Case} constant $(v : \tau, v' : \tau')$. $\sem{v : \tau, v' : \tau'} = \delta_{(v,v')}$.
 
+	\textbf{Case} if-else $(\ifkw \; e_1 \; \thenkw \; e_2 \; \elsekw \; e_3 : \tau, \ifkw \; e_1' \; \thenkw \; e_2' \; \elsekw \; e_3' : \tau')$. Applying IH to $(e_1,e_1')$, we have the following possibilities:
+	\begin{itemize}
+		\item If $(e_1,e_1') = \bot$
+		\item If $(e_1,e_1') = (v,v')$
+		\item If $(e_1,e_1')$ both expressions 
+	\end{itemize}
+\end{proof}
 
-
-\begin{lemma}[Progress with Error]
-	If $(e_1 : \tau, e_1' : \tau')$, then either:
-	\begin{enumerate}
-		\item $(e_1, e_1')$ is a value pair
-		\item There exists $(e_2, e_2')$ such that $\sem{e_1,e_1'}(\{(e_2,e_2')\}) = 1$
-		\item $(e_1,e_1')$ is $\bot$
-	\end{enumerate}
-\end{lemma}
-
-\begin{lemma}[Preservation]
-	If $(e_1 : \tau, e_1' : \tau')$ and $\sem{e_1,e_1'}(\{(e_2,e_2')\}) = 1$ where $(e_2,e_2') \neq \top$, then $(e_2 : \tau, e_2' : \tau')$.
-\end{lemma}
-
-
-\begin{lemma}
-	If $\relation(e,e')$ holds, then $\sem{ e,e' }(\{(f,f') : R(f,f')\}) = 1$. 
-\end{lemma}
-
-From the above lemmas, we can conclude that $e$ and $\discretize{e}$ are semantically equivalent, i.e., they produce the same output distribution up to discretization of float values. 
 
 
 % of two expressions executing in lockstep. We run both programs side-by-side under the coupled small-step rules and relate $(e, \discretize{e})$ by $R_{\tau}$ at every step of the execution. At termination, both programs produce values related by $R_{\tau}$, which means their distributions agree.
