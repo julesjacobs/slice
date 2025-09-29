@@ -648,39 +648,13 @@ We consider a subset of our language, focusing only on let statements, condition
 \begin{definition}[Support]
 	The support of $\mu \in \mathcal{D}(X)$ is the set of points $x \in X$ such that every open neighborhood of $x$ has positive measure:
 	\[
-	{supp}(\mu) \triangleq \{ x \in X \mid \forall U \ni x, \; U \text{ open}, \; \mu(U) > 0 \}.
+	{support}(\mu) \triangleq \{ x \in X \mid \forall U \ni x, \; U \text{ open}, \; \mu(U) > 0 \}.
 	\]
 \end{definition}
 
-Recall the Maybe monad in Haskell:
-\begin{align*}
-	\texttt{return} &:: a \to \texttt{Maybe}\;a \\
-	\texttt{return}\;x &= \texttt{Just}\;x \\[6pt]
-	(\texttt{>>=}) &:: \texttt{Maybe}\;a \to (a \to \texttt{Maybe}\;b) \to \texttt{Maybe}\;b \\
-	mx \;\texttt{>>=}\; f &= \texttt{case}\; mx\;\texttt{ of} \\
-	&\quad \texttt{Nothing} \;\to\; \texttt{Nothing} \\
-	&\quad \texttt{Just}\;x \;\to\; f\;x
-\end{align*}
-
-We consider a probabilistic analogue of this, defined below:
-
-\begin{definition}[Probability Monad]
-
-	\begin{enumerate}
-	\item The return operator at $x \in X$ is the Dirac measure
-	\begin{align*}
-		\text{return} :: X \to \mathcal{D}(X + \bot) \\
-		\text{return} \; x = \delta_{x} \text{ for every } x \in X 
-	\end{align*}
-
-	\item The bind operator is defined by
-	\begin{align*}
-		\text{bind} : \mathcal{D}(X + \bot) \;\to\; (X \to \mathcal{D}(Y + \bot)) \;\to\; \mathcal{D}(Y + \bot) \\
-		\text{bind}(d, f) = \sum_{x \in support(d)} d(x) \cdot f_{\bot}(x) \\
-		% \text{bind}(d,f) = \int_{x \in support(d)} f_{\bot}(x) \, d\,d(x)
-	\end{align*}
-	where $f_{\bot}(\bot) = \delta_{\bot}$, $f_{\bot}(x) = f(x) \text{ for every } x \in X$.
-	\end{enumerate}
+\begin{definition}[Distribution Monad with Error]
+	Define $\text{return} : X \to \mathcal{D}(X + \bot)$ by $\text{return}_X(x) := \delta_x$, where $\delta_x$ denotes the Dirac distribution on $x$: for any $y \in X$, we have $\delta_x(y) = 1$ if $y = x$, otherwise $\delta_x(y) = 0$. Further, define $\text{bind} : \mathcal{D}(X + \bot) \to (X \to \mathcal{D}(Y + \bot)) \to \mathcal{D}(Y + \bot)$ by $\text{bind}(\mu)(f)(y) := \sum_{x \in support(\mu)} \mu(x) \cdot f_{\bot}(x)(y)$, 
+	where $f_{\bot}$ extends $f$ by $f_{\bot}(\bot) := \delta_{\bot}$ and $f_{\bot}(x) := f(x) \;\; \text{for every } x \in X.$
 \end{definition}
 
 \subsubsection{Small-step semantics for $e : \tau$. $Expr_{\tau} \to \mathcal{D}(Expr_{\tau} + \bot)$.}
@@ -700,24 +674,21 @@ We assume the expressions are well-typed. Since we assume all expressions are we
 	\sem{ e_1 : \tau_1 < e_2 : \tau_2 : \bool} &= \begin{cases}
 		\delta_{\true : \bool} \quad &\text{ if } e_1 = v_1, e_2 = v_2, v_1 < v_2 \\
 		\delta_{\false : \bool} \quad &\text{ if } e_1 = v_1, e_2 = v_2, v_1 \geq v_2 \\
-		\sem{ e_1 : \tau_1 } \gg\!= \lambda f. \sem{ f < v_2 : \tau_2 : \bool} \quad &\text{ if } e_2 = v_2 \\
-		\sem{ e_2 : \tau_2 } \gg\!= \lambda f. \sem{ v_1 : \tau_1 < f : \bool} \quad &\text{ if } e_1 = v_1 \\
+		\sem{ e_2 : \tau_2 } \gg\!= \lambda f. \sem{ v_1 : \tau_1 < f : \bool} \quad &\text{ if } e_1 = v_1, e_2 \neq v_2 \\
 		\sem{ e_1 : \tau_1 } \gg\!= \lambda f. \sem{ f < e_2 : \tau_2 : \bool} \quad &\text{ otherwise } \\
 	\end{cases} \\
 	&\text{where } \tau_1 = \tau_2 = \floattype{B}{V} \\
 	\sem{ e_1 : \tau_1 \finlt{n} e_2 : \tau_2 : \bool} &= \begin{cases}
 		\delta_{\true : \bool} \quad &\text{ if } e_1 = k_{1,\#n}, e_2 = k_{2,\#n}, k_1 < k_2 \\
 		\delta_{\false : \bool} \quad &\text{ if } e_1 = k_{1,\#n}, e_2 = k_{2,\#n}, k_1 \geq k_2 \\
-		\sem{ e_1 : \tau_1 } \gg\!= \lambda f. \sem{ f \finlt{n} k_{2,\#n} : \tau_2 : \bool} \quad &\text{ if } e_2 = k_{2,\#n} \\
-		\sem{ e_2 : \tau_2 } \gg\!= \lambda f. \sem{ k_{1,\#n} : \tau_1 \finlt{n} f : \bool} \quad &\text{ if } e_1 = k_{1,\#n} \\
+		\sem{ e_2 : \tau_2 } \gg\!= \lambda f. \sem{ k_{1,\#n} : \tau_1 \finlt{n} f : \bool} \quad &\text{ if } e_1 = k_{1,\#n}, e_2 \neq k_{2,\#n} \\
 		\sem{ e_1 : \tau_1 } \gg\!= \lambda f. \sem{ f \finlt{n} e_2 : \tau_2 : \bool} \quad &\text{ otherwise } \\
 	\end{cases} \\
 	&\text{where } \tau_1 = \tau_2 = \fin{n} \\
 	\sem{ \uniform(e_1 : \tau_1, e_2 : \tau_2) : \tau } &= \begin{cases}
 		\text{Uniform}{(v_1, v_2)} \quad &\text{ if $e_1 = v_1$, $e_2 = v_2$, $v_1 \leq v_2$} \\
 		\delta_{\bot} \quad &\text{ if $e_1 = v_1$, $e_2 = v_2$, $v_1 > v_2$} \\
-		\sem{ e_1 : \tau_1 } \gg\!= \lambda f. \sem{ \uniform(f, v_2 : \tau_2) : \tau } \quad &\text{ if } e_2 = v_2 \\
-		\sem{ e_2 : \tau_2 } \gg\!= \lambda f. \sem{ \uniform(v_1 : \tau_1, f) : \tau } \quad &\text{ if } e_1 = v_1 \\
+		\sem{ e_2 : \tau_2 } \gg\!= \lambda f. \sem{ \uniform(v_1 : \tau_1, f) : \tau } \quad &\text{ if } e_1 = v_1, e_2 \neq v_2 \\
 		\sem{ e_1 : \tau_1 } \gg\!= \lambda f. \sem{ \uniform(f, e_2 : \tau_2) : \tau } \quad &\text{ otherwise } \\
 	\end{cases} \\
 	&\text{where } \tau = \floattype{B}{V} \\
@@ -733,6 +704,191 @@ We assume the expressions are well-typed. Since we assume all expressions are we
 \end{align*}
 }
 
+\subsubsection{Lemmas for $e$}
+\begin{lemma}[Substitution]
+	If $\Gamma, x : \tau_1 \vdash e : \tau_2$ and $\emptyset \vdash v : \tau_1$, then $\Gamma \vdash e[v/x] : \tau_2$. 
+\end{lemma}
+
+\begin{proof}
+	We proceed by induction on $e$:
+
+	\textbf{Case} $e = y$ (variable). There are two subcases. If $y=x$, then $e[v/x] = v$. This also means  $\Gamma, x:\tau_1 \vdash e:\tau_2$ becomes $\Gamma, x:\tau_1 \vdash x:\tau_1$, and we have $\tau_2 = \tau_1$. Hence $\emptyset \vdash v : \tau_1$ becomes $\emptyset \vdash v : \tau_2$, and $\Gamma \vdash e[v/x] : \tau_2$, as required. If $y \neq x$, then $y$ must be bound in $\Gamma$. The substitution does nothing: $e[v/x] = y$. Since $\Gamma, x : \tau_1 \vdash y : \tau_2$ and $y \neq x$, we have $\Gamma \vdash y : \tau_2$. Thus, $\Gamma \vdash e[v/x] : \tau_2$.
+
+	\textbf{Case} $e$ is a constant or a discrete distribution. Substitution does not change either: $e[v/x] = e$. Typing of constants nor $\discrete(v_0,\ldots,v_n)$ do not depend on $x$, so $\Gamma \vdash e : \tau_2$. Hence, $\Gamma \vdash e[v/x] : \tau_2$.
+
+	\textbf{Case} $e$ is a comparison $e_1 < e_2$. The argument proceeds identically in both the float and fin comparisons. Without loss of generality, by the typing rule for comparisons, we have:
+	\[
+		\inferrule
+		{\ \Gamma, x : \tau_1 \vdash e_1 : \tau \text{ and } \Gamma, x : \tau_1 \vdash e_2 : \tau}
+		{\Gamma, x : \tau_1 \vdash e_1 < e_2 : \bool}
+	\]
+	By the induction hypothesis, we have $\Gamma \vdash e_1[v/x] : \tau$ and $\Gamma \vdash e_2[v/x] : \tau$. Thus, $\Gamma \vdash (e_1 < e_2)[v/x] : \bool$ since $(e_1 < e_2)[v/x] = e_1[v/x] < e_2[v/x]$ and the typing rule for $<$ applies directly.
+
+	\textbf{Case} $e$ is an if-else statement $\ifkw \; e_1 \; \thenkw \; e_2 \; \elsekw \; e_3$. By the typing rule for if-else, we have:
+	\[
+		\inferrule
+		{\ \Gamma, x : \tau_1 \vdash e_1 : \bool \text{ and } \Gamma, x : \tau_1 \vdash e_2 : \tau \text{ and } \Gamma, x : \tau_1 \vdash e_3 : \tau}
+		{\Gamma, x : \tau_1 \vdash \ifkw \; e_1 \; \thenkw \; e_2 \; \elsekw \; e_3 : \tau}
+	\]
+	By the induction hypothesis, we have $\Gamma \vdash e_1[v/x] : \bool$, $\Gamma \vdash e_2[v/x] : \tau$, and $\Gamma \vdash e_3[v/x] : \tau$. Thus, $\Gamma \vdash (\ifkw \; e_1 \; \thenkw \; e_2 \; \elsekw \; e_3)[v/x] : \tau$ since $(\ifkw \; e_1 \; \thenkw \; e_2 \; \elsekw \; e_3)[v/x] = \ifkw \; e_1[v/x] \; $ $\thenkw \; e_2[v/x] \; \elsekw \; e_3[v/x]$ and the typing rule for if-else applies directly.
+
+	\textbf{Case} $e$ is a let statement $\letkw \; y \; = e_1 \; \inkw \; e_2$. This is further broken down into two subcases, $y \neq x$ meaning the binder does not shadow $x$ and $y = x$ meaning the binder shadows $x$. For the former case when $y \neq x$, by the typing rule for let, we have:
+	\[
+		\inferrule
+		{\ \Gamma, x : \tau_1 \vdash e_1 : \tau_1' \text{ and } \Gamma, x : \tau_1, y : \tau_1' \vdash e_2 : \tau_2}
+		{\Gamma, x : \tau_1 \vdash \letkw \; y = e_1 \; \inkw \; e_2 : \tau_2}
+	\]
+	By the induction hypothesis, we have $\Gamma \vdash e_1[v/x] : \tau_1'$ and $\Gamma, y : \tau_1' \vdash e_2[v/x] : \tau_2$. Thus, $\Gamma \vdash (\letkw \; y = e_1 \; \inkw \; e_2)[v/x] : \tau_2$ since $(\letkw \; y = e_1 \; \inkw \; e_2)[v/x] = \letkw \; y = e_1[v/x] \; \inkw \; e_2[v/x]$ and the typing rule for let applies directly.
+
+	For the latter case when $y = x$, by the typing rule for let, we have:
+	\[
+		\inferrule
+		{\ \Gamma, x : \tau_1 \vdash e_1 : \tau_1' \text{ and } \Gamma, x : \tau_1 \vdash e_2 : \tau_2}
+		{\Gamma, x : \tau_1 \vdash \letkw \; y = e_1 \; \inkw \; e_2 : \tau_2}
+	\]
+	By the induction hypothesis, we have $\Gamma \vdash e_1[v/x] : \tau_1'$. We have $\Gamma \vdash (\letkw \; y = e_1 \; \inkw \; e_2)[v/x] : \tau_2$ since $(\letkw \; y = e_1 \; \inkw \; e_2)[v/x] = \letkw \; y = e_1[v/x] \; \inkw \; e_2$ by the rules of capture-avoiding substitution.
+
+	\textbf{Case} $e$ is a uniform distribution $\uniform(e_1,e_2)$. By the typing rule for uniform, we have:
+	\[		
+		\inferrule
+		{\ \Gamma, x : \tau_1 \vdash e_1 : \tau \text{ and } \Gamma, x : \tau_1 \vdash e_2 : \tau}
+		{\Gamma, x : \tau_1 \vdash \uniform(e_1,e_2) : \tau}
+	\]
+	By the induction hypothesis, we have $\Gamma \vdash e_1[v/x] : \tau$ and $\Gamma \vdash e_2[v/x] : \tau$. Thus, $\Gamma \vdash \uniform(e_1, e_2)[v/x] : \tau$ since $\uniform(e_1,e_2)[v/x] = \uniform(e_1[v/x], e_2[v/x])$ and the typing rule for uniform applies directly.
+\end{proof}
+
+\begin{proposition}[Bind typing principle]
+	Let $A,B$ be measurable spaces. If $\mu \in \mathcal{D}(A)$ and $f : A \to \mathcal{D}(B)$, then $\mu \gg\!= f \in \mathcal{D}(B)$. In particular, if $f(a) = \delta_{b_a}$ with $b_a \in B$ for all $a \in A$, then $\mu \gg\!= f \in \mathcal{D}(B)$.
+\end{proposition}
+
+\begin{lemma}[Dirac continuations]
+	Let $\tau$ be a type, and let $B = Expr_{\tau} \cup \{\bot\}$. In every semantic clause $\sem{e : \tau}$, whenever a monadic bind $\mu \gg\!= f$ appears, the continution $f$ has type $A \to \mathcal{D}(B)$ for some measurable space $A$, and moreover for each input $a \in A$, $f(a)$ is a Dirac distribution $\delta_{b_a}$ for some $b_a \in B$.
+\end{lemma}
+
+\begin{proof}
+	By induction on the structure of the typing derivation $e : \tau$. 
+
+	\textbf{Case} values. $\sem{v : \tau} = \delta_{v : \tau}$. No bind appears, so the lemma is vacucously true.
+
+	\textbf{Case} let. We have:
+	\[
+	\sem{\letkw \; x = e_1 : \tau_1 \; \inkw \; e_2 : \tau_2 : \tau_2} = \sem{e_1 : \tau_1} \gg\!= f,
+	\]
+	with
+	\[
+	f(w) =
+	\begin{cases}
+		\delta_{\bot} &w = \bot \\
+		\delta_{e_2[w/x] : \tau_2} &w = v \\
+	\end{cases}
+	\]
+	Either $e_1$ is a value or an expression. If $e_1$ is an expression, then it itself is a monadic bind, and by the induction hypothesis, is a Dirac distribution $\delta_{b_a}$ for some $b_a \in B$. Here, $A = Expr_{\tau_1} \cup \{\bot\}$ and $B = Expr_{\tau_2} \cup \{\bot\}$. Every branch of $f$ is a Dirac distribution at an element of $B$.
+
+	\textbf{Case} if-then. We have:
+	\[
+	\sem{\ifkw \; e_1 : \bool \; \thenkw \; e_2 : \tau \; \elsekw \; e_3 : \tau : \tau} = \sem{e_1 : \bool} \gg\!= g,
+	\]
+	with
+	\[
+	g(w) =
+	\begin{cases}
+		\delta_{\bot} &w = \bot \\
+		\delta_{e_2 : \tau} &w = \true \\
+		\delta_{e_3 : \tau} &w = \false \\
+	\end{cases}
+	\]
+	Either $e_1$ is a value or an expression. If $e_1$ is an expression, then it itself is a monadic bind, and by the induction hypothesis, is a Dirac distribution $\delta_{b_a}$ for some $b_a \in B$. Here, $A = Expr_{\bool} \cup \{\bot\}$ and $B = Expr_{\tau} \cup \{\bot\}$. Every branch of $g$ is a Dirac distribution at an element of $B$.
+
+	\textbf{Case} comparison. We have:
+	\[
+	\sem{e_1 : \tau < e_2 : \tau : \bool} = \sem{e_1 : \tau} \gg\!= h_1,
+	\]
+	with
+	\[
+	h_1(w) =
+	\begin{cases}
+		\delta_{\bot} &w = \bot \\
+		\sem{e_2 : \tau} \gg\!= h_2 &w = v_1 \\
+	\end{cases}
+	\]
+	and
+	\[
+	h_2(w_2) =
+	\begin{cases}
+		\delta_{\bot} &w_2 = \bot \\
+		\delta_{\true : \bool} &v_1 < v_2 \\
+		\delta_{\false : \bool} &v_1 \geq v_2 \\
+	\end{cases}
+	\]
+	Either $e_1,e_2$ is a value or an expression. If $e_1$ and $e_2$ are expressions, then they are monadic binds, and by the induction hypothesis, is a Dirac distribution $\delta_{b_a}$ for some $b_a \in B$. Here, $A = Expr_{\tau} \cup \{\bot\}$ and $B = Expr_{\bool} \cup \{\bot\}$. Every branch of $h_1, h_2$ is a Dirac distribution at an element of $B$.
+
+	\textbf{Case} uniform. We have:
+	\[
+	\sem{\uniform(e_1 : \tau_1, e_2 : \tau_2) : \tau} = \sem{e_1 : \tau_1} \gg\!= u_1,
+	\]
+	with
+	\[
+	u_1(w) =
+	\begin{cases}
+		\delta_{\bot} &w = \bot \\
+		\sem{e_2 : \tau_2} \gg\!= u_2 &w = v_1 \\
+	\end{cases}
+	\]
+	and
+	\[
+	u_2(w_2) =
+	\begin{cases}
+		\delta_{\bot} &w_2 = \bot \\
+		\delta_{\text{Uniform}(v_1,v_2) : \tau} &v_1 \leq v_2 \\
+		\delta_{\bot} &v_1 > v_2 \\
+	\end{cases}
+	\]
+	Either $e_1,e_2$ is a value or an expression. If $e_1$ and $e_2$ are expressions, then they are monadic binds, and by the induction hypothesis, is a Dirac distribution $\delta_{b_a}$ for some $b_a \in B$. Here, $A = Expr_{\tau_1} \cup \{\bot\}$ and $B = Expr_{\tau} \cup \{\bot\}$. Every branch of $u_1,u_2$ is a Dirac distribution at an element of $B$.
+\end{proof}
+
+	
+
+\begin{lemma}[Well-Defined]
+	For all well-typed expressions $e : \tau$, $\sem{e : \tau} \in \mathcal{D}(Expr_{\tau} + \bot)$.
+\end{lemma}
+
+\begin{proof}
+	By induction on the derivation of the closed typing judgment $\emptyset \vdash e : \tau$. We do a case analysis on the last rule used.
+
+	\begin{itemize}
+		\item \textbf{Case} constant. If $e$ is a literal (numeric literal, boolean, finite), then $e$ is a value by the definition of values. The semantics have a value clause $\sem{v : \tau} = \delta_v$ or similar for the fin case. 
+		\item \textbf{Case} comparisons. From typing we have $\emptyset \vdash e_1 : \tau_1$ and $\emptyset \vdash e_2 : \tau_2$. Applying IH to $e_1$ and $e_2$, we have the following possibilities:
+		\begin{itemize}
+			\item If either $e_1 = \bot$ or $e_2 = \bot$, the semantics has an explicit clause producing $\delta_{\bot}$. 
+			\item If both $e_1$ and $e_2$ are values $v_1$, $v_2$, the semantics has the value comparison clause that i) if $v_1 < v_2$ produce $\delta_{\true}$ or ii) if $v_1 \geq v_2$ produce $\delta_{\false}$. These are mutually exclusive. Additionally, the $\bool$ is preserved.
+			\item Otherwise, at least one operand is reducible: the semantics has clauses that step a reducible operand, stepping $e_2$ if $e_1$ is a value but $e_2$ is reducible, or stepping $e_1$ otherwise. 
+		\end{itemize}
+
+		\item \textbf{Case} if-else. From typing we have $\emptyset \vdash e_1 : \bool$, $\emptyset \vdash e_2 : \tau$, $\emptyset \vdash e_3 : \tau$. Applying IH to $e_1$, we have the following possibilities:
+		\begin{itemize}
+			\item If $e_1 = \bot$, otherwise clause applies. By definition of the monadic bind. The semantics returns $\bot$ as a Dirac.
+			\item If $e_1$ is a value, true or false. The semantics has clauses for such values; one of these two value branches applies uniquely. 
+			\item If $e_1$ is reducible, then the semantics has a clause that steps the guard $e_1$ and recomposes the if. The otherwise clause applies.
+		\end{itemize}
+
+		\item \textbf{Case} let. From typing we have $\emptyset \vdash e_1 : \tau_1$ and $x : \tau_1 \vdash e_2 : \tau_2$. Applying IH to $e_1$, we get the following cases:
+		\begin{itemize}
+			\item $e_1 = \bot$, otherwise clause applies. By definition of the monadic bind.
+			\item If $e_1$ is a value, then the sematnics contains the value substitution clause that produce $\delta_{e_2[v/x]}$. 
+			\item If $e_1$ is reducible, the semantics of let has a clause that delegates to stepping $e_1$. 
+		\end{itemize}
+
+		\item \textbf{Case} uniform. From typing we have $\emptyset \vdash e_1 : \tau_1$, $\emptyset \vdash e_2 : \tau_2$. Applying IH to both $e_1$ and $e_2$, we get the following cases:
+		\begin{itemize}
+			\item Some operand is $\bot$, otherwise and second to last case applies.
+			\item Both operands are values $v_1, v_2$. Then the semantics contains clauses: if $v_1 \leq v_2$ produce the Uniform distribution, if $v_1 > v_2$ produce $\bot$. One of these applies as they are mutually exclusive.
+			\item Otherwise, at least one operand is reducible: the semantics steps $e_2$ if $e_1$ is a value and $e_2$ is reducible, or steps $e_1$ otherwise.
+		\end{itemize}
+
+		\item \textbf{Case} discrete. If the list of weights sums to 1 the semantics produces the Discrete distribution, otherwise there is a clause that returns $\bot$ as a Dirac. Exactly one of those two clauses applies.
+	\end{itemize}
+\end{proof}
+
 \subsubsection{Relation $\relation_{\tau}$}
 We couple the continuous (and type-annotated) program $e$ appropriately with its discretized one $\discretize{e}$. Formally, the coupling relation is:
 
@@ -740,64 +896,38 @@ We couple the continuous (and type-annotated) program $e$ appropriately with its
 \relation_{\tau}(e : \tau,e' : \tau') \iff e' : \tau' == \discretize{e : \tau} : \discretize{\tau'}.
 \]
 
-% What does this mean precisely? In particular, when the return type of $e$ is $\bool$, then the return type of $\discretize{e}$ is also $\bool$, and they have the same distribution. When the return type of $e$ is $\float$, then the return type of $\discretize{e}$ is also $\float$, and they have the same distribution. 
+In particular, we have the following:
 
-% \begin{align*}
-% 	\{(\true,\true), (\false,\false)\} \in \relation_{\bool} \\
-% 	\{(v,v) : v \in supp(\mu)\} \in \relation_{\float} \\
-% 	\text{ where $\mu$ is the coupled distribution}
-% \end{align*}
+\begin{align*}
+	\{(\true,\true), (\false,\false)\} \in \relation_{\bool} \\
+	\{(v,v) : v \text{ is a value}\} \in \relation_{\float} \\
+\end{align*}
+
+% What does this mean precisely? In particular, when the return type of $e$ is $\bool$, then the return type of $\discretize{e}$ is also $\bool$, and they have the same distribution. When the return type of $e$ is $\float$, then the return type of $\discretize{e}$ is also $\float$, and they have the same distribution. 
 
 \subsubsection{Small-step semantics for $e : \tau, e' : \tau'$.  $\relation_{\tau} \to \mathcal{D}(\relation_{\tau} + \bot)$.} 
 We assume the expressions $e, e'$ are well-typed. 
 
-% \begin{definition}[Probability Monad]
-% 	\begin{enumerate}
-% 		\item The return operator is defined by
-% 		\begin{align*}
-% 			\text{return} :: (X \times X) \to \mathcal{D}((X + \bot) \times (X + \bot)) \\
-% 			\text{return} \; (x,y) = \delta_{(x,y)} \text{ for every } (x,y) \in X \times X
-% 		\end{align*}
-	
-% 		\item The bind operator is defined by
-% 		\begin{align*}
-% 			\text{bind} : \mathcal{D}((X + \bot) \times (X + \bot)) \;\to\; ((X \times X) \to \mathcal{D}(Y + \bot) \times (Y + \bot)) \;\to\; \mathcal{D}((Y + \bot) \times (Y + \bot)) \\
-% 			\text{bind}(d, f) = \sum_{(x,y) \in support(d)} d(x,y) \cdot f_{\bot}(x,y) \\
-% 		\end{align*}
-		
-% 		where: 
-% 		$f_{\bot}(x,y) =
-% 		\begin{cases}
-% 			f(x,y) &\text{ if } x \in X, y \in X \\
-% 			\delta_{(\pi_1(f(x,y)),\bot)} &\text{ if } x \in X, y = \bot \\
-% 			\delta_{(\bot,\pi_2(f(x,y)))} &\text{ if } x = \bot, y \in X \\
-% 			\delta_{(\bot,\bot)} &\text{ if } x = \bot, y = \bot \\
-% 		\end{cases}$
-% 		\end{enumerate}
-% \end{definition}
-
-{\tiny
+{\small
 \allowdisplaybreaks
 \begin{align*}
 	%% let
-	\sem{ \letkw \; x = e_1 : \tau_1 \; \inkw \; e_2 : \tau_2 : \tau_2, \\[-3ex]
-	\letkw \; x' = e_1' : \tau_1' \; \inkw \; e_2' : \tau_2' : \tau_2'} &= \begin{cases}
+	&\sem{ \letkw \; x = e_1 : \tau_1 \; \inkw \; e_2 : \tau_2 : \tau_2, \letkw \; x' = e_1' : \tau_1' \; \inkw \; e_2' : \tau_2' : \tau_2'} \\
+	&= \begin{cases}
 		\delta_{(e_2[v/x] : \tau_2, e_2'[v'/x'] : \tau_2')} \quad &\text{ if } e_1 = v, e_1' = v' \\
 		\sem{ e_1 : \tau_1, e_1' : \tau_1'} \gg\!= \lambda (f, f'). \sem{ \letkw \; x = f \; \inkw \; e_2 : \tau_2 : \tau_2, \letkw \; x' = f' \; \inkw \; e_2' : \tau_2' : \tau_2'} \quad &\text{ if } e_1 \neq v, e_1' \neq v' \\
 	\end{cases} \\
 	%% if-else
-	\sem{ \ifkw \; e_1 : \bool \; \thenkw \\
-	\; e_2 : \tau \; \elsekw \; e_3 : \tau : \tau, \\
-	\ifkw \; e_1' : \bool \; \thenkw \\[-5ex]
-	\; e_2' : \tau' \; \elsekw \; e_3' : \tau' : \tau' } &= \begin{cases}
+	&\sem{ \ifkw \; e_1 : \bool \; \thenkw \; e_2 : \tau \; \elsekw \; e_3 : \tau : \tau, \ifkw \; e_1' : \bool \; \thenkw \; e_2' : \tau' \; \elsekw \; e_3' : \tau' : \tau' } \\
+	&= \begin{cases}
 		\delta_{(e_2 : \tau, e_2' : \tau')}  \quad &\text{ if $e_1 = v = \true$, $e_1' = v' = \true$} \\
 		\delta_{(e_3 : \tau, e_3' : \tau')}  \quad &\text{ if $e_1 = v = \false$, $e_1' = v' = \false$} \\
 		\sem{ e_1 : \bool, e_1' : \bool } \gg\!= \lambda (f,f'). \sem{ \ifkw \; f \; \thenkw \; e_2 : \tau \; \elsekw \; e_3 : \tau : \tau, \\
 		\ifkw \; f' \; \thenkw \; e_2' : \tau' \; \elsekw \; e_3' : \tau' : \tau'} \quad &\text{ if } e_1 \neq v, e_1' \neq v' \\
 	\end{cases} \\
 	%% less than - float
-	\sem{ e_1 : \tau_1 < e_2 : \tau_2 : \bool, \\[-5ex]
-	e_1' : \tau_1 < e_2' : \tau_2 : \bool } &= \begin{cases}
+	&\sem{ e_1 : \tau_1 < e_2 : \tau_2 : \bool, e_1' : \tau_1 < e_2' : \tau_2 : \bool } \\
+	&= \begin{cases}
 		\delta_{(v_1 < v_2 : \bool, v_1' < v_2' : \bool)} \quad &\text{ if } e_1 = v_1, e_1' = v_1', e_2 = v_2, e_2' = v_2' \\
 		\sem{ e_1 : \tau_1, e_1' : \tau_1} \gg\!= \lambda (f,f'). \sem{ f < v_2 : \tau_2, f' < v_2 : \tau_2 } \quad &\text{ if } e_1 \neq v_1, e_1' \neq v_1', e_2 = e_2' = v_2 \\
 		\sem{ e_2 : \tau_2, e_2' : \tau_2 } \gg\!= \lambda (f,f'). \sem{ v_1 : \tau_1 < f, v_1 : \tau_1 < f' } \quad &\text{ if } e_1 = e_1' = v_1, e_2 \neq v_2, e_2' \neq v_2' \\
@@ -805,8 +935,8 @@ We assume the expressions $e, e'$ are well-typed.
 	\end{cases} \\
 	&\text{where } \tau_1 = \tau_2 = \floattype{B}{V}, B = \top \\
 	%% less than - fin
-	\sem{ e_1 : \tau_1 < e_2 : \tau_2 : \bool, \\[-5ex]
-	e_1' : \tau_1' \finlt{n+1} e_2' : \tau_2' : \bool } &= \begin{cases}
+	&\sem{ e_1 : \tau_1 < e_2 : \tau_2 : \bool, e_1' : \tau_1' \finlt{n+1} e_2' : \tau_2' : \bool } \\
+	&= \begin{cases}
 		\delta_{(v_1 < v_2 : \bool, k_1 < k_2 : \bool)} \quad &\text{ if } e_1 = v_1, e_1' = k_{1,\#n+1}, e_2 = v_2, e_2' = k_{2,\#n+1} \\
 		\sem{ e_1 : \tau_1, e_1' : \tau_1' } \gg\!= \lambda (f,f'). \sem{ f < v_2 : \tau_2, f' \finlt{n+1} k_{2,\#n+1} : \tau_2' } \quad &\text{ if } e_1 \neq v_1, e_1' \neq k_{1,\#n+1}, e_2 = v_2, e_2' = k_{2,\#n+1} \\
 		\sem{ e_2 : \tau_2, e_2' : \tau_2' } \gg\!= \lambda (f,f'). \sem{ v_1 : \tau_1 < f, k_{1,\#n+1} : \tau_1' \finlt{n+1} f' } \quad &\text{ if } e_1 = v_1, e_1' = k_{1,\#n+1}, e_2 \neq v_2, e_2' \neq k_{2,\#n+1} \\
@@ -814,8 +944,8 @@ We assume the expressions $e, e'$ are well-typed.
 	\end{cases} \\
 	&\text{where } \tau_1 = \tau_2 = \floattype{B}{V}, B = \{\sim_1\!\!b_1, \ldots, \sim_n\!\!b_n\}, \tau_1' = \tau_2' = \fin{n+1} \\
 	%% uniform uniform
-	\sem{ \uniform(e_1 : \tau_1, e_2: \tau_2) : \tau, \\[-5ex]
-	\uniform(e_1' : \tau_1, e_2' : \tau_2) : \tau} &= \begin{cases}
+	&\sem{ \uniform(e_1 : \tau_1, e_2: \tau_2) : \tau, \uniform(e_1' : \tau_1, e_2' : \tau_2) : \tau} \\
+	&= \begin{cases}
 		\text{Uniform}(v_1, v_2) \gg\!= \lambda v.\delta_{(v, v)} \quad &\text{ if } e_1 = e_1' = v_1 \leq e_2 = e_2' = v_2 \\ 
 		\delta_{\bot} \quad &\text{ if } e_1 = v_1 > e_2 = v_2 \\
 		\sem{ e_1 : \tau_1, e_1' : \tau_1' } \gg\!= \lambda (f,f'). \sem{ \uniform(f, v_2 : \tau_2) : \tau, \uniform(f',v_2 : \tau_2) : \tau } \quad &\text{ if } e_1 \neq v_1, e_1' \neq v_1', e_2 = e_2' = v_2 \\
@@ -824,16 +954,17 @@ We assume the expressions $e, e'$ are well-typed.
 	\end{cases} \\
 	&\text{where } \tau = \floattype{B}{V}, B = \top \\
 	%% uniform discrete
-	\sem{ \uniform(e_1 : \tau_1, e_2 : \tau_2) : \tau, \\[-5ex]
-	\discrete(v_0', \ldots, v_n') : \tau'} &= \begin{cases}
+	&\sem{ \uniform(e_1 : \tau_1, e_2 : \tau_2) : \tau,
+	\discrete(v_0', \ldots, v_n') : \tau'} \\
+	&= \begin{cases}
 		\text{Uniform}(v_1, v_2) \gg\!= \lambda v.\delta_{(v, i)} \text{ s.t. } v \in \intervals{B}_i \quad &\text{ if } e_1 = v_1 \leq e_2 = v_2, \sum_i v_i' = 1, \\
 		&v_i' = \text{CDF}_{\text{unif}(v_1,v_2)}(b_{i+1}) - \text{CDF}_{\text{unif}(v_1,v_2)}(b_{i}) \\
 		\delta_{\bot} \quad &\text{ if } e_1 = v_1 > e_2 = v_2 \\
 	\end{cases} \\
 		&\text{ where } \tau = \floattype{B}{V}, B = \{\sim_1\!\!b_1, \ldots, \sim_n\!\!b_n\} \neq \top, \tau' = \fin{n+1} \\
 	%% uniform discretecase
-	\sem{ \uniform(e_1 : \tau_1, e_2 : \tau_2) : \tau, \\[-5ex]
-	\texttt{DiscreteCase}(e_1' : \tau_1', e_2' : \tau_2') : \tau'} &= \begin{cases}
+	&\sem{ \uniform(e_1 : \tau_1, e_2 : \tau_2) : \tau, \texttt{DiscreteCase}(e_1' : \tau_1', e_2' : \tau_2') : \tau'} \\
+	&= \begin{cases}
 		\sem{e_1, e_1' } \gg\!= \lambda(u_1, i).\sem{ e_2, e_2' } \gg\!= \lambda(u_2, j).\begin{cases}
 			% \sem{ \uniform(v_1, w_1) : \tau, \discrete(v_{000}, v_{001}, \ldots, v_{00n})} \\
 			% \text{ if } u_1 = v_1, u_1' = 0, u_2 = w_1, u_2' = 0 \\
@@ -846,7 +977,8 @@ We assume the expressions $e, e'$ are well-typed.
 		\end{cases} \\
 		\text{s.t. } v_{ijk} = \text{CDF}_{\text{unif}(u_1, u_2)}(b_{k+1}) - \text{CDF}_{\text{unif}(u_1, u_2)}(b_{k}) \quad &\text{if } e_1 \neq v_1 \text{ or } e_2 \neq v_2 \\
 	\end{cases} \\
-	\texttt{DiscreteCase}(e_1,e_2) &= \letkw \; v_1' = e_1 \; \inkw \\
+	&\texttt{DiscreteCase}(e_1,e_2) \\
+	&= \letkw \; v_1' = e_1 \; \inkw \\
 			&\letkw \; v_2' = e_2 \; \inkw \\
 			&\ifkw\; v_1' \fineq{l+1} \finconst{0}{l+1}\; \logand \; v_2' \fineq{m+1} \finconst{0}{m+1}\; \thenkw \\
 			&\quad \discrete(v_{000}, v_{001}, \ldots, v_{00n}) \\
@@ -861,16 +993,69 @@ We assume the expressions $e, e'$ are well-typed.
 	&\tau_2 = \floattype{B_2}{V_2}, B_2 = \{\sim_1\!\!d_1, \ldots, \sim_n\!\!d_m\}, V_2 = \{w_1, \ldots, w_s\} \\
 	&\tau' = \fin{n+1}, \tau_1' = \fin{l+1}, \tau_2' = \fin{m+1} \\
 	%% value float
-	\sem{ v : \tau, v' : \tau } &= \delta_{(v, v')} \text{ if } v = v' \\
+	&\sem{ v : \tau, v' : \tau } \\
+	&= \delta_{(v, v')} \text{ if } v = v' \\
 	&\text{where } \tau = \floattype{B}{V}, B = \top \\
 	%% value fin
-	\sem{ v : \tau, \finconst{k}{n} : \tau' } &= \delta_{(v, \finconst{k}{n})} \text{ if } v \in \intervals{B}_k \\
+	&\sem{ v : \tau, \finconst{k}{n} : \tau' } \\
+	&= \delta_{(v, \finconst{k}{n})} \text{ if } v \in \intervals{B}_k \\
 	&\text{where } \tau = \floattype{B}{V}, B = \{\sim_1\!\!b_1, \ldots, \sim_n\!\!b_n\}, \tau' = \fin{n+1} \\
 \end{align*}
 }
 
 \subsubsection{Lemmas}
 We want to show the following lemmas for the pairing semantics:
+
+\begin{lemma}[Substitution for pairs]
+	If $\Gamma, (x : \tau_1, x' : \tau_1') \vdash (e_2 : \tau_2, e_2' : \tau_2')$ and $\Gamma \vdash (v : \tau_1, v' : \tau_1')$, then $\Gamma \vdash (e_2[v/x] : \tau_2, e_2'[v'/x'] : \tau_2')$.
+\end{lemma}
+
+\begin{proof}
+	By induction. Apply the general substitution lemma twice.
+\end{proof}
+
+\begin{lemma}
+	Let $e$ be a well-typed expression of type $\tau$. Then:
+	\begin{enumerate}
+		\item If $e$ is a value, then $\discretize{e : \tau}$ is a value.
+		\item If $e$ is an expression, then $\discretize{e : \tau}$ is an expression.
+	\end{enumerate}
+\end{lemma}
+
+\begin{proof}
+	By induction on $e$. 
+	\textbf{Case} $e$ constant. $\discretize{c : \floattype{B}{V}}$ is defined as:
+	\[
+		\begin{cases}
+			x &\text{ if } B = \top \\
+			\finconst{k}{n+1} \text{s.t.} c \in \intervals{B}_k &\text{ if } B \neq \top
+		\end{cases}
+	\]
+	In both cases, the output is a constant, hence a value.
+
+	\textbf{Case} $e$ is a let statement $\letkw x = e_1 \inkw e_2$. $e$ is a non-value expression.
+	\[
+	\discretize{letkw x = e_1 \inkw e_2} = \letkw = \discretize{e_1} \inkw \discretize{e_2}
+	\]
+	This is a let expression, a non-value.
+\end{proof}
+
+\begin{lemma}[Dirac continuations for pairs]
+	Let $\tau$ be a type, and let $B = \relation_{\tau} \cup \{\bot\}$. In every semantic clause $\sem{e : \tau}$, whenever a monadic bind $\mu \gg\!= f$ appears, the continution $f$ has type $A \to \mathcal{D}(B)$ for some measurable space $A$, and moreover for each input $a \in A$, then $f(a) = \delta_{b_a}$ for some $b_a \in B$.
+\end{lemma}
+
+\begin{proof}
+	
+\end{proof}
+
+\begin{lemma}[Well-defined]
+	For all well-typed expressions $(e : \tau, e' : \tau')$ such that $\relation_{\tau}(e,e')$, $\sem{(e,e')} \in \mathcal{D}(\relation_{\tau} + \bot)$.
+\end{lemma}
+
+
+
+
+
 \begin{lemma}[Progress with Error]
 	If $(e_1 : \tau, e_1' : \tau')$, then either:
 	\begin{enumerate}
@@ -884,9 +1069,6 @@ We want to show the following lemmas for the pairing semantics:
 	If $(e_1 : \tau, e_1' : \tau')$ and $\sem{e_1,e_1'}(\{(e_2,e_2')\}) = 1$ where $(e_2,e_2') \neq \top$, then $(e_2 : \tau, e_2' : \tau')$.
 \end{lemma}
 
-\begin{lemma}[Substitution]
-	If $\Gamma, (x : \tau_1, x' : \tau_1') \vdash (e_2 : \tau_2, e_2' : \tau_2')$ and $\Gamma \vdash (v : \tau_1, v' : \tau_1')$, then $\Gamma \vdash (e_2[v/x] : \tau_2, e_2'[v'/x'] : \tau_2')$.
-\end{lemma}
 
 \begin{lemma}
 	If $\relation(e,e')$ holds, then $\sem{ e,e' }(\{(f,f') : R(f,f')\}) = 1$. 
