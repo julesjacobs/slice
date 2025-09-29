@@ -33,3 +33,60 @@ tex/.DS_Store
 *.log
 tex/.DS_Store
 tex/slice.synctex(busy)
+## Global LaTeX build artifacts (anywhere in the repo)
+# Core aux files
+**/*.aux
+**/*.auxlock
+**/*.bbl
+**/*.bcf
+**/*.blg
+**/*.fdb_latexmk
+**/*.fls
+**/*.lof
+**/*.log
+**/*.lot
+**/*.nav
+**/*.out
+**/*.run.xml
+**/*.snm
+**/*.synctex.gz
+**/*.synctex(busy)
+**/*.toc
+**/*.vrb
+# Less common but LaTeX-related
+**/*.dvi
+**/*.xdv
+**/*.ps
+**/*.idx
+**/*.ind
+**/*.ilg
+**/*.thm
+**/*.acn
+**/*.acr
+**/*.alg
+**/*.glg
+**/*.glo
+**/*.gls
+**/*.ist
+**/*.xdy
+
+# PDFs produced by LaTeX in tex/ subtrees and at repo root
+tex/**/*.pdf
+/*.pdf
+## LaTeX build artifacts for semantics.tex
+# When building from repo root
+semantics.aux
+semantics.fdb_latexmk
+semantics.fls
+semantics.log
+semantics.out
+semantics.synctex.gz
+semantics.pdf
+# When building from its subdirectory
+tex/semantics/semantics.aux
+tex/semantics/semantics.fdb_latexmk
+tex/semantics/semantics.fls
+tex/semantics/semantics.log
+tex/semantics/semantics.out
+tex/semantics/semantics.synctex.gz
+tex/semantics/semantics.pdf
