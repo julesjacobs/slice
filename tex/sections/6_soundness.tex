@@ -705,6 +705,58 @@ We assume the expressions are well-typed. Since we assume all expressions are we
 }
 
 \subsubsection{Lemmas for $e$}
+% \begin{lemma}[Substitution]
+% 	If $\Gamma, x : \tau_1 \vdash e : \tau_2$ and $\emptyset \vdash v : \tau_1$, then $\Gamma \vdash e[v/x] : \tau_2$. 
+% \end{lemma}
+
+% \begin{proof}
+% 	We proceed by induction on $e$:
+
+% 	\textbf{Case} $e = y$ (variable). There are two subcases. If $y=x$, then $e[v/x] = v$. This also means  $\Gamma, x:\tau_1 \vdash e:\tau_2$ becomes $\Gamma, x:\tau_1 \vdash x:\tau_1$, and we have $\tau_2 = \tau_1$. Hence $\emptyset \vdash v : \tau_1$ becomes $\emptyset \vdash v : \tau_2$, and $\Gamma \vdash e[v/x] : \tau_2$, as required. If $y \neq x$, then $y$ must be bound in $\Gamma$. The substitution does nothing: $e[v/x] = y$. Since $\Gamma, x : \tau_1 \vdash y : \tau_2$ and $y \neq x$, we have $\Gamma \vdash y : \tau_2$. Thus, $\Gamma \vdash e[v/x] : \tau_2$.
+
+% 	\textbf{Case} $e$ is a constant or a discrete distribution. Substitution does not change either: $e[v/x] = e$. Typing of constants nor $\discrete(v_0,\ldots,v_n)$ do not depend on $x$, so $\Gamma \vdash e : \tau_2$. Hence, $\Gamma \vdash e[v/x] : \tau_2$.
+
+% 	\textbf{Case} $e$ is a comparison $e_1 < e_2$. The argument proceeds identically in both the float and fin comparisons. Without loss of generality, by the typing rule for comparisons, we have:
+% 	\[
+% 		\inferrule
+% 		{\ \Gamma, x : \tau_1 \vdash e_1 : \tau \text{ and } \Gamma, x : \tau_1 \vdash e_2 : \tau}
+% 		{\Gamma, x : \tau_1 \vdash e_1 < e_2 : \bool}
+% 	\]
+% 	By the induction hypothesis, we have $\Gamma \vdash e_1[v/x] : \tau$ and $\Gamma \vdash e_2[v/x] : \tau$. Thus, $\Gamma \vdash (e_1 < e_2)[v/x] : \bool$ since $(e_1 < e_2)[v/x] = e_1[v/x] < e_2[v/x]$ and the typing rule for $<$ applies directly.
+
+% 	\textbf{Case} $e$ is an if-else statement $\ifkw \; e_1 \; \thenkw \; e_2 \; \elsekw \; e_3$. By the typing rule for if-else, we have:
+% 	\[
+% 		\inferrule
+% 		{\ \Gamma, x : \tau_1 \vdash e_1 : \bool \text{ and } \Gamma, x : \tau_1 \vdash e_2 : \tau \text{ and } \Gamma, x : \tau_1 \vdash e_3 : \tau}
+% 		{\Gamma, x : \tau_1 \vdash \ifkw \; e_1 \; \thenkw \; e_2 \; \elsekw \; e_3 : \tau}
+% 	\]
+% 	By the induction hypothesis, we have $\Gamma \vdash e_1[v/x] : \bool$, $\Gamma \vdash e_2[v/x] : \tau$, and $\Gamma \vdash e_3[v/x] : \tau$. Thus, $\Gamma \vdash (\ifkw \; e_1 \; \thenkw \; e_2 \; \elsekw \; e_3)[v/x] : \tau$ since $(\ifkw \; e_1 \; \thenkw \; e_2 \; \elsekw \; e_3)[v/x] = \ifkw \; e_1[v/x] \; $ $\thenkw \; e_2[v/x] \; \elsekw \; e_3[v/x]$ and the typing rule for if-else applies directly.
+
+% 	\textbf{Case} $e$ is a let statement $\letkw \; y \; = e_1 \; \inkw \; e_2$. This is further broken down into two subcases, $y \neq x$ meaning the binder does not shadow $x$ and $y = x$ meaning the binder shadows $x$. For the former case when $y \neq x$, by the typing rule for let, we have:
+% 	\[
+% 		\inferrule
+% 		{\ \Gamma, x : \tau_1 \vdash e_1 : \tau_1' \text{ and } \Gamma, x : \tau_1, y : \tau_1' \vdash e_2 : \tau_2}
+% 		{\Gamma, x : \tau_1 \vdash \letkw \; y = e_1 \; \inkw \; e_2 : \tau_2}
+% 	\]
+% 	By the induction hypothesis, we have $\Gamma \vdash e_1[v/x] : \tau_1'$ and $\Gamma, y : \tau_1' \vdash e_2[v/x] : \tau_2$. Thus, $\Gamma \vdash (\letkw \; y = e_1 \; \inkw \; e_2)[v/x] : \tau_2$ since $(\letkw \; y = e_1 \; \inkw \; e_2)[v/x] = \letkw \; y = e_1[v/x] \; \inkw \; e_2[v/x]$ and the typing rule for let applies directly.
+
+% 	For the latter case when $y = x$, by the typing rule for let, we have:
+% 	\[
+% 		\inferrule
+% 		{\ \Gamma, x : \tau_1 \vdash e_1 : \tau_1' \text{ and } \Gamma, x : \tau_1 \vdash e_2 : \tau_2}
+% 		{\Gamma, x : \tau_1 \vdash \letkw \; y = e_1 \; \inkw \; e_2 : \tau_2}
+% 	\]
+% 	By the induction hypothesis, we have $\Gamma \vdash e_1[v/x] : \tau_1'$. We have $\Gamma \vdash (\letkw \; y = e_1 \; \inkw \; e_2)[v/x] : \tau_2$ since $(\letkw \; y = e_1 \; \inkw \; e_2)[v/x] = \letkw \; y = e_1[v/x] \; \inkw \; e_2$ by the rules of capture-avoiding substitution.
+
+% 	\textbf{Case} $e$ is a uniform distribution $\uniform(e_1,e_2)$. By the typing rule for uniform, we have:
+% 	\[		
+% 		\inferrule
+% 		{\ \Gamma, x : \tau_1 \vdash e_1 : \tau \text{ and } \Gamma, x : \tau_1 \vdash e_2 : \tau}
+% 		{\Gamma, x : \tau_1 \vdash \uniform(e_1,e_2) : \tau}
+% 	\]
+% 	By the induction hypothesis, we have $\Gamma \vdash e_1[v/x] : \tau$ and $\Gamma \vdash e_2[v/x] : \tau$. Thus, $\Gamma \vdash \uniform(e_1, e_2)[v/x] : \tau$ since $\uniform(e_1,e_2)[v/x] = \uniform(e_1[v/x], e_2[v/x])$ and the typing rule for uniform applies directly.
+% \end{proof}
+
 \begin{lemma}[Substitution]
 	If $\Gamma, x : \tau_1 \vdash e : \tau_2$ and $\emptyset \vdash v : \tau_1$, then $\Gamma \vdash e[v/x] : \tau_2$. 
 \end{lemma}
@@ -712,142 +764,200 @@ We assume the expressions are well-typed. Since we assume all expressions are we
 \begin{proof}
 	We proceed by induction on $e$:
 
-	\textbf{Case} $e = y$ (variable). There are two subcases. If $y=x$, then $e[v/x] = v$. This also means  $\Gamma, x:\tau_1 \vdash e:\tau_2$ becomes $\Gamma, x:\tau_1 \vdash x:\tau_1$, and we have $\tau_2 = \tau_1$. Hence $\emptyset \vdash v : \tau_1$ becomes $\emptyset \vdash v : \tau_2$, and $\Gamma \vdash e[v/x] : \tau_2$, as required. If $y \neq x$, then $y$ must be bound in $\Gamma$. The substitution does nothing: $e[v/x] = y$. Since $\Gamma, x : \tau_1 \vdash y : \tau_2$ and $y \neq x$, we have $\Gamma \vdash y : \tau_2$. Thus, $\Gamma \vdash e[v/x] : \tau_2$.
+	\textbf{Case} $e$ is a variable $y$. There are two subcases. 
 
-	\textbf{Case} $e$ is a constant or a discrete distribution. Substitution does not change either: $e[v/x] = e$. Typing of constants nor $\discrete(v_0,\ldots,v_n)$ do not depend on $x$, so $\Gamma \vdash e : \tau_2$. Hence, $\Gamma \vdash e[v/x] : \tau_2$.
+	\begin{itemize}
+		\item If $y = x$, then
+		\[
+			e[v/x] = v.
+		\]
+		We know
+		\[
+			\Gamma, x : \tau_1 \vdash x : \tau_1,
+		\]
+		so $\tau_2 = \tau_1$. Since $\emptyset \vdash v : \tau_1$, we also have
+		\[
+			\emptyset \vdash v : \tau_2.
+		\]
+		Hence
+		\[
+			\Gamma \vdash e[v/x] : \tau_2.
+		\]
 
-	\textbf{Case} $e$ is a comparison $e_1 < e_2$. The argument proceeds identically in both the float and fin comparisons. Without loss of generality, by the typing rule for comparisons, we have:
+		\item If $y \neq x$, then the substitution does nothing:
+		\[
+			e[v/x] = y.
+		\]
+		Since $\Gamma, x : \tau_1 \vdash y : \tau_2$ and $y \neq x$, it follows that $y$ must be bound in $\Gamma$, and therefore
+		\[
+			\Gamma \vdash y : \tau_2.
+		\]
+		Thus,
+		\[
+			\Gamma \vdash e[v/x] : \tau_2.
+		\]
+	\end{itemize}
+
+	\textbf{Case} $e$ is a constant or a discrete distribution $\discrete(v_0,\ldots,v_n)$. Substitution does not change either:
+	\[
+		e[v/x] = e.
+	\]
+	Typing of constants or discrete does not depend on $x$, so
+	\[
+		\Gamma \vdash e : \tau_2.
+	\]
+	Hence
+	\[
+		\Gamma \vdash e[v/x] : \tau_2.
+	\]
+
+	\textbf{Case} $e$ is a comparison $e_1 < e_2$. By \textsc{Less}, we have:
 	\[
 		\inferrule
-		{\ \Gamma, x : \tau_1 \vdash e_1 : \tau \text{ and } \Gamma, x : \tau_1 \vdash e_2 : \tau}
+		{\ \Gamma, x : \tau_1 \vdash e_1 : \tau \quad \Gamma, x : \tau_1 \vdash e_2 : \tau}
 		{\Gamma, x : \tau_1 \vdash e_1 < e_2 : \bool}
 	\]
-	By the induction hypothesis, we have $\Gamma \vdash e_1[v/x] : \tau$ and $\Gamma \vdash e_2[v/x] : \tau$. Thus, $\Gamma \vdash (e_1 < e_2)[v/x] : \bool$ since $(e_1 < e_2)[v/x] = e_1[v/x] < e_2[v/x]$ and the typing rule for $<$ applies directly.
+	By the induction hypothesis,
+	\[
+		\Gamma \vdash e_1[v/x] : \tau
+		\quad\text{and}\quad
+		\Gamma \vdash e_2[v/x] : \tau.
+	\]
+	Given these, \textsc{Less} lets us derive:
+	\[
+		\Gamma \vdash e_1[v/x] < e_2[v/x] : \bool,
+	\]
+	and thus:
+	\[
+		\Gamma \vdash (e_1 < e_2)[v/x] : \bool
+	\]
+	since $(e_1 < e_2)[v/x] = e_1[v/x] < e_2[v/x]$ by the definition of substitution.
 
-	\textbf{Case} $e$ is an if-else statement $\ifkw \; e_1 \; \thenkw \; e_2 \; \elsekw \; e_3$. By the typing rule for if-else, we have:
+	\textbf{Case} $e$ is an if-else $\ifkw \; e_1 \; \thenkw \; e_2 \; \elsekw \; e_3$. By \textsc{If}, we have:
 	\[
 		\inferrule
-		{\ \Gamma, x : \tau_1 \vdash e_1 : \bool \text{ and } \Gamma, x : \tau_1 \vdash e_2 : \tau \text{ and } \Gamma, x : \tau_1 \vdash e_3 : \tau}
+		{\ \Gamma, x : \tau_1 \vdash e_1 : \bool \quad \Gamma, x : \tau_1 \vdash e_2 : \tau \quad \Gamma, x : \tau_1 \vdash e_3 : \tau}
 		{\Gamma, x : \tau_1 \vdash \ifkw \; e_1 \; \thenkw \; e_2 \; \elsekw \; e_3 : \tau}
 	\]
-	By the induction hypothesis, we have $\Gamma \vdash e_1[v/x] : \bool$, $\Gamma \vdash e_2[v/x] : \tau$, and $\Gamma \vdash e_3[v/x] : \tau$. Thus, $\Gamma \vdash (\ifkw \; e_1 \; \thenkw \; e_2 \; \elsekw \; e_3)[v/x] : \tau$ since $(\ifkw \; e_1 \; \thenkw \; e_2 \; \elsekw \; e_3)[v/x] = \ifkw \; e_1[v/x] \; $ $\thenkw \; e_2[v/x] \; \elsekw \; e_3[v/x]$ and the typing rule for if-else applies directly.
+	By the induction hypothesis,
+	\[
+		\Gamma \vdash e_1[v/x] : \bool,
+		\quad
+		\Gamma \vdash e_2[v/x] : \tau,
+		\quad
+		\Gamma \vdash e_3[v/x] : \tau.
+	\]
+	Given these, \textsc{If} lets us derive:
+	\[
+		\Gamma \vdash \ifkw \; e_1[v/x] \; \thenkw \; e_2[v/x] \; \elsekw \; e_3[v/x] : \tau,
+	\]
+	and thus:
+	\[
+		\Gamma \vdash (\ifkw \; e_1 \; \thenkw \; e_2 \; \elsekw \; e_3)[v/x] : \tau
+	\]
+	since $(\ifkw \; e_1 \; \thenkw \; e_2 \; \elsekw \; e_3)[v/x] = \ifkw \; e_1[v/x] \; \thenkw \; e_2[v/x] \; \elsekw \; e_3[v/x]$ by the definition of substitution.
 
-	\textbf{Case} $e$ is a let statement $\letkw \; y \; = e_1 \; \inkw \; e_2$. This is further broken down into two subcases, $y \neq x$ meaning the binder does not shadow $x$ and $y = x$ meaning the binder shadows $x$. For the former case when $y \neq x$, by the typing rule for let, we have:
+	\textbf{Case} $e$ is a let statement $\letkw \; y = e_1 \; \inkw \; e_2$. We distinguish two subcases.
+
+	\begin{itemize}
+		\item If $y \neq x$, then by \textsc{Let} we have:
+		\[
+			\inferrule
+			{\ \Gamma, x : \tau_1 \vdash e_1 : \tau_1' \quad \Gamma, x : \tau_1, y : \tau_1' \vdash e_2 : \tau_2'}
+			{\Gamma, x : \tau_1 \vdash \letkw \; y = e_1 \; \inkw \; e_2 : \tau_2'}
+		\]
+		By the induction hypothesis,
+		\[
+			\Gamma \vdash e_1[v/x] : \tau_1'
+			\quad\text{and}\quad
+			\Gamma, y : \tau_1' \vdash e_2[v/x] : \tau_2'.
+		\]
+		Given these, \textsc{Let} lets us derive:
+		\[
+			\Gamma \vdash \letkw \; y = e_1[v/x] \; \inkw \; e_2[v/x] : \tau_2',
+		\]
+		and thus:
+		\[
+			\Gamma \vdash (\letkw \; y = e_1 \; \inkw \; e_2)[v/x] : \tau_2'
+		\]
+		since $(\letkw \; y = e_1 \; \inkw \; e_2)[v/x] = \letkw \; y = e_1[v/x] \; \inkw \; e_2[v/x]$.
+
+		\item If $y = x$, then by the typing rule:
+		\[
+			\inferrule
+			{\ \Gamma, x : \tau_1 \vdash e_1 : \tau_1' \quad \Gamma, x : \tau_1 \vdash e_2 : \tau_2}
+			{\Gamma, x : \tau_1 \vdash \letkw \; x = e_1 \; \inkw \; e_2 : \tau_2}
+		\]
+		By the induction hypothesis,
+		\[
+			\Gamma \vdash e_1[v/x] : \tau_1'.
+		\]
+		By capture-avoiding substitution,
+		\[
+			(\letkw \; x = e_1 \; \inkw \; e_2)[v/x] = \letkw \; x = e_1[v/x] \; \inkw \; e_2.
+		\]
+		Hence,
+		\[
+			\Gamma \vdash (\letkw \; x = e_1 \; \inkw \; e_2)[v/x] : \tau_2.
+		\]
+	\end{itemize}
+
+	\textbf{Case} $e$ is a uniform distribution $\uniform(e_1,e_2)$. By \textsc{Continuous-2}, we have:
 	\[
 		\inferrule
-		{\ \Gamma, x : \tau_1 \vdash e_1 : \tau_1' \text{ and } \Gamma, x : \tau_1, y : \tau_1' \vdash e_2 : \tau_2}
-		{\Gamma, x : \tau_1 \vdash \letkw \; y = e_1 \; \inkw \; e_2 : \tau_2}
-	\]
-	By the induction hypothesis, we have $\Gamma \vdash e_1[v/x] : \tau_1'$ and $\Gamma, y : \tau_1' \vdash e_2[v/x] : \tau_2$. Thus, $\Gamma \vdash (\letkw \; y = e_1 \; \inkw \; e_2)[v/x] : \tau_2$ since $(\letkw \; y = e_1 \; \inkw \; e_2)[v/x] = \letkw \; y = e_1[v/x] \; \inkw \; e_2[v/x]$ and the typing rule for let applies directly.
-
-	For the latter case when $y = x$, by the typing rule for let, we have:
-	\[
-		\inferrule
-		{\ \Gamma, x : \tau_1 \vdash e_1 : \tau_1' \text{ and } \Gamma, x : \tau_1 \vdash e_2 : \tau_2}
-		{\Gamma, x : \tau_1 \vdash \letkw \; y = e_1 \; \inkw \; e_2 : \tau_2}
-	\]
-	By the induction hypothesis, we have $\Gamma \vdash e_1[v/x] : \tau_1'$. We have $\Gamma \vdash (\letkw \; y = e_1 \; \inkw \; e_2)[v/x] : \tau_2$ since $(\letkw \; y = e_1 \; \inkw \; e_2)[v/x] = \letkw \; y = e_1[v/x] \; \inkw \; e_2$ by the rules of capture-avoiding substitution.
-
-	\textbf{Case} $e$ is a uniform distribution $\uniform(e_1,e_2)$. By the typing rule for uniform, we have:
-	\[		
-		\inferrule
-		{\ \Gamma, x : \tau_1 \vdash e_1 : \tau \text{ and } \Gamma, x : \tau_1 \vdash e_2 : \tau}
+		{\ \Gamma, x : \tau_1 \vdash e_1 : \tau \quad \Gamma, x : \tau_1 \vdash e_2 : \tau}
 		{\Gamma, x : \tau_1 \vdash \uniform(e_1,e_2) : \tau}
 	\]
-	By the induction hypothesis, we have $\Gamma \vdash e_1[v/x] : \tau$ and $\Gamma \vdash e_2[v/x] : \tau$. Thus, $\Gamma \vdash \uniform(e_1, e_2)[v/x] : \tau$ since $\uniform(e_1,e_2)[v/x] = \uniform(e_1[v/x], e_2[v/x])$ and the typing rule for uniform applies directly.
+	By the induction hypothesis,
+	\[
+		\Gamma \vdash e_1[v/x] : \tau
+		\quad\text{and}\quad
+		\Gamma \vdash e_2[v/x] : \tau.
+	\]
+	Given these, \textsc{Continuous-2} lets us derive:
+	\[
+		\Gamma \vdash \uniform(e_1[v/x], e_2[v/x]) : \tau,
+	\]
+	and thus:
+	\[
+		\Gamma \vdash \uniform(e_1,e_2)[v/x] : \tau
+	\]
+	since $\uniform(e_1,e_2)[v/x] = \uniform(e_1[v/x], e_2[v/x])$ by the definition of substitution.
+\end{proof}
+
+\begin{lemma}[Canonical forms]
+	Let $v$ be a closed value. 
+	\begin{enumerate}
+		\item If $\emptyset \vdash v : \bool$, then $v \in \{\true, \false\}$.
+		\item If $\emptyset \vdash v : \floattype{B}{V}$, then $v \in \R$.
+		\item If $\emptyset \vdash v : \fin{n}$, then $v \in \Nats$.
+	\end{enumerate}
+\end{lemma}
+
+\begin{lemma}[Typed replacement]
+	All under empty context.
+	\begin{enumerate}
+		\item If $\emptyset \vdash \ifkw \; e_1 \; \thenkw \; e_2 \; \elsekw \; e_3 : \tau$ and $\emptyset \vdash e_1' : \bool$, then $\emptyset \vdash \ifkw \; e_1' \; \thenkw \; e_2 \; \elsekw \; e_3 : \tau$.
+		
+		\item If $\emptyset \vdash e_1 < e_2 : \bool$ and $\emptyset \vdash e_1' : \floattype{B}{V}$, then $\emptyset \vdash e_1' < e_2 : \bool$. Likewise, if $\emptyset \vdash e_1 < e_2 : \bool$ and $\emptyset \vdash e_2' : \floattype{B}{V}$, then $\emptyset \vdash e_1 < e_2' : \bool$.
+		
+		\item If $\emptyset \vdash e_1 \finlt{n} e_2 : \bool$ and $\emptyset \vdash e_1' : \fin{n}$, then $\emptyset \vdash e_1' < e_2 : \bool$. Likewise, if $\emptyset \vdash e_1 \finlt{n} e_2 : \bool$ and $\emptyset \vdash e_2' : \fin{n}$, then $\emptyset \vdash e_1 < e_2' : \bool$.
+		
+		\item If $\emptyset \vdash \uniform(e_1,e_2) : \floattype{B}{V}$ and $\emptyset \vdash e_1' : \floattype{B}{V}$, then $\emptyset \vdash \uniform(e_1',e_2) : \floattype{B}{V}$. Likewise, if $\emptyset \vdash \uniform(e_1,e_2) : \floattype{B}{V}$ and $\emptyset \vdash e_2' : \floattype{B}{V}$, then $\emptyset \vdash \uniform(e_1,e_2') : \floattype{B}{V}$.
+		
+		\item If $\emptyset \vdash \letkw \; x = e_1 \; \inkw \; e_2 : \tau_2$ and $\emptyset \vdash e_1' : \tau_1$, then $\emptyset \vdash \letkw \; x = e_1' \; \inkw \; e_2 : \tau_2$.
+	\end{enumerate}
+\end{lemma}
+
+\begin{proof}
+	Each item is a one-step inversion on the given typing and reconstruction with the indicated premise.
 \end{proof}
 
 \begin{proposition}[Bind typing principle]
 	Let $A,B$ be measurable spaces. If $\mu \in \mathcal{D}(A)$ and $f : A \to \mathcal{D}(B)$, then $\mu \gg\!= f \in \mathcal{D}(B)$. In particular, if $f(a) = \delta_{b_a}$ with $b_a \in B$ for all $a \in A$, then $\mu \gg\!= f \in \mathcal{D}(B)$.
 \end{proposition}
 
-\begin{lemma}[Dirac continuations]
-	Let $\tau$ be a type, and let $B = Expr_{\tau} \cup \{\bot\}$. In every semantic clause $\sem{e : \tau}$, whenever a monadic bind $\mu \gg\!= f$ appears, the continution $f$ has type $A \to \mathcal{D}(B)$ for some measurable space $A$, and moreover for each input $a \in A$, $f(a)$ is a Dirac distribution $\delta_{b_a}$ for some $b_a \in B$.
-\end{lemma}
-
-\begin{proof}
-	By induction on the structure of the typing derivation $e : \tau$. 
-
-	\textbf{Case} values. $\sem{v : \tau} = \delta_{v : \tau}$. No bind appears, so the lemma is vacucously true.
-
-	\textbf{Case} let. We have:
-	\[
-	\sem{\letkw \; x = e_1 : \tau_1 \; \inkw \; e_2 : \tau_2 : \tau_2} = \sem{e_1 : \tau_1} \gg\!= f,
-	\]
-	with
-	\[
-	f(w) =
-	\begin{cases}
-		\delta_{\bot} &w = \bot \\
-		\delta_{e_2[w/x] : \tau_2} &w = v \\
-	\end{cases}
-	\]
-	Either $e_1$ is a value or an expression. If $e_1$ is an expression, then it itself is a monadic bind, and by the induction hypothesis, is a Dirac distribution $\delta_{b_a}$ for some $b_a \in B$. Here, $A = Expr_{\tau_1} \cup \{\bot\}$ and $B = Expr_{\tau_2} \cup \{\bot\}$. Every branch of $f$ is a Dirac distribution at an element of $B$.
-
-	\textbf{Case} if-then. We have:
-	\[
-	\sem{\ifkw \; e_1 : \bool \; \thenkw \; e_2 : \tau \; \elsekw \; e_3 : \tau : \tau} = \sem{e_1 : \bool} \gg\!= g,
-	\]
-	with
-	\[
-	g(w) =
-	\begin{cases}
-		\delta_{\bot} &w = \bot \\
-		\delta_{e_2 : \tau} &w = \true \\
-		\delta_{e_3 : \tau} &w = \false \\
-	\end{cases}
-	\]
-	Either $e_1$ is a value or an expression. If $e_1$ is an expression, then it itself is a monadic bind, and by the induction hypothesis, is a Dirac distribution $\delta_{b_a}$ for some $b_a \in B$. Here, $A = Expr_{\bool} \cup \{\bot\}$ and $B = Expr_{\tau} \cup \{\bot\}$. Every branch of $g$ is a Dirac distribution at an element of $B$.
-
-	\textbf{Case} comparison. We have:
-	\[
-	\sem{e_1 : \tau < e_2 : \tau : \bool} = \sem{e_1 : \tau} \gg\!= h_1,
-	\]
-	with
-	\[
-	h_1(w) =
-	\begin{cases}
-		\delta_{\bot} &w = \bot \\
-		\sem{e_2 : \tau} \gg\!= h_2 &w = v_1 \\
-	\end{cases}
-	\]
-	and
-	\[
-	h_2(w_2) =
-	\begin{cases}
-		\delta_{\bot} &w_2 = \bot \\
-		\delta_{\true : \bool} &v_1 < v_2 \\
-		\delta_{\false : \bool} &v_1 \geq v_2 \\
-	\end{cases}
-	\]
-	Either $e_1,e_2$ is a value or an expression. If $e_1$ and $e_2$ are expressions, then they are monadic binds, and by the induction hypothesis, is a Dirac distribution $\delta_{b_a}$ for some $b_a \in B$. Here, $A = Expr_{\tau} \cup \{\bot\}$ and $B = Expr_{\bool} \cup \{\bot\}$. Every branch of $h_1, h_2$ is a Dirac distribution at an element of $B$.
-
-	\textbf{Case} uniform. We have:
-	\[
-	\sem{\uniform(e_1 : \tau_1, e_2 : \tau_2) : \tau} = \sem{e_1 : \tau_1} \gg\!= u_1,
-	\]
-	with
-	\[
-	u_1(w) =
-	\begin{cases}
-		\delta_{\bot} &w = \bot \\
-		\sem{e_2 : \tau_2} \gg\!= u_2 &w = v_1 \\
-	\end{cases}
-	\]
-	and
-	\[
-	u_2(w_2) =
-	\begin{cases}
-		\delta_{\bot} &w_2 = \bot \\
-		\delta_{\text{Uniform}(v_1,v_2) : \tau} &v_1 \leq v_2 \\
-		\delta_{\bot} &v_1 > v_2 \\
-	\end{cases}
-	\]
-	Either $e_1,e_2$ is a value or an expression. If $e_1$ and $e_2$ are expressions, then they are monadic binds, and by the induction hypothesis, is a Dirac distribution $\delta_{b_a}$ for some $b_a \in B$. Here, $A = Expr_{\tau_1} \cup \{\bot\}$ and $B = Expr_{\tau} \cup \{\bot\}$. Every branch of $u_1,u_2$ is a Dirac distribution at an element of $B$.
-\end{proof}
-
 	
-
 \begin{lemma}[Well-Defined]
 	For all well-typed expressions $e : \tau$, $\sem{e : \tau} \in \mathcal{D}(Expr_{\tau} + \bot)$.
 \end{lemma}
@@ -855,16 +965,97 @@ We assume the expressions are well-typed. Since we assume all expressions are we
 \begin{proof}
 	By induction on the structure of the typing derivation $e : \tau$. We do a case analysis on the last rule used.
 
-		\textbf{Case} constant $v : \tau$. If $e$ is a literal (boolean, float, finite), then $e$ is a value by the definition of values. $\sem{v : \tau} = \delta_{v : \tau}$. 
-		
-		\textbf{Case} comparisons $e_1 < e_2 : \bool$. From typing we have $\Gamma \vdash e_1 : \tau_1$ and $\Gamma \vdash e_2 : \tau_2$. Applying IH to $e_1$ and $e_2$, we have the following possibilities:
+		\textbf{Case} constant $v : \tau$, where $\tau = \floattype{B}{V}$. It holds that $\sem{v : \tau} = \delta_{v : \tau} \in \mathcal{D}(Expr_{\tau} + \bot)$.
+
+		\textbf{Case} comparisons $e_1 < e_2 : \bool$. 
+		From typing we have 
+		\[
+		\emptyset \vdash e_1 : \float 
+		\qquad\text{and}\qquad 
+		\emptyset \vdash e_2 : \float.
+		\]
+
+		We have the following possibilities:
 		\begin{itemize}
-			\item If either $e_1 = \bot$ or $e_2 = \bot$, the semantics returns $\delta_{\bot}$ by definition of the monadic bind. 
-			\item If both $e_1 = v_1$ and $e_2 = v_2$ are values, the semantics has the value comparison clause that i) if $v_1 < v_2$ produce $\delta_{\true : \bool}$ or ii) if $v_1 \geq v_2$ produce $\delta_{\false : \bool}$. These are mutually exclusive. 
-			\item Otherwise, at least one $e_1,e_2$ is reducible: the semantics has clauses that step a reducible operand, stepping $e_2$ if $e_1$ is a value but $e_2$ is reducible, obtaining $\sem{v_1 : \tau_1 < e_2' : \tau_2 : \bool}$. $e_2'$ has type $\tau_2$ by the induction hypothesis. Otherwise, we step $e_1$, obtaining $\sem{e_1' : \tau_1 < e_2 : \tau_2 : \bool}$. $e_1'$ has type $\tau_1$ by the induction hypothesis.
+		\item If either $e_1 = \bot$ or $e_2 = \bot$, the semantics returns 
+		\[
+			\delta_{\bot} \in \mathcal{D}(Expr_{\bool} + \bot)
+		\]
+		by definition of the monadic bind. 
+
+		\item If both $e_1 = v_1$ and $e_2 = v_2$ are values, the canonical forms lemma gives float constants, and either
+		\[
+			\delta_{\true:\bool} \in \mathcal{D}(Expr_{\bool} + \bot) 
+			\quad\text{or}\quad
+			\delta_{\false:\bool} \in \mathcal{D}(Expr_{\bool} + \bot)
+		\]
+		is returned.
+
+		\item At least $e_1$ or $e_2$ is an expression. 
+		Suppose $e_1$ is an expression, then the clause
+		\[
+			\sem{e_1 : \float} \gg\!= \lambda e_1'.\;
+			\sem{e_1' < e_2 : \float : \bool}
+		\]
+		in the semantics is applied. By the IH,
+		\[
+			\sem{e_1 : \float} \in \mathcal{D}(Expr_{\float} + \bot).
+		\]
+		We use the left bind clause with 
+		\[
+			f(e_1') = \sem{e_1' < e_2},
+		\]
+		which maps
+		\[
+			(Expr_{\float} + \bot) \;\to\; \mathcal{D}(Expr_{\bool} + \bot)
+		\]
+		by the typed replacement lemma.
+
+		By Proposition~G.9, we conclude
+		\[
+			\sem{e_1 : \float} \gg\!= \lambda e_1'.\;
+			\sem{e_1' < e_2 : \float : \bool} \in \mathcal{D}(Expr_{\bool} + \bot).
+		\]
+
+		Now suppose $e_2$ is an expression, then the clause
+		\[
+			\sem{e_2 : \float} \gg\!= \lambda e_2'.\;
+			\sem{e_1 : \float < e_2' : \bool}
+		\]
+		in the semantics is applied. By the IH,
+		\[
+			\sem{e_2 : \float} \in \mathcal{D}(Expr_{\float} + \bot).
+		\]
+		We use the left bind clause with 
+		\[
+			f(e_2') = \sem{e_1 < e_2'},
+		\]
+		which maps
+		\[
+			(Expr_{\float} + \bot) \;\to\; \mathcal{D}(Expr_{\bool} + \bot)
+		\]
+		by the typed replacement lemma. 
+
+		By Proposition~G.9, we conclude
+		\[
+			\sem{e_2 : \float} \gg\!= \lambda e_2'.\;
+			\sem{e_1 : \float < e_2' : \bool} \in \mathcal{D}(Expr_{\bool} + \bot).
+		\]
 		\end{itemize}
 
-		\textbf{Case} if-else $\ifkw \; e_1 \; \thenkw \; e_2 \; \elsekw \; e_3 : \tau$. From typing we have $\Gamma \vdash e_1 : \bool$, $\Gamma \vdash e_2 : \tau$, $\Gamma \vdash e_3 : \tau$. Applying IH to $e_1$, we have the following possibilities:
+		\textbf{Case} if-else $\ifkw \; e_1 \; \thenkw \; e_2 \; \elsekw \; e_3 : \tau$. From typing we have:
+		\[
+		\emptyset \vdash e_1 : \bool 
+		\qquad\text{and}\qquad 
+		\emptyset \vdash e_2 : \tau
+		\qquad\text{and}\qquad 
+		\emptyset \vdash e_3 : \tau.
+		\]
+		We have the following possibilities:
+		
+		% finish
+		
+		$\Gamma \vdash e_1 : \bool$, $\Gamma \vdash e_2 : \tau$, $\Gamma \vdash e_3 : \tau$. Applying IH to $e_1$, we have the following possibilities:
 		\begin{itemize}
 			\item If $e_1 = \bot$, the semantics returns $\delta_{\bot}$ by definition of the monadic bind.
 			\item If $e_1 = v$ is a value, either $\delta_{e_2 : \tau}$ or $\delta_{e_3 : \tau}$ depending on $e_1$ true or false. One of these two value branches applies uniquely. 
