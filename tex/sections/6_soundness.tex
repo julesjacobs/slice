@@ -1206,7 +1206,7 @@ We assume the expressions are well-typed. Since we assume all expressions are we
 We couple the continuous (and type-annotated) program $e$ appropriately with its discretized one $\discretize{e}$. Formally, the coupling relation is:
 
 \[
-\relation_{\tau}(e : \tau,e' : \tau') \iff e' : \tau' == \discretize{e : \tau} : \discretize{\tau'}.
+\relation_{\tau}(e : \tau,e' : \tau') \iff e' : \tau' == \discretize{e : \tau} : \discretize{\tau}.
 \]
 
 In particular, we have the following:
@@ -1225,58 +1225,69 @@ We assume the expressions $e, e'$ are well-typed.
 \allowdisplaybreaks
 \begin{align*}
 	%% let
-	&\sem{ \letkw \; x = e_1 : \tau_1 \; \inkw \; e_2 : \tau_2 : \tau_2, \letkw \; x' = e_1' : \tau_1' \; \inkw \; e_2' : \tau_2' : \tau_2'} \\
+	&\sem{ \letkw \; x = e_1 : \tau_1 \; \inkw \; e_2 : \tau_2 : \tau_2, \\
+	&\letkw \; x = \discretize{e_1 : \tau_1} : \discretize{\tau_1} \; \inkw \; \discretize{e_2 : \tau_2} : \discretize{\tau_2} : \discretize{\tau_2}} \\
 	&= \begin{cases}
-		\delta_{(e_2[v/x] : \tau_2, e_2'[v'/x'] : \tau_2')} \quad &\text{ if } e_1 = v, e_1' = v' \\
-		\sem{ e_1 : \tau_1, e_1' : \tau_1'} \gg\!= \lambda (f, f'). \sem{ \letkw \; x = f \; \inkw \; e_2 : \tau_2 : \tau_2, \letkw \; x' = f' \; \inkw \; e_2' : \tau_2' : \tau_2'} \quad &\text{ if } e_1 \neq v, e_1' \neq v' \\
-	\end{cases} \\
+		\delta_{(e_2[v/x] : \tau_2, \discretize{e_2 : \tau_2}[\discretize{v : \tau_1}/x] : \discretize{\tau_2})} \quad &\text{ if } e_1 = v \\
+		\sem{ e_1 : \tau_1, \discretize{e_1 : \tau_1} : \discretize{\tau_1}} \gg\!= \lambda (f, f'). \sem{ \letkw \; x = f \; \inkw \; e_2 : \tau_2 : \tau_2, \\
+		\letkw \; x = f' \; \inkw \; \discretize{e_2 : \tau_2} : \discretize{\tau_2} : \discretize{\tau_2}} \quad &\text{ if } e_1 \neq v \\
+	\end{cases} \\[1cm]
 	%% if-else
-	&\sem{ \ifkw \; e_1 : \bool \; \thenkw \; e_2 : \tau \; \elsekw \; e_3 : \tau : \tau, \ifkw \; e_1' : \bool \; \thenkw \; e_2' : \tau' \; \elsekw \; e_3' : \tau' : \tau' } \\
+	&\sem{ \ifkw \; e_1 : \bool \; \thenkw \; e_2 : \tau \; \elsekw \; e_3 : \tau : \tau, \\
+	&\ifkw \; \discretize{e_1 : \bool} : \discretize{\bool} \; \thenkw \; \discretize{e_2 : \tau} : \discretize{\tau} \; \elsekw \; \discretize{e_3 : \tau} : \discretize{\tau} : \discretize{\tau} } \\
 	&= \begin{cases}
-		\delta_{(e_2 : \tau, e_2' : \tau')}  \quad &\text{ if $e_1 = v = \true$, $e_1' = v' = \true$} \\
-		\delta_{(e_3 : \tau, e_3' : \tau')}  \quad &\text{ if $e_1 = v = \false$, $e_1' = v' = \false$} \\
-		\sem{ e_1 : \bool, e_1' : \bool } \gg\!= \lambda (f,f'). \sem{ \ifkw \; f \; \thenkw \; e_2 : \tau \; \elsekw \; e_3 : \tau : \tau, \\
-		\ifkw \; f' \; \thenkw \; e_2' : \tau' \; \elsekw \; e_3' : \tau' : \tau'} \quad &\text{ if } e_1 \neq v, e_1' \neq v' \\
-	\end{cases} \\
+		\delta_{(e_2 : \tau, \discretize{e_2 : \tau} : \discretize{\tau})}  \quad &\text{ if $e_1 = v = \true$ } \\
+		\delta_{(e_3 : \tau, \discretize{e_3 : \tau} : \discretize{\tau})}  \quad &\text{ if $e_1 = v = \false$ } \\
+		\sem{ e_1 : \bool, \discretize{e_1 : \bool} : \discretize{\bool}} \gg\!= \lambda (f,f'). \sem{ \ifkw \; f \; \thenkw \; e_2 : \tau \; \elsekw \; e_3 : \tau : \tau, \\
+		\ifkw \; f' \; \thenkw \; \discretize{e_2 : \tau} : \discretize{\tau} \; \elsekw \; \discretize{e_3 : \tau} : \discretize{\tau} : \discretize{\tau}} \quad &\text{ if } e_1 \neq v \\
+	\end{cases} \\[1cm]
 	%% less than - float
-	&\sem{ e_1 : \tau_1 < e_2 : \tau_2 : \bool, e_1' : \tau_1 < e_2' : \tau_2 : \bool } \\
+	&\sem{ e_1 : \tau_1 < e_2 : \tau_2 : \bool, \\
+	&\discretize{e_1 : \tau_1} : \discretize{\tau_1} < \discretize{e_2 : \tau_2} : \discretize{\tau_2} : \bool } \\
 	&= \begin{cases}
-		\delta_{(v_1 < v_2 : \bool, v_1' < v_2' : \bool)} \quad &\text{ if } e_1 = v_1, e_1' = v_1', e_2 = v_2, e_2' = v_2' \\
-		\sem{ e_1 : \tau_1, e_1' : \tau_1} \gg\!= \lambda (f,f'). \sem{ f < v_2 : \tau_2, f' < v_2 : \tau_2 } \quad &\text{ if } e_1 \neq v_1, e_1' \neq v_1', e_2 = e_2' = v_2 \\
-		\sem{ e_2 : \tau_2, e_2' : \tau_2 } \gg\!= \lambda (f,f'). \sem{ v_1 : \tau_1 < f, v_1 : \tau_1 < f' } \quad &\text{ if } e_1 = e_1' = v_1, e_2 \neq v_2, e_2' \neq v_2' \\
-		\sem{ e_1 : \tau_1, e_1' : \tau_1 } \gg\!= \lambda (f,f'). \sem{ f < e_2 : \tau_2, f' < e_2' : \tau_2 } \quad &\text{ if } e_1 \neq v_1, e_1' \neq v_1', e_2 \neq v_2, e_2' \neq v_2' \\
+		\delta_{(\true : \bool, \true : \bool)} \quad &\text{ if } e_1 = v_1, e_2 = v_2, v_1 < v_2 \\
+		\delta_{(\false : \bool, \false : \bool)} \quad &\text{ if } e_1 = v_1, e_2 = v_2, v_1 \geq v_2 \\
+		\sem{ e_2 : \tau_2, \discretize{e_2 : \tau_2} : \discretize{\tau_2}} \gg\!= \lambda (f,f'). \sem{ v_1 : \tau_1 < f : \bool, \\
+		\discretize{v_1 : \tau_1} : \discretize{\tau_1} < f' : \discretize{\bool} } \quad &\text{ if } e_1 = v_1, e_2 \neq v_2 \\
+		\sem{ e_1 : \tau_1, \discretize{e_1 : \tau_1} : \discretize{\tau_1}} \gg\!= \lambda (f,f'). \sem{ f < e_2 : \tau_2 : \bool, \\
+		f' < \discretize{e_2 : \tau_2} : \discretize{\tau_2} : \bool} \quad &\text{ otherwise } \\
 	\end{cases} \\
-	&\text{where } \tau_1 = \tau_2 = \floattype{B}{V}, B = \top \\
+	&\text{where } \tau_1 = \tau_2 = \floattype{B}{V}, B = \top \\[1cm]
 	%% less than - fin
-	&\sem{ e_1 : \tau_1 < e_2 : \tau_2 : \bool, e_1' : \tau_1' \finlt{n+1} e_2' : \tau_2' : \bool } \\
+	&\sem{ e_1 : \tau_1 < e_2 : \tau_2 : \bool, \\
+	&\discretize{e_1 : \tau_1} : \discretize{\tau_1} \finlt{n+1} \discretize{e_2 : \tau_2} : \discretize{\tau_2} : \discretize{\bool} } \\
 	&= \begin{cases}
-		\delta_{(v_1 < v_2 : \bool, k_1 < k_2 : \bool)} \quad &\text{ if } e_1 = v_1, e_1' = k_{1,\#n+1}, e_2 = v_2, e_2' = k_{2,\#n+1} \\
-		\sem{ e_1 : \tau_1, e_1' : \tau_1' } \gg\!= \lambda (f,f'). \sem{ f < v_2 : \tau_2, f' \finlt{n+1} k_{2,\#n+1} : \tau_2' } \quad &\text{ if } e_1 \neq v_1, e_1' \neq k_{1,\#n+1}, e_2 = v_2, e_2' = k_{2,\#n+1} \\
-		\sem{ e_2 : \tau_2, e_2' : \tau_2' } \gg\!= \lambda (f,f'). \sem{ v_1 : \tau_1 < f, k_{1,\#n+1} : \tau_1' \finlt{n+1} f' } \quad &\text{ if } e_1 = v_1, e_1' = k_{1,\#n+1}, e_2 \neq v_2, e_2' \neq k_{2,\#n+1} \\
-		\sem{ e_1 : \tau_1, e_1' : \tau_1' } \gg\!= \lambda (f,f'). \sem{ f < e_2 : \tau_2, f' \finlt{n+1} e_2' : \tau_2' } \quad &\text{ if } e_1 \neq v_1, e_1' \neq k_{1,\#n+1}, e_2 \neq v_2, e_2' \neq k_{2,\#n+1} \\
+		\delta_{(\true : \bool, \true : \bool)} \quad &\text{ if } e_1 = v_1, e_2 = v_2, v_1 < v_2 \\
+		\delta_{(\false : \bool, \false : \bool)} \quad &\text{ if } e_1 = v_1, e_2 = v_2, v_1 \geq v_2 \\
+		\sem{ e_2 : \tau_2, \discretize{e_2 : \tau_2} : \discretize{\tau_2} } \gg\!= \lambda (f,f'). \sem{ v_1 : \tau_1 < f : \bool, \\
+		\discretize{v_1} : \discretize{\tau_1} \finlt{n+1} f' : \bool } \quad &\text{ if } e_1 = v_1, e_2 \neq v_2 \\
+		\sem{ e_1 : \tau_1, \discretize{e_1 : \tau_1} : \discretize{\tau_1}} \gg\!= \lambda (f,f'). \sem{ f \finlt{n+1} e_2 : \tau_2 : \bool, \\
+		f' \finlt{n+1} \discretize{e_2 : \tau_2} : \discretize{\tau_2} : \bool} \quad &\text{ otherwise } \\
 	\end{cases} \\
-	&\text{where } \tau_1 = \tau_2 = \floattype{B}{V}, B = \{\sim_1\!\!b_1, \ldots, \sim_n\!\!b_n\}, \tau_1' = \tau_2' = \fin{n+1} \\
+	&\text{where } \tau_1 = \tau_2 = \floattype{B}{V}, B = \{\sim_1\!\!b_1, \ldots, \sim_n\!\!b_n\}, \tau_1' = \tau_2' = \fin{n+1} \\[1cm]
 	%% uniform uniform
-	&\sem{ \uniform(e_1 : \tau_1, e_2: \tau_2) : \tau, \uniform(e_1' : \tau_1, e_2' : \tau_2) : \tau} \\
+	&\sem{ \uniform(e_1 : \tau_1, e_2: \tau_2) : \tau, \\
+	&\uniform(\discretize{e_1 : \tau_1} : \discretize{\tau_1}, \discretize{e_2 : \tau_2} : \discretize{\tau_2}) : \discretize{\tau}} \\
 	&= \begin{cases}
-		\text{Uniform}(v_1, v_2) \gg\!= \lambda v.\delta_{(v, v)} \quad &\text{ if } e_1 = e_1' = v_1 \leq e_2 = e_2' = v_2 \\ 
-		\delta_{\bot} \quad &\text{ if } e_1 = v_1 > e_2 = v_2 \\
-		\sem{ e_1 : \tau_1, e_1' : \tau_1' } \gg\!= \lambda (f,f'). \sem{ \uniform(f, v_2 : \tau_2) : \tau, \uniform(f',v_2 : \tau_2) : \tau } \quad &\text{ if } e_1 \neq v_1, e_1' \neq v_1', e_2 = e_2' = v_2 \\
-		\sem{ e_2 : \tau_2, e_2' : \tau_2' } \gg\!= \lambda (f,f'). \sem{ \uniform(v_1 : \tau_1, f) : \tau, \uniform(v_1 : \tau_1, f') : \tau } \quad &\text{ if } e_1 = e_1' = v_1, e_2 \neq v_2, e_2' \neq v_2',\\
-		\sem{ e_1 : \tau_1, e_1' : \tau_1' } \gg\!= \lambda (f,f'). \sem{ \uniform(f, e_2 : \tau_2) : \tau, \uniform(f',e_2' : \tau_2) : \tau } \quad &\text{ if } e_1 \neq v_1, e_1' \neq v_1', e_2 \neq v_2, e_2' \neq v_2' \\
+		\text{Uniform}(v_1, v_2) \gg\!= \lambda v.\delta_{(v, v)} \quad &\text{ if } e_1 = v_1, e_2 = v_2, v_1 \leq v_2 \\ 
+		\delta_{\bot} \quad &\text{ if } e_1 = v_1, e_2 = v_2, v_1 > v_2 \\
+		\sem{ e_2 : \tau_2, \discretize{e_2 : \tau_2} : \discretize{\tau_2}} \gg\!= \lambda (f,f'). \sem{ \uniform(v_1 : \tau_1, f) : \tau, \\
+		\uniform(\discretize{v_1 : \tau_1} : \discretize{\tau_1}, f') : \discretize{\tau} } \quad &\text{ if } e_1 = v_1, e_2 \neq v_2 \\
+		\sem{ e_1 : \tau_1, \discretize{e_1 : \tau_1} : \discretize{\tau_1}} \gg\!= \lambda (f,f'). \sem{ \uniform(f, e_2 : \tau_2) : \tau, \\
+		\uniform(f', \discretize{e_2 : \tau_2} : \discretize{\tau_2}) : \discretize{\tau} } \quad &\text{ otherwise } \\
 	\end{cases} \\
-	&\text{where } \tau = \floattype{B}{V}, B = \top \\
+	&\text{where } \tau = \floattype{B}{V}, B = \top \\[1cm]
 	%% uniform discrete
-	&\sem{ \uniform(e_1 : \tau_1, e_2 : \tau_2) : \tau,
-	\discrete(v_0', \ldots, v_n') : \tau'} \\
+	&\sem{ \uniform(e_1 : \tau_1, e_2 : \tau_2) : \tau, \\
+	&\discrete(v_0', \ldots, v_n') : \discretize{\tau}} \\
 	&= \begin{cases}
-		\text{Uniform}(v_1, v_2) \gg\!= \lambda v.\delta_{(v, i)} \text{ s.t. } v \in \intervals{B}_i \quad &\text{ if } e_1 = v_1 \leq e_2 = v_2, \sum_i v_i' = 1, \\
-		&v_i' = \text{CDF}_{\text{unif}(v_1,v_2)}(b_{i+1}) - \text{CDF}_{\text{unif}(v_1,v_2)}(b_{i}) \\
-		\delta_{\bot} \quad &\text{ if } e_1 = v_1 > e_2 = v_2 \\
+		\text{Uniform}(v_1, v_2) \gg\!= \lambda v.\delta_{(v, i)} \text{ s.t. } v \in \intervals{B}_i \quad &\text{ if } e_1 = v_1, e_2 = v_2, v_1 \leq v_2 \\
+		\delta_{\bot} \quad &\text{ if } e_1 = v_1, e_2 = v_2, v_1 > v_2 \\
 	\end{cases} \\
-		&\text{ where } \tau = \floattype{B}{V}, B = \{\sim_1\!\!b_1, \ldots, \sim_n\!\!b_n\} \neq \top, \tau' = \fin{n+1} \\
+		&\text{ where } \tau = \floattype{B}{V}, B = \{\sim_1\!\!b_1, \ldots, \sim_n\!\!b_n\} \neq \top \\[1cm]
 	%% uniform discretecase
-	&\sem{ \uniform(e_1 : \tau_1, e_2 : \tau_2) : \tau, \texttt{DiscreteCase}(e_1' : \tau_1', e_2' : \tau_2') : \tau'} \\
+	&\sem{ \uniform(e_1 : \tau_1, e_2 : \tau_2) : \tau, \\
+	&\texttt{DiscreteCase}(e_1' : \tau_1', e_2' : \tau_2') : \tau'} \\
 	&= \begin{cases}
 		\sem{e_1, e_1' } \gg\!= \lambda(u_1, i).\sem{ e_2, e_2' } \gg\!= \lambda(u_2, j).\begin{cases}
 			% \sem{ \uniform(v_1, w_1) : \tau, \discrete(v_{000}, v_{001}, \ldots, v_{00n})} \\
@@ -1304,30 +1315,26 @@ We assume the expressions $e, e'$ are well-typed.
 	&\text{where } \tau = \floattype{B}{V}, B = \{\sim_1\!\!b_1, \ldots, \sim_n\!\!b_n\} \neq \top, \\
 	&\tau_1 = \floattype{B_1}{V_1}, B_1 = \{\sim_1\!\!c_1, \ldots, \sim_n\!\!c_l\}, V_1 = \{v_1, \ldots, v_r\}, \\
 	&\tau_2 = \floattype{B_2}{V_2}, B_2 = \{\sim_1\!\!d_1, \ldots, \sim_n\!\!d_m\}, V_2 = \{w_1, \ldots, w_s\} \\
-	&\tau' = \fin{n+1}, \tau_1' = \fin{l+1}, \tau_2' = \fin{m+1} \\
+	&\tau' = \fin{n+1}, \tau_1' = \fin{l+1}, \tau_2' = \fin{m+1} \\[1cm]
 	%% value float
-	&\sem{ v : \tau, v' : \tau } \\
-	&= \delta_{(v, v')} \text{ if } v = v' \\
-	&\text{where } \tau = \floattype{B}{V}, B = \top \\
-	%% value fin
-	&\sem{ v : \tau, \finconst{k}{n+1} : \tau' } \\
-	&= \delta_{(v, \finconst{k}{n+1})} \text{ if } v \in \intervals{B}_k \\
-	&\text{where } \tau = \floattype{B}{V}, B = \{\sim_1\!\!b_1, \ldots, \sim_n\!\!b_n\}, \tau' = \fin{n+1} \\
+	&\sem{ v : \tau, \\
+	&\discretize{v : \tau} : \discretize{\tau} } \\
+	&= \delta_{(v : \tau, \discretize{v : \tau} : \discretize{\tau})} \\
+	&\text{where } \tau = \floattype{B}{V}, B = \top \text{ or } B = \{\sim_1\!\!b_1, \ldots, \sim_n\!\!b_n\} \\
 \end{align*}
 }
 
-\subsubsection{Lemmas}
-We want to show the following lemmas for the pairing semantics:
+\subsubsection{Lemmas for $e,e'$}
 
-\begin{lemma}[Substitution for pairs]
-	If $\Gamma, (x : \tau_1, x' : \tau_1') \vdash (e_2 : \tau_2, e_2' : \tau_2')$ and $\Gamma \vdash (v : \tau_1, v' : \tau_1')$, then $\Gamma \vdash (e_2[v/x] : \tau_2, e_2'[v'/x'] : \tau_2')$.
+\begin{lemma}[Substitution for pairs]\label{lem:substitution-pairs}
+	If $\Gamma, (x : \tau_1, x' : \tau_1') \vdash (e : \tau_2, e' : \tau_2')$ and $\Gamma \vdash (v : \tau_1, v' : \tau_1')$, then $\Gamma \vdash (e[v/x] : \tau_2, e'[v'/x'] : \tau_2')$.
 \end{lemma}
 
 \begin{proof}
-	By induction. Apply the general substitution lemma twice.
+	By induction on $(e,e')$. Apply the substitution lemma from~\ref{lem:substitution} on $e$ and $e'$.
 \end{proof}
 
-\begin{lemma}
+\begin{lemma}[Discretization Preserves Form]\label{lem:form-preservation}
 	Let $e$ be a well-typed expression of type $\tau$. Then:
 	\begin{enumerate}
 		\item If $e$ is a value, then $\discretize{e : \tau}$ is a value.
@@ -1353,19 +1360,45 @@ We want to show the following lemmas for the pairing semantics:
 	This is a let expression, a non-value.
 \end{proof}
 
+
+
 \begin{lemma}[Well-defined]
-	For all well-typed expressions $(e : \tau, e' : \tau')$ such that $\relation_{\tau}(e,e')$, $\sem{(e,e')} \in \mathcal{D}(\relation_{\tau} + \bot)$.
+	For all well-typed expressions $(e : \tau, e' : \tau')$ such that $\relation_{\tau}(e,e')$, $\sem{(e : \tau,e' : \tau')} \in \mathcal{D}(\relation_{\tau} + \bot)$.
 \end{lemma}
 
 \begin{proof}
 	By induction on the structure of the typing derivation $e : \tau$. We do a case analysis on the last rule used.
 
-	\textbf{Case} constant $(v : \tau, v' : \tau')$. $\sem{v : \tau, v' : \tau'} = \delta_{(v,v')}$.
+	% \textbf{Case} constant $(v : \tau, v' : \tau)$, where $\tau = \floattype{B}{\top}$ and $v = v'$. Clearly, $v' = \discretize{v}$, so $(v : \tau, v' : \tau) \in \relation_{\tau}$. It holds $\sem{v : \tau, v' : \tau'} = \delta_{(v : \tau, v' : \tau)} \in \mathcal{D}(\relation_{\tau} + \bot)$.
 
-	\textbf{Case} if-else $(\ifkw \; e_1 \; \thenkw \; e_2 \; \elsekw \; e_3 : \tau, \ifkw \; e_1' \; \thenkw \; e_2' \; \elsekw \; e_3' : \tau')$. Applying IH to $(e_1,e_1')$, we have the following possibilities:
+	\textbf{Case} comparisons $(e_1 < e_2 : \bool, \discretize{e_1} < \discretize{e_2} : \bool) \in \relation_{\tau}$. We have the following possibilities:
 	\begin{itemize}
-		\item If $(e_1,e_1') = \bot$
-		\item If $(e_1,e_1') = (v,v')$
-		\item If $(e_1,e_1')$ both expressions 
+		\item If $e_1 = v_1$ and $e_2 = v_2$ are values, then by Lemma~\ref{lem:form-preservation}, $\discretize{e_1} = v_1'$ and $\discretize{e_2} = v_2'$ are also values. Either:
+		\[
+			\delta_{(\true:\bool, \true:\bool)} \in \mathcal{D}(\relation_{\tau} + \bot) 
+			\quad\text{or}\quad
+			\delta_{(\false:\bool, \false:\bool)} \in \mathcal{D}(\relation_{\tau} + \bot) 
+		\]
+		\item At least $e_1$ or $e_2$ is an expression. Suppose $e_1$ is an expression; by Lemma~\ref{lem:form-preservation}, $\discretize{e_1}$ is also an expression. The clause
+		\[
+			\sem{ e_1 : \tau_1, \discretize{e_1 : \tau_1} } \gg\!= \lambda (e_1',e_1''). \sem{ e_1' < e_2 : \tau_2, e_1'' < \discretize{e_2 : \tau_2} }
+		\]
+		in the semantics is applied. By the IH,
+		\[
+			\sem{ e_1 : \tau_1, \discretize{e_1 : \tau_1} } \in \mathcal{D}(\relation_{\tau} + \bot).
+		\]
+		We use the left bind clause with 
+		\[
+			f(e_1',e_1'') = \sem{ e_1' < e_2 : \tau_2, e_1'' < \discretize{e_2 : \tau_2} }
+		\]
+		which maps
+		\[
+			\relation_{\tau} \to \mathcal{D}(\relation_{\tau} + \bot).
+		\]
+
+		By Proposition~\ref{prop:bind-typing}, we conclude
+		\[
+			\sem{ e_1 : \tau_1, \discretize{e_1 : \tau_1} } \gg\!= \lambda (f,f'). \sem{ f < e_2 : \tau_2, f' < \discretize{e_2 : \tau_2} } \in \mathcal{D}(\relation_{\tau} + \bot).
+		\] 
 	\end{itemize}
 \end{proof}
