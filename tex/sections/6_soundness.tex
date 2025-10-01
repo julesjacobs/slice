@@ -885,21 +885,22 @@ We assume the expressions are well-typed. Since we assume all expressions are we
 		\item If $y = x$, then by the typing rule:
 		\[
 			\inferrule
-			{\ \Gamma, x : \tau_1 \vdash e_1 : \tau_1' \quad \Gamma, x : \tau_1 \vdash e_2 : \tau_2}
-			{\Gamma, x : \tau_1 \vdash \letkw \; x = e_1 \; \inkw \; e_2 : \tau_2}
+			{\ \Gamma, x : \tau_1 \vdash e_1 : \tau_1' \quad \Gamma, x : \tau_1 \vdash e_2 : \tau_2'}
+			{\Gamma, x : \tau_1 \vdash \letkw \; x = e_1 \; \inkw \; e_2 : \tau_2'}
 		\]
 		By the induction hypothesis,
 		\[
 			\Gamma \vdash e_1[v/x] : \tau_1'.
 		\]
-		By capture-avoiding substitution,
+		Given this, \textsc{Let} lets us derive:
 		\[
-			(\letkw \; x = e_1 \; \inkw \; e_2)[v/x] = \letkw \; x = e_1[v/x] \; \inkw \; e_2.
+			\Gamma \vdash \letkw \; x = e_1[v/x] \; \inkw \; e_2 : \tau_2',
 		\]
-		Hence,
+		and thus:
 		\[
-			\Gamma \vdash (\letkw \; x = e_1 \; \inkw \; e_2)[v/x] : \tau_2.
+			\Gamma \vdash (\letkw \; x = e_1 \; \inkw \; e_2)[v/x] : \tau_2'
 		\]
+		since $(\letkw \; x = e_1 \; \inkw \; e_2)[v/x] = \letkw \; x = e_1[v/x] \; \inkw \; e_2$ by capture-avoiding substitution.
 	\end{itemize}
 
 	\textbf{Case} $e$ is a uniform distribution $\uniform(e_1,e_2)$. By \textsc{Continuous-2}, we have:
@@ -933,6 +934,10 @@ We assume the expressions are well-typed. Since we assume all expressions are we
 		\item If $\emptyset \vdash v : \fin{n}$, then $v \in \Nats$.
 	\end{enumerate}
 \end{lemma}
+
+\begin{proof}
+	By case analysis on the grammar of values and inversion of typing.
+\end{proof}
 
 \begin{lemma}[Typed replacement]\label{lem:typed-replacement}
 	All under empty context.
@@ -1348,30 +1353,6 @@ We want to show the following lemmas for the pairing semantics:
 	This is a let expression, a non-value.
 \end{proof}
 
-\begin{lemma}[Dirac continuations for pairs]
-	Let $\tau$ be a type, and let $B = \relation_{\tau} \cup \{\bot\}$. In every semantic clause $\sem{e : \tau}$, whenever a monadic bind $\mu \gg\!= f$ appears, the continution $f$ has type $A \to \mathcal{D}(B)$ for some measurable space $A$, and moreover for each input $a \in A$, then $f(a) = \delta_{b_a}$ for some $b_a \in B$.
-\end{lemma}
-
-\begin{proof}
-	By induction on the structure of the typing derivation $(e : \tau, e' : \tau')$.
-	
-	\textbf{Case} values. $\sem{v : \tau, v' : \tau'} = \delta_{(v,v')}$ or $\sem{v : \tau, \finconst{k}{n} : \tau'} = \delta_{(v,\finconst{k}{n+1})}$. No bind appears, so the lemma is vacuously true.
-
-	\textbf{Case} let. We have:
-	\[
-	\sem{\letkw \; x = e_1 : \tau_1 \; \inkw \; e_2 : \tau_2 : \tau_2, \letkw \; x' = e_1' : \tau_1' \; \inkw \; e_2' : \tau_2' : \tau_2} = \sem{e_1 : \tau_1,e_1' : \tau_1'} \gg\!= f
-	\]
-	with
-	\[
-	f(w,w') = 
-	\begin{cases}
-		\delta_{\bot} &w = \bot \text{ or } w' = \bot \\
-		\delta_{(e_2[w/x] : \tau_2, e_2'[w'/x'] : \tau_2')} &w = v \text{ and } w' = v'
-	\end{cases}
-	\]
-	EIther $e_1, e_1'$ are both values or both expressions. If $e_1, e_1'$ are expressions, then themselves are monadic binds, and by the induction hypohtesis, is a Dirac distribution $\delta_{b_a}$ for some $b_a \in B$.
-\end{proof}
-
 \begin{lemma}[Well-defined]
 	For all well-typed expressions $(e : \tau, e' : \tau')$ such that $\relation_{\tau}(e,e')$, $\sem{(e,e')} \in \mathcal{D}(\relation_{\tau} + \bot)$.
 \end{lemma}
@@ -1388,217 +1369,3 @@ We want to show the following lemmas for the pairing semantics:
 		\item If $(e_1,e_1')$ both expressions 
 	\end{itemize}
 \end{proof}
-
-
-
-% of two expressions executing in lockstep. We run both programs side-by-side under the coupled small-step rules and relate $(e, \discretize{e})$ by $R_{\tau}$ at every step of the execution. At termination, both programs produce values related by $R_{\tau}$, which means their distributions agree.
-
-% Configurations are of the form $(e, t, p)$, where:
-% \begin{itemize}
-% 	\item $e$ is the expression
-% 	\item $t$ is the trace (sequence of samples)
-% 	\item $p$ is the current probability weight
-% 	\item \textbf{Initial configuration:} $(e, \varepsilon, 1.0)$ where $\varepsilon$ is the empty trace
-% \end{itemize}
-
-% \subsubsection{Small-step semantics for $\mu_e$}
-% \begin{mathpar}
-% 	\inferrule[\textsc{Let}]
-% 	{\ }
-% 	{(\letkw \; x = v \; \inkw \; e, t, p) \rightarrow (\{e[v/x]\}, t, p)}
-
-% 	\inferrule[\textsc{IfTrue}]
-% 	{\ }
-% 	{(\ifkw \; \text{true} \; \thenkw \; e_1 \; \elsekw \; e_2, t, p) \rightarrow (\{e_1\}, t, p)}
-	
-% 	\inferrule[\textsc{IfFalse}]
-% 	{\ }
-% 	{(\ifkw \; \text{false} \; \thenkw \; e_1 \; \elsekw \; e_2, t, p) \rightarrow (\{e_2\}, t, p)}
-
-% 	\inferrule[\textsc{LessTrue}]
-% 	{c_1 < c_2}
-% 	{(c_1 < c_2, t, p) \rightarrow (\{\text{true}\}, t, p)}
-
-% 	\inferrule[\textsc{LessFalse}]
-% 	{c_1 \geq c_2}
-% 	{(c_1 < c_2, t, p) \rightarrow (\{\text{false}\}, t, p)}
-
-% 	\inferrule[\textsc{Uniform}]
-% 	{v_1, v_2 \text{ are float values} \\ v_1 < v_2}
-% 	{(\uniform(v_1, v_2), t, p) \rightarrow (c, t::c, p * (1/(v_2-v_1)))}
-
-% 	\inferrule[\textsc{Discrete}]
-% 	{p_0, \ldots, p_n \text{ are probabilities} \\ \sum_{i=0}^{n} p_i = 1}
-% 	{(\discrete(p_0, \ldots, p_n), t, p) \rightarrow (i, t::i, p * p_i)}
-% \end{mathpar}
-
-% \subsubsection{Small-step semantics for $\mu_{e, \discretize{e}}$}
-% \begin{mathpar}
-% 	\inferrule[\textsc{Let-2}]
-% 	{e := \letkw \; x_1 = v_1 \; \inkw \; e_1 \ e' := \letkw \; x_2 = v_2 \; \inkw \; e_2}
-% 	{((e, t, p), (e', t', p')) \rightarrow ((e_1[v_1/x_1], t, p), (e_2[v_2/x_2], t', p'))}
-	
-% 	\inferrule[\textsc{IfTrue-2}]
-% 	{e := \ifkw \; \text{true} \; \thenkw \; e_1 \; \elsekw \; e_2 \\ e' := \ifkw \; \text{true} \; \thenkw \; e_1' \; \elsekw \; e_2'}
-% 	{((e, t, p), (e', t', p')) \rightarrow ((e_1, t, p), (e_1', t', p'))}
-	
-% 	\inferrule[\textsc{IfFalse-2}]
-% 	{e := \ifkw \; \text{false} \; \thenkw \; e_1 \; \elsekw \; e_2 \\ e' := \ifkw \; \text{false} \; \thenkw \; e_1' \; \elsekw \; e_2'}
-% 	{((e, t, p), (e', t', p')) \rightarrow ((e_2, t, p), (e_2', t', p'))}
-	
-% 	\inferrule[\textsc{LessTrue-2}]
-% 	{c_1 < c_2 \\ c_1' < c_2'}
-% 	{((c_1 < c_2, t, p), (c_1' < c_2', t', p')) \rightarrow ((\text{true}, t, p), (\text{true}, t', p'))}
-	
-% 	\inferrule[\textsc{LessFalse-2}]
-% 	{c_1 \geq c_2 \\ c_1' \geq c_2'}
-% 	{((c_1 < c_2, t, p), (c_1' < c_2', t', p')) \rightarrow ((\text{false}, t, p), (\text{false}, t', p'))}
-	
-% 	\inferrule[\textsc{Uniform-Discrete-2}]
-% 	{v_1, v_2 \text{ are float values} \\ v_1 < v_2 \\ p_0, \ldots, p_n \text{ are probabilities} \\ c \sim \text{Uniform}(v_1, v_2) \\ i \sim \text{Discrete}(p_0, \ldots, p_n)}
-% 	{((\uniform(v_1, v_2), t, p), (\discrete(p_0, \ldots, p_n), t', p')) \rightarrow ((c, t::c, p \times \frac{1}{v_2 - v_1}), (i, t'::i, p' \times p_i))}
-	
-% 	\inferrule[\textsc{Uniform-Uniform-2}]
-% 	{v_1, v_2 \text{ are float values} \\ v_1 < v_2 \\ v_1', v_2' \text{ are float values} \\ v_1' < v_2' \\ c \sim \text{Uniform}(v_1, v_2) \\ c' \sim \text{Uniform}(v_1', v_2')}
-% 	{((\uniform(v_1, v_2), t, p), (\uniform(v_1', v_2'), t', p')) \rightarrow ((c, t::c, p \times \frac{1}{v_2 - v_1}), (c', t'::c', p' \times \frac{1}{v_2' - v_1'}))}
-
-% \end{mathpar}
-
-% \subsubsection{Relation $R_{\tau}(e, \discretize{e})$}
-
-% \begin{align*}
-% 	\mathcal{R_{\bool}}(e, \discretize{e}) &\iff \{(\true, \true), (\false, \false)\} \\
-% 	\mathcal{R}_{\floattype{B}{V}}(e, \discretize{e}) &\iff 
-% 	\begin{cases}
-% 		\discretize{e} = 0 \text{ if } e \in \intervals{B}_0 \\
-% 		\discretize{e} = 1 \text{ if } e \in \intervals{B}_1 \\
-% 		\ldots \\
-% 		\discretize{e} = n \text{ if } e \in \intervals{B}_n \\
-% 	\end{cases} \text{where } B = \{b_1, \ldots, b_n\} \\
-% 	\mathcal{R}_{\floattype{B}{V}}(e, \discretize{e}) &\iff e = \discretize{e} \text{ where } B = \top \\
-% 	\mathcal{R}_{\fin{n}}(e, \discretize{e}) &\iff e = \discretize{e} \\
-% 	\mathcal{R}_{\intty}(e, \discretize{e}) &\iff e = \discretize{e} \\
-% 	\mathcal{R}_{\tau_1 \times \tau_2}(e, \discretize{e}) &\iff (\pi_1(e), \pi_1(\discretize{e})) \in \mathcal{R}_{\tau_1} \land
-% 	(\pi_2(e), \pi_2(\discretize{e})) \in \mathcal{R}_{\tau_2} \\
-% 	\mathcal{R}_{\tau_1 \to \tau_2}(e, \discretize{e})
-%     &\iff \forall (v, v') \in \mathcal{R}_{\tau_1}, ((\lambda x : \tau_1. e) \; v, (\lambda x : \tau_1. \discretize{e}) \; v') \in \mathcal{R}_{\tau_2} \\
-% 	\mathcal{R}_{\listty{\tau}}(e, \discretize{e}) &\iff 
-% 	\begin{cases}
-% 		e = \text{nil} \land \discretize{e} = \text{nil} \\
-% 		e = v::vs \land \discretize{e} = v'::vs' \land (v, v') \in \mathcal{R}_{\tau} \land (vs, vs') \in \mathcal{R}_{\listty{\tau}}
-% 	\end{cases}
-% \end{align*}
-
-% \subsection{Lemmas}
-
-% \begin{enumerate}
-% 	\item $\mu_{e, \discretize{e}}(R_{\tau}) = 1$
-% 	\item $\pi_1(\mu_{e, \discretize{e}}) = \mu_e$, $\pi_2(\mu_{e, \discretize{e}}) = \mu_{\discretize{e}}$
-% \end{enumerate}
-
-% \subsection{Example}
-% \begin{figure}[h]
-% 	\centering
-% 	\begin{subfigure}[t]{0.5\textwidth}
-% 	\scriptsize % shrink so it fits
-% 	\begin{align*}
-% 		&(\texttt{let x = uniform(0,2) in} \\
-% 		&\;\;\;\texttt{if x < 0.5 then uniform(0,2)} \\
-% 		&\;\;\;\texttt{else uniform(0,4)}, \varepsilon, 1.0) \\
-% 		&\rightarrow (\texttt{if uniform(0,2) < 0.5 then} \\
-% 		&\;\;\;\texttt{uniform(0,2) else uniform(0,4)}, \varepsilon, 1.0) \quad \textsc{Let} \\
-% 		&\rightarrow (\texttt{if 0.3 < 0.5 then uniform(0,2)} \\
-% 		&\;\;\;\texttt{else uniform(0,4)}, 0.3, 0.5) \quad \textsc{Uniform} \\
-% 		&\rightarrow (\texttt{if \true then uniform(0,2)} \\
-% 		&\;\;\;\texttt{else uniform(0,4)}, 0.3, 0.5) \quad \textsc{LessTrue} \\
-% 		&\rightarrow (\texttt{uniform(0,2)}, 0.3, 0.5) \quad \textsc{IfTrue} \\
-% 		&\rightarrow (0.2, 0.3::0.2, 1/4) \quad \textsc{Uniform}
-% 	\end{align*}
-% 	\caption{Continuous version}
-% 	\end{subfigure}\hfill
-% 	\begin{subfigure}[t]{0.5\textwidth}
-% 	\scriptsize
-% 	\begin{align*}
-% 		&(\texttt{let x = discrete(0.25, 0.75) in} \\
-% 		&\;\;\;\texttt{if x < 1 then uniform(0,2)} \\
-% 		&\;\;\;\texttt{else uniform(0,4)}, \varepsilon, 1.0) \\
-% 		&\rightarrow (\texttt{if discrete(0.25, 0.75) < 1 then} \\
-% 		&\;\;\;\texttt{uniform(0,2) else uniform(0,4)}, \varepsilon, 1.0) \quad \textsc{Let} \\
-% 		&\rightarrow (\texttt{if 0 < 1 then uniform(0,2)} \\
-% 		&\;\;\;\texttt{else uniform(0,4)}, 0, 0.25) \quad \textsc{Discrete} \\
-% 		&\rightarrow (\texttt{if \true then uniform(0,2)} \\
-% 		&\;\;\;\texttt{else uniform(0,4)}, 0, 0.25) \quad \textsc{LessTrue} \\
-% 		&\rightarrow (\texttt{uniform(0,2)}, 0, 0.25) \quad \textsc{IfTrue} \\
-% 		&\rightarrow (0.2, 0::0.2, 1/8) \quad \textsc{Uniform}
-% 	\end{align*}
-% 	\caption{Discrete version}
-% 	\end{subfigure}
-% \end{figure}
-
-
-% \begin{align*}
-% 	&(\texttt{let x = uniform(0,2) in if x < 0.5 then uniform(0,2) else uniform(0,4)}, \varepsilon, 1.0) \\
-% 	&\rightarrow (\texttt{if uniform(0,2) < 0.5 then uniform(0,2) else uniform(0,4)}, \varepsilon, 1.0) \quad \textsc{Let} \\
-% 	&\rightarrow (\texttt{if 0.3 < 0.5 then uniform(0,2) else uniform(0,4)}, 0.3, 0.5) \quad \textsc{Uniform} \\
-% 	&\rightarrow (\texttt{if \true then uniform(0,2) else uniform(0,4)}, 0.3, 0.5) \quad \textsc{LessTrue} \\
-% 	&\rightarrow (\texttt{uniform(0,2)}, 0.3, 0.5) \quad \textsc{IfTrue} \\
-% 	&\rightarrow (0.2, 0.3::0.2, 1/4) \quad \textsc{Uniform} \\
-% \end{align*}
-
-% \begin{align*}
-% 	&(\texttt{let x = discrete(0.25, 0.75) in if x < 1 then uniform(0,2) else uniform(0,4)}, \varepsilon, 1.0) \\
-% 	&\rightarrow (\texttt{if discrete(0.25, 0.75) < 1 then uniform(0,2) else uniform(0,4)}, \varepsilon, 1.0) \quad \textsc{Let} \\
-% 	&\rightarrow (\texttt{if 0 < 1 then uniform(0,2) else uniform(0,4)}, 0, 0.25) \quad \textsc{Discrete} \\
-% 	&\rightarrow (\texttt{if \true then uniform(0,2) else uniform(0,4)}, 0, 0.25) \quad \textsc{LessTrue} \\
-% 	&\rightarrow (\texttt{uniform(0,2)}, 0, 0.25) \quad \textsc{IfTrue} \\
-% 	&\rightarrow (0.2, 0::0.2, 1/8) \quad \textsc{Uniform} \\
-% \end{align*}
-
-
-
-
-
-% \subsection{Contextual Equivalence}
-% We give a defintion of contextual equivalence below. Two expressions are contextually equivalent ($=_{ctx}$) if for all closing program contexts $C$, their observable aggregate behavior is the same. We take programs to be real values closed expressions, and their observable behavior consists of their measures ($\Sigma_{\R} \rightarrow \R^{+}$).
-
-
-% We give the correctness statement for our discretization; we want the original expression $e$ and the discretized expression $\discretize{e}$ to be contextually equivalent. Two expressions are contextually equivalent ($=_{ctx}$) if for all closing program contexts $C$ their observable aggregate behavior is the same. We take programs to be real values closed expressions, and their observable behavior consists of their measures ($\Sigma_{\R} \rightarrow \R^{+}$).
-
-% \begin{definition}[Contextual Equivalence / Correctness]
-% 	If $\Gamma \vdash e_1 : \tau_1$ and $\Gamma \vdash e_2 : \tau_2$, then $e_1$ and $e_2$ are contextually equivalent $(e_1 =_{ctx} e_2)$ if and only if for all contexts $C$ such that $C : \Gamma$ and $\vdash C[e_1] : \float$ and $\vdash C[e_2] : \float$ (or $\vdash C[e_1] : \bool$ and $\vdash C[e_2] : \bool$) and for all measurable sets $A \in \Sigma_{\R}$,
-
-% 	\[
-% 	\mu_{C[e_1]}(A) = \mu_{C[e_2]}(A).
-% 	\]
-% \end{definition}
-
-% $C : \Gamma$ means that $C$ provides bindings satisfying $\Gamma$ to the expression placed in its hole. 
-
-% \subsection{Logical Relation for Contextual Equivalence}
-% We develop a logical relation for proving expressions contextually equivalent. Figure~\ref{fig:logical-relation} gives the logical relation and its auxillary relations.
-
-% \begin{figure}
-% 	\begin{align*}
-% 		\Gamma \vdash e_1 \approx e_2 : \tau 
-%         &\iff \forall (\gamma_1, \gamma_2) \in \mathcal{G}\sem{\Gamma}, (e_1 \cdot \gamma_1, e_2 \cdot \gamma_2) \in \mathcal{E}\sem{\tau} \\
-% 		(r_1, r_2) \in \mathcal{V}\sem{\tau} 
-%         &\iff r_1 = r_2 \\[1ex]
-%         (\lambda x.\, e_1, \lambda x.\, e_2) \in \mathcal{V}\sem{\tau_1 \to \tau_2} 
-%         &\iff \forall (v_1, v_2) \in \mathcal{V}\sem{\tau_1},\; (e_1[x \mapsto v_1], e_2[x \mapsto v_2]) \in \mathcal{E}\sem{\tau_2} \\
-%         (\gamma_1, \gamma_2) \in \mathcal{G}\sem{\Gamma} 
-%         &\iff \gamma_1 \models \Gamma \;\wedge\; \gamma_2 \models \Gamma \;\wedge\; \forall x \in \mathrm{dom}(\Gamma), (\gamma_1(x), \gamma_2(x)) \in \mathcal{V}\sem{\Gamma(x)} \\
-%         (e_1, e_2) \in \mathcal{E}\sem{\tau} 
-%         &\iff \forall (A_1, A_2) \in \mathcal{A}\sem{\tau},\; \mu_{e_1}(A_1) = \mu_{e_2}(A_2) \\
-%         (A_1, A_2) \in \mathcal{A}\sem{\tau} 
-%         &\iff A_1, A_2 \in \Sigma\sem{\tau} \;\wedge\; \forall (v_1, v_2) \in \mathcal{V}\sem{\tau},\; (v_1 \in A_1 \iff v_2 \in A_2)
-% 	\end{align*}
-% 	\caption{Logical relation and auxiliary relations. It defines the relation $\Gamma \vdash e_1 \approx e_2 : \tau$.}
-% 	\label{fig:logical-relation}
-% \end{figure}
-
-% \begin{itemize}
-% 	\item $\mathcal{V}\sem{\tau}$ relates closed values of type $\tau$. Real values are related if they are identitcal, and functions are related if they take related inputs to related evaluation configurations.
-% 	\item $\mathcal{G}\sem{\Gamma}$ relates substitutions.
-% 	\item $\mathcal{E}\sem{\tau}$ relates closed expressions. Expressions are related if their measures agree on emasurable sets related by $\mathcal{A}\sem{\tau}$.
-% 	\item $\mathcal{A}\sem{\tau}$ relates measurable sets of values.
-% \end{itemize}
