@@ -1308,7 +1308,7 @@ We assume the expressions $e, e'$ are well-typed.
 	\end{cases} \\
 	&\text{where } \\
 	% definition of DiscreteCase
-	&\texttt{DiscreteCase}(e_1,e_2) \\
+	&\texttt{DiscreteCase}(e_1 : \tau_1, e_2 : \tau_2) \\
 	&= \letkw \; v_1' = \discretize{e_1 : \tau_1} : \discretize{\tau_1} \; \inkw \\
 			&\letkw \; v_2' = \discretize{e_2 : \tau_2} : \discretize{\tau_2} \; \inkw \\
 			&\ifkw\; v_1' \fineq{l+1} \finconst{0}{l+1}\; \logand \; v_2' \fineq{m+1} \finconst{0}{m+1}\; \thenkw \\
@@ -1333,7 +1333,23 @@ We assume the expressions $e, e'$ are well-typed.
 }
 
 \begin{example}
-	
+	Consider the following expression $e : \tau$:
+	\begin{lstlisting}
+		uniform(0, (if uniform(0,1) < 0.5 then 1.0 else 2.0)) < 0.5
+	\end{lstlisting}
+
+	The pairing semantics gives:
+	\begin{align*}
+		&\sem{ \uniform(0, (\ifkw \; \uniform(0,1) < 0.5) \; \thenkw \; 1.0 \; \elsekw \; 2.0) < 0.5, \\
+		&\letkw \; v_1' = \ifkw \; \discrete(0.5, 0.5) < 1 \; \thenkw \; 0 \; \elsekw \; 1 \; \inkw \\
+		&\letkw \; v_2' = 0 \; \inkw \\
+		&\ifkw \; v_1' == 0 \; \&\& \; v_2' == 0 \; \thenkw \\
+		&\discrete(0.5,0.5) \\
+		&\elsekw \\
+		&\discrete(0.25,0.75) < 1} \\
+		&= 
+	\end{align*}
+
 \end{example}
 
 \subsubsection{Lemmas for $e,e'$}
@@ -1394,12 +1410,15 @@ We assume the expressions $e, e'$ are well-typed.
 	which is also an expression.
 
 	\textbf{Case} $e$ is a uniform distribution $\uniform(e_1 : \tau_1, e_2 : \tau_2) : \tau$, where $\tau_1 = \floattype{B}{V}$. $e$ is an expression. Via discretization,
-	\[
-		\discretize{\uniform(e_1 : \tau_1, e_2 : \tau_2) : \tau} = \begin{cases}
-			\uniform(\discretize{e_1 : \tau_1}, \discretize{e_2 : \tau_2}) &\text{ if } 
+	\begin{align*}
+		&\discretize{\uniform(e_1 : \tau_1, e_2 : \tau_2) : \tau} \\
+		&= \begin{cases}
+			\uniform(\discretize{e_1 : \tau_1}, \discretize{e_2 : \tau_2}) &\text{ if } B = \top \\
+			\discrete(p_0,\ldots,p_n) &\text{ if } B = \{\sim_1\!\!b_1, \ldots, \sim_n\!\!b_n\}, e_1,e_2 \in \R \\
+			\texttt{DiscreteCase}(e_1 : \tau_1,e_2 : \tau_2) &\text{ if } B = \{\sim_1\!\!b_1, \ldots, \sim_n\!\!b_n\}, e_1,e_2 \notin \R
 		\end{cases}
-	\]
-	all of which are expressions.
+	\end{align*}
+	all of which are expressions. In particular, \texttt{DiscreteCase} is a let statement.
 \end{proof}
 
 
