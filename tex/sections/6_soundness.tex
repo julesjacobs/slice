@@ -1224,7 +1224,9 @@ We assume the expressions $e, e'$ are well-typed.
 {\small
 \allowdisplaybreaks
 \begin{align*}
+	%%
 	%% let
+	%%
 	&\sem{ \letkw \; x = e_1 : \tau_1 \; \inkw \; e_2 : \tau_2 : \tau_2, \\
 	&\letkw \; x = \discretize{e_1 : \tau_1} : \discretize{\tau_1} \; \inkw \; \discretize{e_2 : \tau_2} : \discretize{\tau_2} : \discretize{\tau_2}} \\
 	&= \begin{cases}
@@ -1232,7 +1234,9 @@ We assume the expressions $e, e'$ are well-typed.
 		\sem{ e_1 : \tau_1, \discretize{e_1 : \tau_1} : \discretize{\tau_1}} \gg\!= \lambda (f, f'). \sem{ \letkw \; x = f \; \inkw \; e_2 : \tau_2 : \tau_2, \\
 		\letkw \; x = f' \; \inkw \; \discretize{e_2 : \tau_2} : \discretize{\tau_2} : \discretize{\tau_2}} \quad &\text{ if } e_1 \neq v \\
 	\end{cases} \\[1cm]
+	%%
 	%% if-else
+	%%
 	&\sem{ \ifkw \; e_1 : \bool \; \thenkw \; e_2 : \tau \; \elsekw \; e_3 : \tau : \tau, \\
 	&\ifkw \; \discretize{e_1 : \bool} : \discretize{\bool} \; \thenkw \; \discretize{e_2 : \tau} : \discretize{\tau} \; \elsekw \; \discretize{e_3 : \tau} : \discretize{\tau} : \discretize{\tau} } \\
 	&= \begin{cases}
@@ -1241,7 +1245,9 @@ We assume the expressions $e, e'$ are well-typed.
 		\sem{ e_1 : \bool, \discretize{e_1 : \bool} : \discretize{\bool}} \gg\!= \lambda (f,f'). \sem{ \ifkw \; f \; \thenkw \; e_2 : \tau \; \elsekw \; e_3 : \tau : \tau, \\
 		\ifkw \; f' \; \thenkw \; \discretize{e_2 : \tau} : \discretize{\tau} \; \elsekw \; \discretize{e_3 : \tau} : \discretize{\tau} : \discretize{\tau}} \quad &\text{ if } e_1 \neq v \\
 	\end{cases} \\[1cm]
+	%%
 	%% less than - float
+	%%
 	&\sem{ e_1 : \tau_1 < e_2 : \tau_2 : \bool, \\
 	&\discretize{e_1 : \tau_1} : \discretize{\tau_1} < \discretize{e_2 : \tau_2} : \discretize{\tau_2} : \bool } \\
 	&= \begin{cases}
@@ -1253,7 +1259,9 @@ We assume the expressions $e, e'$ are well-typed.
 		f' < \discretize{e_2 : \tau_2} : \discretize{\tau_2} : \bool} \quad &\text{ otherwise } \\
 	\end{cases} \\
 	&\text{where } \tau_1 = \tau_2 = \floattype{B}{V}, B = \top \\[1cm]
+	%
 	%% less than - fin
+	%
 	&\sem{ e_1 : \tau_1 < e_2 : \tau_2 : \bool, \\
 	&\discretize{e_1 : \tau_1} : \discretize{\tau_1} \finlt{n+1} \discretize{e_2 : \tau_2} : \discretize{\tau_2} : \discretize{\bool} } \\
 	&= \begin{cases}
@@ -1265,7 +1273,9 @@ We assume the expressions $e, e'$ are well-typed.
 		f' \finlt{n+1} \discretize{e_2 : \tau_2} : \discretize{\tau_2} : \bool} \quad &\text{ otherwise } \\
 	\end{cases} \\
 	&\text{where } \tau_1 = \tau_2 = \floattype{B}{V}, B = \{\sim_1\!\!b_1, \ldots, \sim_n\!\!b_n\}, \tau_1' = \tau_2' = \fin{n+1} \\[1cm]
+	%
 	%% uniform uniform
+	%
 	&\sem{ \uniform(e_1 : \tau_1, e_2: \tau_2) : \tau, \\
 	&\uniform(\discretize{e_1 : \tau_1} : \discretize{\tau_1}, \discretize{e_2 : \tau_2} : \discretize{\tau_2}) : \discretize{\tau}} \\
 	&= \begin{cases}
@@ -1277,7 +1287,9 @@ We assume the expressions $e, e'$ are well-typed.
 		\uniform(f', \discretize{e_2 : \tau_2} : \discretize{\tau_2}) : \discretize{\tau} } \quad &\text{ otherwise } \\
 	\end{cases} \\
 	&\text{where } \tau = \floattype{B}{V}, B = \top \\[1cm]
+	%
 	%% uniform discrete
+	%
 	&\sem{ \uniform(e_1 : \tau_1, e_2 : \tau_2) : \tau, \\
 	&\discrete(v_0', \ldots, v_n') : \discretize{\tau}} \\
 	&= \begin{cases}
@@ -1285,44 +1297,44 @@ We assume the expressions $e, e'$ are well-typed.
 		\delta_{\bot} \quad &\text{ if } e_1 = v_1, e_2 = v_2, v_1 > v_2 \\
 	\end{cases} \\
 		&\text{ where } \tau = \floattype{B}{V}, B = \{\sim_1\!\!b_1, \ldots, \sim_n\!\!b_n\} \neq \top \\[1cm]
-	%% uniform discretecase
+	%
+	%% uniform DiscreteCase
+	%
 	&\sem{ \uniform(e_1 : \tau_1, e_2 : \tau_2) : \tau, \\
-	&\texttt{DiscreteCase}(e_1' : \tau_1', e_2' : \tau_2') : \tau'} \\
+	&\texttt{DiscreteCase}(e_1 : \tau_1, e_2 : \tau_2) : \discretize{\tau}} \\
 	&= \begin{cases}
-		\sem{e_1, e_1' } \gg\!= \lambda(u_1, i).\sem{ e_2, e_2' } \gg\!= \lambda(u_2, j).\begin{cases}
-			% \sem{ \uniform(v_1, w_1) : \tau, \discrete(v_{000}, v_{001}, \ldots, v_{00n})} \\
-			% \text{ if } u_1 = v_1, u_1' = 0, u_2 = w_1, u_2' = 0 \\
-			% \ldots \\
-			\sem{ \uniform(u_1, u_2) : \tau, \\
-			\discrete(v_{ij0}, \ldots, v_{ijn}) : \tau'} \\
-			% \ldots \\
-			% \sem{ \uniform(v_r, w_s) : \tau, \discrete(v_{rs0}, v_{rs1}, \ldots, v_{rsn})} \\
-			% \text{ if } u_1 = v_r, u_1' = l, u_2 = w_s, u_2' = m \\
-		\end{cases} \\
-		\text{s.t. } v_{ijk} = \text{CDF}_{\text{unif}(u_1, u_2)}(b_{k+1}) - \text{CDF}_{\text{unif}(u_1, u_2)}(b_{k}) \quad &\text{if } e_1 \neq v_1 \text{ or } e_2 \neq v_2 \\
+		\sem{e_2 : \tau_2} \gg\!= \lambda f.\sem{ \uniform(v_1 : \tau_1, f) : \tau, \discretize{\uniform(v_1 : \tau_1,f) : \tau} : \discretize{\tau}} \quad &\text{ if } e_1 = v_1, e_2 \neq v_2 \\
+		\sem{e_1 : \tau_1} \gg\!= \lambda f.\sem{ \uniform(f, e_2 : \tau_2) : \tau, \discretize{\uniform(f,e_2 : \tau_2) : \tau} : \discretize{\tau}} \quad &\text{ otherwise } \\
 	\end{cases} \\
+	&\text{where } \\
+	% definition of DiscreteCase
 	&\texttt{DiscreteCase}(e_1,e_2) \\
-	&= \letkw \; v_1' = e_1 \; \inkw \\
-			&\letkw \; v_2' = e_2 \; \inkw \\
+	&= \letkw \; v_1' = \discretize{e_1 : \tau_1} : \discretize{\tau_1} \; \inkw \\
+			&\letkw \; v_2' = \discretize{e_2 : \tau_2} : \discretize{\tau_2} \; \inkw \\
 			&\ifkw\; v_1' \fineq{l+1} \finconst{0}{l+1}\; \logand \; v_2' \fineq{m+1} \finconst{0}{m+1}\; \thenkw \\
-			&\quad \discrete(v_{000}, v_{001}, \ldots, v_{00n}) \\
+			&\quad \discretize{\uniform(v_1,w_1) : \tau} : \discretize{\tau} \\
 			&\vdots \\
 			&\elsekw\; \ifkw\; v_1' \fineq{l+1} \finconst{i}{l+1}\; \logand \; v_2' \fineq{m+1} \finconst{j}{m+1}\; \thenkw \\
-			&\quad \discrete(v_{ij0}, v_{ij1}, \ldots, v_{ijn}) \\
+			&\quad \discretize{\uniform(v_{i+1}, w_{j+1}) : \tau} : \discretize{\tau} \\
 			&\vdots \\
 			&\elsekw \\
-			&\quad \discrete(v_{rs0}, v_{rs1}, \ldots, v_{rsn}) \\
+			&\quad \discretize{\uniform(v_r,w_s) : \tau} : \discretize{\tau} \\
 	&\text{where } \tau = \floattype{B}{V}, B = \{\sim_1\!\!b_1, \ldots, \sim_n\!\!b_n\} \neq \top, \\
 	&\tau_1 = \floattype{B_1}{V_1}, B_1 = \{\sim_1\!\!c_1, \ldots, \sim_n\!\!c_l\}, V_1 = \{v_1, \ldots, v_r\}, \\
-	&\tau_2 = \floattype{B_2}{V_2}, B_2 = \{\sim_1\!\!d_1, \ldots, \sim_n\!\!d_m\}, V_2 = \{w_1, \ldots, w_s\} \\
-	&\tau' = \fin{n+1}, \tau_1' = \fin{l+1}, \tau_2' = \fin{m+1} \\[1cm]
-	%% value float
+	&\tau_2 = \floattype{B_2}{V_2}, B_2 = \{\sim_1\!\!d_1, \ldots, \sim_n\!\!d_m\}, V_2 = \{w_1, \ldots, w_s\} \\[1cm]
+	%
+	%% value
+	%
 	&\sem{ v : \tau, \\
 	&\discretize{v : \tau} : \discretize{\tau} } \\
 	&= \delta_{(v : \tau, \discretize{v : \tau} : \discretize{\tau})} \\
 	&\text{where } \tau = \floattype{B}{V}, B = \top \text{ or } B = \{\sim_1\!\!b_1, \ldots, \sim_n\!\!b_n\} \\
 \end{align*}
 }
+
+\begin{example}
+	
+\end{example}
 
 \subsubsection{Lemmas for $e,e'$}
 
@@ -1337,29 +1349,58 @@ We assume the expressions $e, e'$ are well-typed.
 \begin{lemma}[Discretization Preserves Form]\label{lem:form-preservation}
 	Let $e$ be a well-typed expression of type $\tau$. Then:
 	\begin{enumerate}
-		\item If $e$ is a value, then $\discretize{e : \tau}$ is a value.
-		\item If $e$ is an expression, then $\discretize{e : \tau}$ is an expression.
+		\item If $e : \tau$ is a value, then $\discretize{e : \tau}$ is a value.
+		\item If $e : \tau$ is an expression, then $\discretize{e : \tau}$ is an expression.
 	\end{enumerate}
 \end{lemma}
 
 \begin{proof}
-	By induction on $e$. Follows from the discretization function definition.
-	\textbf{Case} $e$ constant. $\discretize{c : \floattype{B}{V}}$ is defined as:
+	By a case analysis on the structure of $e$. 
+
+	\textbf{Case} $e$ is a constant $v : \tau$. $e$ is a value. Via discretization,
 	\[
-		\begin{cases}
-			x &\text{ if } B = \top \\
-			\finconst{k}{n+1} \text{s.t.} c \in \intervals{B}_k &\text{ if } B \neq \top
+		\discretize{v : \tau} = \begin{cases}
+			v &\text{ if } B = \top \\
+			\finconst{k}{n+1} \text{ s.t. } c \in \intervals{B}_k &\text{ if } B = \{\sim_1\!\!b_1, \ldots, \sim_n\!\!b_n\}
 		\end{cases}
 	\]
-	In both cases, the output is a constant, hence a value.
-
-	\textbf{Case} $e$ is a let statement $\letkw x = e_1 \inkw e_2$. $e$ is a non-value expression.
-	\[
-	\discretize{\letkw \; x = e_1 \; \inkw \; e_2} = \letkw \; x = \discretize{e_1} \; \inkw \; \discretize{e_2}
+	both of which are values.
+	
+	\textbf{Case} $e$ is a variable $x : \tau$. Via discretization, \[
+		\discretize{x : \tau} = x.
 	\]
-	This is a let expression, a non-value.
-\end{proof}
+	$e$ can either be a value or an expression, but since the discretization leaves $x$ unchanged, the value or expression is preserved.
 
+	\textbf{Case} $e$ is a let statement $\letkw \; x = e_1 : \tau_1 \; \inkw \; e_2 : \tau_2 : \tau_2$. $e$ is an expression. Via discretization,
+	\[
+	\discretize{\letkw \; x = e_1 : \tau_1 \; \inkw \; e_2 : \tau_2 : \tau_2} = 
+	\letkw \; x = \discretize{e_1 : \tau_1} \; \inkw \; \discretize{e_2 : \tau_2},
+	\]
+	which is also an expression.
+
+	\textbf{Case} $e$ is a comparison $e_1 : \tau_1 < e_2 : \tau_2 : \bool$, where $\tau_1 = \floattype{B_1}{V_1}$ and $\tau_2 = \floattype{B_2}{V_2}$. $e$ is an expression. Via discretization,
+	\[
+	\discretize{e_1 : \tau_1 < e_2 : \tau_2 : \bool} = \begin{cases}
+		\discretize{e_1 : \tau_1} < \discretize{e_2 : \tau_2} &\text{ if } B = \top \\
+		\discretize{e_1 : \tau_1} \finlt{n+1} \discretize{e_2 : \tau_2} &\text{ if } B = \{\sim_1\!\!b_1, \ldots, \sim_n\!\!b_n\} \\
+	\end{cases}
+	\]
+	both of which are expressions.
+
+	\textbf{Case} $e$ is a conditional $\ifkw \; e_1 : \bool \; \thenkw \; e_2 : \tau \; \elsekw \; e_3 : \tau : \tau$. $e$ is an expression. Via discretization,
+	\[
+		\discretize{\ifkw \; e_1 : \bool \; \thenkw \; e_2 : \tau \; \elsekw \; e_3 : \tau : \tau} = \ifkw \; \discretize{e_1 : \bool} \; \thenkw \; \discretize{e_2 : \tau} \; \elsekw \; \discretize{e_3 : \tau}
+	\]
+	which is also an expression.
+
+	\textbf{Case} $e$ is a uniform distribution $\uniform(e_1 : \tau_1, e_2 : \tau_2) : \tau$, where $\tau_1 = \floattype{B}{V}$. $e$ is an expression. Via discretization,
+	\[
+		\discretize{\uniform(e_1 : \tau_1, e_2 : \tau_2) : \tau} = \begin{cases}
+			\uniform(\discretize{e_1 : \tau_1}, \discretize{e_2 : \tau_2}) &\text{ if } 
+		\end{cases}
+	\]
+	all of which are expressions.
+\end{proof}
 
 
 \begin{lemma}[Well-defined]
