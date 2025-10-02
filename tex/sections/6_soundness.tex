@@ -970,7 +970,10 @@ We assume the expressions are well-typed. Since we assume all expressions are we
 \begin{proof}
 	By induction on the structure of the typing derivation $e : \tau$. We do a case analysis on the last rule used.
 
-		\textbf{Case} constant $v : \tau$, where $\tau = \floattype{B}{V}$. It holds that $\sem{v : \tau} = \delta_{v : \tau} \in \mathcal{D}(Expr_{\tau} + \bot)$.
+		\textbf{Case} constant $v : \tau$, where $\tau = \floattype{B}{V}$. From the semantics, it holds that 
+		\[
+			\sem{v : \tau} = \delta_{v : \tau} \in \mathcal{D}(Expr_{\tau} + \bot).
+		\]
 
 		\textbf{Case} comparisons $e_1 < e_2 : \bool$. 
 		From typing we have 
@@ -1334,11 +1337,17 @@ We assume the expressions $e, e'$ are well-typed.
 
 \begin{example}
 	Consider the following expression $e : \tau$:
-	\begin{lstlisting}
-		uniform(0, (if uniform(0,1) < 0.5 then 1.0 else 2.0)) < 0.5
+	\begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
+	uniform(0, 
+		(if (uniform(0,1) : !{\ft{<0.5}}!) < (0.5 : !{\ftb{<0.5}{0.5}}!) 
+		then (1.0 : !{\ftb{<=1,<=2}{1}}!) else (2.0 : !{\ftb{<=1,<=2}{2}}!))
+		: !{\ftb{<=1,<=2}{1,2}}!) : !{\ft{<0.5}}!
+	< 0.5 : !{\ftb{<0.5}{0.5}}!
 	\end{lstlisting}
 
 	The pairing semantics gives:
+	{
+	\allowdisplaybreaks
 	\begin{align*}
 		&\sem{ \uniform(0, (\ifkw \; \uniform(0,1) < 0.5) \; \thenkw \; 1.0 \; \elsekw \; 2.0) < 0.5, \\
 		&\letkw \; v_1' = \ifkw \; \discrete(0.5, 0.5) < 1 \; \thenkw \; 0 \; \elsekw \; 1 \; \inkw \\
@@ -1346,9 +1355,38 @@ We assume the expressions $e, e'$ are well-typed.
 		&\ifkw \; v_1' == 0 \; \&\& \; v_2' == 0 \; \thenkw \\
 		&\discrete(0.5,0.5) \\
 		&\elsekw \\
-		&\discrete(0.25,0.75) < 1} \\
-		&= 
+		&\discrete(0.25,0.75) < 1} \\[1cm]
+		%%%
+		&= \sem{\uniform(0, (\ifkw \; \uniform(0,1) < 0.5 \; \thenkw \; 1.0 \; \elsekw \; 2.0)), \\
+		&\letkw \; v_1' = \ifkw \; \discrete(0.5, 0.5) < 1 \; \thenkw \; 0 \; \elsekw \; 1 \; \inkw \\
+		&\letkw \; v_2' = 0 \; \inkw \\
+		&\ifkw \; v_1' == 0 \; \&\& \; v_2' == 0 \; \thenkw \\
+		&\discrete(0.5,0.5) \\
+		&\elsekw \\
+		&\discrete(0.25,0.75)} \gg\!= \lambda (f,f').\sem{f < 0.5, f' \finlt{n+1} 1} \\[1cm]
+		%%%
+		&= \sem{\uniform(0, (\ifkw \; \uniform(0,1) < 0.5 \; \thenkw \; 1.0 \; \elsekw \; 2.0)), \\
+		&\texttt{DiscreteCase}(e_1,e_2)} \gg\!= \lambda (f,f').\sem{f < 0.5, f' \finlt{n+1} 1} \\[1cm]
+		%%%
+		&= \sem{\ifkw \; \uniform(0,1) < 0.5 \; \thenkw \; 1.0 \; \elsekw \; 2.0} \gg\!= \lambda g.\sem{\uniform(0, g), \discretize{\uniform(0, g)}} \\
+		&\gg\!= \lambda (f,f').\sem{f < 0.5, f' \finlt{n+1} 1} \\[1cm]
+		%%%
+		&= (0.5 \cdot \delta_{1.0} + 0.5 \cdot \delta_{2.0}) \gg\!= \lambda g.\sem{\uniform(0, g), \discretize{\uniform(0, g)}} \\
+		&\gg\!= \lambda (f,f').\sem{f < 0.5, f' \finlt{n+1} 1} \\[1cm]
+		%%%
+		&= 0.5 \cdot \sem{\uniform(0,1.0), \discrete(0.5,0.5)} \\
+		&+ 0.5 \cdot \sem{\uniform(0,2.0), \discrete(0.25,0.75)} \\
+		&\gg\!= \lambda (f,f').\sem{f < 0.5, f' \finlt{n+1} 1} \\[1cm]
+		%%%
+		&= 0.5 \cdot (\text{Uniform}(0,1) \gg\!= \lambda v.\delta_{(v,i)} \text{ s.t. } v \in \intervals{\{<0.5\}}_i) \\
+		&+ 0.5 \cdot (\text{Uniform}(0,2) \gg\!= \lambda v.\delta_{(v,i)} \text{ s.t. } v \in \intervals{\{<0.5\}}_i) \\
+		&\gg\!= \lambda (f,f').\sem{f < 0.5, f' \finlt{n+1} 1} \\[1cm]
+		%%%
+		&= 0.5 \cdot (0.5 \cdot \delta_{(\true,\true)} + 0.5 \cdot \delta_{(\false,\false)}) \\
+		&+ 0.5 \cdot (0.25 \cdot \delta_{(\true,\true)} + 0.75 \cdot \delta_{(\false,\false)}) \\[1cm]
+		&= 0.375 \cdot \delta_{(\true,\true)} + 0.625 \cdot \delta_{(\false,\false)} 
 	\end{align*}
+	}
 
 \end{example}
 
@@ -1429,15 +1467,18 @@ We assume the expressions $e, e'$ are well-typed.
 \begin{proof}
 	By induction on the structure of the typing derivation $e : \tau$. We do a case analysis on the last rule used.
 
-	% \textbf{Case} constant $(v : \tau, v' : \tau)$, where $\tau = \floattype{B}{\top}$ and $v = v'$. Clearly, $v' = \discretize{v}$, so $(v : \tau, v' : \tau) \in \relation_{\tau}$. It holds $\sem{v : \tau, v' : \tau'} = \delta_{(v : \tau, v' : \tau)} \in \mathcal{D}(\relation_{\tau} + \bot)$.
+	\textbf{Case} constant $(v : \tau, \discretize{v : \tau} : \discretize{\tau}) \in \relation_{\tau}$, where $\tau = \floattype{B}{V}$. It holds that 
+	\[
+		\sem{v : \tau, \discretize{v : \tau} : \discretize{\tau}} = \delta_{(v : \tau, \discretize{v : \tau} : \discretize{\tau})} \in \mathcal{D}(\relation_{\tau} + \bot).
+	\]
 
-	\textbf{Case} comparisons $(e_1 < e_2 : \bool, \discretize{e_1} < \discretize{e_2} : \bool) \in \relation_{\tau}$. We have the following possibilities:
+	\textbf{Case} comparison $(e_1 < e_2 : \bool, \discretize{e_1} < \discretize{e_2} : \bool) \in \relation_{\tau}$. We have the following possibilities:
 	\begin{itemize}
 		\item If $e_1 = v_1$ and $e_2 = v_2$ are values, then by Lemma~\ref{lem:form-preservation}, $\discretize{e_1} = v_1'$ and $\discretize{e_2} = v_2'$ are also values. Either:
 		\[
-			\delta_{(\true:\bool, \true:\bool)} \in \mathcal{D}(\relation_{\tau} + \bot) 
+			\delta_{(\true:\bool, \true:\bool)} \in \mathcal{D}(\relation_{\bool} + \bot) 
 			\quad\text{or}\quad
-			\delta_{(\false:\bool, \false:\bool)} \in \mathcal{D}(\relation_{\tau} + \bot) 
+			\delta_{(\false:\bool, \false:\bool)} \in \mathcal{D}(\relation_{\bool} + \bot) 
 		\]
 		\item At least $e_1$ or $e_2$ is an expression. Suppose $e_1$ is an expression; by Lemma~\ref{lem:form-preservation}, $\discretize{e_1}$ is also an expression. The clause
 		\[
@@ -1445,7 +1486,7 @@ We assume the expressions $e, e'$ are well-typed.
 		\]
 		in the semantics is applied. By the IH,
 		\[
-			\sem{ e_1 : \tau_1, \discretize{e_1 : \tau_1} } \in \mathcal{D}(\relation_{\tau} + \bot).
+			\sem{ e_1 : \tau_1, \discretize{e_1 : \tau_1} } \in \mathcal{D}(\relation_{\tau_1} + \bot).
 		\]
 		We use the left bind clause with 
 		\[
@@ -1453,12 +1494,12 @@ We assume the expressions $e, e'$ are well-typed.
 		\]
 		which maps
 		\[
-			\relation_{\tau} \to \mathcal{D}(\relation_{\tau} + \bot).
+			\relation_{\tau_1} \to \mathcal{D}(\relation_{\tau_2} + \bot).
 		\]
 
 		By Proposition~\ref{prop:bind-typing}, we conclude
 		\[
-			\sem{ e_1 : \tau_1, \discretize{e_1 : \tau_1} } \gg\!= \lambda (f,f'). \sem{ f < e_2 : \tau_2, f' < \discretize{e_2 : \tau_2} } \in \mathcal{D}(\relation_{\tau} + \bot).
+			\sem{ e_1 : \tau_1, \discretize{e_1 : \tau_1} } \gg\!= \lambda (f,f'). \sem{ f < e_2 : \tau_2, f' < \discretize{e_2 : \tau_2} } \in \mathcal{D}(\relation_{\tau_2} + \bot).
 		\] 
 	\end{itemize}
 \end{proof}
