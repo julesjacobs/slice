@@ -662,15 +662,24 @@ We assume the expressions are well-typed. Since we assume all expressions are we
 {
 \footnotesize
 \begin{align*}
+	%%
+	%% let
+	%%
 	\sem{ \letkw \; x = e_1 : \tau_1 \; \inkw \; e_2 : \tau_2 : \tau_2} &= \begin{cases}
 		\delta_{e_2[v/x] : \tau_2} \quad &\text{ if } e_1 = v \\
 		\sem{ e_1 : \tau_1 } \gg\!= \lambda f. \sem{ \letkw \; x = f \; \inkw \; e_2 : \tau_2 : \tau_2} \quad &\text{ otherwise } \\
 	\end{cases} \\
+	%%
+	%% if-else
+	%%
 	\sem{ \ifkw \; e_1 : \bool \; \thenkw \; e_2 : \tau \; \elsekw \; e_3 : \tau : \tau} &= \begin{cases}
 		\delta_{\expr_2 : \tau}  \quad &\text{ if $e_1 = \val_1 = \true$} \\
 		\delta_{\expr_3 : \tau}  \quad &\text{ if $e_1 = \val_1 = \false$} \\
 		\sem{ e_1 : \bool} \gg\!= \lambda f. \sem{ \ifkw \; f \; \thenkw \; e_2 : \tau \; \elsekw \; e_3 : \tau : \tau} \quad &\text{ otherwise } \\
 	\end{cases} \\
+	%%
+	%% less than - float
+	%%
 	\sem{ e_1 : \tau_1 < e_2 : \tau_2 : \bool} &= \begin{cases}
 		\delta_{\true : \bool} \quad &\text{ if } e_1 = v_1, e_2 = v_2, v_1 < v_2 \\
 		\delta_{\false : \bool} \quad &\text{ if } e_1 = v_1, e_2 = v_2, v_1 \geq v_2 \\
@@ -678,6 +687,9 @@ We assume the expressions are well-typed. Since we assume all expressions are we
 		\sem{ e_1 : \tau_1 } \gg\!= \lambda f. \sem{ f < e_2 : \tau_2 : \bool} \quad &\text{ otherwise } \\
 	\end{cases} \\
 	&\text{where } \tau_1 = \tau_2 = \floattype{B}{V} \\
+	%%
+	%% less than - finite
+	%%
 	\sem{ e_1 : \tau_1 \finlt{n} e_2 : \tau_2 : \bool} &= \begin{cases}
 		\delta_{\true : \bool} \quad &\text{ if } e_1 = k_{1,\#n}, e_2 = k_{2,\#n}, k_1 < k_2 \\
 		\delta_{\false : \bool} \quad &\text{ if } e_1 = k_{1,\#n}, e_2 = k_{2,\#n}, k_1 \geq k_2 \\
@@ -685,6 +697,9 @@ We assume the expressions are well-typed. Since we assume all expressions are we
 		\sem{ e_1 : \tau_1 } \gg\!= \lambda f. \sem{ f \finlt{n} e_2 : \tau_2 : \bool} \quad &\text{ otherwise } \\
 	\end{cases} \\
 	&\text{where } \tau_1 = \tau_2 = \fin{n} \\
+	%%
+	%% uniform
+	%%
 	\sem{ \uniform(e_1 : \tau_1, e_2 : \tau_2) : \tau } &= \begin{cases}
 		\text{Uniform}{(v_1, v_2)} \quad &\text{ if $e_1 = v_1$, $e_2 = v_2$, $v_1 \leq v_2$} \\
 		\delta_{\bot} \quad &\text{ if $e_1 = v_1$, $e_2 = v_2$, $v_1 > v_2$} \\
@@ -692,70 +707,63 @@ We assume the expressions are well-typed. Since we assume all expressions are we
 		\sem{ e_1 : \tau_1 } \gg\!= \lambda f. \sem{ \uniform(f, e_2 : \tau_2) : \tau } \quad &\text{ otherwise } \\
 	\end{cases} \\
 	&\text{where } \tau = \floattype{B}{V} \\
+	%%
+	%% discrete
+	%%
 	\sem{ \discrete(v_0, \ldots, v_n) : \tau } &= \begin{cases}
 		\text{Discrete}{(v_0, \ldots, v_n)} \quad &\text{ if } \sum_i v_i = 1 \\
 		\delta_{\bot} \quad &\text{ otherwise }
 	\end{cases} \\
 	&\text{where } \tau = \fin{n} \\
+	%%
+	%% value - float
+	%%
 	\sem{ v : \tau } &= \delta_{v:\tau} \\
 	&\text{where } \tau = \floattype{B}{V} \\
+	%%
+	%% value - finite
+	%%
 	\sem{ \finconst{k}{n} : \tau } &= \delta_{\finconst{k}{n} : \tau} \\
 	&\text{where } \tau = \fin{n} \\
 \end{align*}
 }
 
+\subsubsection{\dc}
+We introduce a new construct, called \dc, that simulates the latter two cases of the discretization of the uniform distribution in the discretization function. We define:
+
+\begin{align*}
+	&\discretize{\uniform(e_1 : \floattype{B_1}{V_1}, e_2 : \floattype{B_2}{V_2}) : \floattype{B}{V}} \\
+	&= \dc(\discretize{e_1 : \floattype{B_1}{V_1}},\discretize{e_2 : \floattype{B_2}{V_2}})
+\end{align*}
+
+where $B \neq \top$, $V_1 = \{v_1, \ldots, v_n\} \neq \top$, and $V_2 = \{w_1, \ldots, w_m\} \neq \top$.
+
+We give a typing rule for this new construct:
+\begin{align*}
+	\inferrule[\textsc{TDiscreteCase}]
+	{e_1 : \fin{|B_1| + 1} \\
+	e_2 : \fin{|B_2| + 1}}
+	{\dc(e_1, e_2) : \fin{|B|+1}}
+\end{align*}
+
+Now the semantics is as follows:
+
+{
+\begin{align*}
+	&\sem{ \dc(e_1 : \tau_1, e_2 : \tau_2) : \tau} \\
+	&= \begin{cases}
+		\sem{ \discretize{\uniform(v_{i+1}, w_{j+1}) : \floattype{B}{\top}} : \tau } \quad &\text{ if } e_1 = i, e_2 = j \\
+		\sem{ e_2 : \tau_2 } \gg\!= \lambda f. \sem{ \dc(i : \tau_1, f) } \quad &\text{ if } e_1 = i, e_2 \neq j \\
+		\sem{ e_1 : \tau_1 } \gg\!= \lambda f. \sem{ \dc(f, e_2 : \tau_2) } \quad &\text{ otherwise } \\
+	\end{cases} \\
+	&\text{where } \\
+	&\tau = \fin{|B| + 1}, \\
+	&\tau_1 = \fin{|B_1| + 1}, \tau_2 = \fin{|B_2| + 1} \\
+	&V_1 = \{v_1,\ldots,v_n\}, V_2 = \{w_1,\ldots,w_m\} \\
+\end{align*}
+}
+
 \subsubsection{Lemmas for $e$}
-% \begin{lemma}[Substitution]
-% 	If $\Gamma, x : \tau_1 \vdash e : \tau_2$ and $\emptyset \vdash v : \tau_1$, then $\Gamma \vdash e[v/x] : \tau_2$. 
-% \end{lemma}
-
-% \begin{proof}
-% 	We proceed by induction on $e$:
-
-% 	\textbf{Case} $e = y$ (variable). There are two subcases. If $y=x$, then $e[v/x] = v$. This also means  $\Gamma, x:\tau_1 \vdash e:\tau_2$ becomes $\Gamma, x:\tau_1 \vdash x:\tau_1$, and we have $\tau_2 = \tau_1$. Hence $\emptyset \vdash v : \tau_1$ becomes $\emptyset \vdash v : \tau_2$, and $\Gamma \vdash e[v/x] : \tau_2$, as required. If $y \neq x$, then $y$ must be bound in $\Gamma$. The substitution does nothing: $e[v/x] = y$. Since $\Gamma, x : \tau_1 \vdash y : \tau_2$ and $y \neq x$, we have $\Gamma \vdash y : \tau_2$. Thus, $\Gamma \vdash e[v/x] : \tau_2$.
-
-% 	\textbf{Case} $e$ is a constant or a discrete distribution. Substitution does not change either: $e[v/x] = e$. Typing of constants nor $\discrete(v_0,\ldots,v_n)$ do not depend on $x$, so $\Gamma \vdash e : \tau_2$. Hence, $\Gamma \vdash e[v/x] : \tau_2$.
-
-% 	\textbf{Case} $e$ is a comparison $e_1 < e_2$. The argument proceeds identically in both the float and fin comparisons. Without loss of generality, by the typing rule for comparisons, we have:
-% 	\[
-% 		\inferrule
-% 		{\ \Gamma, x : \tau_1 \vdash e_1 : \tau \text{ and } \Gamma, x : \tau_1 \vdash e_2 : \tau}
-% 		{\Gamma, x : \tau_1 \vdash e_1 < e_2 : \bool}
-% 	\]
-% 	By the induction hypothesis, we have $\Gamma \vdash e_1[v/x] : \tau$ and $\Gamma \vdash e_2[v/x] : \tau$. Thus, $\Gamma \vdash (e_1 < e_2)[v/x] : \bool$ since $(e_1 < e_2)[v/x] = e_1[v/x] < e_2[v/x]$ and the typing rule for $<$ applies directly.
-
-% 	\textbf{Case} $e$ is an if-else statement $\ifkw \; e_1 \; \thenkw \; e_2 \; \elsekw \; e_3$. By the typing rule for if-else, we have:
-% 	\[
-% 		\inferrule
-% 		{\ \Gamma, x : \tau_1 \vdash e_1 : \bool \text{ and } \Gamma, x : \tau_1 \vdash e_2 : \tau \text{ and } \Gamma, x : \tau_1 \vdash e_3 : \tau}
-% 		{\Gamma, x : \tau_1 \vdash \ifkw \; e_1 \; \thenkw \; e_2 \; \elsekw \; e_3 : \tau}
-% 	\]
-% 	By the induction hypothesis, we have $\Gamma \vdash e_1[v/x] : \bool$, $\Gamma \vdash e_2[v/x] : \tau$, and $\Gamma \vdash e_3[v/x] : \tau$. Thus, $\Gamma \vdash (\ifkw \; e_1 \; \thenkw \; e_2 \; \elsekw \; e_3)[v/x] : \tau$ since $(\ifkw \; e_1 \; \thenkw \; e_2 \; \elsekw \; e_3)[v/x] = \ifkw \; e_1[v/x] \; $ $\thenkw \; e_2[v/x] \; \elsekw \; e_3[v/x]$ and the typing rule for if-else applies directly.
-
-% 	\textbf{Case} $e$ is a let statement $\letkw \; y \; = e_1 \; \inkw \; e_2$. This is further broken down into two subcases, $y \neq x$ meaning the binder does not shadow $x$ and $y = x$ meaning the binder shadows $x$. For the former case when $y \neq x$, by the typing rule for let, we have:
-% 	\[
-% 		\inferrule
-% 		{\ \Gamma, x : \tau_1 \vdash e_1 : \tau_1' \text{ and } \Gamma, x : \tau_1, y : \tau_1' \vdash e_2 : \tau_2}
-% 		{\Gamma, x : \tau_1 \vdash \letkw \; y = e_1 \; \inkw \; e_2 : \tau_2}
-% 	\]
-% 	By the induction hypothesis, we have $\Gamma \vdash e_1[v/x] : \tau_1'$ and $\Gamma, y : \tau_1' \vdash e_2[v/x] : \tau_2$. Thus, $\Gamma \vdash (\letkw \; y = e_1 \; \inkw \; e_2)[v/x] : \tau_2$ since $(\letkw \; y = e_1 \; \inkw \; e_2)[v/x] = \letkw \; y = e_1[v/x] \; \inkw \; e_2[v/x]$ and the typing rule for let applies directly.
-
-% 	For the latter case when $y = x$, by the typing rule for let, we have:
-% 	\[
-% 		\inferrule
-% 		{\ \Gamma, x : \tau_1 \vdash e_1 : \tau_1' \text{ and } \Gamma, x : \tau_1 \vdash e_2 : \tau_2}
-% 		{\Gamma, x : \tau_1 \vdash \letkw \; y = e_1 \; \inkw \; e_2 : \tau_2}
-% 	\]
-% 	By the induction hypothesis, we have $\Gamma \vdash e_1[v/x] : \tau_1'$. We have $\Gamma \vdash (\letkw \; y = e_1 \; \inkw \; e_2)[v/x] : \tau_2$ since $(\letkw \; y = e_1 \; \inkw \; e_2)[v/x] = \letkw \; y = e_1[v/x] \; \inkw \; e_2$ by the rules of capture-avoiding substitution.
-
-% 	\textbf{Case} $e$ is a uniform distribution $\uniform(e_1,e_2)$. By the typing rule for uniform, we have:
-% 	\[		
-% 		\inferrule
-% 		{\ \Gamma, x : \tau_1 \vdash e_1 : \tau \text{ and } \Gamma, x : \tau_1 \vdash e_2 : \tau}
-% 		{\Gamma, x : \tau_1 \vdash \uniform(e_1,e_2) : \tau}
-% 	\]
-% 	By the induction hypothesis, we have $\Gamma \vdash e_1[v/x] : \tau$ and $\Gamma \vdash e_2[v/x] : \tau$. Thus, $\Gamma \vdash \uniform(e_1, e_2)[v/x] : \tau$ since $\uniform(e_1,e_2)[v/x] = \uniform(e_1[v/x], e_2[v/x])$ and the typing rule for uniform applies directly.
-% \end{proof}
 
 \begin{lemma}[Substitution]\label{lem:substitution}
 	If $\Gamma, x : \tau_1 \vdash e : \tau_2$ and $\emptyset \vdash v : \tau_1$, then $\Gamma \vdash e[v/x] : \tau_2$. 
@@ -1304,14 +1312,14 @@ We assume the expressions $e, e'$ are well-typed.
 	%% uniform DiscreteCase
 	%
 	&\sem{ \uniform(e_1 : \tau_1, e_2 : \tau_2) : \tau, \\
-	&\texttt{DiscreteCase}(e_1 : \tau_1, e_2 : \tau_2) : \discretize{\tau}} \\
+	&\dc(e_1 : \tau_1, e_2 : \tau_2) : \discretize{\tau}} \\
 	&= \begin{cases}
 		\sem{e_2 : \tau_2} \gg\!= \lambda f.\sem{ \uniform(v_1 : \tau_1, f) : \tau, \discretize{\uniform(v_1 : \tau_1,f) : \tau} : \discretize{\tau}} \quad &\text{ if } e_1 = v_1, e_2 \neq v_2 \\
 		\sem{e_1 : \tau_1} \gg\!= \lambda f.\sem{ \uniform(f, e_2 : \tau_2) : \tau, \discretize{\uniform(f,e_2 : \tau_2) : \tau} : \discretize{\tau}} \quad &\text{ otherwise } \\
 	\end{cases} \\
 	&\text{where } \\
 	% definition of DiscreteCase
-	&\texttt{DiscreteCase}(e_1 : \tau_1, e_2 : \tau_2) \\
+	&\dc(e_1 : \tau_1, e_2 : \tau_2) \\
 	&= \letkw \; v_1' = \discretize{e_1 : \tau_1} : \discretize{\tau_1} \; \inkw \\
 			&\letkw \; v_2' = \discretize{e_2 : \tau_2} : \discretize{\tau_2} \; \inkw \\
 			&\ifkw\; v_1' \fineq{l+1} \finconst{0}{l+1}\; \logand \; v_2' \fineq{m+1} \finconst{0}{m+1}\; \thenkw \\
@@ -1345,34 +1353,38 @@ We assume the expressions $e, e'$ are well-typed.
 	< 0.5 : !{\ftb{<0.5}{0.5}}!
 	\end{lstlisting}
 
-	The pairing semantics gives:
+	The pairing semantics gives the following. We omit the insignificant types:
 	{
 	\allowdisplaybreaks
 	\begin{align*}
-		&\sem{ \uniform(0, (\ifkw \; \uniform(0,1) < 0.5) \; \thenkw \; 1.0 \; \elsekw \; 2.0) < 0.5, \\
+		&\sem{ \uniform(0 : \tau_1, (\ifkw \; \uniform(0,1) < 0.5 \; \thenkw \; 1.0 \; \elsekw \; 2.0) : \tau_2) : \tau_3 < 0.5 : \tau_4, \\
 		&\letkw \; v_1' = \ifkw \; \discrete(0.5, 0.5) < 1 \; \thenkw \; 0 \; \elsekw \; 1 \; \inkw \\
 		&\letkw \; v_2' = 0 \; \inkw \\
 		&\ifkw \; v_1' == 0 \; \&\& \; v_2' == 0 \; \thenkw \\
 		&\discrete(0.5,0.5) \\
 		&\elsekw \\
-		&\discrete(0.25,0.75) < 1} \\[1cm]
+		&\discrete(0.25,0.75) < 1} \\
+		&\text{where } \tau_1 = \floattype{\{<=0\}}{0}, \tau_2 = \floattype{\{<=1, <=2\}}{1,2}, \\
+		&\tau_3 = \floattype{\{<0.5\}}{\top}, \tau_4 = \floattype{\{<0.5\}}{0.5} \\[1cm]
 		%%%
-		&= \sem{\uniform(0, (\ifkw \; \uniform(0,1) < 0.5 \; \thenkw \; 1.0 \; \elsekw \; 2.0)), \\
+		&= \sem{\uniform(0 : \tau_1, (\ifkw \; \uniform(0,1) < 0.5 \; \thenkw \; 1.0 \; \elsekw \; 2.0) : \tau_2) : \tau_3, \\
 		&\letkw \; v_1' = \ifkw \; \discrete(0.5, 0.5) < 1 \; \thenkw \; 0 \; \elsekw \; 1 \; \inkw \\
 		&\letkw \; v_2' = 0 \; \inkw \\
 		&\ifkw \; v_1' == 0 \; \&\& \; v_2' == 0 \; \thenkw \\
 		&\discrete(0.5,0.5) \\
 		&\elsekw \\
-		&\discrete(0.25,0.75)} \gg\!= \lambda (f,f').\sem{f < 0.5, f' \finlt{n+1} 1} \\[1cm]
+		&\discrete(0.25,0.75)} \gg\!= \lambda (f,f').\sem{f < 0.5 : \tau_4, f' \finlt{n+1} 1} \\[1cm]
 		%%%
-		&= \sem{\uniform(0, (\ifkw \; \uniform(0,1) < 0.5 \; \thenkw \; 1.0 \; \elsekw \; 2.0)), \\
-		&\texttt{DiscreteCase}(e_1,e_2)} \gg\!= \lambda (f,f').\sem{f < 0.5, f' \finlt{n+1} 1} \\[1cm]
+		&= \sem{\uniform(0 : \tau_1, (\ifkw \; \uniform(0,1) < 0.5 \; \thenkw \; 1.0 \; \elsekw \; 2.0) : \tau_2) : \tau_3, \\
+		&\dc(e_1,e_2)} \gg\!= \lambda (f,f').\sem{f < 0.5 : \tau_4, f' \finlt{n+1} 1} \\[1cm]
 		%%%
-		&= \sem{\ifkw \; \uniform(0,1) < 0.5 \; \thenkw \; 1.0 \; \elsekw \; 2.0} \gg\!= \lambda g.\sem{\uniform(0, g), \discretize{\uniform(0, g)}} \\
-		&\gg\!= \lambda (f,f').\sem{f < 0.5, f' \finlt{n+1} 1} \\[1cm]
+		&= \sem{\ifkw \; \uniform(0,1) < 0.5 \; \thenkw \; 1.0 \; \elsekw \; 2.0 : \tau_2} \\
+		&\gg\!= \lambda g.\sem{\uniform(0 : \tau_1, g) : \tau_3, \discretize{\uniform(0 : \tau_1, g) : \tau_3} : \discretize{\tau_3}} \\
+		&\gg\!= \lambda (f,f').\sem{f < 0.5 : \tau_4, f' \finlt{n+1} 1} \\[1cm]
 		%%%
-		&= (0.5 \cdot \delta_{1.0} + 0.5 \cdot \delta_{2.0}) \gg\!= \lambda g.\sem{\uniform(0, g), \discretize{\uniform(0, g)}} \\
-		&\gg\!= \lambda (f,f').\sem{f < 0.5, f' \finlt{n+1} 1} \\[1cm]
+		&= (0.5 \cdot \delta_{1.0} + 0.5 \cdot \delta_{2.0}) \\
+		&\gg\!= \lambda g.\sem{\uniform(0 : \tau_1, g) : \tau_3, \discretize{\uniform(0 : \tau_1, g) : \tau_3} : \discretize{\tau_3}} \\
+		&\gg\!= \lambda (f,f').\sem{f < 0.5 : \tau_4, f' \finlt{n+1} 1} \\[1cm]
 		%%%
 		&= 0.5 \cdot \sem{\uniform(0,1.0), \discrete(0.5,0.5)} \\
 		&+ 0.5 \cdot \sem{\uniform(0,2.0), \discrete(0.25,0.75)} \\
@@ -1453,10 +1465,10 @@ We assume the expressions $e, e'$ are well-typed.
 		&= \begin{cases}
 			\uniform(\discretize{e_1 : \tau_1}, \discretize{e_2 : \tau_2}) &\text{ if } B = \top \\
 			\discrete(p_0,\ldots,p_n) &\text{ if } B = \{\sim_1\!\!b_1, \ldots, \sim_n\!\!b_n\}, e_1,e_2 \in \R \\
-			\texttt{DiscreteCase}(e_1 : \tau_1,e_2 : \tau_2) &\text{ if } B = \{\sim_1\!\!b_1, \ldots, \sim_n\!\!b_n\}, e_1,e_2 \notin \R
+			\dc(e_1 : \tau_1,e_2 : \tau_2) &\text{ if } B = \{\sim_1\!\!b_1, \ldots, \sim_n\!\!b_n\}, e_1,e_2 \notin \R
 		\end{cases}
 	\end{align*}
-	all of which are expressions. In particular, \texttt{DiscreteCase} is a let statement.
+	all of which are expressions. In particular, \dc is a let statement.
 \end{proof}
 
 
