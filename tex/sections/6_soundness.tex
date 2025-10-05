@@ -1408,7 +1408,7 @@ We assume the expressions $e, e'$ are well-typed.
 	{
 	\allowdisplaybreaks
 	\begin{align*}
-		&\sem{ \uniform(0 : \tau_1, (\ifkw \; \uniform(0,1) < 0.5 \; \thenkw \; 1.0 \; \elsekw \; 2.0) : \tau_2) : \tau_3 < 0.5 : \tau_4, \\
+		&\sem{ \uniform(0 : \tau_1, (\ifkw \; \uniform(0,1) < 0.5 \; \thenkw \; 1.0 \; \elsekw \; 2.0) : \tau_2) : \tau < 0.5, \\
 		&\letkw \; v_1' = \ifkw \; \discrete(0.5, 0.5) < 1 \; \thenkw \; 0 \; \elsekw \; 1 \; \inkw \\
 		&\letkw \; v_2' = 0 \; \inkw \\
 		&\ifkw \; v_1' == 0 \; \&\& \; v_2' == 0 \; \thenkw \\
@@ -1416,29 +1416,39 @@ We assume the expressions $e, e'$ are well-typed.
 		&\elsekw \\
 		&\discrete(0.25,0.75) < 1} \\
 		&\text{where } \tau_1 = \floattype{\{<=0\}}{0}, \tau_2 = \floattype{\{<=1, <=2\}}{1,2}, \\
-		&\tau_3 = \floattype{\{<0.5\}}{\top}, \tau_4 = \floattype{\{<0.5\}}{0.5} \\[1cm]
+		&\tau = \floattype{\{<0.5\}}{\top} \\
+		&\text{and hence, } B = \{\cleq{0.5}\}, V = \top, B_1 = \{\cleq{0}\}, V_1 = \{0\}, B_2 = \{\cleq{1}, \cleq{2}\}, V_2 = \{1,2\} \\[1cm]
 		%%%
-		&= \sem{\uniform(0 : \tau_1, (\ifkw \; \uniform(0,1) < 0.5 \; \thenkw \; 1.0 \; \elsekw \; 2.0) : \tau_2) : \tau_3, \\
+		&= \sem{\uniform(0 : \tau_1, (\ifkw \; \uniform(0,1) < 0.5 \; \thenkw \; 1.0 \; \elsekw \; 2.0) : \tau_2) : \tau, \\
 		&\letkw \; v_1' = \ifkw \; \discrete(0.5, 0.5) < 1 \; \thenkw \; 0 \; \elsekw \; 1 \; \inkw \\
 		&\letkw \; v_2' = 0 \; \inkw \\
 		&\ifkw \; v_1' == 0 \; \&\& \; v_2' == 0 \; \thenkw \\
 		&\discrete(0.5,0.5) \\
 		&\elsekw \\
-		&\discrete(0.25,0.75)} \gg\!= \lambda (f,f').\sem{f < 0.5 : \tau_4, f' \finlt{n+1} 1} \\[1cm]
+		&\discrete(0.25,0.75)} \gg\!= \lambda (f,f').\sem{f < 0.5, f' \finlt{n+1} 1} \\[1cm]
 		%%%
-		&= \sem{\uniform(0 : \tau_1, (\ifkw \; \uniform(0,1) < 0.5 \; \thenkw \; 1.0 \; \elsekw \; 2.0) : \tau_2) : \tau_3, \\
-		&\dc(e_1,e_2)} \gg\!= \lambda (f,f').\sem{f < 0.5 : \tau_4, f' \finlt{n+1} 1} \\[1cm]
+		&= \sem{\uniform(0 : \tau_1, (\ifkw \; \uniform(0,1) < 0.5 \; \thenkw \; 1.0 \; \elsekw \; 2.0) : \tau_2) : \tau, \\
+		&\dc(0, \ifkw \; \discrete(0.5, 0.5) < 1 \; \thenkw \; 0 \; \elsekw \; 1)} \\
+		&\gg\!= \lambda (f,f').\sem{f < 0.5, f' \finlt{n+1} 1} \\[1cm]
 		%%%
-		&= \sem{\ifkw \; \uniform(0,1) < 0.5 \; \thenkw \; 1.0 \; \elsekw \; 2.0 : \tau_2} \\
-		&\gg\!= \lambda g.\sem{\uniform(0 : \tau_1, g) : \tau_3, \discretize{\uniform(0 : \tau_1, g) : \tau_3} : \discretize{\tau_3}} \\
-		&\gg\!= \lambda (f,f').\sem{f < 0.5 : \tau_4, f' \finlt{n+1} 1} \\[1cm]
+		&= \sem{\ifkw \; \uniform(0,1) < 0.5 \; \thenkw \; 1.0 \; \elsekw \; 2.0 : \tau_2, \\
+		&\ifkw \; \discrete(0.5, 0.5) < 1 \; \thenkw \; 0 \; \elsekw \; 1} \\
+		&\gg\!= \lambda (f,f').\sem{\uniform(0 : \tau_1, f) : \tau, \dc(0, f')}\\[1cm]
 		%%%
-		&= (0.5 \cdot \delta_{1.0} + 0.5 \cdot \delta_{2.0}) \\
-		&\gg\!= \lambda g.\sem{\uniform(0 : \tau_1, g) : \tau_3, \discretize{\uniform(0 : \tau_1, g) : \tau_3} : \discretize{\tau_3}} \\
-		&\gg\!= \lambda (f,f').\sem{f < 0.5 : \tau_4, f' \finlt{n+1} 1} \\[1cm]
+		&= (0.5 \cdot \delta_{(1.0,0)} + 0.5 \cdot \delta_{(2.0,1)}) \\
+		&\gg\!= \lambda (f,f').\sem{\uniform(0 : \tau_1, f) : \tau, \dc(0, f')}\\[1cm]
 		%%%
-		&= 0.5 \cdot \sem{\uniform(0,1.0), \discrete(0.5,0.5)} \\
-		&+ 0.5 \cdot \sem{\uniform(0,2.0), \discrete(0.25,0.75)} \\
+		&= 0.5 \cdot \sem{\uniform(0,1.0) : \tau, \dc(0,0)} \\
+		&+ 0.5 \cdot \sem{\uniform(0,2.0) : \tau, \dc(0,1)} \\
+		&\gg\!= \lambda (f,f').\sem{f < 0.5, f' \finlt{n+1} 1} \\[1cm]
+		%%%
+		&= 0.5 \cdot \sem{\uniform(0,1.0) : \tau, \discretize{\uniform(0,1) : \floattype{B}{\top}}} \\
+		&+ 0.5 \cdot \sem{\uniform(0,2.0) : \tau, \discretize{\uniform(0,2) : \floattype{B}{\top}}} \\
+		&\gg\!= \lambda (f,f').\sem{f < 0.5, f' \finlt{n+1} 1} \\
+		&\text{since } \discretize{0 : \floattype{B_1}{0}} = 0, \discretize{1 : \floattype{B_2}{1}} = 0, \discretize{2 : \floattype{B_2}{2}} = 1 \\[1cm]
+		%%%
+		&= 0.5 \cdot \sem{\uniform(0,1.0) : \tau, \discrete(0.5, 0.5)} \\
+		&+ 0.5 \cdot \sem{\uniform(0,2.0) : \tau, \discrete(0.25,0.75)} \\
 		&\gg\!= \lambda (f,f').\sem{f < 0.5, f' \finlt{n+1} 1} \\[1cm]
 		%%%
 		&= 0.5 \cdot (\text{Uniform}(0,1) \gg\!= \lambda v.\delta_{(v,i)} \text{ s.t. } v \in \intervals{\{<0.5\}}_i) \\
