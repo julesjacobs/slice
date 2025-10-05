@@ -748,12 +748,30 @@ We give a typing rule for this new construct:
 
 Now the semantics is as follows:
 
+Old:
 {
 \begin{align*}
 	&\sem{ \dc(e_1 : \tau_1, e_2 : \tau_2) : \tau} \\
 	&= \begin{cases}
 		\sem{ \discretize{\uniform(v_{i+1}, w_{j+1}) : \floattype{B}{\top}} : \tau } \quad &\text{ if } e_1 = i, e_2 = j \\
 		\sem{ e_2 : \tau_2 } \gg\!= \lambda f. \sem{ \dc(i : \tau_1, f) } \quad &\text{ if } e_1 = i, e_2 \neq j \\
+		\sem{ e_1 : \tau_1 } \gg\!= \lambda f. \sem{ \dc(f, e_2 : \tau_2) } \quad &\text{ otherwise } \\
+	\end{cases} \\
+	&\text{where } \\
+	&\tau = \fin{|B| + 1}, \\
+	&\tau_1 = \fin{|B_1| + 1}, \tau_2 = \fin{|B_2| + 1} \\
+	&V_1 = \{v_1,\ldots,v_n\}, V_2 = \{w_1,\ldots,w_m\} \\
+\end{align*}
+}
+
+New:
+{
+\begin{align*}
+	&\sem{ \dc(e_1 : \tau_1, e_2 : \tau_2) : \tau} \\
+	&= \begin{cases}
+		\sem{ \discretize{\uniform(v_i, w_j) : \floattype{B}{\top}} : \tau } \quad &\text{ if } e_1 = \discretize{v_i : \floattype{B_1}{v_i}} = v', \\
+		&e_2 = \discretize{w_j : \floattype{B_2}{w_j}} = w' \\
+		\sem{ e_2 : \tau_2 } \gg\!= \lambda f. \sem{ \dc(i : \tau_1, f) } \quad &\text{ if } e_1 = v', e_2 \neq w' \\
 		\sem{ e_1 : \tau_1 } \gg\!= \lambda f. \sem{ \dc(f, e_2 : \tau_2) } \quad &\text{ otherwise } \\
 	\end{cases} \\
 	&\text{where } \\
@@ -1283,7 +1301,7 @@ We assume the expressions $e, e'$ are well-typed.
 		\sem{ e_1 : \tau_1, \discretize{e_1 : \tau_1} : \discretize{\tau_1}} \gg\!= \lambda (f,f'). \sem{ f \finlt{n+1} e_2 : \tau_2 : \bool, \\
 		f' \finlt{n+1} \discretize{e_2 : \tau_2} : \discretize{\tau_2} : \bool} \quad &\text{ otherwise } \\
 	\end{cases} \\
-	&\text{where } \tau_1 = \tau_2 = \floattype{B}{V}, B = \{\sim_1\!\!b_1, \ldots, \sim_n\!\!b_n\}, \tau_1' = \tau_2' = \fin{n+1} \\[1cm]
+	&\text{where } \tau_1 = \tau_2 = \floattype{B}{V}, B = \{\sim_1\!\!b_1, \ldots, \sim_n\!\!b_n\} \neq \top \\[1cm]
 	%
 	%% uniform uniform
 	%
@@ -1309,30 +1327,63 @@ We assume the expressions $e, e'$ are well-typed.
 	\end{cases} \\
 		&\text{ where } \tau = \floattype{B}{V}, B = \{\sim_1\!\!b_1, \ldots, \sim_n\!\!b_n\} \neq \top \\[1cm]
 	%
-	%% uniform DiscreteCase
+	%% uniform DiscreteCase (NEW)
 	%
 	&\sem{ \uniform(e_1 : \tau_1, e_2 : \tau_2) : \tau, \\
-	&\dc(e_1 : \tau_1, e_2 : \tau_2) : \discretize{\tau}} \\
+	&\dc(\discretize{e_1 : \tau_1} : \discretize{\tau_1}, \discretize{e_2 : \tau_2} : \discretize{\tau_2}) : \discretize{\tau}} \\
 	&= \begin{cases}
-		\sem{e_2 : \tau_2} \gg\!= \lambda f.\sem{ \uniform(v_1 : \tau_1, f) : \tau, \discretize{\uniform(v_1 : \tau_1,f) : \tau} : \discretize{\tau}} \quad &\text{ if } e_1 = v_1, e_2 \neq v_2 \\
-		\sem{e_1 : \tau_1} \gg\!= \lambda f.\sem{ \uniform(f, e_2 : \tau_2) : \tau, \discretize{\uniform(f,e_2 : \tau_2) : \tau} : \discretize{\tau}} \quad &\text{ otherwise } \\
+		\sem{ \uniform(v : \tau_1, w : \tau_2) : \tau, \discretize{\uniform(v_i,w_j) : \floattype{B}{\top}} : \discretize{\tau}} \\
+		\text{s.t. } \discretize{v_i : \floattype{B_1}{v_i}} = \discretize{v : \tau_1} \text{ and } \discretize{w_j : \floattype{B_2}{w_j}} = \discretize{w : \tau_2} \quad &\text{ if } e_1 = v, e_2 = w \\
+		\sem{e_2 : \tau_2, \discretize{e_2 : \tau_2} : \discretize{\tau_2}} \gg\!= \lambda (f,f').\sem{ \uniform(v : \tau_1, f) : \tau, \\
+		\dc(\discretize{v : \tau_1} : \discretize{\tau_1}, f')} \quad &\text{ if } e_1 = v, e_2 \neq w \\
+		\sem{e_1 : \tau_1, \discretize{e_1 : \tau_1} : \discretize{\tau_1}} \gg\!= \lambda (f,f').\sem{ \uniform(f, e_2 : \tau_2) : \tau, \\
+		\dc(f', \discretize{e_2 : \tau_2} : \discretize{\tau_2})} \quad &\text{ otherwise } \\
 	\end{cases} \\
-	&\text{where } \\
-	% definition of DiscreteCase
-	&\dc(e_1 : \tau_1, e_2 : \tau_2) \\
-	&= \letkw \; v_1' = \discretize{e_1 : \tau_1} : \discretize{\tau_1} \; \inkw \\
-			&\letkw \; v_2' = \discretize{e_2 : \tau_2} : \discretize{\tau_2} \; \inkw \\
-			&\ifkw\; v_1' \fineq{l+1} \finconst{0}{l+1}\; \logand \; v_2' \fineq{m+1} \finconst{0}{m+1}\; \thenkw \\
-			&\quad \discretize{\uniform(v_1,w_1) : \tau} : \discretize{\tau} \\
-			&\vdots \\
-			&\elsekw\; \ifkw\; v_1' \fineq{l+1} \finconst{i}{l+1}\; \logand \; v_2' \fineq{m+1} \finconst{j}{m+1}\; \thenkw \\
-			&\quad \discretize{\uniform(v_{i+1}, w_{j+1}) : \tau} : \discretize{\tau} \\
-			&\vdots \\
-			&\elsekw \\
-			&\quad \discretize{\uniform(v_r,w_s) : \tau} : \discretize{\tau} \\
-	&\text{where } \tau = \floattype{B}{V}, B = \{\sim_1\!\!b_1, \ldots, \sim_n\!\!b_n\} \neq \top, \\
-	&\tau_1 = \floattype{B_1}{V_1}, B_1 = \{\sim_1\!\!c_1, \ldots, \sim_n\!\!c_l\}, V_1 = \{v_1, \ldots, v_r\}, \\
-	&\tau_2 = \floattype{B_2}{V_2}, B_2 = \{\sim_1\!\!d_1, \ldots, \sim_n\!\!d_m\}, V_2 = \{w_1, \ldots, w_s\} \\[1cm]
+	% &\text{where } \\
+	% % definition of DiscreteCase
+	% &\dc(e_1 : \tau_1, e_2 : \tau_2) \\
+	% &= \letkw \; v_1' = \discretize{e_1 : \tau_1} : \discretize{\tau_1} \; \inkw \\
+	% 		&\letkw \; v_2' = \discretize{e_2 : \tau_2} : \discretize{\tau_2} \; \inkw \\
+	% 		&\ifkw\; v_1' \fineq{l+1} \finconst{0}{l+1}\; \logand \; v_2' \fineq{m+1} \finconst{0}{m+1}\; \thenkw \\
+	% 		&\quad \discretize{\uniform(v_1,w_1) : \tau} : \discretize{\tau} \\
+	% 		&\vdots \\
+	% 		&\elsekw\; \ifkw\; v_1' \fineq{l+1} \finconst{i}{l+1}\; \logand \; v_2' \fineq{m+1} \finconst{j}{m+1}\; \thenkw \\
+	% 		&\quad \discretize{\uniform(v_{i+1}, w_{j+1}) : \tau} : \discretize{\tau} \\
+	% 		&\vdots \\
+	% 		&\elsekw \\
+	% 		&\quad \discretize{\uniform(v_r,w_s) : \tau} : \discretize{\tau} \\
+	&\text{where } \tau = \floattype{B}{V}, B \neq \top, \\
+	&\tau_1 = \floattype{B_1}{V_1}, V_1 = \{v_1, \ldots, v_n\}, \\
+	&\tau_2 = \floattype{B_2}{V_2}, V_2 = \{w_1, \ldots, w_m\} \\[1cm]
+	%
+	%% uniform DiscreteCase (OLD)
+	%
+	% &\sem{ \uniform(e_1 : \tau_1, e_2 : \tau_2) : \tau, \\
+	% &\dc(\discretize{e_1 : \tau_1} : \discretize{\tau_1}, \discretize{e_2 : \tau_2} : \discretize{\tau_2}) : \discretize{\tau}} \\
+	% &= \begin{cases}
+	% 	\sem{ \uniform(v : \tau_1, w : \tau_2) : \tau, \\
+	% 	\discretize{\uniform(v'_{\discretize{v : \tau_1} + 1}, w'_{\discretize{w : \tau_2} + 1}) : \floattype{B}{\top}} : \discretize{\tau}} \quad &\text{ if } e_1 = v, e_2 = w \\
+	% 	\sem{e_2 : \tau_2, \discretize{e_2 : \tau_2} : \discretize{\tau_2}} \gg\!= \lambda (f,f').\sem{ \uniform(v : \tau_1, f) : \tau, \\
+	% 	\dc(\discretize{v : \tau_1} : \discretize{\tau_1}, f')} \quad &\text{ if } e_1 = v, e_2 \neq w \\
+	% 	\sem{e_1 : \tau_1, \discretize{e_1 : \tau_1} : \discretize{\tau_1}} \gg\!= \lambda (f,f').\sem{ \uniform(f, e_2 : \tau_2) : \tau, \\
+	% 	\dc(f', \discretize{e_2 : \tau_2} : \discretize{\tau_2})} \quad &\text{ otherwise } \\
+	% \end{cases} \\
+	% % &\text{where } \\
+	% % % definition of DiscreteCase
+	% % &\dc(e_1 : \tau_1, e_2 : \tau_2) \\
+	% % &= \letkw \; v_1' = \discretize{e_1 : \tau_1} : \discretize{\tau_1} \; \inkw \\
+	% % 		&\letkw \; v_2' = \discretize{e_2 : \tau_2} : \discretize{\tau_2} \; \inkw \\
+	% % 		&\ifkw\; v_1' \fineq{l+1} \finconst{0}{l+1}\; \logand \; v_2' \fineq{m+1} \finconst{0}{m+1}\; \thenkw \\
+	% % 		&\quad \discretize{\uniform(v_1,w_1) : \tau} : \discretize{\tau} \\
+	% % 		&\vdots \\
+	% % 		&\elsekw\; \ifkw\; v_1' \fineq{l+1} \finconst{i}{l+1}\; \logand \; v_2' \fineq{m+1} \finconst{j}{m+1}\; \thenkw \\
+	% % 		&\quad \discretize{\uniform(v_{i+1}, w_{j+1}) : \tau} : \discretize{\tau} \\
+	% % 		&\vdots \\
+	% % 		&\elsekw \\
+	% % 		&\quad \discretize{\uniform(v_r,w_s) : \tau} : \discretize{\tau} \\
+	% &\text{where } \tau = \floattype{B}{V}, B \neq \top, \\
+	% &\tau_1 = \floattype{B_1}{V_1}, V_1 = \{v_1', \ldots, v_n'\}, \\
+	% &\tau_2 = \floattype{B_2}{V_2}, V_2 = \{w_1', \ldots, w_m'\} \\[1cm]
 	%
 	%% value
 	%
@@ -1515,3 +1566,7 @@ We assume the expressions $e, e'$ are well-typed.
 		\] 
 	\end{itemize}
 \end{proof}
+
+\begin{definition}[Projection]
+	The first and second projections $\pi_1(\mu)$ and $\pi_2(\mu)$ of a distribution $\mu$ over $A \times B$ are defined by $\pi_1(\mu)(a) = \sum_{b \in B} \mu(a,b)$ and $\pi_2(\mu)(n) = \sum_{b \in A} \mu(a,b)$.
+\end{definition}
