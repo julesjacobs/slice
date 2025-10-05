@@ -1409,51 +1409,52 @@ We assume the expressions $e, e'$ are well-typed.
 	\allowdisplaybreaks
 	\begin{align*}
 		&\sem{ \uniform(0 : \tau_1, (\ifkw \; \uniform(0,1) < 0.5 \; \thenkw \; 1.0 \; \elsekw \; 2.0) : \tau_2) : \tau < 0.5, \\
-		&\letkw \; v_1' = \ifkw \; \discrete(0.5, 0.5) < 1 \; \thenkw \; 0 \; \elsekw \; 1 \; \inkw \\
-		&\letkw \; v_2' = 0 \; \inkw \\
-		&\ifkw \; v_1' == 0 \; \&\& \; v_2' == 0 \; \thenkw \\
+		&\letkw \; v_1' = \finconst{0}{2} \; \inkw \\
+		&\letkw \; v_2' = \ifkw \; \discrete(0.5, 0.5) \finlt{2} \finconst{1}{2} \; \thenkw \; \finconst{0}{3} \; \elsekw \; \finconst{1}{3} \; \inkw \\
+		&\ifkw \; v_1' \fineq{2} \finconst{0}{2} \; \&\& \; v_2' \fineq{3} \finconst{0}{3} \; \thenkw \\
 		&\discrete(0.5,0.5) \\
 		&\elsekw \\
-		&\discrete(0.25,0.75) < 1} \\
-		&\text{where } \tau_1 = \floattype{\{<=0\}}{0}, \tau_2 = \floattype{\{<=1, <=2\}}{1,2}, \\
-		&\tau = \floattype{\{<0.5\}}{\top} \\
-		&\text{and hence, } B = \{\cleq{0.5}\}, V = \top, B_1 = \{\cleq{0}\}, V_1 = \{0\}, B_2 = \{\cleq{1}, \cleq{2}\}, V_2 = \{1,2\} \\[1cm]
+		&\discrete(0.25,0.75) \finlt{2} \finconst{1}{2}} \\
+		&\text{where } \tau = \floattype{\{\clt{0.5}\}}{\top}, \tau_1 = \floattype{\{\cleq{0}\}}{0}, \tau_2 = \floattype{\{\cleq{1}, \cleq{2}\}}{1,2} \\
+		&\text{and hence, } B = \{\clt{0.5}\}, V = \top, B_1 = \{\cleq{0}\}, V_1 = \{0\}, B_2 = \{\cleq{1}, \cleq{2}\}, V_2 = \{1,2\} \\[1cm]
 		%%%
 		&= \sem{\uniform(0 : \tau_1, (\ifkw \; \uniform(0,1) < 0.5 \; \thenkw \; 1.0 \; \elsekw \; 2.0) : \tau_2) : \tau, \\
-		&\letkw \; v_1' = \ifkw \; \discrete(0.5, 0.5) < 1 \; \thenkw \; 0 \; \elsekw \; 1 \; \inkw \\
-		&\letkw \; v_2' = 0 \; \inkw \\
-		&\ifkw \; v_1' == 0 \; \&\& \; v_2' == 0 \; \thenkw \\
+		&\letkw \; v_1' = \finconst{0}{2} \; \inkw \\
+		&\letkw \; v_2' = \ifkw \; \discrete(0.5, 0.5) \finlt{2} \finconst{1}{2} \; \thenkw \; \finconst{0}{3} \; \elsekw \; \finconst{1}{3} \; \inkw \\
+		&\ifkw \; v_1' \fineq{2} \finconst{0}{2} \; \&\& \; v_2' \fineq{3} \finconst{0}{3} \; \thenkw \\
 		&\discrete(0.5,0.5) \\
 		&\elsekw \\
-		&\discrete(0.25,0.75)} \gg\!= \lambda (f,f').\sem{f < 0.5, f' \finlt{n+1} 1} \\[1cm]
+		&\discrete(0.25,0.75)} \gg\!= \lambda (f,f').\sem{f < 0.5, f' \finlt{2} \finconst{1}{2}} \\[1cm]
 		%%%
 		&= \sem{\uniform(0 : \tau_1, (\ifkw \; \uniform(0,1) < 0.5 \; \thenkw \; 1.0 \; \elsekw \; 2.0) : \tau_2) : \tau, \\
-		&\dc(0, \ifkw \; \discrete(0.5, 0.5) < 1 \; \thenkw \; 0 \; \elsekw \; 1)} \\
-		&\gg\!= \lambda (f,f').\sem{f < 0.5, f' \finlt{n+1} 1} \\[1cm]
+		&\dc(\finconst{0}{2}, \ifkw \; \discrete(0.5, 0.5) \finlt{2} \finconst{1}{2} \; \thenkw \; \finconst{0}{3} \; \elsekw \; \finconst{1}{3})} \\
+		&\gg\!= \lambda (f,f').\sem{f < 0.5, f' \finlt{2} \finconst{1}{2}} \\[1cm]
 		%%%
 		&= \sem{\ifkw \; \uniform(0,1) < 0.5 \; \thenkw \; 1.0 \; \elsekw \; 2.0 : \tau_2, \\
-		&\ifkw \; \discrete(0.5, 0.5) < 1 \; \thenkw \; 0 \; \elsekw \; 1} \\
-		&\gg\!= \lambda (f,f').\sem{\uniform(0 : \tau_1, f) : \tau, \dc(0, f')}\\[1cm]
+		&\ifkw \; \discrete(0.5, 0.5) \finlt{2} \finconst{1}{2} \; \thenkw \; \finconst{0}{3} \; \elsekw \; \finconst{1}{3}} \\
+		&\gg\!= \lambda (g,g').\sem{\uniform(0 : \tau_1, g) : \tau, \dc(\finconst{0}{2}, g')}\\
+		&\gg\!= \lambda (f,f').\sem{f < 0.5, f' \finlt{2} \finconst{1}{2}} \\[1cm]
 		%%%
-		&= (0.5 \cdot \delta_{(1.0,0)} + 0.5 \cdot \delta_{(2.0,1)}) \\
-		&\gg\!= \lambda (f,f').\sem{\uniform(0 : \tau_1, f) : \tau, \dc(0, f')}\\[1cm]
+		&= (0.5 \cdot \delta_{(1.0,\finconst{0}{3})} + 0.5 \cdot \delta_{(2.0,\finconst{1}{3})}) \\
+		&\gg\!= \lambda (g,g').\sem{\uniform(0 : \tau_1, g) : \tau, \dc(\finconst{0}{2}, g')}\\
+		&\gg\!= \lambda (f,f').\sem{f < 0.5, f' \finlt{2} \finconst{1}{2}} \\[1cm]
 		%%%
-		&= 0.5 \cdot \sem{\uniform(0,1.0) : \tau, \dc(0,0)} \\
-		&+ 0.5 \cdot \sem{\uniform(0,2.0) : \tau, \dc(0,1)} \\
-		&\gg\!= \lambda (f,f').\sem{f < 0.5, f' \finlt{n+1} 1} \\[1cm]
+		&= 0.5 \cdot \sem{\uniform(0,1.0) : \tau, \dc(\finconst{0}{2},\finconst{0}{3})} \\
+		&+ 0.5 \cdot \sem{\uniform(0,2.0) : \tau, \dc(\finconst{0}{2},\finconst{1}{3})} \\
+		&\gg\!= \lambda (f,f').\sem{f < 0.5, f' \finlt{2} \finconst{1}{2}} \\[1cm]
 		%%%
 		&= 0.5 \cdot \sem{\uniform(0,1.0) : \tau, \discretize{\uniform(0,1) : \floattype{B}{\top}}} \\
 		&+ 0.5 \cdot \sem{\uniform(0,2.0) : \tau, \discretize{\uniform(0,2) : \floattype{B}{\top}}} \\
-		&\gg\!= \lambda (f,f').\sem{f < 0.5, f' \finlt{n+1} 1} \\
+		&\gg\!= \lambda (f,f').\sem{f < 0.5, f' \finlt{2} \finconst{1}{2}} \\
 		&\text{since } \discretize{0 : \floattype{B_1}{0}} = 0, \discretize{1 : \floattype{B_2}{1}} = 0, \discretize{2 : \floattype{B_2}{2}} = 1 \\[1cm]
 		%%%
 		&= 0.5 \cdot \sem{\uniform(0,1.0) : \tau, \discrete(0.5, 0.5)} \\
 		&+ 0.5 \cdot \sem{\uniform(0,2.0) : \tau, \discrete(0.25,0.75)} \\
-		&\gg\!= \lambda (f,f').\sem{f < 0.5, f' \finlt{n+1} 1} \\[1cm]
+		&\gg\!= \lambda (f,f').\sem{f < 0.5, f' \finlt{2} \finconst{1}{2}} \\[1cm]
 		%%%
 		&= 0.5 \cdot (\text{Uniform}(0,1) \gg\!= \lambda v.\delta_{(v,i)} \text{ s.t. } v \in \intervals{\{<0.5\}}_i) \\
 		&+ 0.5 \cdot (\text{Uniform}(0,2) \gg\!= \lambda v.\delta_{(v,i)} \text{ s.t. } v \in \intervals{\{<0.5\}}_i) \\
-		&\gg\!= \lambda (f,f').\sem{f < 0.5, f' \finlt{n+1} 1} \\[1cm]
+		&\gg\!= \lambda (f,f').\sem{f < 0.5, f' \finlt{2} \finconst{1}{2}} \\[1cm]
 		%%%
 		&= 0.5 \cdot (0.5 \cdot \delta_{(\true,\true)} + 0.5 \cdot \delta_{(\false,\false)}) \\
 		&+ 0.5 \cdot (0.25 \cdot \delta_{(\true,\true)} + 0.75 \cdot \delta_{(\false,\false)}) \\[1cm]
