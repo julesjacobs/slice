@@ -771,7 +771,7 @@ New:
 	&= \begin{cases}
 		\sem{ \discretize{\uniform(v_i, w_j) : \floattype{B}{\top}} : \tau } \quad &\text{ if } e_1 = \discretize{v_i : \floattype{B_1}{v_i}} = v', \\
 		&e_2 = \discretize{w_j : \floattype{B_2}{w_j}} = w' \\
-		\sem{ e_2 : \tau_2 } \gg\!= \lambda f. \sem{ \dc(i : \tau_1, f) } \quad &\text{ if } e_1 = v', e_2 \neq w' \\
+		\sem{ e_2 : \tau_2 } \gg\!= \lambda f. \sem{ \dc(v' : \tau_1, f) } \quad &\text{ if } e_1 = v', e_2 \neq w' \\
 		\sem{ e_1 : \tau_1 } \gg\!= \lambda f. \sem{ \dc(f, e_2 : \tau_2) } \quad &\text{ otherwise } \\
 	\end{cases} \\
 	&\text{where } \\
@@ -977,6 +977,8 @@ New:
 		\item If $\emptyset \vdash \uniform(e_1,e_2) : \floattype{B}{V}$ and $\emptyset \vdash e_1' : \floattype{B}{V}$, then $\emptyset \vdash \uniform(e_1',e_2) : \floattype{B}{V}$. Likewise, if $\emptyset \vdash \uniform(e_1,e_2) : \floattype{B}{V}$ and $\emptyset \vdash e_2' : \floattype{B}{V}$, then $\emptyset \vdash \uniform(e_1,e_2') : \floattype{B}{V}$.
 		
 		\item If $\emptyset \vdash \letkw \; x = e_1 \; \inkw \; e_2 : \tau_2$ and $\emptyset \vdash e_1' : \tau_1$, then $\emptyset \vdash \letkw \; x = e_1' \; \inkw \; e_2 : \tau_2$.
+		
+		\item If $\emptyset \vdash \dc(e_1,e_2) : \fin{|B|+1}$ and $\emptyset \vdash e_1' : \fin{|B_1|+1}$, then $\emptyset \vdash \dc(e_1',e_2) : \fin{|B|+1}$. Likewise, if $\emptyset \vdash \dc(e_1,e_2) : \fin{|B|+1}$ and $\emptyset \vdash e_2' : \fin{|B_2|+1}$, then $\emptyset \vdash \dc(e_1,e_2') : \fin{|B|+1}$.
 	\end{enumerate}
 \end{lemma}
 
@@ -1193,7 +1195,7 @@ New:
 		By Proposition~\ref{prop:bind-typing}, we conclude
 		\[
 			\sem{e_1 : \float} \gg\!= \lambda e_1'.\;
-			\sem{\uniform(e_1',e_2 : \float) : \float : \float} \in \mathcal{D}(Expr_{\float} + \bot).
+			\sem{\uniform(e_1',e_2 : \float) : \float} \in \mathcal{D}(Expr_{\float} + \bot).
 		\]
 
 		Now suppose $e_2$ is an expression, then the clause
@@ -1228,6 +1230,84 @@ New:
 			\qquad\text{and}\qquad
 			\delta_{\bot} \in \mathcal{D}(Expr_{\fin{n}} + \bot).
 		\]
+
+		\textbf{Case} $\dc : \fin{|B| + 1}$. From typing we have
+		\[
+			\emptyset \vdash e_1 : \fin{|B_1| + 1} 
+			\qquad\text{and}\qquad 
+			\emptyset \vdash e_2 : \fin{|B_2| + 1}.
+		\]  
+		We have the following possibilities:
+		\begin{itemize}
+			\item If both $e_1 = v'$ and $e_2 = w'$ are values, Lemma~\ref{lem:canonical-forms} gives finite constants, and there exists a unique $v_i \in V_1$ such that $\discretize{v_i : \floattype{B_1}{v_i}} = v'$ and a unique $w_j \in V_2$ such that $\discretize{w_j : \floattype{B_2}{w_j}} = w'$. Since $v_i$ and $w_j$ are values and $B \neq \top$, by definition of the discretization function:
+			\[
+				\discretize{\uniform(v_i,w_j) : \floattype{B}{\top}} = \discrete(p_0, \ldots, p_{|B|})
+			\]
+			where $p_k$ denotes the difference in the CDF of $\uniform(v_i,w_j)$ evaluated at consecutive cuts of $B$.
+
+			As proved in the case above,
+			\[
+				\discrete(p_0, \ldots, p_{|B|}) \in \mathcal{D}(Expr_{\fin{|B|+1}}),
+			\]
+			and thus,
+			\[
+				\discretize{\uniform(v_i,w_j) : \floattype{B}{\top}} \in \mathcal{D}(Expr_{\fin{|B|+1}})
+			\]
+			as desired.
+
+			\item At least $e_1$ or $e_2$ is an expression. 
+			Suppose $e_1$ is an expression, then the clause
+			\[
+				\sem{e_1 : \fin{|B_1| + 1}} \gg\!= \lambda e_1'.\;
+				\sem{\dc(e_1',e_2 : \fin{|B_2| + 1}) : \fin{|B| + 1}}
+			\]
+			in the semantics is applied. By the IH,
+			\[
+				\sem{e_1 : \fin{|B_1| + 1}} \in \mathcal{D}(Expr_{\fin{|B_1| + 1}} + \bot).
+			\]
+			We use the left bind clause with 
+			\[
+				f(e_1') = \sem{\dc(e_1',e_2)},
+			\]
+			which maps
+			\[
+				Expr_{\fin{|B_1| + 1}} \;\to\; \mathcal{D}(Expr_{\fin{|B| + 1}} + \bot)
+			\]
+			by Lemma~\ref{lem:typed-replacement}.
+
+			By Proposition~\ref{prop:bind-typing}, we conclude
+			\begin{align*}
+				\sem{e_1 : \fin{|B_1| + 1}} \gg\!= \lambda e_1'.\;
+				\sem{\dc(e_1',e_2 : \fin{|B_2| + 1}) : \fin{|B| + 1}} \\
+				\in \mathcal{D}(Expr_{\fin{|B| + 1}} + \bot).
+			\end{align*}
+
+			Now suppose $e_2$ is an expression, then the clause
+			\[
+				\sem{e_2 : \fin{|B_2| + 1}} \gg\!= \lambda e_2'.\;
+				\sem{\dc(e_1 : \fin{|B_1| + 1}, e_2') : \fin{|B| + 1}}
+			\]
+			in the semantics is applied. By the IH,
+			\[
+				\sem{e_2 : \fin{|B_2| + 1}} \in \mathcal{D}(Expr_{\fin{|B_2| + 1}} + \bot).
+			\]
+			We use the left bind clause with 
+			\[
+				f(e_2') = \sem{\dc(e_1,e_2')},
+			\]
+			which maps
+			\[
+				Expr_{\fin{|B_2| + 1}} \;\to\; \mathcal{D}(Expr_{\fin{|B| + 1}} + \bot)
+			\]
+			by Lemma~\ref{lem:typed-replacement}. 
+
+			By Proposition~\ref{prop:bind-typing}, we conclude
+			\begin{align*}
+				\sem{e_2 : \fin{|B_2| + 1}} \gg\!= \lambda e_2'.\;
+				\sem{\dc(e_1 : \fin{|B_1| + 1},e_2') : \float} \\
+				\in \mathcal{D}(Expr_{\fin{|B| + 1}} + \bot).
+			\end{align*}
+		\end{itemize}
 		Hence, for all well-typed expressions $e : \tau$, $\sem{e : \tau} \in \mathcal{D}(Expr_\tau + \bot)$.
 \end{proof}
 
