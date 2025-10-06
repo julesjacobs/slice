@@ -1358,14 +1358,14 @@ We assume the expressions $e, e'$ are well-typed.
 	%% less than - float
 	%%
 	&\sem{ e_1 : \tau_1 < e_2 : \tau_2 : \bool, \\
-	&\discretize{e_1 : \tau_1} : \discretize{\tau_1} < \discretize{e_2 : \tau_2} : \discretize{\tau_2} : \bool } \\
+	&\discretize{e_1 : \tau_1} : \discretize{\tau_1} < \discretize{e_2 : \tau_2} : \discretize{\tau_2} : \discretize{\bool} } \\
 	&= \begin{cases}
 		\delta_{(\true : \bool, \true : \bool)} \quad &\text{ if } e_1 = v_1, e_2 = v_2, v_1 < v_2 \\
 		\delta_{(\false : \bool, \false : \bool)} \quad &\text{ if } e_1 = v_1, e_2 = v_2, v_1 \geq v_2 \\
 		\sem{ e_2 : \tau_2, \discretize{e_2 : \tau_2} : \discretize{\tau_2}} \gg\!= \lambda (f,f'). \sem{ v_1 : \tau_1 < f : \bool, \\
 		\discretize{v_1 : \tau_1} : \discretize{\tau_1} < f' : \discretize{\bool} } \quad &\text{ if } e_1 = v_1, e_2 \neq v_2 \\
 		\sem{ e_1 : \tau_1, \discretize{e_1 : \tau_1} : \discretize{\tau_1}} \gg\!= \lambda (f,f'). \sem{ f < e_2 : \tau_2 : \bool, \\
-		f' < \discretize{e_2 : \tau_2} : \discretize{\tau_2} : \bool} \quad &\text{ otherwise } \\
+		f' < \discretize{e_2 : \tau_2} : \discretize{\tau_2} : \discretize{\bool}} \quad &\text{ otherwise } \\
 	\end{cases} \\
 	&\text{where } \tau_1 = \tau_2 = \floattype{B}{V}, B = \top \\[1cm]
 	%
@@ -1526,7 +1526,7 @@ We assume the expressions $e, e'$ are well-typed.
 		&= 0.5 \cdot \sem{\uniform(0,1.0) : \tau, \discretize{\uniform(0,1) : \floattype{B}{\top}}} \\
 		&+ 0.5 \cdot \sem{\uniform(0,2.0) : \tau, \discretize{\uniform(0,2) : \floattype{B}{\top}}} \\
 		&\gg\!= \lambda (f,f').\sem{f < 0.5, f' \finlt{2} \finconst{1}{2}} \\
-		&\text{since } \discretize{0 : \floattype{B_1}{0}} = 0, \discretize{1 : \floattype{B_2}{1}} = 0, \discretize{2 : \floattype{B_2}{2}} = 1 \\[1cm]
+		&\text{since } \discretize{0 : \floattype{B_1}{0}} = \finconst{0}{2}, \discretize{1 : \floattype{B_2}{1}} = \finconst{0}{3}, \discretize{2 : \floattype{B_2}{2}} = \finconst{1}{3} \\[1cm]
 		%%%
 		&= 0.5 \cdot \sem{\uniform(0,1.0) : \tau, \discrete(0.5, 0.5)} \\
 		&+ 0.5 \cdot \sem{\uniform(0,2.0) : \tau, \discrete(0.25,0.75)} \\
@@ -1626,7 +1626,7 @@ We assume the expressions $e, e'$ are well-typed.
 		\sem{v : \tau, \discretize{v : \tau} : \discretize{\tau}} = \delta_{(v : \tau, \discretize{v : \tau} : \discretize{\tau})} \in \mathcal{D}(\relation_{\tau} + \bot).
 	\]
 
-	\textbf{Case} comparison $(e_1 < e_2 : \bool, \discretize{e_1} < \discretize{e_2} : \bool) \in \relation_{\tau}$. We have the following possibilities:
+	\textbf{Case} comparison $(e_1 < e_2 : \bool, \discretize{e_1} < \discretize{e_2} : \discretize{\bool}) \in \relation_{\bool}$. We have the following possibilities:
 	\begin{itemize}
 		\item If $e_1 = v_1$ and $e_2 = v_2$ are values, then by Lemma~\ref{lem:form-preservation}, $\discretize{e_1} = v_1'$ and $\discretize{e_2} = v_2'$ are also values. Either:
 		\[
@@ -1634,27 +1634,85 @@ We assume the expressions $e, e'$ are well-typed.
 			\quad\text{or}\quad
 			\delta_{(\false:\bool, \false:\bool)} \in \mathcal{D}(\relation_{\bool} + \bot) 
 		\]
-		\item At least $e_1$ or $e_2$ is an expression. Suppose $e_1$ is an expression; by Lemma~\ref{lem:form-preservation}, $\discretize{e_1}$ is also an expression. The clause
-		\[
-			\sem{ e_1 : \tau_1, \discretize{e_1 : \tau_1} } \gg\!= \lambda (e_1',e_1''). \sem{ e_1' < e_2 : \tau_2, e_1'' < \discretize{e_2 : \tau_2} }
-		\]
+		\item At least $e_1$ or $e_2$ is an expression. Suppose $e_1$ is an expression; by Lemma~\ref{lem:form-preservation}, $\discretize{e_1}$ is also an expression. Let $\tau_1 = \floattype{B_1}{V_1}$ and $\tau_2 = \floattype{B_2}{V_2}$. The clause
+		\begin{align*}
+			&\sem{ e_1 : \tau_1, \discretize{e_1 : \tau_1} : \discretize{\tau_1}} \\
+			&\gg\!= \lambda (e_1',e_1''). \sem{ e_1' < e_2 : \tau_2 : \bool, e_1'' < \discretize{e_2 : \tau_2} : \discretize{\tau_2} : \discretize{\bool} }
+		\end{align*}
 		in the semantics is applied. By the IH,
 		\[
-			\sem{ e_1 : \tau_1, \discretize{e_1 : \tau_1} } \in \mathcal{D}(\relation_{\tau_1} + \bot).
+			\sem{ e_1 : \tau_1, \discretize{e_1 : \tau_1} : \discretize{\tau_1}} \in \mathcal{D}(\relation_{\tau_1} + \bot).
 		\]
 		We use the left bind clause with 
 		\[
-			f(e_1',e_1'') = \sem{ e_1' < e_2 : \tau_2, e_1'' < \discretize{e_2 : \tau_2} }
+			f(e_1',e_1'') = \sem{ e_1' < e_2, e_1'' < \discretize{e_2 : \tau_2}}
 		\]
 		which maps
 		\[
-			\relation_{\tau_1} \to \mathcal{D}(\relation_{\tau_2} + \bot).
+			\relation_{\tau_1} \to \mathcal{D}(\relation_{\bool} + \bot).
 		\]
+		by Lemma~\ref{lem:typed-replacement}.
 
 		By Proposition~\ref{prop:bind-typing}, we conclude
+		\begin{align*}
+			&\sem{ e_1 : \tau_1, \discretize{e_1 : \tau_1} : \discretize{\tau_1}} \\
+			&\gg\!= \lambda (e_1',e_1''). \sem{ e_1' < e_2 : \tau_2 : \bool, e_1'' < \discretize{e_2 : \tau_2} : \discretize{\tau_2} : \discretize{\bool} } \in \mathcal{D}(\relation_{\bool} + \bot).
+		\end{align*}
+
+		Suppose $e_2$ is an expression; by Lemma~\ref{lem:form-preservation}, $\discretize{e_2}$ is also an expression. The clause
+		\begin{align*}
+			&\sem{ e_2 : \tau_2, \discretize{e_2 : \tau_2} : \discretize{\tau_2}} \\
+			&\gg\!= \lambda (e_2',e_2''). \sem{ e_1 : \tau_1 < e_2' : \bool, \discretize{e_1 : \tau_1 } : \discretize{\tau_1} < e_2'' : \discretize{\bool} }
+		\end{align*}
+		in the semantics is applied. By the IH,
 		\[
-			\sem{ e_1 : \tau_1, \discretize{e_1 : \tau_1} } \gg\!= \lambda (f,f'). \sem{ f < e_2 : \tau_2, f' < \discretize{e_2 : \tau_2} } \in \mathcal{D}(\relation_{\tau_2} + \bot).
-		\] 
+			\sem{ e_2 : \tau_2, \discretize{e_2 : \tau_2} : \discretize{\tau_2}} \in \mathcal{D}(\relation_{\tau_2} + \bot).
+		\]
+		We use the left bind clause with 
+		\[
+			f(e_2',e_2'') = \sem{ e_1 < e_2', \discretize{e_1 : \tau_1} < e_2''}
+		\]
+		which maps
+		\[
+			\relation_{\tau_2} \to \mathcal{D}(\relation_{\bool} + \bot).
+		\]
+		by Lemma~\ref{lem:typed-replacement}.
+
+		By Proposition~\ref{prop:bind-typing}, we conclude
+		\begin{align*}
+			&\sem{ e_2 : \tau_2, \discretize{e_2 : \tau_2} : \discretize{\tau_2}} \\
+			&\gg\!= \lambda (e_2',e_2''). \sem{ e_1 : \tau_1 < e_2' : \bool, \discretize{e_1 : \tau_1 } : \discretize{\tau_1} < e_2'' : \discretize{\bool} } \in \mathcal{D}(\relation_{\bool} + \bot).
+		\end{align*}
+	\end{itemize}
+
+	\textbf{Case} let $(\letkw \; x = e_1 \; \inkw \; e_2 : \tau_2, \letkw \; x = \discretize{e_1} \; \inkw \; \discretize{e_2} : \discretize{\tau_2}) \in \relation_{\tau_2}$. We have the following possibilities:
+	\begin{itemize}
+		\item 
+	\end{itemize}
+
+	\textbf{Case} uniform $(\uniform(e_1,e_2) : \tau, \discrete(v_0',\ldots,v_n') : \discretize{\tau}) \in \relation_{\tau}$, where $\tau = \floattype{B}{V}$ and $B \neq \top$. We have the following:
+	\begin{itemize}
+		\item If $e_1 = v_1$ and $e_2 = v_2$ are values, then either:
+		\[
+			\text{Uniform}(v_1,v_2) \gg\!= \lambda.\delta_{(v,i)} \in \mathcal{D}(\relation_{\float} + \bot)
+			\quad\text{or}\quad
+			\delta_{\bot} \in \mathcal{D}(\relation_{\float} + \bot)
+		\]
+	\end{itemize}
+
+	\textbf{Case} uniform $(\uniform(e_1,e_2) : \tau, \dc(\discretize{e_1}, \discretize{e_2}) : \discretize{\tau}) \in \relation_{\tau}$, where $\tau = \floattype{B}{V}$ and $B \neq \top$. We have the following possibilities:
+	\begin{itemize}
+		\item If $e_1 = v$ and $e_2 = w$, then by Lemma, $\discretize{e_1} = v'$ and $\discretize{e_2} = w'$ are also values. There exists a unique $v_i \in V_1$ such that $\discretize{v_i : \floattype{B_1}{v_i}} = v'$ and a unique $w_j \in V_2$ such that $\discretize{w_j : \floattype{B_2}{w_j}} = w'$. Since $v_i$ and $w_j$ are values and $B \neq \top$, by definition of the discretization function:
+		\[
+			\discretize{\uniform(v_i,w_j) : \floattype{B}{\top}} = \discrete(p_0, \ldots, p_{|B|})
+		\]
+		where $p_k$ denotes the difference in the CDF of $\uniform(v_i,w_j)$ evaluated at consecutive cuts of $B$. Thus,
+		\[
+			\sem{\uniform(e_1,e_2) : \tau, \discrete(v_0',\ldots,v_n') : \discretize{\tau}} \in \mathcal{D}(\relation_{\float} + \bot),
+		\]
+		for which we proved in the above case.
+		
+		\item At least $e_1$ or $e_2$ is an expression. Same as the comparison case.
 	\end{itemize}
 \end{proof}
 
