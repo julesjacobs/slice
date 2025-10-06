@@ -1546,14 +1546,6 @@ We assume the expressions $e, e'$ are well-typed.
 
 \subsubsection{Lemmas for $e,e'$}
 
-\begin{lemma}[Substitution for pairs]\label{lem:substitution-pairs}
-	If $\Gamma, (x : \tau_1, x' : \tau_1') \vdash (e : \tau_2, e' : \tau_2')$ and $\Gamma \vdash (v : \tau_1, v' : \tau_1')$, then $\Gamma \vdash (e[v/x] : \tau_2, e'[v'/x'] : \tau_2')$.
-\end{lemma}
-
-\begin{proof}
-	By induction on $(e,e')$. Apply the substitution lemma from~\ref{lem:substitution} on $e$ and $e'$.
-\end{proof}
-
 \begin{lemma}[Discretization Preserves Form]\label{lem:form-preservation}
 	Let $e$ be a well-typed expression of type $\tau$. Then:
 	\begin{enumerate}
@@ -1651,7 +1643,7 @@ We assume the expressions $e, e'$ are well-typed.
 		\[
 			\relation_{\tau_1} \to \mathcal{D}(\relation_{\bool} + \bot).
 		\]
-		by Lemma~\ref{lem:typed-replacement}.
+		by Lemma~\ref{lem:typed-replacement} and Lemma~\ref{lem:type-transformations}.
 
 		By Proposition~\ref{prop:bind-typing}, we conclude
 		\begin{align*}
@@ -1676,7 +1668,7 @@ We assume the expressions $e, e'$ are well-typed.
 		\[
 			\relation_{\tau_2} \to \mathcal{D}(\relation_{\bool} + \bot).
 		\]
-		by Lemma~\ref{lem:typed-replacement}.
+		by Lemma~\ref{lem:typed-replacement} and Lemma~\ref{lem:type-transformations}.
 
 		By Proposition~\ref{prop:bind-typing}, we conclude
 		\begin{align*}
@@ -1687,7 +1679,36 @@ We assume the expressions $e, e'$ are well-typed.
 
 	\textbf{Case} let $(\letkw \; x = e_1 \; \inkw \; e_2 : \tau_2, \letkw \; x = \discretize{e_1} \; \inkw \; \discretize{e_2} : \discretize{\tau_2}) \in \relation_{\tau_2}$. We have the following possibilities:
 	\begin{itemize}
-		\item 
+		\item If $e_1 = v$ is a value, then $\discretize{e_1}$ is also a value by Lemma~\ref{lem:form-preservation}. By the substitution lemma, 
+		\[
+			\delta_{(e_2[v/x] : \tau_2, \discretize{e_2 : \tau_2}[\discretize{v : \tau_1}/x] : \discretize{\tau_2})} \in \mathcal{D}(\relation_{\tau_2} + \bot).
+		\]
+
+		\item If $e_1$ is an expression, then the clause:
+		\begin{align*}
+			\sem{ e_1 : \tau_1, \discretize{e_1 : \tau_1} : \discretize{\tau_1}} \gg\!= \lambda (e_1', e_1''). \sem{ \letkw \; x = e_1' \; \inkw \; e_2 : \tau_2 : \tau_2, \\
+			\letkw \; x = e_1'' \; \inkw \; \discretize{e_2 : \tau_2} : \discretize{\tau_2} : \discretize{\tau_2}}
+		\end{align*}
+		in the semantics is applied. By the IH,
+		\[
+			\sem{ e_1 : \tau_1, \discretize{e_1 : \tau_1} : \discretize{\tau_1}} \in \mathcal{D}(\relation_{\tau_1} + \bot).
+		\]
+		We use the left bind clause with
+		\[
+			f(e_1',e_1'') = \sem{\letkw \; x = e_1' \; \inkw \; e_2, \\
+			\letkw \; x = e_1'' \; \inkw \; \discretize{e_2 : \tau_2}}
+		\]
+		which maps
+		\[
+			\relation_{\tau_1} \to \mathcal{D}(\relation_{\tau_2} + \bot)
+		\]
+		by Lemma~\ref{lem:typed-replacement} and Lemma~\ref{lem:type-transformations}.
+
+		By Proposition~\ref{prop:bind-typing}, we conclude
+		\begin{align*}
+			\sem{ e_1 : \tau_1, \discretize{e_1 : \tau_1} : \discretize{\tau_1}} \gg\!= \lambda (e_1', e_1''). \sem{ \letkw \; x = e_1' \; \inkw \; e_2 : \tau_2 : \tau_2, \\
+			\letkw \; x = e_1'' \; \inkw \; \discretize{e_2 : \tau_2} : \discretize{\tau_2} : \discretize{\tau_2}} \in \mathcal{D}(\relation_{\tau_2} + \bot).
+		\end{align*}
 	\end{itemize}
 
 	\textbf{Case} uniform $(\uniform(e_1,e_2) : \tau, \discrete(v_0',\ldots,v_n') : \discretize{\tau}) \in \relation_{\tau}$, where $\tau = \floattype{B}{V}$ and $B \neq \top$. We have the following:
