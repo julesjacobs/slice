@@ -633,7 +633,59 @@ For continuous distributions like $\uniform(a, b)$, the implicit coercion to $\m
 This measure-theoretic foundation ensures that our probabilistic semantics is mathematically rigorous and that operations like conditioning (via observations) and marginalization are well-defined. 
 
 
-\subsection{Defining $\mu_e$, $\mu_{e, \discretize{e}}$, $R_{\tau}$}
+% ---- NEW ----
+\subsection{Measure space on expressions}
+To make the probabilistic semantics precise, we define an appropriate measure space structure on the set of typed expressions. The set $Expr_{\tau}$ is uncountable due to real numerals, so we construct a standard Borel measurable space on $Expr_{\tau}$ by factoring out numerals, using the notion of \emph{expression skeletons}.
+
+\begin{definition}[Expression Skeleton]
+	An expression skeleton $s$ is a well-typed expression where each occurrence of a float constant is replaced by a hole $\square_i$ for some index $i \in \mathbb{N}$, generated as follows:
+	\begin{align*}
+		s ::= \; 
+		&\square_i \mid x \mid \letkw \; x = s \; \inkw \; s \mid \ifkw \; s \; \thenkw \; s \; \elsekw \; s \mid s < s \mid \uniform(\square_i, \square_j)
+	\end{align*}
+	with the understanding that $\square_i$ has type $\floattype{B}{V}$.
+	
+	We denote by $\text{Skel}$ the set of all expression skeletons, and by $\text{holes}(s)$ the number of distinct holes in skeleton $s$.
+\end{definition}
+
+\begin{example}
+	The expression $\uniform(0.0, 1.0) < 0.5$ has the skeleton $\uniform(\square_1, \square_2) < \square_3$ with three holes. 
+\end{example}
+
+\begin{lemma}[Skel is countable]
+	The set $\text{Skel}$ is countable.
+\end{lemma}
+
+\begin{proof}
+	Skeletons are finite trees over a finite operator alphabet with node labels drawn from a countable set (variables and indices). Such trees form a countable set. 
+\end{proof}
+
+\begin{definition}[Borel measure space on expressions]
+	Let $s \in Skel$ be an expression skeleton with $n = holes(s)$. Each tuple of real numbers $\vec{r} = (r_1, \ldots, r_n) \in \R^n$ induces a concrete expression $s[\vec{r}] \in Expr_{\tau}$. We associate to $s[\vec{r}]$ the product space $\R^n$, equipped with the Borel $\sigma$-algebra $\mathcal{B}(\R^n)$. We then define the measurable space of expressions of type $\tau$ as the disjoint union
+	\[
+		Expr_{\tau} = \bigsqcup_{s \in \text{Skel}} \{s[\vec{r}] \mid \vec{r} \in \mathbb{R}^{\text{holes}(s)}\},
+	\]
+	equipped with the Borel $\sigma$-algebra $\mathcal{F}_{Expr_{\tau}} := \sigma(\{s[\vec{r}] \mid \vec{r} \in \mathbb{R}^{\text{holes}(s)}\}_{s \in \text{Skel}})$.
+\end{definition}
+
+\begin{lemma}[Borel structure]
+	Each space $(\R^{holes(s)}, \mathcal{B}(\R^{holes(s)}))$ is a Borel measurable space. Consequently, $(Expr_{\tau}, \mathcal{F}_{Expr_{\tau}})$ is also a Borel measurable space.
+\end{lemma}
+
+\begin{proof}
+	The first statement follows immediately from the construction. The second statement holds since $\text{Skel}$ is countable and Borel measures are closed under countable unions.
+\end{proof}
+
+% Intuitively, this means that measurable subsets of $Expr_{\tau}$ can be described by first fixing a finite syntactic skeleton and then selecting a measurable subset of real assignments to its float constants.
+
+We can equip this Borel measurable space with a probability measure, and in particular, any probability measure $\mu$ on $\R^n$ can be lifted to a probability measure on $Expr_{\tau}$ via:
+\begin{enumerate}
+	\item Choose a skeleton $s$ with $n$ holes.
+	\item Define $\mu_{Expr_{\tau}}(A) = \mu(\{\vec{r} \in \R^n \mid s[\vec{r}] \in A\})$.
+\end{enumerate}
+
+
+\subsection{Small-step semantics}
 We consider a subset of our language, focusing only on let statements, conditionals, less than comparisons, and uniform and discrete distributions. 
 
 % \begin{itemize}
@@ -1740,3 +1792,121 @@ We assume the expressions $e, e'$ are well-typed.
 \begin{definition}[Projection]
 	The first and second projections $\pi_1(\mu)$ and $\pi_2(\mu)$ of a distribution $\mu$ over $A \times B$ are defined by $\pi_1(\mu)(a) = \sum_{b \in B} \mu(a,b)$ and $\pi_2(\mu)(n) = \sum_{b \in A} \mu(a,b)$.
 \end{definition}
+
+\begin{lemma}[Coupling Projection]
+	Let $\sem{e : \tau, e' : \tau'} \in \mathcal{D}(\relation_{\tau} + \bot)$. Then:
+	\begin{enumerate}
+		\item $\pi_1(\sem{e : \tau, e' : \tau'}) = \sem{e : \tau}$
+		\item $\pi_2(\sem{e : \tau, e' : \tau'}) = \sem{e' : \tau'}$
+	\end{enumerate}
+\end{lemma}
+
+\begin{proof}
+	By case analysis on the structure of the typing derivation $e : \tau$. 
+
+	\textbf{Case} constant $(v : \tau, \discretize{v : \tau} : \discretize{\tau}) \in \relation_{\tau}$, where $\tau = \floattype{B}{V}$. Taking the first projection of this distribution,
+	\begin{align*}
+		\pi_1(\sem{v : \tau, \discretize{v : \tau} : \discretize{\tau}}) &= \pi_1(\delta_{(v : \tau, \discretize{v : \tau} : \discretize{\tau})}) = \delta_{v : \tau} \\
+		\pi_2(\sem{v : \tau, \discretize{v : \tau} : \discretize{\tau}}) &= \pi_1(\delta_{(v : \tau, \discretize{v : \tau} : \discretize{\tau})}) = \delta_{\discretize{v : \tau} : \discretize{\tau}} \\
+	\end{align*}
+	And similarly,
+	\begin{align*}
+		\sem{v : \tau} &= \delta_{v : \tau} \\
+		\sem{\discretize{v : \tau} : \discretize{\tau}} &= \delta_{\discretize{v : \tau} : \discretize{\tau}}.
+	\end{align*}
+
+	\textbf{Case} comparison $(e_1 < e_2 : \bool, \discretize{e_1} < \discretize{e_2} : \discretize{\bool}) \in \relation_{\bool}$. We have the following possibilities:
+	\begin{itemize}
+		\item If $e_1 = v_1$ and $e_2 = v_2$ are values, then by Lemma~\ref{lem:form-preservation}, $\discretize{e_1}$ and $\discretize{e_2}$ are also values. Thus:
+		
+	\end{itemize}
+\end{proof}
+
+\subsection{Big-step semantics}
+For every $e : \tau \in Expr_{\tau}$ and all $n \in \mathbb{N}$, we define the distribution $\bigsemstep{e : \tau}{n} \in \mathcal{D}(Expr_{\tau} + \bot)$ recursively as
+%
+\[
+	\bigsemstep{e : \tau}{n} = 
+	\begin{cases}
+		\delta_{e : \tau} & \text{if $n = 0$} \\
+		%
+		\bigsemstep{e : \tau}{n-1} \monbind  \lambda e'. \sem{e' : \tau'} & \text{if $n > 0$}~.
+	\end{cases}
+\]
+
+Let $\vals$ be the measurable set of all values and write $\nonvals = \expr \setminus \vals$, which is also measurable. This is the set of all non-values (or expressions).
+
+Given $e : \tau \in Expr_{\tau}$ and $n\in\Nats$, define $\bigsemstepterm{e : \tau}{n} = \lambda \measset. \bigsemstep{e : \tau}{n}(\measset \setminus \nonvals)$. 
+
+The above statement states that among all possible results after $n$ steps, only count the ones that are values.
+
+\begin{definition}[Big-Step Semantics of Expressions]
+	Let $e : \tau \in Expr_{\tau}$. The \emph{big-step semantics of $\expr$} is 
+	%
+	\[
+		\bigsem{e : \tau} = \lim_{n \to \infty} \lambda \measset.
+		%
+		\bigsemstepterm{e : \tau}{n}.
+	\]
+\end{definition}
+
+\begin{lemma}[Basic Properties of $\bigsemstep{\cdot}{n}$]
+	\label{lem:props:bigstepsem}
+	Let $\expr \in \exprs$ and $n \in \mathbb{N}$. We have
+	\begin{enumerate}
+		\item\label{lem:props:bigstepsem1} $\bigsemstep{\expr}{n}(\{\error\}) \leq \bigsemstep{\expr}{n+1}(\{\error\})$
+		%
+		\item\label{lem:props:bigstepsem2} $\bigsemstep{\expr}{n}(\{\obsfail\}) \leq \bigsemstep{\expr}{n+1}(\{\obsfail\})$
+		%
+		\item\label{lem:props:bigstepsem3} $\bigsemstep{\expr}{n}(\nonvals) \geq \bigsemstep{\expr}{n+1}(\nonvals)$.
+	\end{enumerate}
+\end{lemma}
+%
+\begin{proof}
+	By induction on $n$, using that for $\expr' \in \{ \error,\obsfail,\val \}$, we have $\sem{\expr'} = \delta_{\expr'}$.
+\end{proof}
+
+\begin{lemma}[Existence of the big-step limit]
+	The pointwise limit
+	\[
+		\bigsem{e : \tau} = \lim_{n \to \infty} \lambda \measset.
+		%
+		\bigsemstepterm{e : \tau}{n}.
+	\]
+	exists for all measurable $A$.
+\end{lemma}
+
+\begin{proof}
+	By Lemma~\ref{lem:props:bigstepsem2}, the sequence $\bigsemstep{e}{n}$ is monotonically increasing. Moreover, $\bigsemstep{e}{n}$ defines a subprobability measure, and thus is bounded above by 1 for every $n \in \Nats$. Thus, by the monotone convergence theorem, the pointwise limit exists.
+\end{proof}
+
+%
+The above limit is to be understood pointwise and exists by the monotone convergence theorem:  Since $\extexprs$ is the disjoint union 
+%
+\[
+	 \exprs \discup  \{ \error \} \discup \{ \obsfail \} 
+	 \quad {}={} \quad
+	 \nonvals \discup \vals \discup \{ \error \} \discup \{ \obsfail \}~,
+\]
+%
+every $\probmeas \in \distextexprs$ is the disjoint union of some measurable sets $\measset_{\nonvals} \subseteq \nonvals, \measset_{\vals}\subseteq\vals, \measset_{\error}\subseteq \{\error\},\measset_{\obsfail}\subseteq\{\obsfail\}$. 
+
+\begin{definition}[Big-step pairing semantics]
+	For every $(e : \tau, e' : \tau') \in \relation_{\tau}(e,e')$ and all $n \in \Nats$, define the distribution $\bigsemstep{e : \tau, e' : \tau'}{n} \in \mathcal{D}(\relation_{\tau} + \bot)$ recursively as
+	%
+	\[
+		\bigsemstep{e : \tau, e' : \tau'}{n} = 
+		\begin{cases}
+			\delta_{(e : \tau. e' : \tau')} & \text{if $n = 0$} \\
+			%
+			\bigsemstep{e : \tau, e' : \tau'}{n-1} \monbind  \lambda (f,f'). \sem{f : \tau, f' : \tau'} & \text{if $n > 0$}~.
+		\end{cases}
+	\]
+
+	Let $(e : \tau, e' : \tau')$ such that $\relation_{\tau}(e,e')$. The big-step semantics of $(e,e')$ is:
+	\[
+	\bigsem{e : \tau, e' : \tau'} = \lim_{n \to \infty} \lambda \measset.\bigsemstepterm{e : \tau, e' : \tau'}{n}.
+	\]
+\end{definition}
+
+Because the big-step semantics is defined from the small-step semantics, they are equivalent by construction for terminating computations.
