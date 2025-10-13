@@ -735,7 +735,7 @@ We can equip this Borel measurable space with a (sub)probability measure such th
 \subsection{Small-step semantics}
 
 \subsubsection{Small-step semantics for $e : \tau$. $Expr_{\tau} \to \mathcal{D}(Expr_{\tau} + \bot)$.}
-We assume the expressions are well-typed. Since we assume all expressions are well-typed, we do not need to explicitly consider cases where type checking fails. Moreover, certain constructs in our language are only applicable to specific types.
+We assume the expressions are well-typed. Since we assume all expressions are well-typed, we do not need to explicitly consider cases where type checking fails. Moreover, certain constructs in our language are only applicable to specific types, which we indicate by explicit type constraints in such semantic rules.
 {
 \footnotesize
 \begin{align*}
@@ -763,7 +763,7 @@ We assume the expressions are well-typed. Since we assume all expressions are we
 		\sem{ e_2 : \tau_2 } \gg\!= \lambda f. \sem{ v_1 : \tau_1 < f : \bool} \quad &\text{ if } e_1 = v_1, e_2 \neq v_2 \\
 		\sem{ e_1 : \tau_1 } \gg\!= \lambda f. \sem{ f < e_2 : \tau_2 : \bool} \quad &\text{ otherwise } \\
 	\end{cases} \\
-	&\text{where } \tau_1 = \tau_2 = \floattype{B}{V} \\
+	&\text{where } \tau_1 = \floattype{B_1}{V_1}, \tau_2 = \floattype{B_2}{V_2} \\
 	%%
 	%% less than - finite
 	%%
@@ -806,7 +806,7 @@ We assume the expressions are well-typed. Since we assume all expressions are we
 }
 
 \subsubsection{\dc}
-We introduce a new construct, called \dc, that simulates the latter two cases of the discretization of the uniform distribution in the discretization function. We define:
+To model the discretization behavior when $B \neq \top$ for the uniform distribution in the discretization function, we introduce a new construct called \dc. We define:
 
 \begin{align*}
 	&\discretize{\uniform(e_1 : \floattype{B_1}{V_1}, e_2 : \floattype{B_2}{V_2}) : \floattype{B}{V}} \\
@@ -1876,19 +1876,19 @@ The above statement states that among all possible results after $n$ steps, only
 \end{definition}
 
 \begin{lemma}[Basic Properties of $\bigsemstep{\cdot}{n}$]
-	\label{lem:props:bigstepsem}
-	Let $\expr \in \exprs$ and $n \in \mathbb{N}$. We have
+	\label{lem:bigstepsem}
+	Let $e : \tau \in Expr_{\tau}$ and $n \in \mathbb{N}$. We have
 	\begin{enumerate}
-		\item\label{lem:props:bigstepsem1} $\bigsemstep{\expr}{n}(\{\error\}) \leq \bigsemstep{\expr}{n+1}(\{\error\})$
+		% \item\label{lem:props:bigstepsem1} $\bigsemstep{\expr}{n}(\{\error\}) \leq \bigsemstep{\expr}{n+1}(\{\error\})$
+		% %
+		\item\label{lem:bigstepsem1} $\bigsemstep{e : \tau}{n}(V) \leq \bigsemstep{e : \tau}{n+1}(V)$
 		%
-		\item\label{lem:props:bigstepsem2} $\bigsemstep{\expr}{n}(\{\obsfail\}) \leq \bigsemstep{\expr}{n+1}(\{\obsfail\})$
-		%
-		\item\label{lem:props:bigstepsem3} $\bigsemstep{\expr}{n}(\nonvals) \geq \bigsemstep{\expr}{n+1}(\nonvals)$.
+		\item\label{lem:bigstepsem2} $\bigsemstep{e : \tau}{n}(\nonvals) \geq \bigsemstep{e : \tau}{n+1}(\nonvals)$.
 	\end{enumerate}
 \end{lemma}
 %
 \begin{proof}
-	By induction on $n$, using that for $\expr' \in \{ \error,\obsfail,\val \}$, we have $\sem{\expr'} = \delta_{\expr'}$.
+	By induction on $n$.
 \end{proof}
 
 \begin{lemma}[Existence of the big-step limit]
@@ -1902,19 +1902,8 @@ The above statement states that among all possible results after $n$ steps, only
 \end{lemma}
 
 \begin{proof}
-	By Lemma~\ref{lem:props:bigstepsem2}, the sequence $\bigsemstep{e}{n}$ is monotonically increasing. Moreover, $\bigsemstep{e}{n}$ defines a subprobability measure, and thus is bounded above by 1 for every $n \in \Nats$. Thus, by the monotone convergence theorem, the pointwise limit exists.
+	By Lemma~\ref{lem:bigstepsem1}, the sequence $\bigsemstep{e : \tau}{n}$ is monotonically increasing. Moreover, $\bigsemstep{e : \tau}{n}$ defines a subprobability measure, and thus $\bigsemstep{e : \tau}{n} \leq 1$ for every $n \in \Nats$. Thus, by the monotone convergence theorem, the pointwise limit exists.
 \end{proof}
-
-%
-The above limit is to be understood pointwise and exists by the monotone convergence theorem:  Since $\extexprs$ is the disjoint union 
-%
-\[
-	 \exprs \discup  \{ \error \} \discup \{ \obsfail \} 
-	 \quad {}={} \quad
-	 \nonvals \discup \vals \discup \{ \error \} \discup \{ \obsfail \}~,
-\]
-%
-every $\probmeas \in \distextexprs$ is the disjoint union of some measurable sets $\measset_{\nonvals} \subseteq \nonvals, \measset_{\vals}\subseteq\vals, \measset_{\error}\subseteq \{\error\},\measset_{\obsfail}\subseteq\{\obsfail\}$. 
 
 \begin{definition}[Big-step pairing semantics]
 	For every $(e : \tau, e' : \tau') \in \relation_{\tau}(e,e')$ and all $n \in \Nats$, define the distribution $\bigsemstep{e : \tau, e' : \tau'}{n} \in \mathcal{D}(\relation_{\tau} + \bot)$ recursively as
