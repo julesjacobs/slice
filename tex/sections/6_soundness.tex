@@ -634,8 +634,51 @@ This measure-theoretic foundation ensures that our probabilistic semantics is ma
 
 
 % ---- NEW ----
+\newpage
+\subsection{Preliminaries}
+We consider a subset of our language, focusing only on let statements, conditionals, less than comparisons, and uniform and discrete distributions. The other constructs will easily follow.
+
+% \begin{itemize}
+% 	\item $\monunit \colon X \rightarrow \dist{X}$
+%     \item $\monbind \colon \dist{X} \times (X \to \dist{Y}) \rightarrow \dist{Y}$
+% \end{itemize}
+
+\subsubsection{Brief recap of measure theory} 
+We give a brief overiew of basic measure theory terms.
+
+\paragraph{$\sigma$-algebras} A $\sigma$-algebra on a set $X$ is a collection $\Sigma$ of subsets of $X$ that includes $X$ itself and is closed under complement and under countable unions. By implication, a $\sigma$-algebra includes the empty set and is closed under countable intersections. 
+A Borel $\sigma$-algebra is the smallest $\sigma$-algebra that contains all open sets in a given topological space.
+
+\paragraph{Measurable spaces} A measurable space $(X, \Sigma)$ consists of an underlying set and its $\sigma$-algebra.  
+When $\Sigma$ is the Borel $\sigma$-algebra on a topological space $X$, we call $(X, \Sigma)$ a Borel measurable space.
+
+\paragraph{Measures} Let $(X,\Sigma)$ be a measurable space. A function $\mu : \Sigma \to \R^+$ is called a measure if it satisfies nonnegativity, null empty set, and countable additivity. 
+When $\Sigma$ is a Borel $\sigma$-algebra, $\mu$ is called a Borel measure.
+
+\paragraph{Measure spaces} The triple $(X, \Sigma, \mu)$ is called a measure space.
+ When $\Sigma$ is the Borel $\sigma$-algebra, $(X, \Sigma, \mu)$ is called a Borel measure space.
+
+\paragraph{(Sub)probability measures} When $\mu(X) \leq 1$, it is called a subprobability measure. When $\mu(X) = 1$, it is called a probability measure and $(X, \Sigma, \mu)$ a probability space.
+If the underlying $\sigma$-algebra is Borel, we refer respectively to Borel subprobability measures and Borel probability measures, and the space $(X, \Sigma, \mu)$ is a Borel probability space.
+
+\begin{definition}[Sub-Distribution]
+	A sub-probability measure (the continuous analogue of a sub-distribution) on a measureable space $(X, \Sigma)$ is a measure $\mu: \Sigma \to [0,1]$ such that $\mu(X) \leq 1$. We write $D(X)$ for the set of all sub-probability measures of $X$. 
+\end{definition}
+
+\begin{definition}[Support]
+	The support of $\mu \in \mathcal{D}(X)$ is the set of points $x \in X$ such that every open neighborhood of $x$ has positive measure:
+	\[
+	{support}(\mu) \triangleq \{ x \in X \mid \forall U \ni x, \; U \text{ open}, \; \mu(U) > 0 \}.
+	\]
+\end{definition}
+
+\begin{definition}[Distribution Monad with Error]
+	Define $\text{return} : X \to \mathcal{D}(X + \bot)$ by $\text{return}_X(x) := \delta_x$, where $\delta_x$ denotes the Dirac distribution on $x$: for any $y \in X$, we have $\delta_x(y) = 1$ if $y = x$, otherwise $\delta_x(y) = 0$. Further, define $\text{bind} : \mathcal{D}(X + \bot) \to (X \to \mathcal{D}(Y + \bot)) \to \mathcal{D}(Y + \bot)$ by $\text{bind}(\mu)(f)(y) := \sum_{x \in support(\mu)} \mu(x) \cdot f_{\bot}(x)(y)$, 
+	where $f_{\bot}$ extends $f$ by $f_{\bot}(\bot) := \delta_{\bot}$ and $f_{\bot}(x) := f(x) \;\; \text{for every } x \in X.$
+\end{definition}
+
 \subsection{Measure space on expressions}
-To make the probabilistic semantics precise, we define an appropriate measure space structure on the set of typed expressions. The set $Expr_{\tau}$ is uncountable due to real numerals, so we construct a standard Borel measurable space on $Expr_{\tau}$ by factoring out numerals, using the notion of \emph{expression skeletons}.
+To make the probabilistic semantics precise, we define an appropriate measure space structure on the set of typed expressions. The set $Expr_{\tau}$ is uncountable due to the real numerals, so we construct a standard Borel measurable space on $Expr_{\tau}$ by factoring out such numerals using the notion of what we call \emph{expression skeletons}.
 
 \begin{definition}[Expression Skeleton]
 	An expression skeleton $s$ is a well-typed expression where each occurrence of a float constant is replaced by a hole $\square_i$ for some index $i \in \mathbb{N}$, generated as follows:
@@ -657,57 +700,39 @@ To make the probabilistic semantics precise, we define an appropriate measure sp
 \end{lemma}
 
 \begin{proof}
-	Skeletons are finite trees over a finite operator alphabet with node labels drawn from a countable set (variables and indices). Such trees form a countable set. 
+	Each skeleton is a finite syntactic tree where:
+	\begin{itemize}
+	\item Internal nodes are labeled by constructors from a finite set of ${\letkw, \ifkw, <, \uniform}$
+	\item Leaves are labeled by variables (countable) or holes $\square_i$ with $i \in \mathbb{N}$ (countable)
+	\end{itemize}
+	The set of all finite trees over countable labels is countable.
 \end{proof}
 
-\begin{definition}[Borel measure space on expressions]
-	Let $s \in Skel$ be an expression skeleton with $n = holes(s)$. Each tuple of real numbers $\vec{r} = (r_1, \ldots, r_n) \in \R^n$ induces a concrete expression $s[\vec{r}] \in Expr_{\tau}$. We associate to $s[\vec{r}]$ the product space $\R^n$, equipped with the Borel $\sigma$-algebra $\mathcal{B}(\R^n)$. We then define the measurable space of expressions of type $\tau$ as the disjoint union
+\begin{definition}[Borel measurable space on expressions]
+	Let $s \in \text{Skel}$ be an expression skeleton with $n = \text{holes}(s)$. Each tuple of real numbers $\vec{r} = (r_1, \ldots, r_n) \in \R^n$ induces a concrete expression $s[\vec{r}] \in Expr_{\tau}$. We associate to $s[\vec{r}]$ the product space $\R^n$, equipped with the Borel $\sigma$-algebra $\mathcal{B}(\R^n)$. We then define the measurable space of expressions of type $\tau$ as the disjoint union
 	\[
 		Expr_{\tau} = \bigsqcup_{s \in \text{Skel}} \{s[\vec{r}] \mid \vec{r} \in \mathbb{R}^{\text{holes}(s)}\},
 	\]
 	equipped with the Borel $\sigma$-algebra $\mathcal{F}_{Expr_{\tau}} := \sigma(\{s[\vec{r}] \mid \vec{r} \in \mathbb{R}^{\text{holes}(s)}\}_{s \in \text{Skel}})$.
 \end{definition}
 
-\begin{lemma}[Borel structure]
-	Each space $(\R^{holes(s)}, \mathcal{B}(\R^{holes(s)}))$ is a Borel measurable space. Consequently, $(Expr_{\tau}, \mathcal{F}_{Expr_{\tau}})$ is also a Borel measurable space.
+\begin{lemma}
+	For a given $s \in \text{Skel}$, $(\R^{holes(s)}, \mathcal{B}(\R^{holes(s)}))$ is a Borel measurable space. Consequently, $(Expr_{\tau}, \mathcal{F}_{Expr_{\tau}})$ is also a Borel measurable space.
 \end{lemma}
 
 \begin{proof}
-	The first statement follows immediately from the construction. The second statement holds since $\text{Skel}$ is countable and Borel measures are closed under countable unions.
+	For each skeleton $s$ with $n = \text{holes}(s)$, the space $\R^n$ with its Borel $\sigma$-algebra is a Borel measureable space. Since $\text{Skel}$ is countable, the countable disjoint union of Borel measureable spaces remains a Borel measurable space. 
 \end{proof}
 
 % Intuitively, this means that measurable subsets of $Expr_{\tau}$ can be described by first fixing a finite syntactic skeleton and then selecting a measurable subset of real assignments to its float constants.
 
-We can equip this Borel measurable space with a probability measure, and in particular, any probability measure $\mu$ on $\R^n$ can be lifted to a probability measure on $Expr_{\tau}$ via:
-\begin{enumerate}
-	\item Choose a skeleton $s$ with $n$ holes.
-	\item Define $\mu_{Expr_{\tau}}(A) = \mu(\{\vec{r} \in \R^n \mid s[\vec{r}] \in A\})$.
-\end{enumerate}
+We can equip this Borel measurable space with a (sub)probability measure such that $\mu(Expr_{\tau}) \leq 1$. And in particular, any (sub)probability measure $\mu$ on $\R^{\text{holes}(s)}$ for a skeleton $s$ can be lifted to a (sub)probability measure on $Expr_{\tau}$, as follows: 
+\[
+	\mu_{Expr_{\tau}}(A) = \mu(\{\vec{r} \in \R^{\text{holes}(s)} \mid s[\vec{r}] \in A\}).
+\]
 
 
 \subsection{Small-step semantics}
-We consider a subset of our language, focusing only on let statements, conditionals, less than comparisons, and uniform and discrete distributions. 
-
-% \begin{itemize}
-% 	\item $\monunit \colon X \rightarrow \dist{X}$
-%     \item $\monbind \colon \dist{X} \times (X \to \dist{Y}) \rightarrow \dist{Y}$
-% \end{itemize}
-
-\begin{definition}[Sub-Distribution]
-	A sub-probability measure (the continuous analogue of a sub-distribution) on a measureable space $(X, \Sigma)$ is a measure $\mu: \Sigma \to [0,1]$ such that $\mu(X) \leq 1$. We write $D(X)$ for the set of all sub-probability measures of $X$. 
-\end{definition}
-
-\begin{definition}[Support]
-	The support of $\mu \in \mathcal{D}(X)$ is the set of points $x \in X$ such that every open neighborhood of $x$ has positive measure:
-	\[
-	{support}(\mu) \triangleq \{ x \in X \mid \forall U \ni x, \; U \text{ open}, \; \mu(U) > 0 \}.
-	\]
-\end{definition}
-
-\begin{definition}[Distribution Monad with Error]
-	Define $\text{return} : X \to \mathcal{D}(X + \bot)$ by $\text{return}_X(x) := \delta_x$, where $\delta_x$ denotes the Dirac distribution on $x$: for any $y \in X$, we have $\delta_x(y) = 1$ if $y = x$, otherwise $\delta_x(y) = 0$. Further, define $\text{bind} : \mathcal{D}(X + \bot) \to (X \to \mathcal{D}(Y + \bot)) \to \mathcal{D}(Y + \bot)$ by $\text{bind}(\mu)(f)(y) := \sum_{x \in support(\mu)} \mu(x) \cdot f_{\bot}(x)(y)$, 
-	where $f_{\bot}$ extends $f$ by $f_{\bot}(\bot) := \delta_{\bot}$ and $f_{\bot}(x) := f(x) \;\; \text{for every } x \in X.$
-\end{definition}
 
 \subsubsection{Small-step semantics for $e : \tau$. $Expr_{\tau} \to \mathcal{D}(Expr_{\tau} + \bot)$.}
 We assume the expressions are well-typed. Since we assume all expressions are well-typed, we do not need to explicitly consider cases where type checking fails. Moreover, certain constructs in our language are only applicable to specific types.
