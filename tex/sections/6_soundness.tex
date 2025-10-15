@@ -656,24 +656,31 @@ When $\Sigma$ is the Borel $\sigma$-algebra on a topological space $X$, we call 
 When $\Sigma$ is a Borel $\sigma$-algebra, $\mu$ is called a Borel measure.
 
 \paragraph{Measure spaces} The triple $(X, \Sigma, \mu)$ is called a measure space.
- When $\Sigma$ is the Borel $\sigma$-algebra, $(X, \Sigma, \mu)$ is called a Borel measure space.
+ When $\Sigma$ is the Borel $\sigma$-algebra and $\mu$ is the Borel measure, $(X, \Sigma, \mu)$ is called a Borel measure space.
 
-\paragraph{(Sub)probability measures} When $\mu(X) \leq 1$, it is called a subprobability measure. When $\mu(X) = 1$, it is called a probability measure and $(X, \Sigma, \mu)$ a probability space.
-If the underlying $\sigma$-algebra is Borel, we refer respectively to Borel subprobability measures and Borel probability measures, and the space $(X, \Sigma, \mu)$ is a Borel probability space.
-
-\begin{definition}[Sub-Distribution]
-	A sub-probability measure (the continuous analogue of a sub-distribution) on a measureable space $(X, \Sigma)$ is a measure $\mu: \Sigma \to [0,1]$ such that $\mu(X) \leq 1$. We write $D(X)$ for the set of all sub-probability measures of $X$. 
-\end{definition}
+\paragraph{(Sub)probability measures} When $\mu(X) \leq 1$, it is called a (Borel) subprobability measure. When $\mu(X) = 1$, it is called a (Borel) probability measure and $(X, \Sigma, \mu)$ a (Borel) probability space.
 
 \begin{definition}[Support]
-	The support of $\mu \in \mathcal{D}(X)$ is the set of points $x \in X$ such that every open neighborhood of $x$ has positive measure:
-	\[
-	{support}(\mu) \triangleq \{ x \in X \mid \forall U \ni x, \; U \text{ open}, \; \mu(U) > 0 \}.
-	\]
+	We define the support of a measure separately for discrete and continuous cases:
+	\begin{enumerate}
+		\item Let $(X, \Sigma, \mu)$ be a measure space where $\mu$ is a discrete measure. The support of $\mu$ is the set of all points with positive measure:
+		\[
+			{support}(\mu) \triangleq \{ x \in X \mid \mu(x) > 0 \}.
+		\]
+
+		\item Let $(X, \Sigma, \mu)$ be a Borel measure space where $X$ is a topological space and $\mu$ is a continuous measure. THe support of $\mu$ is:
+		\[
+			{support}(\mu) \triangleq \{ x \in X \mid \forall U \in \Sigma, \; (U \text{ open and } x \in U) \implies \mu(U) > 0 \}.
+		\]
+	\end{enumerate}
 \end{definition}
 
 \begin{definition}[Distribution Monad with Error]
-	Define $\text{return} : X \to \mathcal{D}(X + \bot)$ by $\text{return}_X(x) := \delta_x$, where $\delta_x$ denotes the Dirac distribution on $x$: for any $y \in X$, we have $\delta_x(y) = 1$ if $y = x$, otherwise $\delta_x(y) = 0$. Further, define $\text{bind} : \mathcal{D}(X + \bot) \to (X \to \mathcal{D}(Y + \bot)) \to \mathcal{D}(Y + \bot)$ by $\text{bind}(\mu)(f)(y) := \sum_{x \in support(\mu)} \mu(x) \cdot f_{\bot}(x)(y)$, 
+	Define $\text{return} : X \to \mathcal{D}(X + \bot)$ by $\text{return}_X(x) := \delta_x$, where $\delta_x$ denotes the Dirac distribution on $x$: for any $y \in X$, we have $\delta_x(y) = 1$ if $y = x$, otherwise $\delta_x(y) = 0$. Further, define $\text{bind} : \mathcal{D}(X + \bot) \to (X \to \mathcal{D}(Y + \bot)) \to \mathcal{D}(Y + \bot)$ by:
+	\begin{enumerate}
+		\item $\text{bind}(\mu)(f)(y) := \sum_{x \in support(\mu)} \mu(x) \cdot f_{\bot}(x)(y)$ if $\mu$ is discrete
+		\item $\text{bind}(\mu)(f)(A) := \int_{x \in support(\mu)} f_{\bot}(x)(A) \cdot d\mu(x)$ if $\mu$ is continuous
+	\end{enumerate}
 	where $f_{\bot}$ extends $f$ by $f_{\bot}(\bot) := \delta_{\bot}$ and $f_{\bot}(x) := f(x) \;\; \text{for every } x \in X.$
 \end{definition}
 
