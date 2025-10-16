@@ -668,7 +668,7 @@ When $\Sigma$ is a Borel $\sigma$-algebra, $\mu$ is called a Borel measure.
 			{support}(\mu) \triangleq \{ x \in X \mid \mu(x) > 0 \}.
 		\]
 
-		\item Let $(X, \Sigma, \mu)$ be a Borel measure space where $X$ is a topological space and $\mu$ is a continuous measure. THe support of $\mu$ is:
+		\item Let $(X, \Sigma, \mu)$ be a Borel measure space where $X$ is a topological space and $\mu$ is a continuous measure. The support of $\mu$ is:
 		\[
 			{support}(\mu) \triangleq \{ x \in X \mid \forall U \in \Sigma, \; (U \text{ open and } x \in U) \implies \mu(U) > 0 \}.
 		\]
@@ -685,10 +685,10 @@ When $\Sigma$ is a Borel $\sigma$-algebra, $\mu$ is called a Borel measure.
 \end{definition}
 
 \subsection{Measure space on expressions}
-To make the probabilistic semantics precise, we define an appropriate measure space structure on the set of typed expressions. The set $Expr_{\tau}$ is uncountable due to the real numerals, so we construct a standard Borel measurable space on $Expr_{\tau}$ by factoring out such numerals using the notion of what we call \emph{expression skeletons}.
+To make the probabilistic semantics precise, we define an appropriate measure space structure on the set of expressions. The set $Expr$ is uncountable due to the real numerals, so we construct a Borel measurable space on $Expr$ by factoring out such numerals using the notion of what we call \emph{expression skeletons}.
 
 \begin{definition}[Expression Skeleton]
-	An expression skeleton $s$ is a well-typed expression where each occurrence of a float constant is replaced by a hole $\square_i$ for some index $i \in \mathbb{N}$, generated as follows:
+	An expression skeleton $s$ is an expression where each occurrence of a float constant is replaced by a hole $\square_i$ for some index $i \in \mathbb{N}$, generated as follows:
 	\begin{align*}
 		s ::= \; 
 		&\square_i \mid x \mid \letkw \; x = s \; \inkw \; s \mid \ifkw \; s \; \thenkw \; s \; \elsekw \; s \mid s < s \mid \uniform(\square_i, \square_j)
@@ -716,15 +716,15 @@ To make the probabilistic semantics precise, we define an appropriate measure sp
 \end{proof}
 
 \begin{definition}[Borel measurable space on expressions]
-	Let $s \in \text{Skel}$ be an expression skeleton with $n = \text{holes}(s)$. Each tuple of real numbers $\vec{r} = (r_1, \ldots, r_n) \in \R^n$ induces a concrete expression $s[\vec{r}] \in Expr_{\tau}$. We associate to $s[\vec{r}]$ the product space $\R^n$, equipped with the Borel $\sigma$-algebra $\mathcal{B}(\R^n)$. We then define the measurable space of expressions of type $\tau$ as the disjoint union
+	Let $s \in \text{Skel}$ be an expression skeleton with $n = \text{holes}(s)$. Each tuple of real numbers $\vec{r} = (r_1, \ldots, r_n) \in \R^n$ induces a concrete expression $s[\vec{r}] \in Expr$. We associate to $s[\vec{r}]$ the product space $\R^n$, equipped with the Borel $\sigma$-algebra $\mathcal{B}(\R^n)$. We then define the measurable space of expressions as the union
 	\[
-		Expr_{\tau} = \bigsqcup_{s \in \text{Skel}} \{s[\vec{r}] \mid \vec{r} \in \mathbb{R}^{\text{holes}(s)}\},
+		Expr := \bigsqcup_{s \in \text{Skel}} \{s[\vec{r}] \mid \vec{r} \in \mathbb{R}^{\text{holes}(s)}\},
 	\]
-	equipped with the Borel $\sigma$-algebra $\mathcal{F}_{Expr_{\tau}} := \sigma(\{s[\vec{r}] \mid \vec{r} \in \mathbb{R}^{\text{holes}(s)}\}_{s \in \text{Skel}})$.
+	equipped with the Borel $\sigma$-algebra $\mathcal{F}_{Expr} := \sigma(\{s[\vec{r}] \mid \vec{r} \in \mathbb{R}^{\text{holes}(s)}\}_{s \in \text{Skel}})$.
 \end{definition}
 
 \begin{lemma}
-	For a given $s \in \text{Skel}$, $(\R^{holes(s)}, \mathcal{B}(\R^{holes(s)}))$ is a Borel measurable space. Consequently, $(Expr_{\tau}, \mathcal{F}_{Expr_{\tau}})$ is also a Borel measurable space.
+	For a given $s \in \text{Skel}$, $(\R^{holes(s)}, \mathcal{B}(\R^{holes(s)}))$ is a Borel measurable space. Consequently, $(Expr, \mathcal{F}_{Expr})$ is also a Borel measurable space.
 \end{lemma}
 
 \begin{proof}
@@ -733,9 +733,9 @@ To make the probabilistic semantics precise, we define an appropriate measure sp
 
 % Intuitively, this means that measurable subsets of $Expr_{\tau}$ can be described by first fixing a finite syntactic skeleton and then selecting a measurable subset of real assignments to its float constants.
 
-We can equip this Borel measurable space with a (sub)probability measure such that $\mu(Expr_{\tau}) \leq 1$. And in particular, any (sub)probability measure $\mu$ on $\R^{\text{holes}(s)}$ for a skeleton $s$ can be lifted to a (sub)probability measure on $Expr_{\tau}$, as follows: 
+We can equip this Borel measurable space with a (sub)probability measure such that $\mu(Expr) \leq 1$. And in particular, any (sub)probability measure $\mu$ on $\R^{\text{holes}(s)}$ for a skeleton $s$ can be lifted to a (sub)probability measure on $Expr$, as follows: 
 \[
-	\mu_{Expr_{\tau}}(A) = \mu(\{\vec{r} \in \R^{\text{holes}(s)} \mid s[\vec{r}] \in A\}).
+	\mu_{Expr}(A) = \mu(\{\vec{r} \in \R^{\text{holes}(s)} \mid s[\vec{r}] \in A\}).
 \]
 
 
@@ -1868,20 +1868,6 @@ For every $e : \tau \in Expr_{\tau}$ and all $n \in \mathbb{N}$, we define the d
 
 Let $\vals$ be the measurable set of all values and write $\nonvals = \expr \setminus \vals$, which is also measurable. This is the set of all non-values (or expressions).
 
-Given $e : \tau \in Expr_{\tau}$ and $n\in\Nats$, define $\bigsemstepterm{e : \tau}{n} = \lambda \measset. \bigsemstep{e : \tau}{n}(\measset \setminus \nonvals)$. 
-
-The above statement states that among all possible results after $n$ steps, only count the ones that are values.
-
-\begin{definition}[Big-Step Semantics of Expressions]
-	Let $e : \tau \in Expr_{\tau}$. The \emph{big-step semantics of $\expr$} is 
-	%
-	\[
-		\bigsem{e : \tau} = \lim_{n \to \infty} \lambda \measset.
-		%
-		\bigsemstepterm{e : \tau}{n}.
-	\]
-\end{definition}
-
 \begin{lemma}[Basic Properties of $\bigsemstep{\cdot}{n}$]
 	\label{lem:bigstepsem}
 	Let $e : \tau \in Expr_{\tau}$ and $n \in \mathbb{N}$. We have
@@ -1896,16 +1882,100 @@ The above statement states that among all possible results after $n$ steps, only
 %
 \begin{proof}
 	By induction on $n$.
+
+	\underline{Base case}:
+
+	For $n=0$,
+	\[
+		\bigsemstep{e : \tau}{0} = \delta_{e : \tau}.
+	\]
+
+	Case 1: $e$ is a value $v$. 
+
+	Then $\bigsemstep{e : \tau}{0}(V) = 1$ and $\bigsemstep{e : \tau}{0}(N) = 0$.
+
+	For $n=1$:
+	\[
+		\bigsemstep{e : \tau}{1} = \delta_{v : \tau} \gg\!= \lambda e'.\sem{e'} = \sem{v : \tau}.
+	\]
+	Since $e'$ is a value, $\sem{v : \tau} = \delta_{v : \tau}$, so
+	\[
+		\bigsemstep{e : \tau}{1} = \delta_{v : \tau}.
+	\]
+	So $\bigsemstep{e : \tau}{0}(V) = 1$ and $\bigsemstep{e : \tau}{0}(N) = 0$, and thus i) $1 \leq 1$ holds and ii) $0 > 0$ holds.
+
+	Case 2: $e$ is an expression.
+
+	Then $\bigsemstep{e : \tau}{0}(V) = 0$ and $\bigsemstep{e : \tau}{0}(N) = 1$.
+
+	For $n=1$:
+	\[
+		\bigsemstep{e : \tau}{1} = \delta_{e : \tau} \gg\!= \lambda e'.\sem{e'} = \sem{e : \tau}.
+	\]
+	Now $\sem{e : \tau}$ may have some mass on $V$ or on $N$, which means $\sem{e : \tau}(V) \geq 0$, so i) $0 \leq \bigsemstep{e}{1}(V)$ holds.
+	
+	Also, $\sem{e : \tau}(N) \leq 1$ beause some probability may go to $V$. So ii) $1 \geq \bigsemstep{e}{1}(N)$ holds.
+
+	\underline{Inductive step}:
+	Assume for $n=k$ that:
+	\begin{align*}
+		\bigsemstep{e : \tau}{k}(V) \leq \bigsemstep{e : \tau}{k+1}(V) \\
+		\bigsemstep{e : \tau}{k}(N) \geq \bigsemstep{e : \tau}{k+1}(N)
+	\end{align*}
+
+	We want to show that for $n = k+1$:
+	\begin{align*}
+		\bigsemstep{e : \tau}{k+1}(V) \leq \bigsemstep{e : \tau}{k+2}(V) \\
+		\bigsemstep{e : \tau}{k+1}(N) \geq \bigsemstep{e : \tau}{k+2}(N)
+	\end{align*}
+
+	which means:
+	\begin{align*}
+		\bigsemstep{e : \tau}{k+1}(V) = \bigsemstep{e}{k} \gg\!= \lambda e'.\sem{e'} \\
+		\bigsemstep{e : \tau}{k+2}(V) = \bigsemstep{e}{k+1} \gg\!= \lambda e'.\sem{e'}
+	\end{align*}
+
+	We introduce $T(\mu) = \mu \gg\!= e'.\sem{e'}$. Then, $\bigsemstep{e : \tau}{k+1} = T(\bigsemstep{e : \tau}{k})$ and $\bigsemstep{e : \tau}{k+2} = T(\bigsemstep{e : \tau}{k+1})$.
+
+	We claim: for any $\mu$,
+	\begin{align*}
+		\mu(V) \leq T(\mu)(V) \\
+		\mu(N) \geq T(\mu)(N) 
+	\end{align*}
+
+	So applying $T$ to both sides of $\bigsemstep{e : \tau}{k}(V) \leq \bigsemstep{e : \tau}{k+1}(V)$, we get:
+	\[
+		T(\bigsemstep{e}{k})(V) \leq T(\bigsemstep{e}{k+1})(V)
+	\]
+	since $T$ is monotone in $V$-mass as we have shown $\mu(V) \leq T(\mu)(V)$. 
+
+	But $T(\bigsemstep{e}{k})(V) = \bigsemstep{e}{k+1}$ and $T(\bigsemstep{e}{k+1})(V) = \bigsemstep{e}{k+2}$, and thus:
+
+	\[
+		\bigsemstep{e : \tau}{k+1}(V) \leq \bigsemstep{e : \tau}{k+2}(V)
+	\]
+	for $n = k+1$.
+
+
+
 \end{proof}
 
-\begin{lemma}[Existence of the big-step limit]
-	The pointwise limit
+Given $e : \tau \in Expr_{\tau}$ and $n\in\Nats$, define $\bigsemstepterm{e : \tau}{n} = \lambda \measset. \bigsemstep{e : \tau}{n}(\measset \setminus \nonvals)$. 
+
+The above statement states that among all possible results after $n$ steps, only count the ones that are values.
+
+\begin{definition}[Big-Step Semantics of Expressions]
+	Let $e : \tau \in Expr_{\tau}$. The \emph{big-step semantics of $\expr$} is 
+	%
 	\[
 		\bigsem{e : \tau} = \lim_{n \to \infty} \lambda \measset.
 		%
 		\bigsemstepterm{e : \tau}{n}.
 	\]
-	exists for all measurable $A$.
+\end{definition}
+
+\begin{lemma}[Existence of the big-step limit]
+	The pointwise limit exists.
 \end{lemma}
 
 \begin{proof}
