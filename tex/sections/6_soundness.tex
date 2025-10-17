@@ -660,6 +660,8 @@ When $\Sigma$ is a Borel $\sigma$-algebra, $\mu$ is called a Borel measure.
 
 \paragraph{(Sub)probability measures} When $\mu(X) \leq 1$, it is called a (Borel) subprobability measure. When $\mu(X) = 1$, it is called a (Borel) probability measure and $(X, \Sigma, \mu)$ a (Borel) probability space.
 
+\paragraph{Product measure} The product of two measurable spaces $(X_1, \Sigma_1)$ and $(X_2, \Sigma_2)$ is also a measurable space, namely $(X_1 \times X_2, \Sigma_1 \otimes \Sigma_2)$.
+
 \begin{definition}[Support]
 	We define the support of a measure separately for discrete and continuous cases:
 	\begin{enumerate}
@@ -673,6 +675,15 @@ When $\Sigma$ is a Borel $\sigma$-algebra, $\mu$ is called a Borel measure.
 			{support}(\mu) \triangleq \{ x \in X \mid \forall U \in \Sigma, \; (U \text{ open and } x \in U) \implies \mu(U) > 0 \}.
 		\]
 	\end{enumerate}
+\end{definition}
+
+\begin{definition}[Projection]
+	Let $(X_1, \Sigma_1)$ and $(X_2, \Sigma_2)$ be measurable spaces, and let $\mu \in \mathcal{D}(X_1 \times X_2)$. We define the first and second projection measures as:
+	\begin{enumerate}
+		\item $\pi_1(\mu)(A) := \mu(A \times X_2)$ for every measurable $A \in \Sigma_1$
+		\item $\pi_2(\mu)(B) := \mu(X_1 \times B)$ for every measurable $B \in \Sigma_2$
+	\end{enumerate}
+	Then, $\pi_1(\mu)$ is a measure on $(X_1, \Sigma_1)$ and $\pi_2(\mu)$ is a measure on $(X_2, \Sigma_2)$.
 \end{definition}
 
 \begin{definition}[Distribution Monad with Error]
@@ -715,7 +726,7 @@ To make the probabilistic semantics precise, we define an appropriate measure sp
 	The set of all finite trees over countable labels is countable.
 \end{proof}
 
-\begin{definition}[Borel measurable space on expressions]
+\begin{definition}[Borel measurable space on expressions]\label{def:meas-space}
 	Let $s \in \text{Skel}$ be an expression skeleton with $n = \text{holes}(s)$. Each tuple of real numbers $\vec{r} = (r_1, \ldots, r_n) \in \R^n$ induces a concrete expression $s[\vec{r}] \in Expr$. We associate to $s[\vec{r}]$ the product space $\R^n$, equipped with the Borel $\sigma$-algebra $\mathcal{B}(\R^n)$. We then define the measurable space of expressions as the union
 	\[
 		Expr := \bigsqcup_{s \in \text{Skel}} \{s[\vec{r}] \mid \vec{r} \in \mathbb{R}^{\text{holes}(s)}\},
@@ -731,12 +742,41 @@ To make the probabilistic semantics precise, we define an appropriate measure sp
 	For each skeleton $s$ with $n = \text{holes}(s)$, the space $\R^n$ with its Borel $\sigma$-algebra is a Borel measureable space. Since $\text{Skel}$ is countable, the countable disjoint union of Borel measureable spaces remains a Borel measurable space. 
 \end{proof}
 
+\begin{definition}[Extension with error element]\label{def:meas-space-with-error}
+	We extend the measurable space of expressions to include a distinguished error element $\bot$, defining
+	\[
+		Expr + \bot := Expr \cup \{\bot\}, \quad \mathcal{F}_{Expr + \bot} := \sigma(\mathcal{F}_{Expr} \cup \{\{\bot\}\}).
+	\]
+	The extended space $(Expr + \bot, \mathcal{F}_{Expr + \bot})$ is measurable.
+\end{definition}
+
 % Intuitively, this means that measurable subsets of $Expr_{\tau}$ can be described by first fixing a finite syntactic skeleton and then selecting a measurable subset of real assignments to its float constants.
 
-We can equip this Borel measurable space with a (sub)probability measure such that $\mu(Expr) \leq 1$. And in particular, any (sub)probability measure $\mu$ on $\R^{\text{holes}(s)}$ for a skeleton $s$ can be lifted to a (sub)probability measure on $Expr$, as follows: 
+We can equip this measurable space with a (sub)probability measure such that $\mu(Expr + \bot) \leq 1$. And in particular, any (sub)probability measure $\mu$ on $\R^{\text{holes}(s)}$ for a skeleton $s$ can be lifted to a (sub)probability measure on $Expr + \bot$, as follows: 
 \[
-	\mu_{Expr}(A) = \mu(\{\vec{r} \in \R^{\text{holes}(s)} \mid s[\vec{r}] \in A\}).
+	\mu_{Expr + \bot}(A) = \mu(\{\vec{r} \in \R^{\text{holes}(s)} \mid s[\vec{r}] \in A\}).
 \]
+
+We give some basic lemmas:
+\begin{lemma}
+	Let $(Expr + \bot, \mathcal{F}_{Expr + \bot})$ be the measurable space of expressions with error from Definition~\ref{def:meas-space-with-error}. Let $V \subset Expr$ be the measurable set of all value expressions. Let $N \subset Expr$, defined as $N = Expr \setminus V$, be the measurabale set of non-value expressions.
+	\begin{enumerate}
+		\item The set $\vals$ is measurable.
+		\item The set $\{\bot\}$ is measurable.
+		\item The set $\nonvals$ is measurable.
+	\end{enumerate}
+\end{lemma}
+
+\begin{proof}
+	We prove the measurability of $\vals$, $\{\bot\}$, and $N$ in separate parts.
+	\begin{enumerate}
+		\item \textbf{(Measurability of $\vals$):} By the construction of $\mathcal{F}_{Expr}$ in Definition~\ref{def:meas-space}, for each skeleton $s$ that represents a value, the set $\{s[\vec{r}] \mid \vec{r} \in \R^{\text{holes}(s)}\}$ is a measurable set in the union. The set $V$ is the countable union of all such sets corresponding to value skeletons. Since $\text{Skel}$ is countable, $V$ is a countable union of measurable sets and is therefore itself measurable, e.g. $V \in \mathcal{F}_{Expr}$. As $\mathcal{F}_{Expr} \subset \mathcal{F}_{Expr + \bot}$, it follows that $V \in \mathcal{F}_{Expr + \bot}$.
+		
+		\item \textbf{(Measurablity of $\{\bot\}$):} By Definition~\ref{def:meas-space-with-error}, the $\sigma$-algebra $\mathcal{F}_{Expr + \bot}$ is generated by $\mathcal{F}_{Expr} \cup \{\bot\}$. The $\{\bot\}$ is explicitly included in the generating family, and is therefore trivally measurable, e.g. $\{\bot\} \in \mathcal{F}_{Expr + \bot}$.
+
+		\item \textbf{(Measurablity of $N$):} By definition, $N$ is the set of non-value expressions, e.g. $N = Expr \setminus V$. From part i), we have established that $V \in \mathcal{F}_{Expr}$. Since $\mathcal{F}_{Expr}$ is a $\sigma$-algebra and is closed under complement, the complement of $V$ within $Expr$, which is precisely $N$, is also measurable, e.g. $N \in \mathcal{F}_{Expr}$. As $\mathcal{F}_{Expr} \subset \mathcal{F}_{Expr + \bot}$, it follows that $N \in \mathcal{F}_{Expr + \bot}$.
+	\end{enumerate}
+\end{proof}
 
 
 \subsection{Small-step semantics}
@@ -745,6 +785,7 @@ We can equip this Borel measurable space with a (sub)probability measure such th
 We assume the expressions are well-typed. Since we assume all expressions are well-typed, we do not need to explicitly consider cases where type checking fails. Moreover, certain constructs in our language are only applicable to specific types, which we indicate by explicit type constraints in such semantic rules.
 {
 \footnotesize
+\allowdisplaybreaks
 \begin{align*}
 	%%
 	%% let
@@ -1821,11 +1862,17 @@ We assume the expressions $e, e'$ are well-typed.
 	\end{itemize}
 \end{proof}
 
-\begin{definition}[Projection]
-	The first and second projections $\pi_1(\mu)$ and $\pi_2(\mu)$ of a distribution $\mu$ over $A \times B$ are defined by $\pi_1(\mu)(a) = \sum_{b \in B} \mu(a,b)$ and $\pi_2(\mu)(n) = \sum_{b \in A} \mu(a,b)$.
+\begin{definition}[Projection functions for small-step]
+	% The first and second projections $\pi_1(\mu)$ and $\pi_2(\mu)$ of a distribution $\mu$ over $A \times B$ are defined by $\pi_1(\mu)(a) = \sum_{b \in B} \mu(a,b)$ and $\pi_2(\mu)(n) = \sum_{b \in A} \mu(a,b)$.
+	Let $(E_1, \Sigma_1)$ and $(E_2, \Sigma_2)$ be measurable spaces, and let $\bigsem{e,e'} \in \mathcal{D}(E_1 \times E_2)$. We define the first and second projection measures as:
+	\begin{enumerate}
+		\item $\pi_1(\sem{e,e'})(A) := \sem{e,e'}(A \times E_2)$ for every measurable $A \in \Sigma_1$
+		\item $\pi_2(\sem{e,e'})(B) := \sem{e,e'}(E_1 \times B)$ for every measurable $B \in \Sigma_2$
+	\end{enumerate}
+	Then, $\pi_1(\sem{e,e'})$ is a measure on $(E_1, \Sigma_1)$ and $\pi_2(\sem{e,e'})$ is a measure on $(E_2, \Sigma_2)$.
 \end{definition}
 
-\begin{lemma}[Coupling Projection]
+\begin{lemma}[Small-step projection]
 	Let $\sem{e : \tau, e' : \tau'} \in \mathcal{D}(\relation_{\tau} + \bot)$. Then:
 	\begin{enumerate}
 		\item $\pi_1(\sem{e : \tau, e' : \tau'}) = \sem{e : \tau}$
@@ -1862,107 +1909,112 @@ For every $e : \tau \in Expr_{\tau}$ and all $n \in \mathbb{N}$, we define the d
 	\begin{cases}
 		\delta_{e : \tau} & \text{if $n = 0$} \\
 		%
-		\bigsemstep{e : \tau}{n-1} \monbind  \lambda e'. \sem{e' : \tau'} & \text{if $n > 0$}~.
+		\bigsemstep{e : \tau}{n-1} \monbind  \lambda e'. \sem{e' : \tau} & \text{if $n > 0$}~.
 	\end{cases}
 \]
 
-Let $\vals$ be the measurable set of all values and write $\nonvals = \expr \setminus \vals$, which is also measurable. This is the set of all non-values (or expressions).
-
 \begin{lemma}[Basic Properties of $\bigsemstep{\cdot}{n}$]
 	\label{lem:bigstepsem}
-	Let $e : \tau \in Expr_{\tau}$ and $n \in \mathbb{N}$. We have
+	Let $e : \tau \in Expr_{\tau}$ and $n \in \mathbb{N}$. Let $V$ be the measurable set of values. We have:
 	\begin{enumerate}
-		% \item\label{lem:props:bigstepsem1} $\bigsemstep{\expr}{n}(\{\error\}) \leq \bigsemstep{\expr}{n+1}(\{\error\})$
-		% %
 		\item\label{lem:bigstepsem1} $\bigsemstep{e : \tau}{n}(V) \leq \bigsemstep{e : \tau}{n+1}(V)$
-		%
-		\item\label{lem:bigstepsem2} $\bigsemstep{e : \tau}{n}(\nonvals) \geq \bigsemstep{e : \tau}{n+1}(\nonvals)$.
+		\item\label{lem:bigstepsem2} $\bigsemstep{e : \tau}{n}(\bot) \leq \bigsemstep{e : \tau}{n+1}(\bot)$
 	\end{enumerate}
 \end{lemma}
 %
 \begin{proof}
 	By induction on $n$.
 
-	\underline{Base case}:
+	\underline{Base case}: $n=0$.
 
-	For $n=0$,
+	We must show $\bigsemstep{e : \tau}{0}(V) \leq \bigsemstep{e : \tau}{1}(V)$.
+
+	By definition,
 	\[
 		\bigsemstep{e : \tau}{0} = \delta_{e : \tau}.
 	\]
 
-	Case 1: $e$ is a value $v$. 
+	Therefore,
+	\[
+		\bigsemstep{e : \tau}{0}(V) =
+		\begin{cases}
+			1 &\text{ if } e \in V \\
+			0 &\text{ if } e \notin V
+		\end{cases}
+	\]
 
-	Then $\bigsemstep{e : \tau}{0}(V) = 1$ and $\bigsemstep{e : \tau}{0}(N) = 0$.
+	Now, for $n=1$, by defintiion,
+	\[
+		\bigsemstep{e : \tau}{1} = \delta_{e : \tau} \gg\!= \lambda e'.\sem{e'} = \sem{e : \tau}.
+	\]
+
+	We analyze the two cases for $e$:
+
+	\textbf{Case 1:} $e$ is a value $v$. Then, $\bigsemstep{e : \tau}{0}(V) = 1$.
 
 	For $n=1$:
 	\[
 		\bigsemstep{e : \tau}{1} = \delta_{v : \tau} \gg\!= \lambda e'.\sem{e'} = \sem{v : \tau}.
 	\]
-	Since $e'$ is a value, $\sem{v : \tau} = \delta_{v : \tau}$, so
+	From the semantics, $\sem{v : \tau} = \delta_{v : \tau}$, which means $\bigsemstep{e : \tau}{1} = \delta_{v : \tau}$, and thus
 	\[
-		\bigsemstep{e : \tau}{1} = \delta_{v : \tau}.
+		\bigsemstep{e : \tau}{1}(V) = 1,
 	\]
-	So $\bigsemstep{e : \tau}{0}(V) = 1$ and $\bigsemstep{e : \tau}{0}(N) = 0$, and thus i) $1 \leq 1$ holds and ii) $0 > 0$ holds.
+	and thus $\bigsemstep{e : \tau}{0}(V) \leq \bigsemstep{e : \tau}{1}(V)$.
 
-	Case 2: $e$ is an expression.
-
-	Then $\bigsemstep{e : \tau}{0}(V) = 0$ and $\bigsemstep{e : \tau}{0}(N) = 1$.
+	\textbf{Case 2:} $e$ is an expression. Then, $\bigsemstep{e : \tau}{0}(V) = 0$.
 
 	For $n=1$:
 	\[
 		\bigsemstep{e : \tau}{1} = \delta_{e : \tau} \gg\!= \lambda e'.\sem{e'} = \sem{e : \tau}.
 	\]
-	Now $\sem{e : \tau}$ may have some mass on $V$ or on $N$, which means $\sem{e : \tau}(V) \geq 0$, so i) $0 \leq \bigsemstep{e}{1}(V)$ holds.
-	
-	Also, $\sem{e : \tau}(N) \leq 1$ beause some probability may go to $V$. So ii) $1 \geq \bigsemstep{e}{1}(N)$ holds.
+	From the semantics, $\sem{e : \tau}$ may step to either a value, which means $\sem{e : \tau}(V) \geq 0$, or an expression, which means $\sem{e : \tau}(V) = 0$. In either case, 
+	\[
+		\bigsemstep{e : \tau}{1}(V) \geq 0,
+	\]
+	and thus $\bigsemstep{e : \tau}{0}(V) \leq \bigsemstep{e : \tau}{1}(V)$.
 
 	\underline{Inductive step}:
-	Assume for $n=k$ that:
-	\begin{align*}
-		\bigsemstep{e : \tau}{k}(V) \leq \bigsemstep{e : \tau}{k+1}(V) \\
-		\bigsemstep{e : \tau}{k}(N) \geq \bigsemstep{e : \tau}{k+1}(N)
-	\end{align*}
-
 	We want to show that for $n = k+1$:
 	\begin{align*}
-		\bigsemstep{e : \tau}{k+1}(V) \leq \bigsemstep{e : \tau}{k+2}(V) \\
-		\bigsemstep{e : \tau}{k+1}(N) \geq \bigsemstep{e : \tau}{k+2}(N)
+		\bigsemstep{e : \tau}{k+1}(V) \leq \bigsemstep{e : \tau}{k+2}(V).
 	\end{align*}
 
-	which means:
+	By the recursive definition:
 	\begin{align*}
-		\bigsemstep{e : \tau}{k+1}(V) = \bigsemstep{e}{k} \gg\!= \lambda e'.\sem{e'} \\
-		\bigsemstep{e : \tau}{k+2}(V) = \bigsemstep{e}{k+1} \gg\!= \lambda e'.\sem{e'}
+		&\bigsemstep{e : \tau}{k}, \\
+		&\bigsemstep{e : \tau}{k+1} = \bigsemstep{e : \tau}{k} \gg\!= \lambda e'.\sem{e'}, \\
+		&\bigsemstep{e : \tau}{k+2} = \bigsemstep{e : \tau}{k+1} \gg\!= \lambda e''.\sem{e''} = (\bigsemstep{e : \tau}{k} \gg\!= \lambda e'.\sem{e'}) \gg\!= \lambda e''.\sem{e''}
 	\end{align*}
 
-	We introduce $T(\mu) = \mu \gg\!= e'.\sem{e'}$. Then, $\bigsemstep{e : \tau}{k+1} = T(\bigsemstep{e : \tau}{k})$ and $\bigsemstep{e : \tau}{k+2} = T(\bigsemstep{e : \tau}{k+1})$.
-
-	We claim: for any $\mu$,
-	\begin{align*}
-		\mu(V) \leq T(\mu)(V) \\
-		\mu(N) \geq T(\mu)(N) 
-	\end{align*}
-
-	So applying $T$ to both sides of $\bigsemstep{e : \tau}{k}(V) \leq \bigsemstep{e : \tau}{k+1}(V)$, we get:
-	\[
-		T(\bigsemstep{e}{k})(V) \leq T(\bigsemstep{e}{k+1})(V)
-	\]
-	since $T$ is monotone in $V$-mass as we have shown $\mu(V) \leq T(\mu)(V)$. 
-
-	But $T(\bigsemstep{e}{k})(V) = \bigsemstep{e}{k+1}$ and $T(\bigsemstep{e}{k+1})(V) = \bigsemstep{e}{k+2}$, and thus:
-
-	\[
-		\bigsemstep{e : \tau}{k+1}(V) \leq \bigsemstep{e : \tau}{k+2}(V)
-	\]
-	for $n = k+1$.
+	Fix an arbitrary $e',e''$. We do a case analysis on $e',e''$.
 
 
+	% We do a case analysis for the terms $a,b$ in $\bigsemstep{e : \tau}{k}(a)$ and $\bigsemstep{e : \tau}{k+1}(b)$:
+
+	% \textbf{Case 1:} Let $a \in V$ and $b \in V$. By the IH, $\bigsemstep{e : \tau}{k}(V) \leq \bigsemstep{e : \tau}{k+1}(V)$, so $\bigsemstep{e : \tau}{k}(a) \leq \bigsemstep{e : \tau}{k+1}(b)$. Applying $\lambda e'.\sem{e'}$ preserves the measures of the values, and hence
+	% \[
+	% 	\bigsemstep{e : \tau}{k+1}(a) \leq \bigsemstep{e : \tau}{k+2}(b).
+	% \]
+
+	% \textbf{Case 2:} Let $a \in N$ and $b \in V$. Applying $\lambda e'.\sem{e'}$ to $\bigsemstep{e}{k+1}$ preserves the measure of the value $b$ in $\bigsemstep{e}{k+2}$, and hence
+	% \[
+	% 	\bigsemstep{e : \tau}{k+1}(b) = \bigsemstep{e : \tau}{k+2}(b).
+	% \]
+
+	% \textbf{Case 3:} Let $a \in V$ and $b \in N$. Impossible since values cannot turn into non-values.
+
+	% \textbf{Case 4:} Let $a \in N$ and $b \in N$. This breaks down further into subcases. Applying $\lambda e'.\sem{e'}$ to $\bigsemstep{e}{k+1}$, either $b \in V$ or $b \in N$. We can discard the latter case as no values are involved. For the former case, 
+	% \[
+	% 	\bigsemstep{e : \tau}{k+1}(b) \leq \bigsemstep{e : \tau}{k+2}(b).
+	% \]
+	% In any case, we obtain $\bigsemstep{e : \tau}{k+1}(b) \leq \bigsemstep{e : \tau}{k+2}(b)$, proving the inductive step.
 
 \end{proof}
 
-Given $e : \tau \in Expr_{\tau}$ and $n\in\Nats$, define $\bigsemstepterm{e : \tau}{n} = \lambda \measset. \bigsemstep{e : \tau}{n}(\measset \setminus \nonvals)$. 
+Given $e : \tau \in Expr_{\tau}$ and $n\in\Nats$, define $\bigsemstepterm{e : \tau}{n} = \lambda \measset. \bigsemstep{e : \tau}{n}(\measset \setminus N)$. 
 
-The above statement states that among all possible results after $n$ steps, only count the ones that are values.
+The above statement states that among all possible results after $n$ steps, only count the ones that are values or error.
 
 \begin{definition}[Big-Step Semantics of Expressions]
 	Let $e : \tau \in Expr_{\tau}$. The \emph{big-step semantics of $\expr$} is 
@@ -1970,16 +2022,16 @@ The above statement states that among all possible results after $n$ steps, only
 	\[
 		\bigsem{e : \tau} = \lim_{n \to \infty} \lambda \measset.
 		%
-		\bigsemstepterm{e : \tau}{n}.
+		\bigsemstepterm{e : \tau}{n}(A).
 	\]
 \end{definition}
 
 \begin{lemma}[Existence of the big-step limit]
-	The pointwise limit exists.
+	The pointwise limit for $\bigsem{e : \tau}$ exists.
 \end{lemma}
 
 \begin{proof}
-	By Lemma~\ref{lem:bigstepsem1}, the sequence $\bigsemstep{e : \tau}{n}$ is monotonically increasing. Moreover, $\bigsemstep{e : \tau}{n}$ defines a subprobability measure, and thus $\bigsemstep{e : \tau}{n} \leq 1$ for every $n \in \Nats$. Thus, by the monotone convergence theorem, the pointwise limit exists.
+	By Lemmas~\ref{lem:bigstepsem1} and~\ref{lem:bigstepsem2}, the sequence $\bigsemstep{e : \tau}{n}$ is monotonically increasing for values and error. Moreover, $\bigsemstep{e : \tau}{n}$ defines a subprobability measure, and thus $\bigsemstep{e : \tau}{n} \leq 1$ for every $n \in \Nats$. Thus, by the monotone convergence theorem, the pointwise limit exists.
 \end{proof}
 
 \begin{definition}[Big-step pairing semantics]
@@ -1993,11 +2045,91 @@ The above statement states that among all possible results after $n$ steps, only
 			\bigsemstep{e : \tau, e' : \tau'}{n-1} \monbind  \lambda (f,f'). \sem{f : \tau, f' : \tau'} & \text{if $n > 0$}~.
 		\end{cases}
 	\]
+	Given $(e : \tau, e' : \tau') \in \relation_{\tau}(e,e')$ and $n \in \Nats$, define $\bigsemstepterm{e : \tau, e' : \tau'}{n} = \lambda (\measset \times \measset). \bigsemstep{e : \tau}{n}((A \times A) \setminus (\nonvals \times \nonvals))$. 
 
 	Let $(e : \tau, e' : \tau')$ such that $\relation_{\tau}(e,e')$. The big-step semantics of $(e,e')$ is:
 	\[
-	\bigsem{e : \tau, e' : \tau'} = \lim_{n \to \infty} \lambda \measset.\bigsemstepterm{e : \tau, e' : \tau'}{n}.
+	\bigsem{e : \tau, e' : \tau'} = \lim_{n \to \infty} \lambda (\measset \times \measset).\bigsemstepterm{e : \tau, e' : \tau'}{n}(\measset \times \measset).
 	\]
 \end{definition}
 
-Because the big-step semantics is defined from the small-step semantics, they are equivalent by construction for terminating computations.
+\begin{lemma}[Basic properties of $\bigsemstep{\cdot, \cdot}{n}$]
+	Let $(e : \tau, e' : \tau') \in \relation_{\tau}$ and $n \in \mathbb{N}$. Let $V \times V$ be the measurable set of value pairs. We have:
+	\begin{enumerate}
+		\item\label{lem:bigstepsem1-pairing} $\bigsemstep{e : \tau, e' : \tau'}{n}(V \times V) \leq \bigsemstep{e : \tau, e' : \tau'}{n+1}(V \times V)$
+		\item\label{lem:bigstepsem2-pairing} $\bigsemstep{e : \tau, e' : \tau'}{n}(\bot) \leq \bigsemstep{e : \tau, e' : \tau'}{n+1}(\bot)$
+	\end{enumerate}
+\end{lemma}
+
+\begin{proof}
+	By induction on $n$. Similar to proof for single case.
+\end{proof}
+
+\begin{lemma}[Existence of the big-step limit]
+	The pointwise limit for $\bigsem{e : \tau, e' : \tau'}$ exists.
+\end{lemma}
+
+\begin{proof}
+	By monotone convergence theorem, via Lemmas~\ref{lem:bigstepsem1-pairing} and~\ref{lem:bigstepsem2-pairing}. Similar to proof for single case.
+\end{proof}
+
+\begin{definition}[Projection functions for big-step]
+	Let $(E_1, \Sigma_1)$ and $(E_2, \Sigma_2)$ be measurable spaces, and let $\bigsem{e,e'} \in \mathcal{D}(E_1 \times E_2)$. We define the first and second projection measures as:
+	\begin{enumerate}
+		\item $\pi_1(\bigsem{e,e'})(A) := \bigsem{e,e'}(A \times E_2)$ for every measurable $A \in \Sigma_1$
+		\item $\pi_2(\bigsem{e,e'})(B) := \bigsem{e,e'}(E_1 \times B)$ for every measurable $B \in \Sigma_2$
+	\end{enumerate}
+	Then, $\pi_1(\bigsem{e,e'})$ is a measure on $(E_1, \Sigma_1)$ and $\pi_2(\bigsem{e,e'})$ is a measure on $(E_2, \Sigma_2)$.
+\end{definition}
+
+\begin{lemma}[Continunity of projections]
+	For all $n \in \Nats$,
+	\begin{enumerate}
+		\item $\pi_1(\lim_{n \to \infty} \bigsemstep{e,e'}{n}) = \lim_{n \to \infty} \pi_1(\bigsemstep{e,e'}{n})$
+		\item $\pi_2(\lim_{n \to \infty} \bigsemstep{e,e'}{n}) = \lim_{n \to \infty} \pi_2(\bigsemstep{e,e'}{n})$ 
+	\end{enumerate}
+\end{lemma}
+
+\begin{proof}
+	We prove part i) in detail; the proof of part ii) is analogous. Fix an aribitrary measurable $A \in \Sigma_1$:
+	\begin{align*}
+		&\pi_1(\lim_{n \to \infty} \bigsemstep{e,e'}{n})(A) \\
+		&= \lim_{n \to \infty} \bigsemstep{e,e'}{n}(A \times X_2) \quad \text{(by defintion of $\pi_1$)}\\
+		&= \lim_{n \to \infty} \pi_1(\bigsemstep{e,e'}{n})(A) \quad \text{(by defintion of $\pi_1$)}
+	\end{align*}
+	Since $A$ was arbitrary, this implies:
+	\[
+		\pi_1(\lim_{n \to \infty} \bigsemstep{e,e'}{n}) =  \lim_{n \to \infty} \pi_1(\bigsemstep{e,e'}{n}),
+	\]
+	as desired.
+\end{proof}
+
+\begin{lemma}[n-step projection]
+	For all $n \in \Nats$, 
+	\begin{enumerate}
+		\item $\pi_1(\bigsemstep{e : \tau,e' : \tau'}{n}) = \bigsemstep{e : \tau}{n}$
+		\item $\pi_2(\bigsemstep{e : \tau,e' : \tau'}{n}) = \bigsemstep{e' : \tau'}{n}$
+	\end{enumerate}
+\end{lemma}
+
+\begin{proof}
+	Follows from the small-step projection lemma, since each big-step is defined in terms of small-step.
+\end{proof}
+
+\begin{lemma}[Coupling projection for big-step]
+	Let $\bigsem{e : \tau, e' : \tau'} \in \mathcal{D}(\relation_{\tau} + \bot)$. Then,
+	\begin{enumerate}
+		\item $\pi_1(\bigsem{e : \tau, e' : \tau'}) = \bigsem{e : \tau}$
+		\item $\pi_2(\bigsem{e : \tau, e' : \tau'}) = \bigsem{e' : \tau'}$
+	\end{enumerate}
+\end{lemma}
+
+\begin{proof}
+	\begin{align*}
+		&\pi_1(\bigsem{e : \tau, e' : \tau'}) \\
+		&= \pi_1(\lim_{n \to \infty} \bigsemstep{e : \tau, e' : \tau'}{n}) \quad \text{(by defintion of big-step pairing semantics)} \\
+		&= \lim_{n \to \infty} \pi_1(\bigsemstep{e : \tau, e' : \tau'}{n}) \quad \text{(by communitivity lemma)} \\
+		&= \lim_{n \to \infty} \bigsemstep{e : \tau}{n} \quad \text{(by definition of n-step projection lemma)} \\
+		&= \bigsem{e : \tau} \quad \text{(by definition of big-step semantics)}
+	\end{align*}
+\end{proof}
