@@ -10,25 +10,32 @@
 		$e \colon \tau $ &  $\discretize{e : \tau}$ \\
 		\hline
 		\hline
+		%% variable
 		$ {x : \tau}$ & $x$\\[2ex]
+		%% constant
 		$  {c : \float[B;V]}$ &
 		$  \begin{cases}
 			c & \text{if } B = \top, \\
-			\finconst{k}{n+1} \text{ such that } c \in \intervals{B}_k & \text{if } B \neq \top.
+			\finconst{k}{(|B|+1)} \text{ such that } c \in \intervals{B}_k & \text{if } B \neq \top.
 		\end{cases}$
 		\\[3ex]
+		%% let statement
 		$ {\letkw\; x = e_1 : \tau_1\; \inkw\; e_2 : \tau_2 : \tau_2}$ &
 		$\letkw\; x = \discretize{e_1 : \tau_1}\; \inkw\; \discretize{e_2 : \tau_2}$
 		\\[2ex]
+		%% less than comparison
 		$ {(e_1 : \float[B_1;V_1] < e_2 : \float[B_2;V_2]) : \bool} $&\\ 
-		\qquad $ \text{if } B_1 = B_2 = \{b_1,\ldots,b_n\} $ & $ \discretize{e_1 : \float[B_1;V_1]} \finlt{n+1} \discretize{e_2 : \float[B_2;V_2]} $   \\[2ex]
+		\qquad $ \text{if } B_1 = B_2 \neq \top $ & $ \discretize{e_1 : \float[B_1;V_1]} \finlt{(|B_1|+1)} \discretize{e_2 : \float[B_2;V_2]} $   \\[2ex]
 		\qquad      $ \text{if } B_1 = B_2 =\top$ & $ \discretize{e_1 : \float[B_1;V_1]} < \discretize{e_2 : \float[B_2;V_2]}$\\[2ex]
+		%% less than equal to comparison
 		$ {(e_1 : \float[B_1;V_1] \leq e_2 : \float[B_2;V_2]) : \bool} $&\\ 
-		\qquad $ \text{if } B_1 = B_2 = \{b_1,\ldots,b_n\} $ & $ \discretize{e_1 : \float[B_1;V_1]} \finleq{n+1} \discretize{e_2 : \float[B_2;V_2]} $   \\[2ex]
+		\qquad $ \text{if } B_1 = B_2 \neq \top $ & $ \discretize{e_1 : \float[B_1;V_1]} \finleq{(|B_1|+1)} \discretize{e_2 : \float[B_2;V_2]} $   \\[2ex]
 		\qquad      $ \text{if } B_1 = B_2 =\top$ & $ \discretize{e_1 : \float[B_1;V_1]} \leq \discretize{e_2 : \float[B_2;V_2]}$\\[2ex]
+		%% if-else
 		$ {(\ifkw\; e_1 : \bool\; \thenkw\; e_2 : \tau\; \elsekw\; e_3 : \tau) : \tau}$ &
 		$\ifkw\; \discretize{e_1 : \bool}\; \thenkw\; \discretize{e_2 : \tau}\; \elsekw\; \discretize{e_3 : \tau}$
 		\\[2ex]
+		%% uniform
 		$ {\uniform(e_1 : \float[B_1;V_1], e_2 : \float[B_2;V_2]): \float[B;V]} $&\\ 
 		\qquad $ \text{if } e_1, e_2 \in \mathbb{R}, e_1 > e_2 $ & $\texttt{Error: Uniform $e_1 > e_2$} $   \\[2ex]
 		\qquad      $\text{if } B=\top$ & $\uniform(\discretize{e_1 : \float[B_1;V_1]}, \discretize{e_2 : \float[B_2;V_2]}) $\\[2ex]
@@ -40,8 +47,8 @@
 		&$\text{ where } p_k = \text{CDF}(b_{k+1}) - \text{CDF}(b_k)$
 		\\[2ex]
 		\qquad   $\text{if } B \neq \top, 
-		B_1 = \{b_1,\ldots,b_k\}, 
-		B_2 = \{c_1,\ldots,c_l\},
+		B_1 \neq \top, 
+		B_2 \neq \top,
 		$      \\
 		\qquad   $ 		V_1 = \{v_1, \ldots, v_n\}, 
 		V_2 = \{w_1, \ldots, w_m\}$ &
@@ -49,13 +56,13 @@
 		&$\begin{array}{@{\!\!\!\!\!\!\!}ll}
 			&\letkw \; v_2' = \discretize{e_2 : \float[B_2; V_2]} \; \inkw \\
 			% &\ifkw\; v_1' \fineq{k+1} \finconst{0}{k+1}\; \logand \; v_2' \fineq{l+1} \finconst{0}{l+1}\; \thenkw \\
-			&\ifkw\; v_1' \fineq{k+1} \discretize{v_1 : \floattype{B_1}{v_1}}\; \\
-			&\quad \logand \; v_2' \fineq{l+1} \discretize{w_1 : \floattype{B_2}{w_1}}\; \thenkw \\
+			&\ifkw\; v_1' \fineq{(|B_1|+1)} \discretize{v_1 : \floattype{B_1}{v_1}}\; \\
+			&\quad \logand \; v_2' \fineq{(|B_2|+1)} \discretize{w_1 : \floattype{B_2}{w_1}}\; \thenkw \\
 			&\quad \quad \discretize{\uniform(v_1, w_1) : \float[B;V]} \\
 			&\vdots \\
 			%&\elsekw\; \ifkw\; v_1' \fineq{k+1} \finconst{i}{k+1}\; \logand \; v_2' \fineq{l+1} \finconst{j}{l+1}\; \thenkw \\
-			&\elsekw\; \ifkw\; v_1' \fineq{k+1} \discretize{v_i : \floattype{B_1}{v_1}}\; \\
-			&\quad \logand \; v_2' \fineq{l+1} \discretize{w_j : \floattype{B_2}{w_j}}\; \thenkw \\
+			&\elsekw\; \ifkw\; v_1' \fineq{(|B_1|+1)} \discretize{v_i : \floattype{B_1}{v_i}}\; \\
+			&\quad \logand \; v_2' \fineq{(|B_2|+1)} \discretize{w_j : \floattype{B_2}{w_j}}\; \thenkw \\
 			&\quad \quad \discretize{\uniform(v_{i+1}, w_{j+1}) : \float[B;V]} \\
 			&\vdots \\
 			&\elsekw \\
