@@ -24,13 +24,13 @@
 		$\letkw\; x = \discretize{e_1 : \tau_1}\; \inkw\; \discretize{e_2 : \tau_2}$
 		\\[2ex]
 		%% less than comparison
-		$ {(e_1 : \float[B_1;V_1] < e_2 : \float[B_2;V_2]) : \bool} $&\\ 
-		\qquad $ \text{if } B_1 = B_2 \neq \top $ & $ \discretize{e_1 : \float[B_1;V_1]} \finlt{(|B_1|+1)} \discretize{e_2 : \float[B_2;V_2]} $   \\[2ex]
-		\qquad      $ \text{if } B_1 = B_2 =\top$ & $ \discretize{e_1 : \float[B_1;V_1]} < \discretize{e_2 : \float[B_2;V_2]}$\\[2ex]
+		$ {(e_1 : \float[B;V_1] < e_2 : \float[B;V_2]) : \bool} $&\\ 
+		\qquad $ \text{if } B \neq \top $ & $ \discretize{e_1 : \float[B;V_1]} \finlt{(|B|+1)} \discretize{e_2 : \float[B;V_2]} $   \\[2ex]
+		\qquad      $ \text{if } B =\top$ & $ \discretize{e_1 : \float[B;V_1]} < \discretize{e_2 : \float[B;V_2]}$\\[2ex]
 		%% less than equal to comparison
-		$ {(e_1 : \float[B_1;V_1] \leq e_2 : \float[B_2;V_2]) : \bool} $&\\ 
-		\qquad $ \text{if } B_1 = B_2 \neq \top $ & $ \discretize{e_1 : \float[B_1;V_1]} \finleq{(|B_1|+1)} \discretize{e_2 : \float[B_2;V_2]} $   \\[2ex]
-		\qquad      $ \text{if } B_1 = B_2 =\top$ & $ \discretize{e_1 : \float[B_1;V_1]} \leq \discretize{e_2 : \float[B_2;V_2]}$\\[2ex]
+		$ {(e_1 : \float[B;V_1] \leq e_2 : \float[B;V_2]) : \bool} $&\\ 
+		\qquad $ \text{if } B \neq \top $ & $ \discretize{e_1 : \float[B;V_1]} \finleq{(|B|+1)} \discretize{e_2 : \float[B;V_2]} $   \\[2ex]
+		\qquad      $ \text{if } B =\top$ & $ \discretize{e_1 : \float[B;V_1]} \leq \discretize{e_2 : \float[B;V_2]}$\\[2ex]
 		%% if-else
 		$ {(\ifkw\; e_1 : \bool\; \thenkw\; e_2 : \tau\; \elsekw\; e_3 : \tau) : \tau}$ &
 		$\ifkw\; \discretize{e_1 : \bool}\; \thenkw\; \discretize{e_2 : \tau}\; \elsekw\; \discretize{e_3 : \tau}$
@@ -195,7 +195,7 @@ We conclude this section by extending the discretization function $\discretize{\
 	\begin{align*}
 		\discretize{\tau} &= 
 		\begin{cases}
-			\fin{n+1} & \text{if } \tau = \float[B; V] \text{ and } B = \{\sim_1\!\!b_1, \ldots, \sim_n\!\!b_n\} \\[0.5em]
+			\fin{|B|+1} & \text{if } \tau = \float[B; V] \text{ and } B \neq \top \\[0.5em]
 			\float & \text{if } \tau = \float[B; V] \text{ and } B = \top \\[0.5em]
 			\discretize{A} \to \discretize{B} & \text{if } \tau = A \to B \\[0.5em]
 			\discretize{A} \times \discretize{B} & \text{if } \tau = A \times B \\[0.5em]

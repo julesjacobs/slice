@@ -36,7 +36,7 @@
         {\Gamma \vdash e_1 : \float[B; V_1] \mid C_1 \and \Gamma \vdash e_2 : \float[B; V_2] \mid C_2}
         {\Gamma \vdash e_1 \leq e_2 : \bool \mid C_1, C_2, \answersleq{B}{V_1}{V_2}}
 
-        \inferrule[\textsc{Let}]
+        \inferrule[\textsc{TLet}]
         {\Gamma \vdash e_1 : \tau_1 \mid C_1 \\
          \Gamma, x: \tau_1 \vdash e_2 : \tau_2 \mid C_2}
         {\Gamma \vdash \letkw \; x = e_1 \; \inkw \; e_2 : \tau_2 \mid C_1, C_2}

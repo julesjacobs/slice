@@ -759,7 +759,7 @@ We can equip this measurable space with a (sub)probability measure such that $\m
 
 We give some basic lemmas:
 \begin{lemma}
-	Let $(Expr + \bot, \mathcal{F}_{Expr + \bot})$ be the measurable space of expressions with error from Definition~\ref{def:meas-space-with-error}. Let $V \subset Expr$ be the measurable set of all value expressions. Let $N \subset Expr$, defined as $N = Expr \setminus V$, be the measurabale set of non-value expressions.
+	Let $(Expr + \bot, \mathcal{F}_{Expr + \bot})$ be the measurable space of expressions with error from Definition~\ref{def:meas-space-with-error}. Let $V \subset Expr$ be the set of all value expressions. Let $N \subset Expr$, defined as $N = Expr \setminus V$, be the set of non-value expressions. Let $\{\bot\}$ be the singleton set containing the error element $\bot$. The following are true:
 	\begin{enumerate}
 		\item The set $\vals$ is measurable.
 		\item The set $\{\bot\}$ is measurable.
@@ -782,7 +782,7 @@ We give some basic lemmas:
 \subsection{Small-step semantics}
 
 \subsubsection{Small-step semantics for $e : \tau$. $Expr_{\tau} \to \mathcal{D}(Expr_{\tau} + \bot)$.}
-We assume the expressions are well-typed. Since we assume all expressions are well-typed, we do not need to explicitly consider cases where type checking fails. Moreover, certain constructs in our language are only applicable to specific types, which we indicate by explicit type constraints in such semantic rules.
+We assume the expressions are well-typed. Since we assume all expressions are well-typed, we do not need to explicitly consider cases where type checking fails. Moreover, certain constructs in our language are only applicable to specific types, which we indicate by explicit type constraints in the semantic rules.
 {
 \footnotesize
 \allowdisplaybreaks
@@ -811,7 +811,7 @@ We assume the expressions are well-typed. Since we assume all expressions are we
 		\sem{ e_2 : \tau_2 } \gg\!= \lambda f. \sem{ v_1 : \tau_1 < f : \bool} \quad &\text{ if } e_1 = v_1, e_2 \neq v_2 \\
 		\sem{ e_1 : \tau_1 } \gg\!= \lambda f. \sem{ f < e_2 : \tau_2 : \bool} \quad &\text{ otherwise } \\
 	\end{cases} \\
-	&\text{where } \tau_1 = \floattype{B_1}{V_1}, \tau_2 = \floattype{B_2}{V_2} \\
+	&\text{where } \tau_1 = \floattype{B}{V_1}, \tau_2 = \floattype{B}{V_2} \\
 	%%
 	%% less than - finite
 	%%
@@ -835,8 +835,8 @@ We assume the expressions are well-typed. Since we assume all expressions are we
 	%%
 	%% discrete
 	%%
-	\sem{ \discrete(v_0, \ldots, v_n) : \tau } &= \begin{cases}
-		\text{Discrete}{(v_0, \ldots, v_n)} \quad &\text{ if } \sum_i v_i = 1 \\
+	\sem{ \discrete(v_0, \ldots, v_{n-1}) : \tau } &= \begin{cases}
+		\text{Discrete}{(v_0, \ldots, v_{n-1})} \quad &\text{ if } \sum_i v_i = 1 \\
 		\delta_{\bot} \quad &\text{ otherwise }
 	\end{cases} \\
 	&\text{where } \tau = \fin{n} \\
@@ -854,16 +854,20 @@ We assume the expressions are well-typed. Since we assume all expressions are we
 }
 
 \subsubsection{\dc}
-To model the discretization behavior when $B \neq \top$ for the uniform distribution in the discretization function, we introduce a new construct called \dc. We define:
+To model the discretization behavior when $B \neq \top$ for the uniform distribution in the discretization function, we introduce a new construct called \dc. We give the following definition:
 
-\begin{align*}
-	&\discretize{\uniform(e_1 : \floattype{B_1}{V_1}, e_2 : \floattype{B_2}{V_2}) : \floattype{B}{V}} \\
-	&= \dc(\discretize{e_1 : \floattype{B_1}{V_1}},\discretize{e_2 : \floattype{B_2}{V_2}})
-\end{align*}
+\begin{definition}[Discretization of uniform when $B \neq \top$]
+	Let $B \neq \top$, $B_1 \neq \top$, and $B_2 \neq \top$ be finite cut sets. Let $V_1 = \{v_1, \ldots, v_n\} \neq \top$, and $V_2 = \{w_1, \ldots, w_m\} \neq \top$ be finite value sets. Then, the discretization of the uniform distribution can be given as:
 
-where $B \neq \top$, $V_1 = \{v_1, \ldots, v_n\} \neq \top$, and $V_2 = \{w_1, \ldots, w_m\} \neq \top$.
+	\begin{align*}
+		&\discretize{\uniform(e_1 : \floattype{B_1}{V_1}, e_2 : \floattype{B_2}{V_2}) : \floattype{B}{V}} \\
+		&= \dc(\discretize{e_1 : \floattype{B_1}{V_1}},\discretize{e_2 : \floattype{B_2}{V_2}}).
+	\end{align*}
 
-We give a typing rule for this new construct:
+	where $\dc$ implements the behavior of $\discretize{\uniform(e_1 : \floattype{B_1}{V_1}, e_2 : \floattype{B_2}{V_2}) : \floattype{B}{V}}$ defined in the discretization function.
+\end{definition}
+
+We give a typing rule for \dc:
 \begin{align*}
 	\inferrule[\textsc{TDiscreteCase}]
 	{e_1 : \fin{|B_1| + 1} \\
@@ -871,25 +875,7 @@ We give a typing rule for this new construct:
 	{\dc(e_1, e_2) : \fin{|B|+1}}
 \end{align*}
 
-Now the semantics is as follows:
-
-Old:
-{
-\begin{align*}
-	&\sem{ \dc(e_1 : \tau_1, e_2 : \tau_2) : \tau} \\
-	&= \begin{cases}
-		\sem{ \discretize{\uniform(v_{i+1}, w_{j+1}) : \floattype{B}{\top}} : \tau } \quad &\text{ if } e_1 = i, e_2 = j \\
-		\sem{ e_2 : \tau_2 } \gg\!= \lambda f. \sem{ \dc(i : \tau_1, f) } \quad &\text{ if } e_1 = i, e_2 \neq j \\
-		\sem{ e_1 : \tau_1 } \gg\!= \lambda f. \sem{ \dc(f, e_2 : \tau_2) } \quad &\text{ otherwise } \\
-	\end{cases} \\
-	&\text{where } \\
-	&\tau = \fin{|B| + 1}, \\
-	&\tau_1 = \fin{|B_1| + 1}, \tau_2 = \fin{|B_2| + 1} \\
-	&V_1 = \{v_1,\ldots,v_n\}, V_2 = \{w_1,\ldots,w_m\} \\
-\end{align*}
-}
-
-New:
+And the semantics is as follows:
 {
 \begin{align*}
 	&\sem{ \dc(e_1 : \tau_1, e_2 : \tau_2) : \tau} \\
@@ -1123,17 +1109,19 @@ New:
 \begin{proof}
 	By induction on the structure of the typing derivation $e : \tau$. We do a case analysis on the last rule used.
 
-		\textbf{Case} constant $v : \tau$, where $\tau = \floattype{B}{V}$. From the semantics, it holds that 
+		\textbf{Case} float constant $v : \floattype{B}{V}$. From the semantics, it holds trivially
 		\[
-			\sem{v : \tau} = \delta_{v : \tau} \in \mathcal{D}(Expr_{\tau} + \bot).
+			\sem{v : \floattype{B}{V}} = \delta_{v : \floattype{B}{V}} \in \mathcal{D}(Expr_{\floattype{B}{V}} + \bot).
 		\]
 
-		\textbf{Case} comparisons $e_1 < e_2 : \bool$. 
+		\textbf{Case} finite constant $\finconst{k}{n} : \fin{n}$. Analogous to float constant.
+
+		\textbf{Case} float less than $e_1 < e_2 : \bool$. 
 		From typing we have 
 		\[
-		\emptyset \vdash e_1 : \float 
+		\emptyset \vdash e_1 : \floattype{B}{V_1} 
 		\qquad\text{and}\qquad 
-		\emptyset \vdash e_2 : \float.
+		\emptyset \vdash e_2 : \floattype{B}{V_2}.
 		\]
 
 		We have the following possibilities:
@@ -1149,12 +1137,12 @@ New:
 		\item At least $e_1$ or $e_2$ is an expression. 
 		Suppose $e_1$ is an expression, then the clause
 		\[
-			\sem{e_1 : \float} \gg\!= \lambda e_1'.\;
-			\sem{e_1' < e_2 : \float : \bool}
+			\sem{e_1 : \floattype{B}{V_1}} \gg\!= \lambda e_1'.\;
+			\sem{e_1' < e_2 : \floattype{B}{V_2} : \bool}
 		\]
 		in the semantics is applied. By the IH,
 		\[
-			\sem{e_1 : \float} \in \mathcal{D}(Expr_{\float} + \bot).
+			\sem{e_1 : \floattype{B}{V_1}} \in \mathcal{D}(Expr_{\floattype{B}{V_1}} + \bot).
 		\]
 		We use the left bind clause with 
 		\[
@@ -1162,24 +1150,24 @@ New:
 		\]
 		which maps
 		\[
-			Expr_{\float} \;\to\; \mathcal{D}(Expr_{\bool} + \bot)
+			Expr_{\floattype{B}{V_1}} \;\to\; \mathcal{D}(Expr_{\bool} + \bot)
 		\]
 		by Lemma~\ref{lem:typed-replacement}.
 
 		By Proposition~\ref{prop:bind-typing}, we conclude
 		\[
-			\sem{e_1 : \float} \gg\!= \lambda e_1'.\;
-			\sem{e_1' < e_2 : \float : \bool} \in \mathcal{D}(Expr_{\bool} + \bot).
+			\sem{e_1 : \floattype{B}{V_1}} \gg\!= \lambda e_1'.\;
+			\sem{e_1' < e_2 : \floattype{B}{V_2} : \bool} \in \mathcal{D}(Expr_{\bool} + \bot).
 		\]
 
 		Now suppose $e_2$ is an expression, then the clause
 		\[
-			\sem{e_2 : \float} \gg\!= \lambda e_2'.\;
-			\sem{e_1 : \float < e_2' : \bool}
+			\sem{e_2 : \floattype{B}{V_2}} \gg\!= \lambda e_2'.\;
+			\sem{e_1 : \floattype{B}{V_1} < e_2' : \bool}
 		\]
 		in the semantics is applied. By the IH,
 		\[
-			\sem{e_2 : \float} \in \mathcal{D}(Expr_{\float} + \bot).
+			\sem{e_2 : \floattype{B}{V_2}} \in \mathcal{D}(Expr_{\floattype{B}{V_2}} + \bot).
 		\]
 		We use the left bind clause with 
 		\[
@@ -1187,16 +1175,18 @@ New:
 		\]
 		which maps
 		\[
-			Expr_{\float} \;\to\; \mathcal{D}(Expr_{\bool} + \bot)
+			Expr_{\floattype{B}{V_2}} \;\to\; \mathcal{D}(Expr_{\bool} + \bot)
 		\]
 		by Lemma~\ref{lem:typed-replacement}. 
 
 		By Proposition~\ref{prop:bind-typing}, we conclude
 		\[
-			\sem{e_2 : \float} \gg\!= \lambda e_2'.\;
-			\sem{e_1 : \float < e_2' : \bool} \in \mathcal{D}(Expr_{\bool} + \bot).
+			\sem{e_2 : \floattype{B}{V_2}} \gg\!= \lambda e_2'.\;
+			\sem{e_1 : \floattype{B}{V_1} < e_2' : \bool} \in \mathcal{D}(Expr_{\bool} + \bot).
 		\]
 		\end{itemize}
+
+		\textbf{Case} finite less than $e_1 \finlt{n} e_2 : \bool$. Analogous to float less than.
 
 		\textbf{Case} if-else $\ifkw \; e_1 \; \thenkw \; e_2 \; \elsekw \; e_3 : \tau$. From typing we have:
 		\[
@@ -1279,33 +1269,33 @@ New:
 			\]
 		\end{itemize}
 
-		\textbf{Case} uniform $\uniform(e_1,e_2) : \float$. 
+		\textbf{Case} uniform $\uniform(e_1,e_2) : \floattype{B}{V}$. 
 		From typing we have 
 		\[
-		\emptyset \vdash e_1 : \float 
+		\emptyset \vdash e_1 : \floattype{B_1}{V_1} 
 		\qquad\text{and}\qquad 
-		\emptyset \vdash e_2 : \float.
+		\emptyset \vdash e_2 : \floattype{B_2}{V_2}.
 		\]
 
 		We have the following possibilities:
 		\begin{itemize}
 		\item If both $e_1 = v_1$ and $e_2 = v_2$ are values, Lemma~\ref{lem:canonical-forms} gives float constants, and either
 		\[
-			\text{Uniform}(v_1,v_2) \in \mathcal{D}(Expr_{\float} + \bot) 
+			\text{Uniform}(v_1,v_2) \in \mathcal{D}(Expr_{\floattype{B}{V}} + \bot) 
 			\quad\text{or}\quad
-			\delta_{\bot} \in \mathcal{D}(Expr_{\float} + \bot)
+			\delta_{\bot} \in \mathcal{D}(Expr_{\floattype{B}{V}} + \bot)
 		\]
 		is returned.
 
 		\item At least $e_1$ or $e_2$ is an expression. 
 		Suppose $e_1$ is an expression, then the clause
 		\[
-			\sem{e_1 : \float} \gg\!= \lambda e_1'.\;
-			\sem{\uniform(e_1',e_2 : \float) : \float}
+			\sem{e_1 : \floattype{B_1}{V_1}} \gg\!= \lambda e_1'.\;
+			\sem{\uniform(e_1',e_2 : \floattype{B_2}{V_2}) : \floattype{B}{V}}
 		\]
 		in the semantics is applied. By the IH,
 		\[
-			\sem{e_1 : \float} \in \mathcal{D}(Expr_{\float} + \bot).
+			\sem{e_1 : \floattype{B_1}{V_1}} \in \mathcal{D}(Expr_{\floattype{B_1}{V_1}} + \bot).
 		\]
 		We use the left bind clause with 
 		\[
@@ -1313,24 +1303,25 @@ New:
 		\]
 		which maps
 		\[
-			Expr_{\float} \;\to\; \mathcal{D}(Expr_{\float} + \bot)
+			Expr_{\floattype{B_1}{V_1}} \;\to\; \mathcal{D}(Expr_{\floattype{B}{V}} + \bot)
 		\]
 		by Lemma~\ref{lem:typed-replacement}.
 
 		By Proposition~\ref{prop:bind-typing}, we conclude
-		\[
-			\sem{e_1 : \float} \gg\!= \lambda e_1'.\;
-			\sem{\uniform(e_1',e_2 : \float) : \float} \in \mathcal{D}(Expr_{\float} + \bot).
-		\]
+		\begin{align*}
+			\sem{e_1 : \floattype{B_1}{V_1}} \gg\!= \lambda e_1'.\;
+			\sem{\uniform(e_1',e_2 : \floattype{B_2}{V_2}) : \float} \\
+			\in \mathcal{D}(Expr_{\floattype{B}{V}} + \bot).
+		\end{align*}
 
 		Now suppose $e_2$ is an expression, then the clause
 		\[
-			\sem{e_2 : \float} \gg\!= \lambda e_2'.\;
-			\sem{\uniform(e_1 : \float, e_2') : \float}
+			\sem{e_2 : \floattype{B_2}{V_2}} \gg\!= \lambda e_2'.\;
+			\sem{\uniform(e_1 : \floattype{B_1}{V_1}, e_2') : \floattype{B}{V}}
 		\]
 		in the semantics is applied. By the IH,
 		\[
-			\sem{e_2 : \float} \in \mathcal{D}(Expr_{\float} + \bot).
+			\sem{e_2 : \floattype{B_2}{V_2}} \in \mathcal{D}(Expr_{\floattype{B_2}{V_2}} + \bot).
 		\]
 		We use the left bind clause with 
 		\[
@@ -1338,15 +1329,16 @@ New:
 		\]
 		which maps
 		\[
-			Expr_{\float} \;\to\; \mathcal{D}(Expr_{\float} + \bot)
+			Expr_{\floattype{B_2}{V_2}} \;\to\; \mathcal{D}(Expr_{\floattype{B}{V}} + \bot)
 		\]
 		by Lemma~\ref{lem:typed-replacement}. 
 
 		By Proposition~\ref{prop:bind-typing}, we conclude
-		\[
-			\sem{e_2 : \float} \gg\!= \lambda e_2'.\;
-			\sem{\uniform(e_1 : \float,e_2') : \float} \in \mathcal{D}(Expr_{\float} + \bot).
-		\]
+		\begin{align*}
+			\sem{e_2 : \floattype{B_2}{V_2}} \gg\!= \lambda e_2'.\;
+			\sem{\uniform(e_1 : \floattype{B_1}{V_1}, e_2') : \floattype{B}{V}} \\
+			\in \mathcal{D}(Expr_{\floattype{B}{V}} + \bot).
+		\end{align*}
 		\end{itemize}
 
 		\textbf{Case} discrete $\discrete(v_0, \ldots, v_n) : \tau$, where $\tau = \fin{n}$. It holds that either:
@@ -1364,7 +1356,11 @@ New:
 		\]  
 		We have the following possibilities:
 		\begin{itemize}
-			\item If both $e_1 = v'$ and $e_2 = w'$ are values, Lemma~\ref{lem:canonical-forms} gives finite constants, and there exists a unique $v_i \in V_1$ such that $\discretize{v_i : \floattype{B_1}{v_i}} = v'$ and a unique $w_j \in V_2$ such that $\discretize{w_j : \floattype{B_2}{w_j}} = w'$. Since $v_i$ and $w_j$ are values and $B \neq \top$, by definition of the discretization function:
+			\item If both $e_1 = v'$ and $e_2 = w'$ are values, then by Lemma~\ref{lem:canonical-forms} they are finite constants, representing discretized values. Since $B_1 \neq \top$ and $B_2 \neq \top$, $v'$ and $w'$ are indices of $\intervals{B_1}$ and $\intervals{B_2}$ respectively, by definition of the discretization function (float constant case).
+
+			By Definition~\ref{def:distinguishes} and the definition of the discretization function (float constant case), the existence of unique values $v_i \in V_1$ and $w_j \in V_2$ such that $\discretize{v_i : \floattype{B_1}{V_1}} = v'$ and $\discretize{w_j : \floattype{B_2}{V_2}} = w'$ is guaranteed.
+
+			Since $v_i$ and $w_j$ are concrete float values and $B \neq \top$, by definition of the discretization function (uniform case where $B \neq \top$ and $e_1,e_2 \in \R$):
 			\[
 				\discretize{\uniform(v_i,w_j) : \floattype{B}{\top}} = \discrete(p_0, \ldots, p_{|B|})
 			\]
@@ -1492,7 +1488,7 @@ We assume the expressions $e, e'$ are well-typed.
 		\sem{ e_1 : \tau_1, \discretize{e_1 : \tau_1} : \discretize{\tau_1}} \gg\!= \lambda (f,f'). \sem{ f < e_2 : \tau_2 : \bool, \\
 		f' < \discretize{e_2 : \tau_2} : \discretize{\tau_2} : \discretize{\bool}} \quad &\text{ otherwise } \\
 	\end{cases} \\
-	&\text{where } \tau_1 = \tau_2 = \floattype{B}{V}, B = \top \\[1cm]
+	&\text{where } \tau_1 = \floattype{B_1}{V_1}, \tau_2 = \floattype{B_2}{V_2}, B_1 = B_2 = \top \\[1cm]
 	%
 	%% less than - fin
 	%
@@ -1506,7 +1502,7 @@ We assume the expressions $e, e'$ are well-typed.
 		\sem{ e_1 : \tau_1, \discretize{e_1 : \tau_1} : \discretize{\tau_1}} \gg\!= \lambda (f,f'). \sem{ f \finlt{n+1} e_2 : \tau_2 : \bool, \\
 		f' \finlt{n+1} \discretize{e_2 : \tau_2} : \discretize{\tau_2} : \bool} \quad &\text{ otherwise } \\
 	\end{cases} \\
-	&\text{where } \tau_1 = \tau_2 = \floattype{B}{V}, B = \{\sim_1\!\!b_1, \ldots, \sim_n\!\!b_n\} \neq \top \\[1cm]
+	&\text{where } \tau_1 = \floattype{B_1}{V_1}, \tau_2 = \floattype{B_2}{V_2}, B_1 = B_2 = \{\sim_1\!\!b_1, \ldots, \sim_n\!\!b_n\} \neq \top \\[1cm]
 	%
 	%% uniform uniform
 	%
@@ -1532,63 +1528,22 @@ We assume the expressions $e, e'$ are well-typed.
 	\end{cases} \\
 		&\text{ where } \tau = \floattype{B}{V}, B = \{\sim_1\!\!b_1, \ldots, \sim_n\!\!b_n\} \neq \top \\[1cm]
 	%
-	%% uniform DiscreteCase (NEW)
+	%% uniform DiscreteCase
 	%
 	&\sem{ \uniform(e_1 : \tau_1, e_2 : \tau_2) : \tau, \\
 	&\dc(\discretize{e_1 : \tau_1} : \discretize{\tau_1}, \discretize{e_2 : \tau_2} : \discretize{\tau_2}) : \discretize{\tau}} \\
 	&= \begin{cases}
 		\sem{ \uniform(v : \tau_1, w : \tau_2) : \tau, \discretize{\uniform(v_i,w_j) : \floattype{B}{\top}} : \discretize{\tau}} \\
-		\text{s.t. } \discretize{v_i : \floattype{B_1}{v_i}} = \discretize{v : \tau_1} \text{ and } \discretize{w_j : \floattype{B_2}{w_j}} = \discretize{w : \tau_2} \quad &\text{ if } e_1 = v, e_2 = w \\
+		\text{s.t. } \discretize{v_i : \floattype{B_1}{v_i}} = \discretize{v : \floattype{B_1}{v}} \\
+		\text{ and } \discretize{w_j : \floattype{B_2}{w_j}} = \discretize{w : \floattype{B_2}{w}} \quad &\text{ if } e_1 = v, e_2 = w \\
 		\sem{e_2 : \tau_2, \discretize{e_2 : \tau_2} : \discretize{\tau_2}} \gg\!= \lambda (f,f').\sem{ \uniform(v : \tau_1, f) : \tau, \\
 		\dc(\discretize{v : \tau_1} : \discretize{\tau_1}, f')} \quad &\text{ if } e_1 = v, e_2 \neq w \\
 		\sem{e_1 : \tau_1, \discretize{e_1 : \tau_1} : \discretize{\tau_1}} \gg\!= \lambda (f,f').\sem{ \uniform(f, e_2 : \tau_2) : \tau, \\
 		\dc(f', \discretize{e_2 : \tau_2} : \discretize{\tau_2})} \quad &\text{ otherwise } \\
 	\end{cases} \\
-	% &\text{where } \\
-	% % definition of DiscreteCase
-	% &\dc(e_1 : \tau_1, e_2 : \tau_2) \\
-	% &= \letkw \; v_1' = \discretize{e_1 : \tau_1} : \discretize{\tau_1} \; \inkw \\
-	% 		&\letkw \; v_2' = \discretize{e_2 : \tau_2} : \discretize{\tau_2} \; \inkw \\
-	% 		&\ifkw\; v_1' \fineq{l+1} \finconst{0}{l+1}\; \logand \; v_2' \fineq{m+1} \finconst{0}{m+1}\; \thenkw \\
-	% 		&\quad \discretize{\uniform(v_1,w_1) : \tau} : \discretize{\tau} \\
-	% 		&\vdots \\
-	% 		&\elsekw\; \ifkw\; v_1' \fineq{l+1} \finconst{i}{l+1}\; \logand \; v_2' \fineq{m+1} \finconst{j}{m+1}\; \thenkw \\
-	% 		&\quad \discretize{\uniform(v_{i+1}, w_{j+1}) : \tau} : \discretize{\tau} \\
-	% 		&\vdots \\
-	% 		&\elsekw \\
-	% 		&\quad \discretize{\uniform(v_r,w_s) : \tau} : \discretize{\tau} \\
 	&\text{where } \tau = \floattype{B}{V}, B \neq \top, \\
 	&\tau_1 = \floattype{B_1}{V_1}, V_1 = \{v_1, \ldots, v_n\}, \\
 	&\tau_2 = \floattype{B_2}{V_2}, V_2 = \{w_1, \ldots, w_m\} \\[1cm]
-	%
-	%% uniform DiscreteCase (OLD)
-	%
-	% &\sem{ \uniform(e_1 : \tau_1, e_2 : \tau_2) : \tau, \\
-	% &\dc(\discretize{e_1 : \tau_1} : \discretize{\tau_1}, \discretize{e_2 : \tau_2} : \discretize{\tau_2}) : \discretize{\tau}} \\
-	% &= \begin{cases}
-	% 	\sem{ \uniform(v : \tau_1, w : \tau_2) : \tau, \\
-	% 	\discretize{\uniform(v'_{\discretize{v : \tau_1} + 1}, w'_{\discretize{w : \tau_2} + 1}) : \floattype{B}{\top}} : \discretize{\tau}} \quad &\text{ if } e_1 = v, e_2 = w \\
-	% 	\sem{e_2 : \tau_2, \discretize{e_2 : \tau_2} : \discretize{\tau_2}} \gg\!= \lambda (f,f').\sem{ \uniform(v : \tau_1, f) : \tau, \\
-	% 	\dc(\discretize{v : \tau_1} : \discretize{\tau_1}, f')} \quad &\text{ if } e_1 = v, e_2 \neq w \\
-	% 	\sem{e_1 : \tau_1, \discretize{e_1 : \tau_1} : \discretize{\tau_1}} \gg\!= \lambda (f,f').\sem{ \uniform(f, e_2 : \tau_2) : \tau, \\
-	% 	\dc(f', \discretize{e_2 : \tau_2} : \discretize{\tau_2})} \quad &\text{ otherwise } \\
-	% \end{cases} \\
-	% % &\text{where } \\
-	% % % definition of DiscreteCase
-	% % &\dc(e_1 : \tau_1, e_2 : \tau_2) \\
-	% % &= \letkw \; v_1' = \discretize{e_1 : \tau_1} : \discretize{\tau_1} \; \inkw \\
-	% % 		&\letkw \; v_2' = \discretize{e_2 : \tau_2} : \discretize{\tau_2} \; \inkw \\
-	% % 		&\ifkw\; v_1' \fineq{l+1} \finconst{0}{l+1}\; \logand \; v_2' \fineq{m+1} \finconst{0}{m+1}\; \thenkw \\
-	% % 		&\quad \discretize{\uniform(v_1,w_1) : \tau} : \discretize{\tau} \\
-	% % 		&\vdots \\
-	% % 		&\elsekw\; \ifkw\; v_1' \fineq{l+1} \finconst{i}{l+1}\; \logand \; v_2' \fineq{m+1} \finconst{j}{m+1}\; \thenkw \\
-	% % 		&\quad \discretize{\uniform(v_{i+1}, w_{j+1}) : \tau} : \discretize{\tau} \\
-	% % 		&\vdots \\
-	% % 		&\elsekw \\
-	% % 		&\quad \discretize{\uniform(v_r,w_s) : \tau} : \discretize{\tau} \\
-	% &\text{where } \tau = \floattype{B}{V}, B \neq \top, \\
-	% &\tau_1 = \floattype{B_1}{V_1}, V_1 = \{v_1', \ldots, v_n'\}, \\
-	% &\tau_2 = \floattype{B_2}{V_2}, V_2 = \{w_1', \ldots, w_m'\} \\[1cm]
 	%
 	%% value
 	%
@@ -1728,7 +1683,7 @@ We assume the expressions $e, e'$ are well-typed.
 		\end{cases}
 	\end{align*}
 	all of which are expressions. In particular, \dc is a let statement.
-\end{proof}
+\end{proof}G
 
 
 \begin{lemma}[Well-defined]
@@ -1848,13 +1803,16 @@ We assume the expressions $e, e'$ are well-typed.
 
 	\textbf{Case} uniform $(\uniform(e_1,e_2) : \tau, \dc(\discretize{e_1}, \discretize{e_2}) : \discretize{\tau}) \in \relation_{\tau}$, where $\tau = \floattype{B}{V}$ and $B \neq \top$. We have the following possibilities:
 	\begin{itemize}
-		\item If $e_1 = v$ and $e_2 = w$, then by Lemma, $\discretize{e_1} = v'$ and $\discretize{e_2} = w'$ are also values. There exists a unique $v_i \in V_1$ such that $\discretize{v_i : \floattype{B_1}{v_i}} = v'$ and a unique $w_j \in V_2$ such that $\discretize{w_j : \floattype{B_2}{w_j}} = w'$. Since $v_i$ and $w_j$ are values and $B \neq \top$, by definition of the discretization function:
+		\item If $e_1 = v$ and $e_2 = w$, then by Lemma, $\discretize{e_1} = v'$ and $\discretize{e_2} = w'$ are also values, namely discretized values where $v' \in \intervals{B_1}$ and $w' \in \intervals{B_2}$. By Lemma~\ref{lem:value-set-soundness}, we know that $e_1 \Downarrow_{p_1} v_i$ and $e_2 \Downarrow_{p_2} w_j$, particularly $v_i = v$ and $w_j = w$ by construction.
+		Since $v_i$ and $w_j$ are values and $B \neq \top$, by definition of the discretization function (uniform case where $B \neq \top$ and $e_1,e_2 \in \R$):
 		\[
 			\discretize{\uniform(v_i,w_j) : \floattype{B}{\top}} = \discrete(p_0, \ldots, p_{|B|})
 		\]
-		where $p_k$ denotes the difference in the CDF of $\uniform(v_i,w_j)$ evaluated at consecutive cuts of $B$. Thus,
+		where $p_k$ denotes the difference in the CDF of $\uniform(v_i,w_j)$ evaluated at consecutive cuts of $B$. 
+		
+		Thus,
 		\[
-			\sem{\uniform(e_1,e_2) : \tau, \discrete(v_0',\ldots,v_n') : \discretize{\tau}} \in \mathcal{D}(\relation_{\float} + \bot),
+			\sem{\uniform(v,w) : \tau, \discrete(p_0',\ldots,p_{|B|}) : \discretize{\tau}} \in \mathcal{D}(\relation_{\float} + \bot),
 		\]
 		for which we proved in the above case.
 		
@@ -2133,3 +2091,7 @@ The above statement states that among all possible results after $n$ steps, only
 		&= \bigsem{e : \tau} \quad \text{(by definition of big-step semantics)}
 	\end{align*}
 \end{proof}
+
+\begin{theorem}[Contextual Equivalence]
+	
+\end{theorem}
