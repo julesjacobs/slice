@@ -313,10 +313,10 @@ All other typing rules are standard and depicted in Figure \ref{fig:typing-gener
     \[
 		\inferrule
 		{\Gamma \vdash e_1 : \bool \\
-		 \Gamma \vdash e_2 : \floattype{B_2}{V_2} \\
-		 \Gamma \vdash e_3 : \floattype{B_3}{V_3} \\
-		 \subtype{\floattype{B_2}{V_2}}{\floattype{B_4}{V_4}} \\
-		 \subtype{\floattype{B_3}{V_3}}{\floattype{B_4}{V_4}}}
+		 \Gamma \vdash e_2 : \floattype{B}{V_2} \\
+		 \Gamma \vdash e_3 : \floattype{B}{V_3} \\
+		 \subtype{\floattype{B}{V_2}}{\floattype{B_4}{V_4}} \\
+		 \subtype{\floattype{B}{V_3}}{\floattype{B_4}{V_4}}}
 		{\Gamma \vdash \ifkw \; e_1 \; \thenkw \; e_2 \; \elsekw \; e_3 : \floattype{B_4}{V_4}}
     \]
     

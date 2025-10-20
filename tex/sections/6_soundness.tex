@@ -1488,21 +1488,21 @@ We assume the expressions $e, e'$ are well-typed.
 		\sem{ e_1 : \tau_1, \discretize{e_1 : \tau_1} : \discretize{\tau_1}} \gg\!= \lambda (f,f'). \sem{ f < e_2 : \tau_2 : \bool, \\
 		f' < \discretize{e_2 : \tau_2} : \discretize{\tau_2} : \discretize{\bool}} \quad &\text{ otherwise } \\
 	\end{cases} \\
-	&\text{where } \tau_1 = \floattype{B_1}{V_1}, \tau_2 = \floattype{B_2}{V_2}, B_1 = B_2 = \top \\[1cm]
+	&\text{where } \tau_1 = \floattype{B}{V_1}, \tau_2 = \floattype{B}{V_2}, B = \top \\[1cm]
 	%
 	%% less than - fin
 	%
 	&\sem{ e_1 : \tau_1 < e_2 : \tau_2 : \bool, \\
-	&\discretize{e_1 : \tau_1} : \discretize{\tau_1} \finlt{n+1} \discretize{e_2 : \tau_2} : \discretize{\tau_2} : \discretize{\bool} } \\
+	&\discretize{e_1 : \tau_1} : \discretize{\tau_1} \finlt{(|B|+1)} \discretize{e_2 : \tau_2} : \discretize{\tau_2} : \discretize{\bool} } \\
 	&= \begin{cases}
 		\delta_{(\true : \bool, \true : \bool)} \quad &\text{ if } e_1 = v_1, e_2 = v_2, v_1 < v_2 \\
 		\delta_{(\false : \bool, \false : \bool)} \quad &\text{ if } e_1 = v_1, e_2 = v_2, v_1 \geq v_2 \\
 		\sem{ e_2 : \tau_2, \discretize{e_2 : \tau_2} : \discretize{\tau_2} } \gg\!= \lambda (f,f'). \sem{ v_1 : \tau_1 < f : \bool, \\
-		\discretize{v_1} : \discretize{\tau_1} \finlt{n+1} f' : \bool } \quad &\text{ if } e_1 = v_1, e_2 \neq v_2 \\
-		\sem{ e_1 : \tau_1, \discretize{e_1 : \tau_1} : \discretize{\tau_1}} \gg\!= \lambda (f,f'). \sem{ f \finlt{n+1} e_2 : \tau_2 : \bool, \\
-		f' \finlt{n+1} \discretize{e_2 : \tau_2} : \discretize{\tau_2} : \bool} \quad &\text{ otherwise } \\
+		\discretize{v_1} : \discretize{\tau_1} \finlt{(|B|+1)} f' : \bool } \quad &\text{ if } e_1 = v_1, e_2 \neq v_2 \\
+		\sem{ e_1 : \tau_1, \discretize{e_1 : \tau_1} : \discretize{\tau_1}} \gg\!= \lambda (f,f'). \sem{ f \finlt{(|B|+1)} e_2 : \tau_2 : \bool, \\
+		f' \finlt{(|B|+1)} \discretize{e_2 : \tau_2} : \discretize{\tau_2} : \bool} \quad &\text{ otherwise } \\
 	\end{cases} \\
-	&\text{where } \tau_1 = \floattype{B_1}{V_1}, \tau_2 = \floattype{B_2}{V_2}, B_1 = B_2 = \{\sim_1\!\!b_1, \ldots, \sim_n\!\!b_n\} \neq \top \\[1cm]
+	&\text{where } \tau_1 = \floattype{B}{V_1}, \tau_2 = \floattype{B}{V_2}, B \neq \top \\[1cm]
 	%
 	%% uniform uniform
 	%
@@ -1521,12 +1521,12 @@ We assume the expressions $e, e'$ are well-typed.
 	%% uniform discrete
 	%
 	&\sem{ \uniform(e_1 : \tau_1, e_2 : \tau_2) : \tau, \\
-	&\discrete(v_0', \ldots, v_n') : \discretize{\tau}} \\
+	&\discrete(v_0', \ldots, v_{|B|}') : \discretize{\tau}} \\
 	&= \begin{cases}
 		\text{Uniform}(v_1, v_2) \gg\!= \lambda v.\delta_{(v, i)} \text{ s.t. } v \in \intervals{B}_i \quad &\text{ if } e_1 = v_1, e_2 = v_2, v_1 \leq v_2 \\
 		\delta_{\bot} \quad &\text{ if } e_1 = v_1, e_2 = v_2, v_1 > v_2 \\
 	\end{cases} \\
-		&\text{ where } \tau = \floattype{B}{V}, B = \{\sim_1\!\!b_1, \ldots, \sim_n\!\!b_n\} \neq \top \\[1cm]
+		&\text{ where } \tau = \floattype{B}{V}, B \neq \top \\[1cm]
 	%
 	%% uniform DiscreteCase
 	%
@@ -1550,79 +1550,9 @@ We assume the expressions $e, e'$ are well-typed.
 	&\sem{ v : \tau, \\
 	&\discretize{v : \tau} : \discretize{\tau} } \\
 	&= \delta_{(v : \tau, \discretize{v : \tau} : \discretize{\tau})} \\
-	&\text{where } \tau = \floattype{B}{V}, B = \top \text{ or } B = \{\sim_1\!\!b_1, \ldots, \sim_n\!\!b_n\} \\
+	&\text{where } \tau = \floattype{B}{V}, B = \top \text{ or } B \neq \top \\
 \end{align*}
 }
-
-\begin{example}
-	Consider the following expression $e : \tau$:
-	\begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
-	uniform(0, 
-		(if (uniform(0,1) : !{\ft{<0.5}}!) < (0.5 : !{\ftb{<0.5}{0.5}}!) 
-		then (1.0 : !{\ftb{<=1,<=2}{1}}!) else (2.0 : !{\ftb{<=1,<=2}{2}}!))
-		: !{\ftb{<=1,<=2}{1,2}}!) : !{\ft{<0.5}}!
-	< 0.5 : !{\ftb{<0.5}{0.5}}!
-	\end{lstlisting}
-
-	The pairing semantics gives the following. We omit the insignificant types:
-	{
-	\allowdisplaybreaks
-	\begin{align*}
-		&\sem{ \uniform(0 : \tau_1, (\ifkw \; \uniform(0,1) < 0.5 \; \thenkw \; 1.0 \; \elsekw \; 2.0) : \tau_2) : \tau < 0.5, \\
-		&\letkw \; v_1' = \finconst{0}{2} \; \inkw \\
-		&\letkw \; v_2' = \ifkw \; \discrete(0.5, 0.5) \finlt{2} \finconst{1}{2} \; \thenkw \; \finconst{0}{3} \; \elsekw \; \finconst{1}{3} \; \inkw \\
-		&\ifkw \; v_1' \fineq{2} \finconst{0}{2} \; \&\& \; v_2' \fineq{3} \finconst{0}{3} \; \thenkw \\
-		&\discrete(0.5,0.5) \\
-		&\elsekw \\
-		&\discrete(0.25,0.75) \finlt{2} \finconst{1}{2}} \\
-		&\text{where } \tau = \floattype{\{\clt{0.5}\}}{\top}, \tau_1 = \floattype{\{\cleq{0}\}}{0}, \tau_2 = \floattype{\{\cleq{1}, \cleq{2}\}}{1,2} \\
-		&\text{and hence, } B = \{\clt{0.5}\}, V = \top, B_1 = \{\cleq{0}\}, V_1 = \{0\}, B_2 = \{\cleq{1}, \cleq{2}\}, V_2 = \{1,2\} \\[1cm]
-		%%%
-		&= \sem{\uniform(0 : \tau_1, (\ifkw \; \uniform(0,1) < 0.5 \; \thenkw \; 1.0 \; \elsekw \; 2.0) : \tau_2) : \tau, \\
-		&\letkw \; v_1' = \finconst{0}{2} \; \inkw \\
-		&\letkw \; v_2' = \ifkw \; \discrete(0.5, 0.5) \finlt{2} \finconst{1}{2} \; \thenkw \; \finconst{0}{3} \; \elsekw \; \finconst{1}{3} \; \inkw \\
-		&\ifkw \; v_1' \fineq{2} \finconst{0}{2} \; \&\& \; v_2' \fineq{3} \finconst{0}{3} \; \thenkw \\
-		&\discrete(0.5,0.5) \\
-		&\elsekw \\
-		&\discrete(0.25,0.75)} \gg\!= \lambda (f,f').\sem{f < 0.5, f' \finlt{2} \finconst{1}{2}} \\[1cm]
-		%%%
-		&= \sem{\uniform(0 : \tau_1, (\ifkw \; \uniform(0,1) < 0.5 \; \thenkw \; 1.0 \; \elsekw \; 2.0) : \tau_2) : \tau, \\
-		&\dc(\finconst{0}{2}, \ifkw \; \discrete(0.5, 0.5) \finlt{2} \finconst{1}{2} \; \thenkw \; \finconst{0}{3} \; \elsekw \; \finconst{1}{3})} \\
-		&\gg\!= \lambda (f,f').\sem{f < 0.5, f' \finlt{2} \finconst{1}{2}} \\[1cm]
-		%%%
-		&= \sem{\ifkw \; \uniform(0,1) < 0.5 \; \thenkw \; 1.0 \; \elsekw \; 2.0 : \tau_2, \\
-		&\ifkw \; \discrete(0.5, 0.5) \finlt{2} \finconst{1}{2} \; \thenkw \; \finconst{0}{3} \; \elsekw \; \finconst{1}{3}} \\
-		&\gg\!= \lambda (g,g').\sem{\uniform(0 : \tau_1, g) : \tau, \dc(\finconst{0}{2}, g')}\\
-		&\gg\!= \lambda (f,f').\sem{f < 0.5, f' \finlt{2} \finconst{1}{2}} \\[1cm]
-		%%%
-		&= (0.5 \cdot \delta_{(1.0,\finconst{0}{3})} + 0.5 \cdot \delta_{(2.0,\finconst{1}{3})}) \\
-		&\gg\!= \lambda (g,g').\sem{\uniform(0 : \tau_1, g) : \tau, \dc(\finconst{0}{2}, g')}\\
-		&\gg\!= \lambda (f,f').\sem{f < 0.5, f' \finlt{2} \finconst{1}{2}} \\[1cm]
-		%%%
-		&= 0.5 \cdot \sem{\uniform(0,1.0) : \tau, \dc(\finconst{0}{2},\finconst{0}{3})} \\
-		&+ 0.5 \cdot \sem{\uniform(0,2.0) : \tau, \dc(\finconst{0}{2},\finconst{1}{3})} \\
-		&\gg\!= \lambda (f,f').\sem{f < 0.5, f' \finlt{2} \finconst{1}{2}} \\[1cm]
-		%%%
-		&= 0.5 \cdot \sem{\uniform(0,1.0) : \tau, \discretize{\uniform(0,1) : \floattype{B}{\top}}} \\
-		&+ 0.5 \cdot \sem{\uniform(0,2.0) : \tau, \discretize{\uniform(0,2) : \floattype{B}{\top}}} \\
-		&\gg\!= \lambda (f,f').\sem{f < 0.5, f' \finlt{2} \finconst{1}{2}} \\
-		&\text{since } \discretize{0 : \floattype{B_1}{0}} = \finconst{0}{2}, \discretize{1 : \floattype{B_2}{1}} = \finconst{0}{3}, \discretize{2 : \floattype{B_2}{2}} = \finconst{1}{3} \\[1cm]
-		%%%
-		&= 0.5 \cdot \sem{\uniform(0,1.0) : \tau, \discrete(0.5, 0.5)} \\
-		&+ 0.5 \cdot \sem{\uniform(0,2.0) : \tau, \discrete(0.25,0.75)} \\
-		&\gg\!= \lambda (f,f').\sem{f < 0.5, f' \finlt{2} \finconst{1}{2}} \\[1cm]
-		%%%
-		&= 0.5 \cdot (\text{Uniform}(0,1) \gg\!= \lambda v.\delta_{(v,i)} \text{ s.t. } v \in \intervals{\{<0.5\}}_i) \\
-		&+ 0.5 \cdot (\text{Uniform}(0,2) \gg\!= \lambda v.\delta_{(v,i)} \text{ s.t. } v \in \intervals{\{<0.5\}}_i) \\
-		&\gg\!= \lambda (f,f').\sem{f < 0.5, f' \finlt{2} \finconst{1}{2}} \\[1cm]
-		%%%
-		&= 0.5 \cdot (0.5 \cdot \delta_{(\true,\true)} + 0.5 \cdot \delta_{(\false,\false)}) \\
-		&+ 0.5 \cdot (0.25 \cdot \delta_{(\true,\true)} + 0.75 \cdot \delta_{(\false,\false)}) \\[1cm]
-		&= 0.375 \cdot \delta_{(\true,\true)} + 0.625 \cdot \delta_{(\false,\false)} 
-	\end{align*}
-	}
-
-\end{example}
 
 \subsubsection{Lemmas for $e,e'$}
 
@@ -1683,7 +1613,7 @@ We assume the expressions $e, e'$ are well-typed.
 		\end{cases}
 	\end{align*}
 	all of which are expressions. In particular, \dc is a let statement.
-\end{proof}G
+\end{proof}
 
 
 \begin{lemma}[Well-defined]
@@ -1803,7 +1733,12 @@ We assume the expressions $e, e'$ are well-typed.
 
 	\textbf{Case} uniform $(\uniform(e_1,e_2) : \tau, \dc(\discretize{e_1}, \discretize{e_2}) : \discretize{\tau}) \in \relation_{\tau}$, where $\tau = \floattype{B}{V}$ and $B \neq \top$. We have the following possibilities:
 	\begin{itemize}
-		\item If $e_1 = v$ and $e_2 = w$, then by Lemma, $\discretize{e_1} = v'$ and $\discretize{e_2} = w'$ are also values, namely discretized values where $v' \in \intervals{B_1}$ and $w' \in \intervals{B_2}$. By Lemma~\ref{lem:value-set-soundness}, we know that $e_1 \Downarrow_{p_1} v_i$ and $e_2 \Downarrow_{p_2} w_j$, particularly $v_i = v$ and $w_j = w$ by construction.
+		\item If $e_1 = v$ and $e_2 = w$, then by Lemma~\ref{lem:form-preservation}, $\discretize{v} = v'$ and $\discretize{w} = w'$ are also values, namely discretized values where $v'$ and $w'$ are indices of $\intervals{B_1}$ and $\intervals{B_2}$, by definition of the discretization function (float constant case). 
+		
+		By Definition~\ref{def:distinguishes} and the definition of the discretization function (float constant case), the existence of unique values $v_i \in V_1$ and $w_j \in V_2$ such that $\discretize{v_i : \floattype{B_1}{V_1}} = v'$ and $\discretize{w_j : \floattype{B_2}{V_2}} = w'$ is guaranteed. 
+		
+		By Lemma~\ref{lem:value-set-soundness}, we know that $e_1 \Downarrow_{p_1} v_i$ and $e_2 \Downarrow_{p_2} w_j$, and in particular, $v_i = v$ and $w_j = w$ by construction.
+
 		Since $v_i$ and $w_j$ are values and $B \neq \top$, by definition of the discretization function (uniform case where $B \neq \top$ and $e_1,e_2 \in \R$):
 		\[
 			\discretize{\uniform(v_i,w_j) : \floattype{B}{\top}} = \discrete(p_0, \ldots, p_{|B|})
@@ -1830,7 +1765,28 @@ We assume the expressions $e, e'$ are well-typed.
 	Then, $\pi_1(\sem{e,e'})$ is a measure on $(E_1, \Sigma_1)$ and $\pi_2(\sem{e,e'})$ is a measure on $(E_2, \Sigma_2)$.
 \end{definition}
 
-\begin{lemma}[Small-step projection]
+\begin{lemma}[Bind-projection identity]\label{lem:bind-proj}
+	For any product-measure-valued $\mu$ and any kernel $f$ that for each product-point returns a product measure,
+	\[
+		\pi_1(\mu \gg\!= f) = \pi_1(\mu) \gg\!= (x \mapsto \pi_1(f(x, \cdot))).
+	\]
+\end{lemma}
+
+Informally, this lemma states that first marginal of a bind is the bind of the first marginal against the first marginal of the continuation.
+
+\begin{proof}
+	For any measurable set $A$,
+	\begin{align*}
+		&\pi_1(\mu \gg\!= k)(A) \\
+		&= (\mu \gg\!= k)(A \times Y) \quad \text{(by def of $\pi_1$)} \\
+		&= \int k((x,x'))(A \times Y) \mu(d(x,x')) \quad \text{(by def of bind)} \\
+		&= \int \pi_1(k((x,x')))(A) \mu(d(x,x')) \quad \text{(by def of $\pi_1$)} \\
+		&= (\pi_1 \mu) \gg\!= (x \mapsto \pi_1(k((x,x'))))
+	\end{align*}
+	with the last equality obtained by definition of monadic bind and by disintegrating $\mu$ along its first component.
+\end{proof}
+
+\begin{lemma}[Small-step projection]\label{lem:small-step-proj}
 	Let $\sem{e : \tau, e' : \tau'} \in \mathcal{D}(\relation_{\tau} + \bot)$. Then:
 	\begin{enumerate}
 		\item $\pi_1(\sem{e : \tau, e' : \tau'}) = \sem{e : \tau}$
@@ -1839,23 +1795,76 @@ We assume the expressions $e, e'$ are well-typed.
 \end{lemma}
 
 \begin{proof}
-	By case analysis on the structure of the typing derivation $e : \tau$. 
+	By induction on the structure of the typing derivation $e : \tau$. We prove the first equality, as the proof for the second is identical.
 
-	\textbf{Case} constant $(v : \tau, \discretize{v : \tau} : \discretize{\tau}) \in \relation_{\tau}$, where $\tau = \floattype{B}{V}$. Taking the first projection of this distribution,
+	\textbf{Case} float constant $(v : \tau, \discretize{v : \tau} : \discretize{\tau}) \in \relation_{\tau}$, where $\tau = \floattype{B}{V}$. 
+
+	From the semantics, $\sem{v : \tau, \discretize{v : \tau} : \discretize{\tau}} = \delta_{v : \tau, \discretize{v : \tau} : \discretize{\tau}}$.
+
 	\begin{align*}
-		\pi_1(\sem{v : \tau, \discretize{v : \tau} : \discretize{\tau}}) &= \pi_1(\delta_{(v : \tau, \discretize{v : \tau} : \discretize{\tau})}) = \delta_{v : \tau} \\
-		\pi_2(\sem{v : \tau, \discretize{v : \tau} : \discretize{\tau}}) &= \pi_1(\delta_{(v : \tau, \discretize{v : \tau} : \discretize{\tau})}) = \delta_{\discretize{v : \tau} : \discretize{\tau}} \\
-	\end{align*}
-	And similarly,
-	\begin{align*}
-		\sem{v : \tau} &= \delta_{v : \tau} \\
-		\sem{\discretize{v : \tau} : \discretize{\tau}} &= \delta_{\discretize{v : \tau} : \discretize{\tau}}.
+		&\pi_1(\delta_{(v : \tau, \discretize{v : \tau} : \discretize{\tau})})(A) \\
+		&= \delta_{(v : \tau, \discretize{v : \tau} : \discretize{\tau})}(A \times E_2) \\
+		&= \delta_{v : \tau} \\
+		&= \sem{v : \tau}
 	\end{align*}
 
-	\textbf{Case} comparison $(e_1 < e_2 : \bool, \discretize{e_1} < \discretize{e_2} : \discretize{\bool}) \in \relation_{\bool}$. We have the following possibilities:
+	\textbf{Case} float less than $(e_1 < e_2 : \bool, \discretize{e_1} < \discretize{e_2} : \discretize{\bool}) \in \relation_{\bool}$. We have the following possibilities:
 	\begin{itemize}
-		\item If $e_1 = v_1$ and $e_2 = v_2$ are values, then by Lemma~\ref{lem:form-preservation}, $\discretize{e_1}$ and $\discretize{e_2}$ are also values. Thus:
+		\item If $e_1 = v_1$ and $e_2 = v_2$ are values, then by Lemma~\ref{lem:form-preservation}, $\discretize{e_1}$ and $\discretize{e_2}$ are also values. 
 		
+		From the semantics, 
+		$\sem{e_1 < e_2} = \begin{cases}
+			\delta_{(\true:\bool, \true:\bool)} &\text{ if } v_1 < v_2 \\
+			\delta_{(\false:\bool, \false:\bool)} &\text{ if } v_1 \geq v_2
+		\end{cases}$
+		
+		Thus, either:
+		\begin{align*}
+			&\pi_1(\delta_{(\true:\bool, \true:\bool)})(A) \\
+			&= \delta_{(\true:\bool, \true:\bool)}(A \times E_2) \\
+			&= \delta_{\true:\bool} \\
+			&= \sem{e_1 < e_2 : \bool} \text{ when } e_1 = v_1, e_2 = v_2, v_1 < v_2
+		\end{align*}
+
+		\begin{align*}
+			&\pi_1(\delta_{(\false:\bool, \false:\bool)})(A) \\
+			&= \delta_{(\false:\bool, \false:\bool)}(A \times E_2) \\
+			&= \delta_{\false:\bool} \\
+			&= \sem{e_1 < e_2 : \bool} \text{ when } e_1 = v_1, e_2 = v_2, v_1 \geq v_2
+		\end{align*}
+
+		\item At least $e_1$ or $e_2$ is an expression. Suppose $e_1$ is an expression. 
+		
+		From the semantics, 
+		\begin{align*}
+			\sem{ e_1 : \tau_1, \discretize{e_1 : \tau_1} : \discretize{\tau_1}} \gg\!= \lambda (f,f'). \sem{ f < e_2 : \tau_2 : \bool, \\
+			f' < \discretize{e_2 : \tau_2} : \discretize{\tau_2} : \discretize{\bool}}
+		\end{align*}
+		By Lemma~\ref{lem:bind-proj}, we get:
+		\begin{align*}
+			&\pi_1(\sem{ e_1 : \tau_1, \discretize{e_1 : \tau_1} : \discretize{\tau_1}}) \gg\!= \lambda f. \pi_1(\sem{ f < e_2 : \tau_2 : \bool, \\
+			&\quad f' < \discretize{e_2 : \tau_2} : \discretize{\tau_2} : \discretize{\bool}}) \\
+			&= \sem{ e_1 : \tau_1} \gg\!= \lambda f. \sem{ f < e_2 : \tau_2 : \bool} \\
+			&= \sem{e_1 < e_2 : \bool} \text{ otherwise } 
+		\end{align*}
+		
+		Suppose $e_2$ is an expression. Analogous to when $e_1$ is an expression.
+	\end{itemize}
+
+	\textbf{Case} uniform with $B \neq \top$, $\uniform(e_1 : \tau_1, e_2 : \tau_2) : \tau,
+	\dc(\discretize{e_1 : \tau_1} : \discretize{\tau_1}, \discretize{e_2 : \tau_2} : \discretize{\tau_2}) : \discretize{\tau}$. (we prove the $\pi_2$ case here since it is more interesting). We have the following possibilities:
+	\begin{itemize}
+		\item If $e_1 = v$ and $e_2 = w$ are values, then by Lemma~\ref{lem:form-preservation}, $\discretize{e_1}$ and $\discretize{e_2}$ are also values. 
+		
+		From the semantics,
+		\begin{align*}
+			\sem{ \uniform(v : \tau_1, w : \tau_2) : \tau, \discretize{\uniform(v_i,w_j) : \floattype{B}{\top}} : \discretize{\tau}} \\
+			\text{s.t. } \discretize{v_i : \floattype{B_1}{v_i}} = \discretize{v : \floattype{B_1}{v}} \\
+			\text{ and } \discretize{w_j : \floattype{B_2}{w_j}} = \discretize{w : \floattype{B_2}{w}}
+		\end{align*}
+
+		\item At least $e_1$ or $e_2$ is an expression. Analogous to float less than case when $e_1$ or $e_2$ is an expression.
+
 	\end{itemize}
 \end{proof}
 
@@ -1945,29 +1954,39 @@ For every $e : \tau \in Expr_{\tau}$ and all $n \in \mathbb{N}$, we define the d
 		&\bigsemstep{e : \tau}{k+2} = \bigsemstep{e : \tau}{k+1} \gg\!= \lambda e''.\sem{e''} = (\bigsemstep{e : \tau}{k} \gg\!= \lambda e'.\sem{e'}) \gg\!= \lambda e''.\sem{e''}
 	\end{align*}
 
-	Fix an arbitrary $e',e''$. We do a case analysis on $e',e''$.
+	By the IH,
+	\begin{align*}
+		\bigsemstep{e : \tau}{k}(V) \leq \bigsemstep{e : \tau}{k+1}(V).
+	\end{align*}
 
+	We do a case analysis on $e'$ and $e''$, whether they are in $N$ or $V$.
 
-	% We do a case analysis for the terms $a,b$ in $\bigsemstep{e : \tau}{k}(a)$ and $\bigsemstep{e : \tau}{k+1}(b)$:
+	\textbf{Case} $e' \in V$, $e'' \in V$.
 
-	% \textbf{Case 1:} Let $a \in V$ and $b \in V$. By the IH, $\bigsemstep{e : \tau}{k}(V) \leq \bigsemstep{e : \tau}{k+1}(V)$, so $\bigsemstep{e : \tau}{k}(a) \leq \bigsemstep{e : \tau}{k+1}(b)$. Applying $\lambda e'.\sem{e'}$ preserves the measures of the values, and hence
-	% \[
-	% 	\bigsemstep{e : \tau}{k+1}(a) \leq \bigsemstep{e : \tau}{k+2}(b).
-	% \]
+	Then, from the semantics, $\sem{e'}$ and $\sem{e''}$ are both Diracs over a value. Combined with the IH and the fact that $\sem{\cdot}$ does not change the probability mass of $\cdot$ if it is a value, 
+	\[
+		\bigsemstep{e : \tau}{k+1}(V) \leq \bigsemstep{e : \tau}{k+2}(V).
+	\]
 
-	% \textbf{Case 2:} Let $a \in N$ and $b \in V$. Applying $\lambda e'.\sem{e'}$ to $\bigsemstep{e}{k+1}$ preserves the measure of the value $b$ in $\bigsemstep{e}{k+2}$, and hence
-	% \[
-	% 	\bigsemstep{e : \tau}{k+1}(b) = \bigsemstep{e : \tau}{k+2}(b).
-	% \]
+	\textbf{Case} $e' \in V$, $e'' \in N$.
+	
+	Then, from the semantics, $\sem{e'}$ is a Dirac over a value and $\sem{e''}$ is a distribution over a non-value expression. Combined with the IH and the fact that $\sem{\cdot}$ does not change the probability mass of $\cdot$ if it is a value and that $\sem{\cdot}$ does not add any probability mass to $V$ if $\cdot$ is a non-value expression,
+	\[
+		\bigsemstep{e : \tau}{k+1}(V) \leq \bigsemstep{e : \tau}{k+2}(V).
+	\]
 
-	% \textbf{Case 3:} Let $a \in V$ and $b \in N$. Impossible since values cannot turn into non-values.
+	\textbf{Case} $e' \in V$, $e'' \in N$.
 
-	% \textbf{Case 4:} Let $a \in N$ and $b \in N$. This breaks down further into subcases. Applying $\lambda e'.\sem{e'}$ to $\bigsemstep{e}{k+1}$, either $b \in V$ or $b \in N$. We can discard the latter case as no values are involved. For the former case, 
-	% \[
-	% 	\bigsemstep{e : \tau}{k+1}(b) \leq \bigsemstep{e : \tau}{k+2}(b).
-	% \]
-	% In any case, we obtain $\bigsemstep{e : \tau}{k+1}(b) \leq \bigsemstep{e : \tau}{k+2}(b)$, proving the inductive step.
+	Analogous to the previous case, but with $e'$ and $e''$ switched.
 
+	\textbf{Case} $e' \in N$, $e'' \in N$.
+
+	Then, from the semantics,  $\sem{e'}$ and $\sem{e''}$ are both distributions over a non-value expression. Combined with the IH and the fact that $\sem{\cdot}$ does not add any probability mass to $V$ if $\cdot$ is a non-value expression, 
+	\[
+		\bigsemstep{e : \tau}{k+1}(V) \leq \bigsemstep{e : \tau}{k+2}(V).
+	\]
+
+	In all cases, $\bigsemstep{e : \tau}{k+1}(V) \leq \bigsemstep{e : \tau}{k+2}(V)$.
 \end{proof}
 
 Given $e : \tau \in Expr_{\tau}$ and $n\in\Nats$, define $\bigsemstepterm{e : \tau}{n} = \lambda \measset. \bigsemstep{e : \tau}{n}(\measset \setminus N)$. 
@@ -1992,7 +2011,7 @@ The above statement states that among all possible results after $n$ steps, only
 	By Lemmas~\ref{lem:bigstepsem1} and~\ref{lem:bigstepsem2}, the sequence $\bigsemstep{e : \tau}{n}$ is monotonically increasing for values and error. Moreover, $\bigsemstep{e : \tau}{n}$ defines a subprobability measure, and thus $\bigsemstep{e : \tau}{n} \leq 1$ for every $n \in \Nats$. Thus, by the monotone convergence theorem, the pointwise limit exists.
 \end{proof}
 
-\begin{definition}[Big-step pairing semantics]
+\begin{definition}[Big-step pairing semantics]\label{def:big-step-2}
 	For every $(e : \tau, e' : \tau') \in \relation_{\tau}(e,e')$ and all $n \in \Nats$, define the distribution $\bigsemstep{e : \tau, e' : \tau'}{n} \in \mathcal{D}(\relation_{\tau} + \bot)$ recursively as
 	%
 	\[
@@ -2023,7 +2042,7 @@ The above statement states that among all possible results after $n$ steps, only
 	By induction on $n$. Similar to proof for single case.
 \end{proof}
 
-\begin{lemma}[Existence of the big-step limit]
+\begin{lemma}[Existence of the big-step limit]\label{lem:limit-exists-2}
 	The pointwise limit for $\bigsem{e : \tau, e' : \tau'}$ exists.
 \end{lemma}
 
@@ -2071,10 +2090,38 @@ The above statement states that among all possible results after $n$ steps, only
 \end{lemma}
 
 \begin{proof}
-	Follows from the small-step projection lemma, since each big-step is defined in terms of small-step.
+	By induction on $n$. We prove part i) in detail; the proof of part ii) is analogous.
+
+	\underline{Base case:} $n=0$:
+
+	By definition of the big-step semantics, 
+	\[
+		\bigsemstep{e : \tau, e' : \tau'}{0} = \delta_{(e : \tau, e' : \tau')}
+	\]
+
+	Projecting the first component: $\pi_1(\delta_{(e : \tau, e' : \tau')}) = \delta_{e : \tau} = \bigsemstep{e : \tau}{0}$.
+
+	\underline{Inductive step:} Assume for $n-1$. For $n > 0$:
+	\[
+		\bigsemstep{e : \tau, e' : \tau'}{n} = \bigsemstep{e : \tau, e' : \tau'}{n-1} \monbind  \lambda (f,f'). \sem{f : \tau, f' : \tau'}
+	\]
+
+	By Lemma~\ref{lem:bind-proj},
+	\[
+		\pi_1(\bigsemstep{e : \tau, e' : \tau'}{n}) = \pi_1(\bigsemstep{e : \tau, e' : \tau'}{n-1}) \monbind  \lambda f. \pi_1(\sem{f : \tau, f' : \tau'})
+	\]
+
+	By the IH, $\pi_1(\bigsemstep{e : \tau, e' : \tau'}{n-1}) = \bigsemstep{e : \tau}{n-1}$.
+
+	By Lemma~\ref{lem:small-step-proj}, $\pi_1(\sem{f : \tau, f' : \tau'}) = \sem{f : \tau}$.
+
+	So,
+	\[
+		\pi_1(\bigsemstep{e : \tau, e' : \tau'}{n}) = \bigsemstep{e : \tau}{n-1} \monbind \lambda f.\sem{f : \tau} = \bigsemstep{e : \tau}{n}.
+	\]
 \end{proof}
 
-\begin{lemma}[Coupling projection for big-step]
+\begin{lemma}[Coupling projection for big-step]\label{lem:big-step-proj}
 	Let $\bigsem{e : \tau, e' : \tau'} \in \mathcal{D}(\relation_{\tau} + \bot)$. Then,
 	\begin{enumerate}
 		\item $\pi_1(\bigsem{e : \tau, e' : \tau'}) = \bigsem{e : \tau}$
@@ -2093,5 +2140,9 @@ The above statement states that among all possible results after $n$ steps, only
 \end{proof}
 
 \begin{theorem}[Contextual Equivalence]
-	
+	For all $e : \tau$, we have $\bigsem{e : \tau} = \bigsem{\discretize{e : \tau} : \discretize{\tau}}$.
 \end{theorem}
+
+\begin{proof}
+	Follows from Defintion~\ref{def:big-step-2}, Lemma~\ref{lem:limit-exists-2}, and Lemma~\ref{lem:big-step-proj}.
+\end{proof}
