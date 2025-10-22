@@ -644,10 +644,12 @@ We consider a subset of our language, focusing only on let statements, condition
 % \end{itemize}
 
 \subsubsection{Brief recap of measure theory} 
-We give a brief overiew of basic measure theory terms.
+We first give a brief overiew of basic measure theory terms.
+
+\paragraph{Topological space} A topological space is a pair $(X, \mathcal{T})$ where $\mathcal{T}$ is a collection of subsets of $X$, called open sets, such that $\emptyset, X \in \mathcal{T}$, and $\mathcal{T}$ is closed under arbitrary unions and finite intersections.
 
 \paragraph{$\sigma$-algebras} A $\sigma$-algebra on a set $X$ is a collection $\Sigma$ of subsets of $X$ that includes $X$ itself and is closed under complement and under countable unions. By implication, a $\sigma$-algebra includes the empty set and is closed under countable intersections. 
-A Borel $\sigma$-algebra is the smallest $\sigma$-algebra that contains all open sets in a given topological space.
+Given a topological space $(X, \mathcal{T})$, the Borel $\sigma$-algebra $\mathcal{B}(X)$ is the smallest $\sigma$-algebra containing all open sets in $\mathcal{T}$.
 
 \paragraph{Measurable spaces} A measurable space $(X, \Sigma)$ consists of an underlying set and its $\sigma$-algebra.  
 When $\Sigma$ is the Borel $\sigma$-algebra on a topological space $X$, we call $(X, \Sigma)$ a Borel measurable space.
@@ -695,6 +697,41 @@ When $\Sigma$ is a Borel $\sigma$-algebra, $\mu$ is called a Borel measure.
 	where $f_{\bot}$ extends $f$ by $f_{\bot}(\bot) := \delta_{\bot}$ and $f_{\bot}(x) := f(x) \;\; \text{for every } x \in X.$
 \end{definition}
 
+\begin{lemma}[Bind-projection identity]\label{lem:bind-proj}
+	For any product-measure $\mu$ and any kernel $f$ that for each product point returns a product measure,
+	\[
+		\pi_1(\mu \gg\!= f) = \pi_1(\mu) \gg\!= (x \mapsto \pi_1(f(x, \cdot))).
+	\]
+\end{lemma}
+
+Informally, this lemma states that first marginal of a bind is the bind of the first marginal against the first marginal of the continuation.
+
+\begin{proof}
+	For any measurable set $A$,
+	\begin{align*}
+		&\pi_1(\mu \gg\!= f)(A) \\
+		&= (\mu \gg\!= f)(A \times Y) && \text{(by definition of $\pi_1$)} \\
+		&= \sum \mu(x,x') f(x,x')(A \times Y) \text{ or } \int f(x,x')(A \times Y) \mu(d(x,x')) && \text{(by definition of bind)} \\
+		&= \sum \mu(x,x') \pi_1(f(x,x'))(A) \text{ or } \int \pi_1(f(x,x'))(A) \mu(d(x,x')) && \text{(by definition of $\pi_1$)} \\
+	\end{align*}
+	For the discrete case,
+	\begin{align*}
+		&\sum_{x,x'} \mu(x,x') \pi_1(f(x,x'))(A) \\
+		&= \sum_x \left[ \sum_{x'} \mu(x,x') \pi_1(f(x,x'))(A) \right] \\
+		&= \sum_x \pi_1(f(x,x'))(A) \left[ \sum_{x'} \mu(x,x') \right] \\
+		&= \sum_x \pi_1(f(x,x'))(A) (\pi_1 \mu)(x,x') \\
+		&= (\pi_1 \mu) \gg\!= (x \mapsto \pi_1(f(x,x')))
+	\end{align*}
+
+	For the continuous case, by the Disintegration Theorem, there exists a conditional distirbution $\mu(dx' \mid x)$ such that $\mu(d(x,x')) = (\pi_1 \mu)(dx)\mu(dx' \mid x)$. Thus,
+	\begin{align*}
+		&\int \pi_1(f(x,x'))(A) \mu(d(x,x')) \\
+		&= \int \left[ \int \pi_1(f(x,x'))(A) \mu(dx' \mid x) \right] (\pi_1 \mu)(dx) \\
+		&= \int \pi_1(f(x,x'))(A) (\pi_1 \mu)(dx) \\
+		&= (\pi_1 \mu) \gg\!= (x \mapsto \pi_1(f(x,x')))
+	\end{align*}
+\end{proof}
+
 \subsection{Measure space on expressions}
 To make the probabilistic semantics precise, we define an appropriate measure space structure on the set of expressions. The set $Expr$ is uncountable due to the real numerals, so we construct a Borel measurable space on $Expr$ by factoring out such numerals using the notion of what we call \emph{expression skeletons}.
 
@@ -729,9 +766,9 @@ To make the probabilistic semantics precise, we define an appropriate measure sp
 \begin{definition}[Borel measurable space on expressions]\label{def:meas-space}
 	Let $s \in \text{Skel}$ be an expression skeleton with $n = \text{holes}(s)$. Each tuple of real numbers $\vec{r} = (r_1, \ldots, r_n) \in \R^n$ induces a concrete expression $s[\vec{r}] \in Expr$. We associate to $s[\vec{r}]$ the product space $\R^n$, equipped with the Borel $\sigma$-algebra $\mathcal{B}(\R^n)$. We then define the measurable space of expressions as the union
 	\[
-		Expr := \bigsqcup_{s \in \text{Skel}} \{s[\vec{r}] \mid \vec{r} \in \mathbb{R}^{\text{holes}(s)}\},
+		Expr := \bigcup_{s \in \text{Skel}} \{s[\vec{r}] \mid \vec{r} \in \mathbb{R}^{\text{holes}(s)}\},
 	\]
-	equipped with the Borel $\sigma$-algebra $\mathcal{F}_{Expr} := \sigma(\{s[\vec{r}] \mid \vec{r} \in \mathbb{R}^{\text{holes}(s)}\}_{s \in \text{Skel}})$.
+	with the topology $\mathcal{T}_{Expr}$ defined as the union of Euclidean topologies on $\R^{\text{holes}(s)}$ for all $s \in \text{Skel}$, equipped with the Borel $\sigma$-algebra $\mathcal{F}_{Expr} := \sigma(\mathcal{T}_{Expr})$.
 \end{definition}
 
 \begin{lemma}
@@ -739,16 +776,24 @@ To make the probabilistic semantics precise, we define an appropriate measure sp
 \end{lemma}
 
 \begin{proof}
-	For each skeleton $s$ with $n = \text{holes}(s)$, the space $\R^n$ with its Borel $\sigma$-algebra is a Borel measureable space. Since $\text{Skel}$ is countable, the countable disjoint union of Borel measureable spaces remains a Borel measurable space. 
+	For each skeleton $s$ with $n = \text{holes}(s)$, the space $\R^n$ with its Borel $\sigma$-algebra is a Borel measureable space. Since $\text{Skel}$ is countable, the countable union of Borel measureable spaces remains a Borel measurable space. 
 \end{proof}
 
 \begin{definition}[Extension with error element]\label{def:meas-space-with-error}
-	We extend the measurable space of expressions to include a distinguished error element $\bot$, defining
+	We extend the Borel measurable space of expressions to include a distinguished error element $\bot$, defining the measurable space of extended expressions as
 	\[
-		Expr + \bot := Expr \cup \{\bot\}, \quad \mathcal{F}_{Expr + \bot} := \sigma(\mathcal{F}_{Expr} \cup \{\{\bot\}\}).
+		Expr + \bot := Expr \cup \{\bot\},
 	\]
-	The extended space $(Expr + \bot, \mathcal{F}_{Expr + \bot})$ is measurable.
+	with the topology $\mathcal{T}_{Expr + \bot} = \{U, U \cup \{\bot\} \mid U \in \mathcal{T}_{Expr}\}$, equipped with the Borel $\sigma$-algebra $\mathcal{F}_{Expr + \bot} := \sigma(\mathcal{T}_{Expr + \bot})$.
 \end{definition}
+
+\begin{lemma}
+	$(Expr + \bot, \mathcal{F}_{Expr + \bot})$ is a Borel measurable space.
+\end{lemma}
+
+\begin{proof}
+	$Expr$ is itself a Borel set, and $\{\bot\}$ is an open singleton in the extended topology. The union of a Borel set with an open set is Borel. 
+\end{proof}
 
 % Intuitively, this means that measurable subsets of $Expr_{\tau}$ can be described by first fixing a finite syntactic skeleton and then selecting a measurable subset of real assignments to its float constants.
 
@@ -772,7 +817,7 @@ We give some basic lemmas:
 	\begin{enumerate}
 		\item \textbf{(Measurability of $\vals$):} By the construction of $\mathcal{F}_{Expr}$ in Definition~\ref{def:meas-space}, for each skeleton $s$ that represents a value, the set $\{s[\vec{r}] \mid \vec{r} \in \R^{\text{holes}(s)}\}$ is a measurable set in the union. The set $V$ is the countable union of all such sets corresponding to value skeletons. Since $\text{Skel}$ is countable, $V$ is a countable union of measurable sets and is therefore itself measurable, e.g. $V \in \mathcal{F}_{Expr}$. As $\mathcal{F}_{Expr} \subset \mathcal{F}_{Expr + \bot}$, it follows that $V \in \mathcal{F}_{Expr + \bot}$.
 		
-		\item \textbf{(Measurablity of $\{\bot\}$):} By Definition~\ref{def:meas-space-with-error}, the $\sigma$-algebra $\mathcal{F}_{Expr + \bot}$ is generated by $\mathcal{F}_{Expr} \cup \{\bot\}$. The $\{\bot\}$ is explicitly included in the generating family, and is therefore trivally measurable, e.g. $\{\bot\} \in \mathcal{F}_{Expr + \bot}$.
+		\item \textbf{(Measurability of $\{\bot\}$):} By Definition~\ref{def:meas-space-with-error}, the topology $\mathcal{T}_{Expr + \bot}$ contains all sets of the form $U \cup \{\bot\}$, where $U \in \mathcal{T}_{Expr}$. In particular, taking $U = \emptyset$ gives $\emptyset \cup \{\bot\} = \{\bot\} \in \mathcal{T}_{Expr + \bot}$. Since the Borel $\sigma$-algebra $\mathcal{F}_{Expr + \bot}$ is generated by $\mathcal{T}_{Expr + \bot}$, it follows that $\{\bot\} \in \mathcal{F}_{Expr + \bot}$.
 
 		\item \textbf{(Measurablity of $N$):} By definition, $N$ is the set of non-value expressions, e.g. $N = Expr \setminus V$. From part i), we have established that $V \in \mathcal{F}_{Expr}$. Since $\mathcal{F}_{Expr}$ is a $\sigma$-algebra and is closed under complement, the complement of $V$ within $Expr$, which is precisely $N$, is also measurable, e.g. $N \in \mathcal{F}_{Expr}$. As $\mathcal{F}_{Expr} \subset \mathcal{F}_{Expr + \bot}$, it follows that $N \in \mathcal{F}_{Expr + \bot}$.
 	\end{enumerate}
@@ -1764,27 +1809,6 @@ We assume the expressions $e, e'$ are well-typed.
 	\end{enumerate}
 	Then, $\pi_1(\sem{e,e'})$ is a measure on $(E_1, \Sigma_1)$ and $\pi_2(\sem{e,e'})$ is a measure on $(E_2, \Sigma_2)$.
 \end{definition}
-
-\begin{lemma}[Bind-projection identity]\label{lem:bind-proj}
-	For any product-measure-valued $\mu$ and any kernel $f$ that for each product-point returns a product measure,
-	\[
-		\pi_1(\mu \gg\!= f) = \pi_1(\mu) \gg\!= (x \mapsto \pi_1(f(x, \cdot))).
-	\]
-\end{lemma}
-
-Informally, this lemma states that first marginal of a bind is the bind of the first marginal against the first marginal of the continuation.
-
-\begin{proof}
-	For any measurable set $A$,
-	\begin{align*}
-		&\pi_1(\mu \gg\!= k)(A) \\
-		&= (\mu \gg\!= k)(A \times Y) \quad \text{(by def of $\pi_1$)} \\
-		&= \int k((x,x'))(A \times Y) \mu(d(x,x')) \quad \text{(by def of bind)} \\
-		&= \int \pi_1(k((x,x')))(A) \mu(d(x,x')) \quad \text{(by def of $\pi_1$)} \\
-		&= (\pi_1 \mu) \gg\!= (x \mapsto \pi_1(k((x,x'))))
-	\end{align*}
-	with the last equality obtained by definition of monadic bind and by disintegrating $\mu$ along its first component.
-\end{proof}
 
 \begin{lemma}[Small-step projection]\label{lem:small-step-proj}
 	Let $\sem{e : \tau, e' : \tau'} \in \mathcal{D}(\relation_{\tau} + \bot)$. Then:
