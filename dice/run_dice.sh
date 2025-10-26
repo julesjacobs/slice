@@ -2,22 +2,38 @@
 # Running dice with a bash script
 
 if [ $# -lt 1 ]; then
-  echo "Usage: $0 <string-or-file>"
+  echo "Usage: $0 [--time] <string-or-file>"
   exit 1
 fi
 
-INPUT=$1
+# Default: do not use --time
+USE_TIME=false
+
+# Parse flags
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --time)
+      USE_TIME=true
+      shift
+      ;;
+    *)
+      INPUT=$1
+      shift
+      ;;
+  esac
+done
+
+if [ -z "$INPUT" ]; then
+  echo "Error: missing input argument."
+  echo "Usage: $0 [--time] <string-or-file>"
+  exit 1
+fi
+
 INPUT_ABS=$(realpath "$INPUT")
 
-# if [ -f "$INPUT" ]; then
-  # If arg is a file, read the file contents into a string
-  # INPUT_ABS=$(realpath "$INPUT")
-  # OUTPUT=$(cat "$INPUT_ABS")
-# else
-  # If arg is a string, use the string directly
-  # OUTPUT="$INPUT"
-# fi
-
-# Now run dune exec dice
-# dune exec dice "$INPUT_ABS" # build-step included
-./_build/default/bin/dice.exe "../output.dice" # directly run the executable
+# Run dice.exe with or without --time
+if [ "$USE_TIME" = true ]; then
+  ./_build/default/bin/dice.exe -time "../output.dice"
+else
+  ./_build/default/bin/dice.exe "../output.dice"
+fi

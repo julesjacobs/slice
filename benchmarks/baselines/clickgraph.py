@@ -1,7 +1,16 @@
+import argparse
+import sys
+import time
 from sppl.compilers.ast_to_spe import Id
 from sppl.compilers.sppl_to_python import SPPL_Compiler
 
-compiler = SPPL_Compiler('''
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--time", action="store_true", help="Print only the execution time to stderr")
+    args = parser.parse_args()
+
+    start_time = time.time()
+    compiler = SPPL_Compiler('''
 from sppl.sym_util import binspace
 
 p_similar ~= beta(a=1, b=1)   # Prior probabilty URLs A and B are similar. (in [0,1])
@@ -29,9 +38,17 @@ for i in range(5):
 
     switch (p_click_url_B[i]) cases (p in binspace(0, 1, 10)):
         click_url_B[i] ~= bernoulli(p=p.right)
-                           ''')
+''')
+    
+    namespace = compiler.execute_module()
+    e = Id('click_url_B[0]')
+    event = (e < 1)
+    prob = namespace.model.prob(event)
+    elapsed = time.time() - start_time
 
-namespace = compiler.execute_module()
-e  = Id('click_url_B[0]')
-event = (e < 1)
-print(namespace.model.prob(event))
+    print(prob)
+    if args.time:
+        print(f"{elapsed:.3f}", file=sys.stderr)
+
+if __name__ == "__main__":
+    main()

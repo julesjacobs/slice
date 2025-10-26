@@ -1,14 +1,21 @@
+import argparse
+import sys
+import time
 from sppl.compilers.ast_to_spe import Id
 from sppl.compilers.sppl_to_python import SPPL_Compiler
 
-# Original n,k = 20
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--time", action="store_true", help="Print only the execution time to stderr")
+    args = parser.parse_args()
 
-compiler = SPPL_Compiler('''
+    start_time = time.time()
+    compiler = SPPL_Compiler('''               
 n = 10
 k = 10
 controlGroup = array(n)
 treatedGroup = array(n)
-                         
+                        
 isEffective ~= bernoulli(p=.5)
 probControl ~= randint(low=0, high=k)
 probTreated ~= randint(low=0, high=k)
@@ -25,9 +32,17 @@ else:
         switch (probAll) cases (p in range(k)):
             controlGroup[i] ~= bernoulli(p=p/k)
             treatedGroup[i] ~= bernoulli(p=p/k)
-                           ''')
+        ''')
+    
+    namespace = compiler.execute_module()
+    e = Id('treatedGroup[0]')
+    event = (e < 1)
+    prob = namespace.model.prob(event)
+    elapsed = time.time() - start_time
 
-namespace = compiler.execute_module()
-e  = Id('treatedGroup[0]')
-event = (e < 1)
-print(namespace.model.prob(event))
+    print(prob)
+    if args.time:
+        print(f"{elapsed:.3f}", file=sys.stderr)
+
+if __name__ == "__main__":
+    main()

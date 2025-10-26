@@ -33,6 +33,54 @@ def build_conditional_independent_slice(comparison_count):
     return "\n".join(code), last_var
 
 
+def build_conditional_independent_fork_slice(comparison_count):
+    code = []
+    counter = 1
+    variables = [f"x{n}" for n in range(1, comparison_count + 1)]
+
+    for idx in range(comparison_count):
+        rand_const = round(random.random(), 2)
+        var = variables[idx]
+        if idx == 0:
+            code.append(f"let {var} = uniform(0,{counter}) in")
+            counter += 1
+        else:
+            rand_idx = random.randint(0, idx - 1)
+            prev = variables[rand_idx]
+            code.append(f"let {var} = if x1 < {rand_const} then uniform(0,{counter}) else uniform(0,{counter + 1}) in")
+            counter += 2
+
+    last_var = variables[-1]
+    code.append(f"{last_var} < 0.5")
+    return "\n".join(code), last_var
+
+
+def build_conditional_independent_collider_slice(comparison_count):
+    code = []
+    counter = 1
+    variables = [f"x{n}" for n in range(1, comparison_count + 1)]
+
+    for idx in range(comparison_count):
+        rand_const = round(random.random(), 2)
+        rand_const_2 = round(random.random(), 2)
+        var = variables[idx]
+        if idx == 0:
+            code.append(f"let {var} = uniform(0,{counter}) in")
+            counter += 1
+        elif idx == 1:
+            prev = variables[idx - 1]
+            code.append(f"let {var} = if {prev} < {rand_const} && {prev} < {rand_const_2} then uniform(0,{counter}) else uniform(0,{counter + 1}) in")
+            counter += 2
+        else:
+            prev = variables[idx - 1]
+            prev_2 = variables[idx-2]
+            code.append(f"let {var} = if {prev} < {rand_const} && {prev_2} then uniform(0,{counter}) else uniform(0,{counter + 1}) in")
+            counter += 2
+
+    last_var = variables[-1]
+    code.append(f"{last_var} < 0.5")
+    return "\n".join(code), last_var
+
 def build_conditional_independent_sppl(comparison_count):
     # Can alternatively use the --to-sppl flag from slice to generate these programs
     lines = []

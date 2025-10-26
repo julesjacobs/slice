@@ -16,6 +16,7 @@ If no backend is specified, by default benchmarks both dice and roulette
 
 $ python3 run.py [--dice|--roulette]: tests asymptotic scaling for a variety of programs
 $ python3 run.py --print-outputs [--dice|--roulette]: to verify that the outputs between slice and sppl are the same
+$ python3 run.py --print-programs [--dice|--roulette]: to print the input programs that are generated
 $ python3 run.py --timeout N [--dice|--roulette]: set timeout to N seconds per benchmark (default: 300)
 '''
 
@@ -28,11 +29,162 @@ def run_with_timeout(command, timeout, stderr=subprocess.DEVNULL):
     except subprocess.TimeoutExpired:
         return None
 
+
+def run_slice_to_dice(path, timeout):
+    """
+    Runs Slice on a .slice file if --dice backend is specified.
+    Args:
+        path: path to .slice file
+        timeout: timeout for running .slice file
+    Output:
+        slice duration, total slice+dice duration, output, timed out : bool
+    """
+    slice_duration_dice = None
+    dice_duration = None
+    slice_timed_out = False
+   
+    # Run slice component
+    print(f"  Running Slice...", end='', flush=True)
+    os.chdir(str(original_dir / "slice"))
+    command = ["./run_slice.sh", str(path)]
+    start = time.time()
+    result = run_with_timeout(command, timeout)
+    if not result:
+        print(f" TIMEOUT after {timeout}s", flush=True)
+        slice_timed_out = True
+    else:
+        slice_duration_dice = time.time() - start
+
+    if not slice_timed_out:
+        # Run dice component (if slice succeeded)
+        os.chdir(str(original_dir / "dice"))
+        command = ["./run_dice.sh", "../output.dice"]
+        start = time.time()
+        result = run_with_timeout(command, timeout)
+        if not result:
+            print(f" TIMEOUT after {timeout}s", flush=True)
+            slice_timed_out = True
+        else:
+            dice_duration = time.time() - start
+            slice_output = result.stdout.decode('utf-8')
+            total_duration_dice = slice_duration_dice + dice_duration
+            print(f"   slice: {slice_duration_dice:.3f}s / dice: {dice_duration:.3f}s (total: {total_duration_dice:.3f}s)", flush=True)
+    else:
+        print(f"  Skipping Slice (previous timeout)", flush=True)
+    
+    os.chdir(str(original_dir))
+    return slice_duration_dice, total_duration_dice, slice_output, slice_timed_out
+
+
+def run_slice_to_roulette(path, timeout):
+    """
+    Runs Slice on a .slice file if --roulette backend is specified.
+    Args:
+        path: path to .slice file
+        timeout: timeout for running .slice file
+    Output:
+        duration, output, timed out : bool
+    """
+    slice_duration_roulette = None
+    roulette_duration = None
+    slice_timed_out = False
+     
+    # Run slice component
+    print(f"  Running Slice...", end='', flush=True)
+    os.chdir(str(original_dir / "slice"))
+    command = ["./run_slice.sh", "--roulette", str(path)]
+    start = time.time()
+    result = run_with_timeout(command, timeout)
+    if not result:
+        print(f" TIMEOUT after {timeout}s", flush=True)
+        slice_timed_out = True
+    else:
+        slice_duration_roulette = time.time() - start
+
+    if not slice_timed_out:
+        # Run roulette component (if slice succeeded)
+        os.chdir(str(original_dir / "roulette"))
+        command = ["./run_roulette.sh", "../output.rkt"]
+        start = time.time()
+        result = run_with_timeout(command, timeout)
+        if not result:
+            print(f" TIMEOUT after {timeout}s", flush=True)
+            slice_timed_out = True
+        else:
+            roulette_duration = time.time() - start
+            slice_output = result.stdout.decode('utf-8')
+            total_duration_roulette = slice_duration_roulette + roulette_duration
+            print(f"   slice: {slice_duration_roulette:.3f}s / roulette: {roulette_duration:.3f}s (total: {total_duration_roulette:.3f}s)", flush=True)
+    else:
+        print(f"  Skipping Slice (previous timeout)", flush=True)
+    
+    os.chdir(str(original_dir))
+    return slice_duration_roulette, total_duration_roulette, slice_output, slice_timed_out
+
+
+def convert_to_sppl_from_slice():
+    """Runs the --to-sppl conversion, converting a slice program to an sppl program
+    Output:
+        sppl program : string"""
+    os.chdir(str(original_dir / "slice"))
+    command = ["bash", "-c", "eval $(opam env --switch=4.14.1) && dune exec -- bin/main.exe --to-sppl ../scale.slice"]
+    result = run_with_timeout(command, timeout=300)
+    output = result.stdout.decode('utf-8')
+    return output
+    
+
+def run_sppl(sppl_program, timeout):
+    """Runs SPPL.
+    Args:
+        sppl_program: sppl program : string
+    Output:
+        duration, output, timed out : bool"""
+    sppl_duration = None
+    sppl_output = None
+    sppl_timed_out = False
+
+    print(f"  Running SPPL...", end='', flush=True)
+    start = time.time()
+    try:
+        # Apply timeout to SPPL execution using threading
+        import threading
+        sppl_result = [None, None]  # [output, error]
+        
+        def run_sppl():
+            try:
+                compiler = SPPL_Compiler(f'''{sppl_program}''')
+                namespace = compiler.execute_module()
+                model = Id('model')
+                event = (model >= 1.0)
+                sppl_result[0] = namespace.model.prob(event)
+            except Exception as e:
+                sppl_result[1] = e
+        
+        thread = threading.Thread(target=run_sppl)
+        thread.daemon = True
+        thread.start()
+        thread.join(timeout)
+        
+        if thread.is_alive():
+            print(f" TIMEOUT after {timeout}s", flush=True)
+            sppl_timed_out = True
+        elif sppl_result[1]:
+            print(f" ERROR: {sppl_result[1]}", flush=True)
+        else:
+            sppl_duration = time.time() - start
+            sppl_output = sppl_result[0]
+            print(f" {sppl_duration:.3f}s", flush=True)
+    except Exception as e:
+        print(f" ERROR: {e}", flush=True)
+
+    return sppl_duration, sppl_output, sppl_timed_out
+
+
 '''
 These are for functions in the gen.py library that have one argument.
 '''
-def test_asymptotic_scaling_1(test_func, timeout=300):
-    # List to store benchmark results: (program_size, ((slice_duration_dice, total_dice_duration), (slice_duration_roulette, total_roulette_duration)), sppl_duration)  
+def test_asymptotic_scaling_1_arg(test_func, timeout=300):
+    # List to store benchmark results: (program_size, ((slice_duration_dice, total_duration_dice), (slice_duration_roulette, total_duration_roulette)), sppl_duration)  
     benchmark_results = []
     
     # Track if slice or sppl has timed out
@@ -41,171 +193,52 @@ def test_asymptotic_scaling_1(test_func, timeout=300):
     
     # Generate programs of increasing size, linearly
     # Currently testing: programs of size 1-50 incremented by 10
-    for i in range(1,50,5):
+    for i in range(1,60,5):
         prog_size = i
         print(f"---- PROGRAM SIZE: {prog_size} ----", flush=True)
         
         # --- SLICE ---
         slice_duration_dice = None
         slice_duration_roulette = None
-        dice_duration = None
-        roulette_duration = None
-        total_dice_duration = None
-        total_roulette_duration = None
-        slice_output = None
+        total_duration_dice = None
+        total_duration_roulette = None
+        slice_output_dice = None
+        slice_output_roulette = None
         
         if not slice_timed_out:
+            # Get the program, write it to a tmp file
             program_slice, last_var = test_func(i)
+            if print_programs_flag: print(program_slice)
             path = (original_dir / "scale.slice").resolve()
             path.write_text(program_slice)
-            
-            # Run slice component
-            print(f"  Running Slice...", end='', flush=True)
-            os.chdir(str(original_dir / "slice"))
 
             if dice_backend:
-                command = ["./run_slice.sh", str(path)]
-                result = run_with_timeout(command, timeout) # warm-up run
-                if not result:
-                    print(f" TIMEOUT (warm-up)", flush=True)
-                    slice_timed_out = True
-                else:
-                    start = time.time()
-                    result = run_with_timeout(command, timeout)
-                    if not result:
-                        print(f" TIMEOUT after {timeout}s", flush=True)
-                        slice_timed_out = True
-                    else:
-                        slice_duration_dice = time.time() - start
-                        output = result.stdout.decode('utf-8')
+                slice_duration_dice, total_duration_dice, slice_output_dice, slice_timed_out = run_slice_to_dice(path, timeout)
 
             if roulette_backend:
-                command = ["./run_slice.sh", "--roulette", str(path)]
-                result = run_with_timeout(command, timeout) # warm-up run
-                if not result:
-                    print(f" TIMEOUT (warm-up)", flush=True)
-                    slice_timed_out = True
-                else:
-                    start = time.time()
-                    result = run_with_timeout(command, timeout)
-                    if not result:
-                        print(f" TIMEOUT after {timeout}s", flush=True)
-                        slice_timed_out = True
-                    else:
-                        slice_duration_roulette = time.time() - start
-                        output = result.stdout.decode('utf-8')
-
-            if dice_backend and roulette_backend and not slice_timed_out:
-                print(f" dice: {slice_duration_dice:.3f}s / roulette: {slice_duration_roulette:.3f}s", flush=True)
-            elif dice_backend and not slice_timed_out:
-                print(f" {slice_duration_dice:.3f}s", flush=True)
-            elif roulette_backend and not slice_timed_out:
-                print(f" {slice_duration_roulette:.3f}s", flush=True)
-
-            # Run dice / roulette component if slice succeeded
-            if not slice_timed_out:
-                if dice_backend:
-                    print(f"  Running Dice...", end='', flush=True)
-                    os.chdir(str(original_dir / "dice"))
-                    command = ["./run_dice.sh", "../output.dice"]
-                    result = run_with_timeout(command, timeout) # warm-up run
-                    if not result:
-                        print(f" TIMEOUT (warm-up)", flush=True)
-                        slice_timed_out = True
-                    else:
-                        start = time.time()
-                        result = run_with_timeout(command, timeout)
-                        if not result:
-                            print(f" TIMEOUT after {timeout}s", flush=True)
-                            slice_timed_out = True
-                        else:
-                            dice_duration = time.time() - start
-                            slice_output = result.stdout.decode('utf-8')
-                            total_dice_duration = slice_duration_dice + dice_duration
-                            print(f" {dice_duration:.3f}s (total: {total_dice_duration:.3f}s)", flush=True)
-                
-                if roulette_backend:
-                    print(f"  Running Roulette...", end='', flush=True)
-                    os.chdir(str(original_dir / "roulette"))
-                    command = ["./run_roulette.sh", "../output.rkt"]
-                    result = run_with_timeout(command, timeout) # warm-up run
-                    if not result:
-                        print(f" TIMEOUT (warm-up)", flush=True)
-                        slice_timed_out = True
-                    else:
-                        start = time.time()
-                        result = run_with_timeout(command, timeout)
-                        if not result:
-                            print(f" TIMEOUT after {timeout}s", flush=True)
-                            slice_timed_out = True
-                        else:
-                            roulette_duration = time.time() - start
-                            slice_output = result.stdout.decode('utf-8')
-                            total_roulette_duration = slice_duration_roulette + roulette_duration
-                            print(f" {roulette_duration:.3f}s (total: {total_roulette_duration:.3f}s)", flush=True)
-
-            else:
-                print(f"  Skipping Slice (previous timeout)", flush=True)
+                slice_duration_roulette, total_duration_roulette, slice_output_roulette, slice_timed_out = run_slice_to_roulette(path, timeout)
+        else:
+            print(f"  Skipping Slice (previous timeout)", flush=True)
         
         # --- SPPL ---
         sppl_duration = None
         sppl_output = None
         
         if not sppl_timed_out:
-            print(f"  Running SPPL...", end='', flush=True)
-            os.chdir(str(original_dir / "slice"))
-            command = ["bash", "-c", "eval $(opam env --switch=4.14.1) && dune exec -- bin/main.exe --to-sppl ../scale.slice"]
-            result = run_with_timeout(command, timeout)
-            
-            if not result:
-                print(f" TIMEOUT after {timeout}s (conversion)", flush=True)
-                sppl_timed_out = True
-            else:
-                output = result.stdout.decode('utf-8')
-                start = time.time()
-                try:
-                    # Apply timeout to SPPL execution using threading
-                    import threading
-                    sppl_result = [None, None]  # [output, error]
-                    
-                    def run_sppl():
-                        try:
-                            compiler = SPPL_Compiler(f'''{output}''')
-                            namespace = compiler.execute_module()
-                            model = Id('model')
-                            event = (model >= 1.0)
-                            sppl_result[0] = namespace.model.prob(event)
-                        except Exception as e:
-                            sppl_result[1] = e
-                    
-                    thread = threading.Thread(target=run_sppl)
-                    thread.daemon = True
-                    thread.start()
-                    thread.join(timeout)
-                    
-                    if thread.is_alive():
-                        print(f" TIMEOUT after {timeout}s", flush=True)
-                        sppl_timed_out = True
-                    elif sppl_result[1]:
-                        print(f" ERROR: {sppl_result[1]}", flush=True)
-                    else:
-                        sppl_duration = time.time() - start
-                        sppl_output = sppl_result[0]
-                        print(f" {sppl_duration:.3f}s", flush=True)
-                except Exception as e:
-                    print(f" ERROR: {e}", flush=True)
+            sppl_program = convert_to_sppl_from_slice()
+            sppl_duration, sppl_output, sppl_timed_out = run_sppl(sppl_program, timeout)
         else:
             print(f"  Skipping SPPL (previous timeout)", flush=True)
         
         os.chdir(str(original_dir))
         
         # Only append results if we have slice data (even if SPPL timed out)
-        if (slice_duration_dice and slice_duration_roulette) is not None and (total_dice_duration and total_roulette_duration) is not None:
-            benchmark_results.append((prog_size, ((slice_duration_dice, total_dice_duration), (slice_duration_roulette, total_roulette_duration)), sppl_duration))
+        if (slice_duration_dice and slice_duration_roulette) is not None and (total_duration_dice and total_duration_roulette) is not None:
+            benchmark_results.append((prog_size, ((slice_duration_dice, total_duration_dice), (slice_duration_roulette, total_duration_roulette)), sppl_duration))
         
         # Print detailed output if requested
         if print_outputs_flag and sppl_output is not None: 
-            print(f"  Outputs: sppl={sppl_output}, slice={slice_output}", flush=True)
+            print(f"  Outputs: sppl={sppl_output}, slice+dice={slice_output_dice}, slice+roulette={slice_output_roulette}", flush=True)
         print("", flush=True)
          
     return benchmark_results
@@ -214,8 +247,8 @@ def test_asymptotic_scaling_1(test_func, timeout=300):
 '''
 These are for functions in the gen.py library that have two arguments.
 '''
-def test_asymptotic_scaling_2(test_func, timeout=300):
-    # List to store benchmark results: (program_size, ((slice_duration_dice, total_dice_duration), (slice_duration_roulette, total_roulette_duration)), sppl_duration)  
+def test_asymptotic_scaling_2_arg(test_func, timeout=300):
+    # List to store benchmark results: (program_size, ((slice_duration_dice, total_duration_dice), (slice_duration_roulette, total_duration_roulette)), sppl_duration)  
     benchmark_results = []
     
     # Track if slice or sppl has timed out
@@ -233,8 +266,8 @@ def test_asymptotic_scaling_2(test_func, timeout=300):
         slice_duration_roulette = None
         dice_duration = None
         roulette_duration = None
-        total_dice_duration = None
-        total_roulette_duration = None
+        total_duration_dice = None
+        total_duration_roulette = None
         slice_output = None
         
         if not slice_timed_out:
@@ -304,8 +337,8 @@ def test_asymptotic_scaling_2(test_func, timeout=300):
                         else:
                             dice_duration = time.time() - start
                             slice_output = result.stdout.decode('utf-8')
-                            total_dice_duration = slice_duration_dice + dice_duration
-                            print(f" {dice_duration:.3f}s (total: {total_dice_duration:.3f}s)", flush=True)
+                            total_duration_dice = slice_duration_dice + dice_duration
+                            print(f" {dice_duration:.3f}s (total: {total_duration_dice:.3f}s)", flush=True)
                 
                 if roulette_backend:
                     print(f"  Running Roulette...", end='', flush=True)
@@ -324,8 +357,8 @@ def test_asymptotic_scaling_2(test_func, timeout=300):
                         else:
                             roulette_duration = time.time() - start
                             slice_output = result.stdout.decode('utf-8')
-                            total_roulette_duration = slice_duration_roulette + roulette_duration
-                            print(f" {roulette_duration:.3f}s (total: {total_roulette_duration:.3f}s)", flush=True)
+                            total_duration_roulette = slice_duration_roulette + roulette_duration
+                            print(f" {roulette_duration:.3f}s (total: {total_duration_roulette:.3f}s)", flush=True)
         else:
             print(f"  Skipping Slice (previous timeout)", flush=True)
         
@@ -382,8 +415,8 @@ def test_asymptotic_scaling_2(test_func, timeout=300):
         os.chdir(str(original_dir))
         
         # Only append results if we have slice data (even if SPPL timed out)
-        if (slice_duration_dice and slice_duration_roulette) is not None and (total_dice_duration and total_roulette_duration) is not None:
-            benchmark_results.append((prog_size, ((slice_duration_dice, total_dice_duration), (slice_duration_roulette, total_roulette_duration)), sppl_duration))
+        if (slice_duration_dice and slice_duration_roulette) is not None and (total_duration_dice and total_duration_roulette) is not None:
+            benchmark_results.append((prog_size, ((slice_duration_dice, total_duration_dice), (slice_duration_roulette, total_duration_roulette)), sppl_duration))
         
         # Print detailed output if requested
         if print_outputs_flag and sppl_output is not None: 
@@ -428,20 +461,20 @@ def generate_line_graphs(benchmark_results, output_path,
     
     if dice_backend:
         slice_times = [b[1][0][0] for b in benchmark_results]  # slice_dice times
-        plt.plot(all_prog_sizes, slice_times, label="Slice", color="darkblue", marker='s')
+        plt.plot(all_prog_sizes, slice_times, label="Slice", color="peru", marker='s')
     
     if dice_backend and roulette_backend:
         dice_times = [b[1][0][1] for b in benchmark_results]  # total_dice times
         roulette_times = [b[1][1][1] for b in benchmark_results]  # total_roulette times
         
-        plt.plot(all_prog_sizes, dice_times, label="Slice+Dice", color="lightblue", marker='^')
-        plt.plot(all_prog_sizes, roulette_times, label="Slice+Roulette", color="lightgreen", marker='D')
+        plt.plot(all_prog_sizes, dice_times, label="Slice+Dice", color="darkblue", marker='^')
+        plt.plot(all_prog_sizes, roulette_times, label="Slice+Roulette", color="forestgreen", marker='D')
     elif dice_backend:
         dice_times = [b[1][0][1] for b in benchmark_results]  # total_dice times
-        plt.plot(all_prog_sizes, dice_times, label="Slice+Dice", color="lightblue", marker='^')
+        plt.plot(all_prog_sizes, dice_times, label="Slice+Dice", color="darkblue", marker='^')
     elif roulette_backend:
         roulette_times = [b[1][1][1] for b in benchmark_results]  # total_roulette times
-        plt.plot(all_prog_sizes, roulette_times, label="Slice+Roulette", color="lightgreen", marker='D')
+        plt.plot(all_prog_sizes, roulette_times, label="Slice+Roulette", color="forestgreen", marker='D')
 
     plt.xlabel("Program Size")
     plt.ylabel("Execution Time (seconds)")
@@ -455,6 +488,7 @@ def generate_line_graphs(benchmark_results, output_path,
 
 
 print_outputs_flag = False
+print_programs_flag = False
 dice_backend = True
 roulette_backend = True
 # Get the project root directory more reliably
@@ -462,7 +496,7 @@ script_dir = Path(__file__).resolve().parent
 original_dir = script_dir.parent.parent  # Go up two levels from benchmarks/scaling to project root
 
 def main():
-    global print_outputs_flag, dice_backend, roulette_backend
+    global print_outputs_flag, print_programs_flag, dice_backend, roulette_backend
     
     # Parse command line arguments
     timeout = 300  # Default timeout per benchmark
@@ -474,6 +508,9 @@ def main():
     
     if "--print-outputs" in sys.argv:
         print_outputs_flag = True
+
+    if "--print-programs" in sys.argv:
+        print_programs_flag = True
     
     if "--dice" in sys.argv:
         dice_backend = True
@@ -506,7 +543,7 @@ def main():
         print(f"\nTesting asymptotic scaling for {test_func.__name__}...", flush=True)
         print(f"This will test programs of size 1 to 245 in increments of 5.", flush=True)
         print("", flush=True)
-        benchmark_results = test_asymptotic_scaling_1(test_func, timeout=timeout)
+        benchmark_results = test_asymptotic_scaling_1_arg(test_func, timeout=timeout)
         if benchmark_results:
             output_file = original_dir / "images" / "scaling" / f"{test_func.__name__}.png"
             output_file.parent.mkdir(parents=True, exist_ok=True)
@@ -517,7 +554,7 @@ def main():
         print(f"\nTesting asymptotic scaling for {test_func.__name__}...", flush=True)
         print(f"This will test programs of size 5 to 95 in increments of 5.", flush=True)
         print("", flush=True)
-        benchmark_results = test_asymptotic_scaling_2(test_func, timeout=timeout)
+        benchmark_results = test_asymptotic_scaling_2_arg(test_func, timeout=timeout)
         if benchmark_results:
             output_file = original_dir / "images" / "scaling" / f"{test_func.__name__}.png"
             output_file.parent.mkdir(parents=True, exist_ok=True)

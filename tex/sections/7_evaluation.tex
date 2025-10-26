@@ -77,18 +77,18 @@ Next, we evaluate the performance of our \Slice{} framework on two sets of exist
     \toprule
     Benchmark & Slice+Dice (s) & Slice+Roulette (s) & SPPL (s) \\
     \midrule
-    DT4\_bn1  & 0.211 (\textbf{16.1×}) & 2.726 (1.2×) & 3.406 \\
-    DT4\_bn2  & 0.212 (\textbf{16.3×}) & 2.742 (1.3×) & 3.465 \\
-    DT4\_ind  & 0.197 (\textbf{16.8×}) & 2.665 (1.2×) & 3.306 \\
-    DT14\_bn1 & 0.232 (\textbf{15.3×}) & 2.929 (1.2×) & 3.547 \\
-    DT14\_bn2 & 0.232 (\textbf{17.5×}) & 2.925 (1.4×) & 4.055 \\
-    DT14\_ind & 0.215 (\textbf{15.7×}) & 2.743 (1.2×) & 3.365 \\
-    DT16\_bn1 & 0.227 (\textbf{16.2×}) & 2.952 (1.2×) & 3.667 \\
-    DT16\_bn2 & 0.230 (\textbf{15.8×}) & 3.064 (1.2×) & 3.624 \\
-    DT16\_ind & 0.213 (\textbf{16.5×}) & 2.848 (1.2×) & 3.517 \\
-    DT44\_bn1 & 0.273 (\textbf{14.5×}) & 3.806 (1.0×) & 3.967 \\
-    DT44\_bn2 & 0.277 (\textbf{14.2×}) & 3.586 (1.1×) & 3.934 \\
-    DT44\_ind & 0.243 (\textbf{15.1×}) & 3.067 (1.2×) & 3.686 \\
+    DT4\_bn1  & 0.029 (\textbf{6.1×}) & 2.534 (0.1×) & 0.176 \\
+    DT4\_bn2  & 0.030 (\textbf{6.6×}) & 2.536 (0.1×) & 0.199 \\
+    DT4\_ind  & 0.029 (\textbf{2.7×}) & 2.579 (0.0×) & 0.077 \\
+    DT14\_bn1 & 0.049 (\textbf{6.4×}) & 2.745 (0.1×) & 0.315 \\
+    DT14\_bn2 & 0.049 (\textbf{7.4×}) & 2.805 (0.1×) & 0.364 \\
+    DT14\_ind & 0.033 (\textbf{4.8×}) & 2.783 (0.1×) & 0.157 \\
+    DT16\_bn1 & 0.043 (\textbf{7.8×}) & 2.915 (0.1×) & 0.335 \\
+    DT16\_bn2 & 0.046 (\textbf{7.9×}) & 2.980 (0.1×) & 0.364 \\
+    DT16\_ind & 0.031 (\textbf{6.0×}) & 2.701 (0.1×) & 0.185 \\
+    DT44\_bn1 & 0.087 (\textbf{7.8×}) & 3.520 (0.2×) & 0.676 \\
+    DT44\_bn2 & 0.089 (\textbf{8.1×}) & 3.670 (0.2×) & 0.723 \\
+    DT44\_ind & 0.061 (\textbf{6.8×}) & 3.020 (0.1×) & 0.413 \\
     \bottomrule
     \end{tabular}
 \caption{Execution times (seconds) for the benchmarks from \cite{albarghouthi2017fairsquare}.}
@@ -106,11 +106,11 @@ Next, we evaluate the performance of our \Slice{} framework on two sets of exist
     \toprule
     Benchmark & Slice+Dice (s) & Slice+Roulette (s) & SPPL (s) \\
     \midrule
-    ClickGraph     & 0.510 (\textbf{215.4×}) & 4.891 (22.5×) & 109.868 \\
-    ClinicalTrial  & 0.738 (\textbf{10.8×})  & 4.352 (1.8×)  & 7.965 \\
-    CoinBias       & 0.261 (\textbf{15.6×})  & 3.006 (1.4×)  & 4.067 \\
-    SurveyUnbias   & 0.229 (\textbf{15.7×})  & 2.849 (1.3×)  & 3.599 \\
-    TrueSkill      & 0.222 (\textbf{15.5×})  & 2.762 (1.2×)  & 3.438 \\
+    ClickGraph     & 0.359 (\textbf{305.5×}) & 5.209 (21.0×) & 109.566 \\
+    ClinicalTrial  & 0.535 (\textbf{9.1×})   & 4.453 (1.1×)  & 4.894 \\
+    CoinBias       & 0.078 (\textbf{10.8×})  & 3.115 (0.27×) & 0.841 \\
+    SurveyUnbias   & 0.043 (\textbf{8.1×})   & 2.772 (0.13×) & 0.347 \\
+    TrueSkill      & 0.041 (\textbf{5.0×})   & 2.766 (0.074×) & 0.204 \\
     \bottomrule
     \end{tabular}    
 \caption{Execution times (seconds) for the benchmarks taken from \cite{gehr2016psi}.}

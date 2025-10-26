@@ -111,7 +111,7 @@ let perform_two_proportion_z_test ~print_all (t_disc, f_disc, e_disc, o_disc) (t
       )
 
 (* Process a single .slice file *)
-let process_file ~print_all ~to_sppl ~backend filename : ( ((int * int * int) * (int * int * int)) option, string) result =
+let process_file ~print_all ~to_sppl ~backend ~time filename : ( ((int * int * int) * (int * int * int)) option, string) result =
   if print_all then Printf.printf "Processing file: %s\n" filename;
   try
     let content = read_file filename in
@@ -125,16 +125,22 @@ let process_file ~print_all ~to_sppl ~backend filename : ( ((int * int * int) * 
       (* Original logic: pretty print, elab, discretize, compare *)
       if print_all then Printf.printf "Source:\n%s\n\n" content;
       
+      let start_time = Unix.gettimeofday () in
       let texpr = Slice.Inference.infer expr in 
       let final_type = fst texpr in 
 
 
       (* Discretize FIRST to make sure return type is not discretized *)
       let discretized_expr = Slice.Discretization.discretize_top texpr in
+      let end_time = Unix.gettimeofday () in
 
-      if print_all then Printf.printf "Typed AST (Pretty):\n%s\n\n" (Slice.Pretty.string_of_texpr texpr);
-      
+      if time then (
+        let elapsed = end_time -. start_time in
+        Printf.eprintf "%.3f\n" elapsed;
+      );
+
       if print_all then (
+        Printf.printf "Typed AST (Pretty):\n%s\n\n" (Slice.Pretty.string_of_texpr texpr);
         Printf.printf "Discretized Program (Pretty):\n%s\n\n" (Slice.Pretty.string_of_expr discretized_expr);
         let backend_code = match backend with
           | `Dice -> Slice.To_dice.string_of_expr discretized_expr
@@ -150,7 +156,7 @@ let process_file ~print_all ~to_sppl ~backend filename : ( ((int * int * int) * 
         in
         Printf.printf "%s\n" backend_code
       );
-
+      
       (* Only run simulations if the result type is bool and print_all is true *)
       match Slice.Ast.force final_type with 
       | Slice.Ast.TBool when print_all -> 
@@ -189,7 +195,7 @@ let has_slice_extension filename =
   Filename.check_suffix filename ".slice"
 
 (* Process a directory, finding all .slice files recursively *)
-let rec process_directory ~print_all ~to_sppl ~backend path : (int * (string * string) list * (string * (int * int * int) * (int * int * int)) list) =
+let rec process_directory ~print_all ~to_sppl ~backend ~time path : (int * (string * string) list * (string * (int * int * int) * (int * int * int)) list) =
   let dir = Unix.opendir path in
   let rec process_entries count errors_list diff_details_list =
     try
@@ -201,7 +207,7 @@ let rec process_directory ~print_all ~to_sppl ~backend path : (int * (string * s
         let stats = Unix.stat full_path in
         match stats.Unix.st_kind with
         | Unix.S_REG when has_slice_extension full_path ->
-            (match process_file ~print_all ~to_sppl ~backend full_path with
+            (match process_file ~print_all ~to_sppl ~backend ~time full_path with
              | Ok diff_details_opt ->
                  let new_diff_details_list = 
                    match diff_details_opt with
@@ -214,7 +220,7 @@ let rec process_directory ~print_all ~to_sppl ~backend path : (int * (string * s
                  process_entries (count + 1) ((full_path, msg) :: errors_list) diff_details_list
             )
         | Unix.S_DIR ->
-            let sub_count, sub_errors_list, sub_diff_details_list = process_directory ~print_all ~to_sppl ~backend full_path in
+            let sub_count, sub_errors_list, sub_diff_details_list = process_directory ~print_all ~to_sppl ~backend ~time full_path in
             process_entries (count + sub_count) (sub_errors_list @ errors_list) (sub_diff_details_list @ diff_details_list)
         | _ ->
             process_entries count errors_list diff_details_list
@@ -230,13 +236,13 @@ let rec process_directory ~print_all ~to_sppl ~backend path : (int * (string * s
   process_entries 0 [] []
 
 (* Main command execution logic *) 
-let run_slice path print_all to_sppl backend =
+let run_slice path print_all to_sppl backend time =
   try
     let stats = Unix.stat path in
     match stats.Unix.st_kind with
     | Unix.S_REG ->
         if has_slice_extension path then (
-          match process_file ~print_all ~to_sppl ~backend path with
+          match process_file ~print_all ~to_sppl ~backend ~time path with
           | Ok diff_details_opt ->
               if not to_sppl && print_all then (
                 match diff_details_opt with
@@ -252,7 +258,7 @@ let run_slice path print_all to_sppl backend =
         ) else
           Printf.eprintf "Error: File must have .slice extension: %s\n" path
     | Unix.S_DIR ->
-        let count, errors_list, diff_details_list = process_directory ~print_all ~to_sppl ~backend path in
+        let count, errors_list, diff_details_list = process_directory ~print_all ~to_sppl ~backend ~time path in
         if print_all then (
           Printf.printf "\n=== Directory Processing Summary ===\n";
           Printf.printf "Processed %d files.\n" count;
@@ -305,7 +311,12 @@ let backend_arg =
   ] in
   Arg.(value & opt backend `Dice & info ["backend"] ~docv:"BACKEND" ~doc)
 
-let slice_t = Term.(const run_slice $ path_arg $ print_all_arg $ to_sppl_arg $ backend_arg)
+(* New time flag argument *)
+let time_arg =
+  let doc = "Print the elapsed time for discretization to stderr." in
+  Arg.(value & flag & info ["time"] ~doc)
+
+let slice_t = Term.(const run_slice $ path_arg $ print_all_arg $ to_sppl_arg $ backend_arg $ time_arg)
 
 let cmd = 
   let doc = "Process and analyze Slice files." in

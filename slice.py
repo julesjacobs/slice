@@ -17,9 +17,15 @@ import statistics
 from pathlib import Path
 from datetime import datetime
 
+from sppl.compilers.ast_to_spe import Id
+from sppl.compilers.sppl_to_python import SPPL_Compiler
+
 # Global backend configuration - both enabled by default
 USE_DICE_BACKEND = True
 USE_ROULETTE_BACKEND = True
+
+# Get the project root directory more reliably
+original_dir = Path(__file__).resolve().parent
 
 class BenchmarkRunner:
     """Integrated benchmark runner for Slice"""
@@ -30,6 +36,7 @@ class BenchmarkRunner:
         self.results = []
         self.num_runs = 5  # Number of times to run each benchmark
         self.timeout = timeout  # Timeout in seconds
+
         
     def run_command(self, cmd, cwd=None):
         """Run a command and return timing information"""
@@ -106,6 +113,134 @@ class BenchmarkRunner:
         cmd = f"python3 {py_file}"
         return self.run_command(cmd)
     
+    ## IGNORE ALL PREVIOUS
+    def run_with_timeout(self, command, timeout):
+        """Run a command with timeout handling"""
+        try:
+            result = subprocess.run(command, shell=False, check=True, stdout=subprocess.PIPE, 
+                                stderr=subprocess.PIPE, timeout=timeout)
+            # return stdout for output, stderr result for timing, 
+            return result.stdout, result.stderr
+        except subprocess.TimeoutExpired:
+            return None
+
+    def run_slice_to_dice(self, path, timeout):
+        """
+        Runs Slice on a .slice file if --dice backend is specified.
+        Args:
+            path: path to .slice file
+            timeout: timeout for running .slice file
+        Output:
+            slice duration, total slice+dice duration, output, timed out : bool
+        """
+        slice_duration_dice = None
+        dice_duration = None
+        total_duration_dice = None
+        slice_output = None
+        slice_timed_out = False
+
+        # Run slice component
+        print(f"  Running Slice...", end='', flush=True)
+        os.chdir(str(original_dir / "slice"))
+        command = ["./run_slice.sh", "--time", str(path)]
+        result = self.run_with_timeout(command, timeout)
+        if not result:
+            print(f" TIMEOUT after {timeout}s", flush=True)
+            slice_timed_out = True
+        else:
+            slice_duration_dice = float(result[1].strip())
+
+        if not slice_timed_out:
+            # Run dice component (if slice succeeded)
+            print(f"  Running Dice...", end='', flush=True)
+            os.chdir(str(original_dir / "dice"))
+            command = ["./run_dice.sh", "--time", "../output.dice"]
+            result = self.run_with_timeout(command, timeout)
+            if not result:
+                print(f" TIMEOUT after {timeout}s", flush=True)
+                slice_timed_out = True
+            else:
+                # Extract time from stderr, output from stdout
+                dice_duration = float(result[1].strip())
+                slice_output = result[0].decode('utf-8')
+                total_duration_dice = slice_duration_dice + dice_duration
+                print(f"   slice: {slice_duration_dice:.3f}s / dice: {dice_duration:.3f}s (total: {total_duration_dice:.3f}s)", flush=True)
+        else:
+            print(f"  Skipping Dice (previous timeout)", flush=True)
+        
+        os.chdir(str(original_dir))
+        return slice_duration_dice, total_duration_dice, slice_output, slice_timed_out
+
+    def run_slice_to_roulette(self, path, timeout):
+        """
+        Runs Slice on a .slice file if --roulette backend is specified.
+        Args:
+            path: path to .slice file
+            timeout: timeout for running .slice file
+        Output:
+            duration, output, timed out : bool
+        """
+        slice_duration_roulette = None
+        roulette_duration = None
+        total_duration_roulette = None
+        slice_output = None
+        slice_timed_out = False
+        
+        # Run slice component
+        print(f"  Running Slice...", end='', flush=True)
+        os.chdir(str(original_dir / "slice"))
+        command = ["./run_slice.sh", "--roulette", "--time", str(path)]
+        result = self.run_with_timeout(command, timeout)
+        if not result:
+            print(f" TIMEOUT after {timeout}s", flush=True)
+            slice_timed_out = True
+        else:
+            slice_duration_roulette = float(result[1].strip())
+
+        if not slice_timed_out:
+            # Run roulette component (if slice succeeded)
+            os.chdir(str(original_dir / "roulette"))
+            command = ["./run_roulette.sh", "--time", "../output.rkt"]
+            result = self.run_with_timeout(command, timeout)
+            if not result:
+                print(f" TIMEOUT after {timeout}s", flush=True)
+                slice_timed_out = True
+            else:
+                # Extract time from stderr, output from stdout
+                roulette_duration = float(result[1].strip())
+                slice_output = result[0].decode('utf-8')
+                total_duration_roulette = slice_duration_roulette + roulette_duration
+                print(f"   slice: {slice_duration_roulette:.3f}s / roulette: {roulette_duration:.3f}s (total: {total_duration_roulette:.3f}s)", flush=True)
+        else:
+            print(f"  Skipping Slice (previous timeout)", flush=True)
+        
+        os.chdir(str(original_dir))
+        return slice_duration_roulette, total_duration_roulette, slice_output, slice_timed_out
+
+
+    def run_sppl(self, py_file, timeout):
+        """Runs SPPL.
+        Args:
+            sppl_program: sppl program : string
+        Output:
+            duration, output, timed out : bool"""
+        sppl_duration = None
+        sppl_output = None
+        sppl_timed_out = False
+
+        command = ["python3", f"{py_file}", "--time"]
+        result = self.run_with_timeout(command, timeout)
+
+        if not result:
+            print(f" TIMEOUT after {timeout}s", flush=True)
+            sppl_timed_out = True
+        else:
+            sppl_duration = float(result[1].strip())
+            sppl_output = result[0].decode('utf-8')
+    
+        return sppl_duration, sppl_output, sppl_timed_out
+    
+    
     def run_decision_tree_benchmarks(self):
         """Run decision tree benchmarks comparing Slice and SPPL"""
         print("Running decision tree benchmarks...", flush=True)
@@ -122,59 +257,63 @@ class BenchmarkRunner:
                 benchmark_name = f"{size}_{variant}"
                 
                 # Run Slice version
-                slice_file = size_dir / f"{benchmark_name}.slice"
+                slice_file = (size_dir / f"{benchmark_name}.slice").resolve()
                 if slice_file.exists():
                     if USE_DICE_BACKEND:
                         print(f"  Running {benchmark_name} (Slice / dice)...", flush=True)
-                        timing = self.run_slice_on_file(slice_file, 'dice')
-                        if timing:
+                        _, total_duration_dice, _, _ = self.run_slice_to_dice(slice_file, 300)
+
+                        # timing = self.run_slice_on_file(slice_file, 'dice')
+                        if total_duration_dice:
                             self.results.append({
                                 'benchmark': benchmark_name,
                                 'category': 'decision_tree',
                                 'size': size,
                                 'variant': variant,
                                 'tool': 'slice-dice',
-                                'mean_time': timing['mean'],
-                                'stdev': timing['stdev'],
-                                'min_time': timing['min'],
-                                'max_time': timing['max']
+                                'mean_time': total_duration_dice,
+                                'stdev': 0,
+                                'min_time': 0,
+                                'max_time': 0
                             })
-                            print(f"    Mean: {timing['mean']:.3f}s ± {timing['stdev']:.3f}s")
+                            print(f"    Mean: {total_duration_dice:.3f}s ± {0:.3f}s")
                     if USE_ROULETTE_BACKEND:
                         print(f"  Running {benchmark_name} (Slice / roulette)...", flush=True)
-                        timing = self.run_slice_on_file(slice_file, 'roulette')
-                        if timing:
+                        _, total_duration_roulette, _, _ = self.run_slice_to_roulette(slice_file, 300)
+                        if total_duration_roulette:
                             self.results.append({
                                 'benchmark': benchmark_name,
                                 'category': 'decision_tree',
                                 'size': size,
                                 'variant': variant,
                                 'tool': 'slice-roulette',
-                                'mean_time': timing['mean'],
-                                'stdev': timing['stdev'],
-                                'min_time': timing['min'],
-                                'max_time': timing['max']
+                                'mean_time': total_duration_roulette,
+                                'stdev': 0,
+                                'min_time': 0,
+                                'max_time': 0
                             })
-                            print(f"    Mean: {timing['mean']:.3f}s ± {timing['stdev']:.3f}s")
+                            print(f"    Mean: {total_duration_roulette:.3f}s ± {0:.3f}s")
                 
                 # Run SPPL version
-                py_file = size_dir / f"{benchmark_name}.py"
+                py_file = (size_dir / f"{benchmark_name}.py").resolve()
                 if py_file.exists():
                     print(f"  Running {benchmark_name} (SPPL)...", flush=True)
-                    timing = self.run_python_file(py_file)
-                    if timing:
+                    sppl_output, _, _ = self.run_sppl(py_file, 300)
+                    if sppl_output:
                         self.results.append({
                             'benchmark': benchmark_name,
                             'category': 'decision_tree',
                             'size': size,
                             'variant': variant,
                             'tool': 'sppl',
-                            'mean_time': timing['mean'],
-                            'stdev': timing['stdev'],
-                            'min_time': timing['min'],
-                            'max_time': timing['max']
+                            'mean_time': sppl_output,
+                            'stdev': 0,
+                            'min_time': 0,
+                            'max_time': 0
                         })
-                        print(f"    Mean: {timing['mean']:.3f}s ± {timing['stdev']:.3f}s")
+                        print(f"    Mean: {sppl_output:.3f}s ± {0:.3f}s")
+                else:
+                    print(f"File not found: {py_file}")
     
     def run_baseline_benchmarks(self):
         """Run baseline benchmarks comparing Slice and SPPL"""
@@ -185,53 +324,54 @@ class BenchmarkRunner:
         
         for benchmark in ["clickgraph", "clinical_trial", "coin_bias", "survey_unbias", "trueskill"]:
             # Run Slice version
-            slice_file = baseline_dir / f"{benchmark}.slice"
+            slice_file = (baseline_dir / f"{benchmark}.slice").resolve()
             if slice_file.exists():
                 if USE_DICE_BACKEND:
                     print(f"  Running {benchmark} (Slice / dice)...", flush=True)
-                    timing = self.run_slice_on_file(slice_file, 'dice')
-                    if timing:
+                    _, total_duration_dice, _, _ = self.run_slice_to_dice(slice_file, 300)
+                    if total_duration_dice:
                         self.results.append({
                             'benchmark': benchmark,
                             'category': 'baseline',
                             'tool': 'slice-dice',
-                            'mean_time': timing['mean'],
-                            'stdev': timing['stdev'],
-                            'min_time': timing['min'],
-                            'max_time': timing['max']
+                            'mean_time': total_duration_dice,
+                            'stdev': 0,
+                            'min_time': 0,
+                            'max_time': 0
                         })
-                        print(f"    Mean: {timing['mean']:.3f}s ± {timing['stdev']:.3f}s")
+                        print(f"    Mean: {total_duration_dice:.3f}s ± {0:.3f}s")
                 if USE_ROULETTE_BACKEND:
                     print(f"  Running {benchmark} (Slice / roulette)...", flush=True)
-                    timing = self.run_slice_on_file(slice_file, 'roulette')
-                    if timing:
+                    _, total_duration_roulette, _, _ = self.run_slice_to_roulette(slice_file, 300)
+                    
+                    if total_duration_roulette:
                         self.results.append({
                             'benchmark': benchmark,
                             'category': 'baseline',
                             'tool': 'slice-roulette',
-                            'mean_time': timing['mean'],
-                            'stdev': timing['stdev'],
-                            'min_time': timing['min'],
-                            'max_time': timing['max']
+                            'mean_time': total_duration_roulette,
+                            'stdev': 0,
+                            'min_time': 0,
+                            'max_time': 0
                         })
-                        print(f"    Mean: {timing['mean']:.3f}s ± {timing['stdev']:.3f}s")
-            
+                        print(f"    Mean: {total_duration_roulette:.3f}s ± {0:.3f}s")
+
             # Run SPPL version
-            py_file = baseline_dir / f"{benchmark}.py"
+            py_file = (baseline_dir / f"{benchmark}.py").resolve()
             if py_file.exists():
                 print(f"  Running {benchmark} (SPPL)...", flush=True)
-                timing = self.run_python_file(py_file)
-                if timing:
+                sppl_output, _, _ = self.run_sppl(py_file, 300)
+                if sppl_output:
                     self.results.append({
                         'benchmark': benchmark,
                         'category': 'baseline',
                         'tool': 'sppl',
-                        'mean_time': timing['mean'],
-                        'stdev': timing['stdev'],
-                        'min_time': timing['min'],
-                        'max_time': timing['max']
+                        'mean_time': sppl_output,
+                        'stdev': 0,
+                        'min_time': 0,
+                        'max_time': 0
                     })
-                    print(f"    Mean: {timing['mean']:.3f}s ± {timing['stdev']:.3f}s")
+                    print(f"    Mean: {sppl_output:.3f}s ± {0:.3f}s")
     
     def run_scaling_benchmarks(self):
         """Run scaling benchmarks"""
@@ -310,6 +450,7 @@ class BenchmarkRunner:
         """Save results to CSV and JSON"""
         # Save detailed results
         csv_file = self.output_dir / "benchmark_results.csv"
+        print(os.getcwd())
         if self.results:
             with open(csv_file, 'w', newline='') as f:
                 writer = csv.DictWriter(f, fieldnames=self.results[0].keys())

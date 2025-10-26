@@ -1,9 +1,18 @@
+import argparse
+import sys
+import time
 from sppl.compilers.ast_to_spe import Id
 from sppl.compilers.sppl_to_python import SPPL_Compiler
 
-compiler = SPPL_Compiler('''
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--time", action="store_true", help="Print only the execution time to stderr")
+    args = parser.parse_args()
+
+    start_time = time.time()
+    compiler = SPPL_Compiler('''
 from sppl.sym_util import binspace
-                         
+                        
 observedResults = [1,1,0,1,0]
 bias ~= beta(a=2, b=5)
 tossResults = array(5)
@@ -13,9 +22,17 @@ for i in range(5):
 
 for i in range(5):
     condition(tossResults[i] == observedResults[i])
-                           ''')
+''')
+    
+    namespace = compiler.execute_module()
+    e = Id('tossResults[0]')
+    event = (e < 1)
+    prob = namespace.model.prob(event)
+    elapsed = time.time() - start_time
 
-namespace = compiler.execute_module()
-e  = Id('tossResults[0]')
-event = (e < 1)
-print(namespace.model.prob(event))
+    print(prob)
+    if args.time:
+        print(f"{elapsed:.3f}", file=sys.stderr)
+
+if __name__ == "__main__":
+    main()
