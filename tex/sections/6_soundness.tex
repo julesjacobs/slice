@@ -803,6 +803,7 @@ We can equip this measurable space with a (sub)probability measure such that $\m
 \]
 
 We give some basic lemmas:
+\kevin{measure theory experts: please check}
 \begin{lemma}
 	Let $(Expr + \bot, \mathcal{F}_{Expr + \bot})$ be the measurable space of expressions with error from Definition~\ref{def:meas-space-with-error}. Let $V \subset Expr$ be the set of all value expressions. Let $N \subset Expr$, defined as $N = Expr \setminus V$, be the set of non-value expressions. Let $\{\bot\}$ be the singleton set containing the error element $\bot$. The following are true:
 	\begin{enumerate}
@@ -1108,6 +1109,7 @@ And the semantics is as follows:
 	since $\uniform(e_1,e_2)[v/x] = \uniform(e_1[v/x], e_2[v/x])$ by the definition of substitution.
 \end{proof}
 
+\kevin{in the third case below, we now more than just $v\in\Nats$, no?}
 \begin{lemma}[Canonical forms]\label{lem:canonical-forms}
 	Let $v$ be a closed value. 
 	\begin{enumerate}
