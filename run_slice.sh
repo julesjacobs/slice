@@ -8,6 +8,7 @@
 # Default to dice if no backend specified
 BACKEND="dice"
 OUTPUT_EXT="dice"  # Default output extension
+TIME_FLAG=false
 
 # Parse command line arguments
 while [[ $# -gt 0 ]]; do
@@ -22,8 +23,11 @@ while [[ $# -gt 0 ]]; do
       OUTPUT_EXT="rkt"
       shift
       ;;
+    --time)
+      TIME_FLAG=true
+      shift
+      ;;
     *)
-      # First non-flag argument is the example program
       if [[ -z "$EXAMPLE" ]]; then
         EXAMPLE=$1
         shift
@@ -36,10 +40,11 @@ while [[ $# -gt 0 ]]; do
 done
 
 if [ -z "$EXAMPLE" ]; then
-  echo "Usage: $0 [--dice|--roulette] <example-program>"
+  echo "Usage: $0 [--dice|--roulette] [--time] <example-program>"
   echo "Options:"
   echo "  --dice       Use Dice backend (default)"
   echo "  --roulette   Use Roulette backend"
+  echo "  --time       Measure and print total execution time"
   exit 1
 fi
 
@@ -49,14 +54,18 @@ EXAMPLE_ABS=$(realpath "$EXAMPLE")
 cd slice || exit 1
 
 if [ "$BACKEND" = "roulette" ]; then
-  # For roulette, prepend the #lang line
-  {
-    echo "#lang roulette/example/disrupt"
-    ./_build/default/bin/main.exe --backend "$BACKEND" "$EXAMPLE_ABS"
-  } > "../output.$OUTPUT_EXT"
+  if [ "$TIME_FLAG" = true ]; then
+    slice_time_roulette=$(./run_slice.sh --roulette --time "$EXAMPLE_ABS" 2>&1 >/dev/null)
+  else
+    ./run_slice.sh --roulette "$EXAMPLE_ABS" > /dev/null 2>&1
+  fi
+
 else
-  # For dice, just run normally
-  ./_build/default/bin/main.exe --backend "$BACKEND" "$EXAMPLE_ABS" > "../output.$OUTPUT_EXT"
+  if [ "$TIME_FLAG" = true ]; then
+    slice_time_dice=$(./run_slice.sh --time "$EXAMPLE_ABS" 2>&1 >/dev/null)
+  else
+    ./run_slice.sh "$EXAMPLE_ABS" > /dev/null 2>&1
+  fi
 fi
 
 cd ..
@@ -66,10 +75,25 @@ case $BACKEND in
   "dice")
     # Run dice backend
     cd dice || exit 1
-    ./_build/default/bin/dice.exe "../output.$OUTPUT_EXT" -show-size -flip-lifting
+    if [ "$TIME_FLAG" = true ]; then
+      ./run_dice.sh --time "../output.$OUTPUT_EXT" 2>/dev/null
+      backend_time_dice=$(./run_dice.sh --time "../output.$OUTPUT_EXT" 2>&1 >/dev/null)
+      total_time=$(echo "$slice_time_dice + $backend_time_dice" | bc -l)
+      echo "$total_time" >&2
+    else
+      ./run_dice.sh "../output.$OUTPUT_EXT"
+    fi
     ;;
   "roulette")
     # Run racket for roulette backend
-    racket "output.$OUTPUT_EXT"
+    cd roulette || exit 1
+    if [ "$TIME_FLAG" = true ]; then
+      ./run_roulette.sh --time "../output.$OUTPUT_EXT" 2>/dev/null
+      backend_time_roulette=$(./run_roulette.sh --time "../output.$OUTPUT_EXT" 2>&1 >/dev/null)
+      total_time=$(echo "$slice_time_roulette + $backend_time_roulette" | bc -l)
+      echo "$total_time" >&2
+    else
+      ./run_roulette.sh "../output.$OUTPUT_EXT"
+    fi
     ;;
 esac

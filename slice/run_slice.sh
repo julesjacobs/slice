@@ -25,7 +25,6 @@ while [[ $# -gt 0 ]]; do
       shift
       ;;
     *)
-      # First non-flag argument is the input file
       if [[ -z "$INPUT" ]]; then
         INPUT=$1
         shift
@@ -48,58 +47,57 @@ if [ -z "$INPUT" ]; then
 fi
 
 INPUT_ABS=$(realpath "$INPUT")
-
-# Determine output file extension based on backend
 OUTPUT_EXT=$([ "$BACKEND" = "roulette" ] && echo "rkt" || echo "dice")
 
-if [ "$TIME" = true ]; then
-  if [ "$BACKEND" = "roulette" ]; then
-    # For roulette, prepend the #lang line
-    {
-      echo "#lang roulette/example/disrupt"
-      if [ "$PRINT_ALL" = true ]; then
-        ./_build/default/bin/main.exe --print-all --backend "$BACKEND" --time "$INPUT_ABS" 2>/dev/null
-      else
-        ./_build/default/bin/main.exe --backend "$BACKEND" --time "$INPUT_ABS" 2>/dev/null
-      fi
-    } | tee "../output.$OUTPUT_EXT"
-    
-    # Print time to stderr
+# ================[ MAIN EXECUTION ]================
+
+if [ "$BACKEND" = "roulette" ]; then 
+  # ROULETTE
+  if [ "$TIME" = true ]; then
+    echo "#lang roulette/example/disrupt" > "../output.$OUTPUT_EXT"
+    # always write non-print-all version to output file
+    ./_build/default/bin/main.exe --backend "$BACKEND" --time "$INPUT_ABS" 2>/dev/null >> "../output.$OUTPUT_EXT"
+
     if [ "$PRINT_ALL" = true ]; then
-      ./_build/default/bin/main.exe --print-all --backend "$BACKEND" --time "$INPUT_ABS" 2>&1 >/dev/null | grep '^[0-9]*\.[0-9]*$' >&2
+      ./_build/default/bin/main.exe --print-all --backend "$BACKEND" --time "$INPUT_ABS" 2>/dev/null
     else
-      ./_build/default/bin/main.exe --backend "$BACKEND" --time "$INPUT_ABS" 2>&1 >/dev/null | grep '^[0-9]*\.[0-9]*$' >&2
+      ./_build/default/bin/main.exe --backend "$BACKEND" --time "$INPUT_ABS" 2>/dev/null
     fi
+
+    # print time to stderr
+    ./_build/default/bin/main.exe --backend "$BACKEND" --time "$INPUT_ABS" 2>&1 >/dev/null | grep '^[0-9]*\.[0-9]*$' >&2
+
   else
-    # For dice, run normally
+    echo "#lang roulette/example/disrupt" > "../output.$OUTPUT_EXT"
+    ./_build/default/bin/main.exe --backend "$BACKEND" "$INPUT_ABS" >> "../output.$OUTPUT_EXT"
     if [ "$PRINT_ALL" = true ]; then
-      ./_build/default/bin/main.exe --print-all --backend "$BACKEND" --time "$INPUT_ABS" 2>/dev/null | tee "../output.$OUTPUT_EXT"
-      # Print time to stderr
-      ./_build/default/bin/main.exe --print-all --backend "$BACKEND" --time "$INPUT_ABS" 2>&1 >/dev/null | grep '^[0-9]*\.[0-9]*$' >&2
+      ./_build/default/bin/main.exe --print-all --backend "$BACKEND" "$INPUT_ABS"
     else
-      ./_build/default/bin/main.exe --backend "$BACKEND" --time "$INPUT_ABS" 2>/dev/null | tee "../output.$OUTPUT_EXT"
-      # Print time to stderr
-      ./_build/default/bin/main.exe --backend "$BACKEND" --time "$INPUT_ABS" 2>&1 >/dev/null | grep '^[0-9]*\.[0-9]*$' >&2
+      ./_build/default/bin/main.exe --backend "$BACKEND" "$INPUT_ABS"
     fi
   fi
-else
-  # Original behavior without --time
-  if [ "$BACKEND" = "roulette" ]; then
-    # For roulette, prepend the #lang line
-    {
-      echo "#lang roulette/example/disrupt"
-      if [ "$PRINT_ALL" = true ]; then
-        ./_build/default/bin/main.exe --print-all --backend "$BACKEND" "$INPUT_ABS"
-      else
-        ./_build/default/bin/main.exe --backend "$BACKEND" "$INPUT_ABS"
-      fi
-    } | tee "../output.$OUTPUT_EXT"
-  else
-    # For dice, run normally
+
+else 
+  # DICE
+  if [ "$TIME" = true ]; then
+    # always write non-print-all version to output file
+    ./_build/default/bin/main.exe --backend "$BACKEND" --time "$INPUT_ABS" 2>/dev/null > "../output.$OUTPUT_EXT"
+
     if [ "$PRINT_ALL" = true ]; then
-      ./_build/default/bin/main.exe --print-all --backend "$BACKEND" "$INPUT_ABS" | tee "../output.$OUTPUT_EXT"
+      ./_build/default/bin/main.exe --print-all --backend "$BACKEND" --time "$INPUT_ABS" 2>/dev/null
     else
-      ./_build/default/bin/main.exe --backend "$BACKEND" "$INPUT_ABS" | tee "../output.$OUTPUT_EXT"
+      ./_build/default/bin/main.exe --backend "$BACKEND" --time "$INPUT_ABS" 2>/dev/null
+    fi
+
+    # print time to stderr
+    ./_build/default/bin/main.exe --backend "$BACKEND" --time "$INPUT_ABS" 2>&1 >/dev/null | grep '^[0-9]*\.[0-9]*$' >&2
+
+  else
+    ./_build/default/bin/main.exe --backend "$BACKEND" "$INPUT_ABS" > "../output.$OUTPUT_EXT"
+    if [ "$PRINT_ALL" = true ]; then
+      ./_build/default/bin/main.exe --print-all --backend "$BACKEND" "$INPUT_ABS"
+    else
+      ./_build/default/bin/main.exe --backend "$BACKEND" "$INPUT_ABS"
     fi
   fi
 fi

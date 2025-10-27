@@ -3,19 +3,18 @@
 # Exit if any command fails
 set -e
 
-# Initialize flag
-TIME_FLAG=false
+TIME=false
 
-# Parse arguments
-if [ "$#" -lt 1 ]; then
-    echo "Usage: ./run_roulette.sh [--time] <file.rkt>" >&2
-    exit 1
+# Parse flags
+if [[ "$1" == "--time" ]]; then
+    TIME=true
+    shift
 fi
 
-# Check for --time flag
-if [ "$1" == "--time" ]; then
-    TIME_FLAG=true
-    shift
+# Check for input argument
+if [ "$#" -ne 1 ]; then
+    echo "Usage: ./run_roulette.sh [--time] <file.rkt>"
+    exit 1
 fi
 
 # Get the input file
@@ -23,18 +22,29 @@ input_file="$1"
 
 # Check if the file exists
 if [ ! -f "$input_file" ]; then
-    echo "Error: File '$input_file' not found." >&2
+    echo "Error: File '$input_file' not found."
     exit 1
 fi
 
-# Run the Racket program, optionally with timing
-if [ "$TIME_FLAG" = true ]; then
-    start=$(date +%s.%N)
+# If --time is specified, modify output.rkt
+if [ "$TIME" = true ]; then
+    # Check if start timing line already exists
+    if ! grep -q "(define start (current-inexact-milliseconds))" $input_file; then
+        sed -i '1a (define start (current-inexact-milliseconds))' $input_file
+    fi
+
+    # Check if end timing block already exists
+    if ! grep -q "(define end (current-inexact-milliseconds))" $input_file; then
+        cat <<'EOF' >> $input_file
+(define end (current-inexact-milliseconds))
+(define elapsed (/ (- end start) 1000.0))
+(eprintf "~a\n" (~r elapsed #:precision 3))
+EOF
+    fi
+
+    # Run modified file
     racket "$input_file"
-    end=$(date +%s.%N)
-    duration=$(awk -v start="$start" -v end="$end" 'BEGIN {printf "%.6f", end - start}')
-    echo "$duration" >&2
 else
+    # Normal execution
     racket "$input_file"
 fi
-
