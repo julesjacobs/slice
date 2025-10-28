@@ -680,12 +680,21 @@ When $\Sigma$ is a Borel $\sigma$-algebra, $\mu$ is called a Borel measure.
 \end{definition}
 
 \begin{definition}[Projection]
-	Let $(X_1, \Sigma_1)$ and $(X_2, \Sigma_2)$ be measurable spaces, and let $\mu \in \mathcal{D}(X_1 \times X_2)$. We define the first and second projection measures as:
+	Let $(X, \Sigma_X)$ and $(Y, \Sigma_Y)$ be measurable spaces, and let $\mu \in \mathcal{D}(X \times Y)$. We define the first and second projection measures as:
 	\begin{enumerate}
-		\item $\pi_1(\mu)(A) := \mu(A \times X_2)$ for every measurable $A \in \Sigma_1$
-		\item $\pi_2(\mu)(B) := \mu(X_1 \times B)$ for every measurable $B \in \Sigma_2$
+		\item $\pi_1(\mu)(A) := \mu(A \times Y)$ for every measurable $A \in \Sigma_X$
+		\item $\pi_2(\mu)(B) := \mu(X \times B)$ for every measurable $B \in \Sigma_Y$
 	\end{enumerate}
-	Then, $\pi_1(\mu)$ is a measure on $(X_1, \Sigma_1)$ and $\pi_2(\mu)$ is a measure on $(X_2, \Sigma_2)$.
+	Then, $\pi_1(\mu)$ is a measure on $(X, \Sigma_X)$ and $\pi_2(\mu)$ is a measure on $(Y, \Sigma_Y)$.
+\end{definition}
+
+\begin{definition}[Projection with error]
+	Let $(X + \bot, \Sigma_{X + \bot})$ and $(Y + \bot, \Sigma_{Y + \bot})$ be measurable spaces, with $(X, \Sigma_X)$ and $(Y, \Sigma_Y)$ measurable spaces as well. Let $\mu \in \mathcal{D}((X \times Y) + \bot)$. We define the first and second projection measures as:
+	\begin{enumerate}
+	\item $\pi_1(\mu)(A) := \mu(A \times Y)$ for every measurable $A \in \Sigma_X$, and $\pi_1(\mu)({\bot}) := \mu({\bot})$
+	\item $\pi_2(\mu)(B) := \mu(X \times B)$ for every measurable $B \in \Sigma_Y$, and $\pi_2(\mu)({\bot}) := \mu({\bot})$
+	\end{enumerate}
+	Then, $\pi_1(\mu)$ is a measure on $(X + \bot, \Sigma_{X + \bot})$ and $\pi_2(\mu)$ is a measure on $(Y + \bot, \Sigma_{Y + \bot})$.
 \end{definition}
 
 \begin{definition}[Distribution Monad with Error]
@@ -697,38 +706,73 @@ When $\Sigma$ is a Borel $\sigma$-algebra, $\mu$ is called a Borel measure.
 	where $f_{\bot}$ extends $f$ by $f_{\bot}(\bot) := \delta_{\bot}$ and $f_{\bot}(x) := f(x) \;\; \text{for every } x \in X.$
 \end{definition}
 
-\begin{lemma}[Bind-projection identity]\label{lem:bind-proj}
-	For any product-measure $\mu$ and any kernel $f$ that for each product point returns a product measure,
+\begin{lemma}[Bind-projection identity with error]\label{lem:bind-proj}
+	Let $(X + \bot, \Sigma_{X + \bot})$ and $(Y + \bot, \Sigma_{Y + \bot})$ be measurable spaces, with $(X, \Sigma_X)$ and $(Y, \Sigma_Y)$ measurable spaces as well, and let $((X \times Y) + \bot, \Sigma_{(X \times Y) + \bot})$ be a product measurable space with error. Let
 	\[
-		\pi_1(\mu \gg\!= f) = \pi_1(\mu) \gg\!= (x \mapsto \pi_1(f(x, \cdot))).
+		\mu \in \mathcal{D}((X \times Y) + \bot)
+	\]
+	be a probability measure, and let 
+	\[
+		f_{\bot} : X \times Y \to \mathcal{D}((X \times Y) + \bot)
+	\]
+	be a kernel extended to handle $\bot$ via $f_\bot(\bot) := \delta_\bot$. Then,
+	\[
+		\pi_1(\mu \gg\!= f_{\bot}) = \pi_1(\mu) \gg\!= (x \mapsto \pi_1(f_{\bot}(x, \cdot))).
 	\]
 \end{lemma}
 
 Informally, this lemma states that first marginal of a bind is the bind of the first marginal against the first marginal of the continuation.
 
 \begin{proof}
-	For any measurable set $A$,
+	For any measurable set $A \subseteq X$,
 	\begin{align*}
-		&\pi_1(\mu \gg\!= f)(A) \\
-		&= (\mu \gg\!= f)(A \times Y) && \text{(by definition of $\pi_1$)} \\
-		&= \sum \mu(x,x') f(x,x')(A \times Y) \text{ or } \int f(x,x')(A \times Y) \mu(d(x,x')) && \text{(by definition of bind)} \\
-		&= \sum \mu(x,x') \pi_1(f(x,x'))(A) \text{ or } \int \pi_1(f(x,x'))(A) \mu(d(x,x')) && \text{(by definition of $\pi_1$)} \\
+		&\pi_1(\mu \gg\!= f_{\bot})(A + \bot) \\
+		&= (\mu \gg\!= f_{\bot})((A \times Y) + \bot) && \text{(by definition of $\pi_1$)} \\
+		&= \sum \mu(x,y) f_{\bot}(x,y)((A \times Y) + \bot) \text{ or } \int f_{\bot}(x,y)((A \times Y) + \bot) \mu(d(x,y)) && \text{(by definition of bind)} \\
+		&= \sum \mu(x,y) \pi_1(f_{\bot}(x,y))(A + \bot) \text{ or } \int \pi_1(f_{\bot}(x,y))(A + \bot) \mu(d(x,y)) && \text{(by definition of $\pi_1$)} \\
 	\end{align*}
-	For the discrete case,
+	
+	For the discrete case:
 	\begin{align*}
-		&\sum_{x,x'} \mu(x,x') \pi_1(f(x,x'))(A) \\
-		&= \sum_x \left[ \sum_{x'} \mu(x,x') \pi_1(f(x,x'))(A) \right] \\
-		&= \sum_x \pi_1(f(x,x'))(A) \left[ \sum_{x'} \mu(x,x') \right] \\
-		&= \sum_x \pi_1(f(x,x'))(A) (\pi_1 \mu)(x,x') \\
-		&= (\pi_1 \mu) \gg\!= (x \mapsto \pi_1(f(x,x')))
+		&\sum_{x,y} \mu(x,y) \pi_1(f_{\bot}(x,y))(A + \bot) \\
+		&= \sum_x \left[ \sum_{y} \mu(x,y) \pi_1(f_{\bot}(x,y))(A + \bot) \right] \\
+		&= \sum_x \pi_1(f_{\bot}(x,y))(A + \bot) \left[ \sum_{y} \mu(x,y) \right] \\
+		&= \sum_x \pi_1(f_{\bot}(x,y))(A + \bot) (\pi_1 \mu)(x,y) \\
+		&= (\pi_1 \mu) \gg\!= (x \mapsto \pi_1(f_{\bot}(x,y)))
 	\end{align*}
 
-	For the continuous case, by the Disintegration Theorem, there exists a conditional distirbution $\mu(dx' \mid x)$ such that $\mu(d(x,x')) = (\pi_1 \mu)(dx)\mu(dx' \mid x)$. Thus,
+	For the continuous case: 
+
+	\katherine{need to double check types}
+	By the Disintegration Theorem, since $\mu \in \mathcal{D}((X \times Y) + \bot)$ is a probability measure on the product measurable space $((X \times Y) + \bot, \Sigma_{(X \times Y) + \bot})$, there exists a kernel
+	\[
+		\mu(\cdot \mid x) : (X + \bot, \Sigma_{X + \bot}) \to \mathcal{D}(Y + \bot)
+	\]
+	such that:
+	\begin{enumerate}
+		\item for every measurable set $B \subseteq Y + \bot$, the map $x \mapsto \mu(B \mid x)$ is measurable with respect to $\Sigma_{X + \bot}$, and
+		\item for all measurable $A \times B \subseteq (X \times Y) + \bot$,
+		\[
+			\mu(A \times B) = \int_A \mu(B \mid x)(\pi_1 \mu)(dx),
+		\]
+		where $(\pi_1 \mu)$ denotes the first projection of $\mu$, defined by:
+		\[
+			(\pi_1 \mu)(A) := \mu(A \times Y) \text{ for } A \in \Sigma_X, \quad (\pi_1 \mu)(\{\bot\}) := \mu(\{\bot\}).
+		\]
+		In differential notation, this disintegration equality can be written as
+		\[
+			\mu(d(x,y)) = (\pi_1 \mu)(dx)\mu(dy \mid x).
+		\]
+	\end{enumerate}
+
+	% Intuitively, the Disintegration Theorem asserts that any joint measure $\mu$ on $X \times Y$ can be factored uniquely into its marginal on $X$ and a conditional kernel $\mu(dy \mid x)$ describing the distribution of $Y$ given $x$.
+
+	Thus,
 	\begin{align*}
-		&\int \pi_1(f(x,x'))(A) \mu(d(x,x')) \\
-		&= \int \left[ \int \pi_1(f(x,x'))(A) \mu(dx' \mid x) \right] (\pi_1 \mu)(dx) \\
-		&= \int \pi_1(f(x,x'))(A) (\pi_1 \mu)(dx) \\
-		&= (\pi_1 \mu) \gg\!= (x \mapsto \pi_1(f(x,x')))
+		&\int_{X \times Y} \pi_1(f_{\bot}(x,y))(A + \bot) \mu(d(x,y)) \\
+		&= \int_X \left[ \int_Y \pi_1(f_{\bot}(x,y))(A + \bot) \mu(dy \mid x) \right] (\pi_1 \mu)(dx) \\
+		&= \int_{X} \pi_1(f_{\bot}(x,y))(A + \bot) (\pi_1 \mu)(dx) \\
+		&= (\pi_1 \mu) \gg\!= (x \mapsto \pi_1(f_{\bot}(x,y)))
 	\end{align*}
 \end{proof}
 
@@ -750,7 +794,7 @@ To make the probabilistic semantics precise, we define an appropriate measure sp
 	The expression $\uniform(0.0, 1.0) < 0.5$ has the skeleton $\uniform(\square_1, \square_2) < \square_3$ with three holes. 
 \end{example}
 
-\begin{lemma}[Skel is countable]
+\begin{lemma}[Skel is countable]\label{lem:skel-countable}
 	The set $\text{Skel}$ is countable.
 \end{lemma}
 
@@ -779,27 +823,65 @@ To make the probabilistic semantics precise, we define an appropriate measure sp
 	For each skeleton $s$ with $n = \text{holes}(s)$, the space $\R^n$ with its Borel $\sigma$-algebra is a Borel measureable space. Since $\text{Skel}$ is countable, the countable union of Borel measureable spaces remains a Borel measurable space. 
 \end{proof}
 
-\begin{definition}[Extension with error element]\label{def:meas-space-with-error}
-	We extend the Borel measurable space of expressions to include a distinguished error element $\bot$, defining the measurable space of extended expressions as
+
+\begin{definition}[Measurable space on well-typed expressions]
+	Let $Expr_{\tau}$ be the set of well-typed expressions. Let $\text{Skel}_{\tau}$ be the set of all well-typed expression skeletons, where $s \in \text{Skel}_{\tau}$ is a well-typed expression skeleton with $n = \text{holes}(s)$. We define the measurable spacce of expressions as the union
 	\[
-		Expr + \bot := Expr \cup \{\bot\},
+		Expr_{\tau} := \bigcup_{s \in \text{Skel}_{\tau}} \{s[\vec{r}] \mid \vec{r} \in \R^{\text{holes}(s)}\}.
 	\]
-	with the topology $\mathcal{T}_{Expr + \bot} = \{U, U \cup \{\bot\} \mid U \in \mathcal{T}_{Expr}\}$, equipped with the Borel $\sigma$-algebra $\mathcal{F}_{Expr + \bot} := \sigma(\mathcal{T}_{Expr + \bot})$.
 \end{definition}
 
+\begin{lemma}[$\text{Skel}_{\tau}$ is countable]\label{lem:skel-t-countable}
+	By Lemma~\ref{lem:skel-countable}, $\text{Skel}$ is countable. Since $\text{Skel}_{\tau} \subset \text{Skel}$, $\text{Skel}_{\tau}$ must also be countable.
+\end{lemma}
+
 \begin{lemma}
-	$(Expr + \bot, \mathcal{F}_{Expr + \bot})$ is a Borel measurable space.
+	$(Expr_{\tau}, \mathcal{F}_{Expr_{\tau}})$ is a Borel measurable space.
 \end{lemma}
 
 \begin{proof}
-	$Expr$ is itself a Borel set, and $\{\bot\}$ is an open singleton in the extended topology. The union of a Borel set with an open set is Borel. 
+	% We show that $Expr_{\tau} \in \mathcal{F}_{Expr}$. 
+	
+	By induction on $s$, focusing only on the cases when there are holes.
+
+	\textbf{Case} $s = \square_i : \floattype{B}{V}$. 
+
+	By Definition~\ref{def:meas-space}, we associate to $s[\vec{r}]$ the product space $\R^{\text{holes}(s)} = \R$, equipped with the Borel $\sigma$-algebra $\mathcal{B}(\R)$. From the type $\floattype{B}{V}$, we get $\square_i \in V$, which is Borel measurable since singletons are Borel measurable. 
+
+	\textbf{Case} $s = \uniform(\square_i : \floattype{B_i}{V_i}, \square_j : \floattype{B_j}{V_j}) : \floattype{B}{V}$. 
+
+	By Definition~\ref{def:meas-space}, we associate to $s[\vec{r}]$ the product space $\R^{\text{holes}(s)} = \R^2$, equipped with the Borel $\sigma$-algebra $\mathcal{B}(\R^2)$. From the type $\floattype{B_i}{V_i}$, we get $\square_i \in V_i$, which is Borel measurable since singletons are Borel measurable. From the type $\floattype{B_j}{V_j}$, we get $\square_j \in V_j$, which is Borel measurable since singletons are Borel measurable. Since $(\square_i, \square_j)$ is a singleton in $R^2$, $(\square_i, \square_j)$ is Borel measurable.
+
+	Thus, $s$ becomes a countable union of Borel measurable sets, which is Borel measurable. And since $\text{Skel}_{\tau}$ is countable by Lemma~\ref{lem:skel-t-countable}, $Expr_{\tau}$ is a Borel measurable space, since the countable union of Borel measurable spaces remains a Borel measurable space.
+
+\end{proof}
+
+
+
+
+
+
+\begin{definition}[Extension with error element]\label{def:meas-space-with-error}
+	We extend the Borel measurable space of expressions to include a distinguished error element $\bot$, defining the measurable space of extended expressions as
+	\[
+		Expr_{\tau} + \bot := Expr_{\tau} \cup \{\bot\},
+	\]
+	with the topology $\mathcal{T}_{Expr_{\tau} + \bot} = \{U, U \cup \{\bot\} \mid U \in \mathcal{T}_{Expr_{\tau}}\}$, equipped with the Borel $\sigma$-algebra $\mathcal{F}_{Expr_{\tau} + \bot} := \sigma(\mathcal{T}_{Expr_{\tau} + \bot})$.
+\end{definition}
+
+\begin{lemma}
+	$(Expr_{\tau} + \bot, \mathcal{F}_{Expr_{\tau} + \bot})$ is a Borel measurable space.
+\end{lemma}
+
+\begin{proof}
+	$Expr_{\tau}$ is itself a Borel set, and $\{\bot\}$ is an open singleton in the extended topology. The union of a Borel set with an open set is Borel. 
 \end{proof}
 
 % Intuitively, this means that measurable subsets of $Expr_{\tau}$ can be described by first fixing a finite syntactic skeleton and then selecting a measurable subset of real assignments to its float constants.
 
-We can equip this measurable space with a (sub)probability measure such that $\mu(Expr + \bot) \leq 1$. And in particular, any (sub)probability measure $\mu$ on $\R^{\text{holes}(s)}$ for a skeleton $s$ can be lifted to a (sub)probability measure on $Expr + \bot$, as follows: 
+We can equip this measurable space with a (sub)probability measure such that $\mu(Expr_{\tau} + \bot) \leq 1$. And in particular, any (sub)probability measure $\mu$ on $\R^{\text{holes}(s)}$ for a skeleton $s$ can be lifted to a (sub)probability measure on $Expr_{\tau} + \bot$, as follows: 
 \[
-	\mu_{Expr + \bot}(A) = \mu(\{\vec{r} \in \R^{\text{holes}(s)} \mid s[\vec{r}] \in A\}).
+	\mu_{Expr_{\tau} + \bot}(A) = \mu(\{\vec{r} \in \R^{\text{holes}(s)} \mid s[\vec{r}] \in A\}).
 \]
 
 We give some basic lemmas:
@@ -823,6 +905,8 @@ We give some basic lemmas:
 		\item \textbf{(Measurablity of $N$):} By definition, $N$ is the set of non-value expressions, e.g. $N = Expr \setminus V$. From part i), we have established that $V \in \mathcal{F}_{Expr}$. Since $\mathcal{F}_{Expr}$ is a $\sigma$-algebra and is closed under complement, the complement of $V$ within $Expr$, which is precisely $N$, is also measurable, e.g. $N \in \mathcal{F}_{Expr}$. As $\mathcal{F}_{Expr} \subset \mathcal{F}_{Expr + \bot}$, it follows that $N \in \mathcal{F}_{Expr + \bot}$.
 	\end{enumerate}
 \end{proof}
+
+Note that in general, given $(X, \Sigma_X)$ and $(Y, \Sigma_Y)$ to be measurable spaces, $((X \times Y) + \bot)$ forms a measurable space, since the product $(X \times Y)$ is measurable and for any measurable space $(Z, \Sigma_Z)$, the space $(Z + \bot, \Sigma_{Z + \bot})$ with $\Sigma_{Z + \bot}$ generated by $\Sigma_Z \cup {{\bot}}$ is measurable. 
 
 
 \subsection{Small-step semantics}
@@ -1110,12 +1194,14 @@ And the semantics is as follows:
 \end{proof}
 
 \kevin{in the third case below, we now more than just $v\in\Nats$, no?}
+
+\katherine{yes, added $v \in \{0, 1, \ldots, n-1\}$}
 \begin{lemma}[Canonical forms]\label{lem:canonical-forms}
 	Let $v$ be a closed value. 
 	\begin{enumerate}
 		\item If $\emptyset \vdash v : \bool$, then $v \in \{\true, \false\}$.
 		\item If $\emptyset \vdash v : \floattype{B}{V}$, then $v \in \R$.
-		\item If $\emptyset \vdash v : \fin{n}$, then $v \in \Nats$.
+		\item If $\emptyset \vdash v : \fin{n}$, then $v \in \{0, 1, \ldots, n-1\}$, where $n \in \Nats$.
 	\end{enumerate}
 \end{lemma}
 
@@ -1782,9 +1868,7 @@ We assume the expressions $e, e'$ are well-typed.
 	\begin{itemize}
 		\item If $e_1 = v$ and $e_2 = w$, then by Lemma~\ref{lem:form-preservation}, $\discretize{v} = v'$ and $\discretize{w} = w'$ are also values, namely discretized values where $v'$ and $w'$ are indices of $\intervals{B_1}$ and $\intervals{B_2}$, by definition of the discretization function (float constant case). 
 		
-		By Definition~\ref{def:distinguishes} and the definition of the discretization function (float constant case), the existence of unique values $v_i \in V_1$ and $w_j \in V_2$ such that $\discretize{v_i : \floattype{B_1}{V_1}} = v'$ and $\discretize{w_j : \floattype{B_2}{V_2}} = w'$ is guaranteed. 
-		
-		By Lemma~\ref{lem:value-set-soundness}, we know that $e_1 \Downarrow_{p_1} v_i$ and $e_2 \Downarrow_{p_2} w_j$, and in particular, $v_i = v$ and $w_j = w$ by construction.
+		By Definition~\ref{def:distinguishes} and the definition of the discretization function (float constant case), the existence of unique values $v_i \in V_1$ and $w_j \in V_2$ such that $\discretize{v_i : \floattype{B_1}{V_1}} = v'$ and $\discretize{w_j : \floattype{B_2}{V_2}} = w'$ is guaranteed. In particular, $v_i = v$ and $w_j = w$ by construction.
 
 		Since $v_i$ and $w_j$ are values and $B \neq \top$, by definition of the discretization function (uniform case where $B \neq \top$ and $e_1,e_2 \in \R$):
 		\[
@@ -1887,6 +1971,22 @@ We assume the expressions $e, e'$ are well-typed.
 			\sem{ \uniform(v : \tau_1, w : \tau_2) : \tau, \discretize{\uniform(v_i,w_j) : \floattype{B}{\top}} : \discretize{\tau}} \\
 			\text{s.t. } \discretize{v_i : \floattype{B_1}{v_i}} = \discretize{v : \floattype{B_1}{v}} \\
 			\text{ and } \discretize{w_j : \floattype{B_2}{w_j}} = \discretize{w : \floattype{B_2}{w}}
+		\end{align*}
+
+		If $e_1 = v$ and $e_2 = w$, then by Lemma~\ref{lem:form-preservation}, $\discretize{v} = v'$ and $\discretize{w} = w'$ are also values, namely discretized values where $v'$ and $w'$ are indices of $\intervals{B_1}$ and $\intervals{B_2}$, by definition of the discretization function (float constant case). 
+		
+		By Definition~\ref{def:distinguishes} and the definition of the discretization function (float constant case), the existence of unique values $v_i \in V_1$ and $w_j \in V_2$ such that $\discretize{v_i : \floattype{B_1}{V_1}} = v'$ and $\discretize{w_j : \floattype{B_2}{V_2}} = w'$ is guaranteed. In particular, $v_i = v$ and $w_j = w$ by construction.
+
+		Since $v_i$ and $w_j$ are values and $B \neq \top$, by definition of the discretization function (uniform case where $B \neq \top$ and $e_1,e_2 \in \R$):
+		\[
+			\discretize{\uniform(v_i,w_j) : \floattype{B}{\top}} = \discrete(p_0, \ldots, p_{|B|})
+		\]
+		where $p_k$ denotes the difference in the CDF of $\uniform(v_i,w_j)$ evaluated at consecutive cuts of $B$. 
+
+		So,
+
+		\begin{align*}
+			\sem{ \uniform(v : \tau_1, w : \tau_2) : \tau, \discrete(p_0, \ldots, p_{|B|}) : \discretize{\tau}}
 		\end{align*}
 
 		\item At least $e_1$ or $e_2$ is an expression. Analogous to float less than case when $e_1$ or $e_2$ is an expression.
