@@ -1,0 +1,39 @@
+
+\begin{table}[t]
+	\begin{center}
+		\begin{adjustbox}{width=\textwidth}
+		\begin{tabular}{l l l l l}
+			\toprule
+			\toprule
+			$e : \tau$ & constraints  & $\sem{e : \tau}$   \\[0.5ex]
+			\hline 
+			\multirow{2}{*}{$\letkw \; x = e_1 : \tau_1 \; \inkw \; e_2 : \tau_2 : \tau_2$} & $e_1=v$ & $\delta_{e_2[v/x] : \tau_2}$ \\
+			& $e_1$ no val.\ & $\sem{ e_1 : \tau_1 } \gg\!=  \lambda f. \sem{ \letkw \; x = f \; \inkw \; e_2 : \tau_2 : \tau_2} $ \\
+			%
+			\midrule 
+			%
+			\multirow{3}{*}{$\ifkw \; e_1 : \bool \; \thenkw \; e_2 : \tau \; \elsekw \; e_3 : \tau : \tau$} & $e_1=\true$ & $\delta_{\expr_2 : \tau} $ \\
+			 & $e_1=\false$ & $\delta_{\expr_3 : \tau} $ \\
+			 & o.w.\ & $\sem{ e_1 : \bool} \gg\!= \lambda f. \sem{ \ifkw \; f \; \thenkw \; e_2 : \tau \; \elsekw \; e_3 : \tau : \tau} $ \\
+			 %
+			 \midrule
+			 \multirow{4}{*}{\makecell{$e_1 : \tau_1 < e_2 : \tau_2 : \bool$ \\
+			 for $\tau_1 = \floattype{B}{V_1}, \tau_2 = \floattype{B}{V_2} $ \\
+			 or \\
+			 $\tau_1 = \tau_2 = \fin{n} $ }} & $e_1 = v_1, e_2 = v_2, v_1 < v_2 $ & $\delta_{\true : \bool}$ \\
+			 & $e_1 = v_1, e_2 = v_2, v_1 \geq v_2$ & $\delta_{\false : \bool}$  \\
+			 &$e_1 = v_1, e_2 \neq v_2$ & $\sem{ e_2 : \tau_2 } \gg\!= \lambda f. \sem{ v_1 : \tau_1 < f : \bool}$ \\
+			 & o.w.\ & $\sem{ e_1 : \tau_1 } \gg\!= \lambda f. \sem{ f < e_2 : \tau_2 : \bool}$  \\
+%			\hline 
+%			%\midrule
+%			 bla
+			\bottomrule
+			\bottomrule
+		\end{tabular}
+		%
+	\end{adjustbox}
+	\end{center}%=
+	%
+	\caption{Small-step operational semantics.}
+	\label{tab:smallstep}%
+\end{table}%
