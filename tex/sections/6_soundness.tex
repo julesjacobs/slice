@@ -679,14 +679,14 @@ When $\Sigma$ is a Borel $\sigma$-algebra, $\mu$ is called a Borel measure.
 	\end{enumerate}
 \end{definition}
 
-\begin{definition}[Projection]
-	Let $(X, \Sigma_X)$ and $(Y, \Sigma_Y)$ be measurable spaces, and let $\mu \in \mathcal{D}(X \times Y)$. We define the first and second projection measures as:
-	\begin{enumerate}
-		\item $\pi_1(\mu)(A) := \mu(A \times Y)$ for every measurable $A \in \Sigma_X$
-		\item $\pi_2(\mu)(B) := \mu(X \times B)$ for every measurable $B \in \Sigma_Y$
-	\end{enumerate}
-	Then, $\pi_1(\mu)$ is a measure on $(X, \Sigma_X)$ and $\pi_2(\mu)$ is a measure on $(Y, \Sigma_Y)$.
-\end{definition}
+% \begin{definition}[Projection]
+% 	Let $(X, \Sigma_X)$ and $(Y, \Sigma_Y)$ be measurable spaces, and let $\mu \in \mathcal{D}(X \times Y)$. We define the first and second projection measures as:
+% 	\begin{enumerate}
+% 		\item $\pi_1(\mu)(A) := \mu(A \times Y)$ for every measurable $A \in \Sigma_X$
+% 		\item $\pi_2(\mu)(B) := \mu(X \times B)$ for every measurable $B \in \Sigma_Y$
+% 	\end{enumerate}
+% 	Then, $\pi_1(\mu)$ is a measure on $(X, \Sigma_X)$ and $\pi_2(\mu)$ is a measure on $(Y, \Sigma_Y)$.
+% \end{definition}
 
 \begin{definition}[Projection with error]
 	Let $(X + \bot, \Sigma_{X + \bot})$ and $(Y + \bot, \Sigma_{Y + \bot})$ be measurable spaces, with $(X, \Sigma_X)$ and $(Y, \Sigma_Y)$ measurable spaces as well. Let $\mu \in \mathcal{D}((X \times Y) + \bot)$. We define the first and second projection measures as:
@@ -734,20 +734,20 @@ Informally, this lemma states that first marginal of a bind is the bind of the f
 	
 	For the discrete case:
 	\begin{align*}
-		&\sum_{x,y} \mu(x,y) \pi_1(f_{\bot}(x,y))(A + \bot) \\
-		&= \sum_x \left[ \sum_{y} \mu(x,y) \pi_1(f_{\bot}(x,y))(A + \bot) \right] \\
-		&= \sum_x \pi_1(f_{\bot}(x,y))(A + \bot) \left[ \sum_{y} \mu(x,y) \right] \\
-		&= \sum_x \pi_1(f_{\bot}(x,y))(A + \bot) (\pi_1 \mu)(x,y) \\
-		&= (\pi_1 \mu) \gg\!= (x \mapsto \pi_1(f_{\bot}(x,y)))
+		&\sum_{(x,y) \in \text{supp}(\mu)} \mu(x,y) \pi_1(f_{\bot}(x,y))(A + \bot) \\
+		&= \sum_{x \in \pi_1(\text{supp}(\mu))} \left[ \sum_{y \in \pi_2(\text{supp}(\mu))} \mu(x,y) \pi_1(f_{\bot}(x,y))(A + \bot) \right] && \text{(rearrange sum)} \\
+		&= \sum_{x \in \pi_1(\text{supp}(\mu))} \pi_1(f_{\bot}(x,y))(A + \bot) \left[ \sum_{y \in \pi_2(\text{supp}(\mu))} \mu(x,y) \right] && \text{(factor constant in $y$)} \\
+		&= \sum_{x \in \pi_1(\text{supp}(\mu))} \pi_1(f_{\bot}(x,y))(A + \bot) (\pi_1 \mu)(x,y) && \text{(definition of $\pi_1$)} \\
+		&= (\pi_1 \mu) \gg\!= (x \mapsto \pi_1(f_{\bot}(x,y))) && \text{(definition of bind)}
 	\end{align*}
 
 	For the continuous case: 
 	\begin{align*}
-		&\int_{X \times Y} \pi_1(f_{\bot}(x,y))(A + \bot) \mu(d(x,y)) \\
-		&= \int_X \left[ \int_Y \pi_1(f_{\bot}(x,y))(A + \bot) \mu(d(x,y)) \right] \\
-		&= \int_X \pi_1(f_{\bot}(x,y))(A + \bot) \left[ \int_Y \mu(d(x,y)) \right] \\
-		&= \int_{X} \pi_1(f_{\bot}(x,y))(A + \bot) (\pi_1 \mu)(d(x,y)) \\
-		&= (\pi_1 \mu) \gg\!= (x \mapsto \pi_1(f_{\bot}(x,y)))
+		&\int_{(x,y) \in \text{supp}(\mu)} \pi_1(f_{\bot}(x,y))(A + \bot) \mu(d(x,y)) \\
+		&= \int_{x \in \pi_1(\text{supp}(\mu))} \left[ \int_{y \in \pi_2(\text{supp}(\mu))} \pi_1(f_{\bot}(x,y))(A + \bot) \mu(d(x,y)) \right] && \text{(by Fubini's theorem)} \\
+		&= \int_{x \in \pi_1(\text{supp}(\mu))} \pi_1(f_{\bot}(x,y))(A + \bot) \left[ \int_{y \in \pi_2(\text{supp}(\mu))} \mu(d(x,y)) \right] && \text{(factor constant in $y$)} \\
+		&= \int_{x \in \pi_1(\text{supp}(\mu))} \pi_1(f_{\bot}(x,y))(A + \bot) (\pi_1 \mu)(d(x,y)) && \text{(definition of $\pi_1$)} \\
+		&= (\pi_1 \mu) \gg\!= (x \mapsto \pi_1(f_{\bot}(x,y))) && \text{(definition of bind)}
 	\end{align*}
 \end{proof}
 
