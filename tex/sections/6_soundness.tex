@@ -742,36 +742,11 @@ Informally, this lemma states that first marginal of a bind is the bind of the f
 	\end{align*}
 
 	For the continuous case: 
-
-	\katherine{need to double check types}
-	By the Disintegration Theorem, since $\mu \in \mathcal{D}((X \times Y) + \bot)$ is a probability measure on the product measurable space $((X \times Y) + \bot, \Sigma_{(X \times Y) + \bot})$, there exists a kernel
-	\[
-		\mu(\cdot \mid x) : (X + \bot, \Sigma_{X + \bot}) \to \mathcal{D}(Y + \bot)
-	\]
-	such that:
-	\begin{enumerate}
-		\item for every measurable set $B \subseteq Y + \bot$, the map $x \mapsto \mu(B \mid x)$ is measurable with respect to $\Sigma_{X + \bot}$, and
-		\item for all measurable $A \times B \subseteq (X \times Y) + \bot$,
-		\[
-			\mu(A \times B) = \int_A \mu(B \mid x)(\pi_1 \mu)(dx),
-		\]
-		where $(\pi_1 \mu)$ denotes the first projection of $\mu$, defined by:
-		\[
-			(\pi_1 \mu)(A) := \mu(A \times Y) \text{ for } A \in \Sigma_X, \quad (\pi_1 \mu)(\{\bot\}) := \mu(\{\bot\}).
-		\]
-		In differential notation, this disintegration equality can be written as
-		\[
-			\mu(d(x,y)) = (\pi_1 \mu)(dx)\mu(dy \mid x).
-		\]
-	\end{enumerate}
-
-	% Intuitively, the Disintegration Theorem asserts that any joint measure $\mu$ on $X \times Y$ can be factored uniquely into its marginal on $X$ and a conditional kernel $\mu(dy \mid x)$ describing the distribution of $Y$ given $x$.
-
-	Thus,
 	\begin{align*}
 		&\int_{X \times Y} \pi_1(f_{\bot}(x,y))(A + \bot) \mu(d(x,y)) \\
-		&= \int_X \left[ \int_Y \pi_1(f_{\bot}(x,y))(A + \bot) \mu(dy \mid x) \right] (\pi_1 \mu)(dx) \\
-		&= \int_{X} \pi_1(f_{\bot}(x,y))(A + \bot) (\pi_1 \mu)(dx) \\
+		&= \int_X \left[ \int_Y \pi_1(f_{\bot}(x,y))(A + \bot) \mu(d(x,y)) \right] \\
+		&= \int_X \pi_1(f_{\bot}(x,y))(A + \bot) \left[ \int_Y \mu(d(x,y)) \right] \\
+		&= \int_{X} \pi_1(f_{\bot}(x,y))(A + \bot) (\pi_1 \mu)(d(x,y)) \\
 		&= (\pi_1 \mu) \gg\!= (x \mapsto \pi_1(f_{\bot}(x,y)))
 	\end{align*}
 \end{proof}
