@@ -9,10 +9,11 @@ Throughout this section, we denote by $e :\tau$ a well-typed expression of type 
 \kevin{get rid of discrete thing, is for my intuition}\\
 \kevin{todo: observe. And missing features.}\\
 \kevin{typing rule DC and redef discretize} \\
-\kevin{maybe have subdistributions and missing mass is error prob. Avoids cases.}
+\kevin{maybe have subdistributions and missing mass is error prob. Avoids cases.} \\
+\kevin{$\bot$ is prob of observe failure}
 \begin{definition}
 	Let $\tau$ be a type.
- 	Given a suitable measurable space, we denote by $\mathcal{D}(Expr_{\tau} + \bot)$ the set of probability measures over $Expr_{\tau} + \bot$. Moreover, for all $\tau,\tau'$, we define the following monad:
+ 	Given a suitable measurable space, we denote by $\mathcal{D}(Expr_{\tau} + \bot)$ the set of sub-probability measures over $Expr_{\tau} + \bot$. Moreover, for all $\tau,\tau'$, we define the following monad:
  	%
  	\begin{align*}
  		 & \text{return} \colon Expr_{\tau} \to \mathcal{D}(Expr_{\tau} + \bot), \quad \text{return}(e) = \delta_e \\
