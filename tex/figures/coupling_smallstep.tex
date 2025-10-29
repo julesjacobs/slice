@@ -1,0 +1,28 @@
+
+\begin{table}[t]
+	\begin{center}
+		\begin{adjustbox}{width=\textwidth}
+		\begin{tabular}{l l l l l}
+			\toprule
+			\toprule
+						$\mathbf{e \boldsymbol{:} \boldsymbol{\tau}}$ & \textbf{constraints}  & $\boldsymbol{\sem{e : \tau, \discretize{e} : \discretize{\tau}}}$   \\
+			\hline 
+			% 
+		     $v : \tau$ & & $\delta_{v:\tau, \discretize{v : \tau}:\discretize{\tau}}$ \\[0.5ex]
+			\midrule
+			%
+			\makecell{$\uniform(e_1 : \tau_1, e_2 : \tau_2) : \floattype{B}{V}$ \\
+			$B=\top$} & $e_1 = v_1, e_2 = v_2$ &$ \text{Uniform}{(v_1, v_2)} \gg\!= \lambda v. \delta_(v : \tau_1, v : \tau_1)$  \\
+			%
+%			%\midrule
+%			 bla
+			\bottomrule
+			\bottomrule
+		\end{tabular}
+		%
+	\end{adjustbox}
+	\end{center}%=
+	%
+	\caption{Small-step coupling semantics.}
+	\label{tab:coupling_smallstep}%
+\end{table}%
