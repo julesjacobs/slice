@@ -8,7 +8,10 @@
 						$\mathbf{e \boldsymbol{:} \boldsymbol{\tau}}$ & \textbf{constraints}  & $\boldsymbol{\sem{e : \tau, \discretize{e} : \discretize{\tau}}}$   \\
 			\hline 
 			% 
-		     $v : \tau$ & & $\delta_{v:\tau, \discretize{v : \tau}:\discretize{\tau}}$ \\[0.5ex]
+		     \multirow{3}{*}{$\observekw\; (e : \bool)  : \text{unit}$} & $e = \true$ & $\delta_{(\text{unit}, \text{unit})}$ \\[0.5ex]
+			& $e=\false$ & $\delta_{\bot}$ \\
+			& o.w.\ & $\sem{e: \bool, \discretize{e}: \bool} \gg\!= \lambda (f, f'). \sem{\observekw\; (f : \bool)  : \text{unit}, \observekw\; (f' : \bool)  : \text{unit}}$ \\
+			%
 			\midrule
 			%
 			\multirow{5}{*}{\makecell[l]{$\uniform(e_1 : \tau_1, e_2 : \tau_2) : \floattype{B}{V}$ \\
