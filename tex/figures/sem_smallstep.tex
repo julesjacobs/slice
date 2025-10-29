@@ -42,7 +42,7 @@
 			 %
 			 \midrule
 			 %
-			\multirow{4}{*}{$\uniform(e_1 : \tau_1, e_2 : \tau_2) : \floattype{B}{V}$} & $e_1 = v_1, e_2 = v_2, v_1 \leq v_2$ & $\text{Uniform}{(v_1, v_2)} $ \\
+			\multirow{3}{*}{$\uniform(e_1 : \tau_1, e_2 : \tau_2) : \floattype{B}{V}$} & $e_1 = v_1, e_2 = v_2, v_1 \leq v_2$ & $\text{Uniform}{(v_1, v_2)} $ \\
 			 % 
 			  %& $e_1 = v_1, e_2 = v_2, v_1 > v_2$ & $\delta_{\bot}$ \\
 			 %
@@ -61,7 +61,7 @@
 			  \multirow{4}{*}{\makecell{$\dc(e_1 : \tau_1, e_2 : \tau_2) : \fin{|B| + 1}$ \\
 			  $\tau = \fin{|B| + 1}$, \\
 			  $\tau_1 = \fin{|B_1| + 1}, \tau_2 = \fin{|B_2| + 1}$,\\
-			  $V_1 = \{v_1,\ldots,v_n\}, V_2 = \{w_1,\ldots,w_m\}$}} & \makecell[l]{$e_1 = \discretize{v_i : \floattype{B_1}{v_i}}$,\\ $e_2 = \discretize{w_j : \floattype{B_2}{w_j}}$} & $\sem{\discretize{\uniform(v_i, w_j) : \floattype{B}{\top}} : \tau}$ \\
+			  $V_1 = \{v_1,\ldots,v_n\}, V_2 = \{w_1,\ldots,w_m\}$}} & \makecell[l]{$e_1 = \discretize{v_i : \floattype{B_1}{V_1}}$,\\ $e_2 = \discretize{w_j : \floattype{B_2}{V_2}}$} & $\sem{\discretize{\uniform(v_i, w_j) : \floattype{B}{\top}} : \tau}$ \\
 			  %
 			  & $ e_1 = v', e_2 \neq w'$ & $\sem{ e_2 : \tau_2 } \gg\!= \lambda f. \sem{ \dc(v' : \tau_1, f) }$ \\
 			  %

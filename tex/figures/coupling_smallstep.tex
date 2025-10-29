@@ -11,25 +11,26 @@
 		     $v : \tau$ & & $\delta_{v:\tau, \discretize{v : \tau}:\discretize{\tau}}$ \\[0.5ex]
 			\midrule
 			%
-			\multirow{5}{*}{\makecell{$\uniform(e_1 : \tau_1, e_2 : \tau_2) : \floattype{B}{V}$ \\
+			\multirow{5}{*}{\makecell[l]{$\uniform(e_1 : \tau_1, e_2 : \tau_2) : \floattype{B}{V}$ \\
 			$B=\top$}} & $e_1 = v_1 \leq v_2 = e_2$ &$ \text{Uniform}{(v_1, v_2)} \gg\!= \lambda v. \delta_{(v : \tau_1, v : \tau_1)}$  \\
 			%
-			& $e_1=v_1$, $e_2$ no val.\ & \makecell{$\sem{e_2:\tau_2, \discretize{e_2} : \discretize{\tau_2}}$ \\ $\gg\!= \lambda (f,f'). \sem{\uniform(v_1:\tau_1, f:\tau_2 ) : \tau, \uniform(\discretize{v_1}:\discretize{\tau_1}, f': \discretize{\tau_2} ) : \discretize{\tau}}$} \\
+			& $e_1=v_1$, $e_2$ no val.\ & \makecell[l]{$\sem{e_2:\tau_2, \discretize{e_2} : \discretize{\tau_2}}$ \\ $\gg\!= \lambda (f,f'). \sem{\uniform(v_1:\tau_1, f:\tau_2 ) : \tau, \uniform(\discretize{v_1}:\discretize{\tau_1}, f': \discretize{\tau_2} ) : \discretize{\tau}}$} \\
 			%
-			& $e_1$ no val.\ & \makecell{$\sem{e_1:\tau_1, \discretize{e_1} : \discretize{\tau_1}}$ \\ $\gg\!= \lambda (f,f'). \sem{\uniform(f:\tau_1, e_2:\tau_2) : \tau, \uniform(\discretize{f'}:\discretize{\tau_1}, \discretize{e_2} : \discretize{\tau_2} ) : \discretize{\tau}}$} \\
+			& $e_1$ no val.\ & \makecell[l]{$\sem{e_1:\tau_1, \discretize{e_1} : \discretize{\tau_1}}$ \\ $\gg\!= \lambda (f,f'). \sem{\uniform(f:\tau_1, e_2:\tau_2) : \tau, \uniform(\discretize{f'}:\discretize{\tau_1}, \discretize{e_2} : \discretize{\tau_2} ) : \discretize{\tau}}$} \\
 			%
-			\midrule
-			%
-			\makecell{$\uniform(v_1 : \tau_1, v_2 : \tau_2) : \floattype{B}{V}$ \\
-			$B \neq \top$} & $v_1 \leq v_2$ & 	\makecell{$\text{Uniform}(v_1, v_2) \gg\!= \lambda v.\delta_{(v, v_i)}$ \\
-			where $v_i$ is unique number s.t. $v \in \intervals{B}_{v_i}$}   \\
+%			\midrule
+%			%
+%			\makecell[l]{$\uniform(v_1 : \tau_1, v_2 : \tau_2) : \floattype{B}{V}$ \\
+%			$B \neq \top$} & $v_1 \leq v_2$ & 	\makecell[l]{$\text{Uniform}(v_1, v_2) \gg\!= \lambda v.\delta_{(v, v_i)}$ \\
+%			where $v_i$ is unique number s.t. $v \in \intervals{B}_{v_i}$}   \\
 			%
 			%
 			\midrule 
-			\makecell{$\uniform(e_1 : \tau_1, e_2 : \tau_2) : \floattype{B}{V}$ \\
+			\makecell[l]{$\uniform(e_1 : \tau_1, e_2 : \tau_2) : \floattype{B}{V}$ \\
 				$B \neq \top$ \\
-				$\tau_1 = \float[B_1,\{v_1,\ldots,v_n\}]$ \\
-				$\tau_2 = \float[B_2,\{w_1,\ldots,w_m\}]$} & \\
+				$\tau_1 = \float[B_1 \neq \top,\{v_1,\ldots,v_n\}]$ \\
+				$\tau_2 = \float[B_2 \neq \top,\{w_1,\ldots,w_m\}]$} &  $e_1 = c_1 \leq c_2 = e_2$ values &  \makecell[l]{$\text{Uniform}(c_1, c_2) \gg\!= \lambda v.\delta_{(v, v_i)}$ \\
+				where $v_i$ is unique number s.t. $v \in \intervals{B}_{v_i}$}\\
 %			 bla
 			\bottomrule
 			\bottomrule

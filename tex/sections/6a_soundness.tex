@@ -7,7 +7,7 @@ Throughout this section, we denote by $e :\tau$ a well-typed expression of type 
 %
 \kevin{measurable space todo} \\
 \kevin{get rid of discrete thing, is for my intuition}\\
-\kevin{todo: observe. And missing features.}\\
+\kevin{todo: Remaining constructs.}\\
 \kevin{typing rule DC and redef discretize} \\
 \kevin{maybe have subdistributions and missing mass is error prob. Avoids cases.} \\
 \kevin{$\bot$ is prob of observe failure}
@@ -34,6 +34,16 @@ Throughout this section, we denote by $e :\tau$ a well-typed expression of type 
  		\end{cases}
  	\]
 \end{definition}
+
+We give a typing rule for \dc:
+\begin{align*}
+	\inferrule[\textsc{TDiscreteCase}]
+	{e_1 : \fin{|B_1| + 1} \\
+		e_2 : \fin{|B_2| + 1}}
+	{\dc(e_1, e_2) : \fin{|B|+1}}
+\end{align*}
+
+and let $\discretize{\uniform(e_1 : \float[B_1; V_1], e_2 :\float[B_2;V_2]) : \float[B,V]} = \dc(\discretize{e_1 : \float[B_1; V_1], e_2 :\float[B_2;V_2]})$ for $B,B_1,B_2 \neq \top$ and $V_1,V_2\neq\top$.
 
 Construct measure spaces, \\
 typing rule
