@@ -19,7 +19,7 @@
 			%
 			& $e_1=v_1$, $e_2$ no val.\ & \makecell[l]{$\sem{e_2:\tau_2, \discretize{e_2} : \discretize{\tau_2}}$ \\ $\gg\!= \lambda (f,f'). \sem{\uniform(v_1:\tau_1, f:\tau_2 ) : \tau, \uniform(\discretize{v_1}:\discretize{\tau_1}, f': \discretize{\tau_2} ) : \discretize{\tau}}$} \\
 			%
-			& $e_1$ no val.\ & \makecell[l]{$\sem{e_1:\tau_1, \discretize{e_1} : \discretize{\tau_1}}$ \\ $\gg\!= \lambda (f,f'). \sem{\uniform(f:\tau_1, e_2:\tau_2) : \tau, \uniform(\discretize{f'}:\discretize{\tau_1}, \discretize{e_2} : \discretize{\tau_2} ) : \discretize{\tau}}$} \\
+			& $e_1$ no val.\ & \makecell[l]{$\sem{e_1:\tau_1, \discretize{e_1} : \discretize{\tau_1}}$ \\ $\gg\!= \lambda (f,f'). \sem{\uniform(f:\tau_1, e_2:\tau_2) : \tau, \uniform({f'}:\discretize{\tau_1}, \discretize{e_2} : \discretize{\tau_2} ) : \discretize{\tau}}$} \\
 			%
 %			\midrule
 %			%
@@ -37,7 +37,7 @@
 				%
 				& $e_1=c_1$, $e_2$ no val.\ & \makecell[l]{$\sem{e_2:\tau_2, \discretize{e_2} : \discretize{\tau_2}}$ \\ $\gg\!= \lambda (f,f'). \sem{\uniform(v_1:\tau_1, f:\tau_2 ) : \tau, \dc(\discretize{v_1}:\discretize{\tau_1}, f': \discretize{\tau_2} ) : \discretize{\tau}}$} \\
 				%
-				& $e_1$ no val.\ & \makecell[l]{$\sem{e_1:\tau_1, \discretize{e_1} : \discretize{\tau_1}}$ \\ $\gg\!= \lambda (f,f'). \sem{\uniform(f:\tau_1, e_2:\tau_2) : \tau, \dc(\discretize{f'}:\discretize{\tau_1}, \discretize{e_2} : \discretize{\tau_2} ) : \discretize{\tau}}$} \\
+				& $e_1$ no val.\ & \makecell[l]{$\sem{e_1:\tau_1, \discretize{e_1} : \discretize{\tau_1}}$ \\ $\gg\!= \lambda (f,f'). \sem{\uniform(f:\tau_1, e_2:\tau_2) : \tau, \dc({f'}:\discretize{\tau_1}, \discretize{e_2} : \discretize{\tau_2} ) : \discretize{\tau}}$} \\
 %			 bla
 			\bottomrule
 			\bottomrule

@@ -9,25 +9,33 @@ Throughout this section, we denote by $e :\tau$ a well-typed expression of type 
 	\discretize{ e: \tau} = \dc(\discretize{e_1 : \float[B_1; V_1]}, \discretize{e_2 :\float[B_2;V_2]})~.
 \]
 %
-We define the semantics of $\dc$ in such a way that it behaves like the discretized program in the last case of \Cref{fig:discretization-code} but resolves the let-bindings and the conditional choices in a single step, which will simpify our proof. 
+We define the semantics of $\dc$ in such a way that it behaves like the discretized program in the last case of \Cref{fig:discretization-code} but resolves the let-bindings and the conditional choices in a single step, which will simpify our proof. We equip this statement with the following typing rule :
+%
+\begin{align*}
+	\inferrule[\textsc{TDiscreteCase}]
+	{e_1 : \fin{|B_1| + 1} \\
+		e_2 : \fin{|B_2| + 1} \\ \distinguishes{B_1}{V_1} \\ \distinguishes{B_2}{V_2}}
+	{\dc(e_1, e_2) : \fin{|B|+1}}
+\end{align*}
+
  
 %
 \kevin{measurable space todo} \\
-\kevin{get rid of discrete thing, is for my intuition}\\
+%\kevin{get rid of discrete thing, is for my intuition}\\
 \kevin{todo: Remaining constructs.}\\
 \kevin{typing rule DC and redef discretize} \\
 \kevin{maybe have subdistributions and missing mass is error prob. Avoids cases.} \\
 \kevin{$\bot$ is prob of observe failure}
 \begin{definition}
 	Let $\tau$ be a type.
- 	Given a suitable measurable space, we denote by $\mathcal{D}(Expr_{\tau} + \bot)$ the set of sub-probability measures over $Expr_{\tau} + \bot$. Moreover, for all $\tau,\tau'$, we define the following monad:
+ 	Given a suitable measurable space, we denote by $\mathcal{D}(Expr_{\tau} + \bot)$ the set of sub-probability measures over $Expr_{\tau} + \bot$. Moreover, for all $\tau,\tau'$, we define the  monad
  	%
  	\begin{align*}
  		 & \text{return} \colon Expr_{\tau} \to \mathcal{D}(Expr_{\tau} + \bot), \quad \text{return}(e) = \delta_e \\
  		 %
  		 & \text{bind} \colon \mathcal{D}(Expr_{\tau} + \bot) \to (Expr_{\tau} \to \mathcal{D}(Expr_{\tau'} + \bot)) \to \mathcal{D}(Expr_{\tau'} + \bot), \\
- 		 & \text{bind}(\mu)(f)(y) := \sum_{x \in support(\mu)} \mu(x) \cdot f_{\bot}(x)(y) \\
- 		 &\text{bind}(\mu)(f)(A) := \int_{x \in support(\mu)} f_{\bot}(x)(A) \cdot d\mu(x)~,
+ 		 %& \text{bind}(\mu)(f)(y) := \sum_{x \in support(\mu)} \mu(x) \cdot f_{\bot}(x)(y) \\
+ 		 &\text{bind}(\mu)(f)(A) = \int_{x \in Expr + \bot} f_{\bot}(x)(A) \cdot \mu(dx)~,
  	\end{align*}
  	%
  	where $f_\bot \colon Expr_{\tau} + \bot \to \mathcal{D}(Expr_{\tau'} + \bot)$ is obtained from $f$ by 
@@ -41,27 +49,18 @@ We define the semantics of $\dc$ in such a way that it behaves like the discreti
  		\end{cases}
  	\]
 \end{definition}
-
-%We give a typing rule for \dc:
-%\begin{align*}
-%	\inferrule[\textsc{TDiscreteCase}]
-%	{e_1 : \fin{|B_1| + 1} \\
-%		e_2 : \fin{|B_2| + 1}}
-%	{\dc(e_1, e_2) : \fin{|B|+1}}
-%\end{align*}
 %
-%and let $\discretize{\uniform(e_1 : \float[B_1; V_1], e_2 :\float[B_2;V_2]) : \float[B,V]} = \dc(\discretize{e_1 : \float[B_1; V_1], e_2 :\float[B_2;V_2]})$ for $B,B_1,B_2 \neq \top$ and $V_1,V_2\neq\top$.
 %
-%Construct measure spaces, \\
-%typing rule
-
-
+%
+%
+Equipped with these notions, we define the small-step semantics of our language:
+%
 \begin{definition}
 	The small-step semantics $\sem{e :\tau} \in \mathcal{D}(Expr_{\tau} + \bot)$ is defined recursively on the structure of $e:\tau$ by the rules in \Cref{tab:smallstep}. 
 \end{definition}
 %
+The missing probability mass in $\sem{e :\tau}$ is the probability of encountering an error due to ill-formed parameters fed into distributions (e.g., $\uniform(0.8,0.1)$). $\sem{e :\tau}(\bot)$ is the probability of encountering an observation failure.
 It follows by induction on the type derivation of $e:\tau$ that $\sem{e:\tau}$ is well-defined, i.e., the small-step semantics is type-preserving.\\
-\kevin{check further hidden assumptions for well-definedness. E.g. Complete case distinctions? Full distributions?}
 
 
 \subsection{Coupling Semantics}
@@ -70,7 +69,7 @@ It follows by induction on the type derivation of $e:\tau$ that $\sem{e:\tau}$ i
 \kevin{todo: measurable space} 
 \begin{definition}
 	Let $\tau$ be a type, and let $P_\tau = Expr_{\tau} \times Expr_{\discretize{\tau}}$. Given a suitable measurable space, we denote by $\mathcal{D}(P_\tau + \bot)$ 
-	Given a suitable measurable space, we denote by 
+	the set of sub-probability measures over $P_\tau$.
 \end{definition}
 
-Follows easily : $e$ value iff $\discretize{e}$ value.
+Exploiting that $e:\tau$ is a value iff $\discretize{e} : \discrete{\tau}$ value
