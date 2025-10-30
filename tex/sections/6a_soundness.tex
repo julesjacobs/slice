@@ -149,17 +149,18 @@ Well-definedness of these objects follows from the monotone convergence theorem:
 Define $V_\tau = \{ (v:\tau, \discretize{v} : \discretize{\tau}) ~|~ v:\tau \}$.
 %
 \begin{lemma}
+	\label{lem:big_step_coupling_props}
 	Let $e:\tau$. We have:
 	%
 	\begin{enumerate}
-		\item $\bigsem{e:\tau}(\{\bot\}) = \bigsem{e:\tau, \discretize{e} : \discretize{\tau}}(\{\bot\}) = \bigsem{\discretize{e} : \discretize{\tau}}(\{\bot\})$.
+		\item\label{lem:big_step_coupling_props1} $\bigsem{e:\tau}(\{\bot\}) = \bigsem{e:\tau, \discretize{e} : \discretize{\tau}}(\{\bot\}) = \bigsem{\discretize{e} : \discretize{\tau}}(\{\bot\})$.
 		%
-		\item For all measurable $E \subseteq Vals_\tau$, we have \[\bigsem{e:\tau}(E) = \bigsem{e:\tau, \discretize{e} : \discretize{\tau}}( E \times Vals_{\discretize{\tau}} )~. \]
+		\item\label{lem:big_step_coupling_props2}  For all measurable $E \subseteq Vals_\tau$, we have \[\bigsem{e:\tau}(E) = \bigsem{e:\tau, \discretize{e} : \discretize{\tau}}( E \times Vals_{\discretize{\tau}} )~. \]
 		%
 		%
-		\item For all measurable $E \subseteq Vals_{\discretize{\tau}}$, we have \[\bigsem{\discretize{e} : \discretize{\tau}}(E) = \bigsem{e:\tau, \discretize{e} : \discretize{\tau}}( Vals_\tau \times E )~. \]
+		\item\label{lem:big_step_coupling_props3}  For all measurable $E \subseteq Vals_{\discretize{\tau}}$, we have \[\bigsem{\discretize{e} : \discretize{\tau}}(E) = \bigsem{e:\tau, \discretize{e} : \discretize{\tau}}( Vals_\tau \times E )~. \]
 		%
-		\item For all measurable $E\subseteq Vals_\tau \times Vals_{\discretize{\tau}}$, we have 
+		\item\label{lem:big_step_coupling_props4}  For all measurable $E\subseteq Vals_\tau \times Vals_{\discretize{\tau}}$, we have 
 		%
 		\[
 		\bigsem{e:\tau, \discretize{e} : \discretize{\tau}}(E) = \bigsem{e:\tau, \discretize{e} : \discretize{\tau}}(E \cap V_\tau)~.
@@ -173,5 +174,41 @@ Define $V_\tau = \{ (v:\tau, \discretize{v} : \discretize{\tau}) ~|~ v:\tau \}$.
 %
 %
 \begin{theorem}
-	Let $e:\bool$. Then $\bigsem{e:bool} = \discretize{e:bool}$.
+	Let $e:\bool$. Then $\bigsem{e:bool} = \bigsem{\discretize{e:bool} : \bool}$.
 \end{theorem}
+%
+\begin{proof}
+	Since $\mathcal{D}(Vals_\tau + \bot)$ contains only discrete distributions, we proceed by caste distinction on the probality of the final outcome $v\in\{\true,\false,\bot\}$.\\
+	%
+	
+	\noindent
+	\emph{The case $v = \bot$.} Immediate by \Cref{lem:big_step_coupling_props}.\ref{lem:big_step_coupling_props1}. \\
+	
+	\noindent
+	\emph{The case $v=\true$.} We have 
+	%
+	\begin{align*}
+		& \bigsem{e :\bool}(\{\true\}) \\
+		%
+		={}& \bigsem{e:\bool, \discretize{e:\bool}:{\bool}}(\{\true\} \times \{\true,\false\})
+		\tag{\Cref{lem:big_step_coupling_props}.\ref{lem:big_step_coupling_props2}} \\
+		%
+		={} & \bigsem{e:\bool, \discretize{e:\bool}:{\bool}}( (\{\true\} \times \{\true,\false\}) \cap \{(\true,\true), (\false,\false)\})
+		\tag{\Cref{lem:big_step_coupling_props}.\ref{lem:big_step_coupling_props4}} \\ 
+		%
+		={}& \bigsem{e:\bool, \discretize{e:\bool}:{\bool}}(\{(\true,\true)\})
+		\tag{set algebra} \\
+		%
+		={}& \bigsem{e:\bool, \discretize{e:\bool}:{\bool}}( (\{\true,\false\} \times \{\true\}) \cap \{(\true,\true), (\false,\false)\})
+		\tag{set algebra} \\
+		%
+		={}& \bigsem{e:\bool, \discretize{e:\bool}:{\bool}}(\{\true,\false\} \times \{\true\})
+		\tag{\Cref{lem:big_step_coupling_props}.\ref{lem:big_step_coupling_props4}} \\
+		%
+		={}& \bigsem{\discretize{e :\bool}}(\{\true\})~.
+	\end{align*}
+	%
+	
+	\noindent
+	\emph{The case $v=\false$.} Completely analogous to the previous case.
+\end{proof}
