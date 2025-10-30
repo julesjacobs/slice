@@ -27,6 +27,7 @@ We define the semantics of $\dc$ in such a way that it behaves like the discreti
 \kevin{maybe have subdistributions and missing mass is error prob. Avoids cases.} \\
 \kevin{$\bot$ is prob of observe failure}
 \begin{definition}
+	\label{def:smallstep_space_and_monad}
 	Let $\tau$ be a type.
  	Given a suitable measurable space, we denote by $\mathcal{D}(Expr_{\tau} + \bot)$ the set of sub-probability measures over $Expr_{\tau} + \bot$. Moreover, for all $\tau,\tau'$, we define the  monad
  	%
@@ -69,7 +70,35 @@ It follows by induction on the type derivation of $e:\tau$ that $\sem{e:\tau}$ i
 \kevin{todo: measurable space} 
 \begin{definition}
 	Let $\tau$ be a type, and let $P_\tau = Expr_{\tau} \times Expr_{\discretize{\tau}}$. Given a suitable measurable space, we denote by $\mathcal{D}(P_\tau + \bot)$ 
-	the set of sub-probability measures over $P_\tau$.
+	the set of sub-probability measures over $P_\tau$. The monad $P_\tau \to \mathcal{D}(P_\tau + \bot)$ is defined analogously to \Cref{def:smallstep_space_and_monad}.
 \end{definition}
 
-Exploiting that $e:\tau$ is a value iff $\discretize{e} : \discrete{\tau}$ value
+Exploiting that $e:\tau$ is a value iff $\discretize{e} : \discretize{\tau}$ value, we define:
+%
+\begin{definition}
+	The small-step coupling  $\sem{e :\tau, \discretize{e}: \discretize{\tau}} \in \mathcal{D}(Expr_{\tau} + \bot)$ is defined recursively on the structure of $e:\tau$ by the rules in \Cref{tab:coupling_smallstep}. 
+\end{definition}
+%
+%
+\kevin{todo: the following must be measurable} \\
+Define $P_\tau = \{ (e:\tau, \discretize{e} : \discretize{\tau}) ~|~ e:\tau \}$.
+%
+%
+\begin{theorem}
+	Let $e:\tau$. We have:
+	%
+	\begin{enumerate}
+		\item $\sem{e:\tau}(\{\bot\}) = \sem{e:\tau, \discretize{e} : \discretize{\tau}}(\{\bot\}) = \sem{\discretize{e} : \discretize{\tau}}(\{\bot\})$.
+		%
+		\item For all measurable $E \subseteq Expr_\tau$, we have \[\sem{e:\tau}(E) = \sem{e:\tau, \discretize{e} : \discretize{\tau}}( E \times Expr_{\discretize{\tau}} )~. \]
+		%
+		%
+		\item For all measurable $E \subseteq Expr_\discretize{\tau}$, we have \[\sem{\discretize{e} : \discretize{\tau}}(E) = \sem{e:\tau, \discretize{e} : \discretize{\tau}}( Expr_\tau \times E )~. \]
+		%
+		\item For all measurable $E\subseteq Expr_\tau \times Expr_\discretize{\tau}$, we have 
+		%
+		\[
+			\sem{e:\tau, \discretize{e} : \discretize{\tau}}(E) = \sem{e:\tau, \discretize{e} : \discretize{\tau}}(E \cap P_\tau)~.
+		\]
+	\end{enumerate}
+\end{theorem}
