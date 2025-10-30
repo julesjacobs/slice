@@ -93,9 +93,9 @@ Define $P_\tau = \{ (e:\tau, \discretize{e} : \discretize{\tau}) ~|~ e:\tau \}$.
 		\item For all measurable $E \subseteq Expr_\tau$, we have \[\sem{e:\tau}(E) = \sem{e:\tau, \discretize{e} : \discretize{\tau}}( E \times Expr_{\discretize{\tau}} )~. \]
 		%
 		%
-		\item For all measurable $E \subseteq Expr_\discretize{\tau}$, we have \[\sem{\discretize{e} : \discretize{\tau}}(E) = \sem{e:\tau, \discretize{e} : \discretize{\tau}}( Expr_\tau \times E )~. \]
+		\item For all measurable $E \subseteq Expr_{\discretize{\tau}}$, we have \[\sem{\discretize{e} : \discretize{\tau}}(E) = \sem{e:\tau, \discretize{e} : \discretize{\tau}}( Expr_\tau \times E )~. \]
 		%
-		\item For all measurable $E\subseteq Expr_\tau \times Expr_\discretize{\tau}$, we have 
+		\item For all measurable $E\subseteq Expr_\tau \times Expr_{\discretize{\tau}}$, we have 
 		%
 		\[
 			\sem{e:\tau, \discretize{e} : \discretize{\tau}}(E) = \sem{e:\tau, \discretize{e} : \discretize{\tau}}(E \cap P_\tau)~.
