@@ -142,4 +142,26 @@ For every type $\tau$, we denote by $Vals_\tau$ the set of values of type $\tau$
 \end{definition}
 %
 %
-Well-definedness of these objects follows from the monotone convergence theorem: The event of evaluating to a value 
+Well-definedness of these objects follows from the monotone convergence theorem: The probability of evaluating to some set of values or an error is montonically increasing in $n$ and upper-bounded by $1$. 
+
+\kevin{the folllowing must be measurable} \\
+Define $V_\tau = \{ (v:\tau, \discretize{v} : \discretize{\tau}) ~|~ v:\tau \}$.
+%
+\begin{lemma}
+	Let $e:\tau$. We have:
+	%
+	\begin{enumerate}
+		\item $\bigsem{e:\tau}(\{\bot\}) = \bigsem{e:\tau, \discretize{e} : \discretize{\tau}}(\{\bot\}) = \bigsem{\discretize{e} : \discretize{\tau}}(\{\bot\})$.
+		%
+		\item For all measurable $E \subseteq Vals_\tau$, we have \[\bigsem{e:\tau}(E) = \bigsem{e:\tau, \discretize{e} : \discretize{\tau}}( E \times Vals_{\discretize{\tau}} )~. \]
+		%
+		%
+		\item For all measurable $E \subseteq Vals_{\discretize{\tau}}$, we have \[\bigsem{\discretize{e} : \discretize{\tau}}(E) = \bigsem{e:\tau, \discretize{e} : \discretize{\tau}}( Vals_\tau \times E )~. \]
+		%
+		\item For all measurable $E\subseteq Vals_\tau \times Vals_{\discretize{\tau}}$, we have 
+		%
+		\[
+		\bigsem{e:\tau, \discretize{e} : \discretize{\tau}}(E) = \bigsem{e:\tau, \discretize{e} : \discretize{\tau}}(E \cap V_\tau)~.
+		\]
+	\end{enumerate}
+\end{lemma}
