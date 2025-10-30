@@ -84,7 +84,8 @@ Exploiting that $e:\tau$ is a value iff $\discretize{e} : \discretize{\tau}$ val
 Define $P_\tau = \{ (e:\tau, \discretize{e} : \discretize{\tau}) ~|~ e:\tau \}$.
 %
 %
-\begin{theorem}
+\begin{lemma}
+	\label{lem:small_step_coupling_props}
 	Let $e:\tau$. We have:
 	%
 	\begin{enumerate}
@@ -101,7 +102,7 @@ Define $P_\tau = \{ (e:\tau, \discretize{e} : \discretize{\tau}) ~|~ e:\tau \}$.
 			\sem{e:\tau, \discretize{e} : \discretize{\tau}}(E) = \sem{e:\tau, \discretize{e} : \discretize{\tau}}(E \cap P_\tau)~.
 		\]
 	\end{enumerate}
-\end{theorem}
+\end{lemma}
 %
 \begin{proof}
 	By induction on the type derivation of $e:\tau$.
@@ -134,9 +135,9 @@ For every type $\tau$, we denote by $Vals_\tau$ the set of values of type $\tau$
 	Let $e:\tau$. The \emph{(big-step) semantics} $\bigsem{e:\tau} \in \mathcal{D}(Vals_\tau + \bot)$ and $\bigsem{e:\tau} \in \mathcal{D}(Vals_\tau \times Vals_{\discretize{\tau}} + \bot)$ are respectively defined as 
 	%
 	\begin{align*}
-		\bigsem{e:\tau} ={}& \lambda A. \sup_n \bigsemstep{e:\tau}{n}(A) \\
+		\bigsem{e:\tau} ={}& \lambda A. \lim_{n\to\infty} \bigsemstep{e:\tau}{n}(A) \\
 		%
-		\bigsem{e:\tau,  \discretize{e} : \discretize{\tau}} ={}& \lambda A. \sup_n \bigsemstep{e:\tau,  \discretize{e} : \discretize{\tau}}{n}(A)
+		\bigsem{e:\tau,  \discretize{e} : \discretize{\tau}} ={}& \lambda A. \lim_{n\to\infty} \bigsemstep{e:\tau,  \discretize{e} : \discretize{\tau}}{n}(A)
 	\end{align*}
 	%
 \end{definition}
@@ -165,3 +166,12 @@ Define $V_\tau = \{ (v:\tau, \discretize{v} : \discretize{\tau}) ~|~ v:\tau \}$.
 		\]
 	\end{enumerate}
 \end{lemma}
+%
+\begin{proof}
+	Follows immeditaley from \Cref{lem:small_step_coupling_props}.
+\end{proof}
+%
+%
+\begin{theorem}
+	Let $e:\bool$. Then $\bigsem{e:bool} = \discretize{e:bool}$.
+\end{theorem}
