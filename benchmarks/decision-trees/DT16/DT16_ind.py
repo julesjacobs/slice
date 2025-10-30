@@ -9,7 +9,8 @@ def main():
     parser.add_argument("--time", action="store_true", help="Print only the execution time to stderr")
     args = parser.parse_args()
 
-    start_time = time.time()
+    # ---------- Translation Section ----------
+    start_translate = time.time()
     compiler = SPPL_Compiler('''
 # Population model
 age ~= norm(loc=38.5816, scale=186.0614)
@@ -27,7 +28,6 @@ sex ~= choice({'female': 0.3307, 'male': 0.6693})
 
 capital_gain ~= norm(loc=1077.6488, scale=54542539.1784)
 
-condition(sex == 'female')
 condition(age > 18)
 
 # Decision logic
@@ -61,14 +61,32 @@ else:
 ''')
 
     namespace = compiler.execute_module()
-    e = Id('t')
-    event = (e < 0.5)
-    prob = namespace.model.prob(event)
-    elapsed = time.time() - start_time
+    model = namespace.model
+    translate_time = time.time() - start_translate
 
-    print(prob)
+    # ---------- Conditioning Section ----------
+    start_condition = time.time()
+    model_c0 = model.condition(namespace.sex << {'female'})
+    model_c1 = model.condition(namespace.sex << {'male'})
+    condition_time = time.time() - start_condition
+
+    # ---------- Querying Section ----------
+    start_prob = time.time()
+    p_given_minority = model_c0.prob(namespace.t << {1})
+    p_given_majority = model_c1.prob(namespace.t << {1})
+    fairness = p_given_minority / p_given_majority
+    prob_time = time.time() - start_prob
+
+    # ---------- Output ----------
+    print(fairness)
+
     if args.time:
-        print(f"{elapsed:.3f}", file=sys.stderr)
+        print(
+            f"{translate_time:.3f},"
+            f"{condition_time:.3f},"
+            f"{prob_time:.3f}",
+            file=sys.stderr
+        )
 
 if __name__ == "__main__":
     main()

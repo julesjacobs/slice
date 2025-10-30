@@ -13,6 +13,9 @@ random.seed(11) # random seed for reproducibility
 Each variable in the if-else guard depends on its immediate predecessor.
 '''
 def build_conditional_independent_slice(comparison_count):
+    if comparison_count == 0:
+        return "", None
+    
     code = []
     counter = 1
     variables = [f"x{n}" for n in range(1, comparison_count + 1)]
@@ -34,6 +37,9 @@ def build_conditional_independent_slice(comparison_count):
 
 
 def build_conditional_independent_fork_slice(comparison_count):
+    if comparison_count == 0:
+        return "", None
+    
     code = []
     counter = 1
     variables = [f"x{n}" for n in range(1, comparison_count + 1)]
@@ -56,6 +62,9 @@ def build_conditional_independent_fork_slice(comparison_count):
 
 
 def build_conditional_independent_collider_slice(comparison_count):
+    if comparison_count == 0:
+        return "", None
+    
     code = []
     counter = 1
     variables = [f"x{n}" for n in range(1, comparison_count + 1)]
@@ -74,12 +83,13 @@ def build_conditional_independent_collider_slice(comparison_count):
         else:
             prev = variables[idx - 1]
             prev_2 = variables[idx-2]
-            code.append(f"let {var} = if {prev} < {rand_const} && {prev_2} then uniform(0,{counter}) else uniform(0,{counter + 1}) in")
+            code.append(f"let {var} = if {prev} < {rand_const} && {prev_2} < {rand_const_2} then uniform(0,{counter}) else uniform(0,{counter + 1}) in")
             counter += 2
 
     last_var = variables[-1]
     code.append(f"{last_var} < 0.5")
     return "\n".join(code), last_var
+
 
 def build_conditional_independent_sppl(comparison_count):
     # Can alternatively use the --to-sppl flag from slice to generate these programs
@@ -108,6 +118,9 @@ Each variable in the if-else guard depends on any previous variable chosen at ra
 May lead to unused fragments.
 '''
 def build_conditional_random_independent_slice_1(comparison_count):
+    if comparison_count == 0:
+        return "", None
+    
     code = []
     counter = 1
     variables = [f"x{n}" for n in range(1, comparison_count + 1)]
@@ -135,6 +148,9 @@ Uses more randomization than build_conditional_random_independent_slice_1.
 May lead to unused fragments.
 '''
 def build_conditional_random_independent_slice_2(depth):
+    if depth == 0:
+        return "", None
+    
     counter = [0]
     def gen_var():
         counter[0] += 1
@@ -228,6 +244,9 @@ Generates unique uniform distributions for each let
 May lead to unused fragments.
 '''
 def build_alternating_guard_slice_1(comparison_count, guard_span):
+    if comparison_count == 0 or guard_span == 0:
+        return "", None
+    
     code = []
     counter = 1
     variables = [f"x{n}" for n in range(1, comparison_count + 1)]
@@ -256,6 +275,9 @@ Variables in the if-else guard alternate depending on guard_span, e.g. guards al
 Generates unique uniform distributions for each let, but else body will depend on immediate predecessor variable
 '''
 def build_alternating_guard_slice_2(comparison_count, guard_span):
+    if comparison_count == 0 or guard_span == 0:
+        return "", None
+    
     code = []
     counter = 1
     variables = [f"x{n}" for n in range(1, comparison_count + 1)]
@@ -285,6 +307,9 @@ Variables in the if-else guard alternate depending on guard_span, e.g. guards al
 Generates unique uniform distributions for each let, but then body will depend on immediate predecessor variable
 '''
 def build_alternating_guard_slice_3(comparison_count, guard_span):
+    if comparison_count == 0 or guard_span == 0:
+        return "", None
+    
     code = []
     counter = 1
     variables = [f"x{n}" for n in range(1, comparison_count + 1)]
@@ -322,6 +347,9 @@ Generates random uniform distributions for each let, different from build_altern
 May lead to unused fragments
 '''
 def build_random_alternating_guard_slice(comparison_count, guard_span):
+    if comparison_count == 0 or guard_span == 0:
+        return "", None
+    
     code = []
     variables = [f"x{n}" for n in range(1, comparison_count + 1)]
 

@@ -77,18 +77,18 @@ Next, we evaluate the performance of our \Slice{} framework on two sets of exist
     \toprule
     Benchmark & Slice+Dice (s) & Slice+Roulette (s) & SPPL (s) \\
     \midrule
-    DT4\_bn1  & 0.029 (\textbf{6.1×}) & 2.534 (0.1×) & 0.176 \\
-    DT4\_bn2  & 0.030 (\textbf{6.6×}) & 2.536 (0.1×) & 0.199 \\
-    DT4\_ind  & 0.029 (\textbf{2.7×}) & 2.579 (0.0×) & 0.077 \\
-    DT14\_bn1 & 0.049 (\textbf{6.4×}) & 2.745 (0.1×) & 0.315 \\
-    DT14\_bn2 & 0.049 (\textbf{7.4×}) & 2.805 (0.1×) & 0.364 \\
-    DT14\_ind & 0.033 (\textbf{4.8×}) & 2.783 (0.1×) & 0.157 \\
-    DT16\_bn1 & 0.043 (\textbf{7.8×}) & 2.915 (0.1×) & 0.335 \\
-    DT16\_bn2 & 0.046 (\textbf{7.9×}) & 2.980 (0.1×) & 0.364 \\
-    DT16\_ind & 0.031 (\textbf{6.0×}) & 2.701 (0.1×) & 0.185 \\
-    DT44\_bn1 & 0.087 (\textbf{7.8×}) & 3.520 (0.2×) & 0.676 \\
-    DT44\_bn2 & 0.089 (\textbf{8.1×}) & 3.670 (0.2×) & 0.723 \\
-    DT44\_ind & 0.061 (\textbf{6.8×}) & 3.020 (0.1×) & 0.413 \\
+    DT4\_bn1  & 0.011 / 0.084 / 0.095 (\textbf{6.3×}) & 0.004 / 0.144 / 0.148 (4.0×) & 0.551 / 0.034 / 0.011 / 0.596 \\
+    DT4\_bn2  & 0.006 / 0.109 / 0.115 (\textbf{5.7×}) & 0.006 / 0.071 / 0.077 (8.6×) & 0.621 / 0.033 / 0.007 / 0.661 \\
+    DT4\_ind  & 0.005 / 0.108 / 0.113 (\textbf{1.3×}) & 0.002 / 0.065 / 0.067 (2.2×) & 0.127 / 0.005 / 0.013 / 0.145 \\
+    DT14\_bn1 & 0.010 / 0.173 / 0.183 (\textbf{8.8×}) & 0.005 / 0.131 / 0.136 (11.9×) & 1.458 / 0.132 / 0.026 / 1.616 \\
+    DT14\_bn2 & 0.006 / 0.210 / 0.216 (\textbf{6.3×}) & 0.005 / 0.134 / 0.139 (9.8×) & 1.216 / 0.119 / 0.023 / 1.358 \\
+    DT14\_ind & 0.010 / 0.112 / 0.122 (\textbf{2.8×}) & 0.005 / 0.137 / 0.142 (2.4×) & 0.296 / 0.004 / 0.039 / 0.339 \\
+    DT16\_bn1 & 0.018 / 0.136 / 0.154 (\textbf{9.7×}) & 0.010 / 0.139 / 0.149 (10.1×) & 1.338 / 0.119 / 0.042 / 1.499 \\
+    DT16\_bn2 & 0.008 / 0.150 / 0.158 (\textbf{7.4×}) & 0.015 / 0.182 / 0.197 (6.0×) & 1.022 / 0.126 / 0.026 / 1.174 \\
+    DT16\_ind & 0.005 / 0.104 / 0.109 (\textbf{4.6×}) & 0.007 / 0.051 / 0.058 (8.7×) & 0.405 / 0.022 / 0.077 / 0.504 \\
+    DT44\_bn1 & 0.008 / 0.274 / 0.282 (\textbf{10.2×}) & 0.006 / 1.171 / 1.177 (2.4×) & 2.332 / 0.430 / 0.105 / 2.867 \\
+    DT44\_bn2 & 0.008 / 0.258 / 0.266 (\textbf{9.9×}) & 0.006 / 1.145 / 1.151 (2.3×) & 2.143 / 0.373 / 0.114 / 2.630 \\
+    DT44\_ind & 0.005 / 0.211 / 0.216 (\textbf{4.6×}) & 0.005 / 0.233 / 0.238 (4.2×) & 0.809 / 0.008 / 0.172 / 0.989 \\
     \bottomrule
     \end{tabular}
 \caption{Execution times (seconds) for the benchmarks from \cite{albarghouthi2017fairsquare}.}
@@ -106,13 +106,13 @@ Next, we evaluate the performance of our \Slice{} framework on two sets of exist
     \toprule
     Benchmark & Slice+Dice (s) & Slice+Roulette (s) & SPPL (s) \\
     \midrule
-    ClickGraph     & 0.359 (\textbf{305.5×}) & 5.209 (21.0×) & 109.566 \\
-    ClinicalTrial  & 0.535 (\textbf{9.1×})   & 4.453 (1.1×)  & 4.894 \\
-    CoinBias       & 0.078 (\textbf{10.8×})  & 3.115 (0.27×) & 0.841 \\
-    SurveyUnbias   & 0.043 (\textbf{8.1×})   & 2.772 (0.13×) & 0.347 \\
-    TrueSkill      & 0.041 (\textbf{5.0×})   & 2.766 (0.074×) & 0.204 \\
+    ClickGraph  & 0.385 (\textbf{270.3×}) & 0.989 (105.2×) & 104.077 \\
+    ClinicalTrial  & 0.476 (\textbf{10.6×}) & 0.196 (25.8×) & 5.059 \\
+    CoinBias  & 0.080 (\textbf{10.8×}) & 0.137 (6.3×) & 0.865 \\
+    SurveyUnbias  & 0.043 (\textbf{7.8×}) & 0.158 (2.1×) & 0.334 \\
+    TrueSkill  & 0.041 (\textbf{4.8×}) & 0.104 (1.9×) & 0.195 \\
     \bottomrule
-    \end{tabular}    
+    \end{tabular}
 \caption{Execution times (seconds) for the benchmarks taken from \cite{gehr2016psi}.}
     \label{tab:benchmarks_psi}
 \end{table}

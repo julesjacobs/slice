@@ -16,6 +16,7 @@ import time
 import statistics
 from pathlib import Path
 from datetime import datetime
+from benchmarks.scaling.run import *
 
 from sppl.compilers.ast_to_spe import Id
 from sppl.compilers.sppl_to_python import SPPL_Compiler
@@ -119,7 +120,7 @@ class BenchmarkRunner:
         try:
             result = subprocess.run(command, shell=False, check=True, stdout=subprocess.PIPE, 
                                 stderr=subprocess.PIPE, timeout=timeout)
-            # return stdout for output, stderr result for timing, 
+            # return stdout for output, stderr result for timing
             return result.stdout, result.stderr
         except subprocess.TimeoutExpired:
             return None
@@ -169,7 +170,7 @@ class BenchmarkRunner:
             print(f"  Skipping Dice (previous timeout)", flush=True)
         
         os.chdir(str(original_dir))
-        return slice_duration_dice, total_duration_dice, slice_output, slice_timed_out
+        return slice_duration_dice, dice_duration, total_duration_dice, slice_output, slice_timed_out
 
     def run_slice_to_roulette(self, path, timeout):
         """
@@ -215,16 +216,28 @@ class BenchmarkRunner:
             print(f"  Skipping Slice (previous timeout)", flush=True)
         
         os.chdir(str(original_dir))
-        return slice_duration_roulette, total_duration_roulette, slice_output, slice_timed_out
+        return slice_duration_roulette, roulette_duration, total_duration_roulette, slice_output, slice_timed_out
 
 
     def run_sppl(self, py_file, timeout):
         """Runs SPPL.
         Args:
-            sppl_program: sppl program : string
-        Output:
-            duration, output, timed out : bool"""
-        sppl_duration = None
+            py_file: path to SPPL Python file
+            timeout: timeout in seconds
+        Returns:
+            (
+                translate_time,          # translation time
+                condition_time,          # conditioning time
+                prob_time,               # probability computation time
+                sppl_duration_total,     # sum of all stage times
+                sppl_output,             # model output (stdout)
+                sppl_timed_out           # whether timeout occurred
+            )
+        """
+        sppl_duration_total = None
+        translate_time = None
+        condition_time = None
+        prob_time = None
         sppl_output = None
         sppl_timed_out = False
 
@@ -235,12 +248,37 @@ class BenchmarkRunner:
             print(f" TIMEOUT after {timeout}s", flush=True)
             sppl_timed_out = True
         else:
-            sppl_duration = float(result[1].strip())
-            sppl_output = result[0].decode('utf-8')
+            stdout_data = result[0].decode("utf-8").strip()
+            stderr_data = result[1].decode("utf-8").strip()
+
+            try:
+                # Expected stderr format: "0.408,0.040,0.010"
+                parts = [float(x) for x in stderr_data.replace("=", " ")
+                                                .replace(",", " ")
+                                                .split() if x.replace('.', '', 1).isdigit()]
+
+                if len(parts) >= 3:
+                    translate_time, condition_time, prob_time = parts[:3]
+                    sppl_duration_total = translate_time + condition_time + prob_time
+                else:
+                    raise ValueError("Could not parse three timing values")
+
+            except Exception as e:
+                print(f"Warning: could not parse SPPL timings from stderr: '{stderr_data}' ({e})")
+
+            sppl_output = stdout_data
+
+        return (
+            translate_time,
+            condition_time,
+            prob_time,
+            sppl_duration_total,
+            sppl_output,
+            sppl_timed_out
+        )
+
     
-        return sppl_duration, sppl_output, sppl_timed_out
-    
-    
+
     def run_decision_tree_benchmarks(self):
         """Run decision tree benchmarks comparing Slice and SPPL"""
         print("Running decision tree benchmarks...", flush=True)
@@ -261,7 +299,7 @@ class BenchmarkRunner:
                 if slice_file.exists():
                     if USE_DICE_BACKEND:
                         print(f"  Running {benchmark_name} (Slice / dice)...", flush=True)
-                        _, total_duration_dice, _, _ = self.run_slice_to_dice(slice_file, 300)
+                        slice_time, dice_time, total_duration_dice, _, _ = self.run_slice_to_dice(slice_file, 300)
 
                         # timing = self.run_slice_on_file(slice_file, 'dice')
                         if total_duration_dice:
@@ -277,9 +315,10 @@ class BenchmarkRunner:
                                 'max_time': 0
                             })
                             print(f"    Mean: {total_duration_dice:.3f}s ± {0:.3f}s")
+                            print(f"    slice: {slice_time:.3f}s, dice: {dice_time:.3f}s")
                     if USE_ROULETTE_BACKEND:
                         print(f"  Running {benchmark_name} (Slice / roulette)...", flush=True)
-                        _, total_duration_roulette, _, _ = self.run_slice_to_roulette(slice_file, 300)
+                        slice_time, roulette_time, total_duration_roulette, _, _ = self.run_slice_to_roulette(slice_file, 300)
                         if total_duration_roulette:
                             self.results.append({
                                 'benchmark': benchmark_name,
@@ -293,12 +332,13 @@ class BenchmarkRunner:
                                 'max_time': 0
                             })
                             print(f"    Mean: {total_duration_roulette:.3f}s ± {0:.3f}s")
+                            print(f"    slice: {slice_time:.3f}s, roulette: {roulette_time:.3f}s")
                 
                 # Run SPPL version
                 py_file = (size_dir / f"{benchmark_name}.py").resolve()
                 if py_file.exists():
                     print(f"  Running {benchmark_name} (SPPL)...", flush=True)
-                    sppl_output, _, _ = self.run_sppl(py_file, 300)
+                    translate_time, condition_time, prob_time, sppl_output, _, _ = self.run_sppl(py_file, 300)
                     if sppl_output:
                         self.results.append({
                             'benchmark': benchmark_name,
@@ -312,6 +352,7 @@ class BenchmarkRunner:
                             'max_time': 0
                         })
                         print(f"    Mean: {sppl_output:.3f}s ± {0:.3f}s")
+                        print(f"    translate: {translate_time:.3f}s, condition: {condition_time:.3f}s, prob: {prob_time:.3f}s")
                 else:
                     print(f"File not found: {py_file}")
     
@@ -328,7 +369,7 @@ class BenchmarkRunner:
             if slice_file.exists():
                 if USE_DICE_BACKEND:
                     print(f"  Running {benchmark} (Slice / dice)...", flush=True)
-                    _, total_duration_dice, _, _ = self.run_slice_to_dice(slice_file, 300)
+                    slice_time, dice_time, total_duration_dice, _, _ = self.run_slice_to_dice(slice_file, 300)
                     if total_duration_dice:
                         self.results.append({
                             'benchmark': benchmark,
@@ -340,9 +381,11 @@ class BenchmarkRunner:
                             'max_time': 0
                         })
                         print(f"    Mean: {total_duration_dice:.3f}s ± {0:.3f}s")
+                        print(f"    slice: {slice_time:.3f}s, dice: {dice_time:.3f}s")
+
                 if USE_ROULETTE_BACKEND:
                     print(f"  Running {benchmark} (Slice / roulette)...", flush=True)
-                    _, total_duration_roulette, _, _ = self.run_slice_to_roulette(slice_file, 300)
+                    slice_time, roulette_time, total_duration_roulette, _, _ = self.run_slice_to_roulette(slice_file, 300)
                     
                     if total_duration_roulette:
                         self.results.append({
@@ -355,12 +398,14 @@ class BenchmarkRunner:
                             'max_time': 0
                         })
                         print(f"    Mean: {total_duration_roulette:.3f}s ± {0:.3f}s")
+                        print(f"    slice: {slice_time:.3f}s, roulette: {roulette_time:.3f}s")
+
 
             # Run SPPL version
             py_file = (baseline_dir / f"{benchmark}.py").resolve()
             if py_file.exists():
                 print(f"  Running {benchmark} (SPPL)...", flush=True)
-                sppl_output, _, _ = self.run_sppl(py_file, 300)
+                translate_time, condition_time, prob_time, sppl_output, _, _ = self.run_sppl(py_file, 300)
                 if sppl_output:
                     self.results.append({
                         'benchmark': benchmark,
@@ -372,60 +417,105 @@ class BenchmarkRunner:
                         'max_time': 0
                     })
                     print(f"    Mean: {sppl_output:.3f}s ± {0:.3f}s")
+                    print(f"    translate: {translate_time:.3f}s, condition: {condition_time:.3f}s, prob: {prob_time:.3f}s")
     
     def run_scaling_benchmarks(self):
         """Run scaling benchmarks"""
         print("\nRunning scaling benchmarks...", flush=True)
         print("-" * 50, flush=True)
         
-        scaling_dir = Path("benchmarks/scaling")
-        if (scaling_dir / "run.py").exists():
-            print("  Running scaling experiments...", flush=True)
-            if USE_DICE_BACKEND and USE_ROULETTE_BACKEND:
-                # The scaling runner creates its own graphs
-                cmd = f"cd {scaling_dir} && python3 -u run.py"
-                # Use subprocess.Popen for real-time output
-                process = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, 
-                                        universal_newlines=True, bufsize=1)
-                for line in process.stdout:
-                    print(f"    {line.rstrip()}", flush=True)
-                process.wait()
-                print("  Scaling graphs saved to images/scaling/", flush=True)
-            elif USE_DICE_BACKEND and not USE_ROULETTE_BACKEND:
-                # The scaling runner creates its own graphs
-                cmd = f"cd {scaling_dir} && python3 -u run.py --dice"
-                # Use subprocess.Popen for real-time output
-                process = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, 
-                                        universal_newlines=True, bufsize=1)
-                for line in process.stdout:
-                    print(f"    {line.rstrip()}", flush=True)
-                process.wait()
-                print("  Scaling graphs saved to images/scaling/", flush=True)
-            else:
-                # The scaling runner creates its own graphs
-                cmd = f"cd {scaling_dir} && python3 -u run.py --roulette"
-                # Use subprocess.Popen for real-time output
-                process = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, 
-                                        universal_newlines=True, bufsize=1)
-                for line in process.stdout:
-                    print(f"    {line.rstrip()}", flush=True)
-                process.wait()
-                print("  Scaling graphs saved to images/scaling/", flush=True)
+        # Define all tests with their argument count
+        tests_1_arg = [
+            build_conditional_independent_slice,
+            build_conditional_independent_fork_slice,
+            build_conditional_random_independent_slice_1,
+            build_conditional_random_independent_slice_2
+        ]
+        
+        tests_2_args = [
+            build_alternating_guard_slice_1,
+            build_alternating_guard_slice_2,
+            build_alternating_guard_slice_3,
+            build_random_alternating_guard_slice
+        ]
 
-    
+        # Run single-argument tests
+        for test_func in tests_1_arg:
+            print(f"\nTesting asymptotic scaling for {test_func.__name__}...", flush=True)
+            print(f"This will test programs of size 1 to 245 in increments of 5.", flush=True)
+            print("", flush=True)
+            benchmark_results = test_asymptotic_scaling_1_arg(test_func, timeout=120)
+            if benchmark_results:
+                output_file = original_dir / "images" / "scaling" / f"{test_func.__name__}.png"
+                output_file.parent.mkdir(parents=True, exist_ok=True)
+                generate_line_graphs(benchmark_results, str(output_file))
+                for b in benchmark_results:
+                    size = b[0]
+                    tools = {
+                        'slice': b[1][0][0],
+                        'slice-dice': b[1][0][1],
+                        'slice-roulette': b[1][1][1],
+                        'sppl': b[2],
+                    }
+
+                    for tool, mean_time in tools.items():
+                        self.results.append({
+                            'benchmark': test_func.__name__,
+                            'category': 'scaling',
+                            'tool': tool,
+                            'size': size,
+                            'mean_time': mean_time,
+                            'stdev': 0,
+                            'min_time': 0,
+                            'max_time': 0,
+                        })
+
+        # Run two-argument tests
+        for test_func in tests_2_args:
+            print(f"\nTesting asymptotic scaling for {test_func.__name__}...", flush=True)
+            print(f"This will test programs of size 5 to 95 in increments of 5.", flush=True)
+            print("", flush=True)
+            benchmark_results = test_asymptotic_scaling_2_arg(test_func, timeout=120)
+            if benchmark_results:
+                output_file = original_dir / "images" / "scaling" / f"{test_func.__name__}.png"
+                output_file.parent.mkdir(parents=True, exist_ok=True)
+                generate_line_graphs(benchmark_results, str(output_file))
+                for b in benchmark_results:
+                    size = b[0]
+                    tools = {
+                        'slice': b[1][0][0],
+                        'slice-dice': b[1][0][1],
+                        'slice-roulette': b[1][1][1],
+                        'sppl': b[2],
+                    }
+
+                    for tool, mean_time in tools.items():
+                        self.results.append({
+                            'benchmark': test_func.__name__,
+                            'category': 'scaling',
+                            'tool': tool,
+                            'size': size,
+                            'mean_time': mean_time,
+                            'stdev': 0,
+                            'min_time': 0,
+                            'max_time': 0,
+                        })
+
+        print("  Scaling graphs saved to images/scaling/", flush=True)
+        
+
     def calculate_speedups(self):
-        """Calculate speedups for decision tree benchmarks"""
+        """Calculate speedups for decision tree / baseline benchmarks"""
         print("\nCalculating speedups...")
         print("-" * 50)
         
         # Group results by benchmark
         benchmarks = {}
         for r in self.results:
-            if r['category'] == 'decision_tree':
-                key = r['benchmark']
-                if key not in benchmarks:
-                    benchmarks[key] = {}
-                benchmarks[key][r['tool']] = r['mean_time']
+            key = r['benchmark']
+            if key not in benchmarks:
+                benchmarks[key] = {}
+            benchmarks[key][r['tool']] = r['mean_time']
         
         # Calculate speedups
         speedups = []
@@ -446,10 +536,10 @@ class BenchmarkRunner:
         
         return speedups
     
-    def save_results(self):
+    def save_results(self, type):
         """Save results to CSV and JSON"""
         # Save detailed results
-        csv_file = self.output_dir / "benchmark_results.csv"
+        csv_file = self.output_dir / f"{type}_benchmark_results.csv"
         print(os.getcwd())
         if self.results:
             with open(csv_file, 'w', newline='') as f:
@@ -461,7 +551,7 @@ class BenchmarkRunner:
         # Save speedup summary
         speedups = self.calculate_speedups()
         if speedups:
-            speedup_file = self.output_dir / "speedup_summary.csv"
+            speedup_file = self.output_dir / f"{type}_speedup_summary.csv"
             with open(speedup_file, 'w', newline='') as f:
                 writer = csv.DictWriter(f, fieldnames=speedups[0].keys())
                 writer.writeheader()
@@ -469,7 +559,7 @@ class BenchmarkRunner:
             print(f"Speedup summary saved to: {speedup_file}")
         
         # Save everything as JSON
-        json_file = self.output_dir / "all_results.json"
+        json_file = self.output_dir / f"{type}_all_results.json"
         with open(json_file, 'w') as f:
             json.dump({
                 'timestamp': datetime.now().isoformat(),
@@ -484,26 +574,25 @@ class BenchmarkRunner:
         speedups = self.calculate_speedups()
         if not speedups:
             return
-            
+
         latex_file = self.output_dir / "results_table.tex"
         with open(latex_file, 'w') as f:
-            f.write("\\begin{tabular}{lrrrr}\n")
-            f.write("\\toprule\n")
-            f.write("Benchmark & Slice+Dice (s) & Slice+Roulette (s) & SPPL (s) & Speedup \\\\\n")
-            f.write("\\midrule\n")
-            
+            f.write("\\begin{tabular}{lrrr}\n")
+            f.write("    \\toprule\n")
+            f.write("    Benchmark & Slice+Dice (s) & Slice+Roulette (s) & SPPL (s) \\\\\n")
+            f.write("    \\midrule\n")
+
             for s in speedups:
-                # Display the max speedup time between dice and roulette
-                max_speedup = max(s['dice_speedup'], s['roulette_speedup'])
-                f.write(f"{s['benchmark']} & "
-                       f"{s['slice_time_dice']:.3f} & "
-                       f"{s['slice_time_roulette']:.3f} & "
-                       f"{s['sppl_time']:.3f} & "
-                       f"{max_speedup:.1f}× \\\\\n")
-            
-            f.write("\\bottomrule\n")
-            f.write("\\end{tabular}\n")
-        
+                f.write(
+                    f"    {s['benchmark']}  & "
+                    f"{s['slice_time_dice']:.3f} (\\textbf{{{s['dice_speedup']:.1f}×}}) & "
+                    f"{s['slice_time_roulette']:.3f} ({s['roulette_speedup']:.1f}×) & "
+                    f"{s['sppl_time']:.3f} \\\\\n"
+                )
+
+            f.write("    \\bottomrule\n")
+            f.write("    \\end{tabular}\n")
+
         print(f"LaTeX table saved to: {latex_file}")
     
     def run_all(self):
@@ -515,9 +604,14 @@ class BenchmarkRunner:
         print()
         
         self.run_decision_tree_benchmarks()
+        self.save_results('dt')
+
+        self.run_baseline_benchmarks()
+        self.save_results('baseline')
+
         self.run_scaling_benchmarks()
-        
-        self.save_results()
+        self.save_results('scaling')
+
         self.generate_latex_table()
         
         print("\nBenchmark run complete!")
@@ -817,7 +911,7 @@ class SliceCLI:
                 runner = BenchmarkRunner(str(output_dir), timeout=args.timeout if args.timeout else 300)
                 runner.num_runs = args.runs
                 runner.run_decision_tree_benchmarks()
-                runner.save_results()
+                runner.save_results('dt')
                 
                 if args.format == 'latex':
                     runner.generate_latex_table()
@@ -834,7 +928,7 @@ class SliceCLI:
                 runner = BenchmarkRunner(str(output_dir), timeout=args.timeout if args.timeout else 300)
                 runner.num_runs = args.runs
                 runner.run_baseline_benchmarks()
-                runner.save_results()
+                runner.save_results('baseline')
                 
                 if args.format == 'latex':
                     runner.generate_latex_table()
@@ -842,28 +936,20 @@ class SliceCLI:
         if args.type in ['all', 'scaling']:
             if not self.quiet:
                 print("\nRunning scaling benchmarks...", flush=True)
-            # Use subprocess with real-time output
-            cmd = f"python3 -u run.py"
-            if args.timeout:
-                cmd += f" --timeout {args.timeout}"
-            try:
-                process = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
-                                         universal_newlines=True, bufsize=1, cwd="benchmarks/scaling")
+            
+            if args.hyperfine:
+                # Use hyperfine for benchmarking
+                self.run_hyperfine_benchmarks(output_dir)
+            else:
+                # Use integrated benchmark runner
+                runner = BenchmarkRunner(str(output_dir), timeout=args.timeout if args.timeout else 300)
+                runner.num_runs = args.runs
+                runner.run_scaling_benchmarks()
+                runner.save_results('scaling')
                 
-                # Read output line by line without overall timeout
-                while True:
-                    line = process.stdout.readline()
-                    if not line and process.poll() is not None:
-                        break
-                    if line:
-                        print(line.rstrip(), flush=True)
-                
-                process.wait()
-            except Exception as e:
-                print(f"Error running scaling benchmarks: {e}", flush=True)
-        
-        if not self.quiet:
-            print(f"\nBenchmark results saved to {output_dir}/")
+                if args.format == 'latex':
+                    runner.generate_latex_table()
+
     
     def run_hyperfine_benchmarks(self, output_dir):
         """Run decision tree benchmarks using hyperfine"""
