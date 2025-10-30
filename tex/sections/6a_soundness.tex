@@ -64,7 +64,7 @@ The missing probability mass in $\sem{e :\tau}$ is the probability of encounteri
 It follows by induction on the type derivation of $e:\tau$ that $\sem{e:\tau}$ is well-defined, i.e., the small-step semantics is type-preserving.\\
 
 
-\subsection{Coupling Semantics}
+\subsection{Small-Step Coupling Semantics}
 \input{figures/coupling_smallstep}
 
 \kevin{todo: measurable space} 
@@ -102,3 +102,44 @@ Define $P_\tau = \{ (e:\tau, \discretize{e} : \discretize{\tau}) ~|~ e:\tau \}$.
 		\]
 	\end{enumerate}
 \end{theorem}
+%
+\begin{proof}
+	By induction on the type derivation of $e:\tau$.
+\end{proof}
+
+\subsection{Big-Step Semantics and Correctness of Discretization}
+%
+We extend both of the small-step semantics canoncially to an $n$-step semantics by%
+\begin{align*}
+		\bigsemstep{e : \tau}{n} &{}= 
+		\begin{cases}
+			\delta_{e : \tau} & \text{if $n = 0$} \\
+			%
+			\bigsemstep{e : \tau}{n-1} \monbind  \lambda e'. \sem{e' : \tau} & \text{if $n > 0$}~.
+		\end{cases} \\
+		%
+		%
+		\bigsemstep{e : \tau, \discretize{e} : \discretize{\tau}}{n} &{}= 
+		\begin{cases}
+			\delta_{(e : \tau, \discretize{e} : \discretize{\tau})} & \text{if $n = 0$} \\
+			%
+			\bigsemstep{e : \tau, \discretize{e} : \discretize{\tau}}{n-1} \monbind  \lambda (e', e''). \sem{e' : \tau, e'' : \discretize{\tau}} & \text{if $n > 0$}~.
+		\end{cases}
+\end{align*}
+%
+%
+For every type $\tau$, we denote by $Vals_\tau$ the set of values of type $\tau$ and equip it with a suitable measurable sub-space of the measurable space over $Expr_\tau$.
+%
+\begin{definition}
+	Let $e:\tau$. The \emph{(big-step) semantics} $\bigsem{e:\tau} \in \mathcal{D}(Vals_\tau + \bot)$ and $\bigsem{e:\tau} \in \mathcal{D}(Vals_\tau \times Vals_{\discretize{\tau}} + \bot)$ are respectively defined as 
+	%
+	\begin{align*}
+		\bigsem{e:\tau} ={}& \lambda A. \sup_n \bigsemstep{e:\tau}{n}(A) \\
+		%
+		\bigsem{e:\tau,  \discretize{e} : \discretize{\tau}} ={}& \lambda A. \sup_n \bigsemstep{e:\tau,  \discretize{e} : \discretize{\tau}}{n}(A)
+	\end{align*}
+	%
+\end{definition}
+%
+%
+Well-definedness of these objects follows from the monotone convergence theorem: The event of evaluating to a value 
