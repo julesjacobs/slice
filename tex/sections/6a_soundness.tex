@@ -91,12 +91,12 @@ Define $P_\tau = \{ (e:\tau, \discretize{e} : \discretize{\tau}) ~|~ e:\tau \}$.
 	\begin{enumerate}
 		\item $\sem{e:\tau}(\{\bot\}) = \sem{e:\tau, \discretize{e} : \discretize{\tau}}(\{\bot\}) = \sem{\discretize{e} : \discretize{\tau}}(\{\bot\})$.
 		%
-		\item For all measurable $E \subseteq Expr_\tau$, we have \[\sem{e:\tau}(E) = \sem{e:\tau, \discretize{e} : \discretize{\tau}}( E \times Expr_{\discretize{\tau}} )~. \]
+		\item\label{lem:small_step_coupling_props2} For all measurable $E \subseteq Expr_\tau$, we have \[\sem{e:\tau}(E) = \sem{e:\tau, \discretize{e} : \discretize{\tau}}( E \times Expr_{\discretize{\tau}} )~. \]
 		%
 		%
-		\item For all measurable $E \subseteq Expr_{\discretize{\tau}}$, we have \[\sem{\discretize{e} : \discretize{\tau}}(E) = \sem{e:\tau, \discretize{e} : \discretize{\tau}}( Expr_\tau \times E )~. \]
+		\item\label{lem:small_step_coupling_props3} For all measurable $E \subseteq Expr_{\discretize{\tau}}$, we have \[\sem{\discretize{e} : \discretize{\tau}}(E) = \sem{e:\tau, \discretize{e} : \discretize{\tau}}( Expr_\tau \times E )~. \]
 		%
-		\item For all measurable $E\subseteq Expr_\tau \times Expr_{\discretize{\tau}}$, we have 
+		\item\label{lem:small_step_coupling_props4} For all measurable $E\subseteq Expr_\tau \times Expr_{\discretize{\tau}}$, we have 
 		%
 		\[
 			\sem{e:\tau, \discretize{e} : \discretize{\tau}}(E) = \sem{e:\tau, \discretize{e} : \discretize{\tau}}(E \cap P_\tau)~.
@@ -105,8 +105,51 @@ Define $P_\tau = \{ (e:\tau, \discretize{e} : \discretize{\tau}) ~|~ e:\tau \}$.
 \end{lemma}
 %
 \begin{proof}
-	By induction on the type derivation of $e:\tau$.
+	By induction on the type derivation of $e:\tau$. We focus on \Cref{lem:small_step_coupling_props}.\ref{lem:small_step_coupling_props2} and \ref{lem:big_step_coupling_props3}. Let us focus on the case 
+	\[
+	    e:\tau = \uniform(c_1 : \floattype{B_1}{V_1}, c_2 : \floattype{B_2}{V_2}) : \floattype{B}{V}~,
+	\]
+	%
+	where
+	%
+	\begin{enumerate}
+		\item $c_1 \leq c_2$,
+		%
+		\item $B =  \{\sim_1\!\!b_1, \ldots, \sim_n\!\!b_n\}$,
+		%
+		\item $V=\top$, 
+		%
+		\item $V_1 = \{v_1,\ldots, v_{n_1}\}$ with $\distinguishes{B_1}{V_1}$ and $c_1 \in V_1$ due to $\has{V_1}{c_1}$ by I.H. 
+		%
+		\item $V_2 = \{w_1,\ldots, w_{n_2}\}$ with $\distinguishes{B_2}{V_2}$ and  $c_2 \in V_2$ due to $\has{V_2}{c_2}$ by I.H. 
+	\end{enumerate}
+	%
+	First observe that we have 
+	%
+	\begin{align*}
+		&\discretize{ e:\tau} : \discretize{\tau} \\
+		%
+		{}={}& \dc(\discretize{c_1 : \floattype{B_1}{V_1}}, \discretize{c_2 :  \floattype{B_2}{V_2}}) : \fin{|B| + 1}\\
+		%
+		{}={}&\dc( k_1 : \fin{|B_1| + 1}, k_2:\fin{|B_2|+1} ) : \fin{|B|+1}~,
+	\end{align*}
+	%
+	where $k_i$ is the unique number such that $c_i \in \intervals{B_i}_{k_i}$. By \Cref{tab:smallstep} and \Cref{fig:discretization-code}, this yields
+	%
+	\begin{align*}
+		 & \sem{\discretize{e:\tau}} \\
+		 %
+		 {}={}& \sem{\discrete(p_0,\ldots,p_n)}~\text{where}~p_k = \text{CDF}(b_{k+1}) - \text{CDF}(b_k) = \frac{b_{k+1} - c_1}{c_2-c_1} - \frac{b_{k} - c_1}{c_2-c_1}  =  \frac{b_{k+1} - b_k}{c_2-c_1}~. \\
+		 %
+		 {}={}& \mu_D
+	\end{align*}
+	%
+	where $\mu_D$ is the discrete distribution over values of type $\fin{|B|+1}$ with $\mu(i) =  \frac{b_{k+1} - b_k}{c_2-c_1}$ for $i\in\{0,\ldots,n-1\}$. Hence, 
+	%
+	\kevin{I need help here}
 \end{proof}
+
+
 
 \subsection{Big-Step Semantics and Correctness of Discretization}
 %
@@ -129,6 +172,9 @@ We extend both of the small-step semantics canoncially to an $n$-step semantics 
 \end{align*}
 %
 %
+
+%
+%
 For every type $\tau$, we denote by $Vals_\tau$ the set of values of type $\tau$ and equip it with a suitable measurable sub-space of the measurable space over $Expr_\tau$.
 %
 \begin{definition}
@@ -146,7 +192,8 @@ For every type $\tau$, we denote by $Vals_\tau$ the set of values of type $\tau$
 Well-definedness of these objects follows from the monotone convergence theorem: The probability of evaluating to some set of values or an error is montonically increasing in $n$ and upper-bounded by $1$. 
 
 \kevin{the folllowing must be measurable} \\
-Define $V_\tau = \{ (v:\tau, \discretize{v} : \discretize{\tau}) ~|~ v:\tau \}$.
+Define $V_\tau = \{ (v:\tau, \discretize{v} : \discretize{\tau}) ~|~ v:\tau \}$.\\
+\kevin{we might have to prove the first point below differently}
 %
 \begin{lemma}
 	\label{lem:big_step_coupling_props}
