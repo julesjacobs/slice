@@ -51,23 +51,23 @@ else:
 condition(age > 18)
 
 # Decision model
-if relationship == '0':
+if relationship == '1':
     t ~= atomic(loc=1)
-elif relationship == '1':
+elif relationship == '2':
     if age < 21.5:
         t ~= atomic(loc=1)
     elif age < 47.5:
         t ~= atomic(loc=1)
     else:
         t ~= atomic(loc=0)
-elif relationship == '2':
-    t ~= atomic(loc=1)
 elif relationship == '3':
+    t ~= atomic(loc=1)
+elif relationship == '4':
     if age < 50.5:
         t ~= atomic(loc=1)
     else:
         t ~= atomic(loc=0)
-elif relationship == '4':
+elif relationship == '5':
     if age < 49.5:
         t ~= atomic(loc=1)
     else:

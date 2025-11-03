@@ -34,47 +34,47 @@ capital_gain ~= norm(loc=1077.6488, scale=54542539.1784)
 condition(age > 18)
 
 # Decision model
-if relationship == '0':
-    if education == '0': t ~= atomic(loc=0)
-    elif education == '1': t ~= atomic(loc=1)
+if relationship == '1':
+    if education == '1': t ~= atomic(loc=0)
     elif education == '2': t ~= atomic(loc=1)
     elif education == '3': t ~= atomic(loc=1)
-    elif education == '4': t ~= atomic(loc=0)
+    elif education == '4': t ~= atomic(loc=1)
     elif education == '5': t ~= atomic(loc=0)
     elif education == '6': t ~= atomic(loc=0)
-    elif education == '7': t ~= atomic(loc=1)
+    elif education == '7': t ~= atomic(loc=0)
     elif education == '8': t ~= atomic(loc=1)
     elif education == '9': t ~= atomic(loc=1)
-    elif education == '10': t ~= atomic(loc=0)
-    elif education == '11': t ~= atomic(loc=1)
+    elif education == '10': t ~= atomic(loc=1)
+    elif education == '11': t ~= atomic(loc=0)
     elif education == '12': t ~= atomic(loc=1)
-    elif education == '13': t ~= atomic(loc=0)
-    elif education == '14': t ~= atomic(loc=1)
+    elif education == '13': t ~= atomic(loc=1)
+    elif education == '14': t ~= atomic(loc=0)
+    elif education == '15': t ~= atomic(loc=1)
     else: t ~= atomic(loc=1)
-elif relationship == '1':
+elif relationship == '2':
     if capital_gain < 4718.5: t ~= atomic(loc=1)
     else: t ~= atomic(loc=0)
-elif relationship == '2':
-    if education == '0': t ~= atomic(loc=0)
-    elif education == '1': t ~= atomic(loc=1)
+elif relationship == '3':
+    if education == '1': t ~= atomic(loc=0)
     elif education == '2': t ~= atomic(loc=1)
     elif education == '3': t ~= atomic(loc=1)
-    elif education == '4': t ~= atomic(loc=0)
-    elif education == '5': t ~= atomic(loc=1)
+    elif education == '4': t ~= atomic(loc=1)
+    elif education == '5': t ~= atomic(loc=0)
     elif education == '6': t ~= atomic(loc=1)
     elif education == '7': t ~= atomic(loc=1)
     elif education == '8': t ~= atomic(loc=1)
     elif education == '9': t ~= atomic(loc=1)
-    elif education == '10': t ~= atomic(loc=0)
-    elif education == '11': t ~= atomic(loc=1)
+    elif education == '10': t ~= atomic(loc=1)
+    elif education == '11': t ~= atomic(loc=0)
     elif education == '12': t ~= atomic(loc=1)
-    elif education == '13': t ~= atomic(loc=0)
-    elif education == '14': t ~= atomic(loc=1)
+    elif education == '13': t ~= atomic(loc=1)
+    elif education == '14': t ~= atomic(loc=0)
+    elif education == '15': t ~= atomic(loc=1)
     else: t ~= atomic(loc=1)
-elif relationship == '3':
+elif relationship == '4':
     if capital_gain < 8296: t ~= atomic(loc=1)
     else: t ~= atomic(loc=0)
-elif relationship == '4':
+elif relationship == '5':
     t ~= atomic(loc=1)
 else:
     if capital_gain < 4668.5: t ~= atomic(loc=1)

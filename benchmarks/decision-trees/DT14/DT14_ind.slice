@@ -1,27 +1,47 @@
-let age = gaussian(38.5816, 186.0614) in
+let sex_f = discrete(0.3307, 0.6693) in
+let _1 = observe(sex_f <#2 1#2) in
 
-let relationship = discrete(
-  0.0481, 0.1557, 0.4051,
-  0.2551, 0.0301, 0.1059) in
+let age_f = gaussian(38.5816, 186.0614) in
+let relationship_f = discrete(0.0481, 0.1557, 0.4051, 0.2551, 0.0301, 0.1059) in
 
-let sex = discrete(0.3307, 0.6693) in
+let _2 = observe(age_f > 18.0) in
 
-let _1 = observe(sex <#2 1#2) in
-let _2 = observe(age > 18.0) in
-
-let t =
-  if relationship ==#6 0#6 then
+let t_f =
+  if relationship_f ==#6 1#6 then
     1.0
-  else if relationship ==#6 1#6 then
-    if age < 21.5 then 1.0
-    else if age < 47.5 then 1.0 else 0.0
-  else if relationship ==#6 2#6 then
+  else if relationship_f ==#6 2#6 then
+    if age_f < 21.5 then 1.0
+    else if age_f < 47.5 then 1.0 else 0.0
+  else if relationship_f ==#6 3#6 then
     1.0
-  else if relationship ==#6 3#6 then
-    if age < 50.5 then 1.0 else 0.0
-  else if relationship ==#6 4#6 then
-    if age < 49.5 then 1.0 else 0.0
+  else if relationship_f ==#6 4#6 then
+    if age_f < 50.5 then 1.0 else 0.0
+  else if relationship_f ==#6 5#6 then
+    if age_f < 49.5 then 1.0 else 0.0
   else
+    1.0 in
+
+let sex_m = discrete(0.3307, 0.6693) in
+let _3 = observe(sex_m >=#2 1#2) in
+
+let age_m = gaussian(38.5816, 186.0614) in
+let relationship_m = discrete(0.0481, 0.1557, 0.4051, 0.2551, 0.0301, 0.1059) in
+
+let _4 = observe(age_m > 18.0) in
+
+let t_m =
+  if relationship_m ==#6 1#6 then
     1.0
-in
-t < 0.5
+  else if relationship_m ==#6 2#6 then
+    if age_m < 21.5 then 1.0
+    else if age_m < 47.5 then 1.0 else 0.0
+  else if relationship_m ==#6 3#6 then
+    1.0
+  else if relationship_m ==#6 4#6 then
+    if age_m < 50.5 then 1.0 else 0.0
+  else if relationship_m ==#6 5#6 then
+    if age_m < 49.5 then 1.0 else 0.0
+  else
+    1.0 in
+
+(t_f >= 1.0, t_m >= 1.0)

@@ -73,24 +73,45 @@ Next, we evaluate the performance of our \Slice{} framework on two sets of exist
 
 \begin{table}[!t]
 \centering
-\begin{tabular}{lrrr}
-    \toprule
-    Benchmark & Slice+Dice (s) & Slice+Roulette (s) & SPPL (s) \\
-    \midrule
-    DT4\_bn1  & 0.011 / 0.084 / 0.095 (\textbf{6.3×}) & 0.004 / 0.144 / 0.148 (4.0×) & 0.551 / 0.034 / 0.011 / 0.596 \\
-    DT4\_bn2  & 0.006 / 0.109 / 0.115 (\textbf{5.7×}) & 0.006 / 0.071 / 0.077 (8.6×) & 0.621 / 0.033 / 0.007 / 0.661 \\
-    DT4\_ind  & 0.005 / 0.108 / 0.113 (\textbf{1.3×}) & 0.002 / 0.065 / 0.067 (2.2×) & 0.127 / 0.005 / 0.013 / 0.145 \\
-    DT14\_bn1 & 0.010 / 0.173 / 0.183 (\textbf{8.8×}) & 0.005 / 0.131 / 0.136 (11.9×) & 1.458 / 0.132 / 0.026 / 1.616 \\
-    DT14\_bn2 & 0.006 / 0.210 / 0.216 (\textbf{6.3×}) & 0.005 / 0.134 / 0.139 (9.8×) & 1.216 / 0.119 / 0.023 / 1.358 \\
-    DT14\_ind & 0.010 / 0.112 / 0.122 (\textbf{2.8×}) & 0.005 / 0.137 / 0.142 (2.4×) & 0.296 / 0.004 / 0.039 / 0.339 \\
-    DT16\_bn1 & 0.018 / 0.136 / 0.154 (\textbf{9.7×}) & 0.010 / 0.139 / 0.149 (10.1×) & 1.338 / 0.119 / 0.042 / 1.499 \\
-    DT16\_bn2 & 0.008 / 0.150 / 0.158 (\textbf{7.4×}) & 0.015 / 0.182 / 0.197 (6.0×) & 1.022 / 0.126 / 0.026 / 1.174 \\
-    DT16\_ind & 0.005 / 0.104 / 0.109 (\textbf{4.6×}) & 0.007 / 0.051 / 0.058 (8.7×) & 0.405 / 0.022 / 0.077 / 0.504 \\
-    DT44\_bn1 & 0.008 / 0.274 / 0.282 (\textbf{10.2×}) & 0.006 / 1.171 / 1.177 (2.4×) & 2.332 / 0.430 / 0.105 / 2.867 \\
-    DT44\_bn2 & 0.008 / 0.258 / 0.266 (\textbf{9.9×}) & 0.006 / 1.145 / 1.151 (2.3×) & 2.143 / 0.373 / 0.114 / 2.630 \\
-    DT44\_ind & 0.005 / 0.211 / 0.216 (\textbf{4.6×}) & 0.005 / 0.233 / 0.238 (4.2×) & 0.809 / 0.008 / 0.172 / 0.989 \\
-    \bottomrule
-    \end{tabular}
+\small
+\setlength{\tabcolsep}{3.5pt}
+\begin{tabular}{llccccccccc}
+\toprule
+\makecell{\textbf{Decision}\\\textbf{Program}} &
+\makecell{\textbf{Population}\\\textbf{Model}} &
+\multicolumn{3}{c}{\textbf{Slice+Dice (s)}} &
+\multicolumn{3}{c}{\textbf{Slice+Roulette (s)}} &
+\multicolumn{3}{c}{\textbf{\textsc{SPPL} (s)}} \\
+\cmidrule(lr){3-5} \cmidrule(lr){6-8} \cmidrule(lr){9-11}
+ &  & \textbf{Slice} & \textbf{Dice} & \textbf{Total} &
+      \textbf{Slice} & \textbf{Roulette} & \textbf{Total} &
+      \textbf{Trans.} & \textbf{Judg.} & \textbf{Total} \\
+\midrule
+DT$_4$            & Ind  & 0.002 & 0.031 & \textbf{0.033} & 0.002 & 0.026 & \textbf{0.028} & 0.074 & 0.011 & \textbf{0.085} \\
+                  & BN1  & 0.002 & 0.033 & \textbf{0.035} & 0.002 & 0.031 & \textbf{0.033} & 0.245 & 0.028 & \textbf{0.273} \\
+                  & BN2  & 0.002 & 0.035 & \textbf{0.037} & 0.003 & 0.034 & \textbf{0.037} & 0.268 & 0.030 & \textbf{0.298} \\
+\midrule
+DT$_{14}$         & Ind  & 0.002 & 0.047 & \textbf{0.049} & 0.002 & 0.049 & \textbf{0.051} & 0.153 & 0.024 & \textbf{0.177} \\
+                  & BN1  & 0.002 & 0.056 & \textbf{0.058} & 0.002 & 0.074 & \textbf{0.076} & 0.597 & 0.076 & \textbf{0.673} \\
+                  & BN2  & 0.002 & 0.058 & \textbf{0.060} & 0.002 & 0.073 & \textbf{0.075} & 0.535 & 0.072 & \textbf{0.607} \\
+\midrule
+DT$_{16}$         & Ind  & 0.002 & 0.045 & \textbf{0.047} & 0.002 & 0.054 & \textbf{0.056} & 0.176 & 0.026 & \textbf{0.202} \\
+                  & BN1  & 0.002 & 0.053 & \textbf{0.055} & 0.002 & 0.079 & \textbf{0.081} & 0.535 & 0.088 & \textbf{0.623} \\
+                  & BN2  & 0.003 & 0.053 & \textbf{0.056} & 0.003 & 0.079 & \textbf{0.082} & 0.554 & 0.090 & \textbf{0.644} \\
+\midrule
+DT$^{\alpha}_{16}$ & Ind & 0.002 & 0.034 & \textbf{0.036} & 0.002 & 0.052 & \textbf{0.054} & 0.201 & 0.029 & \textbf{0.230} \\
+                   & BN1 & 0.002 & 0.042 & \textbf{0.044} & 0.003 & 0.191 & \textbf{0.194} & 0.597 & 0.080 & \textbf{0.677} \\
+                   & BN2 & 0.003 & 0.049 & \textbf{0.052} & 0.003 & 0.224 & \textbf{0.227} & 0.642 & 0.075 & \textbf{0.717} \\
+\midrule
+DT$_{44}$         & Ind  & 0.002 & 0.099 & \textbf{0.101} & 0.002 & 0.276 & \textbf{0.278} & 0.402 & 0.073 & \textbf{0.475} \\
+                  & BN1  & 0.003 & 0.120 & \textbf{0.123} & 0.003 & 0.550 & \textbf{0.553} & 1.043 & 0.309 & \textbf{1.352} \\
+                  & BN2  & 0.003 & 0.122 & \textbf{0.125} & 0.003 & 0.546 & \textbf{0.549} & 1.135 & 0.346 & \textbf{1.481} \\
+\midrule
+DT$_{1000}$         & Ind  & 3.352 & 1.913 & \textbf{5.265} & 3.606 & t.o. & \textbf{t.o.} & 17.491 & 0.288 & \textbf{17.779} \\
+                & BN1  & 4.022 & 2.044 & \textbf{6.066} & 4.030 & t.o. & \textbf{t.o.} & 33.300 & 1.553 & \textbf{34.853} \\
+                & BN2  & 4.120 & 2.179 & \textbf{6.299} & 4.080 & t.o. & \textbf{t.o.} & 33.108 & 1.592 & \textbf{34.700} \\
+\bottomrule
+\end{tabular}
 \caption{Execution times (seconds) for the benchmarks from \cite{albarghouthi2017fairsquare}.}
     \label{tab:benchmarks_decision_procedures}
 \end{table}

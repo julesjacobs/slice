@@ -1,16 +1,29 @@
-let age = gaussian(38.5816, 186.0614) in
-let sex = discrete(0.3307, 0.6693) in
-let capital_gain = gaussian(1077.6488, 54542539.1784) in
+let sex_f = discrete(0.3307, 0.6693) in
+let _1 = observe(sex_f <#2 1#2) in
 
-let _1 = observe(sex <#2 1#2) in
-let _2 = observe(age > 18) in
+let age_f = gaussian(38.5816, 186.0614) in
+let capital_gain_f = gaussian(1077.6488, 54542539.1784) in
 
-let t =
-  if capital_gain >= 7073.5 then
-    if age < 20.0 then
-      1.0
-    else
-      0.0
+let _2 = observe(age_f > 18.0) in
+
+let t_f = 
+  if capital_gain_f >= 7073.5 then
+    if age_f < 20.0 then 1.0 else 0.0
   else
-    1.0
-in t < 0.5
+    1.0 in
+
+let sex_m = discrete(0.3307, 0.6693) in
+let _3 = observe(sex_m >=#2 1#2) in
+
+let age_m = gaussian(38.5816, 186.0614) in
+let capital_gain_m = gaussian(1077.6488, 54542539.1784) in
+
+let _4 = observe(age_m > 18.0) in
+
+let t_m = 
+  if capital_gain_m >= 7073.5 then
+    if age_m < 20.0 then 1.0 else 0.0
+  else
+    1.0 in
+
+(t_f >= 1.0, t_m >= 1.0)

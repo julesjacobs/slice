@@ -46,27 +46,27 @@ else:
 condition(age > 18)
 
 # Decision model.
-if relationship == '0':
+if relationship == '1':
     if capital_gain < 5095.5:
-        t ~= atomic(loc=1)
-    else:
-        t ~= atomic(loc=0)
-elif relationship == '1':
-    if capital_gain < 4718.5:
         t ~= atomic(loc=1)
     else:
         t ~= atomic(loc=0)
 elif relationship == '2':
-    if capital_gain < 5095.5:
+    if capital_gain < 4718.5:
         t ~= atomic(loc=1)
     else:
         t ~= atomic(loc=0)
 elif relationship == '3':
-    if capital_gain < 8296:
+    if capital_gain < 5095.5:
         t ~= atomic(loc=1)
     else:
         t ~= atomic(loc=0)
 elif relationship == '4':
+    if capital_gain < 8296:
+        t ~= atomic(loc=1)
+    else:
+        t ~= atomic(loc=0)
+elif relationship == '5':
     t ~= atomic(loc=1)
 else:
     if capital_gain < 4668.5:

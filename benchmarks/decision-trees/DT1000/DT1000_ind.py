@@ -9,30 +9,31 @@ def main():
     parser.add_argument("--time", action="store_true", help="Print only the execution time to stderr")
     args = parser.parse_args()
 
+    # ---------- Translation Section ----------
+    start_translate = time.time()
     compiler = SPPL_Compiler('''
 # Population model
+age ~= norm(loc=38.5816, scale=186.0614)
+
+education ~= choice({
+    '0': 0.1644, '1': 0.2239, '2': 0.0361, '3': 0.3225,
+    '4': 0.0177, '5': 0.0328, '6': 0.0424, '7': 0.0158,
+    '8': 0.0198, '9': 0.0133, '10': 0.0530, '11': 0.0051,
+    '12': 0.0287, '13': 0.0127, '14': 0.0102, '15': 0.0016
+})
+
+category ~= choice({
+    '0': 0.0481, '1': 0.1557, '2': 0.4051,
+    '3': 0.2551, '4': 0.0301, '5': 0.1059
+})
+
 sex ~= choice({'female': 0.3307, 'male': 0.6693})
 
-if (sex == 'female'):
-    capital_gain ~= norm(loc=5000, scale=1000000)
-    if capital_gain < 7000:
-        age ~= norm(loc=40, scale=10)
-        category ~= choice({'0': 0.2, '1': 0.2, '2': 0.2, '3': 0.2, '4': 0.2})
-    else:
-        age ~= norm(loc=45, scale=10)
-        category ~= choice({'0': 0.2, '1': 0.2, '2': 0.2, '3': 0.2, '4': 0.2})
-else:
-    capital_gain ~= norm(loc=6000, scale=1000000)
-    if capital_gain < 5000:
-        age ~= norm(loc=35, scale=10)
-        category ~= choice({'0': 0.2, '1': 0.2, '2': 0.2, '3': 0.2, '4': 0.2})
-    else:
-        age ~= norm(loc=42, scale=10)
-        category ~= choice({'0': 0.2, '1': 0.2, '2': 0.2, '3': 0.2, '4': 0.2})
+capital_gain ~= norm(loc=1077.6488, scale=54542539.1784)
 
 condition(age > 18)
 
-# Decision model - Exactly 997 conditionals here + 3 from population = 1000 total
+# Decision model
 if category == '0':
     if capital_gain < 100: t ~= atomic(loc=0)
     elif capital_gain < 200: t ~= atomic(loc=1)
@@ -232,6 +233,8 @@ if category == '0':
     elif capital_gain < 19600: t ~= atomic(loc=1)
     elif capital_gain < 19700: t ~= atomic(loc=0)
     elif capital_gain < 19800: t ~= atomic(loc=1)
+    elif capital_gain < 19900: t ~= atomic(loc=0)
+    elif capital_gain < 20000: t ~= atomic(loc=1)
     else: t ~= atomic(loc=0)
 elif category == '1':
     if capital_gain < 100: t ~= atomic(loc=0)
@@ -432,6 +435,8 @@ elif category == '1':
     elif capital_gain < 19600: t ~= atomic(loc=1)
     elif capital_gain < 19700: t ~= atomic(loc=0)
     elif capital_gain < 19800: t ~= atomic(loc=1)
+    elif capital_gain < 19900: t ~= atomic(loc=0)
+    elif capital_gain < 20000: t ~= atomic(loc=1)
     else: t ~= atomic(loc=0)
 elif category == '2':
     if capital_gain < 100: t ~= atomic(loc=0)
@@ -632,6 +637,8 @@ elif category == '2':
     elif capital_gain < 19600: t ~= atomic(loc=1)
     elif capital_gain < 19700: t ~= atomic(loc=0)
     elif capital_gain < 19800: t ~= atomic(loc=1)
+    elif capital_gain < 19900: t ~= atomic(loc=0)
+    elif capital_gain < 20000: t ~= atomic(loc=1)
     else: t ~= atomic(loc=0)
 elif category == '3':
     if capital_gain < 100: t ~= atomic(loc=0)
@@ -832,8 +839,10 @@ elif category == '3':
     elif capital_gain < 19600: t ~= atomic(loc=1)
     elif capital_gain < 19700: t ~= atomic(loc=0)
     elif capital_gain < 19800: t ~= atomic(loc=1)
+    elif capital_gain < 19900: t ~= atomic(loc=0)
+    elif capital_gain < 20000: t ~= atomic(loc=1)
     else: t ~= atomic(loc=0)
-else:
+elif category == '4':
     if capital_gain < 100: t ~= atomic(loc=0)
     elif capital_gain < 200: t ~= atomic(loc=1)
     elif capital_gain < 300: t ~= atomic(loc=0)
@@ -1032,26 +1041,41 @@ else:
     elif capital_gain < 19600: t ~= atomic(loc=1)
     elif capital_gain < 19700: t ~= atomic(loc=0)
     elif capital_gain < 19800: t ~= atomic(loc=1)
-    else: t ~= atomic(loc=0)              
-''')
+    elif capital_gain < 19900: t ~= atomic(loc=0)
+    elif capital_gain < 20000: t ~= atomic(loc=1)
+    else: t ~= atomic(loc=0)
+else:
+    if capital_gain < 4668.5: t ~= atomic(loc=1)
+    else: t ~= atomic(loc=0)
+                           ''')
 
     namespace = compiler.execute_module()
     model = namespace.model
+    translate_time = time.time() - start_translate
 
+    # ---------- Conditioning Section ----------
+    start_condition = time.time()
     model_c0 = model.condition(namespace.sex << {'female'})
     model_c1 = model.condition(namespace.sex << {'male'})
+    condition_time = time.time() - start_condition
 
-    start_time = time.time()
+    # ---------- Querying Section ----------
+    start_prob = time.time()
     p_given_minority = model_c0.prob(namespace.t << {1})
     p_given_majority = model_c1.prob(namespace.t << {1})
-
     fairness = p_given_minority / p_given_majority
-    elapsed = time.time() - start_time
+    prob_time = time.time() - start_prob
 
+    # ---------- Output ----------
     print(fairness)
 
     if args.time:
-        print(f"{elapsed:.3f}", file=sys.stderr)
+        print(
+            f"{translate_time:.3f},"
+            f"{condition_time:.3f},"
+            f"{prob_time:.3f}",
+            file=sys.stderr
+        )
 
 if __name__ == "__main__":
     main()

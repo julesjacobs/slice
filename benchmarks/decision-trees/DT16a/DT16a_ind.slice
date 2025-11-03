@@ -1,0 +1,35 @@
+let relationship = discrete(
+  0.0481, 0.1557, 0.4051,
+  0.2551, 0.0301, 0.1059) in
+
+let sex = discrete(0.3307, 0.6693) in
+
+let capital_gain = gaussian(1077.6488, 54542539.1784) in
+
+let t_initial =
+  if relationship ==#6 0#6 then
+    if capital_gain < 5095.5 then 1.0 else 0.0
+  else if relationship ==#6 1#6 then
+    if capital_gain < 4718.5 then 1.0 else 0.0
+  else if relationship ==#6 2#6 then
+    if capital_gain < 5095.5 then 1.0 else 0.0
+  else if relationship ==#6 3#6 then
+    if capital_gain < 8296.0 then 1.0 else 0.0
+  else if relationship ==#6 4#6 then
+    1.0
+  else
+    if capital_gain < 4668.5 then 1.0 else 0.0 in
+
+let fl =
+  if t_initial > 0.5 && sex <#2 1#2 then
+    discrete(0.15, 0.85)
+  else
+    discrete(1.0, 0.0) in
+
+let t =
+  if t_initial > 0.5 && sex <#2 1#2 then
+    if fl <#2 1#2 then 0.0 else t_initial
+  else
+    t_initial in
+
+t < 0.5
