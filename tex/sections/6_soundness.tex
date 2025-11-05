@@ -869,9 +869,9 @@ Define the bijection $f\colon Expr_{\tau} \to \text{Skel}_{\tau} \times \R^n$ fo
 \begin{proof}
 	Follows by structural recursion on expressions. 
 	
-	At the base cases, we either get a finite value set $V$ (a finite union of Borel singletons, which is Borel), $V = \top$ (the entire $\R$, which is Borel), or $\emptyset$ (Borel). 
-	
-	Each construct combines its subexpressions through Cartesian products, and since Borel sets are closed under finite products and countable unions, $Expr_{\tau}$ forms a Borel measurable space.
+	Fix an $s \in \text{Skel}$. At the base cases, we either get a finite value set $V$ (a finite union of Borel singletons, which is Borel), $V = \top$ (the entire $\R$, which is Borel), or $\emptyset$ (Borel). Each construct combines its subexpressions through Cartesian products (Borel sets are closed under finite products).
+
+	Since $\text{Skel}$ is countable by Lemma~\ref{lem:skel-countable}, and since Borel sets are closed under countable unions, $Expr_{\tau}$ forms a Borel measurable space.
 \end{proof}
 
 
