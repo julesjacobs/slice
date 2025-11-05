@@ -49,7 +49,9 @@
 			 \midrule
 			 %
 			\multirow{5}{*}{\makecell[l]{$\uniform(e_1 : \tau_1, e_2 : \tau_2) : \floattype{B}{V}$ \\
-			$B=\top$}} & $e_1 = v_1 \leq v_2 = e_2$ &$ \text{Uniform}{(v_1, v_2)} \gg\!= \lambda v. \delta_{(v : \tau_1, v : \tau_1)}$  \\
+			$B=\top$}} & $e_1 = v_1 \leq v_2 = e_2$ &
+		    %$\textnormal{Uniform}(v_1,v_2)  \delta_{(v, v)}(A) dv$ \\
+		    $\text{Uniform}{(v_1, v_2)} \gg\!= \lambda v. \delta_{(v : \floattype{B}{V}, v : \floattype{B}{V})}$  \\
 			%
 			& $e_1=v_1$, $e_2$ no val.\ & \makecell[l]{$\sem{e_2:\tau_2, \discretize{e_2} : \discretize{\tau_2}}$ \\ $\gg\!= \lambda (f,f'). \sem{\uniform(v_1:\tau_1, f:\tau_2 ) : \tau, \uniform(\discretize{v_1}:\discretize{\tau_1}, f': \discretize{\tau_2} ) : \discretize{\tau}}$} \\
 			%
@@ -66,8 +68,10 @@
 			\multirow{5}{*}{\makecell[l]{$\uniform(e_1 : \tau_1, e_2 : \tau_2) : \floattype{B}{V}$ \\
 				$B \neq \top$ \\
 				$\tau_1 = \float[B_1 \neq \top,\{v_1,\ldots,v_n\}]$ \\
-				$\tau_2 = \float[B_2 \neq \top,\{w_1,\ldots,w_m\}]$}} &  $e_1 = c_1 \leq c_2 = e_2$ values &  \makecell[l]{$\text{Uniform}(c_1, c_2) \gg\!= \lambda v.\delta_{(v, v_i)}$ \\
-				where $v_i$ is unique number s.t. $v \in \intervals{B}_{v_i}$}\\
+				$\tau_2 = \float[B_2 \neq \top,\{w_1,\ldots,w_m\}]$}} &  $e_1 = c_1 \leq c_2 = e_2$ values &  \makecell[l]{
+				%$\lambda A. \frac{1}{c_2-c_1} \cdot \int_{c_1}^{c_2} \delta_{(v, v_i)}(A) dv$ \\
+				$\text{Uniform}(c_1, c_2) \gg\!= \lambda v.\delta_{(v : \floattype{B}{V}, v_i : \fin{|B| + 1})}$ \\
+				where $v_i$ is unique number s.t. $v \in \intervals{B}_{v_i}$} \\
 				%
 				& $e_1=c_1$, $e_2$ no val.\ & \makecell[l]{$\sem{e_2:\tau_2, \discretize{e_2} : \discretize{\tau_2}}$ \\ $\gg\!= \lambda (f,f'). \sem{\uniform(v_1:\tau_1, f:\tau_2 ) : \tau, \dc(\discretize{v_1}:\discretize{\tau_1}, f': \discretize{\tau_2} ) : \discretize{\tau}}$} \\
 				%
