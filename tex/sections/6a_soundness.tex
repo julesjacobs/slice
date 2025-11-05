@@ -1,5 +1,39 @@
 \section{(New) Soundness Proof}
 
+Let $X$ be a set equipped with a suitable measurable space so that $\mathcal{D}(X + \bot)$ denotes the set of probability measures over $X + \bot$. We will make heavy use of the following generic monad construction, for which one easily verifies the monad laws:
+
+\begin{definition}[Distribution Monad with Error]
+	We define 
+	%
+	\begin{align*}
+		& \text{return} \colon X \to \mathcal{D}(X + \bot), \quad \text{return}(x) = \delta_x \\
+		%
+		& \text{bind} \colon \mathcal{D}(X + \bot) \to (X \to \mathcal{D}(Y + \bot)) \to \mathcal{D}(Y + \bot), \\
+		%& \text{bind}(\mu)(f)(y) := \sum_{x \in support(\mu)} \mu(x) \cdot f_{\bot}(x)(y) \\
+		&\text{bind}(\mu)(f)(A) = \int_{x \in X} f_{\bot}(x)(A) \cdot \mu(dx)~,
+	\end{align*}
+	%
+	where $\delta_x$ denotes the Dirac measure for $x$ and 
+	where $f_\bot \colon X + \bot \to \mathcal{D}(X + \bot)$ is obtained from $f$ by 
+	%
+	\[
+	f_\bot(e) =
+	\begin{cases}
+		\delta_\bot & \text{if } e =\bot \\
+		%
+		f(e) & \text{otherwise}~.
+	\end{cases}
+	\]
+%	
+%	Define $\text{return} \colon X \to \mathcal{D}(X + \bot)$ by $\text{return}_X(x) := \delta_x$, where $\delta_x$ denotes the Dirac distribution on $x$: for any $y \in X$, we have $\delta_x(y) = 1$ if $y = x$, otherwise $\delta_x(y) = 0$. Further, define $\text{bind} : \mathcal{D}(X + \bot) \to (X \to \mathcal{D}(Y + \bot)) \to \mathcal{D}(Y + \bot)$ by:
+%	\begin{enumerate}
+%		\item $\text{bind}(\mu)(f)(y) := \sum_{x \in support(\mu)} \mu(x) \cdot f_{\bot}(x)(y)$ if $\mu$ is discrete
+%		\item $\text{bind}(\mu)(f)(A) := \int_{x \in support(\mu)} f_{\bot}(x)(A) \cdot d\mu(x)$ if $\mu$ is continuous
+%	\end{enumerate}
+%	where $f_{\bot}$ extends $f$ by $f_{\bot}(\bot) := \delta_{\bot}$ and $f_{\bot}(x) := f(x) \;\; \text{for every } x \in X.$
+\end{definition}
+
+
 \subsection{Small-Step Semantics}
 \input{figures/sem_smallstep}
 
@@ -26,30 +60,30 @@ We define the semantics of $\dc$ in such a way that it behaves like the discreti
 \kevin{typing rule DC and redef discretize} \\
 \kevin{maybe have subdistributions and missing mass is error prob. Avoids cases.} \\
 \kevin{$\bot$ is prob of observe failure}
-\begin{definition}
-	\label{def:smallstep_space_and_monad}
-	Let $\tau$ be a type.
- 	Given a suitable measurable space, we denote by $\mathcal{D}(Expr_{\tau} + \bot)$ the set of sub-probability measures over $Expr_{\tau} + \bot$. Moreover, for all $\tau,\tau'$, we define the  monad
- 	%
- 	\begin{align*}
- 		 & \text{return} \colon Expr_{\tau} \to \mathcal{D}(Expr_{\tau} + \bot), \quad \text{return}(e) = \delta_e \\
- 		 %
- 		 & \text{bind} \colon \mathcal{D}(Expr_{\tau} + \bot) \to (Expr_{\tau} \to \mathcal{D}(Expr_{\tau'} + \bot)) \to \mathcal{D}(Expr_{\tau'} + \bot), \\
- 		 %& \text{bind}(\mu)(f)(y) := \sum_{x \in support(\mu)} \mu(x) \cdot f_{\bot}(x)(y) \\
- 		 &\text{bind}(\mu)(f)(A) = \int_{x \in Expr + \bot} f_{\bot}(x)(A) \cdot \mu(dx)~,
- 	\end{align*}
- 	%
- 	where $f_\bot \colon Expr_{\tau} + \bot \to \mathcal{D}(Expr_{\tau'} + \bot)$ is obtained from $f$ by 
- 	%
- 	\[
- 		f_\bot(e) =
- 		\begin{cases}
- 			\delta_\bot & \text{if } e =\bot \\
- 			%
- 			f(e) & \text{otherwise}~.
- 		\end{cases}
- 	\]
-\end{definition}
+%\begin{definition}
+%	\label{def:smallstep_space_and_monad}
+%	Let $\tau$ be a type.
+% 	Given a suitable measurable space, we denote by $\mathcal{D}(Expr_{\tau} + \bot)$ the set of sub-probability measures over $Expr_{\tau} + \bot$. Moreover, for all $\tau,\tau'$, we define the  monad
+% 	%
+% 	\begin{align*}
+% 		 & \text{return} \colon Expr_{\tau} \to \mathcal{D}(Expr_{\tau} + \bot), \quad \text{return}(e) = \delta_e \\
+% 		 %
+% 		 & \text{bind} \colon \mathcal{D}(Expr_{\tau} + \bot) \to (Expr_{\tau} \to \mathcal{D}(Expr_{\tau'} + \bot)) \to \mathcal{D}(Expr_{\tau'} + \bot), \\
+% 		 %& \text{bind}(\mu)(f)(y) := \sum_{x \in support(\mu)} \mu(x) \cdot f_{\bot}(x)(y) \\
+% 		 &\text{bind}(\mu)(f)(A) = \int_{x \in Expr + \bot} f_{\bot}(x)(A) \cdot \mu(dx)~,
+% 	\end{align*}
+% 	%
+% 	where $f_\bot \colon Expr_{\tau} + \bot \to \mathcal{D}(Expr_{\tau'} + \bot)$ is obtained from $f$ by 
+% 	%
+% 	\[
+% 		f_\bot(e) =
+% 		\begin{cases}
+% 			\delta_\bot & \text{if } e =\bot \\
+% 			%
+% 			f(e) & \text{otherwise}~.
+% 		\end{cases}
+% 	\]
+%\end{definition}
 %
 %
 %
@@ -67,45 +101,44 @@ It follows by induction on the type derivation of $e:\tau$ that $\sem{e:\tau}$ i
 \subsection{Small-Step Coupling Semantics}
 \input{figures/coupling_smallstep}
 
-\kevin{todo: measurable space} 
-\begin{definition}
-	Let $\tau$ be a type, and let $P_\tau = Expr_{\tau} \times Expr_{\discretize{\tau}}$. Given a suitable measurable space, we denote by $\mathcal{D}(P_\tau + \bot)$ 
-	the set of sub-probability measures over $P_\tau$. The monad $P_\tau \to \mathcal{D}(P_\tau + \bot)$ is defined analogously to \Cref{def:smallstep_space_and_monad}.
-\end{definition}
-
-Exploiting that $e:\tau$ is a value iff $\discretize{e} : \discretize{\tau}$ value, we define:
+%\kevin{todo: measurable space} 
+%\begin{definition}
+%	Let $\tau$ be a type, and let $P_\tau = \{ (e:\tau, \discretize{e} : \discretize{\tau}) ~|~ e:\tau \}$. Given a suitable measurable space, we denote by $\mathcal{D}(P_\tau + \bot)$ 
+%	the set of sub-probability measures over $P_\tau$. 
+%\end{definition}
+Define $P_\tau = \{ (e:\tau, \discretize{e} : \discretize{\tau}) ~|~ e:\tau \}$. Exploiting that $e:\tau$ is a value iff $\discretize{e} : \discretize{\tau}$ value, we define:
 %
 \begin{definition}
-	The small-step coupling  $\sem{e :\tau, \discretize{e}: \discretize{\tau}} \in \mathcal{D}(Expr_{\tau} + \bot)$ is defined recursively on the structure of $e:\tau$ by the rules in \Cref{tab:coupling_smallstep}. 
+	The small-step coupling  $\sem{e :\tau, \discretize{e}: \discretize{\tau}} \in \mathcal{D}(P_{\tau} + \bot)$ is defined recursively on the structure of $e:\tau$ by the rules in \Cref{tab:coupling_smallstep}. 
 \end{definition}
 %
 %
-\kevin{todo: the following must be measurable} \\
-Define $P_\tau = \{ (e:\tau, \discretize{e} : \discretize{\tau}) ~|~ e:\tau \}$.
+%\kevin{todo: the following must be measurable} \\
+%Define $P_\tau = \{ (e:\tau, \discretize{e} : \discretize{\tau}) ~|~ e:\tau \}$.
+We now define suitable projection functions on measures $\mu \in \mathcal{D}(P_{\tau} + \bot)$ by 
 %
+\begin{align*}
+	 \pi_1(\mu) &{}={} \mu \gg\!= \lambda(e_1,e_2). \delta_{e_1} \\
+	 %
+	 \pi_1(\mu) 2&{}={} \mu \gg\!= \lambda(e_1,e_2). \delta_{e_2}~.
+\end{align*}
+%
+%
+We have the following key property:
 %
 \begin{lemma}
 	\label{lem:small_step_coupling_props}
 	Let $e:\tau$. We have:
 	%
 	\begin{enumerate}
-		\item $\sem{e:\tau}(\{\bot\}) = \sem{e:\tau, \discretize{e} : \discretize{\tau}}(\{\bot\}) = \sem{\discretize{e} : \discretize{\tau}}(\{\bot\})$.
+		\item\label{lem:small_step_coupling_props1} $\pi_1(\sem{e:\tau, \discretize{e} : \discretize{\tau}}) = \sem{e:\tau}$.
 		%
-		\item\label{lem:small_step_coupling_props2} For all measurable $E \subseteq Expr_\tau$, we have \[\sem{e:\tau}(E) = \sem{e:\tau, \discretize{e} : \discretize{\tau}}( E \times Expr_{\discretize{\tau}} )~. \]
-		%
-		%
-		\item\label{lem:small_step_coupling_props3} For all measurable $E \subseteq Expr_{\discretize{\tau}}$, we have \[\sem{\discretize{e} : \discretize{\tau}}(E) = \sem{e:\tau, \discretize{e} : \discretize{\tau}}( Expr_\tau \times E )~. \]
-		%
-		\item\label{lem:small_step_coupling_props4} For all measurable $E\subseteq Expr_\tau \times Expr_{\discretize{\tau}}$, we have 
-		%
-		\[
-			\sem{e:\tau, \discretize{e} : \discretize{\tau}}(E) = \sem{e:\tau, \discretize{e} : \discretize{\tau}}(E \cap P_\tau)~.
-		\]
+		\item\label{lem:small_step_coupling_props2} $\pi_2(\sem{e:\tau, \discretize{e} : \discretize{\tau}}) = \sem{\discretize{e}:\discretize{\tau}}$.
 	\end{enumerate}
 \end{lemma}
 %
 \begin{proof}
-	By induction on the type derivation of $e:\tau$. We focus on \Cref{lem:small_step_coupling_props}.\ref{lem:small_step_coupling_props2} and \ref{lem:big_step_coupling_props3}. Let us focus on the case 
+	By induction on the type derivation of $e:\tau$. The most interesting case is 
 	\[
 	    e:\tau = \uniform(c_1 : \floattype{B_1}{V_1}, c_2 : \floattype{B_2}{V_2}) : \floattype{B}{V}~,
 	\]
@@ -148,37 +181,49 @@ Define $P_\tau = \{ (e:\tau, \discretize{e} : \discretize{\tau}) ~|~ e:\tau \}$.
 	\begin{align*}
 		 & \pi_1(\sem{e:\tau, \discretize{e} : \discretize{\tau}}) \\
 		 %
-		 ~{}={}~ & \pi_1(\text{Uniform}(c_1, c_2) \gg\!= \lambda v.\delta_{(v : \floattype{B}{V}, v_i : \fin{|B| + 1})})  \\
+		 ~{}={}~ &  \sem{e:\tau, \discretize{e} : \discretize{\tau}} \gg\!= \lambda(e_1,e_2). \delta_{e_1}  
+		 \tag{definition} \\
 		 %
-		 ~{}={}~ & \text{Uniform}(c_1, c_2) \gg\!= \lambda v. \pi_1(\delta_{(v : \floattype{B}{V}, v_i : \fin{|B| + 1})})  \\
+		 ~{}={}~ & (\text{Uniform}(c_1, c_2) \gg\!= \lambda v.\delta_{(v : \floattype{B}{V}, v_i : \fin{|B| + 1})})\gg\!= \lambda(e_1,e_2). \delta_{e_1}  
+		 \tag{\Cref{tab:coupling_smallstep}, $v_i$ is unique number s.t. $v \in \intervals{B}_{v_i}$} \\
 		 %
+		 ~{}={}~ & \text{Uniform}(c_1, c_2) \gg\!= \lambda v.(\delta_{(v : \floattype{B}{V}, v_i : \fin{|B| + 1})} \gg\!= \lambda(e_1,e_2). \delta_{e_1}  )
+		 \tag{monad assoc., $v_i$ is unique number s.t. $v \in \intervals{B}_{v_i}$} \\
 		 %
-		 ~{}={}~ & \text{Uniform}(c_1, c_2) \gg\!= \lambda v. \delta_{(v : \floattype{B}{V})}  \\
+		 ~{}={}~ & \text{Uniform}(c_1, c_2) \gg\!= \lambda v. \delta_{v : \floattype{B}{V}}  
+		 \\
 		 %
-		  %
-		  ~{}={}~ & \sem{e:\tau}
+		 ~{}={}~ & \text{Uniform}(c_1, c_2) \\
+		 %
+		 ~{}={}~ & \sem{e:\tau}~.
+		 \tag{\Cref{tab:smallstep}}
 		 %
 		 %
 	\end{align*}
 	
-	For \Cref{lem:small_step_coupling_props}.\ref{lem:small_step_coupling_props3}, consider the following:
+	For \Cref{lem:small_step_coupling_props}.\ref{lem:small_step_coupling_props2}, consider the following:
 	%
 	\begin{align*}
 		& \pi_2(\sem{e:\tau, \discretize{e} : \discretize{\tau}}) \\
 		%
-		~{}={}~ &\pi_2(\text{Uniform}(c_1, c_2) \gg\!= \lambda v.\delta_{(v : \floattype{B}{V}, v_i : \fin{|B| + 1})})  \\
+		~{}={}~ &  \sem{e:\tau, \discretize{e} : \discretize{\tau}} \gg\!= \lambda(e_1,e_2). \delta_{e_2}  
+		\tag{definition} \\
 		%
+		~{}={}~ & (\text{Uniform}(c_1, c_2) \gg\!= \lambda v.\delta_{(v : \floattype{B}{V}, v_i : \fin{|B| + 1})})\gg\!= \lambda(e_1,e_2). \delta_{e_2}  
+		\tag{\Cref{tab:coupling_smallstep}, $v_i$ is unique number s.t. $v \in \intervals{B}_{v_i}$} \\
 		%
-		~{}={}~ &\text{Uniform}(c_1, c_2) \gg\!= \lambda v. \pi_2(\delta_{(v : \floattype{B}{V}, v_i : \fin{|B| + 1})})  \\
+		~{}={}~ & \text{Uniform}(c_1, c_2) \gg\!= \lambda v.(\delta_{(v : \floattype{B}{V}, v_i : \fin{|B| + 1})} \gg\!= \lambda(e_1,e_2). \delta_{e_2}  )
+		\tag{monad assoc., $v_i$ is unique number s.t. $v \in \intervals{B}_{v_i}$} \\
 		%
+		~{}={}~ & \text{Uniform}(c_1, c_2) \gg\!= \lambda v. \delta_{v_i : \fin{|B| + 1}}  
+		\tag{$v_i$ is unique number s.t. $v \in \intervals{B}_{v_i}$}
+		\\
 		%
-		~{}={}~ &\text{Uniform}(c_1, c_2) \gg\!= \lambda v. \delta_{(v_i : \fin{|B| + 1})}  \\
+		~{}={}~ & \sem{\discrete(p_0,\ldots,p_n)}~\text{where}~p_k = \text{CDF}(b_{k+1}) - \text{CDF}(b_k) = \frac{b_{k+1} - c_1}{c_2-c_1} - \frac{b_{k} - c_1}{c_2-c_1}  =  \frac{b_{k+1} - b_k}{c_2-c_1} 
+		\tag{by construction} \\
 		%
-%		~{}={}~ &\text{Uniform}(c_1, c_2) \gg\!= \lambda v. \delta_{(v_i : \fin{|B| + 1})}  \\
-		%
-		~{}={}~& \text{Discrete}{(p_0,\ldots,p_n)} \\
-		%
-		~{}={}~ & \sem{\discrete(p_0,\ldots,p_n)}~.
+		~{}={}~ & \sem{\discretize{e}:\discretize{\tau}}~.
+		\tag{\Cref{tab:smallstep}}
 		%
 		%
 	\end{align*}
