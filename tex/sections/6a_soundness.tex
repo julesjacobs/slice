@@ -216,7 +216,7 @@ We have the following key property:
 		\tag{monad assoc., $v_i$ is unique number s.t. $v \in \intervals{B}_{v_i}$} \\
 		%
 		~{}={}~ & \text{Uniform}(c_1, c_2) \gg\!= \lambda v. \delta_{v_i : \fin{|B| + 1}}  
-		\tag{$v_i$ is unique number s.t. $v \in \intervals{B}_{v_i}$}
+		\tag{monad return, $v_i$ is unique number s.t. $v \in \intervals{B}_{v_i}$}
 		\\
 		%
 		~{}={}~ & \sem{\discrete(p_0,\ldots,p_n)}~\text{where}~p_k = \text{CDF}(b_{k+1}) - \text{CDF}(b_k) = \frac{b_{k+1} - c_1}{c_2-c_1} - \frac{b_{k} - c_1}{c_2-c_1}  =  \frac{b_{k+1} - b_k}{c_2-c_1} 
@@ -267,14 +267,14 @@ We have the following key property:
 		 %
 		 ~{}={}~ &  \sem{e_2:\tau_2, \discretize{e_2} : \discretize{\tau_2}} 
 		  \gg\!= \lambda (f,f'). \delta_{\uniform(v_1:\tau_1, f:\tau_2 ) : \tau} 
-		 \tag{Dirac measure} \\
+		 \tag{monad return} \\
 		 %
 		 ~{}={}~ &  \pi_1(\sem{e_2:\tau_2, \discretize{e_2} : \discretize{\tau_2}})
-		 \gg\!= \lambda (f,f'). \delta_{\uniform(v_1:\tau_1, f:\tau_2 ) : \tau} 
+		 \gg\!= \lambda f. \delta_{\uniform(v_1:\tau_1, f:\tau_2 ) : \tau} 
 		 \tag{\Cref{lem:bind_project}.\ref{lem:bind_project1}} \\
 		 %
 		 ~{}={}~ &  \sem{e_2:\tau_2}
-		 \gg\!= \lambda (f,f'). \delta_{\uniform(v_1:\tau_1, f:\tau_2 ) : \tau} ~.
+		 \gg\!= \lambda f. \delta_{\uniform(v_1:\tau_1, f:\tau_2 ) : \tau} ~.
 		 \tag{$ \sem{e_2:\tau_2, \discretize{e_2} : \discretize{\tau_2}}  =  \sem{e_2:\tau_2}$ by I.H.} \\
 		 %
 		 ~{}={}~ &  \sem{e : \tau}
@@ -283,7 +283,7 @@ We have the following key property:
 \end{proof}
 
 \begin{lemma}
-	\label{lem:bind_project}
+	\label[lemma]{lem:bind_project}
 	Let $F\colon P_\tau \to \mathcal{D}(P_\tau + \bot)$, let $G\colon Expr_\tau \to \mathcal{D}(Expr_\tau + \bot)$, and let $G' \colon Expr_\discretize{\tau} \to \mathcal{D}(Expr_\discretize{\tau} + \bot)$. We have:
 	%
 	\begin{enumerate}
