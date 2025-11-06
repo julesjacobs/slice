@@ -310,8 +310,21 @@ Well-definedness of these objects follows from the monotone convergence theorem:
 		{}={}~& \bigsem{e : \bool, \discretize{e}:\discretize{\bool}} \gg\!= \lambda(e_1,e_2). \delta_{e_1}
 		\tag{definition} \\
 		%
-		{}={}~& \bigsem{e : \bool, \discretize{e}:\discretize{\bool}}((\true,\true))\cdot {\delta_{e_1}}_{\bot}(\true) 
-		\tag{definition} \\
+		{}={}~& \bigsem{e : \bool, \discretize{e}:\discretize{\bool}}((\true,\true))\cdot \delta_{\true}(\true) \\
+		&{}+ 
+		\bigsem{e : \bool, \discretize{e}:\discretize{\bool}}((\true,\true))\cdot \delta_{\false}(\true) \\
+		&{}+ 
+		\bigsem{e : \bool, \discretize{e}:\discretize{\bool}}((\true,\true))\cdot \delta_{\bot}(\true) 
+		\tag{definition of $\gg\!=$} \\
+		%
+		{}={}~& \bigsem{e : \bool, \discretize{e}:\discretize{\bool}}((\true,\true))
+		\tag{definition of $\delta$} \\
+		%
+		{}={}~& \pi_2(\bigsem{e : \bool, \discretize{e}:\discretize{\bool}})(\true)
+		\tag{reasoning completely analogous} \\
+		%
+		{}={}~& \bigsem{\discretize{e}:\discretize{\bool}}(\true)
+		\tag{\Cref{lem:big_step_coupling_props}.\ref{lem:big_step_coupling_props2}} ~.
 	\end{align*}
 	
 	The cases $v=\false$ and $v=\bot$ are completely analogous.
