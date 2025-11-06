@@ -120,7 +120,7 @@ We now define suitable projection functions on measures $\mu \in \mathcal{D}(P_{
 \begin{align*}
 	 \pi_1(\mu) &{}={} \mu \gg\!= \lambda(e_1,e_2). \delta_{e_1} \\
 	 %
-	 \pi_1(\mu) 2&{}={} \mu \gg\!= \lambda(e_1,e_2). \delta_{e_2}~.
+	 \pi_2(\mu) &{}={} \mu \gg\!= \lambda(e_1,e_2). \delta_{e_2}~.
 \end{align*}
 %
 %
@@ -227,9 +227,103 @@ We have the following key property:
 		%
 		%
 	\end{align*}
+	
+	Now, the remaining cases are either (i) trivial base cases or (ii) immediately follow from the I.H.\ and \Cref{lem:bind_project} further below. We demonstrate this for the case 
+	%
+	\[
+	e:\tau = \uniform(e_1 : \floattype{B_1}{V_1}, e_2 : \floattype{B_2}{V_2}) : \floattype{B}{V}~,
+	\]
+	%
+	where
+	%
+	\begin{enumerate}
+		\item $e_1 = c_1$ is a value but $e_2$ is no value,
+		%
+		\item $B =  \{\sim_1\!\!b_1, \ldots, \sim_n\!\!b_n\}$,
+		%
+		\item $V=\top$, 
+		%
+		\item $V_1 = \{v_1,\ldots, v_{n_1}\}$ with $\distinguishes{B_1}{V_1}$ and $c_1 \in V_1$ due to $\has{V_1}{c_1}$ by I.H. 
+		%
+		\item $V_2 = \{w_1,\ldots, w_{n_2}\}$ with $\distinguishes{B_2}{V_2}$ and  $c_2 \in V_2$ due to $\has{V_2}{c_2}$ by I.H. 
+	\end{enumerate}
+	%
+	For \Cref{lem:small_step_coupling_props}.\ref{lem:small_step_coupling_props2}, consider the following:
+	%
+	\begin{align*}
+		& \pi_1(\sem{e:\tau, \discretize{e} : \discretize{\tau}}) \\
+		%
+		~{}={}~ &  \sem{e:\tau, \discretize{e} : \discretize{\tau}} \gg\!= \lambda(e_1,e_2). \delta_{e_1}  
+		\tag{definition} \\
+		%
+		~{}={}~ & \big( \sem{e_2:\tau_2, \discretize{e_2} : \discretize{\tau_2}} \\
+		& \gg\!= \lambda (f,f'). \delta_{(\uniform(v_1:\tau_1, f:\tau_2 ) : \tau, \dc(\discretize{v_1}:\discretize{\tau_1}, f': \discretize{\tau_2} ) : \discretize{\tau})} \big)
+		 \gg\!= \lambda(e_1,e_2). \delta_{e_1}   \\
+		 %
+		 ~{}={}~ &  \sem{e_2:\tau_2, \discretize{e_2} : \discretize{\tau_2}} \\
+		 & \gg\!= \lambda (f,f'). \big(\delta_{(\uniform(v_1:\tau_1, f:\tau_2 ) : \tau, \dc(\discretize{v_1}:\discretize{\tau_1}, f': \discretize{\tau_2} ) : \discretize{\tau})} 
+		 \gg\!= \lambda(e_1,e_2). \delta_{e_1} \big)
+		 \tag{monad assoc.} \\
+		 %
+		 ~{}={}~ &  \sem{e_2:\tau_2, \discretize{e_2} : \discretize{\tau_2}} 
+		  \gg\!= \lambda (f,f'). \delta_{\uniform(v_1:\tau_1, f:\tau_2 ) : \tau} 
+		 \tag{Dirac measure} \\
+		 %
+		 ~{}={}~ &  \pi_1(\sem{e_2:\tau_2, \discretize{e_2} : \discretize{\tau_2}})
+		 \gg\!= \lambda (f,f'). \delta_{\uniform(v_1:\tau_1, f:\tau_2 ) : \tau} 
+		 \tag{\Cref{lem:bind_project}.\ref{lem:bind_project1}} \\
+		 %
+		 ~{}={}~ &  \sem{e_2:\tau_2}
+		 \gg\!= \lambda (f,f'). \delta_{\uniform(v_1:\tau_1, f:\tau_2 ) : \tau} ~.
+		 \tag{$ \sem{e_2:\tau_2, \discretize{e_2} : \discretize{\tau_2}}  =  \sem{e_2:\tau_2}$ by I.H.} 
+	\end{align*}
 \end{proof}
 
-
+\begin{lemma}
+	\label{lem:bind_project}
+	Let $F\colon P_\tau \to \mathcal{D}(P_\tau + \bot)$, let $G\colon Expr_\tau \to \mathcal{D}(Expr_\tau + \bot)$, and let $G' \colon Expr_\discretize{\tau} \to \mathcal{D}(Expr_\discretize{\tau} + \bot)$. We have:
+	%
+	\begin{enumerate}
+		\item\label{lem:bind_project1} If  $\forall (f,f') \in P_\tau\colon F(f,f') = G(f)$, then for all $\mu \in \mathcal{D}(P_\tau + \bot)$,
+		%
+		\[
+		\pi_1(\mu) \gg\!= \lambda f. G(f)
+		~{}={}~
+		\mu \gg\!= \lambda (f,f'). F(f,f')~.
+		\]
+		%
+		%
+		\item\label{lem:bind_project2} If  $\forall (f,f') \in P_\tau\colon F(f,f') = G'(f)$, then for all $\mu \in \mathcal{D}(P_\tau + \bot)$,
+		%
+		\[
+		\pi_2(\mu) \gg\!= \lambda f. G'(f)
+		~{}={}~
+		\mu \gg\!= \lambda (f,f'). F(f,f')~.
+		\]
+	\end{enumerate}
+\end{lemma}
+%
+%
+\begin{proof}
+	We only prove \Cref{lem:bind_project}.\ref{lem:bind_project1} because the reasoning for \Cref{lem:bind_project}.\ref{lem:bind_project2} is completely analogous. We have
+	%
+	\begin{align*}
+		& \pi_1(\mu) \gg\!= \lambda f. G(f) \\
+		%
+		{}={}~& (\mu \gg\!= \lambda (f,f'). \delta_f) \gg\!= \lambda f. G(f) 
+		\tag{definition} \\
+		%
+		{}={}~& \mu \gg\!= \lambda (f,f'). (\delta_f \gg\!= \lambda f. G(f))
+		\tag{monad assoc.} \\
+		%
+		{}={}~& \mu \gg\!= \lambda (f,f'). G(f)
+		\tag{monad neutral} \\
+		%
+		{}={}~& \mu \gg\!= \lambda (f,f'). F(f,f')~.
+		\tag{assumption} 
+	\end{align*}
+	%
+\end{proof}
 
 \subsection{Big-Step Semantics and Correctness of Discretization}
 %
