@@ -12,21 +12,22 @@
 			%
 			\multirow{2}{*}{$\letkw \; x = e_1 : \tau_1 \; \inkw \; e_2 : \tau_2 : \tau_2$} & $e_1=v$ & $\delta_{(e_2[v/x] : \tau_2, \discretize{e_2 : \tau_2}[\discretize{v : \tau_1}/x] : \discretize{\tau_2})}$ \\
 			& $e_1$ no val.\ & \makecell[l]{$\sem{ e_1 : \tau_1, \discretize{e_1 : \tau_1} : \discretize{\tau_1}}$ \\
-			$\gg\!= \lambda (f, f'). \sem{ \letkw \; x = f \; \inkw \; e_2 : \tau_2 : \tau_2,
-			\letkw \; x = f' \; \inkw \; \discretize{e_2 : \tau_2} : \discretize{\tau_2} : \discretize{\tau_2}}$} \\
+			$\gg\!= \lambda (f, f'). \delta_{(\letkw \; x = f \; \inkw \; e_2 : \tau_2 : \tau_2,
+			\letkw \; x = f' \; \inkw \; \discretize{e_2 : \tau_2} : \discretize{\tau_2} : \discretize{\tau_2})}$} \\
 			%
 			\midrule 
 			%
 			\multirow{3}{*}{$\ifkw \; e_1 : \bool \; \thenkw \; e_2 : \tau \; \elsekw \; e_3 : \tau : \tau$} & $e_1=\true$ & $\delta_{(e_2 : \tau, \discretize{e_2 : \tau} : \discretize{\tau})} $ \\
 			 & $e_1=\false$ & $\delta_{(e_3 : \tau, \discretize{e_3 : \tau} : \discretize{\tau})} $ \\
 			 & o.w.\ & \makecell[l]{$\sem{ e_1 : \bool, \discretize{e_1 : \bool} : \discretize{\bool}}$ \\
-			 $\gg\!= \lambda (f,f'). \sem{ \ifkw \; f \; \thenkw \; e_2 : \tau \; \elsekw \; e_3 : \tau : \tau, \ifkw \; f' \; \thenkw \; \discretize{e_2 : \tau} : \discretize{\tau} \; \elsekw \; \discretize{e_3 : \tau} : \discretize{\tau} : \discretize{\tau}} $} \\
+			 $\gg\!= \lambda (f,f'). \delta_{(\ifkw \; f \; \thenkw \; e_2 : \tau \; \elsekw \; e_3 : \tau : \tau, \ifkw \; f' \; \thenkw \; \discretize{e_2 : \tau} : \discretize{\tau} \; \elsekw \; \discretize{e_3 : \tau} : \discretize{\tau} : \discretize{\tau})} $} \\
 			 %
 			 \midrule 
 			 %
 		     \multirow{3}{*}{$\observekw\; (e : \bool)  : \text{unit}$} & $e = \true$ & $\delta_{(\text{unit}, \text{unit})}$ \\[0.5ex]
 			& $e=\false$ & $\delta_{\bot}$ \\
-			& o.w.\ & $\sem{e: \bool, \discretize{e}: \bool} \gg\!= \lambda (f, f'). \sem{\observekw\; (f : \bool)  : \text{unit}, \observekw\; (f' : \bool)  : \text{unit}}$ \\
+			& o.w.\ & \makecell[l]{$\sem{e: \bool, \discretize{e}: \bool}$ \\
+			$\gg\!= \lambda (f, f'). \delta_{(\observekw\; (f : \bool)  : \text{unit}, \observekw\; (f' : \bool)  : \text{unit})}$} \\
 			%
 			\midrule
 			%
@@ -34,8 +35,10 @@
 			 for $\tau_1 = \floattype{B}{V_1}, \tau_2 = \floattype{B}{V_2} $ \\
 			 $B = \top$}} & $e_1 = v_1, e_2 = v_2, v_1 < v_2 $ & $\delta_{(\true : \bool, \true : \bool)}$ \\
 			 & $e_1 = v_1, e_2 = v_2, v_1 \geq v_2$ & $\delta_{(\false : \bool, \false : \bool)}$  \\
-			 &$e_1 = v_1, e_2 \neq v_2$ & $\sem{ e_2 : \tau_2, \discretize{e_2 : \tau_2} : \discretize{\tau_2}} \gg\!= \lambda (f,f'). \sem{ v_1 : \tau_1 < f : \bool, \discretize{v_1 : \tau_1} : \discretize{\tau_1} < f' : \discretize{\bool} }$ \\
-			 & o.w.\ & $\sem{ e_1 : \tau_1, \discretize{e_1 : \tau_1} : \discretize{\tau_1}} \gg\!= \lambda (f,f'). \sem{ f < e_2 : \tau_2 : \bool, f' < \discretize{e_2 : \tau_2} : \discretize{\tau_2} : \discretize{\bool}}$  \\
+			 &$e_1 = v_1, e_2 \neq v_2$ & \makecell[l]{$\sem{ e_2 : \tau_2, \discretize{e_2 : \tau_2} : \discretize{\tau_2}}$ \\
+			 $\gg\!= \lambda (f,f'). \delta_{(v_1 : \tau_1 < f : \bool, \discretize{v_1 : \tau_1} : \discretize{\tau_1} < f' : \discretize{\bool}) }$} \\
+			 & o.w.\ & \makecell[l]{ $\sem{ e_1 : \tau_1, \discretize{e_1 : \tau_1} : \discretize{\tau_1}}$ \\
+			 $\gg\!= \lambda (f,f'). \delta_{ (f < e_2 : \tau_2 : \bool, f' < \discretize{e_2 : \tau_2} : \discretize{\tau_2} : \discretize{\bool})}$}  \\
 			 %
 			 \midrule
 			 %
@@ -43,8 +46,10 @@
 			 for $\tau_1 = \floattype{B}{V_1}, \tau_2 = \floattype{B}{V_2} $ \\
 			 $B \neq \top$}} & $e_1 = v_1, e_2 = v_2, v_1 < v_2 $ & $\delta_{(\true : \bool, \true : \bool)}$ \\
 			 & $e_1 = v_1, e_2 = v_2, v_1 \geq v_2$ & $\delta_{(\false : \bool, \false : \bool)}$  \\
-			 &$e_1 = v_1, e_2 \neq v_2$ & $\sem{ e_2 : \tau_2, \discretize{e_2 : \tau_2} : \discretize{\tau_2} } \gg\!= \lambda (f,f'). \sem{ v_1 : \tau_1 < f : \bool, \discretize{v_1 : \tau_1} : \discretize{\tau_1} \finlt{(|B|+1)} f' : \discretize{\bool} }$ \\
-			 & o.w.\ & $\sem{ e_1 : \tau_1, \discretize{e_1 : \tau_1} : \discretize{\tau_1}} \gg\!= \lambda (f,f'). \sem{ f \finlt{(|B|+1)} e_2 : \tau_2 : \bool, f' \finlt{(|B|+1)} \discretize{e_2 : \tau_2} : \discretize{\tau_2} : \discretize{\bool}}$  \\
+			 &$e_1 = v_1, e_2 \neq v_2$ & \makecell[l]{$\sem{ e_2 : \tau_2, \discretize{e_2 : \tau_2} : \discretize{\tau_2} }$ \\
+			 $\gg\!= \lambda (f,f'). \delta_{ (v_1 : \tau_1 < f : \bool, \discretize{v_1 : \tau_1} : \discretize{\tau_1} \finlt{(|B|+1)} f' : \discretize{\bool}) }$} \\
+			 & o.w.\ & \makecell[l]{ $\sem{ e_1 : \tau_1, \discretize{e_1 : \tau_1} : \discretize{\tau_1}}$ \\
+			 $\gg\!= \lambda (f,f'). \delta_{ (f \finlt{(|B|+1)} e_2 : \tau_2 : \bool, f' \finlt{(|B|+1)} \discretize{e_2 : \tau_2} : \discretize{\tau_2} : \discretize{\bool})}$}  \\
 			 %
 			 \midrule
 			 %
@@ -53,9 +58,9 @@
 		    %$\textnormal{Uniform}(v_1,v_2)  \delta_{(v, v)}(A) dv$ \\
 		    $\text{Uniform}{(v_1, v_2)} \gg\!= \lambda v. \delta_{(v : \floattype{B}{V}, v : \floattype{B}{V})}$  \\
 			%
-			& $e_1=v_1$, $e_2$ no val.\ & \makecell[l]{$\sem{e_2:\tau_2, \discretize{e_2} : \discretize{\tau_2}}$ \\ $\gg\!= \lambda (f,f'). \sem{\uniform(v_1:\tau_1, f:\tau_2 ) : \tau, \uniform(\discretize{v_1}:\discretize{\tau_1}, f': \discretize{\tau_2} ) : \discretize{\tau}}$} \\
+			& $e_1=v_1$, $e_2$ no val.\ & \makecell[l]{$\sem{e_2:\tau_2, \discretize{e_2} : \discretize{\tau_2}}$ \\ $\gg\!= \lambda (f,f'). \delta_{(\uniform(v_1:\tau_1, f:\tau_2 ) : \tau, \uniform(\discretize{v_1}:\discretize{\tau_1}, f': \discretize{\tau_2} ) : \discretize{\tau})}$} \\
 			%
-			& $e_1$ no val.\ & \makecell[l]{$\sem{e_1:\tau_1, \discretize{e_1} : \discretize{\tau_1}}$ \\ $\gg\!= \lambda (f,f'). \sem{\uniform(f:\tau_1, e_2:\tau_2) : \tau, \uniform({f'}:\discretize{\tau_1}, \discretize{e_2} : \discretize{\tau_2} ) : \discretize{\tau}}$} \\
+			& $e_1$ no val.\ & \makecell[l]{$\sem{e_1:\tau_1, \discretize{e_1} : \discretize{\tau_1}}$ \\ $\gg\!= \lambda (f,f'). \delta_{(\uniform(f:\tau_1, e_2:\tau_2) : \tau, \uniform({f'}:\discretize{\tau_1}, \discretize{e_2} : \discretize{\tau_2} ) : \discretize{\tau})}$} \\
 			%
 %			\midrule
 %			%
@@ -73,9 +78,9 @@
 				$\text{Uniform}(c_1, c_2) \gg\!= \lambda v.\delta_{(v : \floattype{B}{V}, v_i : \fin{|B| + 1})}$ \\
 				where $v_i$ is unique number s.t. $v \in \intervals{B}_{v_i}$} \\
 				%
-				& $e_1=c_1$, $e_2$ no val.\ & \makecell[l]{$\sem{e_2:\tau_2, \discretize{e_2} : \discretize{\tau_2}}$ \\ $\gg\!= \lambda (f,f'). \sem{\uniform(v_1:\tau_1, f:\tau_2 ) : \tau, \dc(\discretize{v_1}:\discretize{\tau_1}, f': \discretize{\tau_2} ) : \discretize{\tau}}$} \\
+				& $e_1=c_1$, $e_2$ no val.\ & \makecell[l]{$\sem{e_2:\tau_2, \discretize{e_2} : \discretize{\tau_2}}$ \\ $\gg\!= \lambda (f,f'). \delta_{(\uniform(v_1:\tau_1, f:\tau_2 ) : \tau, \dc(\discretize{v_1}:\discretize{\tau_1}, f': \discretize{\tau_2} ) : \discretize{\tau})}$} \\
 				%
-				& $e_1$ no val.\ & \makecell[l]{$\sem{e_1:\tau_1, \discretize{e_1} : \discretize{\tau_1}}$ \\ $\gg\!= \lambda (f,f'). \sem{\uniform(f:\tau_1, e_2:\tau_2) : \tau, \dc({f'}:\discretize{\tau_1}, \discretize{e_2} : \discretize{\tau_2} ) : \discretize{\tau}}$} \\
+				& $e_1$ no val.\ & \makecell[l]{$\sem{e_1:\tau_1, \discretize{e_1} : \discretize{\tau_1}}$ \\ $\gg\!= \lambda (f,f'). \delta_{(\uniform(f:\tau_1, e_2:\tau_2) : \tau, \dc({f'}:\discretize{\tau_1}, \discretize{e_2} : \discretize{\tau_2} ) : \discretize{\tau})}$} \\
 %			 bla
 			\bottomrule
 			\bottomrule
