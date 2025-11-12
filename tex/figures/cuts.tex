@@ -1,0 +1,52 @@
+\begin{figure}[h]
+    \centering
+    \begin{tikzpicture}[scale=1.2]
+      % Axes
+      \draw[->] (0,0) -- (7,0) node[right] {$x$};
+      \draw[->] (0,0) -- (0,2.5) node[above] {$\Pr$};
+    
+      % Continuous distribution curve
+      \draw[domain=0.2:6.8, smooth, variable=\x, thick, blue]
+        plot ({\x}, {2*exp(-0.5*((\x-3)^2))});
+    
+      % Vertical cut lines with labels
+      \foreach \x/\label in {0.8/$c_1$, 2/$c_2$, 3.2/$c_3$, 4.8/$c_{n-1}$, 6/$c_n$} {
+        \draw[dashed] (\x,0) -- (\x,2.2);
+        \node[below] at (\x,-0.05) {\label};
+      }
+    
+      % Shading intervals
+      \fill[blue!20, opacity=0.5] (0,0)
+          -- plot[domain=0.2:0.8] ({\x}, {2*exp(-0.5*((\x-3)^2))})
+          -- (0.8,0) -- cycle;
+      \fill[blue!20, opacity=0.5] (0.8,0)
+          -- plot[domain=0.8:2] ({\x}, {2*exp(-0.5*((\x-3)^2))})
+          -- (2,0) -- cycle;
+      \fill[blue!20, opacity=0.5] (2,0)
+          -- plot[domain=2:3.2] ({\x}, {2*exp(-0.5*((\x-3)^2))})
+          -- (3.2,0) -- cycle;
+      \fill[blue!20, opacity=0.5] (3.2,0)
+          -- plot[domain=3.2:4.8] ({\x}, {2*exp(-0.5*((\x-3)^2))})
+          -- (4.8,0) -- cycle;
+      \fill[blue!20, opacity=0.5] (4.8,0)
+          -- plot[domain=4.8:6] ({\x}, {2*exp(-0.5*((\x-3)^2))})
+          -- (6,0) -- cycle;
+    
+      % Interval number labels (0, 1, ..., n)
+      \node[below] at (0.4,-0.4) {$0$};
+      \node[below] at (1.4,-0.4) {$1$};
+      \node[below] at (2.6,-0.4) {$2$};
+      \node[below] at (4.0,-0.4) {$\cdots$};
+      \node[below] at (5.4,-0.4) {$n-1$};
+      \node[below] at (6.6,-0.4) {$n$};
+    
+      % Probability annotations
+      \node[right] at (7.3,2.0) {$\Pr(x = 0) = \text{CDF}(c_1) - \text{CDF}(-\infty)$};
+      \node[right] at (7.3,1.6) {$\Pr(x = 1) = \text{CDF}(c_2) - \text{CDF}(c_1)$};
+      \node[right] at (7.3,1.2) {$\vdots$};
+      \node[right] at (7.3,0.8) {$\Pr(x = n) = \text{CDF}(\infty) - \text{CDF}(c_n)$};
+    
+    \end{tikzpicture}
+    \caption{Partitioning a continuous distribution by cuts $c_1, \ldots, c_n$ into intervals labeled $0, 1, \ldots, n$, with discrete probabilities derived from CDF differences.}
+    \label{fig:cuts-distr}
+  \end{figure}
