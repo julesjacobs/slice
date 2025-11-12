@@ -21,14 +21,6 @@
     {\Gamma \vdash e_1 : \float[B; V_1] \and \Gamma \vdash e_2 : \float[B; V_2] \and \answersleq{B}{V_1}{V_2}}
     {\Gamma \vdash e_1 \leq e_2 : \bool}
 
-    \inferrule[\textsc{If-Float}]
-    {\Gamma \vdash e_1 : \bool \\
-     \Gamma \vdash e_2 : \floattype{B}{V_2} \\
-     \Gamma \vdash e_3 : \floattype{B}{V_3} \\
-     \subtype{\floattype{B}{V_2}}{\floattype{B_4}{V_4}} \\
-     \subtype{\floattype{B}{V_3}}{\floattype{B_4}{V_4}}}
-    {\Gamma \vdash \ifkw \; e_1 \; \thenkw \; e_2 \; \elsekw \; e_3 : \floattype{B_4}{V_4}}
-
 \end{mathpar}
 \caption{Typing rules for float types and continuous distributions ($\uniform$ is a representative for all other two-argument distributions). The notions \emph{distinguishes} and \emph{answers} are defined in Definitions~\ref{def:distinguishes}, \ref{def:answers-less} and \ref{def:answers-less-equal}. Here $\Gamma$ is a typing environment of the form $\{\var_1 : \tau_1,\ldots,\var_n : \tau_n\}$,  where $ \Gamma, x: \tau_1 = (\Gamma \setminus \{ x : \tau ~|~ \tau~\text{type}\} ) \cup \{ x: \tau_1 \}$.}
 \label{fig:typing-float}

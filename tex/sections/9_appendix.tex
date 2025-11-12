@@ -56,6 +56,166 @@ This results in the output \result{0.5334}{0.4666}, which can be obtained from e
 
 \noindent This gives an output of distributions of lists: $\{\textit{true,true,true}: 0.115341, \textit{true,true,false}: 0.234199, ...\}$ when run with Roulette. The closure \textit{check\_threshold} lexically captures the stochastic \textit{threshold} value, which is randomly chosen to be either 0.3 or 0.7. The type system correctly infers that both threshold values (0.3 and 0.7) must be included as cuts for all Gaussian measurements, yielding the type \ft{<0.3,<0.7} for list elements. This demonstrates how \Slice{} handles higher-order functions with captured stochastic values while maintaining sound discretization.
 
+\subsection{Conditioning}\label{sec:examples:6}
+
+\Slice{} supports conditioning on events through the $\observekw$ construct, allowing for Bayesian inference. The following program, already type-annotated, models the conditional probability that a uniform random variable is less than 0.2, given that it is less than 0.5:
+
+%\begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
+%    let x = uniform(0.0, 1.0) in
+%    let _ = observe (x < 0.5) in
+%    x < 0.2
+%\end{lstlisting}
+%
+%\noindent The type annotations show how observation points become cuts:
+
+\begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
+    let x = (uniform(0.0, 1.0) : !{\ft{<0.2,<0.5}}!) in
+    let _ = observe (x < (0.5 : !{\ftb{<0.2,<0.5}{0.5}}!)) in
+    x < (0.2 : !{\ftb{<0.2,<0.5}{0.2}}!)
+\end{lstlisting}
+
+\noindent The discretized program correctly preserves the conditional probability:
+
+\begin{lstlisting}[aboveskip=1em,belowskip=1em]
+    let x = discrete(0.2, 0.3, 0.5) in
+    let _ = observe (x < 2) in
+    x < 1
+\end{lstlisting}
+
+\noindent
+%This results in the output \result{0.4}{0.6}. 
+In the discrete version, the observation $x < 2$ rules out the case where $x = 2$ (corresponding to the original interval $[0.5, +\infty)$), effectively conditioning on $x$ being in $[0.0, 0.5)$.
+
+\subsection{Higher-Order Functions}\label{sec:examples:7}
+
+\Slice{} supports higher-order functions, enabling functional programming patterns with probabilistic computations. The following function \texttt{mappair} applies a function to both elements of a pair:
+
+\begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
+  let mappair = fun f -> fun p -> (f (fst p), f (snd p)) in
+  let f = fun x -> x < 0.5 in
+  let g = fun x -> x < 1.5 in
+  let p = (uniform(0,2), gaussian(0,2)) in
+  let q = (mappair f) p in
+  let r = (mappair g) p in
+  if fst q then snd q else 
+      if fst r then snd r else fst q
+\end{lstlisting}
+
+\noindent The type system correctly infers that cuts from both \texttt{f} and \texttt{g} ($\clt{0.5}$ and $\clt{1.5}$) must be collected for the distributions in \texttt{p}, yielding type the \ft{<0.5,<1.5} for both components. The discretized program preserves the higher-order structure: 
+
+\begin{lstlisting}[aboveskip=1em,belowskip=1em]
+  let mappair = fun f -> fun p -> (f (fst p), f (snd p)) in
+  let f = fun x -> x < 1 in
+  let g = fun x -> x < 2 in
+  let p = (discrete(0.25, 0.5, 0.25), 
+          discrete(0.598706, 0.174666, 0.226627)) in
+  let q = (mappair f) p in
+  let r = (mappair g) p in
+  if fst q then snd q else 
+      if fst r then snd r else fst q
+\end{lstlisting}
+
+\noindent \Dice does not support exact inference for higher-order functions, but \Roulette does, and applying it yields the output \result{0.53636}{0.46364}. The continuous distributions in the original program are discretized into three-valued discrete distributions based on the intervals $(-\infty, 0.5)$, $[0.5, 1.5)$, and $[1.5, +\infty)$, while the functional structure remains intact.
+
+
+\subsection{Mutable State}\label{sec:examples:9}
+
+\Slice{} supports mutable references, allowing imperative-style updates within a probabilistic context. This example models temperature that can be updated based on weather events:
+
+\begin{lstlisting}[aboveskip=1em,belowskip=1em]
+  let temperature = ref (uniform(15.0, 25.0)) in
+  let weather_event = (if flip() then
+      (* Cold front moves in *)
+      temperature := gaussian(10.0, 2.0)
+    else
+      temperature := gaussian(0.0, 1.0)) in
+  !temperature < 12.0
+\end{lstlisting}
+
+\noindent The reference \texttt{temperature} initially holds a uniform temperature between 15°C and 25°C. With 50\% probability, a cold front updates it to a Gaussian-distributed temperature centered at 10°C. The type system tracks that the dereferenced value will be compared to 12.0, ensuring proper discretization of both the initial uniform distribution and the potential Gaussian update:%, both with float types \ft{<12}:
+
+\begin{lstlisting}[aboveskip=1em,belowskip=1em]
+  let temperature = ref (discrete(0, 1)) in
+  let weather_event = (if flip() then
+      temperature := discrete(0.841345, 0.158655)
+    else
+    temperature := discrete(1, 0)) in 
+  !temperature < 1
+\end{lstlisting}
+\noindent
+\Roulette supports exact inference for mutable state, yielding \result{0.92067}{0.07933}.
+
+
+
+\subsection{Indian GPA Problem}\label{sec:gpa}
+
+This example involves both discrete and continuous random variables and models a student's GPA based on nationality (India or USA) and whether they have a perfect record. The GPA is deterministic for perfect students (10.0 for India, 4.0 for USA) but drawn from a uniform distribution otherwise. The program computes the probability that a student's GPA falls below 1.0:
+
+\begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
+  let nationality = discrete(0.5, 0.5) in
+  let perfect = discrete(0.01, 0.99) in
+  let gpa = if nationality <= 0 then
+          if perfect <= 0 then
+            (10.0 : !{\ftb{<1}{10}}!)
+          else
+            (uniform(0, 10) : !{\ft{<1}}!)
+        else
+          if perfect <= 0 then
+            (4.0 : !{\ftb{<1}{4}}!)
+          else
+            (uniform(0, 4) : !{\ft{<1}}!)
+        : !{\ft{<1}}! in
+  gpa < (1.0 : !{\ftb{<1}{1.0}}!)
+\end{lstlisting}
+
+\noindent The type system collects the cut $<1$ for all GPA expressions. This splits each uniform distribution into two intervals at the threshold 1.0. The discretized version becomes:
+
+\begin{lstlisting}[aboveskip=1em,belowskip=1em]
+  let nationality = discrete(0.5, 0.5) in
+  let perfect = discrete(0.01, 0.99) in
+  let gpa = if nationality <= 0 then
+          if perfect <= 0 then  1
+          else
+            discrete(0.1, 0.9)
+        else
+          if perfect <= 0 then  1
+          else
+            discrete(0.25, 0.75) in
+  gpa < 1
+\end{lstlisting}
+
+\noindent This gives the output \result{0.17325}{0.82675}. Here, \uniform(0,10) becomes \discrete(0.1, 0.9) representing 10\% probability for $[0,1)$ and 90\% for $[1,10]$. Similarly, \uniform(0,4) becomes \discrete(0.25, 0.75). Constants 10.0 and 4.0 fall into the second interval in the partition $(-\infty, 1) \cup [1,+\infty)$ and are thus both mapped to index 1 in the discretized program.
+
+We also support sequential probabilistic processes with iterate, and lists and recursion, see \Cref{ap:mot} for examples of these features.
+\subsection{Partial Discretization for Non-Constant Comparisons}\label{sec:examples:partial1}
+
+Not all programs can be fully discretized. Consider a program where continuous variables are compared directly to each other rather than to constants:
+
+\begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
+  let x = uniform(0, 1) in
+  let y = gaussian(0, 1) in
+  if uniform(0,1) < 0.5 then x < y else y < x
+\end{lstlisting}
+
+\noindent The type-annotated version reveals that $x$ and $y$ have type \ftt, indicating that no finite set of cuts suffices to fully preserve the semantics of the above program:
+
+\begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
+  let x = (uniform(0, 1) : !{\ftt}!) in
+  let y = (gaussian(0, 1) : !{\ftt}!) in
+  if uniform(0, 1) : !{\ft{<0.5}}!) < (0.5 : !{\ftb{<0.5}{0.5}}!
+  then x < y else y < x
+\end{lstlisting}
+
+\noindent \Slice{} performs partial discretization, i.e., it discretizes only where it is possible:
+
+\begin{lstlisting}[aboveskip=1em,belowskip=1em]
+  let x = uniform(0, 1) in
+  let y = gaussian(0, 1) in
+  if discrete(0.5, 0.5) < 1 then x < y else y < x
+\end{lstlisting}
+\noindent The branching condition gets discretized, but $x$ and $y$ remain continuous. See \Cref{ap:mot} for another example of partial discretization with no comparisons to continuous distributions.
+
+
 \subsection{Partial Discretization for Continuous Values without Comparisons}\label{sec:examples:partial2}
 The previous example shows a program that can only be partially discretized due to continuous variables being compared directly to each other rather than to constants. If no comparisons are made with continuous distributions, the best \Slice{} can do is also a partial discretization. Consider:
 
@@ -331,3 +491,60 @@ This section contains code snippets of the programs used in the scaling experime
 \clearpage
 \section{Soundness Proof (Notes)}
 \input{sections/6_soundness}
+
+\section{More DT benchmarks}
+Table shows more decision tree benchmarks.
+
+\begin{table}[!t]
+    \centering
+    \small
+    \setlength{\tabcolsep}{3.5pt}
+    \begin{tabular}{llccccccccc}
+    \toprule
+    \makecell{\textbf{Decision}\\\textbf{Program}} &
+    \makecell{\textbf{Population}\\\textbf{Model}} &
+    \multicolumn{3}{c}{\textbf{Slice+Dice (s)}} &
+    \multicolumn{3}{c}{\textbf{Slice+Roulette (s)}} &
+    \multicolumn{3}{c}{\textbf{\textsc{SPPL} (s)}} \\
+    \cmidrule(lr){3-5} \cmidrule(lr){6-8} \cmidrule(lr){9-11}
+     &  & \textbf{Slice} & \textbf{Dice} & \textbf{Total} &
+          \textbf{Slice} & \textbf{Roulette} & \textbf{Total} &
+          \textbf{Trans.} & \textbf{Judg.} & \textbf{Total} \\
+    \midrule
+    DT$_{50}$         & Ind  & 0.006 & 0.094 & \textbf{0.100} & 0.004 & 0.156 & \textbf{0.160} & 0.765 & 0.029 & \textbf{0.793} \\
+                      & BN1  & 0.007 & 0.079 & \textbf{0.086} & 0.006 & 0.451 & \textbf{0.457} & 1.646 & 0.085 & \textbf{1.731} \\
+                      & BN2  & 0.007 & 0.083 & \textbf{0.090} & 0.006 & 0.403 & \textbf{0.409} & 1.580 & 0.080 & \textbf{1.660} \\
+    \midrule
+    DT$_{100}$        & Ind  & 0.011 & 0.138 & \textbf{0.149} & 0.011 & 0.654 & \textbf{0.665} & 1.455 & 0.036 & \textbf{1.490} \\
+                      & BN1  & 0.015 & 0.148 & \textbf{0.163} & 0.016 & 1.775 & \textbf{1.791} & 2.867 & 0.150 & \textbf{3.017} \\
+                      & BN2  & 0.017 & 0.153 & \textbf{0.170} & 0.016 & 1.775 & \textbf{1.791} & 2.914 & 0.152 & \textbf{3.066} \\
+    \midrule
+    DT$_{200}$        & Ind  & 0.045 & 0.289 & \textbf{0.334} & 0.045 & 4.089 & \textbf{4.134} & 2.710 & 0.059 & \textbf{2.770} \\
+                      & BN1  & 0.064 & 0.322 & \textbf{0.386} & 0.064 & 9.496 & \textbf{9.560} & 5.836 & 0.318 & \textbf{6.154} \\
+                      & BN2  & 0.068 & 0.305 & \textbf{0.373} & 0.068 & 9.556 & \textbf{9.624} & 5.797 & 0.302 & \textbf{6.099} \\
+    \midrule
+    DT$_{500}$        & Ind  & 0.479 & 0.879 & \textbf{1.358} & 0.515 & 55.677 & \textbf{56.192} & 7.908 & 0.141 & \textbf{8.049} \\
+                      & BN1  & 0.599 & 0.961 & \textbf{1.560} & 0.636 & 113.426 & \textbf{114.062} & 15.017 & 0.787 & \textbf{15.804} \\
+                      & BN2  & 0.616 & 0.999 & \textbf{1.615} & 0.610 & 112.976 & \textbf{113.586} & 15.330 & 0.889 & \textbf{16.219} \\
+    \midrule
+    DT$_{800}$        & Ind  & 1.738 & 1.592 & \textbf{3.330} & 1.738 & t.o. & \textbf{t.o.} & 14.698 & 0.238 & \textbf{14.937} \\
+                      & BN1  & 2.184 & 1.690 & \textbf{3.874} & 2.184 & t.o. & \textbf{t.o.} & 26.297 & 1.265 & \textbf{27.561} \\
+                      & BN2  & 2.151 & 1.704 & \textbf{3.855} & 2.151 & t.o. & \textbf{t.o.} & 26.542 & 1.298 & \textbf{27.840} \\
+    \midrule
+    DT$_{1000}$       & Ind  & 3.584 & 2.096 & \textbf{5.680} & 3.584 & t.o. & \textbf{t.o.} & 17.626 & 0.279 & \textbf{17.905} \\
+                      & BN1  & 4.125 & 2.192 & \textbf{6.317} & 4.125 & t.o. & \textbf{t.o.} & 33.417 & 1.537 & \textbf{34.954} \\
+                      & BN2  & 4.052 & 2.152 & \textbf{6.204} & 4.052 & t.o. & \textbf{t.o.} & 34.225 & 1.612 & \textbf{35.837} \\
+    \midrule
+    DT$_{2000}$       & Ind  & 26.791 & 4.607 & \textbf{31.398} & 26.791 & t.o. & \textbf{t.o.} & 44.957 & 0.786 & \textbf{45.742} \\
+                      & BN1  & 29.148 & 4.726 & \textbf{33.874} & 29.148 & t.o. & \textbf{t.o.} & 84.744 & 3.227 & \textbf{87.972} \\
+                      & BN2  & 30.353 & 4.715 & \textbf{35.068} & 30.353 & t.o. & \textbf{t.o.} & 76.398 & 3.152 & \textbf{79.550} \\
+    \midrule
+    DT$_{5000}$       & Ind  & t.o. & t.o. & \textbf{t.o.} & t.o. & t.o. & \textbf{t.o.} & err. & err. & \textbf{err.} \\
+                    & BN1  & t.o. & t.o. & \textbf{t.o.} & t.o. & t.o. & \textbf{t.o.} & err. & err. & \textbf{err.} \\
+                    & BN2  & t.o. & t.o. & \textbf{t.o.} & t.o. & t.o. & \textbf{t.o.} & err. & err. & \textbf{err.} \\
+    \bottomrule
+    \end{tabular}
+    \caption{Execution times (seconds) for the decision tree benchmarks, with a timeout of 120s. SPPL encounters a maximum recursion depth exceeded error for DT$_{5000}$.}
+    \label{tab:benchmarks_decision_trees}
+\end{table}
+    
