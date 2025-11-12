@@ -1,3 +1,34 @@
 \section{Soundness of our Approach}
+%
+In this section, we prove that our approach is sound in the following natural sense. Every expression $e:\bool$ is semantically equivalent to $\discretize{e : \bool} : \bool$. To formalize and prove this claim rigorously, we will (i) define a natural operational semantics for our language and (ii) use the idea of \emph{probabilistic couplings} to relate $e$ and $\discretize{e : \bool}$ in such a way that equivalence follows.
+%
+\subsection{Operational Semantics}
+%
+We define a semantic functional $\bigsem{\cdot} \colon Expr_\tau \to \mathcal{D}(Vals_\tau + \bot)$, mapping any well-typed expression $e$ of type $\tau$ to a \emph{sub}-distribution $\bigsem{e:\tau}$ over values of type $\tau$ and $\bot$. The missing probability mass in $\bigsem{e:\tau}$ will correspond to the probability of non-termination and the mass assigned to $\bot$ is the probability of observation failure.
 
-blaba
+\subsection{Coupled Semantics}
+%
+Define $P_\tau = \{ (e:\tau, \discretize{e} : \discretize{\tau}) ~|~ e:\tau \}$. We define a small-step coupling semantics
+
+\subsection{Soundness via Probabilistic Couplings}
+%
+\begin{lemma}
+	%\label{lem:small_step_coupling_props}
+	Let $e:\tau$. We have:
+	%
+	\begin{enumerate}
+		\item%\label{lem:small_step_coupling_props1} 
+		$\pi_1(\sem{e:\tau, \discretize{e} : \discretize{\tau}}) = \sem{e:\tau}$.
+		%
+		\item%\label{lem:small_step_coupling_props2} 
+		$\pi_2(\sem{e:\tau, \discretize{e} : \discretize{\tau}}) = \sem{\discretize{e}:\discretize{\tau}}$.
+	\end{enumerate}
+\end{lemma}
+%
+This immediately carries over to the big-step semantics, i.e., $\pi_1(\bigsem{e:\tau, \discretize{e} : \discretize{\tau}}) = \bigsem{e:\tau}$ and $\pi_2(\bigsem{e:\tau, \discretize{e} : \discretize{\tau}}) = \bigsem{\discretize{e}:\discretize{\tau}}$. With that, we get:
+%
+\begin{theorem}
+	Let $e:\bool$. Then $\bigsem{e:bool} = \bigsem{\discretize{e:bool} : \bool}$.
+\end{theorem}
+
+\kevin{give coupling just for uniform}
