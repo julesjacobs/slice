@@ -6,12 +6,22 @@ In this section, we prove that our approach is sound in the following natural se
 %
 We define a semantic functional $\bigsem{\cdot} \colon Expr_\tau \to \mathcal{D}(Vals_\tau + \bot)$, mapping any well-typed expression $e$ of type $\tau$ to a \emph{sub}-distribution $\bigsem{e:\tau}$ over values of type $\tau$ and $\bot$. The missing probability mass in $\bigsem{e:\tau}$ will correspond to the probability of non-termination and the mass assigned to $\bot$ is the probability of observation failure.
 
-\subsection{Coupled Semantics}
-%
-Define $P_\tau = \{ (e:\tau, \discretize{e} : \discretize{\tau}) ~|~ e:\tau \}$. We define a small-step coupling semantics
 
 \subsection{Soundness via Probabilistic Couplings}
 %
+Let us first consider the main theorem, and then discuss our proof strategy.
+%
+\begin{theorem}
+	Let $e:\bool$. Then $\bigsem{e:bool} = \bigsem{\discretize{e:bool} : \bool}$.
+\end{theorem}
+%
+Now, how can we prove this claim? The idea is to prove that we can execute the two programs simultaneously and in a synchronized manner. The crucial point is when $e$ reaches  a continuous sampling instruction that is discretized in $\discretize{e}$.
+
+Whenever we encounter a continuous sampling instruction in $e$ which is discretized in $\discretize{e}$, we prove that, indeed, 
+
+%
+Define $P_\tau = \{ (e:\tau, \discretize{e} : \discretize{\tau}) ~|~ e:\tau \}$. We define a small-step coupling semantics
+
 \begin{lemma}
 	%\label{lem:small_step_coupling_props}
 	Let $e:\tau$. We have:

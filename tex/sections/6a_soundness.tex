@@ -404,14 +404,14 @@ Well-definedness of these objects follows from the monotone convergence theorem:
 		{}={}~& \pi_1 (\bigsem{e : \bool, \discretize{e}:\discretize{\bool}})(\true)
 		\tag{\Cref{lem:big_step_coupling_props}.\ref{lem:big_step_coupling_props1}} \\
 		%
-		{}={}~& \bigsem{e : \bool, \discretize{e}:\discretize{\bool}} \gg\!= \lambda(e_1,e_2). \delta_{e_1}
+		{}={}~& (\bigsem{e : \bool, \discretize{e}:\discretize{\bool}} \gg\!= \lambda(e_1,e_2). \delta_{e_1})(\true)
 		\tag{definition} \\
 		%
 		{}={}~& \bigsem{e : \bool, \discretize{e}:\discretize{\bool}}((\true,\true))\cdot \delta_{\true}(\true) \\
 		&{}+ 
-		\bigsem{e : \bool, \discretize{e}:\discretize{\bool}}((\true,\true))\cdot \delta_{\false}(\true) \\
+		\bigsem{e : \bool, \discretize{e}:\discretize{\bool}}((\false,\false))\cdot \delta_{\false}(\true) \\
 		&{}+ 
-		\bigsem{e : \bool, \discretize{e}:\discretize{\bool}}((\true,\true))\cdot \delta_{\bot}(\true) 
+		\bigsem{e : \bool, \discretize{e}:\discretize{\bool}}(\bot)\cdot \delta_{\bot}(\true) 
 		\tag{definition of $\gg\!=$} \\
 		%
 		{}={}~& \bigsem{e : \bool, \discretize{e}:\discretize{\bool}}((\true,\true))
