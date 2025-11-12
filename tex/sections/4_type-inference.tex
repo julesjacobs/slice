@@ -161,5 +161,5 @@ $V_7 \sqsubseteq V_9$: we update $V_9 := V_9 \sqcup \{1.8\} = \{1.8\}$. For
  $V_1 = \{0.5\}$, $V_2 = \top$, $V_3 = \{0.8\}$, $V_4 = \top$, $V_5 = \top$, $V_6 = \{1.5\}$, $V_7 = \{1.8\}$, $V_8 = \{0.3\}$, $V_9 = \{0.3, 1.8\}$.    Since none of $B_1$, $B_2$, $B_3$, $B_4$ are $\top$, the constraints $B_1 \equiv_{\top} B_2$ and $B_3 \equiv_{\top} B_4$ are satisfied.
 \end{example}
 
-\paragraph{Additional constraint for partial discretization.} 
+\paragraph{Additional constraint for contextual equivalence.} 
 When the return type of the program involves a float type, either directly, or as part of a larger compound type (such as $\float[B;V] \to \float[B';V']$), we need to add an additional constraint to ensure that these float types involved are not discretized. We do this by recursively going over the return type, and setting all nested $B$ sets to $\top$. This ensures that the observable behavior of the program is preserved after discretization, regardless of the context in which the program is used. When the return type is basic, such as $\bool$, then nothing needs to be done.
