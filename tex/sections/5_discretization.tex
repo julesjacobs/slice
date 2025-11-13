@@ -187,7 +187,7 @@ A similar intuition applies to discretizable comparisons $e_1 < e_2$, where \emp
 
 
 
-\subsection{Discretization of Types}
+\subsubsection{Discretization of Types}
 We conclude this section by extending the discretization function $\discretize{\cdot}$ formally to types. \Cref{fig:discretization-types} shows how type $\tau$ is discretized to type $\discretize{\tau}$. We then obtain the following natural result, proved in Appendix~\ref{proof:type-transformations}, regarding the transformation of types when applying $\discretize{\cdot}$ to programs:
 %
 \begin{figure}[t]
@@ -196,7 +196,7 @@ We conclude this section by extending the discretization function $\discretize{\
 		\discretize{\tau} &= 
 		\begin{cases}
 			\fin{|B|+1} & \text{if } \tau = \float[B; V] \text{ and } B \neq \top \\[0.5em]
-			\float & \text{if } \tau = \float[B; V] \text{ and } B = \top \\[0.5em]
+			\floattype{B}{V} & \text{if } \tau = \float[B; V] \text{ and } B = \top \\[0.5em]
 			\discretize{A} \to \discretize{B} & \text{if } \tau = A \to B \\[0.5em]
 			\discretize{A} \times \discretize{B} & \text{if } \tau = A \times B \\[0.5em]
 			\listty{\discretize{A}} & \text{if } \tau = \listty{A} \\[0.5em]
@@ -209,13 +209,13 @@ We conclude this section by extending the discretization function $\discretize{\
 \end{figure}
 %
 %
-\begin{lemma}[Discretization Is Well-Typed]\label{lem:type-transformations}
-	Let $\Gamma \vdash e : \tau$ be a well-typed expression in \Slice{}, where $\Gamma$ is a typing environment assigning types to variables. Let $\discretize{e : \tau}$ be the discretization function from Figure~\ref{fig:discretization-code}, and $\discretize{\tau}$ be the type transformation function as defined in Figure~\ref{fig:discretization-types}. Then,
+\begin{theorem}[Discretization Is Well-Typed]\label{lem:type-transformations}
+	Let $\Gamma \vdash e : \tau$ be a well-typed expression, where $\Gamma$ is a typing environment assigning types to variables. Let $\discretize{e : \tau}$ be the discretization function from Figure~\ref{fig:discretization-code}, and $\discretize{\tau}$ be the type transformation function as defined in Figure~\ref{fig:discretization-types}. Then,
 	\[
-	\discretize{\Gamma} \vdash \discretize{e : \tau} : \discretize{\tau}
+	\discretize{\Gamma} \vdash \discretize{e : \tau} : \discretize{\tau},
 	\]
 	where $\discretize{\Gamma}$ transforms all types in $\Gamma$, i.e., $\discretize{\Gamma}(x) = \discretize{\Gamma(x)}$ for all $x \in \textnormal{dom}(\Gamma)$.
-\end{lemma}
+\end{theorem}
 %
 %\begin{proof}
 %	See Appendix~\ref{proof:type-transformations}.

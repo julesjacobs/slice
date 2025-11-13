@@ -1,6 +1,6 @@
-\begin{figure}[h]
+\begin{figure}
     \centering
-    \begin{tikzpicture}[scale=1.0]
+    \begin{tikzpicture}[scale=0.9]
       % Axes
       \draw[->] (0,0) -- (7,0) node[right] {$x$};
       \draw[->] (0,0) -- (0,2.5) node[above] {$\Pr$};
@@ -9,11 +9,11 @@
       \draw[domain=0.2:6.8, smooth, variable=\x, thick, blue]
         plot ({\x}, {2*exp(-0.5*((\x-3)^2))});
     
-      % Vertical cut lines with labels (random spacing)
-      \foreach \x/\label in {1.2/$c_1$, 1.8/$c_2$, 2.7/$c_3$, 5.2/$c_{n-1}$, 5.9/$c_n$} {
-        \draw[dashed] (\x,0) -- (\x,2.2);
+      % Vertical cut lines with labels (shift c_{n-1} and c_n left slightly)
+      \foreach \x/\label in {1.2/$c_1$, 1.8/$c_2$, 2.7/$c_3$, 4.8/{\hspace{-4pt}$c_{n-1}$}, 5.5/{\hspace{-4pt}$c_n$}} {
+        \draw[dashed] (\x,0) -- (\x,2.5);
         \node[below] at (\x,-0.05) {\label};
-      }
+    }
     
       % Shading intervals (different colors)
       \fill[blue!25, opacity=0.6] (0,0)
@@ -26,23 +26,23 @@
           -- plot[domain=1.8:2.7] ({\x}, {2*exp(-0.5*((\x-3)^2))})
           -- (2.7,0) -- cycle;
       \fill[white!25, opacity=0.6] (2.7,0)
-          -- plot[domain=2.7:5.2] ({\x}, {2*exp(-0.5*((\x-3)^2))})
+          -- plot[domain=2.7:4.8] ({\x}, {2*exp(-0.5*((\x-3)^2))})
           -- (5.2,0) -- cycle;
-      \fill[orange!25, opacity=0.6] (5.2,0)  % c_{n-1} to c_n
-          -- plot[domain=5.2:5.9] ({\x}, {2*exp(-0.5*((\x-3)^2))})
-          -- (5.9,0) -- cycle;
-      \fill[red!25, opacity=0.8] (5.9,0)  % c_n to infinity (more prominent)
-          -- plot[domain=5.9:6.8] ({\x}, {2*exp(-0.5*((\x-3)^2))})
-          -- (6.8,0) -- (6.8,0.1) -- (7.2,0.1) -- (7.2,0) -- cycle;
-    
-      % Interval number labels
-      \node[below] at (0.6,-0.4) {$0$};
-      \node[below] at (1.5,-0.4) {$1$};
-      \node[below] at (2.25,-0.4) {$2$};
-      \node[below] at (3.95,-0.4) {$\cdots$};
-      \node[below] at (5.55,-0.4) {$n-1$};
-      \node[below] at (6.6,-0.4) {$n$};
-    
+      \fill[orange!25, opacity=0.6] (4.8,0)
+            -- plot[domain=4.8:5.5] ({\x},{2*exp(-0.5*((\x-3)^2))})
+            -- (5.5,0) -- cycle;
+      \fill[red!25, opacity=0.8] (5.5,0)
+            -- plot[domain=5.5:6.8] ({\x},{2*exp(-0.5*((\x-3)^2))})
+            -- (6.8,0) -- cycle;
+
+    % Interval number labels (shift n-1 and n left slightly)
+    \node[below] at (0.6,-0.4) {$0$};
+    \node[below] at (1.5,-0.4) {$1$};
+    \node[below] at (2.25,-0.4) {$2$};
+    \node[below] at (3.65,-0.4) {$\cdots$};
+    \node[below] at (5.15,-0.4) {$n\!-\!1$};   % shifted 0.1 left
+    \node[below] at (6.25,-0.4) {$n$};         % shifted 0.15 left
+     
       % Color-matched probability annotations
       \node[right, text=blue!60!black]  at (7.3,2.0) {$\Pr(x{=}0) = \text{CDF}(c_1) - \text{CDF}(-\infty)$};
       \node[right, text=green!60!black]   at (7.3,1.6) {$\Pr(x{=}1) = \text{CDF}(c_2) - \text{CDF}(c_1)$};
@@ -51,6 +51,6 @@
       \node[right, text=red!70!black]   at (7.3,0.0) {$\Pr(x{=}n) = \text{CDF}(\infty) - \text{CDF}(c_n)$};
     
     \end{tikzpicture}
-    \caption{Partitioning a continuous distribution by cuts $c_1, \ldots, c_n$ into intervals labeled $0, 1, \ldots, n$, with each interval assigned a discrete probability $\Pr(x=i)$ computed from CDF differences. Colors correspond to individual intervals. Depending on the values of the cuts, the resulting intervals may vary in width and need not be uniformly spaced.}
+    \caption{Partitioning a continuous distribution by cuts $\clt{c_1}, \ldots, \clt{c_n}$ into intervals, with each interval assigned a discrete probability $\Pr(x=i)$ computed from CDF differences. Each interval represents a range of real values that is abstracted to a single discretized value labeled $0, 1, \ldots, n$. Depending on the cuts, the resulting intervals may vary in width and need not be uniformly spaced.}
     \label{fig:cuts-distr}
     \end{figure}
