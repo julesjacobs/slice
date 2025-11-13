@@ -1,44 +1,81 @@
 \section{Soundness of our Approach}
 %
-In this section, we prove that our approach is sound in the following natural sense. Every expression $e:\bool$ is semantically equivalent to $\discretize{e : \bool} : \bool$. To formalize and prove this claim rigorously, we will (i) define a natural operational semantics for our language and (ii) use the idea of \emph{probabilistic couplings} to relate $e$ and $\discretize{e : \bool}$ in such a way that equivalence follows.
+We now prove our approach sound in the following expected sense. Every expression $e:\bool$ is semantically equivalent to $\discretize{e : \bool} : \bool$. To formalize and prove this claim rigorously, we will (i) define a natural operational semantics for our language and (ii) use a notion related to \emph{probabilistic couplings} to relate the operational behaviors in a way that lets us conclude equivalence.
 %
 \subsection{Operational Semantics}
 %
-We define a semantic functional $\bigsem{\cdot} \colon Expr_\tau \to \mathcal{D}(Vals_\tau + \bot)$, mapping any well-typed expression $e$ of type $\tau$ to a \emph{sub}-distribution $\bigsem{e:\tau}$ over values of type $\tau$ and $\bot$. The missing probability mass in $\bigsem{e:\tau}$ will correspond to the probability of non-termination and the mass assigned to $\bot$ is the probability of observation failure.
+We start by defining a small-step operational functional $\sem{\cdot}\colon Expr_\tau \to\mathcal{D}(Expr_\tau + \bot)$ (cf.\ \Cref{tab:smallstep} on page \pageref{tab:smallstep}), mapping each expression $e$ of type $\tau$ to a (possibly continuous) subdistribution $\sem{e:\tau}$ over expressions of type $\tau$ or $\bot$. The missing probability mass corresponds to the probability of encountering an error due to ill-defined invokations of sampling instructions (e.g., $\uniform(1,0)$). The probability of $\bot$ is the probability of observation failure. 
 
+Using this small-step operational functional, we employ a limit construction to define a (big-step) functional $\bigsem{\cdot}\colon Expr_\tau \to \mathcal{D}(Vals_\tau + \bot)$, mapping each expression $e$ of type $\tau$ to a subdistribution $\bigsem{e:\tau}$ over \emph{values} of type $\tau$ or $\bot$. The missing probability mass now \emph{additionally} captures $e$'s non-termination probability, and the probability of $\bot$ is the probability of observation failure. 
+
+\kevin{measurable}
 
 \subsection{Soundness via Probabilistic Couplings}
 %
 Let us first consider the main theorem, and then discuss our proof strategy.
 %
 \begin{theorem}
+	\label{thm:maintext:sound}
 	Let $e:\bool$. Then $\bigsem{e:bool} = \bigsem{\discretize{e:bool} : \bool}$.
 \end{theorem}
 %
-Now, how can we prove this claim? The idea is to prove that we can execute the two programs simultaneously and in a synchronized manner. The crucial point is when $e$ reaches  a continuous sampling instruction that is discretized in $\discretize{e}$.
+Intuitively, the idea is to prove that we can execute the two programs in a synchronized manner and such their probability of terminating in a value $v$ coincide for each $v \in \{\true,\false,\bot\}$. Since, however, sub-expressions might be of a type other than $\bool$, we have to find a more general argument which enables us to conclude semantic equivalence.% The crucial point is when we encounter a continuous sampling instruction in $e$, in which case we have to prove that its discretized counterpart $\discretize{e:\tau}$
 
-Whenever we encounter a continuous sampling instruction in $e$ which is discretized in $\discretize{e}$, we prove that, indeed, 
+Towards this end, define for every type $\tau$ the set $P_\tau = \{ (e:\tau, \discretize{e : \tau} : \discretize{\tau}) ~|~ e:\tau \}$. We define a \emph{coupled small-step semantics} $\sem{\cdot,\cdot} \colon Expr_\tau \to \mathcal{D}(P_\tau + \bot)$ (cf.\ \Cref{tab:coupling_smallstep}), which models the simultaneous execution of $e$ and $\discretize{e:\tau}$. The key property of this coupled executions is that the semantics of both $e$ and $\discretize{e:\tau}$ can be recovered in a sense we formalize next.
 
+Given $\mu \in \mathcal{D}(P_\tau + \bot)$, we define the \emph{projection of $\mu$ onto the $i$-th component} for $i\in\{ 1,2 \}$ as
 %
-Define $P_\tau = \{ (e:\tau, \discretize{e} : \discretize{\tau}) ~|~ e:\tau \}$. We define a small-step coupling semantics
-
+\[
+	\pi_i(\mu) = \int_{x \in P_\tau + \bot} 
+	\lambda e. 
+	\begin{cases}
+		 \delta_{e_i} & e = (e_1,e_2)  \\
+		 %
+		 \delta_\bot  & e = \bot
+	\end{cases}
+	%
+	\mu(dx)~,
+\]
+%
+where $\delta_a$ denotes the Dirac distribution of $a$. We recover the semantics of $e$ and $\discretize{e:\tau}$ as follows:
 \begin{lemma}
-	%\label{lem:small_step_coupling_props}
+	\label{lem:maintext:small_step_coupling_props}
 	Let $e:\tau$. We have:
 	%
 	\begin{enumerate}
-		\item%\label{lem:small_step_coupling_props1} 
-		$\pi_1(\sem{e:\tau, \discretize{e} : \discretize{\tau}}) = \sem{e:\tau}$.
+		\item\label{lem:maintext:small_step_coupling_props1} 
+		$\pi_1(\sem{e:\tau, \discretize{e : \tau} : \discretize{\tau}}) = \sem{e:\tau}$.
 		%
-		\item%\label{lem:small_step_coupling_props2} 
-		$\pi_2(\sem{e:\tau, \discretize{e} : \discretize{\tau}}) = \sem{\discretize{e}:\discretize{\tau}}$.
+		\item\label{lem:maintext:small_step_coupling_props2} 
+		$\pi_2(\sem{e:\tau, \discretize{e : \tau} : \discretize{\tau}}) = \sem{\discretize{e : \tau}:\discretize{\tau}}$.
 	\end{enumerate}
 \end{lemma}
-%
-This immediately carries over to the big-step semantics, i.e., $\pi_1(\bigsem{e:\tau, \discretize{e} : \discretize{\tau}}) = \bigsem{e:\tau}$ and $\pi_2(\bigsem{e:\tau, \discretize{e} : \discretize{\tau}}) = \bigsem{\discretize{e}:\discretize{\tau}}$. With that, we get:
-%
-\begin{theorem}
-	Let $e:\bool$. Then $\bigsem{e:bool} = \bigsem{\discretize{e:bool} : \bool}$.
-\end{theorem}
 
-\kevin{give coupling just for uniform}
+Using a limit construction to construct obtain a coupled \emph{big-step} semantics $\bigsem{\cdot,\cdot} \colon Expr_\tau \to \mathcal{D}(V_\tau + \bot)$, where $V_\tau = \{ (v:\tau, \discretize{v} : \discretize{\tau}) ~|~ v:\tau~\text{is a value} \}$
+
+\noindent
+\emph{Proof of \Cref{thm:maintext:sound}}. Let $v \in \{\true,\false,\bot\}$. We have
+%
+\begin{align*}
+	& \bigsem{e : \bool}(v) \\
+	%
+	{}={}~& \pi_1(\bigsem{e:\bool, \discretize{e : \bool} : {\bool}})(v)
+	\tag{Lemma \ref{lem:maintext:small_step_coupling_props}.\ref{lem:maintext:small_step_coupling_props1}} \\
+	%
+    {}={}~& \pi_1(\bigsem{e:\bool, \discretize{e : \bool} : {\bool}})(v)
+    \tag{$P_\bool$ is discrete} \\
+    %
+    {}={} & \bigsem{e : \bool, \discretize{e : \bool}:{\bool}}((\true,\true))\cdot \delta_{\true}(v) \\
+    &{}+ 
+    \bigsem{e : \bool, \discretize{e : \bool}:{\bool}}((\false,\false))\cdot \delta_{\false}(v) \\
+    &{}+ 
+    \bigsem{e : \bool, \discretize{e : \bool}:{\bool}}(\bot)\cdot \delta_{\bot}(v) 
+    \tag{definition of $\pi_1$, argument is discrete} \\
+    %
+    {}={}~& \pi_2(\bigsem{e:\bool, \discretize{e : \bool} : {\bool}})
+    \tag{definition of $\pi_2$, argument is discrete} \\
+    %
+    {}={}~& \bigsem{\discretize{e : \bool}:{\bool}}(v)~.
+\end{align*}
+
+ 
