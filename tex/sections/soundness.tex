@@ -16,7 +16,7 @@ Let us first consider the main theorem, and then discuss our proof strategy.
 %
 \begin{theorem}
 	\label{thm:maintext:sound}
-	Let $e:\bool$. Then $\bigsem{e:bool} = \bigsem{\discretize{e:bool} : \bool}$.
+	Let $e:\bool$. Then $\bigsem{e:\bool} = \bigsem{\discretize{e:bool} : \bool}$.
 \end{theorem}
 %
 Intuitively, the idea is to prove that we can execute the two programs in a synchronized manner and such their probability of terminating in a value $v$ coincide for each $v \in \{\true,\false,\bot\}$. Since, however, sub-expressions might be of a type other than $\bool$, we have to find an argument that (i) applies to expressions of \emph{arbitrary} type and is (ii) strong enough to imply \Cref{thm:maintext:sound}.
@@ -28,12 +28,11 @@ Towards this end, define for every type $\tau$ the set $P_\tau = \{ (e:\tau, \di
 Given $\mu \in \mathcal{D}(P_\tau + \bot)$, we define the \emph{projection of $\mu$ onto the $i$-th component} for $i\in\{ 1,2 \}$ as
 %
 \[
-	\pi_i(\mu) = \int_{x \in P_\tau + \bot} 
-	\lambda e. 
+	\pi_i(\mu) = \lambda A. \int_{x \in P_\tau + \bot} 
 	\begin{cases}
-		 \delta_{e_i} & e = (e_1,e_2)  \\
+		 \delta_{e_i}(A) & x = (e_1,e_2)  \\
 		 %
-		 \delta_\bot  & e = \bot
+		 \delta_\bot(A)  & x = \bot
 	\end{cases}
 	%
 	\mu(dx)~,
