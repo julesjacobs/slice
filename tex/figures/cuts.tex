@@ -36,19 +36,19 @@
             -- (6.8,0) -- cycle;
 
     % Interval number labels (shift n-1 and n left slightly)
-    \node[below] at (0.6,-0.4) {$0$};
-    \node[below] at (1.5,-0.4) {$1$};
-    \node[below] at (2.25,-0.4) {$2$};
-    \node[below] at (3.65,-0.4) {$\cdots$};
-    \node[below] at (5.15,-0.4) {$n\!-\!1$};   % shifted 0.1 left
-    \node[below] at (6.25,-0.4) {$n$};         % shifted 0.15 left
+    \node[below] at (0.6,-0.6) {\footnotesize $0$};
+    \node[below] at (1.5,-0.6) {\footnotesize$1$};
+    \node[below] at (2.25,-0.6) {\footnotesize$2$};
+    \node[below] at (3.65,-0.7) {\footnotesize$\cdots$};
+    \node[below] at (5.15,-0.6) {\footnotesize$n\!-\!1$};   % shifted 0.1 left
+    \node[below] at (6.25,-0.65) {\footnotesize$n$};         % shifted 0.15 left
      
       % Color-matched probability annotations
-      \node[right, text=blue!60!black]  at (7.3,2.0) {$\Pr(x{=}0) = \text{CDF}(c_1) - \text{CDF}(-\infty)$};
-      \node[right, text=green!60!black]   at (7.3,1.6) {$\Pr(x{=}1) = \text{CDF}(c_2) - \text{CDF}(c_1)$};
-      \node[right, text=cyan!70!black]at (7.3,1.2) {$\Pr(x{=}2) = \text{CDF}(c_3) - \text{CDF}(c_2)$};
-      \node[right, text=purple!70!black]at (7.3,0.8) {$\cdots$};
-      \node[right, text=red!70!black]   at (7.3,0.0) {$\Pr(x{=}n) = \text{CDF}(\infty) - \text{CDF}(c_n)$};
+      \node[right, text=blue!60!black]  at (8.3,2.0) {$\Pr(x{=}0) = \text{CDF}(c_1) - \text{CDF}(-\infty)$};
+      \node[right, text=green!60!black]   at (8.3,1.6) {$\Pr(x{=}1) = \text{CDF}(c_2) - \text{CDF}(c_1)$};
+      \node[right, text=cyan!70!black]at (8.3,1.2) {$\Pr(x{=}2) = \text{CDF}(c_3) - \text{CDF}(c_2)$};
+      \node[right, text=purple!70!black]at (8.3,0.8) {$\cdots$};
+      \node[right, text=red!70!black]   at (8.3,0.0) {$\Pr(x{=}n) = \text{CDF}(\infty) - \text{CDF}(c_n)$};
     
     \end{tikzpicture}
     \caption{Partitioning a continuous distribution by cuts $\clt{c_1}, \ldots, \clt{c_n}$ into intervals, with each interval assigned a discrete probability $\Pr(x=i)$ computed from CDF differences. Each interval represents a range of real values that is abstracted to a single discretized value labeled $0, 1, \ldots, n$. Depending on the cuts, the resulting intervals may vary in width and need not be uniformly spaced.}
