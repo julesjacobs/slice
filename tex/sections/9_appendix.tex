@@ -56,35 +56,6 @@ This results in the output \result{0.5334}{0.4666}, which can be obtained from e
 
 \noindent This gives an output of distributions of lists: $\{\textit{true,true,true}: 0.115341, \textit{true,true,false}: 0.234199, ...\}$ when run with Roulette. The closure \textit{check\_threshold} lexically captures the stochastic \textit{threshold} value, which is randomly chosen to be either 0.3 or 0.7. The type system correctly infers that both threshold values (0.3 and 0.7) must be included as cuts for all Gaussian measurements, yielding the type \ft{<0.3,<0.7} for list elements. This demonstrates how \Slice{} handles higher-order functions with captured stochastic values while maintaining sound discretization.
 
-\subsection{Conditioning}\label{sec:examples:6}
-
-\Slice{} supports conditioning on events through the $\observekw$ construct, allowing for Bayesian inference. The following program, already type-annotated, models the conditional probability that a uniform random variable is less than 0.2, given that it is less than 0.5:
-
-%\begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
-%    let x = uniform(0.0, 1.0) in
-%    let _ = observe (x < 0.5) in
-%    x < 0.2
-%\end{lstlisting}
-%
-%\noindent The type annotations show how observation points become cuts:
-
-\begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
-    let x = (uniform(0.0, 1.0) : !{\ft{<0.2,<0.5}}!) in
-    let _ = observe (x < (0.5 : !{\ftb{<0.2,<0.5}{0.5}}!)) in
-    x < (0.2 : !{\ftb{<0.2,<0.5}{0.2}}!)
-\end{lstlisting}
-
-\noindent The discretized program correctly preserves the conditional probability:
-
-\begin{lstlisting}[aboveskip=1em,belowskip=1em]
-    let x = discrete(0.2, 0.3, 0.5) in
-    let _ = observe (x < 2) in
-    x < 1
-\end{lstlisting}
-
-\noindent
-%This results in the output \result{0.4}{0.6}. 
-In the discrete version, the observation $x < 2$ rules out the case where $x = 2$ (corresponding to the original interval $[0.5, +\infty)$), effectively conditioning on $x$ being in $[0.0, 0.5)$.
 
 \subsection{Higher-Order Functions}\label{sec:examples:7}
 
@@ -187,85 +158,6 @@ This example involves both discrete and continuous random variables and models a
 \noindent This gives the output \result{0.17325}{0.82675}. Here, \uniform(0,10) becomes \discrete(0.1, 0.9) representing 10\% probability for $[0,1)$ and 90\% for $[1,10]$. Similarly, \uniform(0,4) becomes \discrete(0.25, 0.75). Constants 10.0 and 4.0 fall into the second interval in the partition $(-\infty, 1) \cup [1,+\infty)$ and are thus both mapped to index 1 in the discretized program.
 
 We also support sequential probabilistic processes with iterate, and lists and recursion, see \Cref{ap:mot} for examples of these features.
-\subsection{Partial Discretization for Non-Constant Comparisons}\label{sec:examples:partial1}
-
-Not all programs can be fully discretized. Consider a program where continuous variables are compared directly to each other rather than to constants:
-
-\begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
-  let x = uniform(0, 1) in
-  let y = gaussian(0, 1) in
-  if uniform(0,1) < 0.5 then x < y else y < x
-\end{lstlisting}
-
-\noindent The type-annotated version reveals that $x$ and $y$ have type \ftt, indicating that no finite set of cuts suffices to fully preserve the semantics of the above program:
-
-\begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
-  let x = (uniform(0, 1) : !{\ftt}!) in
-  let y = (gaussian(0, 1) : !{\ftt}!) in
-  if uniform(0, 1) : !{\ft{<0.5}}!) < (0.5 : !{\ftb{<0.5}{0.5}}!
-  then x < y else y < x
-\end{lstlisting}
-
-\noindent \Slice{} performs partial discretization, i.e., it discretizes only where it is possible:
-
-\begin{lstlisting}[aboveskip=1em,belowskip=1em]
-  let x = uniform(0, 1) in
-  let y = gaussian(0, 1) in
-  if discrete(0.5, 0.5) < 1 then x < y else y < x
-\end{lstlisting}
-\noindent The branching condition gets discretized, but $x$ and $y$ remain continuous. See \Cref{ap:mot} for another example of partial discretization with no comparisons to continuous distributions.
-
-
-\subsection{Partial Discretization for Continuous Values without Comparisons}\label{sec:examples:partial2}
-The previous example shows a program that can only be partially discretized due to continuous variables being compared directly to each other rather than to constants. If no comparisons are made with continuous distributions, the best \Slice{} can do is also a partial discretization. Consider:
-
-\begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
-    let x = uniform(0,1) in
-    let y = gaussian(0,1) in
-    if y < 0.5 then beta(1,1) else uniform(0,2)
-\end{lstlisting}
-\noindent
-Here, \Slice{} does not identify any cuts for the subexpressions $x$ and \ifkw\; $y < 0.5$ \thenkw\; \betafn(1,1) \elsekw\; \uniform(0,2). \Slice{} still preserves the semantics of the original program by not discretizing the return value, setting the cut set of the return values to $\top$. This is because the return value is considered part of the program’s observable behavior, so external code may perform arbitrary comparisons against it, including comparisons to real numbers not present in the program. However, the variables $x$ and $y$ are never used in comparisons, and can hence be discretized:
-
-\begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
- let x = uniform(0,1) : !{\ft{}}! in
- let y = gaussian(0,1) : !{\ft{<0.5}}! in
- (if y < (0.5 : !{\ftb{<0.5}{0.5}}!) then beta(1,1) : !{\ftt}! 
-   else uniform(0,2) : !{\ftt}!) 
-   : !{\ftt}!
-\end{lstlisting}
-
-An empty cut set in a float type implies $\mathbb{R}$ with no partitions, or simply the real number line, and thus the probability mass in $(-\infty, +\infty)$ is trivially 1 for any continuous distribution. This leads to \discrete(1,0) for \uniform(0,1). The following is the partially discretized program:
-
-\begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
-  let x = discrete(1, 0)
-  let y = discrete(0.691462, 0.308538) in
-  if y < 1 then beta(1,1) else uniform(0,2)
-\end{lstlisting}
-
-\subsection{Partial Discretization for Discrete Values without Comparisons}\label{sec:examples:partial3}
-We considered the case where no cuts exist for continuous distributions, but here we illustrate the case when no cuts exist for discrete float values. 
-
-\begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
-   let x = if flip() then 1.0 else 2.0 
-   in 3.0
-\end{lstlisting}
-
-This yields the following type-annotated program:
-
-\begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
- let x = (if flip() then (1.0 : !{\ftb{}{1}}!) 
-         else (2.0 : !{\ftb{}{2}}!))
-         : !{\ftb{}{1,2}}!
- in 3.0 : !{\ftv{3}}!) : !{\ftv{3}}!
-\end{lstlisting}
-
-The float constants 1.0 and 2.0 are discretized away based on their empty cut sets, while the constant 3.0 is preserved as a return value, hence the float type \codetype{\ftv{3}}. For an empty cut set, all float constants in a non-empty value set are trivially mapped to the index 0. From the type-annotated program, the partially discretized program is obtained:
-
-\begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
- let x = if flip() then 0 else 0 in
- in 3
-\end{lstlisting}
 
 
 \section{List of Supported \Slice{} Distributions}\label{appen:supported-distributions}

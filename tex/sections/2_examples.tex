@@ -1,9 +1,9 @@
 \input{figures/architecture.tex}
 
 \section{Slice by Example}\label{sec:examples}
-This section presents simple examples that highlight the key features of our language and compiler \Slice{}. It extends a core functional language with traditional programming language constructs such as conditionals, local variables, and functions, augmented with constructs for probabilistic programming such as sampling and conditioning. Each example in the subsections is intended to showcase such features, with more examples highlighted in Appendix~\ref{ap:mot}.
+This section presents simple examples that highlight some key features of \Slice{}, which extends a core functional language with traditional programming language constructs such as conditionals, local variables, and functions, augmented with constructs for probabilistic programming such as sampling and conditioning. More examples are highlighted in Appendix~\ref{ap:mot}.
 
-For readability, we use \flip() as a shorthand for \uniform(0,1) < 0.5, which represents a fair coin flip that returns true or false with equal probability. A cut $\clt{c}$ refers to any constant $c$ that appears in a comparison $x < c$, where $c$ divides the real line $\mathbb{R}$ into two intervals: $(-\infty, c)$ and $[c, +\infty)$.
+For readability, we use \flip() as a shorthand for \uniform(0,1) < 0.5, which represents a fair coin flip that returns true or false with equal probability. A cut $\clt{c}$ refers to any constant $c$ that appears in a comparison such as $x < c$, where $c$ divides the real line $\R$ into two intervals: $(-\infty, c)$ and $[c, +\infty)$. When $x$ is compared to several constants, these comparisons introduce a set of cuts $\clt{c_1}, \ldots, \clt{c_n}$, which partitions $\R$ into $n+1$ contiguous intervals $(-\infty, c_1), [c_1,c_2), \ldots, [c_{n-1}, c_n), [c_n, +\infty)$.
 
 
 \subsection{Simple Branching on a Uniform Distribution}\label{sec:examples:1}
@@ -14,7 +14,7 @@ We start with a simple example that illustrates the core idea of \Slice{}. Consi
     uniform(0,1) < 0.5
 \end{lstlisting}
 
-\noindent \Slice{}'s type system analyzes this program and identifies that the only cut for the continuous distribution is $\clt{0.5}$. This single cut partitions the reals $\R = (-\infty, +\infty)$ into two intervals: $(-\infty, 0.5)$ and $[0.5, +\infty)$, and furthermore intervals with equal probability mass under the $\uniform(0,1)$ distribution. \Slice{} uses this information to compute a discretization:
+\noindent \Slice{}'s type system analyzes this program and identifies that the only cut for the continuous distribution is $\clt{0.5}$. This single cut partitions the reals $\R = (-\infty, +\infty)$ into two intervals: $(-\infty, 0.5)$ and $[0.5, +\infty)$. \Slice{} uses this information to compute a discretization:
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em]
     discrete(0.5, 0.5) < 1
@@ -27,8 +27,7 @@ The transformation to the discretized program is guided by tracking cuts as an i
 \begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
     (uniform(0, 1) : !{\ft{<0.5}}!) < (0.5 : !{\ftb{<0.5}{0.5}}!)
 \end{lstlisting}
-Figure~\ref{fig:float-type-def} describes the meaning of a type \lstinline{float[cut set; value set]}, and Figure~\ref{fig:cuts-distr} illustrates how a continuous distribution is partitioned into discrete intervals according to its cut set.
- \ft{<0.5} indicates then that the cut set contains $\clt{0.5}$ and the value set is $\top$ which indicates the variable can take any value in $(-\infty, +\infty)$. This tells \Slice{} how to partition $\mathbb{R}$. The type \ftb{<0.5}{0.5} indicates that the cut set contains $\clt{0.5}$ and the value set contains only the single value $0.5$. This allows \Slice{} to determine to which discrete region the constant $0.5$ belongs to after partitioning $\mathbb{R}$. 
+Figure~\ref{fig:float-type-def} describes the meaning of a type \lstinline{float[cut set; value set]}. \ft{<0.5} indicates that the cut set contains $\clt{0.5}$ and the value set is $\top$ which indicates the variable can take any value in $(-\infty, +\infty)$. The type \ftb{<0.5}{0.5} indicates that the cut set contains $\clt{0.5}$ and the value set contains only the single value $0.5$. Figure~\ref{fig:cuts-distr} illustrates how cut sets drive discretization. Notice how a float constant's cut set must contain the constant itself so \Slice{} can determine which discretized interval the constant belongs to after the real line is partitioned. For example, \ftb{<0.5}{0.5} allows \Slice{} to recognize that 0.5 belongs to interval 1, e.g. the region $[0.5,+\infty)$, and to use that value in the discretized program.
 
 \begin{figure}
 \[
@@ -39,7 +38,7 @@ Figure~\ref{fig:float-type-def} describes the meaning of a type \lstinline{float
 \underbrace{\text{value-set}}_{\footnotesize\begin{array}{c}\text{set of concrete values }\text{(e.g., }\{0.1, 0.4, 0.5\}\text{)}\\\text{or }\top\text{ (any value in $\R$)}\end{array}}
 ]
 \]
-\caption{The type \lstinline{float[cut-set; value-set]} captures two aspects of a floating-point expression: the cut set is determined either by \emph{i) what the expression is compared against if the expression is a distribution or ii) the constant itself if the expression is a constant}, and the value set is determined by \emph{what concrete values the expression can take}. The discretization is driven by the cut set: the $n$ cuts define $n+1$ intervals over the real line.}
+\caption{The type \lstinline{float[cut-set; value-set]} captures two aspects of a floating-point expression: the cut set is determined either by \emph{i) the constants the expression is compared against or ii) the constant itself if the expression is a float constant}, and the value set is determined by \emph{what concrete values the expression can take}. The discretization is driven by the cut set: the $n$ cuts define $n+1$ intervals over the real line.}
 \label{fig:float-type-def}
 \end{figure}
 
@@ -59,7 +58,7 @@ Figure~\ref{fig:float-type-def} describes the meaning of a type \lstinline{float
 \noindent In this program, the variable $x$ is drawn from \uniform(0, 1) and is compared against two different constants: $0.5$ and $0.2$. These two cuts $\clt{0.5}$ and $\clt{0.2}$ partition the real line $\R$ into three intervals: $(-\infty, 0.2)$, $[0.2, 0.5)$, and $[0.5, +\infty)$. Similarly, the variable $y$, drawn from \uniform(0, 2), is compared only with $0.1$. This single cut $\clt{0.1}$ partitions the real line $\R$ into two intervals, $(-\infty, 0.1)$ and $[0.1, +\infty)$.
 
 
-This analysis is done by the type inference process, which collects all cuts for each continuous variable. For $x$, the type inference algorithm discovers the cuts $\clt{0.2}$ and $\clt{0.5}$, giving it the type \ft{<0.2,<0.5}. For $y$, it only finds $\clt{0.1}$, giving it the type \ft{<0.1}. This information is captured in the annotated program below (omitting the types for $x$ and $y$):
+This analysis is done by the type inference process, which collects all cuts for each continuous variable. For $x$, the type inference algorithm discovers the cuts $\clt{0.2}$ and $\clt{0.5}$, giving it the type \ft{<0.2,<0.5}. For $y$, it only finds $\clt{0.1}$, giving it the type \ft{<0.1}. This information is captured in the annotated program below (omitting the redundant types):
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
     let x = uniform(0, 1) : !{\ft{<0.2,<0.5}}! in
@@ -106,7 +105,7 @@ This yields the annotated program after type inference:
     let y = 0.5 : !{\ftb{<0.5}{0.5}}! in x < y
 \end{lstlisting}
 
-Both $x$ and $y$ can only take on finitely many values --- a fact which is reflected by the value sets in the type annotations. By locating where each value in the value set falls relative to the cuts in the cut set, \Slice{} determines the corresponding interval index for each value. \codetype{\ftb{<0.5}{0.2}} corresponds to the index 0, and types \codetype{\ftb{<0.5}{2.5}}, \codetype{\ftb{<0.5}{4.5}}, and \codetype{\ftb{<0.5}{0.5}} correspond to the index 1. The value sets in types \codetype{\ftb{<0.5}{0.2, 2.5, 4.5}} and \codetype{\ftb{<0.5}{2.5, 4.5}} arise from taking the union of the value sets from each prior conditional branch. This in turn yields the following discretized program:
+Both $x$ and $y$ can only take on finitely many values --- a fact which is reflected by the value sets in the type annotations. By locating where each value in the value set falls relative to the cuts in the cut set, \Slice{} determines the corresponding interval index for each value. \codetype{\ftb{<0.5}{0.2}} corresponds to the index 0, and types \codetype{\ftb{<0.5}{2.5}}, \codetype{\ftb{<0.5}{4.5}}, and \codetype{\ftb{<0.5}{0.5}} all correspond to the index 1. The value sets in types \codetype{\ftb{<0.5}{0.2, 2.5, 4.5}} and \codetype{\ftb{<0.5}{2.5, 4.5}} arise from taking the union of the value sets from each prior conditional branch. This in turn yields the following discretized program:
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em]
     let x = if flip() then 0
@@ -182,7 +181,7 @@ The type-annotations reveal how the variable $x$ determines the standard deviati
             (gaussian(0, x) : !{\ft{<0.5}}!) < (0.5 : !{\ftb{<0.5}{0.5}}!)
 \end{lstlisting}
 
-\noindent Since the variable $x$ is later used as a parameter to the Gaussian distribution, \Slice{} generates a separate case for each possible value that $x$ can take (namely 0.5 and 1.5). To support this, the type system uses non-strict inequalities in the cut sets, enabling these values to be mapped to integer indices starting from 0. Specifically, the value 0.5 corresponds to index 0 via the type \codetype{\ftb{<=0.5,<=1.5}{0.5}}, and 1.5 corresponds to 1 via \codetype{\ftb{<=0.5,<=1.5}{1.5}}. The resulting discretized program then branches on these values and instantiates the corresponding discrete distribution, depending on which standard deviation was selected by the initial flip.
+\noindent Since the variable $x$ is later used as a parameter to the $\gaussian$ distribution, \Slice{} generates a separate case for each possible value that $x$ can take (namely 0.5 and 1.5). To support this, the type system uses non-strict inequalities in the cut sets, enabling these values to be mapped to integer indices starting from 0. Specifically, the value 0.5 corresponds to index 0 via the type \codetype{\ftb{<=0.5,<=1.5}{0.5}}, and 1.5 corresponds to 1 via \codetype{\ftb{<=0.5,<=1.5}{1.5}}. The resulting discretized program then branches on these values and instantiates the corresponding discrete distribution, depending on which standard deviation was selected by the initial flip.
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em]
     let x = if flip() then 0 else 1 in
