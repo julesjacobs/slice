@@ -47,6 +47,7 @@ Next, we evaluate the performance of our \Slice{} framework on two sets of exist
 
 \begin{table}[!t]
 \centering \vspace{-.3cm}
+\scalebox{0.75}{% adjust the factor
 \begin{tabular}{lrrr}
     \toprule
     \textbf{Benchmark} & \textbf{Slice+Dice (s)} & \textbf{Slice+Roulette (s)} & \textbf{SPPL (s)} \\
@@ -60,7 +61,8 @@ Next, we evaluate the performance of our \Slice{} framework on two sets of exist
     SurveyUnbias~\cite{gehr2016psi} & \textbf{0.044 (8.2×)} & 0.157 (2.3×) & 0.361 \\
     TrueSkill~\cite{gehr2016psi} & \textbf{0.042 (5.2×)} & 0.157 (1.4×) & 0.217 \\
     \bottomrule
-    \end{tabular}    
+    \end{tabular}  
+}  
 \caption{Execution times (seconds) for the benchmarks taken from PSI~\cite{gehr2016psi} and SPPL~\cite{Saad2021SPPL}.}
     \label{tab:benchmarks_psi}
 \end{table}
