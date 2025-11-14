@@ -384,7 +384,12 @@ This section contains code snippets of the programs used in the scaling experime
 \section{Soundness Proof (Notes)}
 \input{sections/6_soundness}
 
-\section{DT benchmarks}
+\section{Benchmarks}
+\subsection{Scaling benchmarks}
+\input{figures/scaling-conditional}
+\input{figures/scaling-alternating.tex}
+
+\subsection{Decision Tree benchmarks}
 \begin{table}[!t]
     \centering
     \small
@@ -484,4 +489,6 @@ Tables~\ref{tab:benchmarks_dt} and~\ref{tab:benchmarks_dt_extra} show the decisi
     \caption{Execution times (seconds) for the decision tree benchmarks, with a timeout of 120s. SPPL encounters a maximum recursion depth exceeded error for DT$_{5000}$.}
     \label{tab:benchmarks_dt_extra}
 \end{table}
+
+
     

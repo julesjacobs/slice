@@ -19,13 +19,12 @@ The \Slice{} compiler consists of approximately 3,400 lines of OCaml code (inclu
  
 The programs in \Cref{fig:cond-benchmarks-a} follow the scheme depicted above where the program size is $n$, i.e., the number of comparisons performed is $n$. In \Cref{fig:cond-benchmarks-b}, every conditional guard compares against the initial variable $x_1$, so all branches depend on the same root variable. In \Cref{fig:cond-benchmarks-c}, each $x_i$ does not necessarily depend on $x_{i-1}$ but on some randomly chosen predecessor\footnote{We generate these programs in a randomized manner with a fixed seed for reproducability}. In \Cref{fig:cond-benchmarks-d}, we additionally choose at random whether the guards of the conditionals and the branches are either some predecessor variable $x_i$ or a  $\uniform$-sampling instruction.
 %
-\input{figures/scaling-conditional}
 %
  The programs in \Cref{fig:alt-benchmarks-a} also follow the scheme depicted above but where the variables used in the guards cycle with a fixed span size of $m$. For instance, for $m=2$, the pattern is $x_1,x_2,x_1,\ldots$. The programs in \Cref{fig:alt-benchmarks-b,fig:alt-benchmarks-c,fig:alt-benchmarks-d} follow a similar pattern, see Appendix~\ref{appen:synthetic-sketches} for details.
 
 We depict the runtime (in seconds) of (i) \SPPL{} (ii) \Slice{} (discretization only) (iii) \Slice{}+\Dice{} (discretization and subsequent inference using \Dice{}), and (iv) \Slice{}+\Roulette{} (discretization and subsequent inference using \Roulette{}). We specify a timeout of 120 seconds. We evaluate program sizes in increments of 5, from size 0 up to size 50. For each program size, we generate 25 random program instances and report the average runtime over these runs. Although \SPPL{} is implemented in Python and \Slice{} in OCaml, the dominant effect is algorithmic: \Slice{} emits discrete programs that Dice and Roulette solve quickly, whereas \SPPL{}'s cost grows sharply with program size. That divergence produces the order-of-magnitude improvements shown in the figure.
 
-\input{figures/scaling-alternating}
+\input{figures/scaling-main.tex}
 
 \subsubsection{Existing Benchmarks}\label{sec:fairness-benchmarks}
 
@@ -47,7 +46,7 @@ Next, we evaluate the performance of our \Slice{} framework on two sets of exist
 
 \begin{table}[!t]
 \centering \vspace{-.3cm}
-\scalebox{0.75}{% adjust the factor
+\scalebox{0.95}{% adjust the factor
 \begin{tabular}{lrrr}
     \toprule
     \textbf{Benchmark} & \textbf{Slice+Dice (s)} & \textbf{Slice+Roulette (s)} & \textbf{SPPL (s)} \\
