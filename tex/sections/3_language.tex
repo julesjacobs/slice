@@ -138,7 +138,7 @@ Moreover, we let $\intervals{\emptyset} = \{(-\infty,\infty)\}$ and $\intervals{
 	\end{align*}
 \end{definition}
 %
-Let us first briefly go over the standard types:  $\textbf{int}$ is the type of integers, $\textbf{bool}$ is the type of Booleans, $\tau_1 * \tau_2$ is the type of (ordered) pairs of $\tau_1$ and $\tau_2$, $\tau_1 \rightarrow \tau_2$ is the type of functions from $\tau_1$ to $\tau_2$, $\textbf{unit}$ is the unit type, and $\listty{\tau}$ (resp.\ $\textbf{ref}(\tau)$) is the type of lists (resp.\ references) over $\tau$.
+Let us first briefly go over the standard types:  $\textbf{int}$ is the type of integers, $\textbf{bool}$ is the type of Booleans, $\tau_1 * \tau_2$ is the type of (ordered) pairs of $\tau_1$ and $\tau_2$, $\tau_1 \rightarrow \tau_2$ is the type of functions from $\tau_1$ to $\tau_2$, $\textbf{unit}$ is the unit type, and $\listty{\tau}$ is the type of lists over $\tau$.
 
 $\fin{n}$ is the finite type with values $\{\finconst{0}{n}, \finconst{1}{n}, \ldots, \finconst{(n-1)}{n}\}$, i.e., the natural numbers up to $n-1$, where the index ${\#n}$ indicates that those integers stem from a finite type. This information is crucial for inference backends such as \Dice{}, which rely on values being drawn from a finite domain.
 
