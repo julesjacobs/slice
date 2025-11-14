@@ -15,22 +15,24 @@ The \Slice{} compiler consists of approximately 3,400 lines of OCaml code (inclu
         x_n < 0.5
     \end{lstlisting}
 %
- Each program consists of a sequence of conditionals, where each branch depends on a previous variable sampled from a uniform distribution, proceeding until the final condition $x_n < 0.5$ is reached. Here $0 \leq r_i \leq 1$ are fixed float constants. With these programs, provided in Appendix \ref{appen:synthetic-sketches}, we evaluate how \Slice{} scales for conditional branching and stochastic control flow. 
- 
-The programs in \Cref{fig:cond-benchmarks-a} follow the scheme depicted above where the program size is $n$, i.e., the number of comparisons performed is $n$. In \Cref{fig:cond-benchmarks-b}, every conditional guard compares against the initial variable $x_1$, so all branches depend on the same root variable. In \Cref{fig:cond-benchmarks-c}, each $x_i$ does not necessarily depend on $x_{i-1}$ but on some randomly chosen predecessor\footnote{We generate these programs in a randomized manner with a fixed seed for reproducibility}. In \Cref{fig:cond-benchmarks-d}, we additionally choose at random whether the guards of the conditionals and the branches are either some predecessor variable $x_i$ or a  $\uniform$-sampling instruction.
-%
-%
- The programs in \Cref{fig:alt-benchmarks-a} also follow the scheme depicted above but where the variables used in the guards cycle with a fixed span size of $m$. For instance, for $m=2$, the pattern is $x_1,x_2,x_1,\ldots$. The programs in \Cref{fig:alt-benchmarks-b,fig:alt-benchmarks-c,fig:alt-benchmarks-d} follow a similar pattern, see Appendix~\ref{appen:synthetic-sketches} for details.
+ Each program consists of a sequence of conditionals, where each branch depends on a previous variable sampled from a uniform distribution, proceeding until the final condition $x_n < 0.5$ is reached. Here $0 \leq r_i \leq 1$ are fixed float constants. Results are depicted in \Cref{fig:alt-benchmarks-main}. Detailed listings and graphs for variants of these benchmarks appear in the supplemental Appendix~\ref{appen:synthetic-sketches}.
 
-We depict the runtime (in seconds) of (i) \SPPL{} (ii) \Slice{} (discretization only) (iii) \Slice{}+\Dice{} (discretization and subsequent inference using \Dice{}), and (iv) \Slice{}+\Roulette{} (discretization and subsequent inference using \Roulette{}). We specify a timeout of 120 seconds. We evaluate program sizes in increments of 5, from size 0 up to size 50. For each program size, we generate 25 random program instances and report the average runtime over these runs. Although \SPPL{} is implemented in Python and \Slice{} in OCaml, the dominant effect is algorithmic: \Slice{} emits discrete programs that Dice and Roulette solve quickly, whereas \SPPL{}'s cost grows sharply with program size. That divergence produces the order-of-magnitude improvements shown in the figure.
+ We depict the runtime (in seconds) of (i) \SPPL{} (ii) \Slice{} (discretization only) (iii) \Slice{}+\Dice{} (discretization and subsequent inference using \Dice{}), and (iv) \Slice{}+\Roulette{} (discretization and subsequent inference using \Roulette{}). We specify a timeout of 120 seconds. We evaluate program sizes in increments of 5, from size 0 up to size 50. For each program size, we generate 25 random program instances and report the average runtime over these runs. Although \SPPL{} is implemented in Python and \Slice{} in OCaml, the dominant effect is algorithmic: \Slice{} emits discrete programs that Dice and Roulette solve quickly, whereas \SPPL{}'s cost grows sharply with program size. That divergence produces the order-of-magnitude improvements shown in the figure.
+ 
+% The programs in \Cref{fig:cond-benchmarks-a} follow the scheme depicted above where the program size is $n$, i.e., the number of comparisons performed is $n$. In \Cref{fig:cond-benchmarks-b}, every conditional guard compares against the initial variable $x_1$, so all branches depend on the same root variable. In \Cref{fig:cond-benchmarks-c}, each $x_i$ does not necessarily depend on $x_{i-1}$ but on some randomly chosen predecessor\footnote{We generate these programs in a randomized manner with a fixed seed for reproducibility}. In \Cref{fig:cond-benchmarks-d}, we additionally choose at random whether the guards of the conditionals and the branches are either some predecessor variable $x_i$ or a  $\uniform$-sampling instruction.
+% %
+% %
+%  The programs in \Cref{fig:alt-benchmarks-a} also follow the scheme depicted above but where the variables used in the guards cycle with a fixed span size of $m$. For instance, for $m=2$, the pattern is $x_1,x_2,x_1,\ldots$. Variants in \Cref{fig:alt-benchmarks-b,fig:alt-benchmarks-c,fig:alt-benchmarks-d} follow related patterns; their exact templates are documented in the supplemental Appendix~\ref{appen:synthetic-sketches}.
+
+
 
 \input{figures/scaling-main.tex}
 
 \subsubsection{Existing Benchmarks}\label{sec:fairness-benchmarks}
 
-Next, we evaluate the performance of our \Slice{} framework on two sets of existing benchmarks that \SPPL{} has been evaluated on. \Cref{tab:benchmarks_dt} and \Cref{tab:benchmarks_dt_extra} show benchmarks that originated from~\cite{albarghouthi2017fairsquare}. Performing probabilistic inference on these programs corresponds to evaluating fairness properties of given decision trees, an application area from machine learning~\cite{albarghouthi2017fairsquare,Bastani2019VeriFair,Dwork2012FairnessAwareness}. The first column of the table shows the decision making program, where DT$_n$ means ``decision tree'' with $n$ conditionals, the second column shows the population model used to generate data, and the remaining columns give the runtimes. We separate \SPPL{}'s execution into two components: a translation phase and a fairness judgment phase. 
+Next, we evaluate the performance of our \Slice{} framework on two benchmark suites previously used by \SPPL{}. The detailed tables (\Cref{tab:benchmarks_dt} and \Cref{tab:benchmarks_dt_extra}) can be found in the supplemental appendix; we summarize their contents here. The decision-tree benchmarks from~\cite{albarghouthi2017fairsquare} assess fairness properties of decision trees under different population models. DT$_n$ denotes a tree with $n$ conditionals, the second column specifies the population model, and the remaining columns report runtimes. We separate \SPPL{}'s execution into translation and fairness-judgment phases to highlight where time is spent.
 
-\Cref{tab:benchmarks_psi} depicts benchmarks containing at least one continuous distribution, taken from the \PSI{} and \SPPL{} benchmark sets. We note that \Slice{} can run all benchmarks \SPPL{} can except for those containing transformations. We depict the performance of (i) \Slice{}+\Dice{}, (ii) \Slice{}+\Roulette{}, and (ii) \SPPL{} in seconds. We do not compare to \PSI{} since it has already been shown to be slower than \SPPL{} on these benchmarks. 
+\Cref{tab:benchmarks_psi} depicts benchmarks containing at least one continuous distribution, taken from the \PSI{} and \SPPL{} benchmark sets. We note that \Slice{} can run all benchmarks \SPPL{} can except for those containing transformations. We depict the performance of (i) \Slice{}+\Dice{}, (ii) \Slice{}+\Roulette{}, and (ii) \SPPL{} in seconds. We do not list results for \PSI{} since \SPPL{} is faster on these benchmarks. 
 
 
 
@@ -65,4 +67,3 @@ Next, we evaluate the performance of our \Slice{} framework on two sets of exist
 \caption{Execution times (seconds) for the benchmarks taken from PSI~\cite{gehr2016psi} and SPPL~\cite{Saad2021SPPL}.}
     \label{tab:benchmarks_psi}
 \end{table}
-
