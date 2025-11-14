@@ -384,8 +384,53 @@ This section contains code snippets of the programs used in the scaling experime
 \section{Soundness Proof (Notes)}
 \input{sections/6_soundness}
 
-\section{More DT benchmarks}
-Table shows more decision tree benchmarks.
+\section{DT benchmarks}
+\begin{table}[!t]
+    \centering
+    \small
+    \setlength{\tabcolsep}{3.5pt}
+    \begin{tabular}{llccccccccc}
+    \toprule
+    \makecell{\textbf{Decision}\\\textbf{Program}} &
+    \makecell{\textbf{Population}\\\textbf{Model}} &
+    \multicolumn{3}{c}{\textbf{Slice+Dice (s)}} &
+    \multicolumn{3}{c}{\textbf{Slice+Roulette (s)}} &
+    \multicolumn{3}{c}{\textbf{\textsc{SPPL} (s)}} \\
+    \cmidrule(lr){3-5} \cmidrule(lr){6-8} \cmidrule(lr){9-11}
+     &  & \textbf{Slice} & \textbf{Dice} & \textbf{Total} &
+          \textbf{Slice} & \textbf{Roulette} & \textbf{Total} &
+          \textbf{Trans.} & \textbf{Judg.} & \textbf{Total} \\
+    \midrule
+    DT$_4$            & Ind  & 0.002 & 0.031 & \textbf{0.033} & 0.002 & 0.026 & \textbf{0.028} & 0.074 & 0.011 & \textbf{0.085} \\
+                      & BN1  & 0.002 & 0.033 & \textbf{0.035} & 0.002 & 0.031 & \textbf{0.033} & 0.245 & 0.028 & \textbf{0.273} \\
+                      & BN2  & 0.002 & 0.035 & \textbf{0.037} & 0.003 & 0.034 & \textbf{0.037} & 0.268 & 0.030 & \textbf{0.298} \\
+    \midrule
+    DT$_{14}$         & Ind  & 0.002 & 0.047 & \textbf{0.049} & 0.002 & 0.049 & \textbf{0.051} & 0.153 & 0.024 & \textbf{0.177} \\
+                      & BN1  & 0.002 & 0.056 & \textbf{0.058} & 0.002 & 0.074 & \textbf{0.076} & 0.597 & 0.076 & \textbf{0.673} \\
+                      & BN2  & 0.002 & 0.058 & \textbf{0.060} & 0.002 & 0.073 & \textbf{0.075} & 0.535 & 0.072 & \textbf{0.607} \\
+    \midrule
+    DT$_{16}$         & Ind  & 0.002 & 0.045 & \textbf{0.047} & 0.002 & 0.054 & \textbf{0.056} & 0.176 & 0.026 & \textbf{0.202} \\
+                      & BN1  & 0.002 & 0.053 & \textbf{0.055} & 0.002 & 0.079 & \textbf{0.081} & 0.535 & 0.088 & \textbf{0.623} \\
+                      & BN2  & 0.003 & 0.053 & \textbf{0.056} & 0.003 & 0.079 & \textbf{0.082} & 0.554 & 0.090 & \textbf{0.644} \\
+    \midrule
+    DT$^{\alpha}_{16}$ & Ind & 0.002 & 0.034 & \textbf{0.036} & 0.002 & 0.052 & \textbf{0.054} & 0.201 & 0.029 & \textbf{0.230} \\
+                       & BN1 & 0.002 & 0.042 & \textbf{0.044} & 0.003 & 0.191 & \textbf{0.194} & 0.597 & 0.080 & \textbf{0.677} \\
+                       & BN2 & 0.003 & 0.049 & \textbf{0.052} & 0.003 & 0.224 & \textbf{0.227} & 0.642 & 0.075 & \textbf{0.717} \\
+    \midrule
+    DT$_{44}$         & Ind  & 0.002 & 0.099 & \textbf{0.101} & 0.002 & 0.276 & \textbf{0.278} & 0.402 & 0.073 & \textbf{0.475} \\
+                      & BN1  & 0.003 & 0.120 & \textbf{0.123} & 0.003 & 0.550 & \textbf{0.553} & 1.043 & 0.309 & \textbf{1.352} \\
+                      & BN2  & 0.003 & 0.122 & \textbf{0.125} & 0.003 & 0.546 & \textbf{0.549} & 1.135 & 0.346 & \textbf{1.481} \\
+    \midrule
+    DT$_{1000}$         & Ind  & 3.352 & 1.913 & \textbf{5.265} & 3.606 & t.o. & \textbf{t.o.} & 17.491 & 0.288 & \textbf{17.779} \\
+                    & BN1  & 4.022 & 2.044 & \textbf{6.066} & 4.030 & t.o. & \textbf{t.o.} & 33.300 & 1.553 & \textbf{34.853} \\
+                    & BN2  & 4.120 & 2.179 & \textbf{6.299} & 4.080 & t.o. & \textbf{t.o.} & 33.108 & 1.592 & \textbf{34.700} \\
+    \bottomrule
+    \end{tabular}
+    \caption{Execution times (seconds) for the benchmarks from \cite{albarghouthi2017fairsquare}, with a timeout of 120s.}
+        \label{tab:benchmarks_dt}
+    \end{table}
+
+Tables~\ref{tab:benchmarks_dt} and~\ref{tab:benchmarks_dt_extra} show the decision tree benchmarks, of varying sizes of $n$.
 
 \begin{table}[!t]
     \centering
