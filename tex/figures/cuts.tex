@@ -51,6 +51,6 @@
       \node[right, text=red!70!black]   at (8.3,0.0) {$\Pr(n) = \text{CDF}(\infty) - \text{CDF}(c_n)$};
     
     \end{tikzpicture}
-    \caption{Partitioning a continuous distribution by cuts $\clt{c_1}, \ldots, \clt{c_n}$ into intervals $(-\infty, c_1), [c_1,c_2), \ldots, [c_n, +\infty)$, with each interval assigned a discrete probability $\Pr(i)$ computed from CDF differences. Each interval represents a range of real values that is abstracted to a single discretized value labeled $0, 1, \ldots, n$. Depending on the cuts, the resulting intervals may vary in width and need not be uniformly spaced.}
+    \caption{Partitioning a continuous distribution by cuts $\clt{c_1}, \ldots, \clt{c_n}$ into intervals $(-\infty, c_1), [c_1,c_2), \ldots, [c_n, +\infty)$, with each interval assigned a discrete probability $\Pr(i)$ computed from CDF differences. Each interval represents a range of real values that is abstracted to a single discretized value labeled $0, 1, \ldots, n$. Note the resulting intervals may vary in width and need not be uniformly spaced. Given an expression of type $\floattype{B}{V}$, a finite value set $V$ maps the expression to the unique interval containing that value, whereas $V = \top$ yields a discrete distribution over all interval indices $i$, weighted by their probabilities $\Pr(i)$.}
     \label{fig:cuts-distr}
     \end{figure}

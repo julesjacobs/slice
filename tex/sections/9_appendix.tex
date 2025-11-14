@@ -2,6 +2,8 @@
 \appendix
 
 \section{More motivating examples on language features}\label{ap:mot}
+This section provides more examples highlighting the language features of \Slice{}. As an additional demonstration, we provide exact inference results obtained by integrating \Slice{} with \Dice{} and \Roulette{}, the latter of which supports higher-order functions, recursion, and mutable state.
+
 \subsection{Sequential Processes with Iterate}\label{sec:examples:8}
 
 \Slice{} provides the \texttt{iterate} construct to model sequential probabilistic processes. This example simulates a two-state weather model where tomorrow's weather depends on today's:
@@ -54,7 +56,9 @@ This results in the output \result{0.5334}{0.4666}, which can be obtained from e
   map check_threshold measurements
 \end{lstlisting}
 
-\noindent This gives an output of distributions of lists: $\{\textit{true,true,true}: 0.115341, \textit{true,true,false}: 0.234199, ...\}$ when run with Roulette. The closure \textit{check\_threshold} lexically captures the stochastic \textit{threshold} value, which is randomly chosen to be either 0.3 or 0.7. The type system correctly infers that both threshold values (0.3 and 0.7) must be included as cuts for all Gaussian measurements, yielding the type \ft{<0.3,<0.7} for list elements. This demonstrates how \Slice{} handles higher-order functions with captured stochastic values while maintaining sound discretization.
+\noindent The closure \textit{check\_threshold} lexically captures the stochastic \textit{threshold} value, which is randomly chosen to be either 0.3 or 0.7. The type system correctly infers that both threshold values (0.3 and 0.7) must be included as cuts for all Gaussian measurements, yielding the type \ft{<0.3,<0.7} for list elements. This demonstrates how \Slice{} handles higher-order functions with captured stochastic values while maintaining sound discretization.
+
+This gives an output of distributions of lists: $\{\textit{true,true,true}: 0.115341, \textit{true,true,false}: 0.234199, ...\}$ when run with \Roulette{}, as \Dice{} does not support recursion. 
 
 
 \subsection{Higher-Order Functions}\label{sec:examples:7}
@@ -86,8 +90,10 @@ This results in the output \result{0.5334}{0.4666}, which can be obtained from e
       if fst r then snd r else fst q
 \end{lstlisting}
 
-\noindent \Dice does not support exact inference for higher-order functions, but \Roulette does, and applying it yields the output \result{0.53636}{0.46364}. The continuous distributions in the original program are discretized into three-valued discrete distributions based on the intervals $(-\infty, 0.5)$, $[0.5, 1.5)$, and $[1.5, +\infty)$, while the functional structure remains intact.
+\noindent The continuous distributions in the original program are discretized into three-valued discrete distributions based on the intervals $(-\infty, 0.5)$, $[0.5, 1.5)$, and $[1.5, +\infty)$, while the functional structure remains intact.
 
+
+This gives the output \result{0.53636}{0.46364} when run with \Roulette{}, as \Dice{} does not support higher order functions.
 
 \subsection{Mutable State}\label{sec:examples:9}
 
@@ -114,7 +120,8 @@ This results in the output \result{0.5334}{0.4666}, which can be obtained from e
   !temperature < 1
 \end{lstlisting}
 \noindent
-\Roulette supports exact inference for mutable state, yielding \result{0.92067}{0.07933}.
+
+This gives the result \result{0.92067}{0.07933} when run with \Roulette{}, as \Dice{} does not support mutable references.
 
 
 
@@ -155,16 +162,16 @@ This example involves both discrete and continuous random variables and models a
   gpa < 1
 \end{lstlisting}
 
-\noindent This gives the output \result{0.17325}{0.82675}. Here, \uniform(0,10) becomes \discrete(0.1, 0.9) representing 10\% probability for $[0,1)$ and 90\% for $[1,10]$. Similarly, \uniform(0,4) becomes \discrete(0.25, 0.75). Constants 10.0 and 4.0 fall into the second interval in the partition $(-\infty, 1) \cup [1,+\infty)$ and are thus both mapped to index 1 in the discretized program.
+\noindent Here, \uniform(0,10) becomes \discrete(0.1, 0.9) representing 10\% probability for $[0,1)$ and 90\% for $[1,10]$. Similarly, \uniform(0,4) becomes \discrete(0.25, 0.75). Constants 10.0 and 4.0 fall into the second interval in the partition $(-\infty, 1) \cup [1,+\infty)$ and are thus both mapped to index 1 in the discretized program.
 
-We also support sequential probabilistic processes with iterate, and lists and recursion, see \Cref{ap:mot} for examples of these features.
+This gives the output \result{0.17325}{0.82675} when run with \Dice{} and \Roulette{}.
 
 
 \section{List of Supported \Slice{} Distributions}\label{appen:supported-distributions}
 
-The list of distributions supported by \Slice{}, along with their probability density functions, is given in the following table.
+The list of distributions supported by \Slice{}, along with their probability density / mass functions, is given in the following table. \Slice{} supports discrete distributions by applying the same cut-set and value-set analysis used for continuous distributions, \emph{provided that the discrete distribution admits a well-defined CDF}. The extension to discrete distributions does not introduce any fundamental changes to the discretization algorithm.
 
-       \begin{tabular}{l l @{\qquad} l l}
+\begin{tabular}{l l @{\qquad} l l}
     \toprule
     \textbf{Distribution} & \textbf{Density} & \textbf{Distribution} & \textbf{Density} \\
     \midrule
@@ -185,12 +192,25 @@ The list of distributions supported by \Slice{}, along with their probability de
     & & Gumbel-1 & $\frac{1}{\beta} e^{-(z + e^{-z})}$,\quad $z = \frac{x - \mu}{\beta}$ \\
     & & Gumbel-2 & $\frac{\alpha \beta x^{-\alpha - 1} e^{-(x/\beta)^{-\alpha}}}{\beta}$ \\
     & & Exponentiated Power & $k \lambda x^{k - 1} e^{-(x/\lambda)^k}$ \\
+    \midrule
+    \multicolumn{4}{l}{\textbf{Discrete Distributions}} \\
+    \midrule
+    Poisson & $\frac{\lambda^k e^{-\lambda}}{k!}$ 
+        & Geometric & $(1 - p)^{k - 1} p$ \\
+
+    Binomial & $\binom{n}{k} p^k (1 - p)^{n - k}$ 
+        & Negative Binomial & $\binom{k + r - 1}{k} (1 - p)^r p^k$ \\
+
+    Hypergeometric & $\frac{\binom{K}{k} \binom{N - K}{n - k}}{\binom{N}{n}}$ 
+        & Bernoulli & $p^k (1 - p)^{1 - k}$ \\
+
+    Discrete Uniform & $\frac{1}{n}$ 
+        & Multinomial & $\frac{n!}{x_1! \cdots x_k!} p_1^{x_1} \cdots p_k^{x_k}$ \\
     \bottomrule
-    \end{tabular}
+\end{tabular}
 
     
     
-
 \section{Typing Rules for Full \Slice{} Language}\label{appen:typing-rules}
 
 The typing rules for general language constructs is given in \Cref{fig:typing-general-all}.
@@ -207,6 +227,121 @@ The typing rules for general language constructs is given in \Cref{fig:typing-ge
 % \begin{proof}
 % 	Suppose by contradiction that $B \neq \top$ but $B$ distinguishes $V = \top$. Since $B \neq \top$, the set $\intervals{B}$ partitions $\mathbb{R}$ into finitely many intervals. However, since $V = \top$ represents the set of all real numbers, and there are uncountably many real values, it is impossible for every interval in $\intervals{B}$ to contain at most one element from $V$. In particular, at least one interval must contain more than one value from $V$, violating the condition in Definition~\ref{def:distinguishes}. Therefore, $B = \top$.
 % \end{proof}
+
+
+\section{Code Sketches for Scaling Benchmarks}\label{appen:synthetic-sketches}
+This section contains code snippets of the programs used in the scaling experiments in Section~\ref{sec:synthetic-benchmarks}. We implemented a Python script that automatically generates these programs based on configurable parameters such as program size, guard structure, and dependency pattern. For reproducibility, we used a fixed random seed to generate each program. All $r_i$ values in the generated programs, where $0 \leq r_i \leq 1$ is randomly chosen, are rounded to two decimal places.
+
+All of these programs follow the same structural pattern: they define a sequence of random variables $X_1,\ldots,X_n$, where each $X_i$ is drawn from a uniform distribution whose parameters depend on the value of a single predecessor variable through a conditional branch of the form
+\[
+X_i =
+  \begin{cases}
+    \mathrm{Unif}(a_i,b_i), & X_{\pi(i)} < r_i, \\[2pt]
+    \mathrm{Unif}(a'_i,b'_i), & \text{otherwise},
+  \end{cases}
+\]
+for some parent-selection function $\pi : \{2,\ldots,n\} \to \{1,\ldots,i-1\}$.  
+Thus each program is a Bayesian network of conditionally independent nodes, differing only in the choice of $\pi(i)$ that determines the dependency pattern.
+
+
+\begin{figure}
+    \begin{lstlisting}
+        let x1 = uniform(0,1) in
+        let x2 = if x1 < 0.56 then uniform(0,2) else uniform(0,3) in
+        let x3 = if x2 < 0.92 then uniform(0,4) else uniform(0,5) in
+        let x4 = if x3 < 0.47 then uniform(0,6) else uniform(0,7) in
+        let x5 = if x4 < 0.51 then uniform(0,8) else uniform(0,9) in
+        x5 < 0.5
+    \end{lstlisting}
+    \caption{Conditional Independent (Figure~\ref{fig:cond-benchmarks-a}): Program of size 5. Each variable depends on its immediate predecessor variable via a conditional branch. Each uniform distribution is distinct.}
+\end{figure}
+
+\begin{figure}
+    \begin{lstlisting}
+        let x1 = uniform(0,1) in
+        let x2 = if x1 < 0.56 then uniform(0,2) else uniform(0,3) in
+        let x3 = if x1 < 0.45 then uniform(0,4) else uniform(0,5) in
+        let x4 = if x1 < 0.18 then uniform(0,6) else uniform(0,7) in
+        let x5 = if x1 < 0.48 then uniform(0,8) else uniform(0,9) in
+        x5 < 0.5
+    \end{lstlisting}
+    \caption{Conditional Independent Fork (Figure~\ref{fig:cond-benchmarks-b}): 
+    Program of size 5. Each variable $x_i$ depends on the same predecessor variable $x_1$ through a conditional branch. This creates a fork-shaped dependency pattern in which $x_1$ serves as the sole parent of all subsequent variables. Each uniform distribution is distinct.}
+\end{figure}
+
+\begin{figure}
+    \begin{lstlisting}
+        let x1 = uniform(0,1) in
+        let x2 = if x1 < 0.18 then uniform(0,2) else uniform(0,3) in
+        let x3 = if x1 < 0.63 then uniform(0,4) else uniform(0,5) in
+        let x4 = if x2 < 0.09 then uniform(0,6) else uniform(0,7) in
+        let x5 = if x1 < 0.14 then uniform(0,8) else uniform(0,9) in
+        x5 < 0.5
+    \end{lstlisting}
+    \caption{Conditional Random 1 (Figure~\ref{fig:cond-benchmarks-c}): Program of size 5. Each variable depends on a randomly selected predecessor via a conditional branch. Note that this structure may lead to unused variables; that is, some previously defined $x_i$ may not influence any subsequent computation. Each uniform distribution is distinct.}
+\end{figure}
+
+\begin{figure}
+    \begin{lstlisting}
+        let x1 = uniform(0, 10) in
+        let x2 = if x1 < 0.06 then x1 else x1 in
+        let x3 = if uniform(0, 4) < 0.64 then x2 else x1 in
+        let x4 = if x3 < 0.71 then uniform(0, 5) else x1 in
+        let x5 = if uniform(0, 4) < 0.4 then x1 else uniform(0, 2) in
+        x4 < 0.5
+    \end{lstlisting}
+    \caption{Conditional Random 2 (Figure~\ref{fig:cond-benchmarks-d}): Program of size 5. Each variable uses a randomized conditional expression where the guard and both branches may involve either a randomly selected predecessor variable or a fresh uniform distribution. The second parameter of the uniform distribution is a random integer between 0 and 10, so this may result in repeated bounds across different variables, meaning not all distributions are guaranteed to be unique.}
+\end{figure}
+
+\begin{figure}
+    \begin{lstlisting}
+        let x1 = uniform(0,1) in
+        let x2 = if x1 < 0.02 then uniform(0,2) else uniform(0,3) in
+        let x3 = if x2 < 0.68 then uniform(0,4) else uniform(0,5) in
+        let x4 = if x1 < 0.21 then uniform(0,6) else uniform(0,7) in
+        let x5 = if x2 < 0.93 then uniform(0,8) else uniform(0,9) in
+        x5 < 0.5
+    \end{lstlisting}
+    \caption{Alternating Guard 1 (Figure~\ref{fig:alt-benchmarks-a}): Program of size 5 with guard span 2. Guard variables in the comparisons cycle with a fixed span of 2. Note this may lead to unused variables, in particular those variables $x_i$ where $i$ is greater than the span.}
+\end{figure}
+
+\begin{figure}
+    \begin{lstlisting}
+        let x1 = uniform(0,1) in
+        let x2 = if x1 < 0.38 then uniform(0,2) else x1 in
+        let x3 = if x2 < 0.71 then uniform(0,4) else x2 in
+        let x4 = if x1 < 0.42 then uniform(0,6) else x3 in
+        let x5 = if x2 < 0.57 then uniform(0,8) else x4 in
+        x5 < 0.5
+    \end{lstlisting}
+    \caption{Alternating Guard 2 (Figure~\ref{fig:alt-benchmarks-b}): Program of size 5 with guard span 2. Guard variables in the comparisons cycle with a fixed span of 2. Unlike Alternating Guard 1, all variables are used in subsequent branches, either as guards or else branch expressions. This construction ensures that every variable contributes to the final computation. Each uniform distribution generated is unique.}
+\end{figure}
+
+\begin{figure}
+    \begin{lstlisting}
+        let x1 = uniform(0,1) in
+        let x2 = if x1 < 0.67 then uniform(0,2) else uniform(0,3) in
+        let x3 = if x2 < 0.5 then x2 else uniform(0,4) in
+        let x4 = if x1 < 0.5 then x3 else uniform(0,6) in
+        let x5 = if x2 < 0.5 then x4 else uniform(0,8) in
+        x5 < 0.5
+    \end{lstlisting}
+    \caption{Alternating Guard 3 (Figure~\ref{fig:alt-benchmarks-c}): Program of size 5 with guard span 2. Guard variables in the comparisons cycle with a fixed span of 2. Unlike Alternating Guard 1, all variables are used in subsequent branches, either as guards or if branch expressions. This construction ensures that every variable contributes to the final computation. Each uniform distribution generated is unique.}
+\end{figure}
+
+\begin{figure}
+    \begin{lstlisting}
+        let x1 = uniform(0,2) in
+        let x2 = if x1 < 0.13 then uniform(0,2) else uniform(0,1) in
+        let x3 = if x2 < 0.06 then uniform(0,8) else uniform(0,3) in
+        let x4 = if x1 < 0.68 then uniform(0,4) else uniform(0,8) in
+        let x5 = if x2 < 0.51 then uniform(0,3) else uniform(0,7) in
+        x5 < 0.5
+    \end{lstlisting}
+    \caption{Random Alternating (Figure~\ref{fig:alt-benchmarks-d}): Program of size 5 with guard span 2. Guard variables in the comparisons cycle with a fixed span of 2. The second parameter of the uniform distribution is a random integer between 0 and 10, so this may result in repeated bounds across different variables, meaning not all distributions are guaranteed to be unique.}
+\end{figure}
+
+\pagebreak
 
 \section{Proofs for Discretization}
 \subsection{Proof of Lemma~\ref{lem:type-transformations}}
@@ -285,109 +420,61 @@ The typing rules for general language constructs is given in \Cref{fig:typing-ge
 
 %\input{sections/6_soundness.tex}
 
-\section{Code Sketches for Synthetic Benchmarks}\label{appen:synthetic-sketches}
-This section contains code snippets of the programs used in the scaling experiments in Section~\ref{sec:synthetic-benchmarks}. We implemented a Python script that automatically generates these programs based on configurable parameters such as program size, guard structure, and dependency pattern. For reproducibility, we used a fixed random seed of random.seed(11). All $r_i$ values in the generated programs, where $0 \leq r_i \leq 1$ is randomly chosen, are rounded to two decimal places.
-
-
-\subsection{Conditional Independent Programs}
-\begin{figure}
-    \begin{lstlisting}
-        let x1 = uniform(0,1) in
-        let x2 = if x1 < 0.56 then uniform(0,2) else uniform(0,3) in
-        let x3 = if x2 < 0.92 then uniform(0,4) else uniform(0,5) in
-        let x4 = if x3 < 0.47 then uniform(0,6) else uniform(0,7) in
-        let x5 = if x4 < 0.51 then uniform(0,8) else uniform(0,9) in
-        x5 < 0.5
-    \end{lstlisting}
-    \caption{Conditional Independent (Figure~\ref{fig:cond-benchmarks-a}): Program of size 5. Each variable depends on its immediate predecessor variable via a conditional branch. Each uniform distribution is distinct.}
-\end{figure}
-
-\begin{figure}
-    \begin{lstlisting}
-        let x1 = uniform(0,1) in
-        let x2 = if x1 < 0.18 then uniform(0,2) else uniform(0,3) in
-        let x3 = if x1 < 0.63 then uniform(0,4) else uniform(0,5) in
-        let x4 = if x2 < 0.09 then uniform(0,6) else uniform(0,7) in
-        let x5 = if x1 < 0.14 then uniform(0,8) else uniform(0,9) in
-        x5 < 0.5
-    \end{lstlisting}
-    \caption{Conditional Random 1 (Figure~\ref{fig:cond-benchmarks-b}): Program of size 5. EAch variable depends on a randomly selected predecessor via a conditional branch. Note that this structure may lead to unused variables; that is, some previously defined $x_i$ may not influence any subsequent computation. Each uniform distribution is distinct.}
-\end{figure}
-
-\begin{figure}
-    \begin{lstlisting}
-        let x1 = uniform(0, 10) in
-        let x2 = if x1 < 0.06 then x1 else x1 in
-        let x3 = if uniform(0, 4) < 0.64 then x2 else x1 in
-        let x4 = if x3 < 0.71 then uniform(0, 5) else x1 in
-        let x5 = if uniform(0, 4) < 0.4 then x1 else uniform(0, 2) in
-        x4 < 0.5
-    \end{lstlisting}
-    \caption{Conditional Random 2 (Figure~\ref{fig:cond-benchmarks-c}): Program of size 5. Each variable uses a randomized conditional expression where the guard and both branches may involve either a randomly selected predecessor variable or a fresh uniform distribution. The second parameter of the uniform distribution is a random integer between 0 and 10, so this may result in repeated bounds across different variables, meaning not all distributions are guaranteed to be unique.}
-\end{figure}
-
-\subsection{Alternating Guard Programs}
-\begin{figure}
-    \begin{lstlisting}
-        let x1 = uniform(0,1) in
-        let x2 = if x1 < 0.02 then uniform(0,2) else uniform(0,3) in
-        let x3 = if x2 < 0.68 then uniform(0,4) else uniform(0,5) in
-        let x4 = if x1 < 0.21 then uniform(0,6) else uniform(0,7) in
-        let x5 = if x2 < 0.93 then uniform(0,8) else uniform(0,9) in
-        x5 < 0.5
-    \end{lstlisting}
-    \caption{Alternating Guard 1 (Figure~\ref{fig:alt-benchmarks-a}): Program of size 5 with guard span 2. Guard variables in the comparisons cycle with a fixed span of 2. Note this may lead to unused variables, in particular those variables $x_i$ where $i$ is greater than the span.}
-\end{figure}
-
-\begin{figure}
-    \begin{lstlisting}
-        let x1 = uniform(0,1) in
-        let x2 = if x1 < 0.38 then uniform(0,2) else x1 in
-        let x3 = if x2 < 0.71 then uniform(0,4) else x2 in
-        let x4 = if x1 < 0.42 then uniform(0,6) else x3 in
-        let x5 = if x2 < 0.57 then uniform(0,8) else x4 in
-        x5 < 0.5
-    \end{lstlisting}
-    \caption{Alternating Guard 2 (Figure~\ref{fig:alt-benchmarks-b}): Program of size 5 with guard span 2. Guard variables in the comparisons cycle with a fixed span of 2. Unlike Alternating Guard 1, all variables are used in subsequent branches, either as guards or else branch expressions. This construction ensures that every variable contributes to the final computation. Each uniform distribution generated is unique.}
-\end{figure}
-
-\begin{figure}
-    \begin{lstlisting}
-        let x1 = uniform(0,1) in
-        let x2 = if x1 < 0.67 then uniform(0,2) else uniform(0,3) in
-        let x3 = if x2 < 0.5 then x2 else uniform(0,4) in
-        let x4 = if x1 < 0.5 then x3 else uniform(0,6) in
-        let x5 = if x2 < 0.5 then x4 else uniform(0,8) in
-        x5 < 0.5
-    \end{lstlisting}
-    \caption{Alternating Guard 3 (Figure~\ref{fig:alt-benchmarks-c}): Program of size 5 with guard span 2. Guard variables in the comparisons cycle with a fixed span of 2. Unlike Alternating Guard 1, all variables are used in subsequent branches, either as guards or if branch expressions. This construction ensures that every variable contributes to the final computation. Each uniform distribution generated is unique.}
-\end{figure}
-
-\begin{figure}
-    \begin{lstlisting}
-        let x1 = uniform(0,2) in
-        let x2 = if x1 < 0.13 then uniform(0,2) else uniform(0,1) in
-        let x3 = if x2 < 0.06 then uniform(0,8) else uniform(0,3) in
-        let x4 = if x1 < 0.68 then uniform(0,4) else uniform(0,8) in
-        let x5 = if x2 < 0.51 then uniform(0,3) else uniform(0,7) in
-        x5 < 0.5
-    \end{lstlisting}
-    \caption{Random Alternating (Figure~\ref{fig:alt-benchmarks-d}): Program of size 5 with guard span 2. Guard variables in the comparisons cycle with a fixed span of 2. The second parameter of the uniform distribution is a random integer between 0 and 10, so this may result in repeated bounds across different variables, meaning not all distributions are guaranteed to be unique.}
-\end{figure}
-
-
-\clearpage
-\section{NEW Soundness Proof}
+%\clearpage
+%\section{NEW Soundness Proof}
 \input{sections/6a_soundness}
 
-\clearpage
-\section{Soundness Proof (Notes)}
-\input{sections/6_soundness}
+%\clearpage
+%\section{Soundness Proof (Notes)}
+%\input{sections/6_soundness}
 
 \section{Benchmarks}
 \subsection{Scaling benchmarks}
+We designed a set of synthetic benchmarks consisting of programs that can be scaled up in size, with varying dependencies between the program variables. Schematically:
+%
+    \begin{lstlisting}[aboveskip=0.1em,belowskip=.1em]
+        let x1 = uniform(0,1) in 
+        let x2 = if x1 < r1 then uniform(0,2) else uniform(0,3) in 
+        let x3 = if x2 < r2 ...
+        ...
+        x_n < 0.5
+    \end{lstlisting}
+%
+ Each program consists of a sequence of nested conditionals, where each branch depends on a previous variable sampled from a uniform distribution, proceeding until the final condition $x_n < 0.5$ is reached. Here $0 \leq r_i \leq 1$ are fixed float constants. With these programs, provided in in Appendix \ref{appen:synthetic-sketches}, we evaluate how \Slice{} scales for deep conditional branching and stochastic control flow. 
+ 
+The programs in \Cref{fig:cond-benchmarks-a} follow the scheme depicted above where the program size is $n$, i.e., the number of comparisons performed is $n$. In \Cref{fig:cond-benchmarks-b}, each $x_i$ does not necessarily depend on $x_{i-1}$ but on some randomly chosen predecessor\footnote{We generate these programs in a randomized manner with a fixed seed for reproducability}. In \Cref{fig:cond-benchmarks-c}, we additionally choose at random whether the guards of the conditionals and the branches are either some predecessor variable $x_i$ or a  $\uniform$-sampling instruction.
+ %\input{figures/nested-conditionals.tex}
+
+%\subsubsection{Conditional Independence}
+%We test programs where each variable's distribution depends on comparisons with previous variables:
+%
+%\begin{itemize}
+%\item Each variable $x_i$ depends on its immediate predecessor via a conditional branch $x_{i-1} < r_{i-1}$, forming a sequential dependency chain. See Figure~\ref{fig:cond-benchmarks-a}.
+%\item Each variable $x_i$ depends on a randomly selected predecessor $x_j$ (for $j < i$) via a conditional branch $x_j < r_{i-1}$. See Figures~\ref{fig:cond-benchmarks-b}.
+%\item Each variable $x_i$ uses a randomized conditional expression, where the guard and both branches may involve either a randomly selected predecessor $x_j$ (for $j < i$) or a freshly sampled uniform value. See Figure~\ref{fig:cond-benchmarks-c}.
+%\end{itemize}
+%
+%
 \input{figures/scaling-conditional}
-\input{figures/scaling-alternating.tex}
+%
+ The programs in \Cref{fig:alt-benchmarks-a} also follow the scheme depicted above but where the variables used in the guards cycle with a fixed span size of $m$. For instance, for $m=2$, the pattern is $x_1,x_2,x_1,\ldots$. The programs in \Cref{fig:alt-benchmarks-b,fig:alt-benchmarks-c,fig:alt-benchmarks-d} follow a similar pattern, see Appendix~\ref{appen:synthetic-sketches} for details.
+
+We depict the runtime (in seconds) of (i) SPPL (ii) \Slice{} (discretization only) (iii) \Slice{}+\Dice{} (discretization and subsequent inference using \Dice{}), and (iv) \Slice{}+\Roulette{} (discretization and subsequent inference using \Roulette{}). The time-out is 300 seconds.
+
+%\subsubsection{Alternating Guards}
+%We test programs in which comparison guards alternate in a pattern:
+%
+%\begin{itemize}
+%\item Guard variables cycle with a fixed span. For example, with span 2, guards alternate as $x_1,x_2,x_1,\ldots$. See Figure~\ref{fig:alt-benchmarks-a}. Figures~\ref{fig:alt-benchmarks-b} and~\ref{fig:alt-benchmarks-c} show variants where the if and else branches are replaced with an immediate predecessor variable $x_{i-1}$ instead of a uniform distribution.
+%
+%\item Guard variables are selected based on a randomly chosen span at each step, rather than cycling deterministically as before. See Figure~\ref{fig:alt-benchmarks-d}.
+%\end{itemize}
+
+\input{figures/scaling-alternating}
+
+\paragraph{Results.} The results indicate that exact inference with \Slice{} + \Dice{}/\Roulette{} can scale to large programs, often outperforming the state-of-the-art tool SPPL significantly. This is particularly striking in \Cref{fig:cond-benchmarks-b} and \Cref{fig:alt-benchmarks-a,fig:alt-benchmarks-b,fig:alt-benchmarks-d}, where the time required by \Slice{} + \Dice{}/\Roulette{}  remains roughly constant but increases rapidly for SPPL when increasing the program size. In \Cref{fig:cond-benchmarks-c}, we observe a mixed picture for programs of sizes $1-20$, with \Slice{} + \Dice{}/\Roulette{} taking the lead for programs of size $\geq\! 20$.
+%The program size refers to the number of comparison operations in the program. We generate programs of sizes ranging from 1 to 50, in increments of 5, for the conditional independence tests. For the alternating guard tests, we generate programs with sizes ranging from 1 to 100, increasing the program size in steps of 5 and the guard span in steps of 1. Each program is evaluated with a timeout of 300 seconds. The scaling experiments demonstrate that Slice+Dice maintains near-linear scaling behavior while SPPL exhibits significantly faster growth and times out on larger programs. The Slice compilation phase alone (dark blue line) shows essentially constant time, indicating that the type-directed discretization algorithm scales extremely well.
+
 
 \subsection{Decision Tree benchmarks}
 \begin{table}[!t]

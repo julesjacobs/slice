@@ -43,7 +43,7 @@ A type $\float[B; V]$ records the relevant finite cut set $B$ and a finite value
 \underbrace{\text{value-set}}_{\footnotesize\begin{array}{c}\text{set of concrete values }\text{(e.g., }\{0.1, 0.4, 0.5\}\text{)}\\\text{or }\top\text{ (any continuous value)}\end{array}}
 ]
 \]
-\caption{The type \lstinline{float[cut-set; value-set]} captures two aspects of a floating-point expression: the cut set is determined either by \emph{i) the constants the expression is compared against or ii) the constant itself if the expression is a float constant}, and the value set is determined by \emph{what concrete values the expression can take}. The discretization is driven by the cut set: the $n$ cuts define $n+1$ intervals over the real line.}
+\caption{The type \lstinline{float[cut-set; value-set]} captures two aspects of a floating-point expression. The cut set is determined either by \emph{i) the constants the expression is compared against or ii) the constant itself if the expression is a float constant}. The value set is determined by \emph{what concrete values the expression can take}. The discretization is driven by the cut set: the $n$ cuts define $n+1$ intervals over the real line.}
 \label{fig:float-type-def}
 \end{figure}
 
@@ -147,11 +147,7 @@ Continuous values often flow through conditionals before being compared. The sam
             : !{\ftb{<=0.3,<1.5,<=1.8}{0.3,1.8}}! in
     x <= y
 \end{lstlisting}
-\noindent \Slice{} propagates the cuts introduced in $y$ back to the samplings of $x$. Because the final comparison forces both sides to share cuts, every subexpression uses $\cleq{0.3}$, $\clt{1.5}$, and $\cleq{1.8}$, i.e.\ type \codetype{\ft{<=0.3,<1.5,<=1.8}}.
-
-
-
-\noindent The resulting intervals are $(-\infty,0.3]$, $(0.3,1.5)$, $[1.5,1.8]$, and $(1.8,+\infty)$; the strict comparison excludes 1.5 from the second one. The guard in $y$ therefore reads indices 1, 2, or 0 coming from types \codetype{\ftb{<=0.3,<1.5,<=1.8}{1.5}}, \codetype{\ftb{<=0.3,<1.5,<=1.8}{1.8}}, and \codetype{\ftb{<=0.3,<1.5,<=1.8}{0.3}} respectively. Discretization yields:
+\noindent \Slice{} propagates the cuts introduced in $y$ back to the samplings of $x$. Because the final comparison forces both sides to share cuts, every subexpression uses $\cleq{0.3}$, $\clt{1.5}$, and $\cleq{1.8}$, i.e.\ type \codetype{\ft{<=0.3,<1.5,<=1.8}}. The resulting intervals are $(-\infty,0.3]$, $(0.3,1.5)$, $[1.5,1.8]$, and $(1.8,+\infty)$; the strict comparison excludes 1.5 from the second one. The guard in $y$ therefore reads indices 1, 2, or 0 coming from types \codetype{\ftb{<=0.3,<1.5,<=1.8}{1.5}}, \codetype{\ftb{<=0.3,<1.5,<=1.8}{1.8}}, and \codetype{\ftb{<=0.3,<1.5,<=1.8}{0.3}} respectively. Discretization yields:
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em]
     let x = if flip() then
@@ -172,7 +168,6 @@ Continuous distributions can have parameters that depend on discrete random choi
     let x = if flip() then 0.5 else 1.5 in gaussian(0, x) < 0.5
 \end{lstlisting}
 
-\iffalse
 \noindent %This example shows how discrete choices can affect the parameters of continuous distributions. 
 The type-annotations reveal how the variable $x$ determines the standard deviation of the Gaussian:
 
@@ -193,7 +188,6 @@ The type-annotations reveal how the variable $x$ determines the standard deviati
 %
 \noindent
 %Using \Dice{}, this yields the output \result{0.73595}{0.26405}.
-\fi
 
 \subsection{Conditioning}\label{sec:examples:6}
 

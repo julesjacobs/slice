@@ -1,5 +1,238 @@
-\section{(New) Soundness Proof}
+\section{Soundness Proof}
 \label{sec:app:soundness_new}
+\newpage
+\subsection{Preliminaries}
+We consider a subset of our language, focusing only on let statements, conditionals, less than comparisons, and uniform and discrete distributions. The other constructs follow by analogous arguments.
+
+% \begin{itemize}
+% 	\item $\monunit \colon X \rightarrow \dist{X}$
+%     \item $\monbind \colon \dist{X} \times (X \to \dist{Y}) \rightarrow \dist{Y}$
+% \end{itemize}
+
+\subsubsection{Brief recap of measure theory} 
+We first give a brief overiew of basic measure theory terms.
+
+\paragraph{Topological space} A topological space is a pair $(X, \mathcal{T})$ where $\mathcal{T}$ is a collection of subsets of $X$, called open sets, such that $\emptyset, X \in \mathcal{T}$, and $\mathcal{T}$ is closed under arbitrary unions and finite intersections.
+
+\paragraph{$\sigma$-algebras} A $\sigma$-algebra on a set $X$ is a collection $\Sigma$ of subsets of $X$ that includes $X$ itself and is closed under complement and under countable unions. By implication, a $\sigma$-algebra includes the empty set and is closed under countable intersections. 
+Given a topological space $(X, \mathcal{T})$, the Borel $\sigma$-algebra $\mathcal{B}(X)$ is the smallest $\sigma$-algebra containing all open sets in $\mathcal{T}$.
+
+\paragraph{Measurable spaces} A measurable space $(X, \Sigma)$ consists of an underlying set and its $\sigma$-algebra.  
+When $\Sigma$ is the Borel $\sigma$-algebra on a topological space $X$, we call $(X, \Sigma)$ a Borel measurable space.
+
+\paragraph{Measures} Let $(X,\Sigma)$ be a measurable space. A function $\mu : \Sigma \to \R^+$ is called a measure if it satisfies nonnegativity, null empty set, and countable additivity. 
+When $\Sigma$ is a Borel $\sigma$-algebra, $\mu$ is called a Borel measure.
+
+\paragraph{Measure spaces} The triple $(X, \Sigma, \mu)$ is called a measure space.
+ When $\Sigma$ is the Borel $\sigma$-algebra and $\mu$ is the Borel measure, $(X, \Sigma, \mu)$ is called a Borel measure space.
+
+\paragraph{(Sub)probability measures} When $\mu(X) \leq 1$, it is called a (Borel) subprobability measure. When $\mu(X) = 1$, it is called a (Borel) probability measure and $(X, \Sigma, \mu)$ a (Borel) probability space.
+
+\paragraph{Product measure} The product of two measurable spaces $(X_1, \Sigma_1)$ and $(X_2, \Sigma_2)$ is also a measurable space, namely $(X_1 \times X_2, \Sigma_1 \otimes \Sigma_2)$.
+
+\begin{definition}[Support]
+	We define the support of a measure separately for discrete and continuous cases:
+	\begin{enumerate}
+		\item Let $(X, \Sigma, \mu)$ be a measure space where $\mu$ is a discrete measure. The support of $\mu$ is the set of all points with positive measure:
+		\[
+			{support}(\mu) \triangleq \{ x \in X \mid \mu(x) > 0 \}.
+		\]
+
+		\item Let $(X, \Sigma, \mu)$ be a Borel measure space where $X$ is a topological space and $\mu$ is a continuous measure. The support of $\mu$ is:
+		\[
+			{support}(\mu) \triangleq \{ x \in X \mid \forall U \in \Sigma, \; (U \text{ open and } x \in U) \implies \mu(U) > 0 \}.
+		\]
+	\end{enumerate}
+\end{definition}
+
+% \begin{definition}[Projection]
+% 	Let $(X, \Sigma_X)$ and $(Y, \Sigma_Y)$ be measurable spaces, and let $\mu \in \mathcal{D}(X \times Y)$. We define the first and second projection measures as:
+% 	\begin{enumerate}
+% 		\item $\pi_1(\mu)(A) := \mu(A \times Y)$ for every measurable $A \in \Sigma_X$
+% 		\item $\pi_2(\mu)(B) := \mu(X \times B)$ for every measurable $B \in \Sigma_Y$
+% 	\end{enumerate}
+% 	Then, $\pi_1(\mu)$ is a measure on $(X, \Sigma_X)$ and $\pi_2(\mu)$ is a measure on $(Y, \Sigma_Y)$.
+% \end{definition}
+
+\begin{definition}[Projection with error]
+	Let $(X + \bot, \Sigma_{X + \bot})$ and $(Y + \bot, \Sigma_{Y + \bot})$ be measurable spaces, with $(X, \Sigma_X)$ and $(Y, \Sigma_Y)$ measurable spaces as well. Let $\mu \in \mathcal{D}((X \times Y) + \bot)$. We define the first and second projection measures as:
+	\begin{enumerate}
+	\item $\pi_1(\mu)(A) := \mu(A \times Y)$ for every measurable $A \in \Sigma_X$, and $\pi_1(\mu)({\bot}) := \mu({\bot})$
+	\item $\pi_2(\mu)(B) := \mu(X \times B)$ for every measurable $B \in \Sigma_Y$, and $\pi_2(\mu)({\bot}) := \mu({\bot})$
+	\end{enumerate}
+	Then, $\pi_1(\mu)$ is a measure on $(X + \bot, \Sigma_{X + \bot})$ and $\pi_2(\mu)$ is a measure on $(Y + \bot, \Sigma_{Y + \bot})$.
+\end{definition}
+
+
+\subsection{Measure space on expressions}
+To make the probabilistic semantics precise, we define an appropriate measure space structure on the set of expressions. We construct a Borel measurable space on $Expr_{\tau}$ by factoring out real numbers using the notion of what we call \emph{expression skeletons}.
+
+\begin{definition}[Expression Skeleton]
+	An expression skeleton $s : \tau$ is a well-typed expression $e : \tau$ where each occurrence of a float constant is replaced by a hole $\square$, generated as follows:
+	\begin{align*}
+		s ::= \; 
+		&\square \mid x \mid \true \mid \false \mid \finconst{k}{n} \mid \letkw \; x = s_1 \; \inkw \; s_2 \mid \ifkw \; s_1 \; \thenkw \; s_2 \; \elsekw \; s_3 \mid s_1 < s_2 \mid \uniform(s_1, s_2)
+	\end{align*}
+	with the understanding that each hole $\square$ has type $\floattype{B}{V}$, and that all other types appearing in the original expression are preserved in its corresponding skeleton.
+	
+	We denote by $\text{Skel}_{\tau}$ the set of all expression skeletons, and by $\holes(s)$ the number of distinct holes in skeleton $s$.
+\end{definition}
+
+\begin{example}
+	The expression $\uniform(0.0, 1.0) < 0.5$ has the skeleton $\uniform(\square, \square) < \square$ with three holes. 
+\end{example}
+
+\begin{lemma}[Skel is countable]\label{lem:skel-countable}
+	The set $\text{Skel}_{\tau}$ is countable.
+\end{lemma}
+
+\begin{proof}
+	Each skeleton is a finite syntactic tree where:
+	\begin{itemize}
+	\item Internal nodes are labeled by constructors from a finite set of ${\letkw, \ifkw, <, \uniform}$
+	\item Leaves are labeled by literals or variables (countable) or holes $\square$ (countable)
+	\end{itemize}
+	The set of all finite trees over countable labels is countable.
+\end{proof}
+
+Define the bijection $f\colon Expr_{\tau} \to \text{Skel}_{\tau} \times \R^n$ for some $n$, as shown in Figure~\ref{fig:decompose-definition}. This bijection holds because every well-typed expression can be uniquely decomposed into its skeleton (obtained by replacing constants with holes) and the corresponding tuple of real values filling those holes.
+
+\begin{figure}[t]
+	\centering
+	\begin{align*}
+		f(e : \tau) = 
+		\begin{cases}
+			(\true : \bool, \emptyset)
+				& \text{if } e = \true : \bool \\[8pt]
+			(\false : \bool, \emptyset)
+				& \text{if } e = \false : \bool \\[8pt]
+			(\finconst{k}{n} : \fin{n}, \emptyset)
+				& \text{if } e = \finconst{k}{n} : \fin{n} \\[8pt]
+			(\square : \floattype{B}{V}, \{c\})
+				& \text{if } e = c : \floattype{B}{V}, V \neq \top \\[8pt]
+			(\square : \floattype{B}{V}, \R)
+				& \text{if } e = c : \floattype{B}{V}, V = \top \\[8pt]
+			(\uniform(f(e_1)_1, f(e_2)_1) : \floattype{B}{V}, \\
+			(f(e_1)_2, f(e_2)_2))
+				& \text{if } e = \uniform(e_1, e_2) : \floattype{B}{V} \\[8pt]
+			(f(e_1)_1 < f(e_2)_1 : \bool, \\
+			(f(e_1)_2, f(e_2)_2))
+				& \text{if } e = e_1 < e_2 : \bool \\[8pt]
+			(\ifkw\; f(e_1)_1\; \thenkw\; f(e_2)_1\; \elsekw\; f(e_3)_1 : \tau, \\
+			(f(e_1)_2, f(e_2)_2, f(e_3)_2))
+				& \text{if } e = \ifkw\; e_1\; \thenkw\; e_2\; \elsekw\; e_3 : \tau \\[8pt]
+			(\letkw\; x = f(e_1)_1\; \inkw\; f(e_2)_1 : \tau, \\
+			(f(e_1)_2, f(e_2)_2))
+				& \text{if } e = \letkw\; x = e_1\; \inkw\; e_2 : \tau
+		\end{cases}
+	\end{align*}
+	\caption{Recursive definition of $f$, a decompose function, over typed expressions. $f(\cdot)_1$ and $f(\cdot)_2$ denote the first and second projections, respectively, of $f(\cdot)$.}
+	\label{fig:decompose-definition}
+\end{figure}
+	
+\begin{definition}[Measurable space on well-typed expressions]
+	For a given $s : \tau \in \text{Skel}_{\tau}$, define the subset:
+	\[
+		A_{s : \tau} := \{f(e : \tau)_2 \mid f(e : \tau)_1 = s : \tau \text{ and } e : \tau \in Expr_{\tau}\}.
+	\]
+	Let $s[\vec{r}] : \tau$ denote the (unique) well-typed expression of type $\tau$ obtained by filling the holes of $s$ with the coordinates of $\vec{r}$. We then define the measurable space of well-typed expressions as the union:
+	\[
+		Expr_{\tau} := \bigcup_{s : \tau \in \text{Skel}_{\tau}} \{s[\vec{r}] : \tau \mid \vec{r} \in A_{s : \tau}\}.
+	\]
+\end{definition}
+
+\begin{example}
+	Given $s : \tau = (\square : \floattype{\clt{3.5}, \clt{4.5}}{\top} < \square : \floattype{\clt{3.5}, \clt{4.5}}{3.5,4.5}) : \bool$, we compute $A_{s : \tau}$.
+
+	\begin{align*}
+		f(e : \bool)_1 
+			&= (\square : \floattype{\clt{3.5}, \clt{4.5}}{\top} 
+				< \square : \floattype{\clt{3.5}, \clt{4.5}}{3.5,4.5}) : \bool \\[6pt]
+		\iff\;& 
+			e = e_1 < e_2 \\[3pt]
+		&\quad 
+			f(e_1 : \floattype{\clt{3.5}, \clt{4.5}}{\top})_1 
+			= \square : \floattype{\clt{3.5}, \clt{4.5}}{\top}, \\[3pt]
+		&\quad 
+			f(e_2 : \floattype{\clt{3.5}, \clt{4.5}}{3.5,4.5})_1 
+				= \square : \floattype{\clt{3.5}, \clt{4.5}}{3.5,4.5} \\[6pt]
+		\iff\;& 
+			e_1 = c \in \R, \quad e_2 \in \{3.5, 4.5\}.
+	\end{align*}
+	
+	Thus,
+	\begin{align*}
+		f(c : \floattype{\clt{3.5}, \clt{4.5}}{\top})_2 &= \R, \\[3pt]
+		f(3.5 : \floattype{\clt{3.5}, \clt{4.5}}{3.5,4.5})_2 &= \{3.5\}, \\[3pt]
+		f(4.5 : \floattype{\clt{3.5}, \clt{4.5}}{3.5,4.5})_2 &= \{4.5\}.
+	\end{align*}
+	
+	Hence,
+	\begin{align*}
+		A_{s : \tau} 
+			&= \{(x, 3.5) \mid x \in \R\} \cup \{(x, 4.5) \mid x \in \R\} \\[3pt]
+			&= \R \times \{3.5, 4.5\} \subseteq \R^2.
+	\end{align*}	
+\end{example}
+
+\begin{lemma}
+	$(Expr_{\tau}, \mathcal{F}_{Expr_{\tau}})$ is a Borel measurable space.
+\end{lemma}
+
+\begin{proof}
+	Follows by structural recursion on expressions. 
+	
+	Fix an $s \in \text{Skel}$. At the base cases, we either get a finite value set $V$ (a finite union of Borel singletons, which is Borel), $V = \top$ (the entire $\R$, which is Borel), or $\emptyset$ (Borel). Each construct combines its subexpressions through Cartesian products (Borel sets are closed under finite products).
+
+	Since $\text{Skel}$ is countable by Lemma~\ref{lem:skel-countable}, and since Borel sets are closed under countable unions, $Expr_{\tau}$ forms a Borel measurable space.
+\end{proof}
+
+\begin{definition}[Extension with error element]\label{def:meas-space-with-error}
+	We extend the Borel measurable space of expressions to include a distinguished error element $\bot$, defining the measurable space of extended expressions as
+	\[
+		Expr_{\tau} + \bot := Expr_{\tau} \cup \{\bot\},
+	\]
+	with the topology $\mathcal{T}_{Expr_{\tau} + \bot} = \{U, U \cup \{\bot\} \mid U \in \mathcal{T}_{Expr_{\tau}}\}$, equipped with the Borel $\sigma$-algebra $\mathcal{F}_{Expr_{\tau} + \bot} := \sigma(\mathcal{T}_{Expr_{\tau} + \bot})$.
+\end{definition}
+
+\begin{lemma}
+	$(Expr_{\tau} + \bot, \mathcal{F}_{Expr_{\tau} + \bot})$ is a Borel measurable space.
+\end{lemma}
+
+\begin{proof}
+	$Expr_{\tau}$ is itself a Borel set, and $\{\bot\}$ is an open singleton in the extended topology. The union of a Borel set with an open set is Borel. 
+\end{proof}
+
+% Intuitively, this means that measurable subsets of $Expr_{\tau}$ can be described by first fixing a finite syntactic skeleton and then selecting a measurable subset of real assignments to its float constants.
+
+We can equip this measurable space with a (sub)probability measure such that $\mu(Expr_{\tau} + \bot) \leq 1$. And in particular, any (sub)probability measure $\mu$ on $\R^{\holes(s)}$ for a skeleton $s$ can be lifted to a (sub)probability measure on $Expr_{\tau} + \bot$, as follows: 
+\[
+	\mu_{Expr_{\tau} + \bot}(A) = \mu(\{\vec{r} \in \R^{\holes(s)} \mid s[\vec{r}] \in A\}).
+\]
+
+We give some basic lemmas:
+
+\begin{lemma} 
+	Let $(Expr_{\tau} + \bot, \mathcal{F}_{Expr_{\tau} + \bot})$ be the measurable space of expressions with error from Definition~\ref{def:meas-space-with-error}. Let $V \subset Expr_{\tau}$ be the set of all value expressions. Let $N \subset Expr_{\tau}$, defined as $N = Expr_{\tau} \setminus V$, be the set of non-value expressions. Let $\{\bot\}$ be the singleton set containing the error element $\bot$. The following are true:
+	\begin{enumerate}
+		\item The set $\vals$ is measurable.
+		\item The set $\{\bot\}$ is measurable.
+		\item The set $\nonvals$ is measurable.
+	\end{enumerate}
+\end{lemma}
+
+\begin{proof}
+	We prove the measurability of $\vals$, $\{\bot\}$, and $N$ in separate parts.
+	\begin{enumerate}
+		\item \textbf{(Measurability of $\vals$):} By the construction of $\mathcal{F}_{Expr_{\tau}}$, for each skeleton $s$ that represents a value, the set $\{\vec{r} \in \R^{\holes(s)} \mid \vdash s[\vec{r}] : \tau\}$ is a measurable set in the union. The set $V$ is the countable union of all such sets corresponding to value skeletons. Since $\text{Skel}$ is countable, $V$ is a countable union of measurable sets and is therefore itself measurable, e.g. $V \in \mathcal{F}_{Expr_{\tau}}$. As $\mathcal{F}_{Expr_{\tau}} \subset \mathcal{F}_{Expr_{\tau} + \bot}$, it follows that $V \in \mathcal{F}_{Expr_{\tau} + \bot}$.
+		
+		\item \textbf{(Measurability of $\{\bot\}$):} By Definition~\ref{def:meas-space-with-error}, the topology $\mathcal{T}_{Expr_{\tau} + \bot}$ contains all sets of the form $U \cup \{\bot\}$, where $U \in \mathcal{T}_{Expr_{\tau}}$. In particular, taking $U = \emptyset$ gives $\emptyset \cup \{\bot\} = \{\bot\} \in \mathcal{T}_{Expr_{\tau} + \bot}$. Since the Borel $\sigma$-algebra $\mathcal{F}_{Expr_{\tau} + \bot}$ is generated by $\mathcal{T}_{Expr_{\tau} + \bot}$, it follows that $\{\bot\} \in \mathcal{F}_{Expr_{\tau} + \bot}$.
+
+		\item \textbf{(Measurablity of $N$):} By definition, $N$ is the set of non-value expressions, e.g. $N = Expr_{\tau} \setminus V$. From part i), we have established that $V \in \mathcal{F}_{Expr_{\tau}}$. Since $\mathcal{F}_{Expr_{\tau}}$ is a $\sigma$-algebra and is closed under complement, the complement of $V$ within $Expr_{\tau}$, which is precisely $N$, is also measurable, e.g. $N \in \mathcal{F}_{Expr_{\tau}}$. As $\mathcal{F}_{Expr_{\tau}} \subset \mathcal{F}_{Expr_{\tau} + \bot}$, it follows that $N \in \mathcal{F}_{Expr_{\tau} + \bot}$.
+	\end{enumerate}
+\end{proof}
+
+Note that in general, given $(X, \Sigma_X)$ and $(Y, \Sigma_Y)$ to be measurable spaces, $((X \times Y) + \bot)$ forms a measurable space, since the product $(X \times Y)$ is measurable and for any measurable space $(Z, \Sigma_Z)$, the space $(Z + \bot, \Sigma_{Z + \bot})$ with $\Sigma_{Z + \bot}$ generated by $\Sigma_Z \cup {{\bot}}$ is measurable. 
 
 Let $X$ be a set equipped with a suitable measurable space so that $\mathcal{D}(X + \bot)$ denotes the set of probability measures over $X + \bot$. We will make heavy use of the following generic monad construction, for which one easily verifies the monad laws:
 

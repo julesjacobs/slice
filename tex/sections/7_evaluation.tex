@@ -4,7 +4,7 @@ As an application of our discretization method, we perform exact inference on mo
 
 The \Slice{} compiler consists of approximately 3,400 lines of OCaml code (including the lexer, parser, type inference and discretization engines, and \Dice{}/\Roulette{} code generators). We use the OCaml GSL package~\cite{gsl} to compute the CDFs of the probability distributions. The system is open-source and available at \url{https://github.com/[anonymized]}, along with benchmarks, documentation, and a Docker image. All benchmarks were run within that Docker image on an Apple M3 with 16GB RAM.
 
-\subsubsection{New Benchmarks for Scaling}\label{sec:synthetic-benchmarks} We designed a set of benchmarks consisting of conditionally independent programs that can be scaled up in size, with varying dependencies between the program variables. Formally, all programs in our benchmark can be described by the conditional independence structure: $X_i \perp\!\!\!\perp \{\,X_j : j < i, j \neq \pi(i)\,\}
+\subsubsection{New Benchmarks for Scaling}\label{sec:synthetic-benchmarks} We designed a set of benchmarks consisting of conditionally independent continuous programs that can be scaled up in size, with varying dependencies between the program variables. Formally, all programs in our benchmark can be described by the conditional independence structure: $X_i \perp\!\!\!\perp \{\,X_j : j < i, j \neq \pi(i)\,\}
 \;\Big|\; X_{\pi(i)}$, where $\pi(i) \in \{1, \ldots, i-1\}$ is the parent index of $X_i$. Schematically:
 %
     \begin{lstlisting}[aboveskip=0.1em,belowskip=.1em]
@@ -49,18 +49,18 @@ Next, we evaluate the performance of our \Slice{} framework on two benchmark sui
 \begin{table}[!t]
 \centering \vspace{-.3cm}
 \scalebox{0.95}{% adjust the factor
-\begin{tabular}{lrrr}
+\begin{tabular}{lrrrr}
     \toprule
-    \textbf{Benchmark} & \textbf{Slice+Dice (s)} & \textbf{Slice+Roulette (s)} & \textbf{SPPL (s)} \\
+    \textbf{Benchmark} & \textbf{Datasets} & \textbf{Slice+Dice (s)} & \textbf{Slice+Roulette (s)} & \textbf{SPPL (s)} \\
     \midrule
-    ClickGraph~\cite{gehr2016psi} & \textbf{1.551 (81.4×)} & 1.841 (68.6×) & 126.263 \\
-    ClinicalTrial~\cite{gehr2016psi} & \textbf{6.854 (4.5×)} & 8.692 (3.6×) & 31.102 \\
-    CoinBias~\cite{gehr2016psi} & 0.294 (2.9×) & \textbf{0.234 (3.7×)} & 0.867 \\
-    Election~\cite{Saad2021SPPL} & 0.878 (17.9×) & \textbf{0.663 (23.7×)} & 15.739 \\
-    MarkovSwitching~\cite{Saad2021SPPL} & \textbf{0.044 (6.8×)} & \textbf{0.044 (6.8×)} & 0.298 \\
-    StudentInterviews~\cite{Saad2021SPPL} & \textbf{1.287 (44.1×)} & 1.681 (33.8×) & 56.781 \\ 
-    SurveyUnbias~\cite{gehr2016psi} & \textbf{0.044 (8.2×)} & 0.157 (2.3×) & 0.361 \\
-    TrueSkill~\cite{gehr2016psi} & \textbf{0.042 (5.2×)} & 0.157 (1.4×) & 0.217 \\
+    ClickGraph~\cite{gehr2016psi} & 10 & \textbf{1.551 (81.4×)} & 1.841 (68.6×) & 126.263 \\
+    ClinicalTrial~\cite{gehr2016psi} & 20 & \textbf{6.854 (4.5×)} & 8.692 (3.6×) & 31.102 \\
+    CoinBias~\cite{gehr2016psi} & 5 & 0.294 (2.9×) & \textbf{0.234 (3.7×)} & 0.867 \\
+    Election~\cite{Saad2021SPPL} & 2 & 0.878 (17.9×) & \textbf{0.663 (23.7×)} & 15.739 \\
+    MarkovSwitching~\cite{Saad2021SPPL} & 10 & \textbf{0.044 (14.2×)} & \textbf{0.044 (14.2×)} & 0.624 \\
+    StudentInterviews~\cite{Saad2021SPPL} & 10 & \textbf{1.287 (44.1×)} & 1.681 (33.8×) & 56.781 \\ 
+    SurveyUnbias~\cite{gehr2016psi} & 10 & \textbf{0.044 (8.2×)} & 0.157 (2.3×) & 0.361 \\
+    TrueSkill~\cite{gehr2016psi} & 2 & \textbf{0.042 (5.2×)} & 0.157 (1.4×) & 0.217 \\
     \bottomrule
     \end{tabular}  
 }  

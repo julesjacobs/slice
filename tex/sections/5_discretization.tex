@@ -137,7 +137,7 @@ such that $c$ is an (open) endpoint of $\text{ToInts}(c)$ for all $c \in\{0.3,0.
 		20 : !{\ftb{<=10,<=20}{20}}!
 	) : !{\ftb{<=10,<=20}{10,20}}! in
 	
-	uniform(0, x : !{\ftb{<=10,<=20}{10,20}}!) : !{\ft{<5}}! 
+	uniform(0 : !{\ftb{<=0}{0}}!, x : !{\ftb{<=10,<=20}{10,20}}!) : !{\ft{<5}}! 
 	< (5 : !{\ftb{<5}{5}}!)
 	\end{lstlisting}	
 	%
@@ -148,10 +148,10 @@ such that $c$ is an (open) endpoint of $\text{ToInts}(c)$ for all $c \in\{0.3,0.
         (
             let v_1' = !$\discretize{\texttt{0 : \ftb{<=0}{0}}}$! in
             let v2'  = !$\discretize{\texttt{x : \ftb{<=10,<=20}{10,20}}}$! in 
-            if v_1' ==#2 0#2 && v2' ==#3 0#3 then
-            !$\discretize{\texttt{\uniform(0,10) : \ft{<5}}}$!
-            else
-            !$\discretize{\texttt{\uniform(0,20) : \ft{<5}}}$!
+            if v_1' ==#2 !$\discretize{\texttt{0 : \ftb{<=0}{0}}}$! && 
+			 v2' ==#3 !$\discretize{\texttt{10 : \ftb{<=10,<=20}{10,20}}}$! 
+	    then !$\discretize{\texttt{\uniform(0,10) : \ft{<5}}}$!
+            else !$\discretize{\texttt{\uniform(0,20) : \ft{<5}}}$!
           ) <#2 !$\discretize{\texttt{5 : \ftb{<5}{5}}}$!
         \end{lstlisting}	
 	%
@@ -200,7 +200,7 @@ We conclude this section by extending the discretization function $\discretize{\
 			\discretize{A} \to \discretize{B} & \text{if } \tau = A \to B \\[0.5em]
 			\discretize{A} \times \discretize{B} & \text{if } \tau = A \times B \\[0.5em]
 			\listty{\discretize{A}} & \text{if } \tau = \listty{A} \\[0.5em]
-			\texttt{ref}(\discretize{A}) & \text{if } \tau = \texttt{ref}(A) \\[0.5em]
+			% \texttt{ref}(\discretize{A}) & \text{if } \tau = \texttt{ref}(A) \\[0.5em]
 			\tau & \text{otherwise}\\[-1ex]
 		\end{cases}
 	\end{align*}
