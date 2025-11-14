@@ -32,7 +32,7 @@ In our type system, this is captured as follows, using $\float[B; V]$ types:
 \begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
     (uniform(0, 1) : !{\ft{<0.5}}!) < (0.5 : !{\ftb{<0.5}{0.5}}!)
 \end{lstlisting}
-A type $\float[B; V]$ records the relevant cut set $B$ and the (possibly finite) value set $V$ (either may be~$\top$). In the listing, the uniform sample has type \ft{<0.5}: only two intervals matter and the value is otherwise unrestricted. The constant $0.5$ has type \ftb{<0.5}{0.5}, meaning it sits exactly on the cut. Whenever we compare $x < y$, the type system equates their cut sets so both expressions are discretized with the same intervals. Figure~\ref{fig:cuts-distr} visualizes how constants inherit their cuts to remain addressable in the discrete program.
+A type $\float[B; V]$ records the relevant finite cut set $B$ and a finite value set $V$ (either may be~$\top$, indicating continuous range). In the listing, the uniform sample has type \ft{<0.5}: only two intervals matter and the value is otherwise unrestricted. The constant $0.5$ has type \ftb{<0.5}{0.5}, meaning it sits exactly on the cut. Whenever we compare $x < y$, the type system equates their cut sets so both expressions are discretized with the same intervals. Figure~\ref{fig:float-type-def} explains the float type, and Figure~\ref{fig:cuts-distr} visualizes cuts.
 
 \begin{figure}
 \[
