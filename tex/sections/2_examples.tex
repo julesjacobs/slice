@@ -96,6 +96,7 @@ This analysis is done by the type inference process, which collects all cuts for
 %Using \Dice{}, this yields the output \result{0.225}{0.775}.
 Note that the original constant $0.5$ is discretized differently: for $x < 0.5$ it is discretized to $2$ and for $y < 0.5$ it is discretized to $1$. This is because the constant $0.5$ falls in the third interval of the split $(-\infty, 0.2) \cup [0.2, 0.5) \cup [0.5, +\infty)$ for $x$ and the second interval for the split $(-\infty, 0.5) \cup [0.5, +\infty)$ for $y$. 
 
+\iffalse
 \subsection{Discretizing Float Constants}\label{sec:examples:3}
 The example in Section~\ref{sec:examples:2} involves comparisons with literal constant right-hand sides (such as $e < 0.5$). 
 \Slice{} does not require the comparison to have a syntactic constant right-hand or left-hand side. Instead, it analyzes the dataflow of the program to determine which constants are relevant, and how these constants are mapped to discrete indices.
@@ -132,10 +133,10 @@ Both $x$ and $y$ can only take on finitely many values --- a fact which is refle
 Notice how both $2.5$ and $4.5$ are discretized to $1$, because for the purpose of comparing them to $y = 0.5$, these values are equivalent.
 
 %Using \Dice{}, this yields the output \result{0.5}{0.5}.
+\fi
+\subsection{Control flow}\label{sec:examples:4}
 
-\subsection{Branching on Continuous Values}\label{sec:examples:4}
-
-In the two programs above, we directly compare the continuous or discrete samples to constants.
+In the programs above, we directly compare the continuous samples to constants.
 However, the discretization process still works if the both the continuous samples and constants flow through the program, for instance via a conditional.
 Consider the following program, already type-annotated:
 
@@ -187,6 +188,7 @@ Continuous distributions can have parameters that depend on discrete random choi
     let x = if flip() then 0.5 else 1.5 in gaussian(0, x) < 0.5
 \end{lstlisting}
 
+\iffalse
 \noindent %This example shows how discrete choices can affect the parameters of continuous distributions. 
 The type-annotations reveal how the variable $x$ determines the standard deviation of the Gaussian:
 
@@ -207,7 +209,7 @@ The type-annotations reveal how the variable $x$ determines the standard deviati
 %
 \noindent
 %Using \Dice{}, this yields the output \result{0.73595}{0.26405}.
-
+\fi
 
 \subsection{Conditioning}\label{sec:examples:6}
 
