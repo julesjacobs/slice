@@ -257,7 +257,7 @@ In general, the typing rule for $e_1 < e_2$ requires that the expressions share 
 		(3) $B \neq \top$ and $V_1 \neq \top$ and $\forall x \in V_2,\ \cleq{x} \in B$.
 \end{definition}
 
-This definition is subtle and it requires some explanation to understand why it makes sense and ensures that the comparison result can still be determined after discretization.
+% This definition is subtle and it requires some explanation to understand why it makes sense and ensures that the comparison result can still be determined after discretization.
 
 To understand this definition, we first want to introduce two different perspectives on the $B$ set. The first perspective is that $B$ specifies a set of intervals, such that values of the expression will be mapped to their respective interval index. The second perspective is that this discretized index \emph{still contains enough information to evaluate all comparisons in $B$ when viewed as predicates}. That is, if $B$ contains $\clt{x}$ then, the discretized value of $e : \float[B; V]$ still contains enough information to answer $e < x$ precisely: if after discretization, we have an interval index below the index of $\clt{x}$, then the comparison is false, and otherwise it is true.
 
