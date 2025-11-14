@@ -122,6 +122,8 @@ Each of the constraints is handled as follows:
 
 The solver repeatedly processes constraints until reaching a fixed point, where no constraint causes any further updates to the variables. The monotonicity of the lattice operations ensures that this process terminates. This procedure may add more cuts to $B$s than strictly necessary, but it never sets $B=\top$ unless that is the only way to satisfy all constraints. In other words, the discretization itself may be suboptimal in terms of the number of cuts.
 
+Lattice constraint solving takes time polynomial in the size of the program: at worst, every single constant in the program gets added to the cut set or value set of every subexpression of type $\float[B;V]$.
+
 \begin{example}
     From the previous example, we obtained the constraint set displayed in \Cref{eq:cs}, which is then solved as follows:
 
