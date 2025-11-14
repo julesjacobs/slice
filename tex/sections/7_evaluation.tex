@@ -1,6 +1,6 @@
 \section{Evaluation}\label{sec:implem_eval}
 
-As an application of our discretization method, we perform exact inference on models with mixed discrete and continuous distributions. In particular, we integrate \Slice{} with exact discrete inference backends \Dice{} and \Roulette{}, and evaluate the performance of \Slice{}+\Dice{} and \Slice{}+\Roulette{} on (i) a set of constructed benchmarks and (ii) a set of benchmarks taken from the literature, comparing to the state-of-the-art tool \SPPL{} for exact inference of continuous probabilistic programs.
+As an application of our discretization method, we perform exact inference on models with mixed discrete and continuous distributions. In particular, we integrate \Slice{} with exact discrete inference backends \Dice{} and \Roulette{}, and evaluate the performance of \Slice{}+\Dice{} and \Slice{}+\Roulette{} on (i) a set of constructed benchmarks and (ii) a set of benchmarks taken from the literature, comparing to the state-of-the-art tool \SPPL{} for exact inference on continuous probabilistic programs. We remark that, even though \Slice{} outperforms \SPPL{} on all benchmarks, \SPPL{} supports features that \Slice{} does not support automatically, notably numeric transformations (one must manually refactor the arithmetic expressions in our language). 
 
 The \Slice{} compiler consists of approximately 3,400 lines of OCaml code (including the lexer, parser, type inference and discretization engines, and \Dice{}/\Roulette{} code generators). We use the OCaml GSL package~\cite{gsl} to compute the CDFs of the probability distributions. The system is open-source and available at \url{https://github.com/[anonymized]}, along with benchmarks, documentation, and a Docker image. All benchmarks were run within that Docker image on an Apple M3 with 16GB RAM.
 
@@ -29,14 +29,9 @@ We depict the runtime (in seconds) of (i) \SPPL{} (ii) \Slice{} (discretization 
 
 \subsubsection{Existing Benchmarks}\label{sec:fairness-benchmarks}
 
-Next, we evaluate the performance of our \Slice{} framework on two sets of existing benchmarks that \SPPL{} has been evaluated on. We focus on benchmarks which involve continuous sampling and are supported by both \Slice{} and \SPPL{}. 
+Next, we evaluate the performance of our \Slice{} framework on two sets of existing benchmarks that \SPPL{} has been evaluated on. \Cref{tab:benchmarks_dt} and \Cref{tab:benchmarks_dt_extra} show benchmarks that originated from~\cite{albarghouthi2017fairsquare}. Performing probabilistic inference on these programs corresponds to evaluating fairness properties of given decision trees, an application area from machine learning~\cite{albarghouthi2017fairsquare,Bastani2019VeriFair,Dwork2012FairnessAwareness}. The first column of the table shows the decision making program, where DT$_n$ means ``decision tree'' with $n$ conditionals, the second column shows the population model used to generate data, and the remaining columns give the runtimes. We separate \SPPL{}'s execution into two components: a translation phase and a fairness judgment phase. 
 
-
-
-\Cref{tab:benchmarks_dt} shows benchmarks that originated from~\cite{albarghouthi2017fairsquare}. Performing probabilistic inference on these programs corresponds to evaluating fairness properties of given decision trees, an application area from machine learning. \Cref{tab:benchmarks_psi} depicts benchmarks taken from the PSI~\cite{gehr2016psi} benchmark set. We depict the performance of (i) \Slice{}+\Dice{}, (ii) \Slice{}+\Roulette{}, and (ii) \SPPL{} in seconds. We do not compare to PSI since it has already been shown to be slower than \SPPL{} on these benchmarks.
-
-\paragraph{Results.} Both \Cref{tab:benchmarks_dt} and \Cref{tab:benchmarks_psi} clearly indicate that our \Slice{} framework is highly competitive with the state-of-the-art solver \SPPL{} on the benchmarks it has been evaluated on. In particular, \Slice{}+\Dice{} outperforms \SPPL{} on \emph{every} benchmark, with speed-up factors ranging from $10$ to $215$. \Slice{}+\Roulette{} also outperforms \SPPL{} but with a less significant speed-up. This clearly indicates that our technique of automatically discretizing programs and using discrete inference engines for continuous inference advances the state-of-the-art for exact inference of probabilistic programs.
-
+\Cref{tab:benchmarks_psi} depicts benchmarks containing at least one continuous distribution, taken from the \PSI{} and \SPPL{} benchmark sets. We note that \Slice{} can run all benchmarks \SPPL{} can except for those containing transformations. We depict the performance of (i) \Slice{}+\Dice{}, (ii) \Slice{}+\Roulette{}, and (ii) \SPPL{} in seconds. We do not compare to \PSI{} since it has already been shown to be slower than \SPPL{} on these benchmarks. 
 
 
 
@@ -100,17 +95,17 @@ DT$_{1000}$         & Ind  & 3.352 & 1.913 & \textbf{5.265} & 3.606 & t.o. & \te
     \toprule
     \textbf{Benchmark} & \textbf{Slice+Dice (s)} & \textbf{Slice+Roulette (s)} & \textbf{SPPL (s)} \\
     \midrule
-    ClickGraph & \textbf{1.551 (81.4×)} & 1.841 (68.6×) & 126.263 \\
-    ClinicalTrial & \textbf{6.854 (4.5×)} & 8.692 (3.6×) & 31.102 \\
-    CoinBias & 0.294 (2.9×) & \textbf{0.234 (3.7×)} & 0.867 \\
-    Election & 0.878 (17.9×) & \textbf{0.663 (23.7×)} & 15.739 \\
-    HMM & \textbf{0.044 (6.8×)} & \textbf{0.044 (6.8×)} & 0.298 \\
-    StudentInterviews & \textbf{1.287 (44.1×)} & 1.681 (33.8×) & 56.781 \\ 
-    SurveyUnbias & \textbf{0.044 (8.2×)} & 0.157 (2.3×) & 0.361 \\
-    TrueSkill & \textbf{0.042 (5.2×)} & 0.157 (1.4×) & 0.217 \\
+    ClickGraph~\cite{gehr2016psi} & \textbf{1.551 (81.4×)} & 1.841 (68.6×) & 126.263 \\
+    ClinicalTrial~\cite{gehr2016psi} & \textbf{6.854 (4.5×)} & 8.692 (3.6×) & 31.102 \\
+    CoinBias~\cite{gehr2016psi} & 0.294 (2.9×) & \textbf{0.234 (3.7×)} & 0.867 \\
+    Election~\cite{Saad2021SPPL} & 0.878 (17.9×) & \textbf{0.663 (23.7×)} & 15.739 \\
+    MarkovSwitching~\cite{Saad2021SPPL} & \textbf{0.044 (6.8×)} & \textbf{0.044 (6.8×)} & 0.298 \\
+    StudentInterviews~\cite{Saad2021SPPL} & \textbf{1.287 (44.1×)} & 1.681 (33.8×) & 56.781 \\ 
+    SurveyUnbias~\cite{gehr2016psi} & \textbf{0.044 (8.2×)} & 0.157 (2.3×) & 0.361 \\
+    TrueSkill~\cite{gehr2016psi} & \textbf{0.042 (5.2×)} & 0.157 (1.4×) & 0.217 \\
     \bottomrule
     \end{tabular}    
-\caption{Execution times (seconds) for the benchmarks taken from \cite{gehr2016psi}, with a timeout of 120s. Dashed lines indicate unsupported programs.}
+\caption{Execution times (seconds) for the benchmarks taken from PSI~\cite{gehr2016psi} and SPPL~\cite{Saad2021SPPL}.}
     \label{tab:benchmarks_psi}
 \end{table}
 

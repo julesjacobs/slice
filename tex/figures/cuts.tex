@@ -44,13 +44,13 @@
     \node[below] at (6.25,-0.65) {\footnotesize$n$};         % shifted 0.15 left
      
       % Color-matched probability annotations
-      \node[right, text=blue!60!black]  at (8.3,2.0) {$\Pr(x{=}0) = \text{CDF}(c_1) - \text{CDF}(-\infty)$};
-      \node[right, text=green!60!black]   at (8.3,1.6) {$\Pr(x{=}1) = \text{CDF}(c_2) - \text{CDF}(c_1)$};
-      \node[right, text=cyan!70!black]at (8.3,1.2) {$\Pr(x{=}2) = \text{CDF}(c_3) - \text{CDF}(c_2)$};
+      \node[right, text=blue!60!black]  at (8.3,2.0) {$\Pr(0) = \text{CDF}(c_1) - \text{CDF}(-\infty)$};
+      \node[right, text=green!60!black]   at (8.3,1.6) {$\Pr(1) = \text{CDF}(c_2) - \text{CDF}(c_1)$};
+      \node[right, text=cyan!70!black]at (8.3,1.2) {$\Pr(2) = \text{CDF}(c_3) - \text{CDF}(c_2)$};
       \node[right, text=purple!70!black]at (8.3,0.8) {$\cdots$};
-      \node[right, text=red!70!black]   at (8.3,0.0) {$\Pr(x{=}n) = \text{CDF}(\infty) - \text{CDF}(c_n)$};
+      \node[right, text=red!70!black]   at (8.3,0.0) {$\Pr(n) = \text{CDF}(\infty) - \text{CDF}(c_n)$};
     
     \end{tikzpicture}
-    \caption{Partitioning a continuous distribution by cuts $\clt{c_1}, \ldots, \clt{c_n}$ into intervals, with each interval assigned a discrete probability $\Pr(x=i)$ computed from CDF differences. Each interval represents a range of real values that is abstracted to a single discretized value labeled $0, 1, \ldots, n$. Depending on the cuts, the resulting intervals may vary in width and need not be uniformly spaced.}
+    \caption{Partitioning a continuous distribution by cuts $\clt{c_1}, \ldots, \clt{c_n}$ into intervals $(-\infty, c_1), [c_1,c_2), \ldots, [c_n, +\infty)$, with each interval assigned a discrete probability $\Pr(i)$ computed from CDF differences. Each interval represents a range of real values that is abstracted to a single discretized value labeled $0, 1, \ldots, n$. Depending on the cuts, the resulting intervals may vary in width and need not be uniformly spaced.}
     \label{fig:cuts-distr}
     \end{figure}

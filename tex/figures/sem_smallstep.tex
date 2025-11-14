@@ -1,5 +1,6 @@
 
 \begin{table}[t]
+	\allowdisplaybreaks
 	\begin{center}
 		\begin{adjustbox}{width=\textwidth}
 		\begin{tabular}{l l l l l}
@@ -68,9 +69,60 @@
 			  %
 			  & o.w.\ & $\sem{ e_1 : \tau_1 } \gg\!= \lambda f. \dirac{ \dc(f, e_2 : \tau_2) }$ \\
 %			\hline 
+				\midrule
 				%
-			\phantom{blabla}	& \phantom{blabala} \\
-%			%\midrule
+				\multirow{4}{*}{\makecell{$e_1 : \tau_1 \logand e_2 : \tau_2 : \bool$ \\
+				$\tau_1 = \bool, \tau_2 = \bool$}} & $e_1 = b_1 = \true, e_2 = b_2 = \true $ & $\dirac{\true : \bool}$ \\
+			 & $e_1 = b_1, e_2 = b_2 $ & $\dirac{\false : \bool}$  \\
+			 &$e_1 = b_1, e_2 \neq b_2$ & $\sem{ e_2 : \tau_2 } \gg\!= \lambda f. \dirac{ b_1 : \tau_1 \logand f : \bool}$ \\
+			 & o.w.\ & $\sem{ e_1 : \tau_1 } \gg\!= \lambda f. \dirac{ f \logand e_2 : \tau_2 : \bool}$  \\
+			 %
+			 \midrule
+				%
+				\multirow{4}{*}{\makecell{$e_1 : \tau_1 \logor e_2 : \tau_2 : \bool$ \\
+				$\tau_1 = \bool, \tau_2 = \bool$}} & $e_1 = b_1 = \false, e_2 = b_2 = \false $ & $\dirac{\false : \bool}$ \\
+			 & $e_1 = b_1, e_2 = b_2 $ & $\dirac{\true : \bool}$  \\
+			 &$e_1 = b_1, e_2 \neq b_2$ & $\sem{ e_2 : \tau_2 } \gg\!= \lambda f. \dirac{ b_1 : \tau_1 \logor f : \bool}$ \\
+			 & o.w.\ & $\sem{ e_1 : \tau_1 } \gg\!= \lambda f. \dirac{ f \logor e_2 : \tau_2 : \bool}$  \\
+			 %
+			 \midrule
+				%
+				%
+				\multirow{4}{*}{\makecell{$\text{not}\; e : \tau : \bool$ \\
+				$\tau = \bool$}} & $e = \true $ & $\dirac{\false : \bool}$ \\
+				& $e = \false $ & $\dirac{\true : \bool}$  \\
+				& o.w.\ & $\sem{ e : \tau } \gg\!= \lambda f. \dirac{ f : \bool}$  \\
+				%
+				\midrule
+				%
+				\multirow{4}{*}{\makecell{$(e_1 : \tau_1, e_2 : \tau_2) : \tau_1 * \tau_2$}} & $e_1 = v_1, e_2 = v_2 $ & $\dirac{(v_1,v_2) : \tau_1 * \tau_2}$ \\
+			 &$e_1 = v_1, e_2 \neq v_2$ & $\sem{ e_2 : \tau_2 } \gg\!= \lambda f. \dirac{ (v_1 : \tau_1, f : \tau_1 * \tau_2)}$ \\
+			 & o.w.\ & $\sem{ e_1 : \tau_1 } \gg\!= \lambda f. \dirac{ (f, e_2 : \tau_2 : \tau_1 * \tau_2)}$  \\
+			 %
+			 \midrule
+			 %
+			 \multirow{1}{*}{\makecell{$\fstkw\; (e : \tau_1 * \tau_2) : \tau_1$ }} & $ $ & $\dirac{e_1: \tau_1}$ \\ 
+			 %
+			 \midrule
+				%
+				\multirow{1}{*}{\makecell{$\sndkw\; (e : \tau_1 * \tau_2) : \tau_1$ }} & $ $ & $\dirac{e_2: \tau_2}$ \\
+			 %
+			 \midrule
+			%
+				\multirow{2}{*}{\makecell{$(\funkw \; x \to e : \tau_1 \to \tau_2) \; e_2$ }} & $e_2 = v$ & $\dirac{e_2[v/x] : \tau_2}$ \\
+				& $e_2 $ no val. & $\sem{e_2 : \tau_1} \monbind \lambda g.\dirac{(\funkw \; x \to e : \tau_1 \to \tau_2) \; g}$ \\
+				%
+				\midrule
+				%
+				\multirow{2}{*}{\makecell{$(\fixkw \; f \; x := e : \tau_1 \to \tau_2) \; e_2$ }} & $e_2 = v$ & $\dirac{e_2[v/x] : \tau_2}$ \\
+				& $e_2 $ no val. & $\sem{e_2 : \tau_1} \monbind \lambda g.\dirac{(\fixkw \; f \; x := e : \tau_1 \to \tau_2) \; g}$ \\
+				%
+				\midrule
+				%
+			\multirow{2}{*}{\makecell{$( \matchkw \; e \; \withkw \matchcase \text{nil} \rightarrow e_{\text{nil}} \matchcase e_1 :: e_2 \rightarrow e_{\text{cons}}\; {\textnormal{\ttfamily\bfseries end}})$ }} & $e = \text{nil}$ & $\dirac{e_1 : \tau_1}$ \\
+			 & $e = v_1 :: v_2 $ & $\dirac{e_2[v_1/h, v_2/t]}$  \\
+			 %
+			 \midrule
 %			 bla
 			\bottomrule
 			\bottomrule
