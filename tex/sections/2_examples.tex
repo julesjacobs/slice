@@ -49,7 +49,7 @@ Figure~\ref{fig:cuts-distr} illustrates how cut sets drive discretization. Notic
 [
 \underbrace{\text{cut-set}}_{\footnotesize\begin{array}{c}\text{set of cuts}\text{ (e.g., }\{<\!0.1, <\!0.5, \leq\!0.8\}\text{)}\\\text{or }\top\text{ (uncut)}\end{array}}
 ;
-\underbrace{\text{value-set}}_{\footnotesize\begin{array}{c}\text{set of concrete values }\text{(e.g., }\{0.1, 0.4, 0.5\}\text{)}\\\text{or }\top\text{ (any value in $\R$)}\end{array}}
+\underbrace{\text{value-set}}_{\footnotesize\begin{array}{c}\text{set of concrete values }\text{(e.g., }\{0.1, 0.4, 0.5\}\text{)}\\\text{or }\top\text{ (any continuous value)}\end{array}}
 ]
 \]
 \caption{The type \lstinline{float[cut-set; value-set]} captures two aspects of a floating-point expression: the cut set is determined either by \emph{i) the constants the expression is compared against or ii) the constant itself if the expression is a float constant}, and the value set is determined by \emph{what concrete values the expression can take}. The discretization is driven by the cut set: the $n$ cuts define $n+1$ intervals over the real line.}
