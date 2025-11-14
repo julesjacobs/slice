@@ -23,7 +23,7 @@ The programs in \Cref{fig:cond-benchmarks-a} follow the scheme depicted above wh
 %
  The programs in \Cref{fig:alt-benchmarks-a} also follow the scheme depicted above but where the variables used in the guards cycle with a fixed span size of $m$. For instance, for $m=2$, the pattern is $x_1,x_2,x_1,\ldots$. The programs in \Cref{fig:alt-benchmarks-b,fig:alt-benchmarks-c,fig:alt-benchmarks-d} follow a similar pattern, see Appendix~\ref{appen:synthetic-sketches} for details.
 
-We depict the runtime (in seconds) of (i) \SPPL{} (ii) \Slice{} (discretization only) (iii) \Slice{}+\Dice{} (discretization and subsequent inference using \Dice{}), and (iv) \Slice{}+\Roulette{} (discretization and subsequent inference using \Roulette{}). We specify a timeout of 120 seconds. We evaluate program sizes in increments of 5, from size 0 up to size 50. For each program size, we generate 25 random program instances and report the average runtime over these runs. We note that, although \SPPL{} is implemented in Python while \Slice{} in OCaml, this difference only accounts for a small portion of the observed runtime gap: \Slice{}’s discretization and its integration with efficient exact inference engines allow it to maintain low runtimes as program size increases, whereas \SPPL{}’s performance degrades significantly. As a result, \Slice{} consistently achieves order-of-magnitude improvements across our benchmark suite.
+We depict the runtime (in seconds) of (i) \SPPL{} (ii) \Slice{} (discretization only) (iii) \Slice{}+\Dice{} (discretization and subsequent inference using \Dice{}), and (iv) \Slice{}+\Roulette{} (discretization and subsequent inference using \Roulette{}). We specify a timeout of 120 seconds. We evaluate program sizes in increments of 5, from size 0 up to size 50. For each program size, we generate 25 random program instances and report the average runtime over these runs. Although \SPPL{} is implemented in Python and \Slice{} in OCaml, the dominant effect is algorithmic: \Slice{} emits discrete programs that Dice and Roulette solve quickly, whereas \SPPL{}'s cost grows sharply with program size. That divergence produces the order-of-magnitude improvements shown in the figure.
 
 \input{figures/scaling-alternating}
 
@@ -108,5 +108,4 @@ DT$_{1000}$         & Ind  & 3.352 & 1.913 & \textbf{5.265} & 3.606 & t.o. & \te
 \caption{Execution times (seconds) for the benchmarks taken from PSI~\cite{gehr2016psi} and SPPL~\cite{Saad2021SPPL}.}
     \label{tab:benchmarks_psi}
 \end{table}
-
 

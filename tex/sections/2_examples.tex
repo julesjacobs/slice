@@ -1,45 +1,47 @@
 \input{figures/architecture.tex}
 
 \section{Slice by Example}\label{sec:examples}
-This section presents illustrative examples that highlight key features of \Slice{}, which extends a core functional language with traditional programming language constructs such as conditionals, local variables, and functions, augmented with constructs for probabilistic programming such as sampling and conditioning. More examples are highlighted in Appendix~\ref{ap:mot}.
+% We illustrate the main \Slice{} constructs—conditionals, local bindings, functions, sampling, and conditioning—through a set of small programs; Appendix~\ref{ap:mot} contains additional examples.
 
-For readability, we use \flip() as a shorthand for \uniform(0,1) < 0.5, which represents a fair coin flip that returns true or false with equal probability. A cut $\clt{c}$ is introduced whenever a real-valued expression is compared against a constant $c$. Each cut carves the real line $\R$ at $c$, splitting it into two regions: $(-\infty,c)$ and $[c,+\infty)$. A finite collection of cuts $\clt{c_1},\ldots,\clt{c_n}$ therefore partitions $\R$ into $n+1$ consecutive intervals $(-\infty, c_1), [c_1,c_2), \ldots, [c_{n-1}, c_n), [c_n, +\infty)$.
+% For readability, we use \flip() as a shorthand for \uniform(0,1) < 0.5, which represents a fair coin flip that returns true or false with equal probability. A cut $\clt{c}$ refers to any constant $c$ that appears in a comparison such as $x < c$, where $c$ divides the real line $\R$ into two intervals: $(-\infty, c)$ and $[c, +\infty)$. When $x$ is compared to several constants, these comparisons introduce a set of cuts $\clt{c_1}, \ldots, \clt{c_n}$, which partitions $\R$ into $n+1$ contiguous intervals $(-\infty, c_1), [c_1,c_2), \ldots, [c_{n-1}, c_n), [c_n, +\infty)$.
 
 
-\subsection{Simple Branching on a Uniform Distribution}\label{sec:examples:1}
+% \subsection{Simple Branching on a Uniform Distribution}\label{sec:examples:1}
 
-To see the central idea behind \Slice{}, consider the simplest possible example:
+% We start with a basic example that illustrates the core idea of \Slice{}. 
+We can model a fair coin flip by comparing the outcome of a uniform sampling to $0.5$:
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em]
     uniform(0,1) < 0.5
 \end{lstlisting}
 
-Here the program samples a real number from \uniform(0,1) and branches on whether it is less than $0.5$. From the perspective of the program's control flow, the only fact that matters about the sampled value is whether it falls before or after the cut at $0.5$.
+% \noindent 
 
-\Slice{}'s type system captures exactly this. It collects the comparison constant $0.5$ as a cut, forming the cut set $\{ \clt{0.5} \}$. A single cut yields two intervals: $(-\infty, 0.5)$ and $[0.5, +\infty)$.
-
-Notice that even though the uniform distribution actually lives on $[0,1]$, the support does not matter: \Slice{} computes interval probabilities purely from the distribution’s CDF. In this case, both intervals intersect the support with probability $0.5$, producing the following discretization:
+Instead of sampling a real number and then comparing it to $0.5$, we can sample a discrete choice directly:
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em]
     discrete(0.5, 0.5) < 1
 \end{lstlisting}
 
-\noindent The value \lstinline{discrete(0.5, 0.5)} is a choice between two outcomes (0 and 1), each with probability $0.5$. Outcome 0 corresponds to the sampled value landing in $(-\infty,0.5)$; outcome 1 corresponds to landing in $[0.5,+\infty)$. In effect, we have collapsed an uncountable real domain into a two-element discrete domain that fully preserves the program's observable behavior at this comparison.
+\noindent Here, \discrete(0.5, 0.5) represents a choice between two outcomes (0 or 1), each with probability 0.5. Intuitively, the large amount of information contained in the uniform sampling of a real number was not necessary; we only needed 1 bit of randomness to determine the outcome.
 
-\subsubsection{Tracking cuts via types}
-The discretization is guided by the type system, which annotates floating-point expressions with the cuts they induce:
+\textbf{The goal of this paper is to automatically detect such opportunities and transform continuous choices into discrete choices when possible.} We do this by partitioning each continuous variable into intervals, such that numbers in the same interval are equivalent for any comparison that the rest of the program performs on them. Our analysis is formulated as a type system that tracks the partitions, and performing the analysis is done by type inference. After the partitions are determined, we map all real numbers in an interval to a discrete quantity that represents the interval. That is, for a real number $r \in \mathbb{R}$, we forget its exact value, and only remember which interval it belongs to.
+
+For the program above, \Slice{}'s type system identifies that the only cut for the continuous distribution is $\clt{0.5}$. This single cut partitions the reals $\R = (-\infty, +\infty)$ into two intervals: $(-\infty, 0.5)$ and $[0.5, +\infty)$. \Slice{} uses this information to compute a discretization:
+
+The outcome 0 corresponds to the original value being in $(-\infty, 0.5)$, and 1 corresponds to it being in $[0.5, +\infty)$. As such, we have abstracted away the support of the uniform distribution in the original program, replacing it with a discrete choice that preserves the original program's probabilistic behavior with respect to the identified cut. % Now, using \Dice{} as a backend for exact inference of discrete probabilistic programs, we can obtain the result \result{0.5}{0.5}.
+
+In our type system, this is captured as follows, using $\float[B; V]$ types:
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
     (uniform(0, 1) : !{\ft{<0.5}}!) < (0.5 : !{\ftb{<0.5}{0.5}}!)
 \end{lstlisting}
-Two key ideas are encoded in this type:
+A type $\float[B; V]$ tracks two pieces of information: the cut set $B$, which indicates which intervals are relevant, and the value set $V$ which indicates which values the expression itself can take. Each of these may be $\top$, indicating that we have no information.
+Figure~\ref{fig:float-type-def} explains this in more detail.
 
-\begin{enumerate}
-  \item \textbf{Cut set.} The type \ft{<0.5} means ``this expression is cut at 0.5.'' For a float constant, the constant itself also induces a cut; this allows \Slice{} to know exactly which interval the constant lies in once the real line is partitioned.
-  \item \textbf{Value set.} The annotation \ftb{<0.5}{0.5} records that the value \lstinline{0.5} is known precisely. This is crucial: after discretization, \Slice{} must replace the real constant \lstinline{0.5} with the correct interval index so that comparisons like \lstinline{<} remain meaningful.
-\end{enumerate}
+The type of the uniformly sampled value is \ft{<0.5}, which indicates that only the intervals $(-\infty, 0.5)$ and $[0.5, +\infty)$ are relevant, and the value set is $\top$ which indicates no knowledge of the value itself (because it can be any real value in the range 0 to 1). The type \ftb{<0.5}{0.5} on the constant \emph{does} indicate knowledge of the value itself, which is known to be precisely 0.5. Whenever we have a comparison $x < y$, the type system enforces that the cut sets of both sides are the same, which means that the discretization can map them to discrete quantities in a consistent way.
 
-Figure~\ref{fig:float-type-def} summarizes this structure. The cut set determines how \Slice{} partitions the real line; the value set ensures constants are placed in the correct discretized interval. Together, they allow \Slice{} to translate the original continuous program into a sound discrete program. Figure~\ref{fig:cuts-distr} illustrates how cut sets drive discretization. Notice how a float constant's cut set must contain the constant itself so \Slice{} can determine which discretized interval the constant belongs to after the real line is partitioned. For example, \ftb{<0.5}{0.5} allows \Slice{} to recognize that 0.5 belongs to the interval with index 1, e.g. the region $[0.5,+\infty)$, and to use that value in the discretized program.
+Figure~\ref{fig:cuts-distr} illustrates how cut sets drive discretization. Notice how a float constant's cut set must contain the constant itself so \Slice{} can determine which discretized interval the constant belongs to after the real line is partitioned. For example, \ftb{<0.5}{0.5} allows \Slice{} to recognize that 0.5 belongs to interval 1, e.g. the region $[0.5,+\infty)$, and to use that value in the discretized program.
 
 \begin{figure}
 \[
