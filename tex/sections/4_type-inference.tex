@@ -111,7 +111,7 @@ Each of the constraints is handled as follows:
     
     \item \textbf{Top assignment} ($V = \top$): We immediately set $V$ to $\top$, representing that the value set contains all possible float values.
     
-    \item \textbf{Distinguishability} ($\distinguishes{B}{V}$): This constraint ensures that the cut set $B$ can distinguish between all values in $V$. If $V$ is a finite set $\{v_1, ..., v_n\}$ with $n > 1$, we require that $B$ contains at least $n-1$ cuts to separate these values. If the cuts do not separate the values at the current solver state, we insert additional cuts to satisfy this condition. There is no canonical way to do this, so we use a simple heuristic: we insert a cut $\clt{x}$ for each value $x \in V$ that is not already separated by existing cuts.  If $B = \top$, the constraint is trivially satisfied.
+    \item \textbf{Distinguishability} ($\distinguishes{B}{V}$): This constraint ensures that the cut set $B$ can distinguish between all values in $V$. If $V$ is a finite set $\{v_1, ..., v_n\}$ with $n > 1$, we require that $B$ contains at least $n-1$ cuts to separate these values. If the cuts do not separate the values at the current solver state, we insert additional cuts to satisfy this condition. There is no canonical way to do this, so we use a heuristic: we insert a cut $\clt{x}$ for each value $x \in V$ that is not already separated by existing cuts.  If $B = \top$, the constraint is trivially satisfied.
     
     \item \textbf{Less-than answerability} ($\answerslt{B}{V_1}{V_2}$): Intuitively, this constraint ensures that $B$ contains enough cuts to answer all possible comparisons of the form ``$v_1 < v_2$'' where $v_1 \in V_1$ and $v_2 \in V_2$.
     If $B = \top$, the constraint is trivially satisfied.

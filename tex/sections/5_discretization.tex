@@ -76,18 +76,18 @@
 %
 In this section, we describe our type-directed discretization algorithm alongside illustrative examples. The setting is the following: Given a typed expression $e : \tau$ compute --- guided by the type annotations --- a (partially) \emph{discretized} expression $\discretize{e : \tau}$ such that $e$ and $\discretize{e : \tau}$ are \emph{semantically equivalent}, i.e., they produce the same distribution. Throughout the paper we call this semantics-preserving transformation \emph{exact discretization} to emphasize that it differs from prior \emph{quantization} approaches~\cite{Garg2024BitBlast,Huang2021AQUA}, where the continuous program is approximated via externally chosen precision parameters.
 
-$\discretize{e : \tau}$ is defined recursively on $e : \tau$ as shown in \Cref{fig:discretization-code}, where we focus on continuous uniform distributions. For other distributions, this procedure is completely analogous. Naturally, the only sub-expressions which are actually replaced by $\discretize{\cdot}$ are float constants and uniform samplings. Before we go into the details, let us get some intuition on how we use the type annotation to discretize expressions. The type system is designed in such a way that every typed sub-expression of the form 
+$\discretize{e : \tau}$ is defined recursively on $e : \tau$ as shown in \Cref{fig:discretization-code}, where we focus on continuous uniform distributions. For other distributions, this procedure is completely analogous. Naturally, the only sub-expressions which are actually replaced by $\discretize{\cdot}$ are float constants and uniform samplings. Before we go into the details, we outline how the type annotation guides the discretization of expressions. The type system is designed in such a way that every typed sub-expression of the form 
 $e = \uniform(e_1, e_2 )$ of type $\float[B;V]$ with $B=\{\sim_1\!\!b_1, \ldots, \sim_n\!\!b_n\} \neq \top$ 
 %
 can be \emph{discretized} to an expression $e' : \fin{n+1}$ such that 
 %
 the probability that $e$ evaluates to a value in $\intervals{B}_i$ \emph{coincides} with the probability that $e'$ evaluates to $\finconst{i}{n+1}$. %Moreover, this information is \emph{all we need} to ensure semantic equivalence of the continuous and the (partially) discretized expression. 
-In particular, if \emph{all} $\float[B;V]$-typed subexpressions are finite-cut, then the given expression can be \emph{fully discretized}.  Let us start with simple examples before considering more intricate ones.
+In particular, if \emph{all} $\float[B;V]$-typed subexpressions are finite-cut, then the given expression can be \emph{fully discretized}. 
 %
 
 \begin{example}
 	\label{ex:discretize_simple}
-The simplest setting is a uniform distribution whose outcomes are compared to constants. Consider the following typed expression $e: \bool$, where we omit irrelevant types:
+Consider first a uniform distribution whose outcomes are compared to constants. Consider the following typed expression $e: \bool$, where we omit irrelevant types:
 	%
 %
 %
@@ -115,7 +115,7 @@ Now consider the discretized expression obtained from computing $\discretize{e: 
     let x = discrete(0.3, 0.2, 0.5) in (x <#3 1#3) || (x >=#3 2#3)
 \end{lstlisting}
 %
-The probabilities appearing in $\discrete(\ldots)$ are determined by the cumulative distribution function (CDF) of the uniform distribution over $[0,1]$, ensuring that the probability of $x$ evaluating to $\finconst{k}{3}$ in $\discretize{e: \bool}$ \emph{coincides} with the probability of $x$ evaluating to a value in $\intervals{B}_k$ in $e$. Hence, the constants $0.3$ and $0.5$ in $e$ can be replaced by the constants $\finconst{1}{3}$ and $\finconst{2}{3}$, respectively,  in $\discretize{e: \bool}$, and it is evident that $e$ and $\discretize{e: \bool}$ are semantically equivalent. 
+The probabilities appearing in $\discrete(\ldots)$ are determined by the cumulative distribution function (CDF) of the uniform distribution over $[0,1]$, ensuring that the probability of $x$ evaluating to $\finconst{k}{3}$ in $\discretize{e: \bool}$ \emph{coincides} with the probability of $x$ evaluating to a value in $\intervals{B}_k$ in $e$. Hence, the constants $0.3$ and $0.5$ in $e$ can be replaced by the constants $\finconst{1}{3}$ and $\finconst{2}{3}$, respectively,  in $\discretize{e: \bool}$, which shows that $e$ and $\discretize{e: \bool}$ are semantically equivalent. 
 \end{example}
 %
 Crucially, the \emph{answers} constraint in the premise of the typing rules for comparisons (cf.\ \Cref{fig:typing-float}) ensures that $B$ is a correct and sufficiently fine-grained partitioning of $\Reals$, i.e., there is an injective function

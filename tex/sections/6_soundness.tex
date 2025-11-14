@@ -636,7 +636,7 @@
 % ---- NEW ----
 \newpage
 \subsection{Preliminaries}
-We consider a subset of our language, focusing only on let statements, conditionals, less than comparisons, and uniform and discrete distributions. The other constructs will easily follow.
+We consider a subset of our language, focusing only on let statements, conditionals, less than comparisons, and uniform and discrete distributions. The other constructs follow by analogous arguments.
 
 % \begin{itemize}
 % 	\item $\monunit \colon X \rightarrow \dist{X}$
@@ -2067,7 +2067,7 @@ We assume the expressions $e, e'$ are well-typed.
 	\end{itemize}
 
 	\textbf{Case} uniform with $B \neq \top$, $\uniform(e_1 : \tau_1, e_2 : \tau_2) : \tau,
-	\dc(\discretize{e_1 : \tau_1} : \discretize{\tau_1}, \discretize{e_2 : \tau_2} : \discretize{\tau_2}) : \discretize{\tau}$. (we prove the $\pi_2$ case here since it is more interesting). We have the following possibilities:
+	\dc(\discretize{e_1 : \tau_1} : \discretize{\tau_1}, \discretize{e_2 : \tau_2} : \discretize{\tau_2}) : \discretize{\tau}$. (we detail the $\pi_2$ case because it differs from $\pi_1$ in the construction below). We have the following possibilities:
 	\begin{itemize}
 		\item If $e_1 = v$ and $e_2 = w$ are values, then by Lemma~\ref{lem:form-preservation}, $\discretize{e_1}$ and $\discretize{e_2}$ are also values. 
 		

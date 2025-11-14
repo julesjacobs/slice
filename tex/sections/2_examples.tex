@@ -1,14 +1,14 @@
 \input{figures/architecture.tex}
 
 \section{Slice by Example}\label{sec:examples}
-This section presents simple examples that highlight some key features of \Slice{}, which extends a core functional language with traditional programming language constructs such as conditionals, local variables, and functions, augmented with constructs for probabilistic programming such as sampling and conditioning. More examples are highlighted in Appendix~\ref{ap:mot}.
+This section presents illustrative examples that highlight key features of \Slice{}, which extends a core functional language with traditional programming language constructs such as conditionals, local variables, and functions, augmented with constructs for probabilistic programming such as sampling and conditioning. More examples are highlighted in Appendix~\ref{ap:mot}.
 
 For readability, we use \flip() as a shorthand for \uniform(0,1) < 0.5, which represents a fair coin flip that returns true or false with equal probability. A cut $\clt{c}$ refers to any constant $c$ that appears in a comparison such as $x < c$, where $c$ divides the real line $\R$ into two intervals: $(-\infty, c)$ and $[c, +\infty)$. When $x$ is compared to several constants, these comparisons introduce a set of cuts $\clt{c_1}, \ldots, \clt{c_n}$, which partitions $\R$ into $n+1$ contiguous intervals $(-\infty, c_1), [c_1,c_2), \ldots, [c_{n-1}, c_n), [c_n, +\infty)$.
 
 
 \subsection{Simple Branching on a Uniform Distribution}\label{sec:examples:1}
 
-We start with a simple example that illustrates the core idea of \Slice{}. Consider the following program, which models a fair coin flip by comparing the outcome of a uniform sampling to $0.5$:
+We start with a basic example that illustrates the core idea of \Slice{}. Consider the following program, which models a fair coin flip by comparing the outcome of a uniform sampling to $0.5$:
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em]
     uniform(0,1) < 0.5

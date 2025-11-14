@@ -4,7 +4,7 @@
 \section{More motivating examples on language features}\label{ap:mot}
 \subsection{Sequential Processes with Iterate}\label{sec:examples:8}
 
-\Slice{} provides the \texttt{iterate} construct to model sequential probabilistic processes. This example simulates a simple weather model where tomorrow's weather depends on today's:
+\Slice{} provides the \texttt{iterate} construct to model sequential probabilistic processes. This example simulates a two-state weather model where tomorrow's weather depends on today's:
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
   let weather_transition = fun today ->
