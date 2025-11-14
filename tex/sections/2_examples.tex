@@ -82,9 +82,9 @@ This analysis is done by the type inference process, which collects all cuts for
 %Using \Dice{}, this yields the output \result{0.225}{0.775}.
 Note that the original constant $0.5$ is discretized differently: for $x < 0.5$ it is discretized to $2$ and for $y < 0.5$ it is discretized to $1$. This is because the constant $0.5$ falls in the third interval of the split $(-\infty, 0.2) \cup [0.2, 0.5) \cup [0.5, +\infty)$ for $x$ and the second interval for the split $(-\infty, 0.5) \cup [0.5, +\infty)$ for $y$. 
 
-\subsection{Branching on Multiple Discrete Values}\label{sec:examples:3}
-The example in Section~\ref{sec:examples:2} involves multiple continuous variables and conditional branches. In a similar fashion, \Slice{} supports multiple discrete values and conditionals. Crucially, discrete PPLs cannot directly handle floating-point quantities or continuous probability densities; they operate only over finite or countable domains. The transformation performed by \Slice{} is therefore essential for making such programs executable in these discrete settings.
-
+\subsection{Discretizing Float Constants}\label{sec:examples:3}
+The example in Section~\ref{sec:examples:2} involves comparisons with literal constant right-hand sides (such as $e < 0.5$). 
+\Slice{} does not require the comparison to have a syntactic constant right-hand or left-hand side. Instead, it analyzes the dataflow of the program to determine which constants are relevant, and how these constants are mapped to discrete indices.
 Consider the program:
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
@@ -115,12 +115,14 @@ Both $x$ and $y$ can only take on finitely many values --- a fact which is refle
     x < y
 \end{lstlisting}
 
+Notice how both $2.5$ and $4.5$ are discretized to $1$, because for the purpose of comparing them to $y = 0.5$, these values are equivalent.
+
 %Using \Dice{}, this yields the output \result{0.5}{0.5}.
 
 \subsection{Branching on Continuous Values}\label{sec:examples:4}
 
 In the two programs above, we directly compare the continuous or discrete samples to constants.
-However, the discretization process still works if the continuous samples and constants flow through the program, for instance via a conditional.
+However, the discretization process still works if the both the continuous samples and constants flow through the program, for instance via a conditional.
 Consider the following program, already type-annotated:
 
 %\begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
