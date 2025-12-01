@@ -1,0 +1,150 @@
+\begin{figure}[h]
+    \centering
+    
+    \begin{subfigure}[t]{0.5\textwidth}
+    \centering
+    \scalebox{0.58}{
+    \begin{tikzpicture}[
+        node distance=3cm,
+        floatnode/.style={draw, rounded corners, minimum width=3.3cm, minimum height=1.1cm, align=center},
+        flow/.style={->, thick, color=brown!60!black},
+        compred/.style={thick, dashed, color=red},
+        compblue/.style={thick, dashed, color=blue}
+    ]
+    
+    % ==== FLOAT NODES ====
+    
+    \node[floatnode] (u) {
+        $\uniform(0,2)$ : \\
+        $\floattype{\textcolor{blue}{\cleq{0.3}}, \textcolor{red}{\clt{1.5}}, 
+                    \textcolor{blue}{\cleq{1.8}}}{\textcolor{brown!60!black}{\top}}$
+    };
+    
+    \node[floatnode, right=0.2cm of u] (g) {
+        $\gaussian(0,1)$ : \\
+        $\floattype{\textcolor{blue}{\cleq{0.3}}, \textcolor{red}{\clt{1.5}}, 
+                    \textcolor{blue}{\cleq{1.8}}}{\textcolor{brown!60!black}{\top}}$
+    };
+    
+    \node[floatnode, below=2.8cm of $(u)!0.5!(g)$] (x) {
+        $x$ : \\
+        $\floattype{\textcolor{blue}{\cleq{0.3}}, \textcolor{red}{\clt{1.5}}, 
+                    \textcolor{blue}{\cleq{1.8}}}{\textcolor{brown!60!black}{\top}}$
+    };
+    
+    \node[floatnode, below=2.8cm of x, xshift=-2.2cm] (c15) {
+        \textcolor{red}{1.5} : \\
+        $\floattype{\textcolor{blue}{\cleq{0.3}}, \textcolor{red}{\clt{1.5}}, 
+                    \textcolor{blue}{\cleq{1.8}}}{\textcolor{brown!60!black}{1.5}}$
+    };
+    
+    \node[floatnode, below=2.8cm of x, xshift=2.4cm] (y) {
+        \textcolor{blue}{y} : \\
+        $\floattype{\textcolor{blue}{\cleq{0.3}}, \textcolor{red}{\clt{1.5}}, 
+                    \textcolor{blue}{\cleq{1.8}}}{\textcolor{brown!60!black}{0.3,1.8}}$
+    };
+    
+    \node[floatnode, below=2.5cm of y, xshift=-2.2cm] (c18) {
+        \textcolor{blue}{1.8} : \\
+        $\floattype{\textcolor{blue}{\cleq{0.3}}, \textcolor{red}{\clt{1.5}}, 
+                    \textcolor{blue}{\cleq{1.8}}}{\textcolor{brown!60!black}{1.8}}$
+    };
+    
+    \node[floatnode, below=2.5cm of y, xshift=2.2cm] (c03) {
+        \textcolor{blue}{0.3} : \\
+        $\floattype{\textcolor{blue}{\cleq{0.3}}, \textcolor{red}{\clt{1.5}}, 
+                    \textcolor{blue}{\cleq{1.8}}}{\textcolor{brown!60!black}{0.3}}$
+    };
+    
+    % ==== DATA FLOW EDGES ====
+    
+    \draw[flow] (u) -- node[left, text=black] {\small then-branch flow} (x);
+    \draw[flow] (g) -- node[right, text=black] {\small else-branch flow} (x);
+    
+    \draw[flow] (c18) -- node[left, text=black] {\small then-branch flow} (y);
+    \draw[flow] (c03) -- node[right, text=black] {\small else-branch flow} (y);
+    
+    % ==== COMPARISON EDGES ====
+    
+    \draw[compred] (c15) -- node[above, color=black] {$>$} (x);
+    \draw[compblue] (x) -- node[above, color=black] {$\le$} (y);
+    
+    \end{tikzpicture}
+    }
+    \caption{Edge diagram for example~\ref{sec:examples:4}.}
+    \label{fig:control-flow-gaussian}
+    \end{subfigure}
+    \hfill
+    % ======================================================
+    \begin{subfigure}[t]{0.40\textwidth}
+    \centering
+    \scalebox{0.58}{
+    \begin{tikzpicture}[
+        node distance=3cm,
+        floatnode/.style={draw, rounded corners, minimum width=3.4cm, minimum height=1.2cm, align=center},
+        flow/.style={->, thick},
+        comp/.style={->, thick, dashed}
+    ]
+    
+    % ===== FLOAT VALUE NODES =====
+    
+    \node[floatnode] (v05) {
+        \textcolor{blue}{0.5} : \\
+        $\floattype{\textcolor{blue}{\cleq{0.5}}, \textcolor{red}{\cleq{1.5}}}{\textcolor{brown!60!black}{0.5}}$
+    };
+    
+    \node[floatnode, right=0.2cm of v05] (v15) {
+        \textcolor{red}{1.5} : \\
+        $\floattype{\textcolor{blue}{\cleq{0.5}}, \textcolor{red}{\cleq{1.5}}}{\textcolor{brown!60!black}{1.5}}$
+    };
+    
+    % ===== X NODE =====
+    
+    \node[floatnode, below=3cm of $(v05)!0.5!(v15)$] (x) {
+        $x$ : \\
+        $\floattype{\textcolor{blue}{\cleq{0.5}}, \textcolor{red}{\cleq{1.5}}}{\textcolor{brown!60!black}{0.5,1.5}}$
+    };
+    
+    % ===== GAUSSIAN CASE NODES =====
+    
+    \node[floatnode, below=3cm of x, xshift=-1.8cm] (g05) {
+        $\gaussian(0, \textcolor{blue}{x = 0.5})$ : \\
+        $\floattype{\textcolor{teal}{\clt{0.5}}}{\textcolor{brown!60!black}{\top}}$
+    };
+    
+    \node[floatnode, below=3cm of x, xshift=1.8cm] (g15) {
+        $\gaussian(0, \textcolor{red}{x = 1.5})$ : \\
+        $\floattype{\textcolor{teal}{\clt{0.5}}}{\textcolor{brown!60!black}{\top}}$
+    };
+    
+    % ===== CONSTANT 0.5 =====
+    
+    \node[floatnode, below=3cm of $(g05)!0.5!(g15)$] (c05) {
+        \textcolor{teal}{0.5} : \\
+        $\floattype{\textcolor{teal}{\clt{0.5}}}{\textcolor{brown!60!black}{0.5}}$
+    };
+    
+    % ===== DATA FLOW =====
+    
+    \draw[->, thick, color=brown!70!black] (v05) -- node[left, text=black] {\small then-branch flow} (x);
+    \draw[->, thick, color=brown!70!black] (v15) -- node[right, text=black] {\small else-branch flow} (x);
+    
+    \draw[thick, dashed, color=blue] (x) -- 
+    node[left, text=black] {\small \shortstack{distinguishes \\ (case 0)}} (g05);
+
+    \draw[thick, dashed, color=red] (x) -- 
+    node[right, text=black] {\small \shortstack{distinguishes \\ (case 1)}} (g15);
+    
+    \draw[thick, dashed, color=teal!60!black] (g05) -- node[left, text=black] {$<$} (c05);
+    \draw[thick, dashed, color=teal!60!black] (g15) -- node[right, text=black] {$<$} (c05);
+    
+    \end{tikzpicture}
+    }
+    \caption{Edge diagram for example~\ref{sec:examples:5}.}
+    \label{fig:control-flow-distinguishes}
+    \end{subfigure}
+    
+    \caption{Nodes are float-typed subexpressions. Brown directed edges represent the flow of value sets, obtained by taking the union of the possible values contributed by each subexpression. The dotted lines show where cut sets are produced. The same cut set information is then propagated along the value-flow edges.}
+    \label{fig:control-flow}
+    \end{figure}
+    

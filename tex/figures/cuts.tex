@@ -1,3 +1,70 @@
+\begin{figure}[h]
+  \centering
+  \scalebox{0.6}{
+  \begin{tikzpicture}[scale=1.1]
+
+  % ===== BEGIN GRAPH REGION =====
+  \begin{scope}[xshift=-2.5cm, scale=0.75]
+
+  % Axes for Gaussian
+  \draw[->] (-5,0) -- (6,0);
+  \node[text=green!70!black] at (-4.8, -0.3) {$-\infty$};
+  \node[text=green!70!black] at (5.8, -0.3) {$+\infty$};
+  \node[text=green!70!black] at (3.2, -0.5) {3.2};
+
+  % Gaussian curve: N(2,1)
+  \draw[thick, domain=-4:6, smooth, variable=\x] 
+    plot ({\x},{2*exp(-((\x-2)*(\x-2))/2)});
+
+  % Vertical dotted line 
+  \draw[dotted, thick] (3.2, 2.3) -- (3.2, -3.2);
+
+  % Blue shading (left interval)
+  \fill[blue, opacity=0.5] 
+    (-4,0) -- plot[domain=-4:3.2] (\x,{2*exp(-((\x-2)*(\x-2))/2)}) -- (3.2,0) -- cycle;
+
+  % Red shading (right interval)
+  \fill[red, opacity=0.5] 
+    (3.2,0) -- plot[domain=3.2:6] (\x,{2*exp(-((\x-2)*(\x-2))/2)}) -- (6,0) -- cycle;
+
+  % Discrete distribution: 0 bar
+  \draw (-3.75,-1.8) rectangle (3.2,-3.2);
+
+  % Discrete distribution: 1 bar
+  \draw (3.2,-2.4) rectangle (6.25,-3.2);
+
+  % Fill colors
+  \fill[blue, opacity=0.5] (-3.75,-1.8) rectangle (3.2,-3.2);
+  \fill[red, opacity=0.5] (3.2,-2.4) rectangle (6.25,-3.2);
+
+  % Labels
+  \node[text=orange] at (0.5,-3.5) {0};
+  \node[text=orange] at (4.7,-3.5) {1};
+
+  \end{scope}
+  % ===== END GRAPH REGION =====
+
+  % Original program text
+  \node[left] at (-6.2,1.5) {original program:};
+  \node[left] at (-6.2,0.9) {$\gaussian(2,1) < \textcolor{green!70!black}{3.2}$};
+
+  % Discretized program text
+  \node[left] at (-6.2,-2.0) {discretized program:};
+  \node[left] at (-6.2,-2.6) {$\discrete(\textcolor{blue}{0.8849}, \textcolor{red}{0.1151}) < \textcolor{orange}{1}$};
+
+  % Probability equations
+  \node[align=left] at (5.2,-1.8) {
+  \textcolor{blue}{$\Pr(0) = CDF(3.2) - CDF(-\infty)= 0.8849$}\\
+  \textcolor{red}{$\Pr(1) = CDF(+\infty) - CDF(3.2) = 0.1151$}
+  };
+
+  \end{tikzpicture}
+  }
+  \caption{Discretization of the original program $\gaussian(2,1) < 3.2$ into the semantically equivalent discretized program $\discrete(0.8849, 0.1151) < 1$. The blue and red shaded regions show how the cut at 3.2 partitions the continuous distribution into two intervals $(-\infty, 3.2)$ and $[3.2, +\infty)$, whose masses become the probabilities of outcomes $0$ and $1$, e.g. interval indices, in the discrete distribution.}
+  \label{fig:cuts-gaussian}
+\end{figure}
+
+\iffalse
 \begin{figure}
     \centering
     \begin{tikzpicture}[scale=0.9]
@@ -53,4 +120,5 @@
     \end{tikzpicture}
     \caption{Partitioning a continuous distribution by cuts $\clt{c_1}, \ldots, \clt{c_n}$ into intervals $(-\infty, c_1), [c_1,c_2), \ldots, [c_n, +\infty)$, with each interval assigned a discrete probability $\Pr(i)$ computed from CDF differences. Each interval represents a range of real values that is abstracted to a single discretized value labeled $0, 1, \ldots, n$. Note the resulting intervals may vary in width and need not be uniformly spaced. Given an expression of type $\floattype{B}{V}$, a finite value set $V$ maps the expression to the unique interval containing that value, whereas $V = \top$ yields a discrete distribution over all interval indices $i$, weighted by their probabilities $\Pr(i)$.}
     \label{fig:cuts-distr}
-    \end{figure}
+\end{figure}
+\fi
