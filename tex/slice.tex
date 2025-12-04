@@ -13,6 +13,7 @@
 \usepackage{adjustbox}
 \usepackage{makecell}
 \usepackage{bm}
+\usepackage{wrapfig}
 % Redefine sections to display with § symbol
 \crefformat{section}{\S#2#1#3}
 \Crefformat{section}{\S#2#1#3}
@@ -37,6 +38,7 @@
 % Use \ftb{cuts}{values} for float type with both cuts and values
 % Use \ft{cuts} for float type with cuts and T for values
 % Use \ftt for float[T; T]
+\newcommand{\ftnv}[1]{\codetype{float[\{#1\}]}}  % Cuts only, no values
 \newcommand{\ftb}[2]{\codetype{float[\{#1\}; \{#2\}]}}  % Both bags have values
 \newcommand{\ft}[1]{\codetype{float[\{#1\}; T]}}        % Cuts only, values are T
 \newcommand{\ftbn}[2]{\codetype{float[#1; #2]}}  % Both bags have values
