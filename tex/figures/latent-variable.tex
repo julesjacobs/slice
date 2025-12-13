@@ -10,67 +10,55 @@
 
 \node[floatnode] (v05) {
     0.5 : \\
-    $\floattype{\textcolor{red}{\cleq{0.5}}, \textcolor{red}{\cleq{1.5}}}{\textcolor{black!60!black}{0.5}}$
+    $\floattype{\cleq{0.5}, \cleq{1.5}}{\textcolor{black!60!black}{0.5}}$
 };
 
 \node[floatnode, right=0.2cm of v05] (v15) {
     1.5 : \\
-    $\floattype{\textcolor{red}{\cleq{0.5}}, \textcolor{red}{\cleq{1.5}}}{\textcolor{black!60!black}{1.5}}$
+    $\floattype{\cleq{0.5}, \cleq{1.5}}{\textcolor{black!60!black}{1.5}}$
 };
 
 % ===== X NODE =====
 
 \node[floatnode, below=3cm of $(v05)!0.5!(v15)$] (x) {
     $x$ : \\
-    $\floattype{\textcolor{red}{\cleq{0.5}}, \textcolor{red}{\cleq{1.5}}}{\textcolor{black!60!black}{0.5,1.5}}$
+    $\floattype{\textcolor{red}{\cleq{0.5}}, \textcolor{red}{\cleq{1.5}}}{\textcolor{red}{0.5,1.5}}$
 };
 
 % ===== SINGLE GAUSSIAN NODE =====
 
-\node[floatnode, below=3cm of x] (g) {
+\node[floatnode, below=1cm of x] (g) {
     $\gaussian(0, x)$ : \\
-    $\floattype{\textcolor{blue}{\clt{0.5}}}{\textcolor{black!60!black}{\top}}$
+    $\floattype{\clt{0.5}}{\top}$
 };
 
-% ===== CONSTANT 0.5 =====
+% ===== CONSTANT 0.5 NODE =====
 
-\node[floatnode, below=3cm of g] (c05) {
-    \textcolor{blue}{0.5} : \\
-    $\floattype{\textcolor{blue}{\clt{0.5}}}{\textcolor{black!60!black}{0.5}}$
+\node[floatnode, below=2cm of g] (c05) {
+    0.5 : \\
+    $\floattype{\clt{0.5}}{0.5}$
 };
 
-% ===== BRANCH FLOWS =====
+% ===== DOTTED ARROWS FOR CUT SET PROPAGATION =====
+\draw[->, thick, dotted] (x) -- node[left, text=black] {} (v05);
+\draw[->, thick, dotted] (x) -- node[right, text=black] {} (v15);
 
-\draw[->, thick, color=black!70!black] (v05) -- node[left, text=black] {\small then-branch flow} (x);
-\draw[->, thick, color=black!70!black] (v15) -- node[right, text=black] {\small else-branch flow} (x);
+% ===== SOLID ARROWS FOR VALUE SET PROPAGATION =====
+\draw[->, thick]
+    ([xshift=40pt]v05.south west) to node[left, pos=0.7] {\small then-branch flow} ([xshift=30pt]x.north west);
+\draw[->, thick]
+    ([xshift=-40pt]v15.south east) to node[right, pos=0.7] {\small else-branch flow} ([xshift=-30pt]x.north east);
 
 % ===== SELF LOOP ON X WITH "recovers" =====
 
 \draw[->, thick, color=red, dotted]
-    (x.north east) .. controls +(0.8,0.8) and +(0.8,-0.8) ..
-    node[right, text=black, inner sep=1pt] (rec) {\small recovers}
+    (x.east) .. controls +(0.8,0) and +(0.8,-0.8) ..
+    node[right, text=black, inner sep=1pt] {\small recovers}
     (x.south east);
-
-% ===== SINGLE CIRCULAR LOOP FROM RECOVERS TO GAUSSIAN(0,x) =====
-\draw[->, thick, color=lightgray!70!black, line cap=round]
-    % start at recovers
-    (rec.south east)
-        % first segment going downward-ish
-        .. controls +(0.35,-0.05) and +(-0.35,0.20) ..
-        ($(rec.south east)!0.33!(g.north)$)
-        % --- the loop in the middle ---
-        .. controls +(0.35,-0.15) and +(0.35,0.15) ..
-        ++(0.0,-0.30)
-        .. controls +(-0.35,-0.15) and +(-0.35,0.15) ..
-        ++(0.0,0.30)
-        % continue toward gaussian x
-        .. controls +(0.30,-0.05) and +(-0.25,0.15) ..
-        ($(g.north) + (1.2,0.08)$);
-
 
 % ===== GAUSSIAN TO CONSTANT LINE =====
 
-\draw[thick, dashed, color=blue!60!black]
+\draw[->, thick, dashed, color=black!60!black]
     (g) -- node[right, text=black] {$<$} (c05);
 
 \end{tikzpicture}
