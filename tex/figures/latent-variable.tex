@@ -10,33 +10,33 @@
 
 \node[floatnode] (v05) {
     0.5 : \\
-    $\floattype{\cleq{0.5}, \cleq{1.5}}{\textcolor{black!60!black}{0.5}}$
+    $\floattype{\{\cleq{0.5}, \cleq{1.5}\}}{\{0.5\}}$
 };
 
 \node[floatnode, right=0.2cm of v05] (v15) {
     1.5 : \\
-    $\floattype{\cleq{0.5}, \cleq{1.5}}{\textcolor{black!60!black}{1.5}}$
+    $\floattype{\{\cleq{0.5}, \cleq{1.5}\}}{\{1.5\}}$
 };
 
 % ===== X NODE =====
 
 \node[floatnode, below=3cm of $(v05)!0.5!(v15)$] (x) {
     $x$ : \\
-    $\floattype{\textcolor{red}{\cleq{0.5}}, \textcolor{red}{\cleq{1.5}}}{\textcolor{red}{0.5,1.5}}$
+    $\floattype{\{\textcolor{red}{\cleq{0.5}}, \textcolor{red}{\cleq{1.5}}\}}{\{\textcolor{red}{0.5,1.5}\}}$
 };
 
 % ===== SINGLE GAUSSIAN NODE =====
 
 \node[floatnode, below=1cm of x] (g) {
     $\gaussian(0, x)$ : \\
-    $\floattype{\clt{0.5}}{\top}$
+    $\floattype{\{\clt{0.5}\}}{\top}$
 };
 
 % ===== CONSTANT 0.5 NODE =====
 
 \node[floatnode, below=2cm of g] (c05) {
     0.5 : \\
-    $\floattype{\clt{0.5}}{0.5}$
+    $\floattype{\{\clt{0.5}\}}{\{0.5\}}$
 };
 
 % ===== DOTTED ARROWS FOR CUT SET PROPAGATION =====
@@ -45,9 +45,9 @@
 
 % ===== SOLID ARROWS FOR VALUE SET PROPAGATION =====
 \draw[->, thick]
-    ([xshift=40pt]v05.south west) to node[left, pos=0.7] {\small then-branch flow} ([xshift=30pt]x.north west);
+    ([xshift=57pt]v05.south west) to node[left, pos=0.7] {\small then-branch flow} ([xshift=45pt]x.north west);
 \draw[->, thick]
-    ([xshift=-40pt]v15.south east) to node[right, pos=0.7] {\small else-branch flow} ([xshift=-30pt]x.north east);
+    ([xshift=-57pt]v15.south east) to node[right, pos=0.7] {\small else-branch flow} ([xshift=-45pt]x.north east);
 
 % ===== SELF LOOP ON X WITH "recovers" =====
 

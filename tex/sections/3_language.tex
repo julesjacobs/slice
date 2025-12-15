@@ -124,7 +124,7 @@ Moreover, we let $\intervals{\emptyset} = \{(-\infty,\infty)\}$ and $\intervals{
 	\end{align*}
 \end{definition}
 %
-Standard types cover integers, booleans, ordered pairs, functions, unit, lists, and references. 
+Standard types cover integers, booleans, ordered pairs, functions, unit, and lists. 
 
 Finite types $\fin{n}$ contain $\{\finconst{0}{n},\ldots,\finconst{(n-1)}{n}\}$; the ${\#n}$ subscript reminds inference backends such as \Dice{} that these values live in a finite domain.
 
@@ -199,7 +199,7 @@ Rule \textsc{Float-Const} assigns a constant $c$ the type $\float[B; V]$ wheneve
 	%$B$ distinguishes $V$ if every interval in $B$ contains at most one value in $V$, or $B = \top$.
 \end{definition}
 %
-Intuitively, $\exponential(e)$ can be discretized only when $e$ takes finitely many recoverable values. Thus $V$ must be finite and $B$ must separate those values so the discretized program can determine which one occurred. Section~\ref{sec:discretization} revisits this invariant.
+Intuitively, $\distinguishes{B}{V}$ means that the discretization induced by $B$ is lossless on $V$: from the resulting interval index, the original value in $V$ can be uniquely recovered. For example, $\exponential(e)$ can be discretized only when $e$ takes finitely many recoverable values. Thus $V$ must be finite and $B$ must separate those values so the discretized program can determine which one occurred. Section~\ref{sec:discretization} revisits this invariant.
 
 % The following observations will be useful in the sequel:
 

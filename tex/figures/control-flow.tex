@@ -38,17 +38,17 @@
     
     \node[floatnode, right=0.4cm of g] (c18) {
         1.8 : \\
-        $\floattype{}{\textcolor{red}{1.8}}$
+        $\floattype{}{\{\textcolor{red}{1.8}\}}$
     };
     
     \node[floatnode, right=0.2cm of c18] (c03) {
         0.3 : \\
-        $\floattype{}{\textcolor{red}{0.3}}$
+        $\floattype{}{\{\textcolor{red}{0.3}\}}$
     };
     
     \node[floatnode, below=0.5cm of x, xshift=-2.2cm] (c15) {
         1.5 : \\
-        $\floattype{}{\textcolor{red}{1.5}}$
+        $\floattype{}{\{\textcolor{red}{1.5}\}}$
     };
     
     \end{tikzpicture}
@@ -88,22 +88,22 @@
     
     \node[floatnode, right=4.5cm of x] (y) {
         $y$ : \\
-        $\floattype{}{\textcolor{red}{0.3,1.8}}$
+        $\floattype{}{\{\textcolor{red}{0.3,1.8}\}}$
     };
     
     \node[floatnode, right=0.4cm of g] (c18) {
         1.8 : \\
-        $\floattype{}{1.8}$
+        $\floattype{}{\{1.8\}}$
     };
     
     \node[floatnode, right=0.2cm of c18] (c03) {
         0.3 : \\
-        $\floattype{}{0.3}$
+        $\floattype{}{\{0.3\}}$
     };
     
     \node[floatnode, below=0.5cm of x, xshift=-2.2cm] (c15) {
         1.5 : \\
-        $\floattype{}{1.5}$
+        $\floattype{}{\{1.5\}}$
     };
     
     % ==== DATA FLOW EDGES ====
@@ -148,30 +148,30 @@
     
     \node[floatnode, below=1.0cm of $(u)!0.5!(g)$] (x) {
         $x$ : \\
-        $\floattype{\textcolor{blue}{\cleq{0.3}}, \textcolor{red}{\clt{1.5}}, 
-                    \textcolor{blue}{\cleq{1.8}}}{\textcolor{black}{\top}}$
+        $\floattype{\{\textcolor{blue}{\cleq{0.3}}, \textcolor{red}{\clt{1.5}}, 
+                    \textcolor{blue}{\cleq{1.8}}\}}{\textcolor{black}{\top}}$
     };
     
     \node[floatnode, right=4.5cm of x] (y) {
         $y$ : \\
-        $\floattype{\textcolor{blue}{\cleq{0.3}}, \textcolor{red}{\clt{1.5}}, 
-                    \textcolor{blue}{\cleq{1.8}}}{\textcolor{blue}{0.3,1.8}}$
+        $\floattype{\{\textcolor{blue}{\cleq{0.3}}, \textcolor{red}{\clt{1.5}}, 
+                    \textcolor{blue}{\cleq{1.8}}\}}{\{\textcolor{blue}{0.3,1.8}\}}$
     };
     
     \node[floatnode, right=0.4cm of g] (c18) {
         1.8 : \\
-        $\floattype{}{1.8}$
+        $\floattype{}{\{1.8\}}$
     };
     
     \node[floatnode, right=0.2cm of c18] (c03) {
         0.3 : \\
-        $\floattype{}{0.3}$
+        $\floattype{}{\{0.3\}}$
     };
     
     \node[floatnode, below=2.8cm of x, xshift=-2.2cm] (c15) {
         1.5 : \\
-        $\floattype{\textcolor{blue}{\cleq{0.3}}, \textcolor{red}{\clt{1.5}}, 
-                    \textcolor{blue}{\cleq{1.8}}}{\textcolor{red}{1.5}}$
+        $\floattype{\{\textcolor{blue}{\cleq{0.3}}, \textcolor{red}{\clt{1.5}}, 
+                    \textcolor{blue}{\cleq{1.8}}\}}{\{\textcolor{red}{1.5}\}}$
     };
 
     % ==== COMPARISON EDGES ====
@@ -199,37 +199,37 @@
     % ==== FLOAT NODES ====
     \node[floatnode] (u) {
         $\uniform(0,2)$ : \\
-        $\floattype{\textcolor{red}{\cleq{0.3}, \clt{1.5}, \cleq{1.8}}}{\top}$
+        $\floattype{\{\textcolor{red}{\cleq{0.3}, \clt{1.5}, \cleq{1.8}}\}}{\top}$
     };
 
     \node[floatnode, right=0.2cm of u] (g) {
         $\gaussian(0,1)$ : \\
-        $\floattype{\textcolor{red}{\cleq{0.3}, \clt{1.5}, \cleq{1.8}}}{\top}$
+        $\floattype{\{\textcolor{red}{\cleq{0.3}, \clt{1.5}, \cleq{1.8}}\}}{\top}$
     };
 
     \node[floatnode, below=2.8cm of $(u)!0.5!(g)$] (x) {
         $x$ : \\
-        $\floattype{\cleq{0.3}, \clt{1.5}, \cleq{1.8}}{\top}$
+        $\floattype{\{\cleq{0.3}, \clt{1.5}, \cleq{1.8}\}}{\top}$
     };
 
     \node[floatnode, right=4.5cm of x] (y) {
         $y$ : \\
-        $\floattype{\cleq{0.3}, \clt{1.5}, \cleq{1.8}}{0.3,1.8}$
+        $\floattype{\{\cleq{0.3}, \clt{1.5}, \cleq{1.8}\}}{\{0.3,1.8\}}$
     };
 
     \node[floatnode, right=0.4cm of g] (c18) {
         1.8 : \\
-        $\floattype{\textcolor{red}{\cleq{0.3}, \clt{1.5}, \cleq{1.8}}}{1.8}$
+        $\floattype{\{\textcolor{red}{\cleq{0.3}, \clt{1.5}, \cleq{1.8}}\}}{\{1.8\}}$
     };
 
     \node[floatnode, right=0.2cm of c18] (c03) {
         0.3 : \\
-        $\floattype{\textcolor{red}{\cleq{0.3}, \clt{1.5}, \cleq{1.8}}}{0.3}$
+        $\floattype{\{\textcolor{red}{\cleq{0.3}, \clt{1.5}, \cleq{1.8}}\}}{\{0.3\}}$
     };
 
     \node[floatnode, below=0.5cm of x, xshift=-2.2cm] (c15) {
         1.5 : \\
-        $\floattype{\cleq{0.3}, \clt{1.5}, \cleq{1.8}}{1.5}$
+        $\floattype{\{\cleq{0.3}, \clt{1.5}, \cleq{1.8}\}}{\{1.5\}}$
     };
 
     % ==== DATA FLOW EDGES ====

@@ -29,12 +29,12 @@ The type inference rules closely mirror the typing rules in Figure~\ref{fig:typi
 \input{figures/typing-infer.tex}
 
 \begin{example}
-    To further illustrate how our constraint generation rules work, we walk through an example below. Consider the program, omitting the irrelevant types such as \bool:
+    To further illustrate how our constraint generation rules work, we walk through Example~\ref{sec:examples:4} from Section~\ref{sec:examples}. Below is the program again:
 
     \begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!,mathescape]
         let x = if flip()
-                then exponential(0.5)
-                else exponential(0.8)
+                then uniform(0,2)
+                else gaussian(0,1)
                 in
         let y = if x < 1.5
                 then 1.8
@@ -47,44 +47,50 @@ The type inference rules closely mirror the typing rules in Figure~\ref{fig:typi
     
     \begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!,mathescape]
         let x = if flip()
-                then exponential(0.5 : !{\ftbn{$B_1$}{$V_1$}}!) : !{\ftbn{$B_2$}{$V_2$}}!
-                else exponential(0.8 : !{\ftbn{$B_3$}{$V_3$}}!) : !{\ftbn{$B_4$}{$V_4$}}!
-                : !{\ftbn{$B_5$}{$V_5$}}! in
-        let y = if (x : !{\ftbn{$B_5$}{$V_5$}}!) < (1.5 : !{\ftbn{$B_6$}{$V_6$}}!)
-                then (1.8 : !{\ftbn{$B_7$}{$V_7$}}!)
-                else (0.3 : !{\ftbn{$B_8$}{$V_8$}}!)
-                : !{\ftbn{$B_9$}{$V_9$}}! in
-        (x : !{\ftbn{$B_5$}{$V_5$}}!) <= (y : !{\ftbn{$B_9$}{$V_9$}}!)
+                then uniform(0 : !{\ftbn{$B_1$}{$V_1$}}!, 2 : !{\ftbn{$B_2$}{$V_2$}}!) : !{\ftbn{$B_3$}{$V_3$}}!
+                else gaussian(0 : !{\ftbn{$B_4$}{$V_4$}}!, 1 : !{\ftbn{$B_5$}{$V_5$}}!) : !{\ftbn{$B_6$}{$V_6$}}!
+                : !{\ftbn{$B_7$}{$V_7$}}! in
+        let y = if (x : !{\ftbn{$B_7$}{$V_7$}}!) < (1.5 : !{\ftbn{$B_8$}{$V_8$}}!)
+                then (1.8 : !{\ftbn{$B_9$}{$V_9$}}!)
+                else (0.3 : !{\ftbn{$B_{10}$}{$V_{10}$}}!)
+                : !{\ftbn{$B_{11}$}{$V_{11}$}}! in
+        (x : !{\ftbn{$B_7$}{$V_7$}}!) <= (y : !{\ftbn{$B_{11}$}{$V_{11}$}}!)
     \end{lstlisting}
     
-    Applying our constraint generation rules, we obtain the following constraints:
+    Applying our constraint generation rules from Figure~\ref{fig:type-inference}, we obtain the following constraints:
     
     \begin{enumerate}
-        \item From the constants using \textsc{TFloat-Const}:  $\has{V_1}{0.5}$ (from literal 0.5), $\has{V_3}{0.8}$ (from literal 0.8), 
-        $\has{V_6}{1.5}$ (from literal 1.5), $\has{V_7}{1.8}$ (from literal 1.8), and $\has{V_8}{0.3}$ (from literal 0.3).
+        \item From the constants using \textsc{TFloat-Const}: 
         
-        \item From the exponential distributions using \textsc{TContinuous-1}: $\distinguishes{B_1}{V_1}, V_2 = \top$, $B_1 \equiv_{\top} B_2$ (from \texttt{exponential(0.5)}); 
-         $\distinguishes{B_3}{V_3}, V_4 = \top$, $B_3 \equiv_{\top} B_4$ (from \texttt{exponential(0.8)}).
+        $\has{V_1}{0}$ (from literal 0); $\has{V_2}{2}$ (from literal 2); $\has{V_4}{0}$ (from literal 0); $\has{V_5}{1}$ (from literal 1); $\has{V_8}{1.5}$ (from literal 1.5); $\has{V_9}{1.8}$ (from literal 1.8); and $\has{V_{10}}{0.3}$ (from literal 0.3).
         
-        \item From the first \texttt{if} expression using \textsc{TIf}:  $\subtype{\float[B_2; V_2]}{\float[B_5; V_5]}$ and $\subtype{\float[B_4; V_4]}{\float[B_5; V_5]}$.        
-        \item From the comparison \texttt{x < 1.5} using \textsc{TLess}: $\answerslt{B_{5}}{V_5}{V_6}$ and $B_{5} = B_6$.
+        \item From the continuous distributions using \textsc{TContinuous-2}: 
         
+        $\distinguishes{B_1}{V_1}$, $B_1 \equiv_{\top} B_3$, $\distinguishes{B_2}{V_2}$, $B_2 \equiv_{\top} B_3$, $V_3 = \top$ (from \texttt{uniform(0,2)}); $\distinguishes{B_4}{V_4}$, $B_4 \equiv_{\top} B_6$, $\distinguishes{B_5}{V_5}$, $B_5 \equiv_{\top} B_6$, $V_6 = \top$ (from \texttt{gaussian(0,1)}). 
         
-        \item From the second \texttt{if} expression using \textsc{TIf}: $\subtype{\float[B_7; V_7]}{\float[B_9; V_9]}$ and $\subtype{\float[B_8; V_8]}{\float[B_9; V_9]}$.        
-        \item From the final comparison \texttt{x <= y} using \textsc{TLessEq}: $\answersleq{B_{5}}{V_5}{V_9}$ and 
-           $B_{5} = B_9$.
-               \end{enumerate}
+        \item From the if expressions using \textsc{TIf}: 
+        
+        $\subtype{\float[B_3; V_3]}{\float[B_7; V_7]}$, $\subtype{\float[B_6; V_6]}{\float[B_7; V_7]}$ (from the first if for $x$); $\subtype{\float[B_9; V_9]}{\float[B_{11}; V_{11}]}$, $\subtype{\float[B_{10}; V_{10}]}{\float[B_{11}; V_{11}]}$ (from the second if for $y$).  
+        
+        \item From the comparisons using \textsc{TLess} and \textsc{TLessEq}:
+
+        $\answerslt{B_7}{V_7}{V_8}$, $B_7 = B_8$ (from \texttt{x < 1.5}); $\answersleq{B_7}{V_7}{V_{11}}$, $B_7 = B_{11}$ (from \texttt{x <= y}).
+        
+    \end{enumerate}
     
     The complete constraint set generated is:
     \begin{equation}\label{eq:cs}
-    \begin{array}{lll}
-    C = \Big\{&\; \has{V_1}{0.5}, \has{V_3}{0.8}, \has{V_6}{1.5}, \has{V_7}{1.8}, \has{V_8}{0.3}, V_2 = \top, V_4 = \top, \\
-        &\; \distinguishes{B_1}{V_1}, \distinguishes{B_3}{V_3}, B_1 \equiv_{\top} B_2, B_3 \equiv_{\top} B_4 \\
-        &\; \subtype{\float[B_2; V_2]}{\float[B_5; V_5]}, \subtype{\float[B_4; V_4]}{\float[B_5; V_5]}, \\
-        &\; \subtype{\float[B_7; V_7]}{\float[B_9; V_9]}, \subtype{\float[B_8; V_8]}{\float[B_9; V_9]}, \\
-        &\; \answerslt{B_{5}}{V_5}{V_6},  B_{5} = B_6, 
-         \answersleq{B_{5}}{V_5}{V_9},  B_{5} = B_9& \Big\}
-     \end{array}   \end{equation}
+        \begin{array}{lll}
+        C = \Big\{&\; \has{V_1}{0}, \has{V_2}{2}, \has{V_4}{0}, \has{V_5}{1}, \has{V_8}{1.5}, \has{V_9}{1.8}, \has{V_{10}}{0.3}, \\
+            &\; \distinguishes{B_1}{V_1}, B_1 \equiv_{\top} B_3, \distinguishes{B_2}{V_2}, B_2 \equiv_{\top} B_3, V_3 = \top, \\
+            &\; \distinguishes{B_4}{V_4}, B_4 \equiv_{\top} B_6, \distinguishes{B_5}{V_5}, B_5 \equiv_{\top} B_6, V_6 = \top, \\
+            &\; \subtype{\float[B_3; V_3]}{\float[B_7; V_7]}, \subtype{\float[B_6; V_6]}{\float[B_7; V_7]}, \\
+            &\; \subtype{\float[B_9; V_9]}{\float[B_{11}; V_{11}]}, \subtype{\float[B_{10}; V_{10}]}{\float[B_{11}; V_{11}]}, \\
+            &\; \answerslt{B_{7}}{V_7}{V_8}, B_{7} = B_8,
+             \answersleq{B_{7}}{V_7}{V_{11}}, B_{7} = B_{11} & \Big\}
+        \end{array}
+    \end{equation}
+        
 \end{example}
 
 \subsection{Constraint Solving}
@@ -111,7 +117,7 @@ Each of the constraints is handled as follows:
     
     \item \textbf{Top assignment} ($V = \top$): We immediately set $V$ to $\top$, representing that the value set contains all possible float values.
     
-    \item \textbf{Distinguishability} ($\distinguishes{B}{V}$): This constraint ensures that the cut set $B$ can distinguish between all values in $V$. If $V$ is a finite set $\{v_1, ..., v_n\}$ with $n > 1$, we require that $B$ contains at least $n-1$ cuts to separate these values. If the cuts do not separate the values at the current solver state, we insert additional cuts to satisfy this condition. There is no canonical way to do this, so we use a heuristic: we insert a cut $\clt{x}$ for each value $x \in V$ that is not already separated by existing cuts.  If $B = \top$, the constraint is trivially satisfied.
+    \item \textbf{Recoverability} ($\distinguishes{B}{V}$): This constraint ensures that the cut set $B$ can distinguish between all values in $V$. If $V$ is a finite set $\{v_1, ..., v_n\}$ with $n > 1$, we require that $B$ contains at least $n-1$ cuts to separate these values. If the cuts do not separate the values at the current solver state, we insert additional cuts to satisfy this condition. There is no canonical way to do this, so we use a heuristic: we insert a cut $\clt{x}$ for each value $x \in V$ that is not already separated by existing cuts.  If $B = \top$, the constraint is trivially satisfied.
     
     \item \textbf{Less-than answerability} ($\answerslt{B}{V_1}{V_2}$): Intuitively, this constraint ensures that $B$ contains enough cuts to answer all possible comparisons of the form ``$v_1 < v_2$'' where $v_1 \in V_1$ and $v_2 \in V_2$.
     If $B = \top$, the constraint is trivially satisfied.
@@ -125,11 +131,11 @@ The solver repeatedly processes constraints until reaching a fixed point, where 
 Lattice constraint solving takes time polynomial in the size of the program: at worst, every single constant in the program gets added to the cut set or value set of every subexpression of type $\float[B;V]$.
 
 \begin{example}
-    From the previous example, we obtained the constraint set displayed in \Cref{eq:cs}, which is then solved as follows:
+    From the previous example, we obtained the constraint set displayed in \Cref{eq:cs}, which is then solved as follows (referring to Figure~\ref{fig:control-flow-gaussian} for a pictorial depiction):
 
  \noindent   \emph{Step 1: Subtyping reduction.} We replace each subtyping constraint as described above:
  \[
-  \subtype{\float[B_i; V_i]}{\float[B_j; V_j]}\text{ becomes }B_i = B_j, V_i \sqsubseteq V_j \qquad \text{for } (i,j) \in \{(2,5),(4,5),(7,9),(8,9)\}
+  \subtype{\float[B_i; V_i]}{\float[B_j; V_j]}\text{ becomes }B_i = B_j, V_i \sqsubseteq V_j \quad \text{for } (i,j) \in \{(3,7),(6,7),(9,11),(10,11)\}
  \]
 %    \begin{itemize}
 %        \item $\subtype{\float[B_2; V_2]}{\float[B_5; V_5]}$ becomes $B_2 = B_5, V_2 \sqsubseteq V_5$
@@ -140,27 +146,27 @@ Lattice constraint solving takes time polynomial in the size of the program: at 
 
   \noindent   \emph{Step 2: Initialize.} All $B$ and $V$ variables start as $\emptyset$.
 
- \noindent    \emph{Step 3: Process value containment.} We update:
-    \[V_1 := \{0.5\} \quad V_3 := \{0.8\} \quad V_6 := \{1.5\} \quad V_7 := \{1.8\} \quad V_8 := \{0.3\}\]
+ \noindent    \emph{Step 3: Process value containment (e.g. Figure~\ref{fig:control-flow-gaussian-a}).} We update:
+    \[V_1 := \{0\} \quad V_2 := \{2\} \quad V_4 := \{0\} \quad V_5 := \{1\} \quad V_8 := \{1.5\} \quad V_9 := \{1.8\} \quad V_{10} := \{0.3\}\]
 
- \noindent    \emph{Step 4: Process top assignments.} We set $V_2 := \top$ and $V_4 := \top$.
 
-  \noindent   \emph{Step 5: Process equalities.} Unifying all equality constraints: from comparisons: $B_5 = B_6$ and $B_5 = B_9$;
-       from subtyping: $B_2 = B_5$, $B_4 = B_5$, $B_7 = B_9$, $B_8 = B_9$; result: $B_2 = B_4 = B_5 = B_6 = B_7 = B_8 = B_9$.
-       
-   \noindent  \emph{Step 6: Process subset constraints.}
- For $V_2 \sqsubseteq V_5$: since $V_2 = \top$, we update $V_5 := V_5 \sqcup \top = \top$. For
- $V_4 \sqsubseteq V_5$: already satisfied since $V_5 = \top$. For 
-$V_7 \sqsubseteq V_9$: we update $V_9 := V_9 \sqcup \{1.8\} = \{1.8\}$. For 
- $V_8 \sqsubseteq V_9$: we update $V_9 := V_9 \sqcup \{0.3\} = \{0.3, 1.8\}$.
+ \noindent    \emph{Step 4: Process top assignments (e.g. Figure~\ref{fig:control-flow-gaussian-a}).} We set $V_3 := \top$ and $V_6 := \top$.
 
-  \noindent   \emph{Step 7: Process distinguishability. }
- For $\distinguishes{B_1}{V_1}$: since $|V_1| = 1$, trivially satisfied. For $\distinguishes{B_3}{V_3}$: since $|V_3| = 1$, trivially satisfied.
+ \noindent  \emph{Step 5: Process subset constraints (e.g. Figure~\ref{fig:control-flow-gaussian-b}).}
+ For $V_3 \sqsubseteq V_7$: since $V_3 = \top$, update $V_7 := V_7 \sqcup \top = \top$. For
+ $V_6 \sqsubseteq V_7$: already satisfied since $V_7 = \top$. For 
+$V_9 \sqsubseteq V_{11}$: we update $V_{11} := V_{11} \sqcup \{1.8\} = \{1.8\}$. For 
+ $V_{10} \sqsubseteq V_{11}$: we update $V_{11} := V_{11} \sqcup \{0.3\} = \{0.3, 1.8\}$.
 
-\noindent    \emph{Step 8: Process answerability.} For $\answerslt{B_{5}}{V_5}{V_6}$: with $V_5 = \top$ and $V_6 = \{1.5\}$, we add $\clt{1.5}$ to \mbox{$B$}. For $\answersleq{B_{5}}{V_5}{V_9}$: with $V_5 = \top$ and $V_9 = \{0.3, 1.8\}$, we add $\cleq{0.3}$ and $\cleq{1.8}$ to \mbox{$B$}.
+ \noindent    \emph{Step 8: Process answerability (e.g. Figure~\ref{fig:control-flow-gaussian-c}).} For $\answerslt{B_7}{V_7}{V_8}$: with $V_7 = \top$ and $V_8 = \{1.5\}$, we add $\clt{1.5}$ to \mbox{$B_7$}. For $\answersleq{B_7}{V_7}{V_{11}}$: with $V_7 = \top$ and $V_{11} = \{0.3, 1.8\}$, we add $\cleq{0.3}$ and $\cleq{1.8}$ to \mbox{$B_7$}.
 
-  \noindent \emph{Final solution:}  $B_1 = \emptyset$, $B_3 = \emptyset$,  $B_2 = B_4 = B_5 = B_6 = B_7 = B_8 = B_9 = \{\clt{1.5}, \cleq{0.3}, \cleq{1.8}\}$, 
- $V_1 = \{0.5\}$, $V_2 = \top$, $V_3 = \{0.8\}$, $V_4 = \top$, $V_5 = \top$, $V_6 = \{1.5\}$, $V_7 = \{1.8\}$, $V_8 = \{0.3\}$, $V_9 = \{0.3, 1.8\}$.    Since none of $B_1$, $B_2$, $B_3$, $B_4$ are $\top$, the constraints $B_1 \equiv_{\top} B_2$ and $B_3 \equiv_{\top} B_4$ are satisfied.
+ \noindent   \emph{Step 7: Process recoverability. }
+For $\distinguishes{B_1}{V_1}$, $\distinguishes{B_2}{V_2}$, $\distinguishes{B_4}{V_4}$, $\distinguishes{B_5}{V_5}$: $|V_i| = 1$ for $i = 1,2,4,5$, so trivially satisfied.
+
+\noindent   \emph{Step 6: Process equalities (e.g. Figures~\ref{fig:control-flow-gaussian-c},~\ref{fig:control-flow-gaussian-d}).} Unifying all equality constraints: from comparisons: $B_7 = B_8$ and $B_7 = B_{11}$;
+       from subtyping: $B_3 = B_7$, $B_6 = B_7$, $B_9 = B_{11}$, $B_{10} = B_{11}$; result: $B_3 = B_6 = B_7 = B_8 = B_9 = B_{10} = B_{11}$.
+
+ \noindent \emph{Final solution (e.g. Figure~\ref{fig:control-flow-gaussian-d}):} $B_1 = \emptyset$, $B_2 = \emptyset$, $B_4 = \emptyset$, $B_5 = \emptyset$, $B_3 = B_6 = B_7 = B_8 = B_9 = B_{10} = B_{11} = \{\clt{1.5}, \cleq{0.3}, \cleq{1.8}\}$, $V_1 = \{0\}$, $V_2 = \{2\}$, $V_3 = \top$, $V_4 = \{0\}$, $V_5 = \{1\}$, $V_6 = \top$, $V_7 = \top$, $V_8 = \{1.5\}$, $V_9 = \{1.8\}$, $V_{10} = \{0.3\}$, $V_{11} = \{0.3, 1.8\}$. Since none of $B_1$, $B_2$, $B_4$ are $\top$, the constraints $B_1 \equiv_{\top} B_3$ and $B_2 \equiv_{\top} B_3$ are satisfied.
 \end{example}
 
 \paragraph{Additional constraint for contextual equivalence.} 

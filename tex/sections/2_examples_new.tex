@@ -114,7 +114,7 @@ We now consider comparisons against an expression for which control flow determi
    let y = if 1.5 > x then 1.8 else 0.3 in x <= y
 \end{lstlisting}
 
-\noindent Here, $y$ evaluates to either $1.8$ or $0.3$ depending on $x$. Because $x \leq y$ may use either value, \Slice{} collects both constants and treats the comparison as over this finite set. This motivates enriching our float types with a \emph{value set}: a finite collection of concrete values that an expression may evaluate to. Figure \ref{fig:float-type-def} presents the full float type as is implemented by \Slice{}; each floating-point expression is annotated with such a type. The type-annotated program is thus:
+\noindent Here, $y$ evaluates to either $1.8$ or $0.3$ depending on $x$. Because $x \leq y$ may use either value, \Slice{} collects both constants and treats the comparison as over this finite set. This motivates enriching our float types with a \emph{value set}: a finite collection of concrete values that an expression may evaluate to. Figure \ref{fig:float-type-def} presents the full float type as is implemented by \Slice{}; each floating-point expression is annotated with such a type. The type-annotated program is thus (omitting the redundant and irrelevant types):
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
     let x = if flip()
