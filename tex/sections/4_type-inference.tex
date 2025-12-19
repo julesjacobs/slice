@@ -29,56 +29,8 @@ The type inference rules closely mirror the typing rules in Figure~\ref{fig:typi
 \input{figures/typing-infer.tex}
 
 \begin{example}
-    To further illustrate how our constraint generation rules work, we walk through Example~\ref{sec:examples:4} from Section~\ref{sec:examples}. Below is the program again:
+    To make the constraint generation process concrete, Figure~\ref{fig:constraint-generation} walks through Example~\ref{sec:examples:4} from Section~\ref{sec:examples}, where each subexpression is annotated with type variables for the cut sets ($B_i$) and value sets ($V_i$), and the constraints produced at every step are shown explicitly. Aggregating these constraints yields the complete constraint set:
 
-    \begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!,mathescape]
-        let x = if flip()
-                then uniform(0,2)
-                else gaussian(0,1)
-                in
-        let y = if x < 1.5
-                then 1.8
-                else 0.3
-                in
-        x <= y
-    \end{lstlisting}
-    
-    Let us walk through the constraint generation for this program. We annotate each subexpression with type variables for the cut sets ($B_i$) and value sets ($V_i$):
-    
-    \begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!,mathescape]
-        let x = if flip()
-                then uniform(0 : !{\ftbn{$B_1$}{$V_1$}}!, 2 : !{\ftbn{$B_2$}{$V_2$}}!) : !{\ftbn{$B_3$}{$V_3$}}!
-                else gaussian(0 : !{\ftbn{$B_4$}{$V_4$}}!, 1 : !{\ftbn{$B_5$}{$V_5$}}!) : !{\ftbn{$B_6$}{$V_6$}}!
-                : !{\ftbn{$B_7$}{$V_7$}}! in
-        let y = if (x : !{\ftbn{$B_7$}{$V_7$}}!) < (1.5 : !{\ftbn{$B_8$}{$V_8$}}!)
-                then (1.8 : !{\ftbn{$B_9$}{$V_9$}}!)
-                else (0.3 : !{\ftbn{$B_{10}$}{$V_{10}$}}!)
-                : !{\ftbn{$B_{11}$}{$V_{11}$}}! in
-        (x : !{\ftbn{$B_7$}{$V_7$}}!) <= (y : !{\ftbn{$B_{11}$}{$V_{11}$}}!)
-    \end{lstlisting}
-    
-    Applying our constraint generation rules from Figure~\ref{fig:type-inference}, we obtain the following constraints:
-    
-    \begin{enumerate}
-        \item From the constants using \textsc{TFloat-Const}: 
-        
-        $\has{V_1}{0}$ (from literal 0); $\has{V_2}{2}$ (from literal 2); $\has{V_4}{0}$ (from literal 0); $\has{V_5}{1}$ (from literal 1); $\has{V_8}{1.5}$ (from literal 1.5); $\has{V_9}{1.8}$ (from literal 1.8); and $\has{V_{10}}{0.3}$ (from literal 0.3).
-        
-        \item From the continuous distributions using \textsc{TContinuous-2}: 
-        
-        $\distinguishes{B_1}{V_1}$, $B_1 \equiv_{\top} B_3$, $\distinguishes{B_2}{V_2}$, $B_2 \equiv_{\top} B_3$, $V_3 = \top$ (from \texttt{uniform(0,2)}); $\distinguishes{B_4}{V_4}$, $B_4 \equiv_{\top} B_6$, $\distinguishes{B_5}{V_5}$, $B_5 \equiv_{\top} B_6$, $V_6 = \top$ (from \texttt{gaussian(0,1)}). 
-        
-        \item From the if expressions using \textsc{TIf}: 
-        
-        $\subtype{\float[B_3; V_3]}{\float[B_7; V_7]}$, $\subtype{\float[B_6; V_6]}{\float[B_7; V_7]}$ (from the first if for $x$); $\subtype{\float[B_9; V_9]}{\float[B_{11}; V_{11}]}$, $\subtype{\float[B_{10}; V_{10}]}{\float[B_{11}; V_{11}]}$ (from the second if for $y$).  
-        
-        \item From the comparisons using \textsc{TLess} and \textsc{TLessEq}:
-
-        $\answerslt{B_7}{V_7}{V_8}$, $B_7 = B_8$ (from \texttt{x < 1.5}); $\answersleq{B_7}{V_7}{V_{11}}$, $B_7 = B_{11}$ (from \texttt{x <= y}).
-        
-    \end{enumerate}
-    
-    The complete constraint set generated is:
     \begin{equation}\label{eq:cs}
         \begin{array}{lll}
         C = \Big\{&\; \has{V_1}{0}, \has{V_2}{2}, \has{V_4}{0}, \has{V_5}{1}, \has{V_8}{1.5}, \has{V_9}{1.8}, \has{V_{10}}{0.3}, \\
@@ -92,6 +44,8 @@ The type inference rules closely mirror the typing rules in Figure~\ref{fig:typi
     \end{equation}
         
 \end{example}
+
+\input{figures/constraint-gen.tex}
 
 \subsection{Constraint Solving}
 Once constraint generation completes, we obtain a system of constraints over type variables, cut sets $B$, and value sets $V$. The constraint solving phase proceeds in two steps:

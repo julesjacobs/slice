@@ -1,0 +1,91 @@
+\begin{figure}[t]
+    \centering
+    \small
+    
+    % ---- Listing style ----
+    \lstdefinestyle{mystyle}{
+        basicstyle=\ttfamily\small,
+        columns=fullflexible,
+        keepspaces=true,
+        escapechar=!,
+        mathescape=true
+    }
+
+    \definecolor{blue}{RGB}{0, 51, 102}
+    \definecolor{violet}{RGB}{102, 51, 153}
+    \colorlet{teal}{teal!80!black}
+    \colorlet{olive}{olive!70!black}
+    \colorlet{brown}{brown!60!black}
+    
+    % ---- Two-column aligned table ----
+    \begin{tabular}{p{0.35\linewidth} p{0.7\linewidth}}
+
+    \lstinline[style=mystyle]|let x = if flip()| 
+      & \\
+    
+    \lstinline[style=mystyle]| then uniform(0 : $\textcolor{blue}{\floattype{B_1}{V_1}}$,| 
+      & $+\; \textcolor{blue}{\has{V_1}{0}}$ \\
+    
+    \lstinline[style=mystyle]|$\hspace{8em}$ 2 : $\textcolor{blue}{\floattype{B_2}{V_2}}$)| 
+     & $+\; \textcolor{blue}{\has{V_2}{2}}$ \\
+
+    \lstinline[style=mystyle]|$\hspace{3em}$ : $\textcolor{violet}{\floattype{B_3}{V_3}}$| 
+     & $+\; \textcolor{violet}{\distinguishes{B_1}{V_1}, B_1 \equiv_{\top} B_3, \distinguishes{B_2}{V_2}, B_2 \equiv_{\top} B_3, V_3 = \top}$ \\
+    
+    \lstinline[style=mystyle]| else gaussian(0 : $\textcolor{blue}{\floattype{B_4}{V_4}}$, | 
+      & $+\; \textcolor{blue}{\has{V_4}{0}}$ \\
+
+    \lstinline[style=mystyle]|$\hspace{8.4em}$ 1 : $\textcolor{blue}{\floattype{B_5}{V_5}}$)| 
+      & $+\; \textcolor{blue}{\has{V_5}{1}}$ \\
+
+    \lstinline[style=mystyle]|$\hspace{3em}$ : $\textcolor{violet}{\floattype{B_6}{V_6}}$ | 
+      & $+\; \textcolor{violet}{\distinguishes{B_4}{V_4}, B_4 \equiv_{\top} B_6, \distinguishes{B_5}{V_5}, B_5 \equiv_{\top} B_6, V_6 = \top}$  \\
+
+    \lstinline[style=mystyle]| : $\textcolor{teal}{\floattype{B_7}{V_7}}$ | 
+      & $+\; \textcolor{teal}{\subtype{\floattype{B_3}{V_3}}{\floattype{B_7}{V_7}}, \subtype{\floattype{B_6}{V_6}}{\floattype{B_7}{V_7}}}$ \\
+    
+    \lstinline[style=mystyle]|in| 
+      & \\
+    
+    \lstinline[style=mystyle]|let y = if x : $\textcolor{olive}{\floattype{B_7}{V_7}}$ | 
+      & $+\; \textcolor{olive}{\emptyset}$ \\
+
+    \lstinline[style=mystyle]|$\hspace{6em}$ <| 
+      & \\
+
+    \lstinline[style=mystyle]|$\hspace{5.5em}$ 1.5 : $\textcolor{blue}{\floattype{B_8}{V_8}}$| 
+      & $+\; \textcolor{blue}{\has{V_8}{1.5}}$ \\
+
+    \lstinline[style=mystyle]|$\hspace{5.5em}$ : $\textcolor{brown}{\bool}$| 
+      & $+\; \textcolor{brown}{\answerslt{B_7}{V_7}{V_8}, B_7 = B_8}$ \\
+    
+    \lstinline[style=mystyle]| then 1.8 : $\textcolor{blue}{\floattype{B_9}{V_9}}$| 
+      & $+\; \textcolor{blue}{\has{V_9}{1.8}}$ \\
+    
+    \lstinline[style=mystyle]| else 0.3 : $\textcolor{blue}{\floattype{B_{10}}{V_{10}}}$| 
+      & $+\; \textcolor{blue}{\has{V_{10}}{0.3}}$ \\
+
+    \lstinline[style=mystyle]| : $\textcolor{teal}{\floattype{B_{11}}{V_{11}}}$| 
+      & $+\; \textcolor{teal}{\subtype{\floattype{B_9}{V_9}}{\floattype{B_{11}}{V_{11}}}, \subtype{\floattype{B_{10}}{V_{10}}}{\floattype{B_{11}}{V_{11}}}}$ \\
+    
+    \lstinline[style=mystyle]|in| 
+      & \\
+    
+    \lstinline[style=mystyle]| x : $\textcolor{olive}{\floattype{B_7}{V_7}}$| 
+      & $+\; \textcolor{olive}{\emptyset}$  \\
+
+    \lstinline[style=mystyle]| <=| 
+      & \\
+
+    \lstinline[style=mystyle]| y : $\textcolor{olive}{\floattype{B_{11}}{V_{11}}}$| 
+      & $+\; \textcolor{olive}{\emptyset}$  \\
+
+    \lstinline[style=mystyle]| : $\textcolor{brown}{\bool}$| 
+      & $\textcolor{brown}{+\; \answersleq{B_7}{V_7}{V_{11}}, B_7 = B_{11}}$ \\
+    
+    \end{tabular}
+    
+    \caption{Program (left) and its emitted constraints from each line (right) from \textcolor{blue}{\textsc{TFloat-Const}}, \textcolor{violet}{\textsc{TContinuous-2}}, \textcolor{teal}{\textsc{TIf}}, \textcolor{olive}{\textsc{TVar}}, and \textcolor{brown}{\textsc{TLess} and \textsc{TLessEq}} following the constraint generation rules in Figure~\ref{fig:type-inference}.}
+    \label{fig:constraint-generation}
+\end{figure}
+    
