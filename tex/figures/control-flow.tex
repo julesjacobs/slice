@@ -1,250 +1,391 @@
 \begin{figure}[t]
     \centering
+    %======================
+    % Step 0
+    %======================
+    \begin{subfigure}[t]{\textwidth}
+        \centering
+        \begin{minipage}[c]{0.62\textwidth}
+        \centering
+        \scalebox{0.4}{
+        \begin{tikzpicture}[
+            floatnode/.style={draw, rounded corners, minimum width=3.3cm, minimum height=1.1cm, align=center},
+            flow/.style={->, ultra thick, draw=purple},
+            constraintgt/.style={->, ultra thick, dashed, draw=red},
+            constraintleq/.style={->, ultra thick, dashed, draw=orange}
+        ]
+    
+        % ==== FLOAT NODES ====
+    
+        \node[floatnode] (u) at (-6, 2) {
+            $\uniform(0,2)$ \\
+            \phantom{$\floattype{\{\cleq{0.3}, \clt{1.5}, \cleq{1.8}\}}{\top}$}
+        };
+    
+        \node[floatnode] (g) at (-6, -2) {
+            $\gaussian(0,1)$ \\
+            \phantom{$\floattype{\{\cleq{0.3}, \clt{1.5}, \cleq{1.8}\}}{\top}$}
+        };
+    
+        \node[floatnode] (x) at (-1, 0) {
+            $x$ \\
+            \phantom{$\floattype{\{\cleq{0.3}, \clt{1.5}, \cleq{1.8}\}}{\top}$}
+        };
+    
+        \node[floatnode] (c15) at (-1, -2) {
+            1.5 \\
+            \phantom{$\floattype{\{\cleq{0.3}, \clt{1.5}, \cleq{1.8}\}}{\{1.5\}}$}
+        };
+    
+        \node[floatnode] (y) at (8, 0) {
+            y \\
+            \phantom{$\floattype{\{\cleq{0.3}, \clt{1.5}, \cleq{1.8}\}}{\{0.3,1.8\}}$}
+        };
+    
+        \node[floatnode] (c18) at (4.0, 2) {
+            1.8 \\
+            \phantom{$\floattype{\{\cleq{0.3}, \clt{1.5}, \cleq{1.8}\}}{\{1.8\}}$}
+        };
+    
+        \node[floatnode] (c03) at (4.0, -2) {
+            0.3 \\
+            \phantom{$\floattype{\{\cleq{0.3}, \clt{1.5}, \cleq{1.8}\}}{\{0.3\}}$}
+        };
+    
+        % ==== DATA FLOW EDGES ====
+    
+        \draw[flow] (u) -- node[below left] {\small then-branch flow} (x);
+        \draw[flow] (g) -- node[above left] {\small else-branch flow} (x);
+    
+        \draw[flow] (c18) -- node[above right] {\small then-branch flow} (y);
+        \draw[flow] (c03) -- node[below right] {\small else-branch flow} (y);
+    
+        % ==== COMPARISON EDGES ====
+    
+        \draw[constraintgt] (c15) -- node[right] {$>$} (x);
+        \draw[constraintleq] (x) -- node[above] {$\leq$} (y);
+    
+        \end{tikzpicture}
+        }
+        \end{minipage}\hfill
+        \begin{minipage}[c]{0.35\textwidth}
+\begin{lstlisting}[escapeinside={<@}{@>},aboveskip=0.1em,belowskip=0.1em]
+let x = if flip() 
+    <@\colorbox{purple!30}{\textcolor{black}{then}}@> uniform(0,2) 
+    <@\colorbox{purple!30}{\textcolor{black}{else}}@> gaussian(0,1) in
+let y = if 1.5 <@\colorbox{red!30}{\textcolor{black}{>}}@> x 
+    <@\colorbox{purple!30}{\textcolor{black}{then}}@> 1.8 
+    <@\colorbox{purple!30}{\textcolor{black}{else}}@> 0.3 
+in x <@\colorbox{orange!30}{\textcolor{black}{<=}}@> y
+\end{lstlisting}      
+    \end{minipage}
+    \end{subfigure}
+    \vspace{0.8cm}
     
     %======================
-    % Top-left (Step 1)
+    % Step 1
     %======================
-    \begin{subfigure}{0.48\textwidth}
+    \begin{subfigure}[t]{\textwidth}
+    \centering
+    \begin{minipage}[c]{0.62\textwidth}
     \centering
     \scalebox{0.4}{
     \begin{tikzpicture}[
-        node distance=3cm,
         floatnode/.style={draw, rounded corners, minimum width=3.3cm, minimum height=1.1cm, align=center},
         flow/.style={->, thick, color=black},
-        compred/.style={thick, dashed, color=red},
-        compblue/.style={thick, dashed, color=blue}
+        constraint/.style={->, thick, dashed, color=black}
     ]
-    
+
     % ==== FLOAT NODES ====
-    \node[floatnode] (u) {
+
+    \node[floatnode] (u) at (-6, 2) {
         $\uniform(0,2)$ : \\
-        $\floattype{}{\textcolor{red}{\top}}$
+        $\floattype{\phantom{\{\cleq{0.3}, \clt{1.5}, \cleq{1.8}\}}}{\boldsymbol{\textcolor{violet}{\top}}}$
     };
-    
-    \node[floatnode, right=0.2cm of u] (g) {
+
+    \node[floatnode] (g) at (-6, -2) {
         $\gaussian(0,1)$ : \\
-        $\floattype{}{\textcolor{red}{\top}}$
+        $\floattype{\phantom{\{\cleq{0.3}, \clt{1.5}, \cleq{1.8}\}}}{\boldsymbol{\textcolor{violet}{\top}}}$
     };
-    
-    \node[floatnode, below=1.0cm of $(u)!0.5!(g)$] (x) {
+
+    \node[floatnode] (x) at (-1, 0) {
         $x$ : \\
-        $\floattype{}{}$
+        $\floattype{\phantom{\{\cleq{0.3}, \clt{1.5}, \cleq{1.8}\}}}{\phantom{\top}}$
     };
-    
-    \node[floatnode, right=4.5cm of x] (y) {
-        $y$ : \\
-        $\floattype{}{}$
-    };
-    
-    \node[floatnode, right=0.4cm of g] (c18) {
-        1.8 : \\
-        $\floattype{}{\{\textcolor{red}{1.8}\}}$
-    };
-    
-    \node[floatnode, right=0.2cm of c18] (c03) {
-        0.3 : \\
-        $\floattype{}{\{\textcolor{red}{0.3}\}}$
-    };
-    
-    \node[floatnode, below=0.5cm of x, xshift=-2.2cm] (c15) {
+
+    \node[floatnode] (c15) at (-1, -2) {
         1.5 : \\
-        $\floattype{}{\{\textcolor{red}{1.5}\}}$
+        $\floattype{\phantom{\{\cleq{0.3}, \clt{1.5}, \cleq{1.8}\}}}{\{\boldsymbol{\textcolor{violet}{1.5}}\}}$
     };
-    
-    \end{tikzpicture}
-    }
-    \caption{\emph{Initialize value sets.} Literal floats are annotated with their numeric value, and continuous distributions with~$\top$.}
-    \label{fig:control-flow-gaussian-a}
-    \end{subfigure}
-    \hfill
-    %======================
-    % Top-right (Step 2)
-    %======================
-    \begin{subfigure}{0.48\textwidth}
-    \centering
-    \scalebox{0.4}{
-    \begin{tikzpicture}[node distance=3cm,
-        floatnode/.style={draw, rounded corners, minimum width=3.3cm, minimum height=1.1cm, align=center},
-        flow/.style={->, thick, color=black},
-        compred/.style={thick, dashed, color=red},
-        compblue/.style={thick, dashed, color=blue}
-    ]
-    
-    % ==== FLOAT NODES ====
-    \node[floatnode] (u) {
-        $\uniform(0,2)$ : \\
-        $\floattype{}{\top}$
+
+    \node[floatnode] (y) at (8, 0) {
+        y : \\
+        $\floattype{\phantom{\{\cleq{0.3}, \clt{1.5}, \cleq{1.8}\}}}{\phantom{\{0.3,1.8\}}}$
     };
-    
-    \node[floatnode, right=0.2cm of u] (g) {
-        $\gaussian(0,1)$ : \\
-        $\floattype{}{\top}$
-    };
-    
-    \node[floatnode, below=2.8cm of $(u)!0.5!(g)$] (x) {
-        $x$ : \\
-        $\floattype{}{\textcolor{red}{\top}}$
-    };
-    
-    \node[floatnode, right=4.5cm of x] (y) {
-        $y$ : \\
-        $\floattype{}{\{\textcolor{red}{0.3,1.8}\}}$
-    };
-    
-    \node[floatnode, right=0.4cm of g] (c18) {
+
+    \node[floatnode] (c18) at (4.0, 2) {
         1.8 : \\
-        $\floattype{}{\{1.8\}}$
+        $\floattype{\phantom{\{\cleq{0.3}, \clt{1.5}, \cleq{1.8}\}}}{\{\boldsymbol{\textcolor{violet}{1.8}}\}}$
     };
-    
-    \node[floatnode, right=0.2cm of c18] (c03) {
+
+    \node[floatnode] (c03) at (4.0, -2) {
         0.3 : \\
-        $\floattype{}{\{0.3\}}$
+        $\floattype{\phantom{\{\cleq{0.3}, \clt{1.5}, \cleq{1.8}\}}}{\{\boldsymbol{\textcolor{violet}{0.3}}\}}$
     };
-    
-    \node[floatnode, below=0.5cm of x, xshift=-2.2cm] (c15) {
-        1.5 : \\
-        $\floattype{}{\{1.5\}}$
-    };
-    
+
     % ==== DATA FLOW EDGES ====
-    \draw[flow] (u) -- node[left, text=black] {\small then-branch flow} (x);
-    \draw[flow] (g) -- node[right, text=black] {\small else-branch flow} (x);
-    
-    \draw[flow] (c18) -- node[left, text=black] {\small then-branch flow} (y);
-    \draw[flow] (c03) -- node[right, text=black] {\small else-branch flow} (y);
-    
-    \end{tikzpicture}
-    }
-    \caption{\emph{Propagate value sets (forward along data flow).} Any expression formed by an if-expression
-    inherits the union of the value sets of its branches.}
-    \label{fig:control-flow-gaussian-b}
-    \end{subfigure}
 
-    \vspace{0.3cm}
+    \draw[flow] (u) -- node[below left] {\small then-branch flow} (x);
+    \draw[flow] (g) -- node[above left] {\small else-branch flow} (x);
 
-    %======================
-    % Bottom-left (Step 3)
-    %======================
-    \begin{subfigure}{0.48\textwidth}
-    \centering
-    \scalebox{0.4}{
-    \begin{tikzpicture}[node distance=3cm,
-        floatnode/.style={draw, rounded corners, minimum width=3.3cm, minimum height=1.1cm, align=center},
-        flow/.style={->, thick, color=black},
-        compred/.style={->, thick, dotted, color=red},
-        compblue/.style={->, thick, dotted, color=blue}
-    ]
-    
-    % ==== FLOAT NODES ====
-    \node[floatnode] (u) {
-        $\uniform(0,2)$ : \\
-        $\floattype{}{\top}$
-    };
-    
-    \node[floatnode, right=0.2cm of u] (g) {
-        $\gaussian(0,1)$ : \\
-        $\floattype{}{\top}$
-    };
-    
-    \node[floatnode, below=1.0cm of $(u)!0.5!(g)$] (x) {
-        $x$ : \\
-        $\floattype{\{\textcolor{blue}{\cleq{0.3}}, \textcolor{red}{\clt{1.5}}, 
-                    \textcolor{blue}{\cleq{1.8}}\}}{\textcolor{black}{\top}}$
-    };
-    
-    \node[floatnode, right=4.5cm of x] (y) {
-        $y$ : \\
-        $\floattype{\{\textcolor{blue}{\cleq{0.3}}, \textcolor{red}{\clt{1.5}}, 
-                    \textcolor{blue}{\cleq{1.8}}\}}{\{\textcolor{blue}{0.3,1.8}\}}$
-    };
-    
-    \node[floatnode, right=0.4cm of g] (c18) {
-        1.8 : \\
-        $\floattype{}{\{1.8\}}$
-    };
-    
-    \node[floatnode, right=0.2cm of c18] (c03) {
-        0.3 : \\
-        $\floattype{}{\{0.3\}}$
-    };
-    
-    \node[floatnode, below=2.8cm of x, xshift=-2.2cm] (c15) {
-        1.5 : \\
-        $\floattype{\{\textcolor{blue}{\cleq{0.3}}, \textcolor{red}{\clt{1.5}}, 
-                    \textcolor{blue}{\cleq{1.8}}\}}{\{\textcolor{red}{1.5}\}}$
-    };
+    \draw[flow] (c18) -- node[above right] {\small then-branch flow} (y);
+    \draw[flow] (c03) -- node[below right] {\small else-branch flow} (y);
 
     % ==== COMPARISON EDGES ====
-    \draw[compred] (c15) -- node[above, color=black] {$>$} (x);
 
-    \draw[compblue] (x) -- node[above, color=black] {$\leq$} (y);
-    
+    \draw[constraint] (c15) -- node[right] {$>$} (x);
+    \draw[constraint] (x) -- node[above] {$\leq$} (y);
+
     \end{tikzpicture}
     }
-    \caption{\emph{Generate cut sets.} Comparisons contribute threshold values (e.g., $1.5$, $0.3$, $1.8$) to the cut sets of participating expressions. Cut sets on both sides of a comparison (e.g. $1.5 > x$ and $x \leq y$) are unified to ensure consistent discretization.}
-    \label{fig:control-flow-gaussian-c}
-    \end{subfigure}    
-    \hfill
+    \end{minipage}\hfill
+    \begin{minipage}[c]{0.35\textwidth}
+    \caption{\emph{Initialize value sets.} Literal floats are annotated with their numeric value, and continuous distributions with~$\top$.}
+    \label{fig:control-flow-gaussian-a}
+    \end{minipage}
+    \end{subfigure}
+    \vspace{1cm}
+    
     %======================
-    % Bottom-right (Step 4)
+    % Step 2
     %======================
-    \begin{subfigure}{0.48\textwidth}
+    \begin{subfigure}[t]{\textwidth}
+    \centering
+    \begin{minipage}[c]{0.62\textwidth}
     \centering
     \scalebox{0.4}{
-    \begin{tikzpicture}[node distance=3cm,
+    \begin{tikzpicture}[
         floatnode/.style={draw, rounded corners, minimum width=3.3cm, minimum height=1.1cm, align=center},
-        flow/.style={->, dotted, color=black},
+        flow/.style={->, ultra thick, draw=purple},
+        constraint/.style={->, thick, dashed, color=black}
     ]
-    
+
     % ==== FLOAT NODES ====
-    \node[floatnode] (u) {
+
+    \node[floatnode] (u) at (-6, 2) {
         $\uniform(0,2)$ : \\
-        $\floattype{\{\textcolor{red}{\cleq{0.3}, \clt{1.5}, \cleq{1.8}}\}}{\top}$
+        $\floattype{\phantom{\{\cleq{0.3}, \clt{1.5}, \cleq{1.8}\}}}{\top}$
     };
 
-    \node[floatnode, right=0.2cm of u] (g) {
+    \node[floatnode] (g) at (-6, -2) {
         $\gaussian(0,1)$ : \\
-        $\floattype{\{\textcolor{red}{\cleq{0.3}, \clt{1.5}, \cleq{1.8}}\}}{\top}$
+        $\floattype{\phantom{\{\cleq{0.3}, \clt{1.5}, \cleq{1.8}\}}}{\top}$
     };
 
-    \node[floatnode, below=2.8cm of $(u)!0.5!(g)$] (x) {
+    \node[floatnode] (x) at (-1, 0) {
+        $x$ : \\
+        $\floattype{\phantom{\{\cleq{0.3}, \clt{1.5}, \cleq{1.8}\}}}{\boldsymbol{\textcolor{purple}{\top}}}$
+    };
+
+    \node[floatnode] (c15) at (-1, -2) {
+        1.5 : \\
+        $\floattype{\phantom{\{\cleq{0.3}, \clt{1.5}, \cleq{1.8}\}}}{\{1.5\}}$
+    };
+
+    \node[floatnode] (y) at (8, 0) {
+        y : \\
+        $\floattype{\phantom{\{\cleq{0.3}, \clt{1.5}, \cleq{1.8}\}}}{\{\boldsymbol{\textcolor{purple}{0.3,1.8}}\}}$
+    };
+
+    \node[floatnode] (c18) at (4.0, 2) {
+        1.8 : \\
+        $\floattype{\phantom{\{\cleq{0.3}, \clt{1.5}, \cleq{1.8}\}}}{\{1.8\}}$
+    };
+
+    \node[floatnode] (c03) at (4.0, -2) {
+        0.3 : \\
+        $\floattype{\phantom{\{\cleq{0.3}, \clt{1.5}, \cleq{1.8}\}}}{\{0.3\}}$
+    };
+
+    % ==== DATA FLOW EDGES ====
+
+    \draw[flow] (u) -- node[below left, text=black] {\small then-branch flow} (x);
+    \draw[flow] (g) -- node[above left, text=black] {\small else-branch flow} (x);
+
+    \draw[flow] (c18) -- node[above right, text=black] {\small then-branch flow} (y);
+    \draw[flow] (c03) -- node[below right, text=black] {\small else-branch flow} (y);
+
+    % ==== COMPARISON EDGES ====
+
+    \draw[constraint] (c15) -- node[right] {$>$} (x);
+    \draw[constraint] (x) -- node[above] {$\leq$} (y);
+
+    \end{tikzpicture}
+    }
+    \end{minipage}\hfill
+    \begin{minipage}[c]{0.35\textwidth}
+    \caption{\emph{Propagate value sets (forward along data flow).} Any expression formed by an if-expression inherits the union of the value sets of its branches.}
+    \label{fig:control-flow-gaussian-b}
+    \end{minipage}
+    \end{subfigure}
+    \vspace{0.8cm}
+    
+    %======================
+    % Step 3
+    %======================
+    \begin{subfigure}[t]{\textwidth}
+    \centering
+    \begin{minipage}[c]{0.62\textwidth}
+    \centering
+    \scalebox{0.4}{
+    \begin{tikzpicture}[
+        floatnode/.style={draw, rounded corners, minimum width=3.3cm, minimum height=1.1cm, align=center},
+        flow/.style={->, thick, color=black},
+        constraintred/.style={->, ultra thick, dashed, draw=red},
+        constraintpurple/.style={->, ultra thick, dashed, draw=orange}
+    ]
+
+    % ==== FLOAT NODES ====
+
+    \node[floatnode] (u) at (-6, 2) {
+        $\uniform(0,2)$ : \\
+        $\floattype{\phantom{\{\cleq{0.3}, \clt{1.5}, \cleq{1.8}\}}}{\top}$
+    };
+
+    \node[floatnode] (g) at (-6, -2) {
+        $\gaussian(0,1)$ : \\
+        $\floattype{\phantom{\{\cleq{0.3}, \clt{1.5}, \cleq{1.8}\}}}{\top}$
+    };
+
+    \node[floatnode] (x) at (-1, 0) {
+        $x$ : \\
+        $\floattype{\{\boldsymbol{\textcolor{orange}{\cleq{0.3}}, \textcolor{red}{\clt{1.5}}, \textcolor{orange}{\cleq{1.8}}}\}}{\top}$
+    };
+
+    \node[floatnode] (c15) at (-1, -2) {
+        1.5 : \\
+        $\floattype{\{\boldsymbol{\textcolor{orange}{\cleq{0.3}}, \textcolor{red}{\clt{1.5}}, \textcolor{orange}{\cleq{1.8}}}\}}{\{1.5\}}$
+    };
+
+    \node[floatnode] (y) at (8, 0) {
+        y : \\
+        $\floattype{\{\boldsymbol{\textcolor{orange}{\cleq{0.3}}, \textcolor{red}{\clt{1.5}}, \textcolor{orange}{\cleq{1.8}}}\}}{\{0.3,1.8\}}$
+    };
+
+    \node[floatnode] (c18) at (4.0, 2) {
+        1.8 : \\
+        $\floattype{\phantom{\{\cleq{0.3}, \clt{1.5}, \cleq{1.8}\}}}{\{1.8\}}$
+    };
+
+    \node[floatnode] (c03) at (4.0, -2) {
+        0.3 : \\
+        $\floattype{\phantom{\{\cleq{0.3}, \clt{1.5}, \cleq{1.8}\}}}{\{0.3\}}$
+    };
+
+    % ==== DATA FLOW EDGES ====
+
+    \draw[flow] (u) -- node[below left] {\small then-branch flow} (x);
+    \draw[flow] (g) -- node[above left] {\small else-branch flow} (x);
+
+    \draw[flow] (c18) -- node[above right] {\small then-branch flow} (y);
+    \draw[flow] (c03) -- node[below right] {\small else-branch flow} (y);
+
+    % ==== COMPARISON EDGES ====
+
+    \draw[constraintred] (c15) -- node[right, text=black] {$>$} (x);
+    \draw[constraintpurple] (x) -- node[above, text=black] {$\leq$} (y);
+
+    \end{tikzpicture}
+    }
+    \end{minipage}\hfill
+    \begin{minipage}[c]{0.35\textwidth}
+    \caption{\emph{Generate cut sets.} Comparisons contribute threshold values (e.g., $1.5$, $0.3$, $1.8$) to the cut sets of participating expressions. Cut sets of expressions on both sides of a comparison (e.g. $1.5 > x$ and $x \leq y$) are unified to ensure consistent discretization.}
+    \label{fig:control-flow-gaussian-c}
+    \end{minipage}
+    \end{subfigure}
+    \vspace{0.8cm}
+    
+    %======================
+    % Step 4
+    %======================
+    \begin{subfigure}[t]{\textwidth}
+    \centering
+    \begin{minipage}[c]{0.62\textwidth}
+    \centering
+    \scalebox{0.4}{
+    \begin{tikzpicture}[
+        floatnode/.style={draw, rounded corners, minimum width=3.3cm, minimum height=1.1cm, align=center},
+        flow/.style={->, thick, color=black},
+        constraint/.style={->, thick, dashed, color=black},
+        revflow/.style={->, ultra thick, draw=purple}
+    ]
+
+    % ==== FLOAT NODES ====
+
+    \node[floatnode] (u) at (-6, 2) {
+        $\uniform(0,2)$ : \\
+        $\floattype{\{\boldsymbol{\textcolor{purple}{\cleq{0.3}, \clt{1.5}, \cleq{1.8}}}\}}{\top}$
+    };
+
+    \node[floatnode] (g) at (-6, -2) {
+        $\gaussian(0,1)$ : \\
+        $\floattype{\{\boldsymbol{\textcolor{purple}{\cleq{0.3}, \clt{1.5}, \cleq{1.8}}}\}}{\top}$
+    };
+
+    \node[floatnode] (x) at (-1, 0) {
         $x$ : \\
         $\floattype{\{\cleq{0.3}, \clt{1.5}, \cleq{1.8}\}}{\top}$
     };
 
-    \node[floatnode, right=4.5cm of x] (y) {
-        $y$ : \\
-        $\floattype{\{\cleq{0.3}, \clt{1.5}, \cleq{1.8}\}}{\{0.3,1.8\}}$
-    };
-
-    \node[floatnode, right=0.4cm of g] (c18) {
-        1.8 : \\
-        $\floattype{\{\textcolor{red}{\cleq{0.3}, \clt{1.5}, \cleq{1.8}}\}}{\{1.8\}}$
-    };
-
-    \node[floatnode, right=0.2cm of c18] (c03) {
-        0.3 : \\
-        $\floattype{\{\textcolor{red}{\cleq{0.3}, \clt{1.5}, \cleq{1.8}}\}}{\{0.3\}}$
-    };
-
-    \node[floatnode, below=0.5cm of x, xshift=-2.2cm] (c15) {
+    \node[floatnode] (c15) at (-1, -2) {
         1.5 : \\
         $\floattype{\{\cleq{0.3}, \clt{1.5}, \cleq{1.8}\}}{\{1.5\}}$
     };
 
-    % ==== DATA FLOW EDGES ====
-    \draw[flow] (x) -- (u);
-    \draw[flow] (x) -- (g);
+    \node[floatnode] (y) at (8, 0) {
+        y : \\
+        $\floattype{\{\cleq{0.3}, \clt{1.5}, \cleq{1.8}\}}{\{0.3,1.8\}}$
+    };
 
-    \draw[flow] (y) -- (c18);
-    \draw[flow] (y) -- (c03);
-    
+    \node[floatnode] (c18) at (4.0, 2) {
+        1.8 : \\
+        $\floattype{\{\boldsymbol{\textcolor{purple}{\cleq{0.3}, \clt{1.5}, \cleq{1.8}}}\}}{\{1.8\}}$
+    };
+
+    \node[floatnode] (c03) at (4.0, -2) {
+        0.3 : \\
+        $\floattype{\{\boldsymbol{\textcolor{purple}{\cleq{0.3}, \clt{1.5}, \cleq{1.8}}}\}}{\{0.3\}}$
+    };
+
+    % ==== DATA FLOW EDGES ====
+
+    \draw[flow] (u) -- node[below left] {\small then-branch flow} (x);
+    \draw[flow] (g) -- node[above left] {\small else-branch flow} (x);
+
+    \draw[flow] (c18) -- node[above right] {\small then-branch flow} (y);
+    \draw[flow] (c03) -- node[below right] {\small else-branch flow} (y);
+
+    \draw[revflow] (x) -- (u);
+    \draw[revflow] (x) -- (g);
+
+    \draw[revflow] (y) -- (c18);
+    \draw[revflow] (y) -- (c03);
+
+    % ==== COMPARISON EDGES ====
+
+    \draw[constraint] (c15) -- node[right] {$>$} (x);
+    \draw[constraint] (x) -- node[above] {$\leq$} (y);
+
     \end{tikzpicture}
     }
+    \end{minipage}\hfill
+    \begin{minipage}[c]{0.35\textwidth}
     \caption{\emph{Propagate cut sets (backward along data flow).} Cuts introduced at comparison sites are pushed backward along the edges in~\ref{fig:control-flow-gaussian-b} so that all contributing subexpressions share the same interval boundaries for discretization.}
     \label{fig:control-flow-gaussian-d}
+    \end{minipage}
     \end{subfigure}
-    
-    \caption{A high-level overview of value-set flow and cut-set propagation over float-typed subexpressions for the example program~\ref{sec:examples:4}. A fully type-annotated program used for discretization is produced.}
+    \vspace{0.8cm}
+
+    \caption{Constraint graphs, read from left to right in program order, demonstrating value-set flow and cut-set propagation over float-typed subexpressions for example~\ref{sec:examples:4}. Colored elements indicate the components of the float types activated at each step.}
     \label{fig:control-flow-gaussian}
 \end{figure}

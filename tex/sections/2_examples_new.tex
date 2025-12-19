@@ -134,6 +134,8 @@ More generally, whenever two expressions are compared, the type system equates t
 
 \input{figures/control-flow}
 
+Now, the discretized program becomes:
+
 \begin{lstlisting}[aboveskip=1em,belowskip=1em]
     let x = if flip() then
         discrete(0.15, 0.6, 0.15, 0.1)
@@ -166,6 +168,14 @@ Continuous distributions can have parameters that depend on discrete random choi
     let x = if flip() then 0.5 else 1.5 in gaussian(0, x) < 0.5
 \end{lstlisting}
 
+\begin{wrapfigure}{r}{0.3\textwidth}
+    \centering
+    \input{figures/latent-variable}
+    \caption{Constraint graph, read from top to bottom in program order, for example~\ref{sec:examples:5}. Using $x$ as a Gaussian parameter induces a \emph{recovers} constraint, which ensures a unique discrete index for each value of $x$.}
+    \vspace{-75pt}
+    \label{fig:control-flow-distinguishes}
+\end{wrapfigure}
+
 \noindent %This example shows how discrete choices can affect the parameters of continuous distributions. 
 The type-annotations reveal how the variable $x$ determines the standard deviation of the Gaussian, and Figure~\ref{fig:control-flow-distinguishes} illustrates how type information is propagated:
 
@@ -177,15 +187,6 @@ The type-annotations reveal how the variable $x$ determines the standard deviati
     (gaussian(0, x) : !{\ft{<0.5}}!) 
         < (0.5 : !{\ftb{<0.5}{0.5}}!)
 \end{lstlisting}
-
-
-\begin{wrapfigure}{r}{0.3\textwidth}
-    \centering
-    \input{figures/latent-variable}
-    \caption{Edge diagram for example~\ref{sec:examples:5}. Using $x$ as a Gaussian parameter induces a \emph{recovers} constraint, ensuring a unique discrete index for each value of $x$.}
-    \vspace{-75pt}
-    \label{fig:control-flow-distinguishes}
-\end{wrapfigure}
 
 \noindent Since the variable $x$ is later used as a parameter to the $\gaussian$ distribution, \Slice{} generates a separate case for each possible value that $x$ can take (namely 0.5 and 1.5, from its value set). To support this, the type system uses non-strict inequalities in the cut sets, enabling these values to be mapped to unique integer indices starting from 0. Specifically, the value 0.5 corresponds to index 0 via the type \codetype{\ftb{<=0.5,<=1.5}{0.5}}, and 1.5 corresponds to 1 via \codetype{\ftb{<=0.5,<=1.5}{1.5}}. 
 

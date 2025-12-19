@@ -22,7 +22,7 @@
 
 \node[floatnode, below=3cm of $(v05)!0.5!(v15)$] (x) {
     $x$ : \\
-    $\floattype{\{\textcolor{red}{\cleq{0.5}}, \textcolor{red}{\cleq{1.5}}\}}{\{\textcolor{red}{0.5,1.5}\}}$
+    $\floattype{\{\textcolor{red}{\cleq{0.5}}, \textcolor{red}{\cleq{1.5}}\}}{\{0.5,1.5}\}$
 };
 
 % ===== SINGLE GAUSSIAN NODE =====
@@ -38,10 +38,6 @@
     0.5 : \\
     $\floattype{\{\clt{0.5}\}}{\{0.5\}}$
 };
-
-% ===== DOTTED ARROWS FOR CUT SET PROPAGATION =====
-\draw[->, thick, dotted] (x) -- node[left, text=black] {} (v05);
-\draw[->, thick, dotted] (x) -- node[right, text=black] {} (v15);
 
 % ===== SOLID ARROWS FOR VALUE SET PROPAGATION =====
 \draw[->, thick]
