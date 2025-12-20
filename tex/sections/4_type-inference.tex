@@ -50,11 +50,32 @@ The type inference rules closely mirror the typing rules in Figure~\ref{fig:typi
 \subsection{Constraint Solving}
 Once constraint generation completes, we obtain a system of constraints over type variables, cut sets $B$, and value sets $V$. The constraint solving phase proceeds in two steps:
 
+\input{figures/constraint-sol.tex}
+
 \begin{enumerate}
     \item \textbf{Subtyping reduction}: We first process all subtyping constraints of the form $\subtype{\tau_1}{\tau_2}$. Since subtyping for float types follows the rule $\subtype{\float[B_1;V_1]}{\float[B_2;V_2]}$ if and only if $B_1 = B_2$ and $V_1 \sqsubseteq V_2$, we reduce each subtyping constraint into corresponding equality and subset constraints on the cut sets and value sets. Subtyping constraint elimination continues until we have only constraints among $B$'s and $V$'s.
     
     \item \textbf{Lattice constraint solving}: After subtyping reduction, we are left with constraints purely over cut sets and value sets—equalities, subset relations, and the specialized constraints like $\distinguishes{B}{V}$, $\answerslt{B}{V_1}{V_2}$, and $\has{V}{c}$. These constraints are solved using a monotone fixed point algorithm for lattices over the cut sets and value sets.
 \end{enumerate}
+
+\paragraph{Subtyping Reduction.}
+Subtyping reduction eliminates all remaining type-level subtyping constraints by recursively
+decomposing them according to the structure of types.
+For base float types, a constraint
+$\subtype{\float[B_1;V_1]}{\float[B_2;V_2]}$
+is reduced to the conjunction $B_1 = B_2$ and $V_1 \sqsubseteq V_2$.
+For compound types, subtyping is handled structurally before reaching floats.
+For example, a constraint
+$\subtype{\float[B_1;V_1] * \float[B_2;V_2]}
+        {\float[B_5;V_5] * \float[B_6;V_6]}$
+is decomposed into
+$\subtype{\float[B_1;V_1]}{\float[B_5;V_5]}$
+and
+$\subtype{\float[B_2;V_2]}{\float[B_6;V_6]}$,
+each of which is then reduced to equality and subset constraints on the corresponding cut
+and value sets.
+This process is syntactic and continues until no subtyping constraints remain,
+leaving only constraints over $B$ and $V$ for lattice solving. 
 
 \paragraph{Lattice Solving.}
 The lattice solver keeps track of the current contents of all $B$ and $V$ variables.
@@ -85,7 +106,7 @@ The solver repeatedly processes constraints until reaching a fixed point, where 
 Lattice constraint solving takes time polynomial in the size of the program: at worst, every single constant in the program gets added to the cut set or value set of every subexpression of type $\float[B;V]$.
 
 \begin{example}
-    From the previous example, we obtained the constraint set displayed in \Cref{eq:cs}, which is then solved as follows (referring to Figure~\ref{fig:control-flow-gaussian} for a pictorial depiction):
+    From the previous example, we obtained the constraint set displayed in \Cref{eq:cs}, which is then solved as follows:
 
  \noindent   \emph{Step 1: Subtyping reduction.} We replace each subtyping constraint as described above:
  \[
@@ -100,11 +121,11 @@ Lattice constraint solving takes time polynomial in the size of the program: at 
 
   \noindent   \emph{Step 2: Initialize.} All $B$ and $V$ variables start as $\emptyset$.
 
- \noindent    \emph{Step 3: Process value containment (e.g. Figure~\ref{fig:control-flow-gaussian-a}).} We update:
+ \noindent    \emph{Step 3: Process value containment.} We update:
     \[V_1 := \{0\} \quad V_2 := \{2\} \quad V_4 := \{0\} \quad V_5 := \{1\} \quad V_8 := \{1.5\} \quad V_9 := \{1.8\} \quad V_{10} := \{0.3\}\]
 
 
- \noindent    \emph{Step 4: Process top assignments (e.g. Figure~\ref{fig:control-flow-gaussian-a}).} We set $V_3 := \top$ and $V_6 := \top$.
+ \noindent    \emph{Step 4: Process top assignments.} We set $V_3 := \top$ and $V_6 := \top$.
 
  \noindent  \emph{Step 5: Process subset constraints (e.g. Figure~\ref{fig:control-flow-gaussian-b}).}
  For $V_3 \sqsubseteq V_7$: since $V_3 = \top$, update $V_7 := V_7 \sqcup \top = \top$. For
@@ -112,15 +133,15 @@ Lattice constraint solving takes time polynomial in the size of the program: at 
 $V_9 \sqsubseteq V_{11}$: we update $V_{11} := V_{11} \sqcup \{1.8\} = \{1.8\}$. For 
  $V_{10} \sqsubseteq V_{11}$: we update $V_{11} := V_{11} \sqcup \{0.3\} = \{0.3, 1.8\}$.
 
- \noindent    \emph{Step 8: Process answerability (e.g. Figure~\ref{fig:control-flow-gaussian-c}).} For $\answerslt{B_7}{V_7}{V_8}$: with $V_7 = \top$ and $V_8 = \{1.5\}$, we add $\clt{1.5}$ to \mbox{$B_7$}. For $\answersleq{B_7}{V_7}{V_{11}}$: with $V_7 = \top$ and $V_{11} = \{0.3, 1.8\}$, we add $\cleq{0.3}$ and $\cleq{1.8}$ to \mbox{$B_7$}.
+ \noindent    \emph{Step 8: Process answerability.} For $\answerslt{B_7}{V_7}{V_8}$: with $V_7 = \top$ and $V_8 = \{1.5\}$, we add $\clt{1.5}$ to \mbox{$B_7$}. For $\answersleq{B_7}{V_7}{V_{11}}$: with $V_7 = \top$ and $V_{11} = \{0.3, 1.8\}$, we add $\cleq{0.3}$ and $\cleq{1.8}$ to \mbox{$B_7$}.
 
  \noindent   \emph{Step 7: Process recoverability. }
 For $\distinguishes{B_1}{V_1}$, $\distinguishes{B_2}{V_2}$, $\distinguishes{B_4}{V_4}$, $\distinguishes{B_5}{V_5}$: $|V_i| = 1$ for $i = 1,2,4,5$, so trivially satisfied.
 
-\noindent   \emph{Step 6: Process equalities (e.g. Figures~\ref{fig:control-flow-gaussian-c},~\ref{fig:control-flow-gaussian-d}).} Unifying all equality constraints: from comparisons: $B_7 = B_8$ and $B_7 = B_{11}$;
+\noindent   \emph{Step 6: Process equalities.} Unifying all equality constraints: from comparisons: $B_7 = B_8$ and $B_7 = B_{11}$;
        from subtyping: $B_3 = B_7$, $B_6 = B_7$, $B_9 = B_{11}$, $B_{10} = B_{11}$; result: $B_3 = B_6 = B_7 = B_8 = B_9 = B_{10} = B_{11}$.
 
- \noindent \emph{Final solution (e.g. Figure~\ref{fig:control-flow-gaussian-d}):} $B_1 = \emptyset$, $B_2 = \emptyset$, $B_4 = \emptyset$, $B_5 = \emptyset$, $B_3 = B_6 = B_7 = B_8 = B_9 = B_{10} = B_{11} = \{\clt{1.5}, \cleq{0.3}, \cleq{1.8}\}$, $V_1 = \{0\}$, $V_2 = \{2\}$, $V_3 = \top$, $V_4 = \{0\}$, $V_5 = \{1\}$, $V_6 = \top$, $V_7 = \top$, $V_8 = \{1.5\}$, $V_9 = \{1.8\}$, $V_{10} = \{0.3\}$, $V_{11} = \{0.3, 1.8\}$. Since none of $B_1$, $B_2$, $B_4$ are $\top$, the constraints $B_1 \equiv_{\top} B_3$ and $B_2 \equiv_{\top} B_3$ are satisfied.
+ \noindent \emph{Final solution:} $B_1 = \emptyset$, $B_2 = \emptyset$, $B_4 = \emptyset$, $B_5 = \emptyset$, $B_3 = B_6 = B_7 = B_8 = B_9 = B_{10} = B_{11} = \{\clt{1.5}, \cleq{0.3}, \cleq{1.8}\}$, $V_1 = \{0\}$, $V_2 = \{2\}$, $V_3 = \top$, $V_4 = \{0\}$, $V_5 = \{1\}$, $V_6 = \top$, $V_7 = \top$, $V_8 = \{1.5\}$, $V_9 = \{1.8\}$, $V_{10} = \{0.3\}$, $V_{11} = \{0.3, 1.8\}$. Since none of $B_1$, $B_2$, $B_4$ are $\top$, the constraints $B_1 \equiv_{\top} B_3$ and $B_2 \equiv_{\top} B_3$ are satisfied.
 \end{example}
 
 \paragraph{Additional constraint for contextual equivalence.} 
