@@ -1,15 +1,13 @@
-\section{Soundness of our Approach}\
+\section{Soundness of our Approach}
 \label{sec:soundness}%
 %
 We now prove our approach sound in the following expected sense. Every expression $e:\bool$ is semantically equivalent to $\discretize{e : \bool} : \bool$. To formalize and prove this claim rigorously, we will (i) define a natural operational semantics for our language and (ii) use a notion related to \emph{probabilistic couplings} to relate the operational behaviors in a way that lets us conclude equivalence. We provide the high-level idea of the proof in this main text. All details can be found in \Cref{sec:app:soundness_new}.
 %
 \subsection{Operational Semantics}
 %
-We start by defining a small-step operational functional $\sem{\cdot}\colon Expr_\tau \to\mathcal{D}(Expr_\tau + \bot)$ (cf.\ \Cref{tab:smallstep} on page \pageref{tab:smallstep}), mapping each expression $e$ of type $\tau$ to a (possibly continuous) subdistribution $\sem{e:\tau}$ over expressions of type $\tau$ or $\bot$. The missing probability mass corresponds to the probability of encountering an error due to ill-defined invokations of sampling instructions (e.g., $\uniform(1,0)$). The probability of $\bot$ is the probability of observation failure. 
+We start by defining a small-step operational functional $\sem{\cdot}\colon Expr_\tau \to\mathcal{D}(Expr_\tau + \bot)$ (cf.\ \Cref{tab:smallstep} on page \pageref{tab:smallstep}), mapping each expression $e$ of type $\tau$ to a (possibly continuous) subdistribution $\sem{e:\tau}$ over expressions of type $\tau$ or $\bot$. The missing probability mass corresponds to the probability of encountering an error due to ill-defined invocations of sampling instructions (e.g., $\uniform(1,0)$). The probability of $\bot$ is the probability of observation failure. 
 
 Using this small-step operational functional, we employ a limit construction to define a (big-step) functional $\bigsem{\cdot}\colon Expr_\tau \to \mathcal{D}(Vals_\tau + \bot)$, mapping each expression $e$ of type $\tau$ to a subdistribution $\bigsem{e:\tau}$ over \emph{values} of type $\tau$ or $\bot$. The missing probability mass now \emph{additionally} captures $e$'s non-termination probability, and the probability of $\bot$ is the probability of observation failure. 
-
-\kevin{measurable}
 
 \subsection{Soundness via Probabilistic Couplings}
 %
@@ -20,7 +18,7 @@ Let us first consider the main theorem, and then discuss our proof strategy.
 	Let $e:\bool$. Then $\bigsem{e:\bool} = \bigsem{\discretize{e:bool} : \bool}$.
 \end{theorem}
 %
-Intuitively, the idea is to prove that we can execute the two programs in a synchronized manner and such their probability of terminating in a value $v$ coincide for each $v \in \{\true,\false,\bot\}$. Since, however, sub-expressions might be of a type other than $\bool$, we have to find an argument that (i) applies to expressions of \emph{arbitrary} type and is (ii) strong enough to imply \Cref{thm:maintext:sound}.
+Intuitively, the idea is to prove that we can execute the two programs in a synchronized manner such that their probability of terminating in a value $v$ coincide for each $v \in \{\true,\false,\bot\}$. Since, however, sub-expressions might be of a type other than $\bool$, we have to find an argument that (i) applies to expressions of \emph{arbitrary} type and is (ii) strong enough to imply \Cref{thm:maintext:sound}.
 %e, and which lets us conclude semantic equivalence for expressions of type $\bool$.
 %more general argument which enables us to conclude semantic equivalence.% The crucial point is when we encounter a continuous sampling instruction in $e$, in which case we have to prove that its discretized counterpart $\discretize{e:\tau}$
 

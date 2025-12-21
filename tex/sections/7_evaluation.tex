@@ -32,7 +32,7 @@ The \Slice{} compiler consists of approximately 3,400 lines of OCaml code (inclu
 
 Next, we evaluate the performance of our \Slice{} framework on two benchmark suites previously used by \SPPL{}. The detailed tables (\Cref{tab:benchmarks_dt} and \Cref{tab:benchmarks_dt_extra}) can be found in the supplemental appendix; we summarize their contents here. The decision-tree benchmarks from~\cite{albarghouthi2017fairsquare} assess fairness properties of decision trees under different population models. DT$_n$ denotes a tree with $n$ conditionals, the second column specifies the population model, and the remaining columns report runtimes. We separate \SPPL{}'s execution into translation and fairness-judgment phases to highlight where time is spent.
 
-\Cref{tab:benchmarks_psi} depicts benchmarks containing at least one continuous distribution, taken from the \PSI{} and \SPPL{} benchmark sets. We note that \Slice{} can run all benchmarks \SPPL{} can except for those containing transformations. We depict the performance of (i) \Slice{}+\Dice{}, (ii) \Slice{}+\Roulette{}, and (ii) \SPPL{} in seconds. We do not list results for \PSI{} since \SPPL{} is faster on these benchmarks. 
+\Cref{tab:benchmarks_psi} depicts benchmarks containing at least one continuous distribution, taken from the \PSI{} and \SPPL{} benchmark sets. We note that \Slice{} can run all benchmarks \SPPL{} can except for those containing transformations. We depict the performance of (i) \Slice{}+\Dice{}, (ii) \Slice{}+\Roulette{}, and (iii) \SPPL{} in seconds. We do not list results for \PSI{} since \SPPL{} is faster on these benchmarks. 
 
 
 
