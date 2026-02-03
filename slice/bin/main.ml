@@ -111,7 +111,8 @@ let perform_two_proportion_z_test ~print_all (t_disc, f_disc, e_disc, o_disc) (t
       )
 
 (* Process a single .slice file *)
-let process_file ~print_all ~to_sppl ~backend ~time filename : ( ((int * int * int) * (int * int * int)) option, string) result =
+let process_file ~print_all ~to_sppl ~backend ~time ~storm ~limit filename
+  : ( ((int * int * int) * (int * int * int)) option, string) result =
   if print_all then Printf.printf "Processing file: %s\n" filename;
   try
     let content = read_file filename in
@@ -137,6 +138,17 @@ let process_file ~print_all ~to_sppl ~backend ~time filename : ( ((int * int * i
       if time then (
         let elapsed = end_time -. start_time in
         Printf.eprintf "%.3f\n" elapsed;
+      );
+      
+      (* Storm backend *)
+      if storm then (
+        let mc_result = Slice.To_mc.to_mc ~limit discretized_expr in
+        let mc_path = filename ^ ".tra" in
+        Slice.To_mc.write_tra_file mc_result mc_path;
+        let lab_path = filename ^ ".lab" in
+        Slice.To_mc.write_lab_file mc_result lab_path;
+        let state_rew_path = filename ^ ".state.rew" in
+        Slice.To_mc.write_state_rew_file mc_result state_rew_path
       );
 
       if print_all then (
@@ -195,7 +207,8 @@ let has_slice_extension filename =
   Filename.check_suffix filename ".slice"
 
 (* Process a directory, finding all .slice files recursively *)
-let rec process_directory ~print_all ~to_sppl ~backend ~time path : (int * (string * string) list * (string * (int * int * int) * (int * int * int)) list) =
+let rec process_directory ~print_all ~to_sppl ~backend ~time ~storm ~limit path
+  : (int * (string * string) list * (string * (int * int * int) * (int * int * int)) list) =
   let dir = Unix.opendir path in
   let rec process_entries count errors_list diff_details_list =
     try
@@ -207,7 +220,7 @@ let rec process_directory ~print_all ~to_sppl ~backend ~time path : (int * (stri
         let stats = Unix.stat full_path in
         match stats.Unix.st_kind with
         | Unix.S_REG when has_slice_extension full_path ->
-            (match process_file ~print_all ~to_sppl ~backend ~time full_path with
+            (match process_file ~print_all ~to_sppl ~backend ~time ~storm ~limit full_path with
              | Ok diff_details_opt ->
                  let new_diff_details_list = 
                    match diff_details_opt with
@@ -220,7 +233,9 @@ let rec process_directory ~print_all ~to_sppl ~backend ~time path : (int * (stri
                  process_entries (count + 1) ((full_path, msg) :: errors_list) diff_details_list
             )
         | Unix.S_DIR ->
-            let sub_count, sub_errors_list, sub_diff_details_list = process_directory ~print_all ~to_sppl ~backend ~time full_path in
+            let sub_count, sub_errors_list, sub_diff_details_list =
+              process_directory ~print_all ~to_sppl ~backend ~time ~storm ~limit full_path
+            in
             process_entries (count + sub_count) (sub_errors_list @ errors_list) (sub_diff_details_list @ diff_details_list)
         | _ ->
             process_entries count errors_list diff_details_list
@@ -236,13 +251,13 @@ let rec process_directory ~print_all ~to_sppl ~backend ~time path : (int * (stri
   process_entries 0 [] []
 
 (* Main command execution logic *) 
-let run_slice path print_all to_sppl backend time =
+let run_slice path print_all to_sppl backend time storm limit =
   try
     let stats = Unix.stat path in
     match stats.Unix.st_kind with
     | Unix.S_REG ->
         if has_slice_extension path then (
-          match process_file ~print_all ~to_sppl ~backend ~time path with
+          match process_file ~print_all ~to_sppl ~backend ~time ~storm ~limit path with
           | Ok diff_details_opt ->
               if not to_sppl && print_all then (
                 match diff_details_opt with
@@ -258,7 +273,9 @@ let run_slice path print_all to_sppl backend time =
         ) else
           Printf.eprintf "Error: File must have .slice extension: %s\n" path
     | Unix.S_DIR ->
-        let count, errors_list, diff_details_list = process_directory ~print_all ~to_sppl ~backend ~time path in
+        let count, errors_list, diff_details_list =
+          process_directory ~print_all ~to_sppl ~backend ~time ~storm ~limit path
+        in
         if print_all then (
           Printf.printf "\n=== Directory Processing Summary ===\n";
           Printf.printf "Processed %d files.\n" count;
@@ -316,7 +333,16 @@ let time_arg =
   let doc = "Print the elapsed time for discretization to stderr." in
   Arg.(value & flag & info ["time"] ~doc)
 
-let slice_t = Term.(const run_slice $ path_arg $ print_all_arg $ to_sppl_arg $ backend_arg $ time_arg)
+let storm_arg =
+  let doc = "Emit Storm DTMC files (.tra/.lab/.state.rew) from the discretized program." in
+  Arg.(value & flag & info ["storm"] ~doc)
+
+let limit_arg =
+  let doc = "State limit for Storm DTMC construction (optional)." in
+  Arg.(value & opt (some int) None & info ["limit"] ~docv:"N" ~doc)
+
+let slice_t =
+  Term.(const run_slice $ path_arg $ print_all_arg $ to_sppl_arg $ backend_arg $ time_arg $ storm_arg $ limit_arg)
 
 let cmd = 
   let doc = "Process and analyze Slice files." in
