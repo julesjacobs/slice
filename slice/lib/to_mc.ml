@@ -11,7 +11,6 @@ type transition = {
 type mc = {
   num_states : int;
   sink : int;
-  sink_diverging : int option;
   transitions : transition list;
   expr_of : (int, A.expr) Hashtbl.t; (* map: state id -> expression *)
 }
@@ -505,51 +504,36 @@ let expr_key (e : A.expr) : string =
   let h = Hashtbl.hash e in
   string_of_int h ^ ":" ^ Marshal.to_string e [ Marshal.No_sharing ]
 
-let to_mc ?(limit : int option = None) (e0 : A.expr) : mc =
+let to_mc (e0 : A.expr) : mc =
   let e0 = simplify e0 in
-  let () =
-    match limit with
-    | None -> ()
-    | Some l -> if l <= 0 then failwith "to_mc: limit must be > 0"
-  in
 
   let id_of : (string, int) Hashtbl.t = Hashtbl.create 4096 in
   let expr_of : (int, A.expr) Hashtbl.t = Hashtbl.create 4096 in
   let q : int Queue.t = Queue.create () in
   let next_id = ref 0 in
 
-  let can_add_new () : bool =
-    match limit with
-    | None -> true
-    | Some l -> !next_id < l
-  in
-
   let add_state (e : A.expr) : int option =
     let key = expr_key e in
     match Hashtbl.find_opt id_of key with
     | Some id -> Some id
     | None ->
-        if not (can_add_new ()) then
-          None
-        else
-          let id = !next_id in
-          incr next_id;
-          Hashtbl.add id_of key id;
-          Hashtbl.add expr_of id e;
-          Queue.add id q;
-          Some id
+        let id = !next_id in
+        incr next_id;
+        Hashtbl.add id_of key id;
+        Hashtbl.add expr_of id e;
+        Queue.add id q;
+        Some id
   in
 
   let start_id =
     match add_state e0 with
     | Some id -> id
-    | None -> failwith "to_mc: limit too small to add initial state"
+    | None -> failwith "to_mc: unable to add initial state"
   in
   if start_id <> 0 then failwith "internal error: initial state is not 0";
 
   let transitions_rev : transition list ref = ref [] in
   let terminal_ids : int list ref = ref [] in
-  let cutoff_ids : int list ref = ref [] in
 
   let is_terminal_value (e : A.expr) : bool =
     match simplify e with
@@ -568,66 +552,34 @@ let to_mc ?(limit : int option = None) (e0 : A.expr) : mc =
       let succs = step e in
       if succs = [] then terminal_ids := sid :: !terminal_ids
       else
-        let all_cutoff = ref true in
         List.iter
           (fun (p, e') ->
             let e' = simplify e' in
             match add_state e' with
             | Some tid ->
-                all_cutoff := false;
                 transitions_rev := { src = sid; dst = tid; prob = p } :: !transitions_rev
             | None -> ())
           succs;
-        if !all_cutoff then cutoff_ids := sid :: !cutoff_ids
   done;
 
-  match limit with
-  | None ->
-      let sink = !next_id in
-      let transitions =
-        let base = !transitions_rev in
-        let from_terminals =
-          List.map (fun sid -> { src = sid; dst = sink; prob = 1.0 }) !terminal_ids
-        in
-        { src = sink; dst = sink; prob = 1.0 } :: (from_terminals @ base)
-      in
-      let transitions =
-        List.sort
-          (fun a b ->
-            match compare a.src b.src with
-            | 0 -> (match compare a.dst b.dst with 0 -> compare a.prob b.prob | c -> c)
-            | c -> c)
-          transitions
-      in
-      { num_states = sink + 1; sink; sink_diverging = None; transitions; expr_of }
-  | Some l ->
-      let sink_done = l in
-      let sink_diverging = l + 1 in
-      let transitions = !transitions_rev in
-      let transitions =
-        !terminal_ids
-        |> List.map (fun sid -> { src = sid; dst = sink_done; prob = 1.0 })
-        |> List.rev_append transitions
-      in
-      let transitions =
-        !cutoff_ids
-        |> List.map (fun sid -> { src = sid; dst = sink_diverging; prob = 1.0 })
-        |> List.rev_append transitions
-      in
-      let transitions =
-        { src = sink_done; dst = sink_done; prob = 1.0 }
-        :: { src = sink_diverging; dst = sink_diverging; prob = 1.0 }
-        :: transitions
-      in
-      let transitions =
-        List.sort
-          (fun a b ->
-            match compare a.src b.src with
-            | 0 -> (match compare a.dst b.dst with 0 -> compare a.prob b.prob | c -> c)
-            | c -> c)
-          transitions
-      in
-      { num_states = l + 2; sink = sink_done; sink_diverging = Some sink_diverging; transitions; expr_of }
+  let sink = !next_id in
+  let transitions =
+    let base = !transitions_rev in
+    let from_terminals =
+      List.map (fun sid -> { src = sid; dst = sink; prob = 1.0 }) !terminal_ids
+    in
+    { src = sink; dst = sink; prob = 1.0 } :: (from_terminals @ base)
+  in
+  (* Sort transitions for nicer output *)
+  let transitions =
+    List.sort
+      (fun a b ->
+        match compare a.src b.src with
+        | 0 -> (match compare a.dst b.dst with 0 -> compare a.prob b.prob | c -> c)
+        | c -> c)
+      transitions
+  in
+  { num_states = sink + 1; sink; transitions; expr_of }
 
 (* Transition file (.tra) for STORM backend *)
 let write_tra_file (m : mc) (path : string) : unit =
@@ -650,32 +602,9 @@ let write_lab_file (m : mc) (path : string) : unit =
   Format.fprintf fmt "0 init@.";
   for sid = 0 to (m.num_states - 1) do
     match Hashtbl.find_opt m.expr_of sid with
-    | Some (A.ExprNode (A.Const _))
-    | Some (A.ExprNode (A.BoolConst _))
-    | Some (A.ExprNode (A.FinConst _)) ->
+    | Some (A.ExprNode (A.BoolConst true)) ->
         Format.fprintf fmt "%d accept@." sid
     | _ -> ()
   done;
   Format.fprintf fmt "%d done@." m.sink;
-  (match m.sink_diverging with
-   | None -> ()
-   | Some s2 -> Format.fprintf fmt "%d done@." s2);
-  close_out oc
-
-(* State rewards file (.state.rew) for STORM backend *)
-let write_state_rew_file (m : mc) (path : string) : unit =
-  let oc = open_out path in
-  let fmt = Format.formatter_of_out_channel oc in
-  for sid = 0 to (m.num_states - 1) do
-    match Hashtbl.find_opt m.expr_of sid with
-    | Some (A.ExprNode (A.Const f)) ->
-        Format.fprintf fmt "%d %.17g@." sid f
-    | Some (A.ExprNode (A.BoolConst true)) ->
-        Format.fprintf fmt "%d %.17g@." sid 1.0
-    | Some (A.ExprNode (A.BoolConst false)) ->
-        Format.fprintf fmt "%d %.17g@." sid 0.0
-    | Some (A.ExprNode (A.FinConst (k, _n))) ->
-        Format.fprintf fmt "%d %.17g@." sid (float_of_int k)
-    | _ -> ()
-  done;
   close_out oc
