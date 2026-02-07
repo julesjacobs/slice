@@ -10,7 +10,6 @@ BACKEND="dice"
 OUTPUT_EXT="dice"  # Default output extension
 TIME_FLAG=false
 RUN_STORM=false
-LIMIT=""
 
 # Parse command line arguments
 while [[ $# -gt 0 ]]; do
@@ -18,19 +17,6 @@ while [[ $# -gt 0 ]]; do
     --storm)
       RUN_STORM=true
       shift
-      ;;
-    --limit)
-      if [ "$RUN_STORM" = true ]; then
-        if [ $# -lt 2 ]; then
-          echo "Error: --limit requires a value"
-          exit 1
-        fi
-        LIMIT="$2"
-        shift 2
-      else
-        echo "Error: --limit requires --storm"
-        exit 1
-      fi
       ;;
     --dice)
       BACKEND="dice"
@@ -59,10 +45,9 @@ while [[ $# -gt 0 ]]; do
 done
 
 if [ -z "$EXAMPLE" ]; then
-  echo "Usage: $0 [--storm] [--limit N] [--dice|--roulette] [--time] <example-program>"
+  echo "Usage: $0 [--storm] [--dice|--roulette] [--time] <example-program>"
   echo "Options:"
   echo "  --storm      Run Storm on the generated DTMC"
-  echo "  --limit N    State limit for Storm DTMC construction (requires --storm)"
   echo "  --dice       Use Dice backend (default)"
   echo "  --roulette   Use Roulette backend"
   echo "  --time       Measure and print total execution time"
@@ -78,13 +63,8 @@ cd slice || exit 1
 if [ "$RUN_STORM" = true ]; then
   TRA="${EXAMPLE_ABS}.tra"
   LAB="${EXAMPLE_ABS}.lab"
-  STATE_REW="${EXAMPLE_ABS}.state.rew"
 
-  if [ -n "$LIMIT" ]; then
-    ./_build/default/bin/main.exe --storm --limit "$LIMIT" "$EXAMPLE_ABS"
-  else
-    ./_build/default/bin/main.exe --storm "$EXAMPLE_ABS"
-  fi
+  ./_build/default/bin/main.exe --storm "$EXAMPLE_ABS"
 
   if [ ! -f "$TRA" ]; then
     echo "Error: missing transition file: $TRA" >&2
@@ -94,14 +74,39 @@ if [ "$RUN_STORM" = true ]; then
     echo "Error: missing label file: $LAB" >&2
     exit 1
   fi
-  if [ ! -f "$STATE_REW" ]; then
-    echo "Error: missing state rewards file: $STATE_REW" >&2
-    exit 1
-  fi
 
-  storm --explicit "$TRA" "$LAB" \
-    --staterew "$STATE_REW" \
-    --prop 'R=? [ F "done" || F "accept" ]'
+  if grep -q "has_observe" "$LAB"; then
+    run_storm_prop() {
+      local prop="$1"
+      local out
+      out="$(storm --explicit "$TRA" "$LAB" --prop "$prop")"
+      printf '%s\n' "$out" >&2
+      printf '%s\n' "$out" | awk '/Result/ {print $NF}' | tail -n 1
+    }
+
+    num="$(run_storm_prop 'P=? [ (F "accept") & (G !"fail") ]')"
+    den="$(run_storm_prop 'P=? [ (G !"fail") ]')"
+    if [[ -z "$num" || -z "$den" ]]; then
+      echo "Error: could not parse Storm output for normalization." >&2
+      exit 1
+    fi
+    echo "--------------------------------------------------------------"
+    echo ""
+
+    awk -v num="$num" -v den="$den" '
+      BEGIN {
+        if (den == 0) {
+          print "Conditional probability undefined (P(G \"!fail\") = 0).";
+          exit 1;
+        }
+        printf "Storm P(F \"accept\" & G \"!fail\") = %.17g\n", num;
+        printf "Storm P(G \"!fail\") = %.17g\n", den;
+        printf "Conditional probability P(F \"accept\" | G \"!fail\") = %.17g\n", num / den;
+      }'
+  else
+    storm --explicit "$TRA" "$LAB" \
+      --prop 'P=? [ (F "accept") ]'
+  fi
   cd ..
   exit 0
 fi

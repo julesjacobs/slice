@@ -13,6 +13,8 @@ type mc = {
   sink : int;
   transitions : transition list;
   expr_of : (int, A.expr) Hashtbl.t; (* map: state id -> expression *)
+  has_observe : bool;
+  fail : int option;
 }
 
 (* ---------- Utilities: sets of identifiers ---------- *)
@@ -312,7 +314,7 @@ let rec simplify (A.ExprNode e : A.expr) : A.expr =
   | A.RuntimeError _ ->
       A.ExprNode e
 
-(***** ---------- Small-step semantics: e -> { (p_i, e_i) } ---------- *****)
+(***** ---------- Small-step semantics: e -> { (p_i, successors_i) } ---------- *****)
 
 let check_prob (p : float) : unit =
   if p < 0.0 || p > 1.0 || Float.is_nan p || Float.is_infinite p then
@@ -324,7 +326,16 @@ let check_sum_to_one (ps : float list) : unit =
   if Float.abs (s -. 1.0) > eps then
     failwith (Format.asprintf "probabilities must sum to 1, got %0.17g" s)
 
-let rec step (e : A.expr) : (float * A.expr) list =
+type succ =
+  | Next of A.expr
+  | Fail  (* observe failure *)
+
+let map_succ (plug : A.expr -> A.expr) ((p, s) : float * succ) : float * succ =
+  match s with
+  | Fail -> (p, Fail)
+  | Next e' -> (p, Next (plug e'))
+
+let rec step (e : A.expr) : (float * succ) list =
   let e = simplify e in
   if is_value e then
     []
@@ -332,142 +343,146 @@ let rec step (e : A.expr) : (float * A.expr) list =
     match e with
     | A.ExprNode (A.If (c, tbr, fbr)) ->
         if not (is_value c) then
-          List.map (fun (p, c') -> (p, A.ExprNode (A.If (c', tbr, fbr)))) (step c)
+          List.map (map_succ (fun c' -> A.ExprNode (A.If (c', tbr, fbr)))) (step c)
         else
           (match c with
-           | A.ExprNode (A.BoolConst true) -> [ (1.0, tbr) ]
-           | A.ExprNode (A.BoolConst false) -> [ (1.0, fbr) ]
+           | A.ExprNode (A.BoolConst true) -> [ (1.0, Next tbr) ]
+           | A.ExprNode (A.BoolConst false) -> [ (1.0, Next fbr) ]
            | _ -> failwith "if: condition is not a bool")
     | A.ExprNode (A.Let (x, e1, e2)) ->
         if not (is_value e1) then
-          List.map (fun (p, e1') -> (p, A.ExprNode (A.Let (x, e1', e2)))) (step e1)
+          List.map (map_succ (fun e1' -> A.ExprNode (A.Let (x, e1', e2)))) (step e1)
         else
           let e' = subst x e1 e2 |> simplify in
-          [ (1.0, e') ]
+          [ (1.0, Next e') ]
     | A.ExprNode (A.FuncApp (e1, e2)) ->
         if not (is_value e1) then
-          List.map (fun (p, e1') -> (p, A.ExprNode (A.FuncApp (e1', e2)))) (step e1)
+          List.map (map_succ (fun e1' -> A.ExprNode (A.FuncApp (e1', e2)))) (step e1)
         else if not (is_value e2) then
-          List.map (fun (p, e2') -> (p, A.ExprNode (A.FuncApp (e1, e2')))) (step e2)
+          List.map (map_succ (fun e2' -> A.ExprNode (A.FuncApp (e1, e2')))) (step e2)
         else
           (match e1 with
            | A.ExprNode (A.Fun (x, body)) ->
                let e' = subst x e2 body |> simplify in
-               [ (1.0, e') ]
+               [ (1.0, Next e') ]
            | A.ExprNode (A.Fix (f, x, body)) ->
                let self = e1 in
                let e' = subst f self body |> subst x e2 |> simplify in
-               [ (1.0, e') ]
+               [ (1.0, Next e') ]
            | _ -> failwith "application to non-function")
     | A.ExprNode (A.LoopApp (e1, e2, n)) ->
         if not (is_value e1) then
-          List.map (fun (p, e1') -> (p, A.ExprNode (A.LoopApp (e1', e2, n)))) (step e1)
+          List.map (map_succ (fun e1' -> A.ExprNode (A.LoopApp (e1', e2, n)))) (step e1)
         else if not (is_value e2) then
-          List.map (fun (p, e2') -> (p, A.ExprNode (A.LoopApp (e1, e2', n)))) (step e2)
+          List.map (map_succ (fun e2' -> A.ExprNode (A.LoopApp (e1, e2', n)))) (step e2)
         else
           (match e1 with
            | A.ExprNode (A.Fun (x, body)) ->
                let e' = subst x e2 body |> simplify in
-               [ (1.0, e') ]
+               [ (1.0, Next e') ]
            | A.ExprNode (A.Fix (f, x, body)) ->
                let self = e1 in
                let e' = subst f self body |> subst x e2 |> simplify in
-               [ (1.0, e') ]
+               [ (1.0, Next e') ]
            | _ -> failwith "loop application to non-function")
     | A.ExprNode (A.Cmp (op, a, b, flipped)) ->
         if not (is_value a) then
-          List.map (fun (p, a') -> (p, A.ExprNode (A.Cmp (op, a', b, flipped)))) (step a)
+          List.map (map_succ (fun a' -> A.ExprNode (A.Cmp (op, a', b, flipped)))) (step a)
         else if not (is_value b) then
-          List.map (fun (p, b') -> (p, A.ExprNode (A.Cmp (op, a, b', flipped)))) (step b)
+          List.map (map_succ (fun b' -> A.ExprNode (A.Cmp (op, a, b', flipped)))) (step b)
         else
           (match (a, b) with
            | A.ExprNode (A.Const x), A.ExprNode (A.Const y) ->
                let r = match op with A.Lt -> x < y | A.Le -> x <= y in
-               [ (1.0, A.ExprNode (A.BoolConst r)) ]
+               [ (1.0, Next (A.ExprNode (A.BoolConst r))) ]
            | _ -> failwith "cmp: expected floats")
     | A.ExprNode (A.FinCmp (op, a, b, n, flipped)) ->
         if not (is_value a) then
-          List.map (fun (p, a') -> (p, A.ExprNode (A.FinCmp (op, a', b, n, flipped)))) (step a)
+          List.map (map_succ (fun a' -> A.ExprNode (A.FinCmp (op, a', b, n, flipped)))) (step a)
         else if not (is_value b) then
-          List.map (fun (p, b') -> (p, A.ExprNode (A.FinCmp (op, a, b', n, flipped)))) (step b)
+          List.map (map_succ (fun b' -> A.ExprNode (A.FinCmp (op, a, b', n, flipped)))) (step b)
         else
           (match (a, b) with
            | A.ExprNode (A.FinConst (k1, n1)), A.ExprNode (A.FinConst (k2, n2))
              when n1 = n && n2 = n ->
                let r = match op with A.Lt -> k1 < k2 | A.Le -> k1 <= k2 in
-               [ (1.0, A.ExprNode (A.BoolConst r)) ]
+               [ (1.0, Next (A.ExprNode (A.BoolConst r))) ]
            | _ -> failwith "fincmp: expected Fin")
     | A.ExprNode (A.FinEq (a, b, n)) ->
         if not (is_value a) then
-          List.map (fun (p, a') -> (p, A.ExprNode (A.FinEq (a', b, n)))) (step a)
+          List.map (map_succ (fun a' -> A.ExprNode (A.FinEq (a', b, n)))) (step a)
         else if not (is_value b) then
-          List.map (fun (p, b') -> (p, A.ExprNode (A.FinEq (a, b', n)))) (step b)
+          List.map (map_succ (fun b' -> A.ExprNode (A.FinEq (a, b', n)))) (step b)
         else
           (match (a, b) with
            | A.ExprNode (A.FinConst (k1, n1)), A.ExprNode (A.FinConst (k2, n2))
              when n1 = n && n2 = n ->
-               [ (1.0, A.ExprNode (A.BoolConst (k1 = k2))) ]
+               [ (1.0, Next (A.ExprNode (A.BoolConst (k1 = k2)))) ]
            | _ -> failwith "fineq: expected Fin")
     | A.ExprNode (A.And (a, b)) ->
         if not (is_value a) then
-          List.map (fun (p, a') -> (p, A.ExprNode (A.And (a', b)))) (step a)
+          List.map (map_succ (fun a' -> A.ExprNode (A.And (a', b)))) (step a)
         else
           (match a with
-           | A.ExprNode (A.BoolConst false) -> [ (1.0, a) ]
-           | A.ExprNode (A.BoolConst true) -> [ (1.0, b) ]
+           | A.ExprNode (A.BoolConst false) -> [ (1.0, Next a) ]
+           | A.ExprNode (A.BoolConst true) -> [ (1.0, Next b) ]
            | _ -> failwith "and: expected bool")
     | A.ExprNode (A.Or (a, b)) ->
         if not (is_value a) then
-          List.map (fun (p, a') -> (p, A.ExprNode (A.Or (a', b)))) (step a)
+          List.map (map_succ (fun a' -> A.ExprNode (A.Or (a', b)))) (step a)
         else
           (match a with
-           | A.ExprNode (A.BoolConst true) -> [ (1.0, a) ]
-           | A.ExprNode (A.BoolConst false) -> [ (1.0, b) ]
+           | A.ExprNode (A.BoolConst true) -> [ (1.0, Next a) ]
+           | A.ExprNode (A.BoolConst false) -> [ (1.0, Next b) ]
            | _ -> failwith "or: expected bool")
     | A.ExprNode (A.Not a) ->
         if not (is_value a) then
-          List.map (fun (p, a') -> (p, A.ExprNode (A.Not a'))) (step a)
+          List.map (map_succ (fun a' -> A.ExprNode (A.Not a'))) (step a)
         else
           (match a with
-           | A.ExprNode (A.BoolConst b) -> [ (1.0, A.ExprNode (A.BoolConst (not b))) ]
+           | A.ExprNode (A.BoolConst b) -> [ (1.0, Next (A.ExprNode (A.BoolConst (not b)))) ]
            | _ -> failwith "not: expected bool")
     | A.ExprNode (A.Pair (a, b)) ->
         if not (is_value a) then
-          List.map (fun (p, a') -> (p, A.ExprNode (A.Pair (a', b)))) (step a)
+          List.map (map_succ (fun a' -> A.ExprNode (A.Pair (a', b)))) (step a)
         else if not (is_value b) then
-          List.map (fun (p, b') -> (p, A.ExprNode (A.Pair (a, b')))) (step b)
+          List.map (map_succ (fun b' -> A.ExprNode (A.Pair (a, b')))) (step b)
         else
           []
     | A.ExprNode (A.First a) ->
         if not (is_value a) then
-          List.map (fun (p, a') -> (p, A.ExprNode (A.First a'))) (step a)
+          List.map (map_succ (fun a' -> A.ExprNode (A.First a'))) (step a)
         else
           (match a with
-           | A.ExprNode (A.Pair (v1, v2)) when is_value v1 && is_value v2 -> [ (1.0, v1) ]
+           | A.ExprNode (A.Pair (v1, v2)) when is_value v1 && is_value v2 ->
+               [ (1.0, Next v1) ]
            | _ -> failwith "first: expected pair")
     | A.ExprNode (A.Second a) ->
         if not (is_value a) then
-          List.map (fun (p, a') -> (p, A.ExprNode (A.Second a'))) (step a)
+          List.map (map_succ (fun a' -> A.ExprNode (A.Second a'))) (step a)
         else
           (match a with
-           | A.ExprNode (A.Pair (v1, v2)) when is_value v1 && is_value v2 -> [ (1.0, v2) ]
+           | A.ExprNode (A.Pair (v1, v2)) when is_value v1 && is_value v2 ->
+               [ (1.0, Next v2) ]
            | _ -> failwith "second: expected pair")
     | A.ExprNode (A.Cons (hd, tl)) ->
         if not (is_value hd) then
-          List.map (fun (p, hd') -> (p, A.ExprNode (A.Cons (hd', tl)))) (step hd)
+          List.map (map_succ (fun hd' -> A.ExprNode (A.Cons (hd', tl)))) (step hd)
         else if not (is_value tl) then
-          List.map (fun (p, tl') -> (p, A.ExprNode (A.Cons (hd, tl')))) (step tl)
+          List.map (map_succ (fun tl' -> A.ExprNode (A.Cons (hd, tl')))) (step tl)
         else
           []
     | A.ExprNode (A.MatchList (scrut, nil_br, x, xs, cons_br)) ->
         if not (is_value scrut) then
-          List.map (fun (p, s') -> (p, A.ExprNode (A.MatchList (s', nil_br, x, xs, cons_br)))) (step scrut)
+          List.map
+            (map_succ (fun s' -> A.ExprNode (A.MatchList (s', nil_br, x, xs, cons_br))))
+            (step scrut)
         else
           (match scrut with
-           | A.ExprNode A.Nil -> [ (1.0, nil_br) ]
+           | A.ExprNode A.Nil -> [ (1.0, Next nil_br) ]
            | A.ExprNode (A.Cons (vhd, vtl)) when is_value vhd && is_value vtl ->
                let e' = subst xs vtl (subst x vhd cons_br) |> simplify in
-               [ (1.0, e') ]
+               [ (1.0, Next e') ]
            | _ -> failwith "matchlist: expected [] or v::vs")
     | A.ExprNode (A.DistrCase cases) ->
         if cases = [] then failwith "distrcase: empty"
@@ -475,24 +490,24 @@ let rec step (e : A.expr) : (float * A.expr) list =
           let ps = List.map snd cases in
           List.iter check_prob ps;
           check_sum_to_one ps;
-          List.map (fun (ei, p) -> (p, ei)) cases
+          List.map (fun (ei, p) -> (p, Next ei)) cases
     | A.ExprNode (A.Sample _) ->
-        failwith "to_mc: continuous distributions not supported (Sample)"
+        failwith "to_mc: continuous distributions not supported"
     | A.ExprNode (A.Observe c) ->
         if not (is_value c) then
-          List.map (fun (p, c') -> (p, A.ExprNode (A.Observe c'))) (step c)
+          List.map (map_succ (fun c' -> A.ExprNode (A.Observe c'))) (step c)
         else
           (match c with
-           | A.ExprNode (A.BoolConst true) -> [ (1.0, A.ExprNode A.Unit) ]
-           | A.ExprNode (A.BoolConst false) -> []
+           | A.ExprNode (A.BoolConst true) -> [ (1.0, Next (A.ExprNode A.Unit)) ]
+           | A.ExprNode (A.BoolConst false) -> [ (1.0, Fail) ]
            | _ -> failwith "observe: expected bool")
     | A.ExprNode (A.Seq (e1, e2)) ->
         if not (is_value e1) then
-          List.map (fun (p, e1') -> (p, A.ExprNode (A.Seq (e1', e2)))) (step e1)
+          List.map (map_succ (fun e1' -> A.ExprNode (A.Seq (e1', e2)))) (step e1)
         else
-          [ (1.0, e2) ]
+          [ (1.0, Next e2) ]
     | A.ExprNode (A.Ref _ | A.Deref _ | A.Assign _) ->
-        failwith "to_mc: refs not supported"
+        failwith "to_mc: refs not supported (yet)"
     | A.ExprNode (A.Var _) ->
         failwith "to_mc: stuck on Var (did you forget to substitute?)"
     | A.ExprNode (A.Unit | A.Nil | A.BoolConst _ | A.Const _ | A.FinConst _ | A.Fun _ | A.Fix _ | A.RuntimeError _) ->
@@ -534,6 +549,8 @@ let to_mc (e0 : A.expr) : mc =
 
   let transitions_rev : transition list ref = ref [] in
   let terminal_ids : int list ref = ref [] in
+  let fail_srcs : (int * float) list ref = ref [] in
+  let has_fail = ref false in (* if a program has_fail, then it will has_observe *)
 
   let is_terminal_value (e : A.expr) : bool =
     match simplify e with
@@ -548,27 +565,48 @@ let to_mc (e0 : A.expr) : mc =
     let e = Hashtbl.find expr_of sid in
     if is_terminal_value e then
       terminal_ids := sid :: !terminal_ids
-    else
+    else begin
       let succs = step e in
-      if succs = [] then terminal_ids := sid :: !terminal_ids
+      if succs = [] then
+        terminal_ids := sid :: !terminal_ids
       else
         List.iter
-          (fun (p, e') ->
-            let e' = simplify e' in
-            match add_state e' with
-            | Some tid ->
-                transitions_rev := { src = sid; dst = tid; prob = p } :: !transitions_rev
-            | None -> ())
-          succs;
+          (fun (p, s) ->
+            match s with
+            | Fail ->
+                has_fail := true;
+                fail_srcs := (sid, p) :: !fail_srcs
+            | Next e' ->
+                let e' = simplify e' in
+                match add_state e' with
+                | Some tid ->
+                    transitions_rev := { src = sid; dst = tid; prob = p } :: !transitions_rev
+                | None -> ())
+          succs
+    end
   done;
 
-  let sink = !next_id in
-  let transitions =
-    let base = !transitions_rev in
-    let from_terminals =
-      List.map (fun sid -> { src = sid; dst = sink; prob = 1.0 }) !terminal_ids
-    in
-    { src = sink; dst = sink; prob = 1.0 } :: (from_terminals @ base)
+  (* Allocate done and observe fail states *)
+  let done_id = !next_id in
+  let fail_id =
+    if !has_fail then Some (done_id + 1) else None
+  in
+  let num_states =
+    match fail_id with
+    | None -> done_id + 1
+    | Some fid -> fid + 1
+  in
+  let base = !transitions_rev in
+  let from_terminals =
+    List.map (fun sid -> { src = sid; dst = done_id; prob = 1.0 }) !terminal_ids
+  in
+  let done_self = { src = done_id; dst = done_id; prob = 1.0 } in
+  let fail_edges, fail_self =
+    match fail_id with
+    | None -> ([], [])
+    | Some fid ->
+        ( List.map (fun (sid, p) -> { src = sid; dst = fid; prob = p }) !fail_srcs
+        , [ { src = fid; dst = fid; prob = 1.0 } ] )
   in
   (* Sort transitions for nicer output *)
   let transitions =
@@ -577,9 +615,9 @@ let to_mc (e0 : A.expr) : mc =
         match compare a.src b.src with
         | 0 -> (match compare a.dst b.dst with 0 -> compare a.prob b.prob | c -> c)
         | c -> c)
-      transitions
+      (done_self :: (fail_self @ fail_edges @ from_terminals @ base))
   in
-  { num_states = sink + 1; sink; transitions; expr_of }
+  { num_states; sink = done_id; transitions; expr_of; has_observe = !has_fail; fail = fail_id }
 
 (* Transition file (.tra) for STORM backend *)
 let write_tra_file (m : mc) (path : string) : unit =
@@ -597,14 +635,20 @@ let write_lab_file (m : mc) (path : string) : unit =
   let oc = open_out path in
   let fmt = Format.formatter_of_out_channel oc in
   Format.fprintf fmt "#DECLARATION@.";
-  Format.fprintf fmt "init done accept@.";
+  if m.has_observe then
+    Format.fprintf fmt "init done accept fail has_observe@."
+  else
+    Format.fprintf fmt "init done accept@.";
   Format.fprintf fmt "#END@.";
   Format.fprintf fmt "0 init@.";
   for sid = 0 to (m.num_states - 1) do
     match Hashtbl.find_opt m.expr_of sid with
     | Some (A.ExprNode (A.BoolConst true)) ->
-        Format.fprintf fmt "%d accept@." sid
+        Format.fprintf fmt "%d accept@." sid (* label only true states with accept *)
     | _ -> ()
   done;
   Format.fprintf fmt "%d done@." m.sink;
+  (match m.fail with
+   | None -> ()
+   | Some fid -> Format.fprintf fmt "%d fail@." fid);
   close_out oc
