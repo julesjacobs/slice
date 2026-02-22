@@ -4,11 +4,6 @@
 \subsection{Preliminaries}
 We consider a subset of our language, focusing only on let statements, conditionals, less than comparisons, and uniform and discrete distributions. The other constructs follow by analogous arguments.
 
-% \begin{itemize}
-% 	\item $\monunit \colon X \rightarrow \dist{X}$
-%     \item $\monbind \colon \dist{X} \times (X \to \dist{Y}) \rightarrow \dist{Y}$
-% \end{itemize}
-
 \subsubsection{Brief recap of measure theory} 
 We first give a brief overiew of basic measure theory terms.
 
@@ -17,7 +12,7 @@ We first give a brief overiew of basic measure theory terms.
 \paragraph{$\sigma$-algebras} A $\sigma$-algebra on a set $X$ is a collection $\Sigma$ of subsets of $X$ that includes $X$ itself and is closed under complement and under countable unions. By implication, a $\sigma$-algebra includes the empty set and is closed under countable intersections. 
 Given a topological space $(X, \mathcal{T})$, the Borel $\sigma$-algebra $\mathcal{B}(X)$ is the smallest $\sigma$-algebra containing all open sets in $\mathcal{T}$.
 
-\paragraph{Measurable spaces} A measurable space $(X, \Sigma)$ consists of an underlying set and its $\sigma$-algebra.  
+\paragraph{Measurable spaces} A measurable space is a pair $(X,\Sigma)$ consisting of a set $X$ and a $\sigma$-algebra $\Sigma$ on $X$.
 When $\Sigma$ is the Borel $\sigma$-algebra on a topological space $X$, we call $(X, \Sigma)$ a Borel measurable space.
 
 \paragraph{Measures} Let $(X,\Sigma)$ be a measurable space. A function $\mu : \Sigma \to \R^+$ is called a measure if it satisfies nonnegativity, null empty set, and countable additivity. 
@@ -28,7 +23,17 @@ When $\Sigma$ is a Borel $\sigma$-algebra, $\mu$ is called a Borel measure.
 
 \paragraph{(Sub)probability measures} When $\mu(X) \leq 1$, it is called a (Borel) subprobability measure. When $\mu(X) = 1$, it is called a (Borel) probability measure and $(X, \Sigma, \mu)$ a (Borel) probability space.
 
-\paragraph{Product measure} The product of two measurable spaces $(X_1, \Sigma_1)$ and $(X_2, \Sigma_2)$ is also a measurable space, namely $(X_1 \times X_2, \Sigma_1 \otimes \Sigma_2)$.
+\paragraph{Product measure} The product of two measurable spaces $(X_1, \Sigma_1)$ and $(X_2, \Sigma_2)$ is also a measurable space, namely $(X_1 \times X_2, \Sigma_1 \otimes \Sigma_2)$. 
+
+\begin{definition}[Subspace $\sigma$-algebra]\label{def:subspace-sigma-algebra}
+	Let $(X, \Sigma)$ be a measurable space and let $Y \subseteq X$. 
+	The subspace (or trace) $\sigma$-algebra on $Y$ is defined as
+	\[
+	\Sigma_Y = \{ Y \cap A \mid A \in \Sigma \}.
+	\]
+	Then $(Y, \Sigma_Y)$ is a measurable space.
+\end{definition}
+
 
 \begin{definition}[Support]
 	We define the support of a measure separately for discrete and continuous cases:
@@ -43,6 +48,18 @@ When $\Sigma$ is a Borel $\sigma$-algebra, $\mu$ is called a Borel measure.
 			{support}(\mu) \triangleq \{ x \in X \mid \forall U \in \Sigma, \; (U \text{ open and } x \in U) \implies \mu(U) > 0 \}.
 		\]
 	\end{enumerate}
+\end{definition}
+
+\begin{definition}[Markov kernels]
+	Given measurable spaces $(X, \Sigma_X)$ and $(Y, \Sigma_Y)$, a Markov kernel with source $X$ and target $Y$ is a function $P : X \times \Sigma_Y \to [0,1]$ (or equivalently, $X \to \Sigma_Y \to [0,1]$) that maps each source state $x \in X$ to a distribution over target states $P(x, -) : \Sigma_Y \to [0,1]$.
+
+	A Markov kernel $P$ must satisfy two conditions:
+
+	\begin{itemize}
+		\item For each source state $x \in X$, the map $A \mapsto P(x, A)$ must be a probability measure on the target space.
+		\item For each event $A \in \Sigma_Y$ in the target space, the map $x \mapsto P(x,A)$ must be a measurable function.
+	\end{itemize}
+	A kernel $P$ is called deterministic if $P(a,-)$ is a Dirac measure for each $a$. 
 \end{definition}
 
 % \begin{definition}[Projection]
@@ -63,15 +80,17 @@ When $\Sigma$ is a Borel $\sigma$-algebra, $\mu$ is called a Borel measure.
 	Then, $\pi_1(\mu)$ is a measure on $(X + \bot, \Sigma_{X + \bot})$ and $\pi_2(\mu)$ is a measure on $(Y + \bot, \Sigma_{Y + \bot})$.
 \end{definition}
 
+\todo[inline]{Mention that these constructions are nontrivial}
 
 \subsection{Measure space on expressions}
-To make the probabilistic semantics precise, we define an appropriate measure space structure on the set of expressions. We construct a Borel measurable space on $Expr_{\tau}$ by factoring out real numbers using the notion of what we call \emph{expression skeletons}.
+To make the probabilistic semantics precise, we define an appropriate measure space structure on the set of expressions. We construct a Borel measurable space on $Expr_{\tau}$, the set of well-typed expressions in our langauge, by factoring out real numbers using the notion of what we call \emph{expression skeletons}.
 
 \begin{definition}[Expression Skeleton]
 	An expression skeleton $s : \tau$ is a well-typed expression $e : \tau$ where each occurrence of a float constant is replaced by a hole $\square$, generated as follows:
 	\begin{align*}
 		s ::= \; 
-		&\square \mid x \mid \true \mid \false \mid \finconst{k}{n} \mid \letkw \; x = s_1 \; \inkw \; s_2 \mid \ifkw \; s_1 \; \thenkw \; s_2 \; \elsekw \; s_3 \mid s_1 < s_2 \mid \uniform(s_1, s_2)
+		&\square \mid x \mid \true \mid \false \mid \finconst{k}{n} \mid \letkw \; x = s_1 \; \inkw \; s_2 \\
+		&\mid \ifkw \; s_1 \; \thenkw \; s_2 \; \elsekw \; s_3 \mid s_1 < s_2 \mid \uniform(s_1, s_2) \mid \discrete(p_0, \ldots, p_{n-1})
 	\end{align*}
 	with the understanding that each hole $\square$ has type $\floattype{B}{V}$, and that all other types appearing in the original expression are preserved in its corresponding skeleton.
 	
@@ -90,12 +109,30 @@ To make the probabilistic semantics precise, we define an appropriate measure sp
 	Each skeleton is a finite syntactic tree where:
 	\begin{itemize}
 	\item Internal nodes are labeled by constructors from a finite set of ${\letkw, \ifkw, <, \uniform}$
-	\item Leaves are labeled by literals or variables (countable) or holes $\square$ (countable)
+	\item Leaves are labeled by variables (countable), literals $\true,\false,\finconst{k}{n}$ (countable), holes $\square$ (countable), or $\discrete$ (where the parameters $p_i$ are fixed).
 	\end{itemize}
 	The set of all finite trees over countable labels is countable.
 \end{proof}
 
-Define the bijection $f\colon Expr_{\tau} \to \text{Skel}_{\tau} \times \R^n$ for some $n$, as shown in Figure~\ref{fig:decompose-definition}. This bijection holds because every well-typed expression can be uniquely decomposed into its skeleton (obtained by replacing constants with holes) and the corresponding tuple of real values filling those holes.
+\begin{definition}[Filling a skeleton]
+	Let $s \in \text{Skel}_{\tau}$ and let $\vec{r} = (r_1, \ldots, r_{\holes(s)}) \in \mathbb{R}^{\holes(s)}$. We define the expression $s[\vec{r}] \in Expr_{\tau}$ to be the result of replacing each hole $\square_i$ in $s$ with the corresponding real constant $r_i$, for $1 \le i \le \holes(s)$.
+\end{definition}
+
+The decomposition function $f \colon Expr_{\tau} \to \bigcup_{s \in \text{Skel}_{\tau}} \{s\} \times 2^{\R^{\holes(s)}}$ is then the inverse of this filling operation: it maps each expression to the unique pair $(s,\vec{r})$ such that $e = s[\vec{r}]$, i.e.
+
+\[
+	f(s[\vec{r}]) = (s,\vec{r})
+\]
+
+The explicit recursive definition of $f$ is shown in Figure~\ref{fig:decompose-definition}.
+
+\begin{proposition}\label{prop:decompose-bijection}
+	$f$ is a bijection.
+\end{proposition}
+
+\begin{proof}
+	Injectivity holds because if $f(e_1) = f(e_2)$, then both share the same skeleton and tuple of constants. Since the skeleton uniquely determines the expression's structure and each hole is filled by a unique constant from the tuple, $e_1 = e_2$. Surjectivity holds because for any skeleton $s$ and matching tuple of reals $\vec{r}$, replacing each hole in $s$ with the corresponding constant from $\vec{r}$ yields an expression $e$ such that $f(e) = (s,\vec{r})$. Thus, every pair is hit.
+\end{proof}
 
 \begin{figure}[t]
 	\centering
@@ -112,6 +149,8 @@ Define the bijection $f\colon Expr_{\tau} \to \text{Skel}_{\tau} \times \R^n$ fo
 				& \text{if } e = c : \floattype{B}{V}, V \neq \top \\[8pt]
 			(\square : \floattype{B}{V}, \R)
 				& \text{if } e = c : \floattype{B}{V}, V = \top \\[8pt]
+			(\discrete(p_0,\ldots,p_{n-1}) : \fin{n}, \emptyset)
+				& \text{if } e = \discrete(p_0,\ldots,p_{n-1}) : \fin{n} \\[8pt]
 			(\uniform(f(e_1)_1, f(e_2)_1) : \floattype{B}{V}, \\
 			(f(e_1)_2, f(e_2)_2))
 				& \text{if } e = \uniform(e_1, e_2) : \floattype{B}{V} \\[8pt]
@@ -126,66 +165,264 @@ Define the bijection $f\colon Expr_{\tau} \to \text{Skel}_{\tau} \times \R^n$ fo
 				& \text{if } e = \letkw\; x = e_1\; \inkw\; e_2 : \tau
 		\end{cases}
 	\end{align*}
-	\caption{Recursive definition of $f$, a decompose function, over typed expressions. $f(\cdot)_1$ and $f(\cdot)_2$ denote the first and second projections, respectively, of $f(\cdot)$.}
+	\caption{Recursive definition of $f$, a decompose function, over typed expressions. $f(\cdot)_1$ and $f(\cdot)_2$ denote the first and second projections, respectively, of $f(\cdot)$. Although the second component of $f(e)$ is defined recursively as a nested tuple, it is canonically bijective to a flat vector in $\R^n$, obtained by concatenating the coordinates corresponding to each hole.}
 	\label{fig:decompose-definition}
 \end{figure}
-	
-\begin{definition}[Measurable space on well-typed expressions]
-	For a given $s : \tau \in \text{Skel}_{\tau}$, define the subset:
+
+\begin{definition}[Hole assignments of a skeleton]
+	For a given $s : \tau \in \text{Skel}_{\tau}$, define the set of hole assignments of $s$ as:
 	\[
-		A_{s : \tau} := \{f(e : \tau)_2 \mid f(e : \tau)_1 = s : \tau \text{ and } e : \tau \in Expr_{\tau}\}.
+		A_{s : \tau} := \bigcup_{e : \tau \in Expr_{\tau}} \{f(e : \tau)_2 \mid f(e : \tau)_1 = s : \tau\} \subseteq \R^{\holes(s)}.
 	\]
-	Let $s[\vec{r}] : \tau$ denote the (unique) well-typed expression of type $\tau$ obtained by filling the holes of $s$ with the coordinates of $\vec{r}$. We then define the measurable space of well-typed expressions as the union:
-	\[
-		Expr_{\tau} := \bigcup_{s : \tau \in \text{Skel}_{\tau}} \{s[\vec{r}] : \tau \mid \vec{r} \in A_{s : \tau}\}.
-	\]
+
+	Intuitively, $A_{s;\tau}$ is the set of all real tuples that can be substituted into the holes of $s$ to yield a well-typed expression of type $\tau$.
 \end{definition}
 
 \begin{example}
-	Given $s : \tau = (\square : \floattype{\clt{3.5}, \clt{4.5}}{\top} < \square : \floattype{\clt{3.5}, \clt{4.5}}{3.5,4.5}) : \bool$, we compute $A_{s : \tau}$.
-
-	\begin{align*}
-		f(e : \bool)_1 
-			&= (\square : \floattype{\clt{3.5}, \clt{4.5}}{\top} 
-				< \square : \floattype{\clt{3.5}, \clt{4.5}}{3.5,4.5}) : \bool \\[6pt]
-		\iff\;& 
-			e = e_1 < e_2 \\[3pt]
-		&\quad 
-			f(e_1 : \floattype{\clt{3.5}, \clt{4.5}}{\top})_1 
-			= \square : \floattype{\clt{3.5}, \clt{4.5}}{\top}, \\[3pt]
-		&\quad 
-			f(e_2 : \floattype{\clt{3.5}, \clt{4.5}}{3.5,4.5})_1 
-				= \square : \floattype{\clt{3.5}, \clt{4.5}}{3.5,4.5} \\[6pt]
-		\iff\;& 
-			e_1 = c \in \R, \quad e_2 \in \{3.5, 4.5\}.
-	\end{align*}
+	Consider the skeleton
+	\[
+		s : \tau 
+		=
+		(\square : \floattype{\clt{3.5}, \clt{4.5}}{\top}
+		\;<\;
+		\square : \floattype{\clt{3.5}, \clt{4.5}}{3.5,4.5})
+		: \bool.
+	\]
 	
-	Thus,
-	\begin{align*}
-		f(c : \floattype{\clt{3.5}, \clt{4.5}}{\top})_2 &= \R, \\[3pt]
-		f(3.5 : \floattype{\clt{3.5}, \clt{4.5}}{3.5,4.5})_2 &= \{3.5\}, \\[3pt]
-		f(4.5 : \floattype{\clt{3.5}, \clt{4.5}}{3.5,4.5})_2 &= \{4.5\}.
-	\end{align*}
+	This skeleton has two holes:
+	\begin{itemize}
+		\item The left hole has type 
+		$\floattype{\clt{3.5}, \clt{4.5}}{\top}$,
+		so it may be instantiated by any real number.
+		\item The right hole has type 
+		$\floattype{\clt{3.5}, \clt{4.5}}{3.5,4.5}$,
+		so it may only be instantiated by one of the values 
+		$3.5$ or $4.5$.
+	\end{itemize}
+	
+	An expression $e : \bool$ has skeleton $s$ iff it is of the form
+	\[
+		e = c_1 < c_2
+	\]
+	where $c_1 \in \mathbb{R}$ and 
+	$c_2 \in \{3.5,4.5\}$.
+	
+	Therefore, the admissible parameter tuples are precisely
+	\[
+		A_{s:\tau}
+		=
+		\{ (c_1,c_2) \mid c_1 \in \mathbb{R},\; c_2 \in \{3.5,4.5\} \}.
+	\]
+	
+	Equivalently,
+	\[
+		A_{s:\tau}
+		=
+		\mathbb{R} \times \{3.5,4.5\}
+		\subseteq
+		\mathbb{R}^2.
+	\]
+	
+	Thus, expressions with this syntactic shape are parameterized by a two-dimensional space whose first coordinate ranges over $\mathbb{R}$ and whose second coordinate ranges over a finite set.
+\end{example}
+
+\begin{definition}[$\sigma$-algebra construction on $A_{s;\tau}$]\label{def:sigma-algebra-construction-holes}
+	Let $s : \tau \in \text{Skel}_{\tau}$. Endow $A_{s;\tau}$ with the subspace $\sigma$-algebra inherited from the standard Borel $\sigma$-algebra on $\R^{\holes(s)}$:
+
+	\[
+		\mathcal{F}_{s;\tau} := \{A_{s;\tau} \cap M \mid M \in \mathcal{B}(\R^{\holes(s)})\}.
+	\]
+\end{definition}
+
+\begin{lemma}
+	$(A_{s;\tau}, \mathcal{F}_{s;\tau})$ is a Borel measurable space.
+\end{lemma}
+
+\begin{proof}
+	For a fixed $s : \tau \in \text{Skel}_{\tau}$, $(\R^{\holes(s)}, \mathcal{B}(\R^{\holes(s)}))$ is a Borel measurable space and $A_{s; \tau} \subseteq \R^{\holes(s)}$. Thus, $(A_{s;\tau}, \{A_{s;\tau} \cap M \mid M \in \mathcal{B}(\R^{\holes(s)})\}) = (A_{s;\tau}, \mathcal{F}_{s;\tau})$ is a Borel measurable space by Definition~\ref{def:subspace-sigma-algebra}.
+\end{proof}
+
+
+Now, we map this measurable space to the space of actual expressions that share that skeleton. 
+
+Recall the mapping $s[\vec{r}] : \tau$, which takes a vector of hole assignments $\vec{r} \in A_{s;\tau}$ and produces a unique well-typed expression of type $\tau$. 
+
+\begin{definition}[Expressions of a skeleton]
+	For a given $s : \tau \in \text{Skel}_{\tau}$, define the set of well-typed expressions having skeleton $s$ as:
+	\[
+		Expr_{s;\tau} 
+		:=
+		\{\, s[\vec r] \mid \vec r \in A_{s;\tau} \,\}
+		\subseteq
+		Expr_\tau.
+	\]
+\end{definition}
+
+Notice this is the inverse $f$ which was bijective.
+
+Intuitively, $Expr_{s;\tau}$ consists exactly of those expressions whose syntactic shape is fixed by $s$, and whose real constants vary according to the admissible hole assignments in $A_{s;\tau}$.
+
+\begin{definition}[Measurable structure on expressions of a skeleton]\label{def:sigma-algebra-construction-skeletons}
+	Let $s : \tau \in \text{Skel}_{\tau}$. Endow $Expr_{s;\tau}$ with the following $\sigma$-algebra:
+
+	\[
+		\mathcal{F}_{Expr_{s;\tau}}
+		:=
+		\left\{
+			E \subseteq Expr_{s;\tau}
+			\;\middle|\;
+			\{ \vec r \in A_{s;\tau} \mid s[\vec r] \in E \}
+			\in
+			\mathcal{F}_{s;\tau}
+		\right\}.
+	\]
+\end{definition}
+
+\begin{lemma}
+	$(Expr_{s;\tau}, \mathcal{F}_{Expr_{s;\tau}})$ is a Borel measurable space.
+\end{lemma}
+
+\begin{proof}
+	By the explicit construction of the $\sigma$-algebra in Definition~\ref{def:sigma-algebra-construction-skeletons}.
+\end{proof}
+
+
+\begin{lemma}[Isomorphism property]
+	For $s \in \text{Skel}_{\tau}$,
+	\[
+		(A_{s;\tau}, \mathcal{F}_{s;\tau})
+		\cong
+		(Expr_{s;\tau}, \mathcal{F}_{Expr_{s;\tau}}).
+	\]
+\end{lemma}
+
+\begin{proof}
+	Define
+	\[
+		\phi_s \colon A_{s;\tau} \to Expr_{s;\tau},
+		\qquad
+		\phi_s(\vec r) = s[\vec r].
+	\]
+	
+	By construction, $\phi_s$ is bijective:
+	filling the holes of $s$ with $\vec r$ yields a unique expression,
+	and distinct tuples $\vec r$ produce distinct expressions.
+	
+	\medskip
+	Measurability of $\phi_s$.
+	
+	By definition of $\mathcal{F}_{Expr_{s;\tau}}$,
+	\[
+		E \in \mathcal{F}_{Expr_{s;\tau}}
+		\iff
+		\{ \vec r \in A_{s;\tau} \mid s[\vec r] \in E \}
+		\in
+		\mathcal{F}_{s;\tau}.
+	\]
+	
+	But
+	\[
+		\{ \vec r \in A_{s;\tau} \mid s[\vec r] \in E \}
+		=	
+		\phi_s^{-1}(E).
+	\]
 	
 	Hence,
-	\begin{align*}
-		A_{s : \tau} 
-			&= \{(x, 3.5) \mid x \in \R\} \cup \{(x, 4.5) \mid x \in \R\} \\[3pt]
-			&= \R \times \{3.5, 4.5\} \subseteq \R^2.
-	\end{align*}	
-\end{example}
+	\[
+		E \in \mathcal{F}_{Expr_{s;\tau}}
+		\iff
+		\phi_s^{-1}(E) \in \mathcal{F}_{s;\tau},
+	\]
+	so $\phi_s$ is measurable.
+	
+	\medskip
+	Measurability of $\phi_s^{-1}$. 
+
+	First, observe that:
+
+	\begin{align}
+		\forall E \subseteq Expr_{s;\tau} : E \in \mathcal{F}_{Expr_{s;\tau}} \iff \phi_s^{-1}(E) \in \mathcal{F}_{s;\tau}
+	\end{align}
+
+	$\phi_s^{-1}$ is measurable iff 
+
+
+
+	
+	Let $B \in \mathcal{F}_{s;\tau}$. By definition,
+	\[
+		E \in \mathcal{F}_{Expr_{s;\tau}}
+		\iff
+		\phi_s^{-1}(E) \in \mathcal{F}_{s;\tau}.
+	\]
+
+	Since $\phi_s$ is bijective,
+	\[
+		\phi_s^{-1}(\phi_s(B)) = B.
+	\]
+
+	Because $B \in \mathcal{F}_{s;\tau}$ by assumption,
+	it follows that
+	\[
+		\phi_s^{-1}(\phi_s(B)) \in \mathcal{F}_{s;\tau}.
+	\]
+
+	Therefore, by the defining condition above,
+	\[
+		\phi_s(B) \in \mathcal{F}_{Expr_{s;\tau}}.
+	\]
+
+	\medskip
+	Therefore $\phi_s$ is a bijection that is measurable with measurable inverse, and the measurable spaces are isomorphic.
+\end{proof}
+
+
+Now we combine the measurable spaces for each distinct skeleton into a single measurable space of all well-typed expressions of type $\tau$.
+
+\todo[inline]{Get rid of definition, make it a statement}
+
+The set of all well-typed expressions of type $\tau$ is the union
+\[
+	Expr_{\tau} = \bigcup_{s \in \text{Skel}_{\tau}} Expr_{s;\tau}.
+\]
+Equivalently, letting $s[\vec{r}] : \tau$ denote the (unique) well-typed expression obtained by filling the holes of $s$ with the coordinates of $\vec{r}$, we have:
+\[
+	Expr_{\tau} := \bigcup_{s \in \text{Skel}_{\tau}} \{s[\vec{r}] : \tau \mid \vec{r} \in A_{s : \tau}\}.
+\]
+
+\begin{definition}[Measurable structure on well-typed expressions]\label{def:sigma-algebra-construction-expressions}
+	Endow $Expr_\tau$ with the following $\sigma$-algebra: 
+	\[
+		\mathcal{F}_{Expr_{\tau}}
+		:=
+		\left\{
+			E \subseteq Expr_{\tau}
+			\;\middle|\;
+			\forall s \in \text{Skel}_{\tau},\;
+			E \cap Expr_{s;\tau} \in \mathcal{F}_{Expr_{s;\tau}}
+		\right\}.
+	\]
+\end{definition}
 
 \begin{lemma}
 	$(Expr_{\tau}, \mathcal{F}_{Expr_{\tau}})$ is a Borel measurable space.
 \end{lemma}
 
 \begin{proof}
-	Follows by structural recursion on expressions. 
-	
-	Fix an $s \in \text{Skel}$. At the base cases, we either get a finite value set $V$ (a finite union of Borel singletons, which is Borel), $V = \top$ (the entire $\R$, which is Borel), or $\emptyset$ (Borel). Each construct combines its subexpressions through Cartesian products (Borel sets are closed under finite products).
-
-	Since $\text{Skel}$ is countable by Lemma~\ref{lem:skel-countable}, and since Borel sets are closed under countable unions, $Expr_{\tau}$ forms a Borel measurable space.
+	By the explicit construction of the $\sigma$-algebra in Definition~\ref{def:sigma-algebra-construction-expressions}.
 \end{proof}
+
+% \begin{lemma}
+% 	$(Expr_{\tau}, \mathcal{F}_{Expr_{\tau}})$ is a Borel measurable space.
+% \end{lemma}
+
+% \begin{proof}
+% 	Follows by structural recursion on expressions. 
+	
+% 	Fix an $s \in \text{Skel}$. At the base cases, we either get a finite value set $V$ (a finite union of Borel singletons, which is Borel), $V = \top$ (the entire $\R$, which is Borel), or $\emptyset$ (Borel). Each construct combines its subexpressions through Cartesian products (Borel sets are closed under finite products).
+
+% 	Since $\text{Skel}$ is countable by Lemma~\ref{lem:skel-countable}, and since Borel sets are closed under countable unions, $Expr_{\tau}$ forms a Borel measurable space.
+% \end{proof}
 
 \begin{definition}[Extension with error element]\label{def:meas-space-with-error}
 	We extend the Borel measurable space of expressions to include a distinguished error element $\bot$, defining the measurable space of extended expressions as
@@ -205,10 +442,7 @@ Define the bijection $f\colon Expr_{\tau} \to \text{Skel}_{\tau} \times \R^n$ fo
 
 % Intuitively, this means that measurable subsets of $Expr_{\tau}$ can be described by first fixing a finite syntactic skeleton and then selecting a measurable subset of real assignments to its float constants.
 
-We can equip this measurable space with a (sub)probability measure such that $\mu(Expr_{\tau} + \bot) \leq 1$. And in particular, any (sub)probability measure $\mu$ on $\R^{\holes(s)}$ for a skeleton $s$ can be lifted to a (sub)probability measure on $Expr_{\tau} + \bot$, as follows: 
-\[
-	\mu_{Expr_{\tau} + \bot}(A) = \mu(\{\vec{r} \in \R^{\holes(s)} \mid s[\vec{r}] \in A\}).
-\]
+Finally, we can equip this measurable space with a (sub)probability measure such that $\mu(Expr_{\tau} + \bot) \leq 1$. 
 
 We give some basic lemmas:
 
@@ -242,13 +476,23 @@ Let $X$ be a set equipped with a suitable measurable space so that $\mathcal{D}(
 	\begin{align*}
 		& \text{return} \colon X \to \mathcal{D}(X + \bot), \quad \text{return}(x) = \delta_x \\
 		%
-		& \text{bind} \colon \mathcal{D}(X + \bot) \to (X \to \mathcal{D}(Y + \bot)) \to \mathcal{D}(Y + \bot), \\
+		& \text{bind} \colon \mathcal{D}(X + \bot) \to ((X + \bot) \to \mathcal{D}(Y + \bot)) \to \mathcal{D}(Y + \bot), \\
 		%& \text{bind}(\mu)(f)(y) := \sum_{x \in support(\mu)} \mu(x) \cdot f_{\bot}(x)(y) \\
-		&\text{bind}(\mu)(f)(A) = \int_{x \in X} f_{\bot}(x)(A) \cdot \mu(dx)~,
+		&\text{bind}(\mu)(f)(A) = \int_{x \in supp(\mu)} f(x)(A) \cdot \mu(dx)~,
 	\end{align*}
 	%
-	where $\delta_x$ denotes the Dirac measure for $x$ and 
-	where $f_\bot \colon X + \bot \to \mathcal{D}(X + \bot)$ is obtained from $f$ by 
+	where $\delta_x$ denotes the Dirac measure for $x$, and $f$ is a Markov kernel.
+%	
+%	Define $\text{return} \colon X \to \mathcal{D}(X + \bot)$ by $\text{return}_X(x) := \delta_x$, where $\delta_x$ denotes the Dirac distribution on $x$: for any $y \in X$, we have $\delta_x(y) = 1$ if $y = x$, otherwise $\delta_x(y) = 0$. Further, define $\text{bind} : \mathcal{D}(X + \bot) \to (X \to \mathcal{D}(Y + \bot)) \to \mathcal{D}(Y + \bot)$ by:
+%	\begin{enumerate}
+%		\item $\text{bind}(\mu)(f)(y) := \sum_{x \in support(\mu)} \mu(x) \cdot f_{\bot}(x)(y)$ if $\mu$ is discrete
+%		\item $\text{bind}(\mu)(f)(A) := \int_{x \in support(\mu)} f_{\bot}(x)(A) \cdot d\mu(x)$ if $\mu$ is continuous
+%	\end{enumerate}
+%	where $f_{\bot}$ extends $f$ by $f_{\bot}(\bot) := \delta_{\bot}$ and $f_{\bot}(x) := f(x) \;\; \text{for every } x \in X.$
+\end{definition}
+
+\begin{definition}[$\bot$-extension]\label{def:bot-extension}
+	Define the $\bot$-extension of $f$ to be $f_\bot \colon X + \bot \to \mathcal{D}(Y + \bot)$, obtained from $f$ by:
 	%
 	\[
 	f_\bot(e) =
@@ -258,14 +502,75 @@ Let $X$ be a set equipped with a suitable measurable space so that $\mathcal{D}(
 		f(e) & \text{otherwise}~.
 	\end{cases}
 	\]
-%	
-%	Define $\text{return} \colon X \to \mathcal{D}(X + \bot)$ by $\text{return}_X(x) := \delta_x$, where $\delta_x$ denotes the Dirac distribution on $x$: for any $y \in X$, we have $\delta_x(y) = 1$ if $y = x$, otherwise $\delta_x(y) = 0$. Further, define $\text{bind} : \mathcal{D}(X + \bot) \to (X \to \mathcal{D}(Y + \bot)) \to \mathcal{D}(Y + \bot)$ by:
-%	\begin{enumerate}
-%		\item $\text{bind}(\mu)(f)(y) := \sum_{x \in support(\mu)} \mu(x) \cdot f_{\bot}(x)(y)$ if $\mu$ is discrete
-%		\item $\text{bind}(\mu)(f)(A) := \int_{x \in support(\mu)} f_{\bot}(x)(A) \cdot d\mu(x)$ if $\mu$ is continuous
-%	\end{enumerate}
-%	where $f_{\bot}$ extends $f$ by $f_{\bot}(\bot) := \delta_{\bot}$ and $f_{\bot}(x) := f(x) \;\; \text{for every } x \in X.$
 \end{definition}
+
+\begin{lemma}[Dirac return is a Markov kernel]
+	For any measurable space $X$, the map $return: X \to \mathcal{D}(X + \bot)$, $x \mapsto \dirac{x}$ is a Markov kernel.
+\end{lemma}
+
+\begin{proof}
+	For any measurable set $A \subseteq X + \bot$, the map: 
+	\[
+		x \mapsto \dirac{x}(A) = \mathds{1}_A(x)
+	\]
+	is precisely the indicator function of $A$. Since $A$ is measurable, $\mathbf{1}_A$ is a measurable function $X \to [0,1]$. Moreover, each $\dirac{x}$ is a Dirac measure, hence a probability measure on $X + \bot$ concentrated at $x$. Thus $x \mapsto \dirac{x}$ satisfies the definition of a Markov kernel.
+\end{proof}
+
+\begin{lemma}[$f_{\bot}$ is a Markov kernel]
+	Given a Markov kernel $f : X \to \mathcal{D}(Y + \bot)$, the extension $f_{\bot} : (X + \bot) \to \mathcal{D}(Y + \bot)$ is also a Markov kernel.
+\end{lemma}
+	
+\begin{proof}
+	We verify the two conditions for $f_{\bot}$ to be a Markov kernel.
+	
+	\paragraph{(1) Probability measure:}
+	Fix $e \in X + \bot$. We must show that the map 
+	\[
+	A \mapsto f_{\bot}(e)(A)
+	\]
+	is a probability measure on $Y + \bot$.
+	
+	\begin{itemize}
+	\item If $e = \bot$, then $f_{\bot}(\bot) = \delta_{\bot}$, the Dirac measure at $\bot$, which is a probability measure on $Y + \bot$.
+	
+	\item If $e \in X$, then $f_{\bot}(e) = f(e)$, and since $f$ is a Markov kernel, $f(e)$ is a probability measure on $Y + \bot$.
+	\end{itemize}
+	
+	Thus, for all $e \in X + \bot$, $f_{\bot}(e)$ is a probability measure.
+	
+	\paragraph{(2) Measurability:}
+	Let $A \subseteq Y + \bot$ be measurable. We must show that the function
+	\[
+	e \mapsto f_{\bot}(e)(A)
+	\]
+	is measurable on $X + \bot$.
+	
+	We consider two cases:
+	
+	\begin{itemize}
+	\item If $e = \bot$, then
+	\[
+	f_{\bot}(\bot)(A) = \delta_{\bot}(A) =
+	\begin{cases}
+	1 & \text{if } \bot \in A, \\
+	0 & \text{if } \bot \notin A.
+	\end{cases}
+	\]
+	Thus, the function is constant at $\bot$, hence measurable.
+	
+	\item If $e \in X$, then
+	\[
+	f_{\bot}(e)(A) = f(e)(A),
+	\]
+	and the map $x \mapsto f(x)(A)$ is measurable by assumption since $f$ is a Markov kernel.
+	\end{itemize}
+	
+	Therefore, the function $e \mapsto f_{\bot}(e)(A)$ is measurable on $X + \bot$.
+	
+	\medskip
+	
+	Since both conditions hold, $f_{\bot}$ is a Markov kernel.
+\end{proof}
 
 
 \subsection{Small-Step Semantics}
@@ -332,6 +637,220 @@ The missing probability mass in $\sem{e :\tau}$ is the probability of encounteri
 It follows by induction on the type derivation of $e:\tau$ that $\sem{e:\tau}$ is well-defined, i.e., the small-step semantics is type-preserving.\\
 
 
+\todo[inline]{In table 2, $\dirac{\bot}$ for uniform when $v_1 > v_2$?}
+
+\todo[inline]{Add iterate construct}
+
+\begin{lemma}[Measurability of the constant extension map]
+	Let $A \subseteq \R^n$ be equipped with the subspace $\sigma$-algebra 
+	$\mathcal{F}_A := \{A \cap M \mid M \in \mathcal{B}(\R^n)\}$, and let 
+	$B \subseteq \R^{n+m}$ be equipped with the subspace $\sigma$-algebra 
+	$\mathcal{F}_B := \{B \cap N \mid N \in \mathcal{B}(\R^{n+m})\}$, where $n,m \in \Nats$.
+	
+	Fix $\vec{c} \in \R^m$ and define
+	\[
+		\phi_{\vec{c}} \colon A \to B,
+		\qquad
+		\phi_{\vec{c}}(\vec{r}) := (\vec{r},\vec{c}).
+	\]
+	Then $\phi_{\vec{c}}$ is measurable.
+	\end{lemma}
+	
+	\begin{proof}
+	Let $S \in \mathcal{F}_B$. By definition of the subspace $\sigma$-algebra, there exists
+	$N \in \mathcal{B}(\R^{n+m})$ such that $S = B \cap N$.
+	We show that $\phi_{\vec{c}}^{-1}(S) \in \mathcal{F}_A$.
+	
+	Define the (total) constant-extension map
+	\[
+		g_{\vec{c}} \colon \R^n \to \R^{n+m},
+		\qquad
+		g_{\vec{c}}(\vec{r}) := (\vec{r},\vec{c}).
+	\]
+	The map $g_{\vec{c}}$ is continuous since each output coordinate is either the identity (continuous) or a constant (continuous), hence Borel measurable. Therefore:
+	\[
+	M' := g_{\vec{c}}^{-1}(N) = \{\vec{r} \in \R^n \mid (\vec{r},\vec{c}) \in N\}
+	\in \mathcal{B}(\R^n).
+	\]
+	
+	Now compute the preimage:
+	\begin{align*}
+	\phi_{\vec{c}}^{-1}(S)
+	&= \{\vec{r} \in A \mid \phi_{\vec{c}}(\vec{r}) \in B \cap N\} \\
+	%
+	&= \{\vec{r} \in A \mid \phi_{\vec{c}}(\vec{r}) \in B \cap \phi_{\vec{c}}(\vec{r}) \in N\} \\
+	%
+	&= \{\vec{r} \in A \mid (\vec{r},\vec{c}) \in N\} 
+	\qquad (\text{since } \phi_{\vec c}(\vec r)\in B \text{ for all } \vec r\in A)\\
+	%
+	&= A \cap \{\vec{r} \in \R^n \mid (\vec{r},\vec{c}) \in N\} \\
+	%
+	&= A \cap M'.
+	\end{align*}
+	Since $M' \in \mathcal{B}(\R^n)$, we have $A \cap M' \in \mathcal{F}_A$ by definition. Hence
+	$\phi_{\vec{c}}^{-1}(S) \in \mathcal{F}_A$, so $\phi_{\vec{c}}$ is measurable.
+\end{proof}
+
+
+\begin{lemma}[Substitution is measurable]
+	Let $Val_{\tau_1} \subseteq Expr_{\tau_1}$ denote the set of value expressions of type $\tau_1$. The substitution operation $v \mapsto e[v/x]$ is a measurable function from $Val_{\tau_1} \to Expr_{\tau_2}$.
+\end{lemma}
+
+
+\begin{lemma}
+	For a given monadic bind $\mu \monbind f$ defined in the small-step operational semantics, $f : (Expr_{\tau_1} + \bot) \to \mathcal{D}(Expr_{\tau_2} + \bot)$ is a Markov kernel.
+\end{lemma}
+
+\begin{proof}
+
+	We first prove that $f : Expr_{\tau_1} \to \mathcal{D}(Expr_{\tau_2} + \bot)$.
+
+	Case let:
+
+	This means proving that $\lambda f. \dirac{\letkw\; x = f\; \inkw\; e_2}$ is a Markov kernel. Denote this as $f(x) = \dirac{\letkw\; y = x\; \inkw e_2 : \tau_2}$, where $f \colon Expr_{\tau_1} \to \mathcal{D}(Expr_{\tau_2})$.
+
+	Check probability measure: for each $x \in Expr_{\tau_1}$, the map $A \mapsto f(x)(A)$ is a probability measure.
+
+	Fix $x \in Expr_{\tau_1}$. The map $A \mapsto f(x)(A)$ is actually $A \mapsto \dirac{\letkw\; x = f\; \inkw\; e_2}$. 
+
+	Now, for any $A \in \mathcal{D}(Expr_{\tau_2})$,
+
+	\begin{itemize}
+		\item $f(x)(A) = 1$ if $\letkw\; x = f\; \inkw\; e_2 \in A$.
+		\item $f(x)(A) = 0$ otherwise.
+	\end{itemize}
+
+	This is a probability measure that satisfies all axioms:
+
+	\begin{itemize}
+		\item Non-negativity
+		\item Total probability
+		\item Countable additivity
+	\end{itemize}
+
+	Check measurability: for each $A \in \mathcal{F}_{Expr_{\tau_2}}$, the map $x \mapsto f(x)(A)$ is a measurable function.
+
+	Fix $A \in \mathcal{F}_{Expr_{\tau_2}}$. 
+
+	The map $x \mapsto f(x)(A)$ is actually $x \mapsto \dirac{\letkw\; y = x\; \inkw\; e_2}(A)$.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	When $0 < a < 1$:
+
+	Recall $g(x)$ is a function from $Expr_{\tau_1}$ to $[0,1]$.
+
+	Let $B = \{x \in Expr_{\tau_1} | \letkw\; y = x\; \inkw\; e2 : \tau_2 \in A\}$. We prove $B \in \mathcal{F}_{Expr_{\tau_1}}$, using our explicit sigma-algebra construction. 
+
+	We know that $A$ is measurable (i.e. $A \in \mathcal{F}_{Expr_{\tau_2}}$).
+
+	By the explicit sigma-algebra construction:
+
+	\begin{align*}
+		&B \in \mathcal{F}_{Expr_{\tau_1}} \\
+		\iff \quad&B \in \{E \subseteq Expr_{\tau_1} | \forall s \in \text{Skel}_{\tau_1}, E \cap Expr_{s;\tau_1} \in \mathcal{F}_{Expr_{s;\tau_1}}\} \\
+		\iff \quad&\forall s \in \text{Skel}_{\tau_1}, B \cap Expr_{s;\tau_1} \in \mathcal{F}_{Expr_{s;\tau_1}} \\
+	\end{align*}
+
+	Now, fix $s \in \text{Skel}_{\tau}$. We want to prove:
+
+	\begin{align*}
+		&B \cap Expr_{s;\tau_1} \in \mathcal{F}_{Expr_{s;\tau_1}} \\
+		%
+		\iff \quad&\{x \in Expr_{s;\tau_1} | \letkw\; y = x\; \inkw\; e2 : \tau_2 \in A\} \cap Expr_{s;\tau_1} \in \mathcal{F}_{Expr_{s;\tau_1}} \\
+		%
+		\iff \quad&\bigcup_{\vec{r}} \{s[\vec{r}] | \letkw\; y = s[\vec{r}] \; \inkw\; e_2 \in A\} \cap Expr_{s;\tau_1} \in \mathcal{F}_{Expr_{s;\tau_1}}\\
+		%
+		\iff \quad&\bigcup_{\vec{r}} \{\vec{r} | \letkw\; y = s[\vec{r}] \; \inkw\; e_2 \in A\} \cap A_{s;\tau_1} \in \mathcal{F}_{s;\tau_1} \\
+		%
+		\iff \quad&\bigcup_{\vec{r}} \{\vec{r} | \letkw\; y = s[\vec{r}] \inkw\; e_2 \in A\} \in \mathcal{F}_{s;\tau_1} \\
+	\end{align*}
+
+	Let $s_2$ be the skeleton of $e_2$, and let $m = \holes(s_2)$. Let $\vec{c} \in A_{s_2;\tau_2} \subseteq \R^m$ be a fixed tuple of real constants that fills the holes of $s_2$ to recover $e_2$. 
+
+	Define the combined skeleton as:
+
+	\[
+		s' := \letkw\; y = s\; \inkw\; s_2 \in \text{Skel}_{\tau_2}
+	\]
+	where the holes in $s'$ consist of:
+	
+	\begin{itemize}
+		\item The holes from $s$ (filled by $\vec{r}$)
+		\item The holes from $s_2$ (filled by some $\vec{c} \in \mathbb{R}^m$)
+	\end{itemize}
+
+	Then, for every $\vec{r} \in A_{s;\tau_1}$:
+
+	\[
+		\letkw\; y = s[\vec{r}]\; \inkw\; e_2 \quad = \quad s'[(\vec{r},\vec{c})]
+	\]
+
+	Define the measurable set of hole-assignments corresponding to $A$ at skeleton $s'$ as:
+
+	\[
+		A_{s'} := \{(\vec{r}, \vec{r'}) \in A_{s';\tau_2} | s'[\vec{r},\vec{r'}] \in A\}
+	\]
+
+	$A_{s'}$ is measurable in $\mathcal{F}_{s';\tau_2}$.
+
+	Define the function $\phi_{\vec{c}}: A_{s;\tau_1} \to A_{s';\tau_2}$ by $\phi_{\vec{c}}(\vec{r}) = (\vec{r}, \vec{c})$. 
+
+	This map is measurable by Lemma.
+	
+	
+	it is a product of the identity on $\R^n$ with a constant map into $\R^m$, and we are using the Borel subspace $\sigma$-algebras on $A_{s;\tau_1} \subseteq \R^n$ and $A_{s';\tau_2} \subseteq \R^{n+m}$. 
+
+	Thus:
+
+	\begin{align*}
+		&\{\vec{r} \in A_{s;\tau_1} | \letkw\; y = s[\vec{r}]\; \inkw\; e_2 \in A\} \\
+		%
+		= \quad&\{\vec{r} \in A_{s;\tau_1} | s'[\phi_{\vec{c}}(\vec{r})] \in A\} \\
+		%
+		= \quad&\{\vec{r} \in A_{s;\tau_1} | \phi_{\vec{c}}(\vec{r}) \in A_{s'}\} \quad \text{via bijection} \\
+		%
+		= \quad&\phi_{\vec{c}}^{-1}(A_{s'}).
+	\end{align*}
+
+	And since $A_{s'} \in \mathcal{F}_{s';\tau_2}$ and $\phi_{\vec{c}}$ is measurable, we conclude:
+
+	\[
+		\phi_{\vec{c}}^{-1}(A_{s'}) \in \mathcal{F}_{s;\tau_1}.
+	\]
+
+	And thus, 
+	
+	\[
+		\{\vec{r} \in A_{s;\tau_1} | \letkw\; y = s[\vec{r}]\; \inkw\; e_2 \in A\} \in \mathcal{F}_{s;\tau_1}.
+	\]
+
+\end{proof}
+
+\begin{lemma}[Small-Step Semantics as a Markov kernel]
+	For each type $\tau$, the small-step operational semantics $\sem{e : \tau}$ defines a Markov kernel from $(Expr_{\tau}, \mathcal{F}_{Expr_{\tau}})$ to $(Expr_{\tau} + \bot, \mathcal{F}_{Expr_{\tau} + \bot})$. That is, $\sem{e : \tau} : Expr_{\tau} \to \mathcal{D}(Expr_{\tau} + \bot)$ satisfies the following:
+
+	\begin{itemize}
+		\item For each measurable set $A \in \mathcal{F}_{Expr_{\tau} + \bot}$, the function $e \mapsto \sem{e : \tau}(A)$ is measurable as a function from $Expr_{\tau}$ to $[0,1]$.
+		\item For each $e \in Expr_{\tau}$, $\sem{e : \tau}$ is a subprobability measure on $(Expr_{\tau} + \bot, \mathcal{F}_{Expr_{\tau} + \bot})$.
+	\end{itemize}
+\end{lemma}
+
+
+
+
+
 \subsection{Small-Step Coupling Semantics}
 \input{figures/coupling_smallstep}
 
@@ -349,6 +868,12 @@ Define $P_\tau = \{ (e:\tau, \discretize{e:\tau} : \discretize{\tau}) ~|~ e:\tau
 %
 %\kevin{todo: the following must be measurable} \\
 %Define $P_\tau = \{ (e:\tau, \discretize{e} : \discretize{\tau}) ~|~ e:\tau \}$.
+
+\begin{lemma}
+	For a given monadic bind $\mu \monbind (f,f')$ defined in the small-step coupling operational semantics, $(f,f') : (X \times Y) \to \mathcal{D}((X \times Y) + \bot)$ is a Markov kernel.
+\end{lemma}
+
+
 We now define suitable projection functions on measures $\mu \in \mathcal{D}(P_{\tau} + \bot)$ by 
 %
 \begin{align*}
