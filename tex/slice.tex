@@ -24,6 +24,15 @@
 \Crefformat{subsection}{\S#2#1#3}
 \crefformat{subsubsection}{\S#2#1#3}
 \Crefformat{subsubsection}{\S#2#1#3}
+% acmart shares the theorem counter across theorem-like environments.
+% Set cleveref's alias while inside lemma so plain \label{...} gets Lemma.
+\AtEndPreamble{%
+  \AtBeginEnvironment{lemma}{\crefalias{theorem}{lemma}}%
+  \AtBeginEnvironment{definition}{\crefalias{theorem}{definition}}%
+  \AtEndEnvironment{lemma}{\crefalias{theorem}{theorem}}%
+  \AtEndEnvironment{definition}{\crefalias{theorem}{definition}}%
+
+}
 
 %\usepackage[table,xcdraw]{xcolor}
 \usepackage{tikz}

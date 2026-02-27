@@ -84,21 +84,21 @@ During the solving process, the variables may go up in the lattice to a finite s
 Each of the constraints is handled as follows:
 
 \begin{itemize}[leftmargin=*]
-    \item \textbf{Equality constraints} ($B_1 = B_2$ or $V_1 = V_2$): We unify the variables, treating them as the same variable throughout the solving process. Any update to one variable is immediately reflected in all variables unified with it.
+    \item \textbf{Value containment} ($\has{V}{c}$): We update $V$ to include the constant $c$, i.e., $V := V \sqcup \{c\}$. If $V$ is already $\top$, the constraint is trivially satisfied. \circled{1}
     
-    \item \textbf{Subset constraints} ($B_1 \sqsubseteq B_2$ or $V_1 \sqsubseteq V_2$): We ensure that the contents of the first variable are always a subset of the second. When $B_1$ or $V_1$ is updated, we propagate the changes to $B_2$ or $V_2$ by taking the least upper bound.
+    \item \textbf{Top assignment} ($V = \top$): We immediately set $V$ to $\top$, representing that the value set contains all possible float values. \circled{2}
     
-    \item \textbf{Value containment} ($\has{V}{c}$): We update $V$ to include the constant $c$, i.e., $V := V \sqcup \{c\}$. If $V$ is already $\top$, the constraint is trivially satisfied.
+    \item \textbf{Subset constraints} ($B_1 \sqsubseteq B_2$ or $V_1 \sqsubseteq V_2$): We ensure that the contents of the first variable are always a subset of the second. When $B_1$ or $V_1$ is updated, we propagate the changes to $B_2$ or $V_2$ by taking the least upper bound. \circled{3}
     
-    \item \textbf{Top assignment} ($V = \top$): We immediately set $V$ to $\top$, representing that the value set contains all possible float values.
-    
-    \item \textbf{Recoverability} ($\distinguishes{B}{V}$): This constraint ensures that the cut set $B$ can distinguish between all values in $V$. If $V$ is a finite set $\{v_1, ..., v_n\}$ with $n > 1$, we require that $B$ contains at least $n-1$ cuts to separate these values. If the cuts do not separate the values at the current solver state, we insert additional cuts to satisfy this condition. There is no canonical way to do this, so we use a heuristic: we insert a cut $\clt{x}$ for each value $x \in V$ that is not already separated by existing cuts.  If $B = \top$, the constraint is trivially satisfied.
+    \item \textbf{Recoverability} ($\distinguishes{B}{V}$): This constraint ensures that the cut set $B$ can distinguish between all values in $V$. If $V$ is a finite set $\{v_1, ..., v_n\}$ with $n > 1$, we require that $B$ contains at least $n-1$ cuts to separate these values. If the cuts do not separate the values at the current solver state, we insert additional cuts to satisfy this condition. There is no canonical way to do this, so we use a heuristic: we insert a cut $\clt{x}$ for each value $x \in V$ that is not already separated by existing cuts.  If $B = \top$, the constraint is trivially satisfied. \circled{4}
     
     \item \textbf{Less-than answerability} ($\answerslt{B}{V_1}{V_2}$): Intuitively, this constraint ensures that $B$ contains enough cuts to answer all possible comparisons of the form ``$v_1 < v_2$'' where $v_1 \in V_1$ and $v_2 \in V_2$.
     If $B = \top$, the constraint is trivially satisfied.
-    Otherwise, we again have a heuristic choice: we add a cut $\clt{v}$ for each value $v \in V_2$ (if $V_2 \neq \top$) and $\cleq{v}$ for each value $v \in V_1$ (if $V_1 \neq \top$). If $V_1$ and $V_2$ are both $\top$, we set $B$ to $\top$.
+    Otherwise, we again have a heuristic choice: we add a cut $\clt{v}$ for each value $v \in V_2$ (if $V_2 \neq \top$) and $\cleq{v}$ for each value $v \in V_1$ (if $V_1 \neq \top$). If $V_1$ and $V_2$ are both $\top$, we set $B$ to $\top$. \circled{5}
     
-    \item \textbf{Less-equal answerability} ($\answersleq{B}{V_1}{V_2}$): Analogous to less-than.
+    \item \textbf{Less-equal answerability} ($\answersleq{B}{V_1}{V_2}$): Analogous to less-than. \circled{5}
+    
+    \item \textbf{Equality constraints} ($B_1 = B_2$ or $V_1 = V_2$): We unify the variables, treating them as the same variable throughout the solving process. Any update to one variable is immediately reflected in all variables unified with it. \circled{6}
 \end{itemize}
 
 The solver repeatedly processes constraints until reaching a fixed point, where no constraint causes any further updates to the variables. The monotonicity of the lattice operations ensures that this process terminates. This procedure may add more cuts to $B$s than strictly necessary, but it never sets $B=\top$ unless that is the only way to satisfy all constraints. In other words, the discretization itself may be suboptimal in terms of the number of cuts.

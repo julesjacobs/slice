@@ -1,7 +1,7 @@
 \input{figures/architecture.tex}
 
 \section{Slice by Example}\label{sec:examples}
-To build intuition for how \Slice{} works, we start with a set of introductory examples.
+To build intuition for how \Slice{} works, we start with a set of introductory examples of increasing complexity.
 
 \subsection{Branching on a Single Continuous Variable}\label{sec:examples:1}
 We consider a program that samples a real value from a standard Gaussian distribution and then performs two nested comparisons, first checking whether the sampled value is less than 0.8 then comparing that value against either 0.1 or 2.0:
@@ -63,7 +63,6 @@ This analysis is done by the type inference process, which collects all cuts for
     if x < 2 then x < 1 else  y < 1
 \end{lstlisting}
 
-%Using \Dice{}, this yields the output \result{0.225}{0.775}.
 \noindent The constants $0.5$ and $0.2$ map to indices 2 and 1, respectively, in the partition $(-\infty,0.2)\cup[0.2,0.5)\cup[0.5,+\infty)$ for $x$. The constant $0.1$ maps to index 1 in the partition $(-\infty,0.1)\cup[0.1,+\infty)$ for $y$.
 
 
@@ -103,16 +102,17 @@ Both $x$ and $y$ can only take on finitely many values --- a fact which is refle
 
 Notice how both $2.5$ and $4.5$ are discretized to $1$, because for the purpose of comparing them to $y = 0.5$, these values are equivalent.
 
-%Using \Dice{}, this yields the output \result{0.5}{0.5}.
 \fi
 \subsection{Control flow}\label{sec:examples:4}
 
 We now consider comparisons against an expression for which control flow determines which of several constant values it may take. Additionally, continuous values can flow through conditionals before reaching such a comparison:
 
-\begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
-   let x = if flip() then uniform(0,2) else gaussian(0,1) in
-   let y = if 1.5 > x then 1.8 else 0.3 in x <= y
-\end{lstlisting}
+% \begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
+%     let x = if flip() then uniform(0,2) else gaussian(0,1) in
+%     let y = if 1.5 > x then 1.8 else 0.3 in x <= y
+% \end{lstlisting}
+
+\input{figures/cf-program.tex}
 
 \noindent Here, $y$ evaluates to either $1.8$ or $0.3$ depending on $x$. Because $x \leq y$ may use either value, \Slice{} collects both constants and treats the comparison as over this finite set. This motivates enriching our float types with a \emph{value set}: a finite collection of concrete values that an expression may evaluate to. Figure \ref{fig:float-type-def} presents the full float type as is implemented by \Slice{}; each floating-point expression is annotated with such a type. The type-annotated program is thus (omitting the redundant and irrelevant types):
 
@@ -132,7 +132,7 @@ We now consider comparisons against an expression for which control flow determi
 
 More generally, whenever two expressions are compared, the type system equates their cut sets so they are discretized over the same intervals. These cut sets then propagate backward through the control flow to all contributing subexpressions. Figure~\ref{fig:control-flow-gaussian} shows how this information flows.
 
-\input{figures/control-flow}
+\input{figures/cf-propagation.tex}
 
 Now, the discretized program becomes:
 
@@ -164,33 +164,23 @@ Now, the discretized program becomes:
 
 Continuous distributions can have parameters that depend on discrete random choices. In this example, a Gaussian distribution's standard deviation is determined by a such a random choice:
 
-\begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
-    let x = if flip() then 0.5 else 1.5 in gaussian(0, x) < 0.5
+\begin{lstlisting}[escapeinside={<@}{@>},aboveskip=1em,belowskip=1em]
+    let x = if flip() <@\textcolor{purple}{then}@> 0.5 <@\textcolor{purple}{else}@> 1.5 in gaussian(0, <@\textcolor{red}{x}@>) <@\textcolor{orange}{<}@> 0.5
 \end{lstlisting}
-
-\begin{wrapfigure}{r}{0.3\textwidth}
-    \centering
-    \input{figures/latent-variable}
-    \caption{Constraint graph, read from top to bottom in program order, for example~\ref{sec:examples:5}. Using $x$ as a Gaussian parameter induces a \emph{recovers} constraint, which ensures a unique discrete index for each value of $x$.}
-    \vspace{-75pt}
-    \label{fig:control-flow-distinguishes}
-\end{wrapfigure}
 
 \noindent %This example shows how discrete choices can affect the parameters of continuous distributions. 
 The type-annotations reveal how the variable $x$ determines the standard deviation of the Gaussian, and Figure~\ref{fig:control-flow-distinguishes} illustrates how type information is propagated:
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
-    let x = if flip() 
-        then (0.5 : !{\ftb{<=0.5,<=1.5}{0.5}}!)
+    let x = if flip() then (0.5 : !{\ftb{<=0.5,<=1.5}{0.5}}!)
         else (1.5 : !{\ftb{<=0.5,<=1.5}{1.5}}!)
         : !{\ftb{<=0.5,<=1.5}{0.5,1.5}}! in
-    (gaussian(0, x) : !{\ft{<0.5}}!) 
-        < (0.5 : !{\ftb{<0.5}{0.5}}!)
+    (gaussian(0, x) : !{\ft{<0.5}}!) < (0.5 : !{\ftb{<0.5}{0.5}}!)
 \end{lstlisting}
 
-\noindent Since the variable $x$ is later used as a parameter to the $\gaussian$ distribution, \Slice{} generates a separate case for each possible value that $x$ can take (namely 0.5 and 1.5, from its value set). To support this, the type system uses non-strict inequalities in the cut sets, enabling these values to be mapped to unique integer indices starting from 0. Specifically, the value 0.5 corresponds to index 0 via the type \codetype{\ftb{<=0.5,<=1.5}{0.5}}, and 1.5 corresponds to 1 via \codetype{\ftb{<=0.5,<=1.5}{1.5}}. 
+\input{figures/latent-variable.tex}
 
-The resulting discretized program then branches on these values and instantiates the corresponding discrete distribution, depending on which standard deviation was selected by the initial flip:
+\noindent Since the variable $x$ is later used as a parameter to the $\gaussian$ distribution, \Slice{} generates a separate case for each possible value that $x$ can take (namely 0.5 and 1.5, from its value set). To support this, the type system uses non-strict inequalities in the cut sets, enabling these values to be mapped to unique integer indices starting from 0. Specifically, the value 0.5 corresponds to index 0 via the type \codetype{\ftb{<=0.5,<=1.5}{0.5}}, and 1.5 corresponds to 1 via \codetype{\ftb{<=0.5,<=1.5}{1.5}}. The resulting discretized program then branches on these discrete values and instantiates the corresponding discrete distribution, depending on which standard deviation was selected by the initial flip:
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em]
     let x = if flip() then 0 else 1 in
@@ -199,7 +189,6 @@ The resulting discretized program then branches on these values and instantiates
 \end{lstlisting}
 %
 \noindent
-%Using \Dice{}, this yields the output \result{0.73595}{0.26405}.
 
 \subsection{Conditioning}\label{sec:examples:6}
 

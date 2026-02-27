@@ -2,12 +2,6 @@
   \centering
   \small
 
-  \definecolor{blue}{RGB}{0, 51, 102}
-      \definecolor{violet}{RGB}{102, 51, 153}
-      \colorlet{teal}{teal!80!black}
-      \colorlet{olive}{olive!70!black}
-      \colorlet{brown}{brown!60!black}
-
     % =====================================================
     % Subfigure 1: Subtyping reduction
     % =====================================================
@@ -29,16 +23,16 @@
         & \textbf{After subtyping reduction} \\[0.4em]
 
       \lstinline[style=mystyle]|$\textcolor{teal}{\floattype{B_3}{V_3} <: \floattype{B_7}{V_7}}$|
-        & $+\; \textcolor{teal}{B_3 = B_7},\; \textcolor{teal}{V_3 \sqsubseteq V_7}$ \\
+        & $\textcolor{teal}{B_3 = B_7},\; \textcolor{teal}{V_3 \sqsubseteq V_7}$ \\
 
       \lstinline[style=mystyle]|$\textcolor{teal}{\floattype{B_6}{V_6} <: \floattype{B_7}{V_7}}$|
-        & $+\; \textcolor{teal}{B_6 = B_7},\; \textcolor{teal}{V_6 \sqsubseteq V_7}$ \\
+        & $\textcolor{teal}{B_6 = B_7},\; \textcolor{teal}{V_6 \sqsubseteq V_7}$ \\
 
       \lstinline[style=mystyle]|$\textcolor{teal}{\floattype{B_9}{V_9} <: \floattype{B_{11}}{V_{11}}}$|
-        & $+\; \textcolor{teal}{B_9 = B_{11}},\; \textcolor{teal}{V_9 \sqsubseteq V_{11}}$ \\
+        & $\textcolor{teal}{B_9 = B_{11}},\; \textcolor{teal}{V_9 \sqsubseteq V_{11}}$ \\
 
       \lstinline[style=mystyle]|$\textcolor{teal}{\floattype{B_{10}}{V_{10}} <: \floattype{B_{11}}{V_{11}}}$|
-        & $+\; \textcolor{teal}{B_{10} = B_{11}},\; \textcolor{teal}{V_{10} \sqsubseteq V_{11}}$ \\
+        & $\textcolor{teal}{B_{10} = B_{11}},\; \textcolor{teal}{V_{10} \sqsubseteq V_{11}}$ \\
 
       \end{tabular}
 
@@ -50,7 +44,7 @@
   % =====================================================
   % Subfigure 2: Constraints + Solver updates
   % =====================================================
-  \begin{subfigure}[t]{0.52\linewidth}
+  \begin{subfigure}[t]{0.58\linewidth}
       \centering
       \begin{tabular}{c p{0.35\linewidth} p{0.35\linewidth}}
 
@@ -66,132 +60,145 @@
       % Value containment
       % =====================================================
       \multirow{7}{*}{
-        \textcolor{blue}{
+        \textcolor{black}{
           $\left\{
           \begin{array}{c}
           \\ \\ \\ \\ \\ \\ \\
           \end{array}
           \right.$
         }
-        \;\textsc{}
+        \;\text{\circled{1}}
       }
       & $\textcolor{blue}{\has{V_1}{0}}$
-        & $+\; \textcolor{blue}{V_1 := V_1 \sqcup \{0\} = \{0\}}$ \\
+        & $\textcolor{blue}{V_1 := V_1 \sqcup \{0\} = \{0\}}$ \\
 
       & $\textcolor{blue}{\has{V_2}{2}}$
-        & $+\; \textcolor{blue}{V_2 := V_2 \sqcup \{2\} = \{2\}}$ \\
+        & $\textcolor{blue}{V_2 := V_2 \sqcup \{2\} = \{2\}}$ \\
 
       & $\textcolor{blue}{\has{V_4}{0}}$
-        & $+\; \textcolor{blue}{V_4 := V_4 \sqcup \{0\} = \{0\}}$ \\
+        & $\textcolor{blue}{V_4 := V_4 \sqcup \{0\} = \{0\}}$ \\
 
       & $\textcolor{blue}{\has{V_5}{1}}$
-        & $+\; \textcolor{blue}{V_5 := V_5 \sqcup \{1\} = \{1\}}$ \\
+        & $\textcolor{blue}{V_5 := V_5 \sqcup \{1\} = \{1\}}$ \\
 
       & $\textcolor{blue}{\has{V_8}{1.5}}$
-        & $+\; \textcolor{blue}{V_8 := V_8 \sqcup \{1.5\} = \{1.5\}}$ \\
+        & $\textcolor{blue}{V_8 := V_8 \sqcup \{1.5\} = \{1.5\}}$ \\
 
       & $\textcolor{blue}{\has{V_9}{1.8}}$
-        & $+\; \textcolor{blue}{V_9 := V_9 \sqcup \{1.8\} = \{1.8\}}$ \\
+        & $\textcolor{blue}{V_9 := V_9 \sqcup \{1.8\} = \{1.8\}}$ \\
 
       & $\textcolor{blue}{\has{V_{10}}{0.3}}$
-        & $+\; \textcolor{blue}{V_{10} := V_{10} \sqcup \{0.3\} = \{0.3\}}$ \\[0.6em]
+        & $\textcolor{blue}{V_{10} := V_{10} \sqcup \{0.3\} = \{0.3\}}$ \\[0.6em]
 
       % =====================================================
-      % Top assignment / Recoverability
+      % Top assignment
       % =====================================================
-      \multirow{6}{*}{
-        \textcolor{violet}{
+      \multirow{2}{*}{
+        \textcolor{black}{
           $\left\{
           \begin{array}{c}
-          \\ \\ \\ \\ \\ \\
+          \\ \\
           \end{array}
           \right.$
         }
-        \;\textsc{}
+        \;\textsc{\circled{2}}
       }
-      & $\textcolor{violet}{\distinguishes{B_1}{V_1}}$
-        & $+\; \textcolor{violet}{\emptyset}$ \\
-
-      & $\textcolor{violet}{\distinguishes{B_2}{V_2}}$
-        & $+\; \textcolor{violet}{\emptyset}$ \\
-
       & $\textcolor{violet}{V_3 = \top}$
-        & $+\; \textcolor{violet}{V_3 := \top}$ \\
-
-      & $\textcolor{violet}{\distinguishes{B_4}{V_4}}$
-        & $+\; \textcolor{violet}{\emptyset}$ \\
-
-      & $\textcolor{violet}{\distinguishes{B_5}{V_5}}$
-        & $+\; \textcolor{violet}{\emptyset}$ \\
+        & $\textcolor{violet}{V_3 := \top}$ \\
 
       & $\textcolor{violet}{V_6 = \top}$
-        & $+\; \textcolor{violet}{V_6 := \top}$ \\[0.6em]
+        & $\textcolor{violet}{V_6 := \top}$ \\[0.6em]
 
       % =====================================================
       % Subset constraints
       % =====================================================
       \multirow{4}{*}{
-        \textcolor{teal}{
+        \textcolor{black}{
           $\left\{
           \begin{array}{c}
           \\ \\ \\ \\ 
           \end{array}
           \right.$
         }
-        \;\textsc{}
+        \;\textsc{\circled{3}}
       }
       & $\textcolor{teal}{V_3 \sqsubseteq V_7}$
-        & $+\; \textcolor{teal}{V_7 := V_7 \sqcup \top = \top}$ \\
+        & $\textcolor{teal}{V_7 := V_7 \sqcup \top = \top}$ \\
 
       & $\textcolor{teal}{V_6 \sqsubseteq V_7}$
-        & $+\; \textcolor{teal}{\emptyset}$ \\
+        & $\textcolor{teal}{\emptyset}$ \\
 
       & $\textcolor{teal}{V_9 \sqsubseteq V_{11}}$
-        & $+\; \textcolor{teal}{V_{11} := V_{11} \sqcup \{1.8\} = \{1.8\}}$ \\
+        & $\textcolor{teal}{V_{11} := V_{11} \sqcup \{1.8\} = \{1.8\}}$ \\
 
       & $\textcolor{teal}{V_{10} \sqsubseteq V_{11}}$
-        & $+\; \textcolor{teal}{V_{11} := V_{11} \sqcup \{0.3\}= \{0.3, 1.8\}}$ \\[0.6em]
+        & $\textcolor{teal}{V_{11} := V_{11} \sqcup \{0.3\}= \{0.3, 1.8\}}$ \\[0.6em]
+
+      % =====================================================
+      % Recoverability
+      % =====================================================
+      \multirow{4}{*}{
+        \textcolor{black}{
+          $\left\{
+          \begin{array}{c}
+          \\ \\ \\ \\
+          \end{array}
+          \right.$
+        }
+        \;\textsc{\circled{4}}
+      }
+      & $\textcolor{violet}{\distinguishes{B_1}{V_1}}$
+        & $\textcolor{violet}{\emptyset}$ \\
+
+      & $\textcolor{violet}{\distinguishes{B_2}{V_2}}$
+        & $\textcolor{violet}{\emptyset}$ \\
+
+      & $\textcolor{violet}{\distinguishes{B_4}{V_4}}$
+        & $\textcolor{violet}{\emptyset}$ \\
+
+      & $\textcolor{violet}{\distinguishes{B_5}{V_5}}$
+        & $\textcolor{violet}{\emptyset}$ \\[0.6em]
 
       % =====================================================
       % Answerability
       % =====================================================
       \multirow{2}{*}{
-        \textcolor{brown}{
+        \textcolor{black}{
           $\left\{
           \begin{array}{c}
           \\ \\ 
           \end{array}
           \right.$
         }
-        \;\textsc{}
+        \;\textsc{\circled{5}}
       }
       & $\textcolor{brown}{\answerslt{B_7}{V_7}{V_8}}$
-        & $+\; \textcolor{brown}{B_7 := B_7 \sqcup \{\clt{1.5}\} = \{\clt{1.5}\}}$ \\
+        & $\textcolor{brown}{B_7 := B_7 \sqcup \{\clt{1.5}\} = \{\clt{1.5}\}}$ \\
 
       & $\textcolor{brown}{\answersleq{B_7}{V_7}{V_{11}}}$
-        & $+\; \textcolor{brown}{B_7 := B_7 \sqcup \{\cleq{0.3}, \cleq{1.8}\} = \{\clt{1.5}, \cleq{0.3}, \cleq{1.8}\}}$ \\[0.6em]
+        & $\textcolor{brown}{B_7 := B_7 \sqcup \{\cleq{0.3}, \cleq{1.8}\} = \{\clt{1.5}, \cleq{0.3}, \cleq{1.8}\}}$ \\[0.6em]
 
       % =====================================================
       % Equality constraints
       % =====================================================
       \multirow{2}{*}{
-        \textcolor{olive}{
+        \textcolor{black}{
           $\left\{
           \begin{array}{c}
           \\ \\ \\
           \end{array}
           \right.$
         }
-        \;\textsc{}
+        \;\textsc{\circled{6}}
       }
       & $\textcolor{brown}{B_7 = B_8, B_7 = B_{11}}$
-        & $+\; \textcolor{brown}{B_7 = B_8, B_7 = B_{11}}$ \\
+        & $\textcolor{brown}{B_7 = B_8, B_7 = B_{11}}$ \\
 
       & $\textcolor{teal}{B_3 = B_7, B_6 = B_7}$
-        & $+\; \textcolor{teal}{B_3 = B_7, B_6 = B_7}$ \\
+        & $\textcolor{teal}{B_3 = B_7, B_6 = B_7}$ \\
 
       & $\textcolor{teal}{B_9 = B_{10}, B_{10} = B_{11}}$
-        & $+\; \textcolor{teal}{B_9 = B_{11}, B_{10} = B_{11}}$ \\
+        & $\textcolor{teal}{B_9 = B_{11}, B_{10} = B_{11}}$ \\
 
       \end{tabular}
       \caption{Lattice solving. Each pass performs monotone updates to $B_i$ or $V_i$. Lines annotated with $\emptyset$ denote constraint is trivially satisfied.}
@@ -200,7 +207,7 @@
   % =====================================================
   % Subfigure 3: Cut sets + Value sets
   % =====================================================
-  \begin{subfigure}[t]{0.25\linewidth}
+  \begin{subfigure}[t]{0.2\linewidth}
       \centering
       \begin{tabular}{p{0.95\linewidth}}
 

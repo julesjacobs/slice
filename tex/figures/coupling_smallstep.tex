@@ -7,60 +7,91 @@
 			\toprule
 						$\mathbf{e \boldsymbol{:} \boldsymbol{\tau}}$ & \textbf{constraints}  & $\boldsymbol{\sem{e : \tau, \discretize{e} : \discretize{\tau}}}$   \\
 			\hline 
+			%
+			% --- divergence ---
+			\multirow{1}{*}{$\diverge : \tau$} 
+			
+			& & $\lambda A.0$  \\
+			%
+			\midrule
+			% 
+			% --- values ---
 			$v : \tau$ & & $\dirac{(v:\tau,\discretize{v:\tau} : \discretize{\tau})}$ \\[0.5ex]
+			%
 			\midrule
 			%
-			\multirow{2}{*}{$\letkw \; x = e_1 : \tau_1 \; \inkw \; e_2 : \tau_2 : \tau_2$} & $e_1=v$ & $\dirac{(e_2[v/x] : \tau_2, \discretize{e_2 : \tau_2}[\discretize{v : \tau_1}/x] : \discretize{\tau_2})}$ \\
+			% --- let ---
+			\multirow{2}{*}{$\letkw \; x = e_1 : \tau_1 \; \inkw \; e_2 : \tau_2 : \tau_2$} 
+			
+			& $e_1=v$ & $\dirac{(e_2[v/x] : \tau_2, \discretize{e_2 : \tau_2}[\discretize{v : \tau_1}/x] : \discretize{\tau_2})}$ \\
 			& $e_1$ no val.\ & \makecell[l]{$\sem{ e_1 : \tau_1, \discretize{e_1 : \tau_1} : \discretize{\tau_1}}$ \\
-			$\gg\!= \lambda (f, f'). \dirac{(\letkw \; x = f \; \inkw \; e_2 : \tau_2 : \tau_2,
-			\letkw \; x = f' \; \inkw \; \discretize{e_2 : \tau_2} : \discretize{\tau_2} : \discretize{\tau_2})}$} \\
+			$\gg\!= \lambda (g,g'). \dirac{(\letkw \; x = g\; \inkw \; e_2 : \tau_2 : \tau_2,
+			\letkw \; x = g' \; \inkw \; \discretize{e_2 : \tau_2} : \discretize{\tau_2} : \discretize{\tau_2})}$} \\
 			%
 			\midrule 
 			%
-			\multirow{3}{*}{$\ifkw \; e_1 : \bool \; \thenkw \; e_2 : \tau \; \elsekw \; e_3 : \tau : \tau$} & $e_1=\true$ & $\dirac{(e_2 : \tau, \discretize{e_2 : \tau} : \discretize{\tau})} $ \\
-			 & $e_1=\false$ & $\dirac{(e_3 : \tau, \discretize{e_3 : \tau} : \discretize{\tau})} $ \\
-			 & o.w.\ & \makecell[l]{$\sem{ e_1 : \bool, \discretize{e_1 : \bool} : \discretize{\bool}}$ \\
-			 $\gg\!= \lambda (f,f'). \dirac{(\ifkw \; f \; \thenkw \; e_2 : \tau \; \elsekw \; e_3 : \tau : \tau, \ifkw \; f' \; \thenkw \; \discretize{e_2 : \tau} : \discretize{\tau} \; \elsekw \; \discretize{e_3 : \tau} : \discretize{\tau} : \discretize{\tau})} $} \\
-			 %
-			 \midrule 
-			 %
-		     \multirow{3}{*}{$\observekw\; (e : \bool)  : \text{unit}$} & $e = \true$ & $\dirac{(\text{unit}, \text{unit})}$ \\[0.5ex]
+			% --- if else ---
+			\multirow{3}{*}{$\ifkw \; e_1 : \bool \; \thenkw \; e_2 : \tau \; \elsekw \; e_3 : \tau : \tau$} 
+			
+			& $e_1=\true$ & $\dirac{(e_2 : \tau, \discretize{e_2 : \tau} : \discretize{\tau})} $ \\
+			& $e_1=\false$ & $\dirac{(e_3 : \tau, \discretize{e_3 : \tau} : \discretize{\tau})} $ \\
+			& o.w.\ & \makecell[l]{$\sem{ e_1 : \bool, \discretize{e_1 : \bool} : \discretize{\bool}}$ \\
+			$\gg\!= \lambda (g,g'). \dirac{(\ifkw \; g\; \thenkw \; e_2 : \tau \; \elsekw \; e_3 : \tau : \tau, \ifkw \; g' \; \thenkw \; \discretize{e_2 : \tau} : \discretize{\tau} \; \elsekw \; \discretize{e_3 : \tau} : \discretize{\tau} : \discretize{\tau})} $} \\
+			%
+			\midrule 
+			%
+			% --- observe ---
+			\multirow{3}{*}{$\observekw\; (e : \bool)  : \text{unit}$} 
+			
+			& $e = \true$ & $\dirac{(\text{unit}, \text{unit})}$ \\[0.5ex]
 			& $e=\false$ & $\dirac{\bot}$ \\
 			& o.w.\ & \makecell[l]{$\sem{e: \bool, \discretize{e}: \bool}$ \\
-			$\gg\!= \lambda (f, f'). \dirac{(\observekw\; (f : \bool)  : \text{unit}, \observekw\; (f' : \bool)  : \text{unit})}$} \\
+			$\gg\!= \lambda (g,g'). \dirac{(\observekw\; (g: \bool)  : \text{unit}, \observekw\; (g' : \bool)  : \text{unit})}$} \\
 			%
 			\midrule
 			%
+			% --- less than: B top ---
 			\multirow{4}{*}{\makecell{$e_1 : \tau_1 < e_2 : \tau_2 : \bool$ \\
-			 for $\tau_1 = \floattype{B}{V_1}, \tau_2 = \floattype{B}{V_2} $ \\
-			 $B = \top$}} & $e_1 = v_1, e_2 = v_2, v_1 < v_2 $ & $\dirac{(\true : \bool, \true : \bool)}$ \\
-			 & $e_1 = v_1, e_2 = v_2, v_1 \geq v_2$ & $\dirac{(\false : \bool, \false : \bool)}$  \\
-			 &$e_1 = v_1, e_2 \neq v_2$ & \makecell[l]{$\sem{ e_2 : \tau_2, \discretize{e_2 : \tau_2} : \discretize{\tau_2}}$ \\
-			 $\gg\!= \lambda (f,f'). \dirac{(v_1 : \tau_1 < f : \bool, \discretize{v_1 : \tau_1} : \discretize{\tau_1} < f' : \discretize{\bool}) }$} \\
-			 & o.w.\ & \makecell[l]{ $\sem{ e_1 : \tau_1, \discretize{e_1 : \tau_1} : \discretize{\tau_1}}$ \\
-			 $\gg\!= \lambda (f,f'). \dirac{ (f < e_2 : \tau_2 : \bool, f' < \discretize{e_2 : \tau_2} : \discretize{\tau_2} : \discretize{\bool})}$}  \\
-			 %
-			 \midrule
-			 %
+			for $\tau_1 = \floattype{B}{V_1}, \tau_2 = \floattype{B}{V_2} $ \\
+			$B = \top$}} 
+			
+			& $e_1 = v_1, e_2 = v_2, v_1 < v_2 $ & $\dirac{(\true : \bool, \true : \bool)}$ \\
+			& $e_1 = v_1, e_2 = v_2, v_1 \geq v_2$ & $\dirac{(\false : \bool, \false : \bool)}$  \\
+			&$e_1 = v_1, e_2 \neq v_2$ & \makecell[l]{$\sem{ e_2 : \tau_2, \discretize{e_2 : \tau_2} : \discretize{\tau_2}}$ \\
+			$\gg\!= \lambda (g,g'). \dirac{(v_1 : \tau_1 < g: \bool, \discretize{v_1 : \tau_1} : \discretize{\tau_1} < g' : \discretize{\bool}) }$} \\
+			& o.w.\ & \makecell[l]{ $\sem{ e_1 : \tau_1, \discretize{e_1 : \tau_1} : \discretize{\tau_1}}$ \\
+			$\gg\!= \lambda (g,g'). \dirac{ (g< e_2 : \tau_2 : \bool, g' < \discretize{e_2 : \tau_2} : \discretize{\tau_2} : \discretize{\bool})}$}  \\
+			%
+			\midrule
+			%
+			% --- less than: B not top ---
 			\multirow{4}{*}{\makecell{$e_1 : \tau_1 < e_2 : \tau_2 : \bool$ \\
-			 for $\tau_1 = \floattype{B}{V_1}, \tau_2 = \floattype{B}{V_2} $ \\
-			 $B \neq \top$}} & $e_1 = v_1, e_2 = v_2, v_1 < v_2 $ & $\dirac{(\true : \bool, \true : \bool)}$ \\
-			 & $e_1 = v_1, e_2 = v_2, v_1 \geq v_2$ & $\dirac{(\false : \bool, \false : \bool)}$  \\
-			 &$e_1 = v_1, e_2 \neq v_2$ & \makecell[l]{$\sem{ e_2 : \tau_2, \discretize{e_2 : \tau_2} : \discretize{\tau_2} }$ \\
-			 $\gg\!= \lambda (f,f'). \dirac{ (v_1 : \tau_1 < f : \bool, \discretize{v_1 : \tau_1} : \discretize{\tau_1} \finlt{(|B|+1)} f' : \discretize{\bool}) }$} \\
-			 & o.w.\ & \makecell[l]{ $\sem{ e_1 : \tau_1, \discretize{e_1 : \tau_1} : \discretize{\tau_1}}$ \\
-			 $\gg\!= \lambda (f,f'). \dirac{ (f \finlt{(|B|+1)} e_2 : \tau_2 : \bool, f' \finlt{(|B|+1)} \discretize{e_2 : \tau_2} : \discretize{\tau_2} : \discretize{\bool})}$}  \\
-			 %
-			 \midrule
-			 %
-			\multirow{5}{*}{\makecell[l]{$\uniform(e_1 : \tau_1, e_2 : \tau_2) : \floattype{B}{V}$ \\
-			$B=\top$}} & $e_1 = v_1 \leq v_2 = e_2$ &
+			for $\tau_1 = \floattype{B}{V_1}, \tau_2 = \floattype{B}{V_2} $ \\
+			$B \neq \top$}} 
+			
+			& $e_1 = v_1, e_2 = v_2, v_1 < v_2 $ & $\dirac{(\true : \bool, \true : \bool)}$ \\
+			& $e_1 = v_1, e_2 = v_2, v_1 \geq v_2$ & $\dirac{(\false : \bool, \false : \bool)}$  \\
+			&$e_1 = v_1, e_2 \neq v_2$ & \makecell[l]{$\sem{ e_2 : \tau_2, \discretize{e_2 : \tau_2} : \discretize{\tau_2} }$ \\
+			$\gg\!= \lambda (g,g'). \dirac{ (v_1 : \tau_1 < g: \bool, \discretize{v_1 : \tau_1} : \discretize{\tau_1} \finlt{(|B|+1)} g' : \discretize{\bool}) }$} \\
+			& o.w.\ & \makecell[l]{ $\sem{ e_1 : \tau_1, \discretize{e_1 : \tau_1} : \discretize{\tau_1}}$ \\
+			$\gg\!= \lambda (g,g'). \dirac{ (g< e_2 : \tau_2 : \bool, g' \finlt{(|B|+1)} \discretize{e_2 : \tau_2} : \discretize{\tau_2} : \discretize{\bool})}$}  \\
+			%
+			\midrule
+			%
+			% --- uniform: B top ---
+			\multirow{5}{*}{\makecell{$\uniform(e_1 : \tau_1, e_2 : \tau_2) : \floattype{B}{V}$ \\
+			$B=\top$}} 
+			
+			& $e_1 = v_1 \leq v_2 = e_2$ &
 		    %$\textnormal{Uniform}(v_1,v_2)  \dirac{(v, v)}(A) dv$ \\
 		    $\text{Uniform}{(v_1, v_2)} \gg\!= \lambda v. \dirac{(v : \floattype{B}{V}, v : \floattype{B}{V})}$  \\
 			%
-			& $e_1=v_1$, $e_2$ no val.\ & \makecell[l]{$\sem{e_2:\tau_2, \discretize{e_2} : \discretize{\tau_2}}$ \\ $\gg\!= \lambda (f,f'). \dirac{(\uniform(v_1:\tau_1, f:\tau_2 ) : \tau, \uniform(\discretize{v_1}:\discretize{\tau_1}, f': \discretize{\tau_2} ) : \discretize{\tau})}$} \\
+			& $e_1 = v_1 > v_2 = e_2$ &
+		    $\sem{\diverge : \tau, \discretize{\uniform(v_1 : \tau_1,v_2 : \tau_2)} : \discretize{\tau}}$  \\
 			%
-			& $e_1$ no val.\ & \makecell[l]{$\sem{e_1:\tau_1, \discretize{e_1} : \discretize{\tau_1}}$ \\ $\gg\!= \lambda (f,f'). \dirac{(\uniform(f:\tau_1, e_2:\tau_2) : \tau, \uniform({f'}:\discretize{\tau_1}, \discretize{e_2} : \discretize{\tau_2} ) : \discretize{\tau})}$} \\
+			& $e_1=v_1$, $e_2$ no val.\ & \makecell[l]{$\sem{e_2:\tau_2, \discretize{e_2} : \discretize{\tau_2}}$ \\ $\gg\!= \lambda (g,g'). \dirac{(\uniform(v_1:\tau_1, g:\tau_2 ) : \tau, \uniform(\discretize{v_1}:\discretize{\tau_1}, g': \discretize{\tau_2} ) : \discretize{\tau})}$} \\
+			%
+			& $e_1$ no val.\ & \makecell[l]{$\sem{e_1:\tau_1, \discretize{e_1} : \discretize{\tau_1}}$ \\ $\gg\!= \lambda (g,g'). \dirac{(\uniform(g:\tau_1, e_2:\tau_2) : \tau, \uniform({g'}:\discretize{\tau_1}, \discretize{e_2} : \discretize{\tau_2} ) : \discretize{\tau})}$} \\
 			%
 %			\midrule
 %			%
@@ -70,17 +101,24 @@
 			%
 			%
 			\midrule 
-			\multirow{5}{*}{\makecell[l]{$\uniform(e_1 : \tau_1, e_2 : \tau_2) : \floattype{B}{V}$ \\
-				$B \neq \top$ \\
-				$\tau_1 = \float[B_1 \neq \top,\{v_1,\ldots,v_n\}]$ \\
-				$\tau_2 = \float[B_2 \neq \top,\{w_1,\ldots,w_m\}]$}} &  $e_1 = c_1 \leq c_2 = e_2$ values &  \makecell[l]{
-				%$\lambda A. \frac{1}{c_2-c_1} \cdot \int_{c_1}^{c_2} \dirac{(v, v_i)}(A) dv$ \\
-				$\text{Uniform}(c_1, c_2) \gg\!= \lambda v.\dirac{(v : \floattype{B}{V}, v_i : \fin{|B| + 1})}$ \\
-				where $v_i$ is unique number s.t. $v \in \intervals{B}_{v_i}$} \\
-				%
-				& $e_1=c_1$, $e_2$ no val.\ & \makecell[l]{$\sem{e_2:\tau_2, \discretize{e_2} : \discretize{\tau_2}}$ \\ $\gg\!= \lambda (f,f'). \dirac{(\uniform(v_1:\tau_1, f:\tau_2 ) : \tau, \dc(\discretize{v_1}:\discretize{\tau_1}, f': \discretize{\tau_2} ) : \discretize{\tau})}$} \\
-				%
-				& $e_1$ no val.\ & \makecell[l]{$\sem{e_1:\tau_1, \discretize{e_1} : \discretize{\tau_1}}$ \\ $\gg\!= \lambda (f,f'). \dirac{(\uniform(f:\tau_1, e_2:\tau_2) : \tau, \dc({f'}:\discretize{\tau_1}, \discretize{e_2} : \discretize{\tau_2} ) : \discretize{\tau})}$} \\
+			%
+			% --- uniform: B not top ---
+			\multirow{5}{*}{\makecell{$\uniform(e_1 : \tau_1, e_2 : \tau_2) : \floattype{B}{V}$ \\
+			$B \neq \top$ \\
+			$\tau_1 = \float[B_1 \neq \top,\{v_1,\ldots,v_n\}]$ \\
+			$\tau_2 = \float[B_2 \neq \top,\{w_1,\ldots,w_m\}]$}} 
+			
+			&  $e_1 = c_1 \leq c_2 = e_2$ values &  \makecell[l]{
+			%$\lambda A. \frac{1}{c_2-c_1} \cdot \int_{c_1}^{c_2} \dirac{(v, v_i)}(A) dv$ \\
+			$\text{Uniform}(c_1, c_2) \gg\!= \lambda v.\dirac{(v : \floattype{B}{V}, v_i : \fin{|B| + 1})}$ \\
+			where $v_i$ is unique number s.t. $v \in \intervals{B}_{v_i}$} \\
+			%
+			& $e_1 = v_1 > v_2 = e_2$ &
+		    $\sem{\diverge : \tau, \discretize{\uniform(v_1 : \tau_1,v_2 : \tau_2)} : \discretize{\tau}}$  \\
+			%
+			& $e_1=c_1$, $e_2$ no val.\ & \makecell[l]{$\sem{e_2:\tau_2, \discretize{e_2} : \discretize{\tau_2}}$ \\ $\gg\!= \lambda (g,g'). \dirac{(\uniform(v_1:\tau_1, g:\tau_2 ) : \tau, \dc(\discretize{v_1}:\discretize{\tau_1}, g': \discretize{\tau_2} ) : \discretize{\tau})}$} \\
+			%
+			& $e_1$ no val.\ & \makecell[l]{$\sem{e_1:\tau_1, \discretize{e_1} : \discretize{\tau_1}}$ \\ $\gg\!= \lambda (g,g'). \dirac{(\uniform(g:\tau_1, e_2:\tau_2) : \tau, \dc({g'}:\discretize{\tau_1}, \discretize{e_2} : \discretize{\tau_2} ) : \discretize{\tau})}$} \\
 %			 bla
 			\bottomrule
 			\bottomrule
@@ -89,6 +127,161 @@
 	\end{adjustbox}
 	\end{center}%=
 	%
-	\caption{Small-step coupling semantics. Notice that $\discretize{e} : \discretize{\tau}$ is uniquiely determined by $e \boldsymbol{:} \boldsymbol{\tau}$ so that it suffices to indicate the latter in the left-hand column.}
-	\label{tab:coupling_smallstep}%
+	\caption{Small-step coupling semantics. Notice that $\discretize{e} : \discretize{\tau}$ is uniquiely determined by $e \boldsymbol{:} \boldsymbol{\tau}$ so that it suffices to indicate the latter in the left-hand column. Here, every function of the form $f(g,g') = \lambda (g,g').\dirac{\ldots}$ is extended to $f_{\bot}$ in the sense of \Cref{def:bot-extension}.}
+	\label{tab:coupling_smallstep_1}%
 \end{table}%
+
+\begin{table}[t]
+	\begin{center}
+		\begin{adjustbox}{width=\textwidth}
+		\begin{tabular}{l l l l l}
+			\toprule
+			\toprule
+			$\mathbf{e \boldsymbol{:} \boldsymbol{\tau}}$ & \textbf{constraints}  & $\boldsymbol{\sem{e : \tau, \discretize{e} : \discretize{\tau}}}$   \\
+			\hline
+			%
+			% --- logical and ---
+			\multirow{4}{*}{\makecell{$e_1 : \tau_1 \logand e_2 : \tau_2 : \bool$ \\
+			$\tau_1 = \bool, \tau_2 = \bool$}}
+			& $e_1 = b_1 = \true,\, e_2 = b_2 = \true$ & $\dirac{(\true : \bool, \true : \bool)}$ \\
+			& $e_1 = b_1,\, e_2 = b_2$ & $\dirac{(\false : \bool, \false : \bool)}$ \\
+			& $e_1 = b_1,\, e_2 \neq b_2$ &
+			\makecell[l]{$\sem{ e_2 : \tau_2, \discretize{e_2 : \tau_2} : \discretize{\tau_2}}$ \\
+			$\gg\!= \lambda (g,g'). \dirac{( b_1 : \tau_1 \logand g: \bool,\; b_1 : \discretize{\tau_1} \logand g' : \discretize{\bool})}$} \\
+			& o.w.\ &
+			\makecell[l]{$\sem{ e_1 : \tau_1, \discretize{e_1 : \tau_1} : \discretize{\tau_1}}$ \\
+			$\gg\!= \lambda (g,g'). \dirac{( g\logand e_2 : \tau_2 : \bool,\; g' \logand \discretize{e_2 : \tau_2} : \discretize{\tau_2} : \discretize{\bool})}$} \\
+			%
+			\midrule
+			%
+			% --- logical or ---
+			\multirow{4}{*}{\makecell{$e_1 : \tau_1 \logor e_2 : \tau_2 : \bool$ \\
+			$\tau_1 = \bool, \tau_2 = \bool$}}
+			& $e_1 = b_1 = \false,\, e_2 = b_2 = \false$ & $\dirac{(\false : \bool, \false : \bool)}$ \\
+			& $e_1 = b_1,\, e_2 = b_2$ & $\dirac{(\true : \bool, \true : \bool)}$ \\
+			& $e_1 = b_1,\, e_2 \neq b_2$ &
+			\makecell[l]{$\sem{ e_2 : \tau_2, \discretize{e_2 : \tau_2} : \discretize{\tau_2}}$ \\
+			$\gg\!= \lambda (g,g'). \dirac{( b_1 : \tau_1 \logor g: \bool,\; b_1 : \discretize{\tau_1} \logor g' : \discretize{\bool})}$} \\
+			& o.w.\ &
+			\makecell[l]{$\sem{ e_1 : \tau_1, \discretize{e_1 : \tau_1} : \discretize{\tau_1}}$ \\
+			$\gg\!= \lambda (g,g'). \dirac{( g\logor e_2 : \tau_2 : \bool,\; g' \logor \discretize{e_2 : \tau_2} : \discretize{\tau_2} : \discretize{\bool})}$} \\
+			%
+			\midrule
+			%
+			% --- logical not ---
+			\multirow{3}{*}{\makecell{$\lognot\; e : \tau : \bool$ \\
+			$\tau = \bool$}}
+			& $e = \true$ & $\dirac{(\false : \bool, \false : \bool)}$ \\
+			& $e = \false$ & $\dirac{(\true : \bool, \true : \bool)}$ \\
+			& o.w.\ &
+			\makecell[l]{$\sem{ e : \tau, \discretize{e : \tau} : \discretize{\tau}}$ \\
+			$\gg\!= \lambda (g,g'). \dirac{(\lognot\; g: \bool,\; \lognot\; g' : \discretize{\bool})}$} \\
+			%
+			\midrule
+			%
+			% --- pairs ---
+			\multirow{3}{*}{\makecell{$(e_1 : \tau_1, e_2 : \tau_2) : \tau_1 * \tau_2$}}
+			& $e_1 = v_1,\, e_2 = v_2$ &
+			$\dirac{((v_1,v_2) : \tau_1 * \tau_2,\; (\discretize{v_1}:\discretize{\tau_1}, \discretize{v_2}:\discretize{\tau_2}) : \discretize{\tau_1} * \discretize{\tau_2})}$ \\
+			& $e_1 = v_1,\, e_2 \neq v_2$ &
+			\makecell[l]{$\sem{ e_2 : \tau_2, \discretize{e_2 : \tau_2} : \discretize{\tau_2} }$ \\
+			$\gg\!= \lambda (g,g'). \dirac{( (v_1 : \tau_1, g: \tau_2) : \tau_1 * \tau_2,\; (\discretize{v_1}:\discretize{\tau_1}, g' : \discretize{\tau_2}) : \discretize{\tau_1} * \discretize{\tau_2})}$} \\
+			& o.w.\ &
+			\makecell[l]{$\sem{ e_1 : \tau_1, \discretize{e_1 : \tau_1} : \discretize{\tau_1}}$ \\
+			$\gg\!= \lambda (g,g'). \dirac{( (g, e_2 : \tau_2) : \tau_1 * \tau_2,\; (g', \discretize{e_2 : \tau_2}) : \discretize{\tau_1} * \discretize{\tau_2})}$} \\
+			%
+			\midrule
+			%
+			% --- fst ---
+			\multirow{2}{*}{\makecell{$\fstkw\; (e : \tau_1 * \tau_2) : \tau_1$}}
+			& $e = (v_1, v_2)$ & $\dirac{(v_1 : \tau_1,\; \discretize{v_1:\tau_1} : \discretize{\tau_1})}$ \\
+			& o.w.\ &
+			\makecell[l]{$\sem{ e : \tau_1 * \tau_2, \discretize{e} : \discretize{\tau_1 * \tau_2}}$ \\
+			$\gg\!= \lambda (g,g'). \dirac{(\fstkw\; (g: \tau_1 * \tau_2) : \tau_1,\; \fstkw\; (g' : \discretize{\tau_1 * \tau_2}) : \discretize{\tau_1})}$} \\
+			%
+			\midrule
+			%
+			% --- snd ---
+			\multirow{2}{*}{\makecell{$\sndkw\; (e : \tau_1 * \tau_2) : \tau_2$}}
+			& $e = (v_1, v_2)$ & $\dirac{(v_2 : \tau_2,\; \discretize{v_2:\tau_2} : \discretize{\tau_2})}$ \\
+			& o.w.\ &
+			\makecell[l]{$\sem{ e : \tau_1 * \tau_2, \discretize{e} : \discretize{\tau_1 * \tau_2}}$ \\
+			$\gg\!= \lambda (g,g'). \dirac{(\sndkw\; (g: \tau_1 * \tau_2) : \tau_2,\; \sndkw\; (g' : \discretize{\tau_1 * \tau_2}) : \discretize{\tau_2})}$} \\
+			%
+			\midrule
+			%
+			% --- function value ---
+			\multirow{1}{*}{\makecell{$\funkw \; x \to e : \tau_1 \to \tau_2$}}
+			& & $\dirac{(\funkw \; x \to e : \tau_1 \to \tau_2,\; \funkw \; x \to \discretize{e} : \discretize{\tau_1} \to \discretize{\tau_2})}$ \\
+			%
+			\midrule
+			%
+			% --- fix value ---
+			\multirow{1}{*}{\makecell{$\fixkw \; g\; x := e : \tau_1 \to \tau_2$}}
+			& & $\dirac{(\fixkw \; g\; x := e : \tau_1 \to \tau_2,\; \fixkw \; g\; x := \discretize{e} : \discretize{\tau_1} \to \discretize{\tau_2})}$ \\
+			%
+			\midrule
+			%
+			% --- application ---
+			\multirow{3}{*}{\makecell{$(e_1 : \tau_1 \to \tau_2\;\; e_2 : \tau_1) : \tau_2$}}
+			& \makecell[l]{$e_1 = \funkw\; x \to e \text{ or } \fixkw\; f\; x := e,$\\ $e_2 = v_2$} &
+			\makecell[l]{$\dirac{(e[v_2/x] : \tau_2,\; \discretize{e}[\discretize{v_2} / x] : \discretize{\tau_2})}$} \\
+			& \makecell[l]{$e_1 = \funkw\; x \to e \text{ or } \fixkw\; f\; x := e,$\\ $e_2 \neq v_2$} &
+			\makecell[l]{$\sem{ e_2 : \tau_1, \discretize{e_2 : \tau_1} : \discretize{\tau_1}}$ \\
+			$\monbind \lambda (g,g'). \dirac{( e_1 : \tau_1 \to \tau_2\;\; g : \tau_1 : \tau_2,\; \discretize{e_1} : \discretize{\tau_1} \to \discretize{\tau_2}\;\; g' : \discretize{\tau_1} : \discretize{\tau_2})}$} \\
+			& o.w.\ &
+			\makecell[l]{$\sem{ e_1 : \tau_1 \to \tau_2, \discretize{e_1} : \discretize{\tau_1 \to \tau_2}}$ \\
+			$\monbind \lambda (g,g'). \dirac{( g\; e_2 : \tau_1 : \tau_2,\; g'\; \discretize{e_2} : \discretize{\tau_1} : \discretize{\tau_2})}$} \\
+			%
+			\midrule
+			%
+			% --- nil ---
+			\multirow{1}{*}{\makecell{$\text{nil} : \listty{\tau}$}}
+			& & $\dirac{(\text{nil} : \listty{\tau},\; \text{nil} : \listty{\discretize{\tau}})}$ \\
+			%
+			\midrule
+			%
+			% --- cons ---
+			\multirow{3}{*}{\makecell{$(e_1 : \tau :: e_2 : \listty{\tau}) : \listty{\tau}$}}
+			& $e_1 = v_1,\, e_2 = v_2$ &
+			$\dirac{(v_1::v_2 : \listty{\tau},\; \discretize{v_1}::\discretize{v_2} : \listty{\discretize{\tau}})}$ \\
+			& $e_1 = v_1,\, e_2 \neq v_2$ &
+			\makecell[l]{$\sem{ e_2 : \listty{\tau}, \discretize{e_2} : \listty{\discretize{\tau}}}$ \\
+			$\monbind \lambda (g,g'). \dirac{( v_1::g: \listty{\tau},\; \discretize{v_1}::g' : \listty{\discretize{\tau}})}$} \\
+			& o.w.\ &
+			\makecell[l]{$\sem{ e_1 : \tau, \discretize{e_1} : \discretize{\tau}}$ \\
+			$\monbind \lambda (g,g'). \dirac{( g::e_2 : \listty{\tau} : \listty{\tau},\; g'::\discretize{e_2} : \listty{\discretize{\tau}} : \listty{\discretize{\tau}})}$} \\
+			%
+			\midrule
+			%
+			% --- match ---
+			\multirow{3}{*}{\makecell{$(\matchkw \; e : \listty{\tau_1}\; \withkw$ \\
+			$\matchcase \text{nil} \rightarrow e_1 : \tau_2$ \\
+			$\matchcase h :: t \rightarrow e_2 : \tau_2$ \\
+			${\textnormal{\ttfamily\bfseries end}}) : \tau_2$}}
+			& $e = \text{nil}$ &
+			$\dirac{(e_1 : \tau_2,\; \discretize{e_1 : \tau_2} : \discretize{\tau_2})}$ \\
+			& $e = v_h :: v_t$ &
+			$\dirac{(e_2[v_h/h, v_t/t] : \tau_2,\; \discretize{e_2 : \tau_2}[\discretize{v_h}/h, \discretize{v_t}/t] : \discretize{\tau_2})}$ \\
+			& o.w.\ &
+			\makecell[l]{%
+			$\sem{ e : \listty{\tau_1}, \discretize{e} : \listty{\discretize{\tau_1}} }$ \\
+			$\monbind \lambda (g,g').\dirac{\begin{array}{l}
+			(\matchkw\; g\; \withkw\;
+				\matchcase \text{nil} \rightarrow e_1 : \tau_2\;
+				\matchcase h::t \rightarrow e_2 : \tau_2\;
+			{\textnormal{\ttfamily\bfseries end}} : \tau_2,\\
+			\matchkw\; g' \; \withkw\;
+				\matchcase \text{nil} \rightarrow \discretize{e_1 : \tau_2} : \discretize{\tau_2}\;
+				\matchcase h::t \rightarrow \discretize{e_2 : \tau_2} : \discretize{\tau_2}\;
+			{\textnormal{\ttfamily\bfseries end}} : \discretize{\tau_2})
+			\end{array}}$} \\
+			%
+			\bottomrule
+			\bottomrule
+		\end{tabular}
+	\end{adjustbox}
+	\end{center}
+	\caption{Small-step coupling semantics (continued). Here, every function of the form $f(g,g') = \lambda (g,g').\dirac{\ldots}$ is extended to $f_{\bot}$ in the sense of \Cref{def:bot-extension}.}
+	\label{tab:coupling_smallstep_2}
+\end{table}

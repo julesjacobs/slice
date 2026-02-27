@@ -6,10 +6,20 @@
 		\begin{tabular}{l l l l l}
 			\toprule
 			\toprule
-						$\mathbf{e \boldsymbol{:} \boldsymbol{\tau}}$ & \textbf{constraints}  & $\boldsymbol{\sem{e : \tau}}$   \\
-			\hline 
+			$\mathbf{e \boldsymbol{:} \boldsymbol{\tau}}$ & \textbf{constraints}  & $\boldsymbol{\sem{e : \tau}}$   \\
+			\hline
+			%
+			% --- divergence ---
+			\multirow{1}{*}{$\diverge : \tau$} 
+			
+			& & $\lambda A.0$  \\
+			%
+			\midrule
 			% 
-		     $v : \tau$ & & $\dirac{v:\tau}$ \\[0.5ex]
+			% --- values ---
+		    \multirow{1}{*}{$v : \tau$} 
+			
+			& & $\dirac{v:\tau}$ \\
 			\midrule
 			%
 			%
@@ -17,112 +27,81 @@
 %			%
 %			\midrule
 			%
-			\multirow{2}{*}{$\letkw \; x = e_1 : \tau_1 \; \inkw \; e_2 : \tau_2 : \tau_2$} & $e_1=v$ & $\dirac{e_2[v/x] : \tau_2}$ \\
-			& $e_1$ no val.\ & $\sem{ e_1 : \tau_1 } \gg\!=  \lambda f. \dirac{ \letkw \; x = f \; \inkw \; e_2 : \tau_2 : \tau_2} $ \\
+			% --- let ---
+			\multirow{2}{*}{$\letkw \; x = e_1 : \tau_1 \; \inkw \; e_2 : \tau_2 : \tau_2$} 
+			
+			& $e_1=v$ & $\dirac{e_2[v/x] : \tau_2}$ \\
+			& $e_1$ no val.\ & $\sem{ e_1 : \tau_1 } \gg\!=  \lambda g. \dirac{ \letkw \; x = g \; \inkw \; e_2 : \tau_2 : \tau_2} $ \\
 			%
 			\midrule 
 			%
-			\multirow{3}{*}{$\ifkw \; e_1 : \bool \; \thenkw \; e_2 : \tau \; \elsekw \; e_3 : \tau : \tau$} & $e_1=\true$ & $\dirac{\expr_2 : \tau} $ \\
-			 & $e_1=\false$ & $\dirac{\expr_3 : \tau} $ \\
-			 & o.w.\ & $\sem{ e_1 : \bool} \gg\!= \lambda f. \dirac{ \ifkw \; f \; \thenkw \; e_2 : \tau \; \elsekw \; e_3 : \tau : \tau} $ \\
-			 %
-			 \midrule 
-			 %
-			 \multirow{3}{*}{$\observekw\; (e : \bool)  : \text{unit}$} & $e = \true$ & $\dirac{\text{unit}}$ \\
-			 & $e=\false$ & $\dirac{\bot}$ \\
-			 & o.w.\ & $\sem{e: \bool} \gg\!= \lambda f. \dirac{\observekw\; (f : \bool)  : \text{unit}}$ \\
-			 %
-			 \midrule
-			 %
-			 \multirow{4}{*}{\makecell{$e_1 : \tau_1 < e_2 : \tau_2 : \bool$ \\
-			 for $\tau_1 = \floattype{B}{V_1}, \tau_2 = \floattype{B}{V_2} $ \\
-			 or \\
-			 $\tau_1 = \tau_2 = \fin{n} $ }} & $e_1 = v_1, e_2 = v_2, v_1 < v_2 $ & $\dirac{\true : \bool}$ \\
-			 & $e_1 = v_1, e_2 = v_2, v_1 \geq v_2$ & $\dirac{\false : \bool}$  \\
-			 &$e_1 = v_1, e_2 \neq v_2$ & $\sem{ e_2 : \tau_2 } \gg\!= \lambda f. \dirac{ v_1 : \tau_1 < f : \bool}$ \\
-			 & o.w.\ & $\sem{ e_1 : \tau_1 } \gg\!= \lambda f. \dirac{ f < e_2 : \tau_2 : \bool}$  \\
-			 %
-			 \midrule
-			 %
-			\multirow{3}{*}{$\uniform(e_1 : \tau_1, e_2 : \tau_2) : \floattype{B}{V}$} & $e_1 = v_1, e_2 = v_2, v_1 \leq v_2$ & $\text{Uniform}(v_1, v_2) \gg\!= \lambda v. \dirac{(v : \floattype{B}{V})}$ \\
-			 % 
-			  %& $e_1 = v_1, e_2 = v_2, v_1 > v_2$ & $\dirac{\bot}$ \\
-			 %
-			 & $e_1 = v_1, e_2 \neq v_2$ & $\sem{ e_2 : \tau_2 } \gg\!= \lambda f. \dirac{ \uniform(v_1 : \tau_1, f) : \tau }$ \\
-			 %
-			 & o.w.\ & $\sem{ e_1 : \tau_1 } \gg\!= \lambda f. \dirac{ \uniform(f, e_2 : \tau_2) : \tau } $ \\
-			 %
-			 \midrule
-			 %
-			  \multirow{1}{*}{$\discrete(v_0, \ldots, v_{n-1}) : \fin{n}$} & $ \sum_i v_i = 1$ & $\text{Discrete}{(v_0, \ldots, v_{n-1})}$  \\
-			  %
-			  %& o.w.\ &$ \dirac{\bot}$ \\
-			  %
-			  \midrule 
-			  %
-			  \multirow{4}{*}{\makecell{$\dc(e_1 : \tau_1, e_2 : \tau_2) : \fin{|B| + 1}$ \\
-			  $\tau = \fin{|B| + 1}$, \\
-			  $\tau_1 = \fin{|B_1| + 1}, \tau_2 = \fin{|B_2| + 1}$,\\
-			  $V_1 = \{v_1,\ldots,v_n\}, V_2 = \{w_1,\ldots,w_m\}$}} & \makecell[l]{$e_1 = \discretize{v_i : \floattype{B_1}{V_1}}$,\\ $e_2 = \discretize{w_j : \floattype{B_2}{V_2}}$} & $\sem{\discretize{\uniform(v_i, w_j) : \floattype{B}{\top}} : \tau}$ \\
-			  %
-			  & $ e_1 = v', e_2 \neq w'$ & $\sem{ e_2 : \tau_2 } \gg\!= \lambda f. \dirac{ \dc(v' : \tau_1, f) }$ \\
-			  %
-			  & o.w.\ & $\sem{ e_1 : \tau_1 } \gg\!= \lambda f. \dirac{ \dc(f, e_2 : \tau_2) }$ \\
-%			\hline 
-			% 	\midrule
-			% 	%
-			% 	\multirow{4}{*}{\makecell{$e_1 : \tau_1 \logand e_2 : \tau_2 : \bool$ \\
-			% 	$\tau_1 = \bool, \tau_2 = \bool$}} & $e_1 = b_1 = \true, e_2 = b_2 = \true $ & $\dirac{\true : \bool}$ \\
-			%  & $e_1 = b_1, e_2 = b_2 $ & $\dirac{\false : \bool}$  \\
-			%  &$e_1 = b_1, e_2 \neq b_2$ & $\sem{ e_2 : \tau_2 } \gg\!= \lambda f. \dirac{ b_1 : \tau_1 \logand f : \bool}$ \\
-			%  & o.w.\ & $\sem{ e_1 : \tau_1 } \gg\!= \lambda f. \dirac{ f \logand e_2 : \tau_2 : \bool}$  \\
-			%  %
-			%  \midrule
-			% 	%
-			% 	\multirow{4}{*}{\makecell{$e_1 : \tau_1 \logor e_2 : \tau_2 : \bool$ \\
-			% 	$\tau_1 = \bool, \tau_2 = \bool$}} & $e_1 = b_1 = \false, e_2 = b_2 = \false $ & $\dirac{\false : \bool}$ \\
-			%  & $e_1 = b_1, e_2 = b_2 $ & $\dirac{\true : \bool}$  \\
-			%  &$e_1 = b_1, e_2 \neq b_2$ & $\sem{ e_2 : \tau_2 } \gg\!= \lambda f. \dirac{ b_1 : \tau_1 \logor f : \bool}$ \\
-			%  & o.w.\ & $\sem{ e_1 : \tau_1 } \gg\!= \lambda f. \dirac{ f \logor e_2 : \tau_2 : \bool}$  \\
-			%  %
-			%  \midrule
-			% 	%
-			% 	%
-			% 	\multirow{4}{*}{\makecell{$\text{not}\; e : \tau : \bool$ \\
-			% 	$\tau = \bool$}} & $e = \true $ & $\dirac{\false : \bool}$ \\
-			% 	& $e = \false $ & $\dirac{\true : \bool}$  \\
-			% 	& o.w.\ & $\sem{ e : \tau } \gg\!= \lambda f. \dirac{ f : \bool}$  \\
-			% 	%
-			% 	\midrule
-			% 	%
-			% 	\multirow{4}{*}{\makecell{$(e_1 : \tau_1, e_2 : \tau_2) : \tau_1 * \tau_2$}} & $e_1 = v_1, e_2 = v_2 $ & $\dirac{(v_1,v_2) : \tau_1 * \tau_2}$ \\
-			%  &$e_1 = v_1, e_2 \neq v_2$ & $\sem{ e_2 : \tau_2 } \gg\!= \lambda f. \dirac{ (v_1 : \tau_1, f : \tau_1 * \tau_2)}$ \\
-			%  & o.w.\ & $\sem{ e_1 : \tau_1 } \gg\!= \lambda f. \dirac{ (f, e_2 : \tau_2 : \tau_1 * \tau_2)}$  \\
-			%  %
-			%  \midrule
-			%  %
-			%  \multirow{1}{*}{\makecell{$\fstkw\; (e : \tau_1 * \tau_2) : \tau_1$ }} & $ $ & $\dirac{e_1: \tau_1}$ \\ 
-			%  %
-			%  \midrule
-			% 	%
-			% 	\multirow{1}{*}{\makecell{$\sndkw\; (e : \tau_1 * \tau_2) : \tau_1$ }} & $ $ & $\dirac{e_2: \tau_2}$ \\
-			%  %
-			%  \midrule
-			% %
-			% 	\multirow{2}{*}{\makecell{$(\funkw \; x \to e : \tau_1 \to \tau_2) \; e_2$ }} & $e_2 = v$ & $\dirac{e_2[v/x] : \tau_2}$ \\
-			% 	& $e_2 $ no val. & $\sem{e_2 : \tau_1} \monbind \lambda g.\dirac{(\funkw \; x \to e : \tau_1 \to \tau_2) \; g}$ \\
-			% 	%
-			% 	\midrule
-			% 	%
-			% 	\multirow{2}{*}{\makecell{$(\fixkw \; f \; x := e : \tau_1 \to \tau_2) \; e_2$ }} & $e_2 = v$ & $\dirac{e_2[v/x] : \tau_2}$ \\
-			% 	& $e_2 $ no val. & $\sem{e_2 : \tau_1} \monbind \lambda g.\dirac{(\fixkw \; f \; x := e : \tau_1 \to \tau_2) \; g}$ \\
-			% 	%
-			% 	\midrule
-			% 	%
-			% \multirow{2}{*}{\makecell{$( \matchkw \; e \; \withkw \matchcase \text{nil} \rightarrow e_{\text{nil}} \matchcase e_1 :: e_2 \rightarrow e_{\text{cons}}\; {\textnormal{\ttfamily\bfseries end}})$ }} & $e = \text{nil}$ & $\dirac{e_1 : \tau_1}$ \\
-			%  & $e = v_1 :: v_2 $ & $\dirac{e_2[v_1/h, v_2/t]}$  \\
-			%  %
-			%  \midrule
+			% --- if else ---
+			\multirow{3}{*}{$\ifkw \; e_1 : \bool \; \thenkw \; e_2 : \tau \; \elsekw \; e_3 : \tau : \tau$} 
+			
+			& $e_1=\true$ & $\dirac{\expr_2 : \tau} $ \\
+			& $e_1=\false$ & $\dirac{\expr_3 : \tau} $ \\
+			& o.w.\ & $\sem{ e_1 : \bool} \gg\!= \lambda g. \dirac{ \ifkw \; g \; \thenkw \; e_2 : \tau \; \elsekw \; e_3 : \tau : \tau} $ \\
+			%
+			\midrule 
+			%
+			% --- observe ---
+			\multirow{3}{*}{$\observekw\; (e : \bool)  : \text{unit}$} 
+			
+			& $e = \true$ & $\dirac{\text{unit}}$ \\
+			& $e=\false$ & $\dirac{\bot}$ \\
+			& o.w.\ & $\sem{e: \bool} \gg\!= \lambda g. \dirac{\observekw\; (g : \bool)  : \text{unit}}$ \\
+			%
+			\midrule
+			%
+			% --- less than ---
+			\multirow{4}{*}{\makecell{$e_1 : \tau_1 < e_2 : \tau_2 : \bool$ \\
+			for $\tau_1 = \floattype{B}{V_1}, \tau_2 = \floattype{B}{V_2} $ \\
+			or \\
+			$\tau_1 = \tau_2 = \fin{n} $ }} 
+			 
+			& $e_1 = v_1, e_2 = v_2, v_1 < v_2 $ & $\dirac{\true : \bool}$ \\
+			& $e_1 = v_1, e_2 = v_2, v_1 \geq v_2$ & $\dirac{\false : \bool}$  \\
+			&$e_1 = v_1, e_2 \neq v_2$ & $\sem{ e_2 : \tau_2 } \gg\!= \lambda g. \dirac{ v_1 : \tau_1 < g : \bool}$ \\
+			& o.w.\ & $\sem{ e_1 : \tau_1 } \gg\!= \lambda g. \dirac{ g < e_2 : \tau_2 : \bool}$  \\
+			%
+			\midrule
+			%
+			% --- uniform distribution ---
+			\multirow{3}{*}{$\uniform(e_1 : \tau_1, e_2 : \tau_2) : \floattype{B}{V}$} 
+			
+			& $e_1 = v_1, e_2 = v_2, v_1 \leq v_2$ & $\text{Uniform}(v_1, v_2) \gg\!= \lambda v. \dirac{(v : \floattype{B}{V})}$ \\
+			% 
+			& $e_1 = v_1, e_2 = v_2, v_1 > v_2$ & $\sem{\diverge : \tau}$ \\
+			%
+			& $e_1 = v_1, e_2 \neq v_2$ & $\sem{ e_2 : \tau_2 } \gg\!= \lambda g. \dirac{ \uniform(v_1 : \tau_1, g) : \tau }$ \\
+			%
+			& o.w.\ & $\sem{ e_1 : \tau_1 } \gg\!= \lambda g. \dirac{ \uniform(g, e_2 : \tau_2) : \tau } $ \\
+			%
+			\midrule
+			%
+			% --- discrete distribution ---
+			\multirow{1}{*}{$\discrete(v_0, \ldots, v_{n-1}) : \fin{n}$} 
+			
+			& $ \sum_i v_i = 1$ & $\text{Discrete}{(v_0, \ldots, v_{n-1})}$  \\
+			%
+			%& o.w.\ &$ \dirac{\bot}$ \\
+			%
+			\midrule 
+			%
+			% --- uniform DC ---
+			\multirow{4}{*}{\makecell{$\dc(e_1 : \tau_1, e_2 : \tau_2) : \fin{|B| + 1}$ \\
+			$\tau = \fin{|B| + 1}$, \\
+			$\tau_1 = \fin{|B_1| + 1}, \tau_2 = \fin{|B_2| + 1}$,\\
+			$V_1 = \{v_1,\ldots,v_n\}, V_2 = \{w_1,\ldots,w_m\}$}} 
+			
+			& \makecell[l]{$e_1 = \discretize{v_i : \floattype{B_1}{V_1}}$,\\ $e_2 = \discretize{w_j : \floattype{B_2}{V_2}}$} & $\sem{\discretize{\uniform(v_i, w_j) : \floattype{B}{\top}} : \tau}$ \\
+			%
+			& $ e_1 = v', e_2 \neq w'$ & $\sem{ e_2 : \tau_2 } \gg\!= \lambda g. \dirac{ \dc(v' : \tau_1, g) }$ \\
+			%
+			& o.w.\ & $\sem{ e_1 : \tau_1 } \gg\!= \lambda g. \dirac{ \dc(g, e_2 : \tau_2) }$ \\
+			%
+			& & \\
+			%
 %			 bla
 			\bottomrule
 			\bottomrule
@@ -131,6 +110,136 @@
 	\end{adjustbox}
 	\end{center}%=
 	%
-	\caption{Small-step operational semantics. In the last case, the existence of suitable $v_i$ and $w_j$ is guaranteed since $\distinguishes{B_i}{V_i}$ and $e_i\in V_i$ for $i \in \{1,2\}$.}
-	\label{tab:smallstep}%
+	\caption{Small-step operational semantics. In the last case, the existence of suitable $v_i$ and $w_j$ is guaranteed since $\distinguishes{B_i}{V_i}$ and $e_i\in V_i$ for $i \in \{1,2\}$. Here, every function of the form $f(g) = \lambda g. \dirac{\ldots}$ is extended to $f_{\bot}$ in the sense of ~\Cref{def:bot-extension}.}
+	\label{tab:smallstep-1}%
+\end{table}%
+
+\begin{table}[t]
+	\allowdisplaybreaks
+	\begin{center}
+		\begin{adjustbox}{width=\textwidth}
+		\begin{tabular}{l l l l l}
+			\toprule
+			\toprule
+			$\mathbf{e \boldsymbol{:} \boldsymbol{\tau}}$ & \textbf{constraints}  & $\boldsymbol{\sem{e : \tau}}$   \\
+			\hline 
+			% --- logical and ---
+			\multirow{4}{*}{\makecell{$e_1 : \tau_1 \logand e_2 : \tau_2 : \bool$ \\
+			$\tau_1 = \bool, \tau_2 = \bool$}} 
+			
+			& $e_1 = b_1 = \true, e_2 = b_2 = \true $ & $\dirac{\true : \bool}$ \\
+			& $e_1 = b_1, e_2 = b_2 $ & $\dirac{\false : \bool}$  \\
+			&$e_1 = b_1, e_2 \neq b_2$ & $\sem{ e_2 : \tau_2 } \gg\!= \lambda g. \dirac{ b_1 : \tau_1 \logand g : \bool}$ \\
+			& o.w.\ & $\sem{ e_1 : \tau_1 } \gg\!= \lambda g. \dirac{ g \logand e_2 : \tau_2 : \bool}$  \\
+			%
+			\midrule
+			%
+			% --- logical or ---
+			\multirow{4}{*}{\makecell{$e_1 : \tau_1 \logor e_2 : \tau_2 : \bool$ \\
+			$\tau_1 = \bool, \tau_2 = \bool$}} 
+			
+			& $e_1 = b_1 = \false, e_2 = b_2 = \false $ & $\dirac{\false : \bool}$ \\
+			& $e_1 = b_1, e_2 = b_2 $ & $\dirac{\true : \bool}$  \\
+			&$e_1 = b_1, e_2 \neq b_2$ & $\sem{ e_2 : \tau_2 } \gg\!= \lambda g. \dirac{ b_1 : \tau_1 \logor g : \bool}$ \\
+			& o.w.\ & $\sem{ e_1 : \tau_1 } \gg\!= \lambda g. \dirac{ g \logor e_2 : \tau_2 : \bool}$  \\
+			%
+			\midrule
+			%
+			% --- logical not ---
+			\multirow{3}{*}{\makecell{$\lognot\; e : \tau : \bool$ \\
+			$\tau = \bool$}} 
+			
+			& $e = \true $ & $\dirac{\false : \bool}$ \\
+			& $e = \false $ & $\dirac{\true : \bool}$  \\
+			& o.w.\ & $\sem{ e : \tau } \gg\!= \lambda g. \dirac{ \lognot\; g : \bool}$  \\
+			%
+			\midrule
+			% 
+			% --- pairs ---
+			\multirow{3}{*}{\makecell{$(e_1 : \tau_1, e_2 : \tau_2) : \tau_1 * \tau_2$}} 
+			
+			& $e_1 = v_1, e_2 = v_2 $ & $\dirac{(v_1,v_2) : \tau_1 * \tau_2}$ \\
+			&$e_1 = v_1, e_2 \neq v_2$ & $\sem{ e_2 : \tau_2 } \gg\!= \lambda g. \dirac{ (v_1 : \tau_1, f) : \tau_1 * \tau_2}$ \\
+			& o.w.\ & $\sem{ e_1 : \tau_1 } \gg\!= \lambda g. \dirac{ (f, e_2 : \tau_2) : \tau_1 * \tau_2}$  \\
+			%
+			\midrule
+			%
+			% --- fst pair ---
+			\multirow{2}{*}{\makecell{$\fstkw\; (e : \tau_1 * \tau_2) : \tau_1$ }} 
+			
+			& $e = (v_1, v_2)$ & $\dirac{v_1: \tau_1}$ \\ 
+			& o.w. & $\sem{e : \tau_1 * \tau_2} \monbind \lambda g. \dirac{\fstkw\; e : \tau_1}$ \\
+			%
+			\midrule
+			%
+			% --- snd pair ---
+			\multirow{2}{*}{\makecell{$\sndkw\; (e : \tau_1 * \tau_2) : \tau_2$ }} 
+			
+			& $e = (v_1, v_2)$ & $\dirac{v_2: \tau_2}$ \\ 
+			& o.w. & $\sem{e : \tau_1 * \tau_2} \monbind \lambda g. \dirac{\sndkw\; e : \tau_2}$ \\
+			%
+			\midrule
+			%
+			% --- function ---
+			\multirow{1}{*}{\makecell{$\funkw \; x \to e : \tau_1 \to \tau_2$ }} 
+			
+			& & $\dirac{\funkw \; x \to e : \tau_1 \to \tau_2}$ \\
+			%
+			\midrule
+			%
+			% --- fix ---
+			\multirow{1}{*}{\makecell{$\fixkw \; g \; x := e : \tau_1 
+			\to \tau_2$ }} 
+			
+			& & $\dirac{\fixkw \; g \; x := e : \tau_1 \to \tau_2}$ \\
+			%
+			\midrule
+			%
+			% --- application ---
+			\multirow{3}{*}{\makecell{$(e_1 : \tau_1 \to \tau_2 \; e_2 : \tau_1) : \tau_2$ }} 
+			
+			& $e_1 = \funkw\; x \to e \text{ or } \fixkw\; g \; x := e, e_2 = v_2$ & $\dirac{e[v_2/x] : \tau_2}$ \\
+			& $e_1 = \funkw\; x \to e \text{ or } \fixkw\; g \; x := e, e_2 \neq v_2$ & $\sem{e_2 : \tau_2} \monbind \lambda g. \dirac{e_1 : \tau_1 \to \tau_2 \; g : \tau_2}$ \\
+			& o.w. & $\sem{e_1 : \tau_1 \to \tau_2} \monbind \lambda g. \dirac{f\; e_2 : \tau_1 : \tau_2}$ \\
+			%
+			\midrule
+			%
+			% --- nil ---
+			\multirow{1}{*}{\makecell{$\text{nil} : \listty{\tau}$ }} 
+			
+			& & $\dirac{\text{nil} : \listty{\tau}}$ \\
+			%
+			\midrule
+			%
+			% --- cons ---
+			\multirow{2}{*}{\makecell{$(e_1 : \tau_1 :: e_2 : \listty{\tau}) : \listty{\tau}$ }} 
+			
+			& $e_1 = v_1, e_2 = v_2$ & $\dirac{v_1::v_2 : \listty{\tau}}$ \\
+			& $e_1 = v_1, e_2 \neq v_2$ & $\sem{e_2 : \listty{\tau}} \monbind \lambda g.\dirac{v_1 : \tau_1 ::g : \listty{\tau}}$ \\
+			& o.w. & $\sem{e_1 : \tau_1} \monbind \lambda g.\dirac{f::e_2 : \listty{\tau} : \listty{\tau}}$ \\
+			%
+			\midrule
+			%
+			% --- match ---
+			\multirow{3}{*}{\makecell{$( \matchkw \; e : \listty{\tau_1}\; \withkw$ \\ 
+			$\matchcase \text{nil} \rightarrow e_1 : \tau_2$ \\
+			$\matchcase h :: t \rightarrow e_2 : \tau_2$ \\
+			${\textnormal{\ttfamily\bfseries end}}) : \tau_2$ }} 
+			
+			& $e = \text{nil}$ & $\dirac{e_1 : \tau_2}$ \\
+			& $e = v_h :: v_t $ & $\dirac{e_2[v_h/h, v_t/t] : \tau_2}$  \\
+			& o.w. & $\sem{e : \listty{\tau_1}} \monbind \lambda g.\dirac{\matchkw \; g \; \withkw ... : \tau_2}$  \\
+
+			& & \\
+			%
+%			 bla
+			\bottomrule
+			\bottomrule
+		\end{tabular}
+		%
+	\end{adjustbox}
+	\end{center}%=
+	%
+	\caption{Small-step operational semantics (continued). Here, every function of the form $f(g) = \lambda g. \dirac{\ldots}$ is extended to $f_{\bot}$ in the sense of \Cref{def:bot-extension}.}
+	\label{tab:smallstep-2}%
 \end{table}%

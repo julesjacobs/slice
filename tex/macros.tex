@@ -29,6 +29,7 @@
 \newcommand{\fin}[1]{\textnormal{\ttfamily\bfseries fin}(#1)}
 \newcommand{\listty}[1]{\textnormal{\ttfamily\bfseries list}(#1)}
 \newcommand{\matchcase}{\boldsymbol{\mid}} % The | in the match e with ...
+\newcommand{\diverge}{\textnormal{\ttfamily\bfseries diverge}}
 
 \newcommand{\subst}[2]{[#1/#2]}
 % Meta variables
@@ -108,3 +109,22 @@
 
 % Holes for the expression skeleton
 \newcommand{\holes}{\text{holes}}
+
+% Decomposition function for expression skeletons
+\newcommand{\decompose}{\mathsf{dec}}
+
+% Colors 
+\colorlet{green}{green!70!black}
+\colorlet{gray}{gray!70!black}
+\colorlet{blue}{blue!50!black}
+\colorlet{red}{red!80!black}
+\colorlet{purple}{purple!80!black}
+\colorlet{orange}{orange}
+\colorlet{teal}{teal!80!black}
+\colorlet{olive}{olive!70!black}
+\colorlet{brown}{brown!90!black}
+\colorlet{violet}{violet!70!black}
+
+% Enumerate item
+\newcommand*\circled[1]{\tikz[baseline=(char.base)]{
+            \node[shape=circle,draw,inner sep=1.5pt] (char) {#1};}}
