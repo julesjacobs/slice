@@ -8,28 +8,28 @@
 
   % Axes for Gaussian
   \draw[->] (-5,0) -- (6,0);
-  \node[text=green!70!black] at (-4.8, -0.3) {$-\infty$};
-  \node[text=green!70!black] at (5.8, -0.3) {$+\infty$};
+  \node[text=green] at (-4.8, -0.3) {$-\infty$};
+  \node[text=green] at (5.8, -0.3) {$+\infty$};
 
   % Cut labels
-  \node[text=green!70!black] at (0.1, -0.5) {0.1};
-  \node[text=green!70!black] at (0.8, -0.5) {0.8};
-  \node[text=green!70!black] at (2.0, -0.5) {2.0};
+  \node[text=green] at (0.1, -0.5) {0.1};
+  \node[text=green] at (0.8, -0.5) {0.8};
+  \node[text=green] at (2.0, -0.5) {2.0};
 
   % Gaussian curve N(0,1)
   \draw[thick, domain=-4:6, smooth, variable=\x]
       plot ({\x},{2.2*exp(-(\x*\x)/2)});
 
   % Vertical dotted lines for cuts
-  \draw[dotted, thick, gray!70!black] (0.1,2.4) -- (0.1,0);
-  \draw[dotted, thick, gray!70!black] (0.8,2.4) -- (0.8,0);
-  \draw[dotted, thick, gray!70!black] (2.0,2.4) -- (2.0,0);
+  \draw[dotted, thick, gray] (0.1,2.4) -- (0.1,0);
+  \draw[dotted, thick, gray] (0.8,2.4) -- (0.8,0);
+  \draw[dotted, thick, gray] (2.0,2.4) -- (2.0,0);
 
   % Shaded continuous intervals 
-  \fill[blue,   opacity=0.45] (-4,0) -- plot[domain=-4:0.1] (\x,{2.2*exp(-(\x*\x)/2)}) -- (0.1,0) -- cycle;
-  \fill[red,    opacity=0.45] (0.1,0) -- plot[domain=0.1:0.8] (\x,{2.2*exp(-(\x*\x)/2)}) -- (0.8,0) -- cycle;
-  \fill[purple, opacity=0.45] (0.8,0) -- plot[domain=0.8:2.0] (\x,{2.2*exp(-(\x*\x)/2)}) -- (2.0,0) -- cycle;
-  \fill[olive, opacity=0.45] (2.0,0) -- plot[domain=2.0:6] (\x,{2.2*exp(-(\x*\x)/2)}) -- (6,0) -- cycle;
+  \fill[blue,   opacity=0.5] (-4,0) -- plot[domain=-4:0.1] (\x,{2.2*exp(-(\x*\x)/2)}) -- (0.1,0) -- cycle;
+  \fill[red,    opacity=0.5] (0.1,0) -- plot[domain=0.1:0.8] (\x,{2.2*exp(-(\x*\x)/2)}) -- (0.8,0) -- cycle;
+  \fill[purple, opacity=0.5] (0.8,0) -- plot[domain=0.8:2.0] (\x,{2.2*exp(-(\x*\x)/2)}) -- (2.0,0) -- cycle;
+  \fill[olive, opacity=0.5] (2.0,0) -- plot[domain=2.0:6] (\x,{2.2*exp(-(\x*\x)/2)}) -- (6,0) -- cycle;
 
   % Discrete distribution (equal-width bars)
   \def\shift{0.7}
@@ -50,16 +50,16 @@
 
   % Bars
   \draw (\xA,\hA) rectangle ++(\barW,\barY-\hA);
-  \fill[blue, opacity=0.45] (\xA,\hA) rectangle ++(\barW,\barY-\hA);
+  \fill[blue, opacity=0.5] (\xA,\hA) rectangle ++(\barW,\barY-\hA);
 
   \draw (\xB,\hB) rectangle ++(\barW,\barY-\hB);
-  \fill[red, opacity=0.45] (\xB,\hB) rectangle ++(\barW,\barY-\hB);
+  \fill[red, opacity=0.5] (\xB,\hB) rectangle ++(\barW,\barY-\hB);
 
   \draw (\xC,\hC) rectangle ++(\barW,\barY-\hC);
-  \fill[purple, opacity=0.45] (\xC,\hC) rectangle ++(\barW,\barY-\hC);
+  \fill[purple, opacity=0.5] (\xC,\hC) rectangle ++(\barW,\barY-\hC);
 
   \draw (\xD,\hD) rectangle ++(\barW,\barY-\hD);
-  \fill[olive, opacity=0.45] (\xD,\hD) rectangle ++(\barW,\barY-\hD);
+  \fill[olive, opacity=0.5] (\xD,\hD) rectangle ++(\barW,\barY-\hD);
 
   % Bar labels
   \node[text=orange] at (\xA+0.5*\barW,\barY-0.3) {0};
@@ -69,23 +69,23 @@
 
   % Dotted lines connecting cuts in gaussian to bars in discrete
   % (-∞) → top of bar 0 left edge
-  \draw[dotted, thick, gray!70!black]
+  \draw[dotted, thick, gray]
       (-5,0) .. controls (-5,-1.0) and (\xA,-1.05) .. (\xA,\hA);
 
   % 0.1 → top of boundary between bar 0 and bar 1
-  \draw[dotted, thick, gray!70!black]
-      (0.1,0) .. controls (0.1,-1.1) and (\xB,-1.15) .. (\xB,\hB);
+  \draw[dotted, thick, gray]
+      (0.1,0) .. controls (0.1,-1.1) and (\xB,-1.15) .. (\xB,\hA);
 
   % 0.8 → top of boundary between bar 1 and bar 2
-  \draw[dotted, thick, gray!70!black]
+  \draw[dotted, thick, gray]
       (0.8,0) .. controls (0.8,-1.2) and (\xC,-1.25) .. (\xC,\hC);
 
   % 2.0 → top of boundary between bar 2 and bar 3
-  \draw[dotted, thick, gray!70!black]
+  \draw[dotted, thick, gray]
       (2.0,0) .. controls (2.0,-1.3) and (\xD,-1.35) .. (\xD,\hD);
 
   % (+∞) → top of bar 3 right edge
-  \draw[dotted, thick, gray!70!black]
+  \draw[dotted, thick, gray]
       (6,0) .. controls (6,-1.4) and (\xD+\barW,-1.4) .. (\xD+\barW,\hD);
 
   \end{scope}
@@ -97,10 +97,10 @@
   \node[left, align=left, text width=6cm] at (-6.2,-2.0) {discretized program:\\ $\letkw \; x =$ \\$\discrete(\textcolor{blue}{0.5398},\textcolor{red}{0.2483},\textcolor{purple}{0.1891},\textcolor{olive}{0.0228}) \; \inkw$ \\ $\ifkw \; x < \textcolor{orange}{2} \; \thenkw \; x < \textcolor{orange}{1} \; \elsekw \; x < \textcolor{orange}{3}$};
 
   \node[align=left] at (5.2,-1.8) {
-    \textcolor{blue}{$\Pr(0)=CDF(0.1)-CDF(-\infty)=0.5398$}\\
+    \textcolor{blue}{$\Pr(0)=CDF(0.1)-\overbrace{CDF(-\infty)}^{= 0}=0.5398$}\\
     \textcolor{red}{$\Pr(1)=CDF(0.8)-CDF(0.1)=0.2483$}\\
     \textcolor{purple}{$\Pr(2)=CDF(2.0)-CDF(0.8)=0.1891$}\\
-    \textcolor{olive}{$\Pr(3)=CDF(+\infty)-CDF(2.0)=0.0228$}
+    \textcolor{olive}{$\Pr(3)=\underbrace{CDF(+\infty)}_{= 1}-CDF(2.0)=0.0228$}
   };
 
   \end{tikzpicture}

@@ -1,61 +1,65 @@
-\scalebox{0.42}{
-\begin{tikzpicture}[
-    node distance=3cm,
-    floatnode/.style={draw, rounded corners, minimum width=3.4cm, minimum height=1.2cm, align=center},
-    flow/.style={->, thick},
-    comp/.style={->, thick, dashed}
-]
+\begin{figure}[ht]
+    \centering
+    \scalebox{0.58}{
+    \begin{tikzpicture}[
+        floatnode/.style={draw, rounded corners, minimum width=3.3cm, minimum height=1.1cm, align=center},
+        flow/.style={->, very thick, draw=purple},
+        constraintlt/.style={->, very thick, dashed, draw=orange}
+    ]
+    
+    % ===== FLOAT VALUE NODES =====
+    
+    \node[floatnode] (v05) at (-6, 2) {
+        0.5 : \\
+        $\floattype{\{\cleq{0.5}, \cleq{1.5}\}}{\{0.5\}}$
+    };
+    
+    \node[floatnode] (v15) at (-6, -2) {
+        1.5 : \\
+        $\floattype{\{\cleq{0.5}, \cleq{1.5}\}}{\{1.5\}}$
+    };
+    
+    % ===== X NODE =====
+    
+    \node[floatnode] (x) at (-1, 0) {
+        $x$ : \\
+        $\floattype{\{\textcolor{red}{\cleq{0.5}}, \textcolor{red}{\cleq{1.5}}\}}{\{0.5,1.5\}}$
+    };
+    
+    % ===== SINGLE GAUSSIAN NODE =====
+    
+    \node[floatnode] (g) at (5, 0) {
+        $\gaussian(0, x)$ : \\
+        $\floattype{\{\clt{0.5}\}}{\top}$
+    };
+    
+    % ===== CONSTANT 0.5 NODE =====
+    
+    \node[floatnode] (c05) at (10, 0) {
+        0.5 : \\
+        $\floattype{\{\clt{0.5}\}}{\{0.5\}}$
+    };
+    
+    % ===== DATA FLOW EDGES (match Step 1 placement style) =====
+    
+    \draw[flow] (v05) -- node[below left] {\small then-branch flow} (x);
+    \draw[flow] (v15) -- node[above left] {\small else-branch flow} (x);
+    
+    % ===== SELF LOOP ON X WITH "recovers" =====
+    
+    \draw[flow, color=red, dashed, very thick]
+        (x.east) .. controls +(0.8,0) and +(0.8,-0.8) ..
+        node[right, text=black, inner sep=1pt] {\small recovers}
+        (x.south east);
+    
+    % ===== GAUSSIAN TO CONSTANT LINE =====
+    
+    \draw[constraintlt] (g) -- node[above] {$<$} (c05);
+    
+    \end{tikzpicture}
+    }
+    \caption{Constraint graph. Using $x$ as a Gaussian parameter induces a \emph{recovers} constraint, which ensures a unique discrete index for each value of $x$.}
+    \label{fig:control-flow-distinguishes}
+\end{figure}
 
-% ===== FLOAT VALUE NODES =====
 
-\node[floatnode] (v05) {
-    0.5 : \\
-    $\floattype{\{\cleq{0.5}, \cleq{1.5}\}}{\{0.5\}}$
-};
-
-\node[floatnode, right=0.2cm of v05] (v15) {
-    1.5 : \\
-    $\floattype{\{\cleq{0.5}, \cleq{1.5}\}}{\{1.5\}}$
-};
-
-% ===== X NODE =====
-
-\node[floatnode, below=3cm of $(v05)!0.5!(v15)$] (x) {
-    $x$ : \\
-    $\floattype{\{\textcolor{red}{\cleq{0.5}}, \textcolor{red}{\cleq{1.5}}\}}{\{0.5,1.5}\}$
-};
-
-% ===== SINGLE GAUSSIAN NODE =====
-
-\node[floatnode, below=1cm of x] (g) {
-    $\gaussian(0, x)$ : \\
-    $\floattype{\{\clt{0.5}\}}{\top}$
-};
-
-% ===== CONSTANT 0.5 NODE =====
-
-\node[floatnode, below=2cm of g] (c05) {
-    0.5 : \\
-    $\floattype{\{\clt{0.5}\}}{\{0.5\}}$
-};
-
-% ===== SOLID ARROWS FOR VALUE SET PROPAGATION =====
-\draw[->, thick]
-    ([xshift=57pt]v05.south west) to node[left, pos=0.7] {\small then-branch flow} ([xshift=45pt]x.north west);
-\draw[->, thick]
-    ([xshift=-57pt]v15.south east) to node[right, pos=0.7] {\small else-branch flow} ([xshift=-45pt]x.north east);
-
-% ===== SELF LOOP ON X WITH "recovers" =====
-
-\draw[->, thick, color=red, dotted]
-    (x.east) .. controls +(0.8,0) and +(0.8,-0.8) ..
-    node[right, text=black, inner sep=1pt] {\small recovers}
-    (x.south east);
-
-% ===== GAUSSIAN TO CONSTANT LINE =====
-
-\draw[->, thick, dashed, color=black!60!black]
-    (g) -- node[right, text=black] {$<$} (c05);
-
-\end{tikzpicture}
-}
