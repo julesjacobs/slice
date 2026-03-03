@@ -1,6 +1,6 @@
 \section{Evaluation}\label{sec:implem_eval}
 
-As an application of our discretization method, we perform exact inference on models with mixed discrete and continuous distributions. In particular, we integrate \Slice{} with exact discrete inference backends \Dice{} and \Roulette{}, and evaluate the performance of \Slice{}+\Dice{} and \Slice{}+\Roulette{} on (i) a set of constructed benchmarks and (ii) a set of benchmarks taken from the literature, comparing to the state-of-the-art tool \SPPL{} for exact inference on continuous probabilistic programs. We remark that, even though \Slice{} outperforms \SPPL{} on all benchmarks, \SPPL{} supports features that \Slice{} does not support automatically, notably numeric transformations (one must manually refactor the arithmetic expressions in our language). 
+We use experiments to characterize the empirical consequences of exact discretization, emphasizing asymptotic scaling as program size grows. We evaluate \Slice{}+\Dice{} and \Slice{}+\Roulette{} on (i) constructed scaling benchmarks and (ii) benchmark suites from prior literature, and report results alongside \SPPL{}. We treat these systems as complementary exact-inference pathways: \SPPL{} performs direct symbolic exact inference over its supported fragment (including numeric transformations and conditioning on measure-zero events), whereas \Slice{} applies an exact source-to-source transformation into a discrete form solved by discrete backends.
 
 The \Slice{} compiler consists of approximately 3,400 lines of OCaml code (including the lexer, parser, type inference and discretization engines, and \Dice{}/\Roulette{} code generators). We use the OCaml GSL package~\cite{gsl} to compute the CDFs of the probability distributions. The system is open-source and available at \url{https://github.com/[anonymized]}, along with benchmarks, documentation, and a Docker image. All benchmarks were run within that Docker image on an Apple M3 with 16GB RAM.
 
@@ -17,7 +17,7 @@ The \Slice{} compiler consists of approximately 3,400 lines of OCaml code (inclu
 %
  Each program consists of a sequence of conditionals, where each branch depends on a previous variable sampled from a uniform distribution, proceeding until the final condition $x_n < 0.5$ is reached. Here $0 \leq r_i \leq 1$ are fixed float constants. Results are depicted in \Cref{fig:alt-benchmarks-main}. Detailed listings and graphs for variants of these benchmarks appear in the supplemental Appendix~\ref{appen:synthetic-sketches}.
 
- We depict the runtime (in seconds) of (i) \SPPL{} (ii) \Slice{} (discretization only) (iii) \Slice{}+\Dice{} (discretization and subsequent inference using \Dice{}), and (iv) \Slice{}+\Roulette{} (discretization and subsequent inference using \Roulette{}). We specify a timeout of 120 seconds. We evaluate program sizes in increments of 5, from size 0 up to size 50. For each program size, we generate 25 random program instances and report the average runtime over these runs. Although \SPPL{} is implemented in Python and \Slice{} in OCaml, the dominant effect is algorithmic: \Slice{} emits discrete programs that Dice and Roulette solve quickly, whereas \SPPL{}'s cost grows sharply with program size. That divergence produces the order-of-magnitude improvements shown in the figure.
+ We depict runtime (seconds) for (i) \SPPL{}, (ii) \Slice{} (discretization only), (iii) \Slice{}+\Dice{} (discretization and subsequent inference using \Dice{}), and (iv) \Slice{}+\Roulette{} (discretization and subsequent inference using \Roulette{}). We use a timeout of 120 seconds. Program sizes are evaluated in increments of 5, from 0 to 50. For each size, we generate multiple random instances and report average runtime.\jules{Verify exact run count used for the plotted scaling results; the current scripts default to 10 unless overridden.} The key empirical signal is asymptotic: discretization remains small across sizes, while end-to-end runtimes for \Slice{} with discrete backends grow more mildly than direct symbolic inference on these families, yielding a clear timeout frontier at larger instances (cf.\ \Cref{fig:alt-benchmarks-main}).
  
 % The programs in \Cref{fig:cond-benchmarks-a} follow the scheme depicted above where the program size is $n$, i.e., the number of comparisons performed is $n$. In \Cref{fig:cond-benchmarks-b}, every conditional guard compares against the initial variable $x_1$, so all branches depend on the same root variable. In \Cref{fig:cond-benchmarks-c}, each $x_i$ does not necessarily depend on $x_{i-1}$ but on some randomly chosen predecessor\footnote{We generate these programs in a randomized manner with a fixed seed for reproducibility}. In \Cref{fig:cond-benchmarks-d}, we additionally choose at random whether the guards of the conditionals and the branches are either some predecessor variable $x_i$ or a  $\uniform$-sampling instruction.
 % %
@@ -30,40 +30,8 @@ The \Slice{} compiler consists of approximately 3,400 lines of OCaml code (inclu
 
 \subsubsection{Existing Benchmarks}\label{sec:fairness-benchmarks}
 
-Next, we evaluate the performance of our \Slice{} framework on two benchmark suites previously used by \SPPL{}. The detailed tables (\Cref{tab:benchmarks_dt} and \Cref{tab:benchmarks_dt_extra}) can be found in the supplemental appendix; we summarize their contents here. The decision-tree benchmarks from~\cite{albarghouthi2017fairsquare} assess fairness properties of decision trees under different population models. DT$_n$ denotes a tree with $n$ conditionals, the second column specifies the population model, and the remaining columns report runtimes. We separate \SPPL{}'s execution into translation and fairness-judgment phases to highlight where time is spent.
+We next use benchmark suites from prior work as compatibility and coverage checks. Detailed tables (\Cref{tab:benchmarks_dt} and \Cref{tab:benchmarks_dt_extra}) are in the supplemental appendix; we summarize their structure here. The decision-tree benchmarks from~\cite{albarghouthi2017fairsquare} assess fairness properties under different population models. DT$_n$ denotes a tree with $n$ conditionals, the second column specifies the population model, and the remaining columns report runtimes. We split \SPPL{} execution into translation and fairness-judgment phases to make phase costs explicit.
 
-\Cref{tab:benchmarks_psi} depicts benchmarks containing at least one continuous distribution, taken from the \PSI{} and \SPPL{} benchmark sets. We note that \Slice{} can run all benchmarks \SPPL{} can except for those containing transformations. We depict the performance of (i) \Slice{}+\Dice{}, (ii) \Slice{}+\Roulette{}, and (iii) \SPPL{} in seconds. We do not list results for \PSI{} since \SPPL{} is faster on these benchmarks. 
-
-
-
-%Characterizing the fairness of classification algorithms is an interesting application in machine learning~\cite{Dwork2012FairnessAwareness}. FairSquare~\cite{albarghouthi2017fairsquare} and VeriFair~\cite{Bastani2019VeriFair} are two solvers that obtain fairness judgments for large-scale decision-making programs. Prior to SPPL, they were state-of-the-art for verifying the fairness of decision tree classifiers, neural network classifiers, and support vector machine classifiers. We evaluate performance on the decision tree benchmarks, as \Slice cannot solve the neural network and support vector machine benchmarks as they contain multivariate transforms, and show that \Slice{} beats SPPL in performance on such benchmarks.
-%
-%Table 1 shows the results. The first column shows the decision making program ($DT_n$ means ``decision tree'' with $n$ conditionals), and the remaining columns display the execution times in seconds of Slice with Dice, Slice with Roulette, and SPPL respectively. The last column measures the speedup of \Slice{} over SPPL, where we take the max between Dice and Roulette speedups. The measurements indicate that \Slice{} consistently obtains probability estimates in milliseconds, with up to 200× speedup compared to SPPL. Although FairSquare and VeriFair can compute approximate probabilities that enable them to express more fairness problems, their cost is that their runtime on the decision trees is higher and less predictable than \Slice{} and SPPL which can compute exact probabilities efficiently.
-
-
-%\paragraph{Backend Performance Trade-offs.} Table 1 clearly illustrates the performance characteristics of our two demonstration backends. \Slice{}+\Dice{} consistently outperforms SPPL by a factor of $14-16$ in approximately $0.2$ seconds. \Slice{}+\Roulette{} takes about $2-3$ seconds, also slightly outperforming SPPL.
-
+\Cref{tab:benchmarks_psi} in the appendix reports representative constant-factor runtimes for benchmarks containing at least one continuous distribution, drawn from the \PSI{} and \SPPL{} benchmark sets. \Slice{} handles the benchmarks in this subset that fit its current fragment; in particular, programs requiring numeric-transformation support remain outside the automatically discretized subset. We report (i) \Slice{}+\Dice{}, (ii) \Slice{}+\Roulette{}, and (iii) \SPPL{} in seconds. We omit \PSI{} runtimes in this snapshot for brevity. These results are supplemental compatibility snapshots, while the main empirical claim in this section is the asymptotic scaling trend above.
 %\subsection{Simple Baselines}\label{sec:baseline-benchmarks}
 %We finally evaluate \Slice{} on a set of benchmarks that were introduced in~\cite{gehr2016psi}. We evaluate \Slice{} on the hybrid programs in these benchmarks. The results are shown in Table 2. We omit the runs of PSI in the table due to its significantly slower performance than SPPL on all benchmarks. The first column in the table gives the benchmark name, and the remaining columns display the execution times in seconds of Slice with Dice, Slice with Roulette, and SPPL respectively. As both SPPL and \Slice{} are restricted languages, in order to test a broader range of programs, we converted several benchmarks with parameters inside distributions that depend on continuous random choices to a discretized version. The time taken by \Slice{} to solve these problems is nearly instant in all cases. 
-
-\begin{table}[!t]
-\centering \vspace{-.3cm}
-\scalebox{0.95}{% adjust the factor
-\begin{tabular}{lrrrr}
-    \toprule
-    \textbf{Benchmark} & \textbf{Datasets} & \textbf{Slice+Dice (s)} & \textbf{Slice+Roulette (s)} & \textbf{SPPL (s)} \\
-    \midrule
-    ClickGraph~\cite{gehr2016psi} & 10 & \textbf{1.551 (81.4×)} & 1.841 (68.6×) & 126.263 \\
-    ClinicalTrial~\cite{gehr2016psi} & 20 & \textbf{6.854 (4.5×)} & 8.692 (3.6×) & 31.102 \\
-    CoinBias~\cite{gehr2016psi} & 5 & 0.294 (2.9×) & \textbf{0.234 (3.7×)} & 0.867 \\
-    Election~\cite{Saad2021SPPL} & 2 & 0.878 (17.9×) & \textbf{0.663 (23.7×)} & 15.739 \\
-    MarkovSwitching~\cite{Saad2021SPPL} & 10 & \textbf{0.044 (14.2×)} & \textbf{0.044 (14.2×)} & 0.624 \\
-    StudentInterviews~\cite{Saad2021SPPL} & 10 & \textbf{1.287 (44.1×)} & 1.681 (33.8×) & 56.781 \\ 
-    SurveyUnbias~\cite{gehr2016psi} & 10 & \textbf{0.044 (8.2×)} & 0.157 (2.3×) & 0.361 \\
-    TrueSkill~\cite{gehr2016psi} & 2 & \textbf{0.042 (5.2×)} & 0.157 (1.4×) & 0.217 \\
-    \bottomrule
-    \end{tabular}  
-}  
-\caption{Execution times (seconds) for the benchmarks taken from PSI~\cite{gehr2016psi} and SPPL~\cite{Saad2021SPPL}.}
-    \label{tab:benchmarks_psi}
-\end{table}

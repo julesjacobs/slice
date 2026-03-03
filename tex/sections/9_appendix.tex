@@ -430,7 +430,7 @@ Thus each program is a Bayesian network of conditionally independent nodes, diff
 
 \section{Benchmarks}
 \subsection{Scaling benchmarks}
-We designed a set of synthetic benchmarks consisting of programs that can be scaled up in size, with varying dependencies between the program variables. Schematically:
+We designed a set of synthetic benchmarks to study how exact-inference runtime varies with program size under different dependency structures. Schematically:
 %
     \begin{lstlisting}[aboveskip=0.1em,belowskip=.1em]
         let x1 = uniform(0,1) in 
@@ -440,7 +440,7 @@ We designed a set of synthetic benchmarks consisting of programs that can be sca
         x_n < 0.5
     \end{lstlisting}
 %
- Each program consists of a sequence of nested conditionals, where each branch depends on a previous variable sampled from a uniform distribution, proceeding until the final condition $x_n < 0.5$ is reached. Here $0 \leq r_i \leq 1$ are fixed float constants. With these programs, provided in Appendix \ref{appen:synthetic-sketches}, we evaluate how \Slice{} scales for deep conditional branching and stochastic control flow. 
+Each program is a sequence of nested conditionals in which each branch depends on a previous variable sampled from a uniform distribution, terminating at the final condition $x_n < 0.5$. Here $0 \leq r_i \leq 1$ are fixed float constants. Using these programs (listed in Appendix \ref{appen:synthetic-sketches}), we study asymptotic runtime trends for discretization plus exact inference.
  
 The programs in \Cref{fig:cond-benchmarks-a} follow the scheme depicted above where the program size is $n$, i.e., the number of comparisons performed is $n$. In \Cref{fig:cond-benchmarks-b}, each $x_i$ does not necessarily depend on $x_{i-1}$ but on some randomly chosen predecessor\footnote{We generate these programs in a randomized manner with a fixed seed for reproducibility}. In \Cref{fig:cond-benchmarks-c}, we additionally choose at random whether the guards of the conditionals and the branches are either some predecessor variable $x_i$ or a  $\uniform$-sampling instruction.
  %\input{figures/nested-conditionals.tex}
@@ -459,7 +459,7 @@ The programs in \Cref{fig:cond-benchmarks-a} follow the scheme depicted above wh
 %
  The programs in \Cref{fig:alt-benchmarks-a} also follow the scheme depicted above but where the variables used in the guards cycle with a fixed span size of $m$. For instance, for $m=2$, the pattern is $x_1,x_2,x_1,\ldots$. The programs in \Cref{fig:alt-benchmarks-b,fig:alt-benchmarks-c,fig:alt-benchmarks-d} follow a similar pattern, see Appendix~\ref{appen:synthetic-sketches} for details.
 
-We depict the runtime (in seconds) of (i) SPPL (ii) \Slice{} (discretization only) (iii) \Slice{}+\Dice{} (discretization and subsequent inference using \Dice{}), and (iv) \Slice{}+\Roulette{} (discretization and subsequent inference using \Roulette{}). The time-out is 300 seconds.
+We report runtime (seconds) for (i) \SPPL{}, (ii) \Slice{} (discretization only), (iii) \Slice{}+\Dice{} (discretization + inference via \Dice{}), and (iv) \Slice{}+\Roulette{} (discretization + inference via \Roulette{}). The timeout is 120 seconds.\jules{Confirm timeout provenance for these appendix plots; earlier scripts and notes sometimes mention 300s.}
 
 %\subsubsection{Alternating Guards}
 %We test programs in which comparison guards alternate in a pattern:
@@ -472,8 +472,7 @@ We depict the runtime (in seconds) of (i) SPPL (ii) \Slice{} (discretization onl
 
 \input{figures/scaling-alternating}
 
-\paragraph{Results.} The results indicate that exact inference with \Slice{} + \Dice{}/\Roulette{} can scale to large programs, often outperforming the state-of-the-art tool SPPL significantly. This is particularly striking in \Cref{fig:cond-benchmarks-b} and \Cref{fig:alt-benchmarks-a,fig:alt-benchmarks-b,fig:alt-benchmarks-d}, where the time required by \Slice{} + \Dice{}/\Roulette{}  remains roughly constant but increases rapidly for SPPL when increasing the program size. In \Cref{fig:cond-benchmarks-c}, we observe a mixed picture for programs of sizes $1-20$, with \Slice{} + \Dice{}/\Roulette{} taking the lead for programs of size $\geq\! 20$.
-%The program size refers to the number of comparison operations in the program. We generate programs of sizes ranging from 1 to 50, in increments of 5, for the conditional independence tests. For the alternating guard tests, we generate programs with sizes ranging from 1 to 100, increasing the program size in steps of 5 and the guard span in steps of 1. Each program is evaluated with a timeout of 300 seconds. The scaling experiments demonstrate that Slice+Dice maintains near-linear scaling behavior while SPPL exhibits significantly faster growth and times out on larger programs. The Slice compilation phase alone (dark blue line) shows essentially constant time, indicating that the type-directed discretization algorithm scales extremely well.
+\paragraph{Results.} The dominant pattern is a growth-rate contrast: discretization time remains small, and \Slice{}+\Dice{}/\Roulette{} scales more gently on these families, while direct symbolic inference in \SPPL{} grows more sharply and times out earlier on several variants. This appears most clearly in \Cref{fig:cond-benchmarks-b} and \Cref{fig:alt-benchmarks-a,fig:alt-benchmarks-b,fig:alt-benchmarks-d}. In \Cref{fig:cond-benchmarks-c}, the small-size regime is mixed, while larger sizes show clearer separation. These measurements are best interpreted as asymptotic trend evidence for complementary exact-inference pathways, not as a universal ranking across language features.
 
 
 \subsection{Decision Tree benchmarks}
@@ -573,9 +572,34 @@ Tables~\ref{tab:benchmarks_dt} and~\ref{tab:benchmarks_dt_extra} show the decisi
                     & BN2  & t.o. & t.o. & \textbf{t.o.} & t.o. & t.o. & \textbf{t.o.} & err. & err. & \textbf{err.} \\
     \bottomrule
     \end{tabular}
-    \caption{Execution times (seconds) for the decision tree benchmarks, with a timeout of 120s. SPPL encounters a maximum recursion depth exceeded error for DT$_{5000}$.}
+    \caption{Execution times (seconds) for the decision tree benchmarks, with a timeout of 120s. For DT$_{5000}$ under our setup, SPPL returned a maximum recursion depth exceeded error (reported as \texttt{err.}).}
     \label{tab:benchmarks_dt_extra}
 \end{table}
 
+
+\subsection{Constant-Factor Snapshot Benchmarks}
+\Cref{tab:benchmarks_psi} reports representative constant-factor runtimes for benchmarks containing at least one continuous distribution, drawn from the \PSI{} and \SPPL{} benchmark sets. \Slice{} handles the benchmarks in this subset that fit its current fragment; in particular, programs requiring numeric-transformation support remain outside the automatically discretized subset. We report (i) \Slice{}+\Dice{}, (ii) \Slice{}+\Roulette{}, and (iii) \SPPL{} in seconds. We omit \PSI{} runtimes in this snapshot for brevity.
+
+\begin{table}[!t]
+\centering \vspace{-.3cm}
+\scalebox{0.95}{% adjust the factor
+\begin{tabular}{lrrrr}
+    \toprule
+    \textbf{Benchmark} & \textbf{Datasets} & \textbf{Slice+Dice (s)} & \textbf{Slice+Roulette (s)} & \textbf{SPPL (s)} \\
+    \midrule
+    ClickGraph~\cite{gehr2016psi} & 10 & \textbf{1.551 (81.4×)} & 1.841 (68.6×) & 126.263 \\
+    ClinicalTrial~\cite{gehr2016psi} & 20 & \textbf{6.854 (4.5×)} & 8.692 (3.6×) & 31.102 \\
+    CoinBias~\cite{gehr2016psi} & 5 & 0.294 (2.9×) & \textbf{0.234 (3.7×)} & 0.867 \\
+    Election~\cite{Saad2021SPPL} & 2 & 0.878 (17.9×) & \textbf{0.663 (23.7×)} & 15.739 \\
+    MarkovSwitching~\cite{Saad2021SPPL} & 10 & \textbf{0.044 (14.2×)} & \textbf{0.044 (14.2×)} & 0.624 \\
+    StudentInterviews~\cite{Saad2021SPPL} & 10 & \textbf{1.287 (44.1×)} & 1.681 (33.8×) & 56.781 \\ 
+    SurveyUnbias~\cite{gehr2016psi} & 10 & \textbf{0.044 (8.2×)} & 0.157 (2.3×) & 0.361 \\
+    TrueSkill~\cite{gehr2016psi} & 2 & \textbf{0.042 (5.2×)} & 0.157 (1.4×) & 0.217 \\
+    \bottomrule
+    \end{tabular}  
+}  
+\caption{Representative execution times (seconds) for benchmarks from PSI~\cite{gehr2016psi} and SPPL~\cite{Saad2021SPPL}. Parenthesized factors provide SPPL-relative runtime context for each benchmark.}
+    \label{tab:benchmarks_psi}
+\end{table}
 
     
