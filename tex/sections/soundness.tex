@@ -1,7 +1,7 @@
 \section{Soundness of our Approach}
 \label{sec:soundness}%
 %
-We now establish soundness of exact discretization in the following sense: every expression $e:\bool$ is semantically equivalent to $\discretize{e : \bool} : \bool$. Because discretization decisions are driven by non-local, type-propagated information, this is not a local rule-by-rule argument. To prove the claim rigorously, we (i) define operational semantics for the source and discretized programs and (ii) relate their executions through a coupling-style logical relation. We provide the high-level proof idea in the main text; all details are in \Cref{sec:app:soundness_new}.
+We establish soundness of exact discretization as follows: every expression $e:\bool$ is semantically equivalent to $\discretize{e : \bool} : \bool$. Because discretization decisions are driven by non-local, type-propagated information, this is not a local rule-by-rule argument. To prove the claim rigorously, we (i) define operational semantics for the source and discretized programs and (ii) relate their executions through a coupling-style logical relation. We provide the high-level proof idea in the main text; all details are in \Cref{sec:app:soundness_new}.
 %
 \subsection{Operational Semantics}
 %
@@ -18,7 +18,7 @@ We first state the central theorem, then outline the coupling-style relational a
 	Let $e:\bool$. Then $\bigsem{e:\bool} = \bigsem{\discretize{e:bool} : \bool}$.
 \end{theorem}
 %
-Intuitively, the idea is to prove that we can execute the two programs in a synchronized manner such that their probability of terminating in a value $v$ coincide for each $v \in \{\true,\false,\bot\}$. Since, however, sub-expressions might be of a type other than $\bool$, we have to find an argument that (i) applies to expressions of \emph{arbitrary} type and is (ii) strong enough to imply \Cref{thm:maintext:sound}.
+Intuitively, we prove that the two programs can execute in a synchronized manner such that their probabilities of terminating in value $v$ coincide for each $v \in \{\true,\false,\bot\}$. Because sub-expressions may have types other than $\bool$, the argument must (i) apply to expressions of \emph{arbitrary} type and (ii) be strong enough to imply \Cref{thm:maintext:sound}.
 %e, and which lets us conclude semantic equivalence for expressions of type $\bool$.
 %more general argument which enables us to conclude semantic equivalence.% The crucial point is when we encounter a continuous sampling instruction in $e$, in which case we have to prove that its discretized counterpart $\discretize{e:\tau}$
 
