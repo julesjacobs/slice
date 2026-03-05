@@ -219,3 +219,101 @@ The type-annotations reveal how the variable $x$ determines the standard deviati
 \noindent Observation $x<2$ eliminates the discrete state corresponding to the original interval $[0.5,+\infty)$, mirroring the conditioning on $x<0.5$.
 
 Exact equalities can be encoded with $\observekw\; (x \leq c \mathrel{\&\&} x \geq c)$. Measure-zero observations remain delicate~\cite{Jacobs2021ParadoxesProbProg}; our semantics handles them by recording observation failure mass instead of renormalizing, so discretization preserves an even stronger equivalence. Scoring semantics for true measure-zero events are out of scope; users should instead approximate them with narrow intervals.
+
+\subsection{Unbounded Recursion}\label{sec:examples:7}
+
+We now consider a program with recursion, where control flow may revisit the same expression an unbounded number of times. Such programs are common in probabilistic modeling (e.g., geometric processes), but are challenging for sampling-based methods, which may fail to terminate due to self-loops.
+
+\begin{lstlisting}[aboveskip=1em,belowskip=1em]
+    (fix geom x := 
+        if x <= 0.5 then true
+        else if x <= 0.8 then geom x
+        else let y = uniform(0,1) in geom y) 1
+\end{lstlisting}
+
+\noindent This program repeatedly evaluates \texttt{geom}, potentially recursing indefinitely when $x \in (0.5, 0.8]$. In the final branch, a fresh sample is drawn and the process continues. While the recursion is unbounded, the key insight is that the observable behavior of the program depends only on which interval the current value of $x$ lies in.
+
+\noindent As in previous examples, \Slice{} extracts the relevant cut set from the comparisons against $0.5$ and $0.8$. These cuts partition the real line into three intervals:
+\[
+(-\infty, 0.5], \quad (0.5, 0.8], \quad (0.8, +\infty).
+\]
+
+\noindent The resulting discretized program is:
+
+\begin{lstlisting}[aboveskip=1em,belowskip=1em]
+    (fix geom x := 
+        if x <= 0 then true
+        else if x <= 1 then geom x
+        else let y = discrete(0.5, 0.3, 0.2) in geom y) 2
+\end{lstlisting}
+
+\noindent Crucially, the resulting program has a finite state space. This enables exact reasoning via finite-state methods such as Markov chain analysis via Storm.
+
+\subsection{Stochastic Coverage with Unbounded Sampling}\label{sec:examples:8}
+
+We now consider a more realistic example, modeling a stochastic coverage process over a continuous domain. The program repeatedly samples points from a uniform distribution; each sample “covers” an $\varepsilon$-interval around it, and we track which regions of $[0,1]$ have been covered so far. The process continues for a random number of steps (via probabilistic stopping), and we finally check whether the entire interval has been covered.
+
+\noindent To make this property checkable, we approximate $[0,1]$ using a finite grid of regions:
+\[
+[0,0.2),\ [0.2,0.4),\ [0.4,0.6),\ [0.6,0.8),\ [0.8,1].
+\]
+We track coverage of each region with a Boolean flag.
+
+\begin{lstlisting}[aboveskip=1em,belowskip=1em]
+let eps = 0.10 in
+
+(* Sample a point *)
+let sample_point = fun _ -> uniform(0.0, 1.0) in
+
+(* Coverage predicates for grid cells *)
+let cover01 = fun y -> (y > 0.0) && (y < 0.2) in
+let cover03 = fun y -> (y > 0.2) && (y < 0.4) in
+let cover05 = fun y -> (y > 0.4) && (y < 0.6) in
+let cover07 = fun y -> (y > 0.6) && (y < 0.8) in
+let cover09 = fun y -> (y > 0.8) && (y < 1.0) in
+
+(* One step updates coverage state *)
+let step = fun st ->
+  let y = sample_point () in
+  (* unpack st = (b01, (b03, (b05, (b07, b09)))) *)
+  ...
+  (* update each flag with OR *)
+  (nb01, (nb03, (nb05, (nb07, nb09))))
+in
+
+(* Check if all regions are covered *)
+let done = fun st -> b01 && b03 && b05 && b07 && b09 in
+
+(* Random stopping loop *)
+let cover = fix cover st :=
+  if uniform(0,1) < 0.01 then st
+  else cover (step st)
+in
+
+let final = cover init in
+done final
+\end{lstlisting}
+
+\noindent \Slice{} again observes that only a finite partition of the real line matters. The comparisons against the grid boundaries $\{0.0, 0.2, 0.4, 0.6, 0.8, 1.0\}$ induce a cut set that partitions $\R$ into intervals corresponding exactly to these regions. Each sampled point $y$ is therefore abstracted by the index of the region it falls into.
+
+\noindent The resulting discretized program is:
+
+\begin{lstlisting}[aboveskip=1em,belowskip=1em]
+let sample_point = fun _ ->
+  discrete(0.2, 0.2, 0.2,
+           0.2, 0.2) in
+
+(* coverage predicates now operate on indices *)
+let cover01 = fun y -> y > 0 && y < 1 in
+let cover03 = fun y -> y > 1 && y < 2 in
+...
+
+let cover = fix cover st :=
+  if discrete(0.5, 0.5) < 1 then st
+  else cover (step st)
+in
+
+done (cover init)
+\end{lstlisting}
+
+\noindent Crucially, the resulting program has a \emph{finite state space}: the continuous domain $[0,1]$ is reduced to a finite set of regions, and the coverage state is a tuple of Booleans. Despite the original program featuring unbounded sampling and recursion, its behavior is captured exactly by a finite-state system.

@@ -5,7 +5,7 @@ We now prove our approach sound in the following expected sense. Every expressio
 %
 \subsection{Operational Semantics}
 %
-We start by defining a small-step operational functional $\sem{\cdot}\colon Expr_\tau \to\mathcal{D}(Expr_\tau + \bot)$ (cf.\ \Cref{tab:smallstep} on page \pageref{tab:smallstep}), mapping each expression $e$ of type $\tau$ to a (possibly continuous) subdistribution $\sem{e:\tau}$ over expressions of type $\tau$ or $\bot$. The missing probability mass corresponds to the probability of encountering an error due to ill-defined invocations of sampling instructions (e.g., $\uniform(1,0)$). The probability of $\bot$ is the probability of observation failure. 
+We start by defining a small-step operational functional $\sem{\cdot}\colon Expr_\tau \to\mathcal{D}(Expr_\tau + \bot)$ (cf.\ \Cref{tab:smallstep-1} on page \pageref{tab:smallstep-1}), mapping each expression $e$ of type $\tau$ to a (possibly continuous) subdistribution $\sem{e:\tau}$ over expressions of type $\tau$ or $\bot$. The missing probability mass corresponds to the probability of encountering an error due to ill-defined invocations of sampling instructions (e.g., $\uniform(1,0)$). The probability of $\bot$ is the probability of observation failure. 
 
 Using this small-step operational functional, we employ a limit construction to define a (big-step) functional $\bigsem{\cdot}\colon Expr_\tau \to \mathcal{D}(Vals_\tau + \bot)$, mapping each expression $e$ of type $\tau$ to a subdistribution $\bigsem{e:\tau}$ over \emph{values} of type $\tau$ or $\bot$. The missing probability mass now \emph{additionally} captures $e$'s non-termination probability, and the probability of $\bot$ is the probability of observation failure. 
 
@@ -22,7 +22,7 @@ Intuitively, the idea is to prove that we can execute the two programs in a sync
 %e, and which lets us conclude semantic equivalence for expressions of type $\bool$.
 %more general argument which enables us to conclude semantic equivalence.% The crucial point is when we encounter a continuous sampling instruction in $e$, in which case we have to prove that its discretized counterpart $\discretize{e:\tau}$
 
-Towards this end, define for every type $\tau$ the set $P_\tau = \{ (e:\tau, \discretize{e : \tau} : \discretize{\tau}) ~|~ e:\tau \}$. We define a \emph{coupled small-step semantics} $\sem{\cdot,\cdot} \colon P_\tau \to \mathcal{D}(P_\tau + \bot)$ (cf.\ \Cref{tab:coupling_smallstep}), which models the simultaneous execution of $e$ and $\discretize{e:\tau}$. The key property of this coupled semantics is that the semantics of both $e$ and $\discretize{e:\tau}$ can be recovered in a sense we formalize next.
+Towards this end, define for every type $\tau$ the set $P_\tau = \{ (e:\tau, \discretize{e : \tau} : \discretize{\tau}) ~|~ e:\tau \}$. We define a \emph{coupled small-step semantics} $\sem{\cdot,\cdot} \colon P_\tau \to \mathcal{D}(P_\tau + \bot)$ (cf.\ \Cref{tab:coupling_smallstep_1,tab:coupling_smallstep_2}), which models the simultaneous execution of $e$ and $\discretize{e:\tau}$. The key property of this coupled semantics is that the semantics of both $e$ and $\discretize{e:\tau}$ can be recovered in a sense we formalize next.
 
 Given $\mu \in \mathcal{D}(P_\tau + \bot)$, we define the \emph{projection of $\mu$ onto the $i$-th component} for $i\in\{ 1,2 \}$ as
 %
