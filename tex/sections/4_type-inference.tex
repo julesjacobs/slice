@@ -110,7 +110,11 @@ Lattice constraint solving takes time polynomial in the size of the program: at 
 
  \noindent   \emph{Step 1: Subtyping reduction.} We replace each subtyping constraint as described above:
  \[
-  \subtype{\float[B_i; V_i]}{\float[B_j; V_j]}\text{ becomes }B_i = B_j, V_i \sqsubseteq V_j \quad \text{for } (i,j) \in \{(3,7),(6,7),(9,11),(10,11)\}
+  \begin{aligned}
+    \subtype{\float[B_i; V_i]}{\float[B_j; V_j]}
+      &\text{ becomes } B_i = B_j,\; V_i \sqsubseteq V_j, \\
+      &\text{for } (i,j) \in \{(3,7),(6,7),(9,11),(10,11)\}.
+  \end{aligned}
  \]
 %    \begin{itemize}
 %        \item $\subtype{\float[B_2; V_2]}{\float[B_5; V_5]}$ becomes $B_2 = B_5, V_2 \sqsubseteq V_5$
@@ -136,7 +140,14 @@ $V_9 \sqsubseteq V_{11}$: we update $V_{11} := V_{11} \sqcup \{1.8\} = \{1.8\}$.
  \noindent    \emph{Step 8: Process answerability.} For $\answerslt{B_7}{V_7}{V_8}$: with $V_7 = \top$ and $V_8 = \{1.5\}$, we add $\clt{1.5}$ to \mbox{$B_7$}. For $\answersleq{B_7}{V_7}{V_{11}}$: with $V_7 = \top$ and $V_{11} = \{0.3, 1.8\}$, we add $\cleq{0.3}$ and $\cleq{1.8}$ to \mbox{$B_7$}.
 
  \noindent   \emph{Step 7: Process recoverability. }
-For $\distinguishes{B_1}{V_1}$, $\distinguishes{B_2}{V_2}$, $\distinguishes{B_4}{V_4}$, $\distinguishes{B_5}{V_5}$: $|V_i| = 1$ for $i = 1,2,4,5$, so trivially satisfied.
+For each of
+\[
+  \distinguishes{B_1}{V_1},\;
+  \distinguishes{B_2}{V_2},\;
+  \distinguishes{B_4}{V_4},\;
+  \distinguishes{B_5}{V_5},
+\]
+we have $|V_i| = 1$ for $i \in \{1,2,4,5\}$, so the constraint is trivially satisfied.
 
 \noindent   \emph{Step 6: Process equalities.} Unifying all equality constraints: from comparisons: $B_7 = B_8$ and $B_7 = B_{11}$;
        from subtyping: $B_3 = B_7$, $B_6 = B_7$, $B_9 = B_{11}$, $B_{10} = B_{11}$; result: $B_3 = B_6 = B_7 = B_8 = B_9 = B_{10} = B_{11}$.
@@ -145,4 +156,8 @@ For $\distinguishes{B_1}{V_1}$, $\distinguishes{B_2}{V_2}$, $\distinguishes{B_4}
 \end{example}
 
 \paragraph{Additional constraint for contextual equivalence.} 
-When the return type of the program involves a float type, either directly, or as part of a larger compound type (such as $\float[B;V] \to \float[B';V']$), we need to add an additional constraint to ensure that these float types involved are not discretized. We do this by recursively going over the return type, and setting all nested $B$ sets to $\top$. This ensures that the observable behavior of the program is preserved after discretization, regardless of the context in which the program is used. When the return type is basic, such as $\bool$, then nothing needs to be done.
+When the return type of the program involves a float type, either directly or as part of a larger compound type, we add an additional constraint to ensure that these float types are not discretized. For example:
+\[
+  \float[B;V] \to \float[B';V'].
+\]
+We do this by recursively traversing the return type and setting all nested $B$ sets to $\top$. This ensures that the observable behavior of the program is preserved after discretization, regardless of the context in which the program is used. When the return type is basic, such as $\bool$, nothing needs to be done.

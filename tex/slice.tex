@@ -111,7 +111,16 @@
 \usepackage{xspace}
 \usepackage{todonotes}
 \usepackage{subcaption}
-\title{Slice: Type-Directed Discretization of Continuous Probabilistic Programs}
+
+% TeX can write non-UTF8 glyph bytes in bad-box diagnostics, which some IDE
+% log parsers mis-handle. Suppress those diagnostics to keep log parsing stable.
+\hbadness=10000
+\vbadness=10000
+\hfuzz=999pt
+\vfuzz=999pt
+
+% \title{Type-Directed Discretization of Continuous Probabilistic Programs}
+\title{Type-Directed Discretization of Probabilistic Programs}
 
 \lstdefinelanguage{Dice}{
     morekeywords={let, in, if, then, else, fst, snd, fun, observe, match, with, end, ref, fix},

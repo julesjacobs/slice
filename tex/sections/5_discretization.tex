@@ -74,10 +74,10 @@
 	\label{fig:discretization-code}
 \end{figure}
 %
-In this section, we describe our type-directed discretization algorithm alongside illustrative examples. The setting is the following: Given a typed expression $e : \tau$ compute --- guided by the type annotations --- a (partially) \emph{discretized} expression $\discretize{e : \tau}$ such that $e$ and $\discretize{e : \tau}$ are \emph{semantically equivalent}, i.e., they produce the same distribution. Throughout the paper we call this semantics-preserving transformation \emph{exact discretization} to emphasize that it differs from prior \emph{quantization} approaches~\cite{Garg2024BitBlast,Huang2021AQUA}, where the continuous program is approximated via externally chosen precision parameters.
+This section presents local transformation rules for our type-directed discretization algorithm, with examples. The global objective is: given a typed expression $e : \tau$, compute, guided by type annotations, a (partially) \emph{discretized} expression $\discretize{e : \tau}$ such that $e$ and $\discretize{e : \tau}$ are \emph{semantically equivalent}, i.e., they induce the same distribution. We refer to this semantics-preserving transformation as \emph{exact discretization}, to distinguish it from \emph{quantization} approaches~\cite{Garg2024BitBlast,Huang2021AQUA} that approximate continuous programs via externally chosen precision parameters. Intuitively, when a program uses continuous quantities only through finitely many comparison outcomes, exact inference should reduce to a finite problem, and exact discretization makes that reduction explicit.
 
-$\discretize{e : \tau}$ is defined recursively on $e : \tau$ as shown in \Cref{fig:discretization-code}, where we focus on continuous uniform distributions. For other distributions, this procedure is completely analogous. Naturally, the only sub-expressions which are actually replaced by $\discretize{\cdot}$ are float constants and uniform samplings. Before we go into the details, we outline how the type annotation guides the discretization of expressions. The type system is designed in such a way that every typed sub-expression of the form 
-$e = \uniform(e_1, e_2 )$ of type $\float[B;V]$ with $B=\{\sim_1\!\!b_1, \ldots, \sim_n\!\!b_n\} \neq \top$ 
+As shown in \Cref{fig:discretization-code}, $\discretize{e : \tau}$ is defined recursively on $e : \tau$; we focus on continuous uniform distributions, with others handled analogously. The only sub-expressions replaced by $\discretize{\cdot}$ are float constants and sampling instructions. The rule schemata are local, but their selection and parameters come from globally inferred cut/value information; \Cref{sec:soundness} proves that this non-local, type-mediated construction preserves semantics. Before detailing the rules, we outline how type annotations guide discretization. The type system is designed so that every typed sub-expression of the form 
+$e = \uniform(e_1, e_2 )$ of type $\float[B;V]$ with $B=\{\sim_1\!\!b_1, \ldots, \sim_n\!\!b_n\} \neq \top$
 %
 can be \emph{discretized} to an expression $e' : \fin{n+1}$ such that 
 %
@@ -87,7 +87,7 @@ In particular, if \emph{all} $\float[B;V]$-typed subexpressions are finite-cut, 
 
 \begin{example}
 	\label{ex:discretize_simple}
-Consider first a uniform distribution whose outcomes are compared to constants. Consider the following typed expression $e: \bool$, where we omit irrelevant types:
+Consider a uniform distribution whose outcomes are compared to constants, with typed expression $e: \bool$ (omitting irrelevant types):
 	%
 %
 %
@@ -97,7 +97,7 @@ Consider first a uniform distribution whose outcomes are compared to constants. 
     (x : !{\ft{B}}! >= (0.5 : !{\ftb{B}{0.5}}!))
 \end{lstlisting}    
 %
-where $B= \{ \clt{0.3},\clt{0.5} \}$. Now, why and how can we discretize this program using the type information? The cut set $B$ correctly informs us that the probability of the comparisons evaluating to $\true$ is completely determined by the probability of $x$ evaluating to one of the intervals 
+where $B= \{ \clt{0.3},\clt{0.5} \}$. The cut set $B$ informs us that the probability of the comparisons evaluating to $\true$ is determined by the probability of $x$ evaluating to one of the intervals 
 %
 \[
 	\intervals{B}_0 = (-\infty, 0.3) 

@@ -1,17 +1,17 @@
 \input{figures/architecture.tex}
 
 \section{Slice by Example}\label{sec:examples}
-To build intuition for how \Slice{} works, we start with a set of introductory examples of increasing complexity.
+To build intuition for \Slice{}, we start with examples of increasing complexity.
 
 \subsection{Branching on a Single Continuous Variable}\label{sec:examples:1}
-We consider a program that samples a real value from a standard Gaussian distribution and then performs two nested comparisons, first checking whether the sampled value is less than 0.8 then comparing that value against either 0.1 or 2.0:
+We consider a program that samples a real value from a standard Gaussian distribution and then performs two nested comparisons, first checking whether the sampled value is less than 0.8, then comparing that value against either 0.1 or 2.0:
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em]
     let x = gaussian(0,1) in 
     if x < 0.8 then x < 0.1 else x < 2.0
 \end{lstlisting}
 
-\noindent Instead of sampling a real value, we can sample the discrete choice that represents the interval containing the sample, shown in the following program and precisely in Figure~\ref{fig:cuts-gaussian}:
+\noindent Instead of sampling a real value, we sample the discrete interval containing it, as shown below and in Figure~\ref{fig:cuts-gaussian}:
 
 \input{figures/cuts.tex}
 
@@ -20,9 +20,9 @@ We consider a program that samples a real value from a standard Gaussian distrib
     if x < 2 then x < 1 else x < 3
 \end{lstlisting}
 
-\noindent Here, \discrete(0.5398, 0.2483, 0.1891, 0.0228) already represents all four observationally distinguishable outcomes of the Gaussian sample. The precise real value of $x$ never mattered to the rest of the program; only the interval in which it falls does. \textbf{Slice’s goal is to detect such situations automatically.} We partition the continuous expression into intervals that are indistinguishable to the rest of the program, and then map every real to the interval it inhabits. 
+\noindent Here, \discrete(0.5398, 0.2483, 0.1891, 0.0228) already represents all four observationally distinguishable outcomes of the Gaussian sample. The precise real value of $x$ never mattered to the rest of the program; only the interval in which it falls does. This is the regime we target: continuous quantities used in an observationally discrete way. \textbf{Slice’s goal is to detect such situations automatically.} We partition the continuous expression into intervals that are indistinguishable to the rest of the program, and then map every real to the interval it inhabits. 
 
-The transformation is guided by our type system, driven by a \emph{cut set}: the set of comparison thresholds extracted from the program. A continuous expression is annotated with its cut set (can either be finite or $\top$, indicating comparison to a continuous value), recording the values it is compared against.
+The transformation is guided by our type system, driven by a \emph{cut set}: the set of comparison thresholds extracted from the program. A continuous expression is annotated with its cut set (either finite or $\top$, indicating comparison to a continuous value), recording the values it is compared against.
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
     let x = (gaussian(0,1) : !{\ftnv{<0.2,<0.5,<2}}!) in
@@ -43,7 +43,7 @@ The transformation is guided by our type system, driven by a \emph{cut set}: the
 
 \noindent In this program, the variable $x$ is drawn from \uniform(0, 1) and is compared against two different constants: $0.5$ and $0.2$. These two cuts $\clt{0.5}$ and $\clt{0.2}$ partition the real line $\R$ into three intervals: $(-\infty, 0.2)$, $[0.2, 0.5)$, and $[0.5, +\infty)$. Similarly, the variable $y$, drawn from \uniform(0, 2), is compared only with $0.1$. This single cut $\clt{0.1}$ partitions the real line $\R$ into two intervals, $(-\infty, 0.1)$ and $[0.1, +\infty)$.
 
-This analysis is done by the type inference process, which collects all cuts for each continuous variable. For $x$, the type inference algorithm discovers the cuts $\clt{0.2}$ and $\clt{0.5}$, giving it the type \ftnv{<0.2,<0.5}. For $y$, it only finds $\clt{0.1}$, giving it the type \ftnv{<0.1}. This information is captured in the annotated program below (omitting the redundant types):
+Type inference performs this analysis by collecting all cuts for each continuous variable. For $x$, it discovers the cuts $\clt{0.2}$ and $\clt{0.5}$, giving it the type \ftnv{<0.2,<0.5}. For $y$, it only finds $\clt{0.1}$, giving it the type \ftnv{<0.1}. This information is captured in the annotated program below (omitting the redundant types):
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
     let x = uniform(0, 1) : !{\ftnv{<0.2,<0.5}}! in
@@ -128,9 +128,9 @@ We now consider comparisons against an expression for which control flow determi
     x <= y
 \end{lstlisting}
 
-\noindent Value sets refine an expression's cut set by contributing cuts at comparisons. For example, in the test $x \leq y$, the value set of $y$ contributes boundary points that must also appear in the cut set of $x$.
+\noindent Value sets refine an expression's cut set by contributing cuts at comparisons. For example, in the test $x \leq y$, the value set of $y$ contributes boundary points that must also appear in the cut set of $x$. This dependency is non-local: constants introduced in one branch can constrain how a sampled value from another branch must be discretized.
 
-More generally, whenever two expressions are compared, the type system equates their cut sets so they are discretized over the same intervals. These cut sets then propagate backward through the control flow to all contributing subexpressions. Figure~\ref{fig:control-flow-gaussian} shows how this information flows.
+More generally, whenever two expressions are compared, the type system equates their cut sets so they are discretized over the same intervals. These cut sets then propagate backward through the control flow to all contributing subexpressions. Figure~\ref{fig:control-flow-gaussian} illustrates this non-local propagation, which the soundness proof must relate through a semantic coupling relation.
 
 \input{figures/cf-propagation.tex}
 
@@ -162,7 +162,7 @@ Now, the discretized program becomes:
 
 \subsection{Discrete Latent Variable}\label{sec:examples:5}
 
-Continuous distributions can have parameters that depend on discrete random choices. In this example, a Gaussian distribution's standard deviation is determined by a such a random choice:
+Continuous distributions can have parameters that depend on discrete random choices. In this example, a Gaussian distribution's standard deviation is determined by such a random choice:
 
 \begin{lstlisting}[escapeinside={<@}{@>},aboveskip=1em,belowskip=1em]
     let x = if flip() <@\textcolor{purple}{then}@> 0.5 <@\textcolor{purple}{else}@> 1.5 in gaussian(0, <@\textcolor{red}{x}@>) <@\textcolor{orange}{<}@> 0.5
@@ -180,7 +180,7 @@ The type-annotations reveal how the variable $x$ determines the standard deviati
 
 \input{figures/latent-variable.tex}
 
-\noindent Since the variable $x$ is later used as a parameter to the $\gaussian$ distribution, \Slice{} generates a separate case for each possible value that $x$ can take (namely 0.5 and 1.5, from its value set). To support this, the type system uses non-strict inequalities in the cut sets, enabling these values to be mapped to unique integer indices starting from 0. Specifically, the value 0.5 corresponds to index 0 via the type \codetype{\ftb{<=0.5,<=1.5}{0.5}}, and 1.5 corresponds to 1 via \codetype{\ftb{<=0.5,<=1.5}{1.5}}. The resulting discretized program then branches on these discrete values and instantiates the corresponding discrete distribution, depending on which standard deviation was selected by the initial flip:
+\noindent Because $x$ is later used as a parameter to $\gaussian$, \Slice{} generates one case per value in its value set (0.5 and 1.5). To support this, the type system uses non-strict inequalities in cut sets, allowing these values to map to unique integer indices starting at 0. Specifically, 0.5 maps to index 0 via \codetype{\ftb{<=0.5,<=1.5}{0.5}}, and 1.5 maps to index 1 via \codetype{\ftb{<=0.5,<=1.5}{1.5}}. This is a non-local effect: an upstream discrete latent choice determines how a downstream continuous distribution is discretized. The resulting discretized program then branches on these values and instantiates the corresponding discrete distribution for the standard deviation selected by the initial flip:
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em]
     let x = if flip() then 0 else 1 in
