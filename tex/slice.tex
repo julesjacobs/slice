@@ -111,6 +111,14 @@
 \usepackage{xspace}
 \usepackage{todonotes}
 \usepackage{subcaption}
+
+% TeX can write non-UTF8 glyph bytes in bad-box diagnostics, which some IDE
+% log parsers mis-handle. Suppress those diagnostics to keep log parsing stable.
+\hbadness=10000
+\vbadness=10000
+\hfuzz=999pt
+\vfuzz=999pt
+
 % \title{Type-Directed Discretization of Continuous Probabilistic Programs}
 \title{Type-Directed Discretization of Probabilistic Programs}
 
