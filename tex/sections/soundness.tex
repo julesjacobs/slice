@@ -1,8 +1,17 @@
-\section{Soundness of our Approach}
+\section{Operational Semantics and Soundness}
 \label{sec:soundness}%
 %
-We establish soundness of exact discretization as follows: every expression $e:\bool$ is semantically equivalent to $\discretize{e : \bool} : \bool$. Because discretization decisions are driven by non-local, type-propagated information, this is not a local rule-by-rule argument. To prove the claim rigorously, we (i) define operational semantics for the source and discretized programs and (ii) relate their executions through a coupling-style logical relation. We provide the high-level proof idea in the main text; all details are in \Cref{sec:app:soundness_new}.
+We now establish the soundness of our approach in the following sense: For \emph{every} expression $e:\bool$ possibly including \emph{higher-order functions, recursion, and conditioning} 
 %
+\begin{center}
+	\emph{$e: \bool$ and $\discretize{e : \bool}:\bool$ (obtained from \Cref{fig:discretization-code}) are semantically equivalent.}
+\end{center}
+%its discretized expression $\discretize{e : \bool} : \bool$ obtained from the rules in \Cref{fig:discretization-code}
+%
+% exact discretization as follows: every expression $e:\bool$ is semantically equivalent to $\discretize{e : \bool} : \bool$. 
+ The first step is to make formal sense of what it means for two expressons to be semantically equivalent. For that, we will define a monadic operational semantics for our language. We will then proceed by proving the above claim. Because discretization decisions are driven by non-local, type-propagated information, this is not a local rule-by-rule argument. To prove the claim rigorously, we relate the executions of $e$ and $\discretize{e}$ through a coupling-style logical relation. %We provide the high-level proof idea in the main text; all details are in \Cref{sec:app:soundness_new}.
+%
+\kb{test}
 \subsection{Operational Semantics}
 %
 We start by defining a small-step operational functional $\sem{\cdot}\colon Expr_\tau \to\mathcal{D}(Expr_\tau + \bot)$ (cf.\ \Cref{tab:smallstep-1} on page \pageref{tab:smallstep-1}), mapping each expression $e$ of type $\tau$ to a (possibly continuous) subdistribution $\sem{e:\tau}$ over expressions of type $\tau$ or $\bot$. The missing probability mass corresponds to the probability of encountering an error due to ill-defined invocations of sampling instructions (e.g., $\uniform(1,0)$). The probability of $\bot$ is the probability of observation failure. 
