@@ -203,7 +203,7 @@ skeletons by adding a distinguished typing rule for holes.
 		\text{Skel}_{\tau} := \{s \in \text{Skel} \mid s : \tau\}.
 	\]
 \end{definition}
-
+\kb{make sure this is the case. currently its not}
 \begin{lemma}[Skel is countable]\label{lem:skel-countable}
 	The set $\text{Skel}_{\tau}$ is countable.
 \end{lemma}
@@ -521,6 +521,7 @@ This union is disjoint because every typed expression $e : \tau$ has a unique sk
 		\item[(ii)] $\mathcal{F}_{Expr_\tau} \subseteq \sigma(\mathcal{T})$.
 	\end{itemize}
 
+\kb{only disjoint if we a assume all subexpressions are also annotated with types. But doing this naively yields Both $Expr_\tau$ and $Skel_\tau$ to be uncountable. fix}
 	\paragraph{Topology on $Expr_\tau$.}
 	For each $s \in \mathrm{Skel}_\tau$, the bijection $\decompose_{s;\tau} : Expr_{s;\tau} 
 	\to A_{s;\tau}$ transports the subspace topology $\mathcal{T}_{A_{s;\tau}}$ on $A_{s;\tau} \subseteq 

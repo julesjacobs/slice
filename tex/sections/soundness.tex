@@ -1,7 +1,7 @@
 \section{Operational Semantics and Soundness}
 \label{sec:soundness}%
 %
-We now establish the soundness of our approach in the following sense: For \emph{every} expression $e:\bool$ possibly including \emph{higher-order functions, recursion, and conditioning} 
+We now establish the soundness of our approach in the following sense: For \emph{every} expression $e:\bool$ possibly including \emph{continuous sampling, higher-order functions, recursion, and conditioning} 
 %
 \begin{center}
 	\emph{$e: \bool$ and $\discretize{e : \bool}:\bool$ (obtained from \Cref{fig:discretization-code}) are semantically equivalent.}
@@ -9,11 +9,23 @@ We now establish the soundness of our approach in the following sense: For \emph
 %its discretized expression $\discretize{e : \bool} : \bool$ obtained from the rules in \Cref{fig:discretization-code}
 %
 % exact discretization as follows: every expression $e:\bool$ is semantically equivalent to $\discretize{e : \bool} : \bool$. 
- The first step is to make formal sense of what it means for two expressons to be semantically equivalent. For that, we will define a monadic operational semantics for our language. We will then proceed by proving the above claim. Because discretization decisions are driven by non-local, type-propagated information, this is not a local rule-by-rule argument. To prove the claim rigorously, we relate the executions of $e$ and $\discretize{e}$ through a coupling-style logical relation. %We provide the high-level proof idea in the main text; all details are in \Cref{sec:app:soundness_new}.
+ The first step is to make formal sense of semantic equivalence. For that, we will define a monadic operational semantics for our language. We will then proceed by proving the above claim. This is non-trivial:  Discretization decisions are driven by non-local, type-propagated information, so that we cannot proceed by a local rule-by-rule argument. To prove the claim rigorously, we relate the executions of $e$ and $\discretize{e}$ through a coupling-style logical relation. %We provide the high-level proof idea in the main text; all details are in \Cref{sec:app:soundness_new}.
 %
-\kb{test}
+\kb{go back here}
 \subsection{Operational Semantics}
 %
+The type-directedness of our discretization function $\discretize{\cdot}$ requires our soundness argument to depend on the types of the given (sub-)expressions as well. We thus start by defining a \emph{type-dependent semantic functional}, i.e., we define for every type $\tau$ a function
+%
+\[
+	\bigsem{\cdot}\colon Expr_\tau \to \mathcal{D}(Vals_\tau + \bot)~,
+\]
+%
+mapping each expression $e:\tau$ to a (possibly continuous) \emph{sub}-probability measure $\bigsem{e : \tau}$ over values of type $\tau$ or $\bot$. In the presence of possibly unbounded recursion \emph{and} conditioning, our semantics has to distinguish between non-termination and observation failure, which we realize as follows: The \enquote{missing} probability mass in $\bigsem{e : \tau}$ ist the probability that $e$ diverges. The probability of $\bot$ is the probability of encountering an observation failure. With this model, semantic equivalence indeed captures our sought-after correctness claim: If $\bigsem{e:\bool} = \bigsem{\discretize{e:\bool}:\bool}$, then $e:\bool$ and $\discretize{e:\bool}:\bool$ have the same probability of producing $\true$, $\false$, or an observation failure.
+\kb{go back here}
+
+
+
+\kbin{old}
 We start by defining a small-step operational functional $\sem{\cdot}\colon Expr_\tau \to\mathcal{D}(Expr_\tau + \bot)$ (cf.\ \Cref{tab:smallstep-1} on page \pageref{tab:smallstep-1}), mapping each expression $e$ of type $\tau$ to a (possibly continuous) subdistribution $\sem{e:\tau}$ over expressions of type $\tau$ or $\bot$. The missing probability mass corresponds to the probability of encountering an error due to ill-defined invocations of sampling instructions (e.g., $\uniform(1,0)$). The probability of $\bot$ is the probability of observation failure. 
 
 Using this small-step operational functional, we employ a limit construction to define a (big-step) functional $\bigsem{\cdot}\colon Expr_\tau \to \mathcal{D}(Vals_\tau + \bot)$, mapping each expression $e$ of type $\tau$ to a subdistribution $\bigsem{e:\tau}$ over \emph{values} of type $\tau$ or $\bot$. The missing probability mass now \emph{additionally} captures $e$'s non-termination probability, and the probability of $\bot$ is the probability of observation failure. 
