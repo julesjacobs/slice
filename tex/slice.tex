@@ -32,11 +32,17 @@
 % acmart shares the theorem counter across theorem-like environments.
 % Set cleveref's alias while inside lemma so plain \label{...} gets Lemma.
 \AtEndPreamble{%
+  \ifcsname remark\endcsname\else
+    \theoremstyle{remark}
+    \newtheorem{remark}[theorem]{Remark}
+    \theoremstyle{acmplain}
+  \fi
   \AtBeginEnvironment{lemma}{\crefalias{theorem}{lemma}}%
   \AtBeginEnvironment{definition}{\crefalias{theorem}{definition}}%
+  \AtBeginEnvironment{remark}{\crefalias{theorem}{remark}}%
   \AtEndEnvironment{lemma}{\crefalias{theorem}{theorem}}%
   \AtEndEnvironment{definition}{\crefalias{theorem}{definition}}%
-
+  \AtEndEnvironment{remark}{\crefalias{theorem}{theorem}}%
 }
 
 %\usepackage[table,xcdraw]{xcolor}
