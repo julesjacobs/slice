@@ -254,36 +254,37 @@ We now consider a program with recursion, where control flow may revisit the sam
 We now consider a more realistic example, modeling a stochastic coverage process over a continuous domain, involving higher-order functions and unbounded recursion. The program repeatedly samples points from a uniform distribution: each sample “covers” an $\varepsilon$-interval around it, and we underapproximate which regions of $[0,1]$ have been covered so far. The process continues for a random number of steps (via probabilistic stopping), and we finally check whether the entire interval has been covered.
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em]
-(* Sample a point *)
-let sample_point = fun _ -> uniform(0.0, 1.0) in
+let within = fun lo -> fun hi -> fun y ->
+(y > lo) && (y <= hi)
+in 
 
-(* Coverage predicates for grid cells *)
-let cover01 = fun y -> (y > 0.0) && (y < 0.2) in
-let cover02 = fun y -> (y > 0.2) && (y < 0.4) in
-let cover03 = fun y -> (y > 0.4) && (y < 0.6) in
-let cover04 = fun y -> (y > 0.6) && (y < 0.8) in
-let cover05 = fun y -> (y > 0.8) && (y < 1.0) in
+let update = fix update y := fun ys -> 
+    match ys with 
+    | nil -> nil
+    | h :: t -> ((fst h || ((snd h) y)), snd h) :: (update y t)
+    end
+in 
 
-(* One step updates coverage state *)
-let step = fun st ->
-  let y = sample_point () in
-  (* unpack st = (b01, (b03, (b05, (b07, b09)))) *)
-  ...
-  (* update each flag with OR *)
-  (b01 || (cover01 y), (b02 || (cover02 y), (b03 || (cover03 y),
-  	 (b04 || (cover04 y), b05 || (cover05 y)))))
+let step = fun ys -> update (uniform(0,1)) ys
 in
 
-(* Check if all regions are covered *)
-let done = fun st -> b01 && b03 && b05 && b07 && b09 in
+let done = fix done ys :=
+    match ys with 
+    | nil -> true 
+    | h :: t -> (fst h) && (done t)
+    end
+in 
 
-(* Random stopping loop *)
+(* At each iteration, stop with a certain probability *)
 let cover = fix cover st :=
-  if uniform(0,1) < 0.01 then st
-  else cover (step st)
+  if uniform(0,1) < 0.01 then st 
+  else 
+    cover (step st)
 in
 
-let init = (false, (false, (false, (false, false)))) in
+let init = (false, within 0.0 0.2) :: (false, within 0.2 0.4) ::
+  (false, within 0.4 0.6) :: (false, within 0.6 0.8) :: (false, within 0.8 1.0) :: nil
+in 
 
 (* Query if we covered the whole interval *)
 let final = cover init in
@@ -298,24 +299,38 @@ done final
 \noindent The resulting discretized program is:
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em]
-...
-let sample_point = fun _ ->
-  discrete(0.2, 0.2, 0.2,
-           0.2, 0.2) in
+let within = fun lo -> fun hi -> fun y ->
+(y > lo) && (y <= hi)
+in 
 
-(* coverage predicates now operate on indices *)
-let cover01 = fun y -> y > 0 && y < 1 in
-let cover03 = fun y -> y > 1 && y < 2 in
-...
+let update = fix update y := fun ys -> 
+    match ys with 
+    | nil -> nil
+    | h :: t -> ((fst h || ((snd h) y)), snd h) :: (update y t)
+    end
+in 
 
-let cover = fix cover st :=
-  if discrete(0.01, 0.99) < 1 then st
-  else cover (step st)
+let step = fun ys -> update (discrete(0, 0.2, 0.2, 0.2, 0.2, 0.2, 0)) ys
 in
 
-let init = (false, (false, (false, (false, false)))) in
+let done = fix done ys :=
+    match ys with 
+    | nil -> true 
+    | h :: t -> (fst h) && (done t)
+    end
+in 
 
-let final = cover init in 
+let cover = fix cover st :=
+    if discrete(0.01, 0.99) < 1 then st 
+    else 
+    cover (step st)
+in
+
+let init = (false, within 0 1) :: (false, within 1 2) ::
+    (false, within 2 3) :: (false, within 3 4) :: (false, within 4 5) :: nil
+in 
+
+let final = cover init in
 done final
 \end{lstlisting}
 
