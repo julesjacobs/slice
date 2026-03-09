@@ -1,0 +1,99 @@
+\begin{figure}[t]
+    \centering
+    \begin{tikzpicture}[x=10cm,y=1cm, font=\small]
+    
+    % ---------------------------------------
+    % #1 = vertical shift
+    % #2 = epsilon
+    % #3 = epsilon label
+    % #4 = y1
+    % #5 = y2
+    % #6 = text showing actual sampled values
+    % ---------------------------------------
+    \newcommand{\DrawCoverLine}[6]{%
+      \begin{scope}[shift={(0,#1)}]
+        \pgfmathsetmacro{\eps}{#2}
+        \pgfmathtruncatemacro{\N}{round(1/\eps)}
+    
+        % Number line
+        \draw[thick] (0,0) -- (1,0);
+        \draw[thick] (0,-0.08) -- (0,0.08);
+        \draw[thick] (1,-0.08) -- (1,0.08);
+    
+        % Partition ticks
+        \foreach \k in {0,...,\N} {
+          \pgfmathsetmacro{\x}{\k*\eps}
+          \draw[gray!65, line width=0.35pt] (\x,-0.055) -- (\x,0.055);
+        }
+    
+        % Major labels
+        \foreach \z in {0,0.2,0.4,0.6,0.8,1} {
+          \node[below] at (\z,-0.07) {\pgfmathprintnumber[fixed,precision=1]{\z}};
+        }
+    
+        % Epsilon label
+        \node[left] at (-0.08,0) {#3};
+    
+        % Draw the two sample points
+        \foreach \s/\name in {#4/$y_1$, #5/$y_2$} {
+          % True epsilon-neighborhood
+          \pgfmathsetmacro{\L}{max(0,\s-\eps)}
+          \pgfmathsetmacro{\R}{min(1,\s+\eps)}
+          \pgfmathsetmacro{\C}{(\L+\R)/2}
+          \pgfmathsetmacro{\Rad}{(\R-\L)/2 + 0.02}
+    
+          % Underapproximation = partition cell containing s
+          \pgfmathtruncatemacro{\Cell}{floor(\s/\eps + 0.000001)}
+          \pgfmathsetmacro{\A}{\Cell*\eps}
+          \pgfmathsetmacro{\B}{min(1,(\Cell+1)*\eps)}
+    
+          % Shade only the partition cell
+          \fill[blue!25] (\A,-0.12) rectangle (\B,0.12);
+    
+          % Sample point
+          \fill[black] (\s,0) circle (1.4pt);
+          \node[above=2pt] at (\s,0) {\name};
+    
+          % Oval showing the true epsilon-ball (centered on the number line)
+          \draw[gray!70, thick, densely dotted, line cap=round] (\C,0)
+            ellipse [x radius=\Rad, y radius=0.12];
+        }
+    
+        % Explicit values of y1 and y2
+        \node[anchor=west, align=left] at (1.05,0.20) {#6};
+      \end{scope}
+    }
+    
+    % Top: epsilon = 0.2
+    \DrawCoverLine
+      {0.0}
+      {0.2}
+      {$\varepsilon=0.2$}
+      {0.30}
+      {0.74}
+      {$y_1=0.30$\\$y_2=0.74$}
+    
+    % Middle: epsilon = 0.1
+    \DrawCoverLine
+      {-1.45}
+      {0.1}
+      {$\varepsilon=0.1$}
+      {0.18}
+      {0.66}
+      {$y_1=0.18$\\$y_2=0.66$}
+    
+    % Bottom: epsilon = 0.01
+    \DrawCoverLine
+      {-2.90}
+      {0.01}
+      {$\varepsilon=0.01$}
+      {0.273}
+      {0.834}
+      {$y_1=0.273$\\$y_2=0.834$}
+    
+    \end{tikzpicture}
+    \caption{Illustration of \(\varepsilon\)-coverage on \([0,1]\) at three resolutions. 
+    For each sampled point \(y\), the oval indicates the true covered interval 
+    \([y-\varepsilon,y+\varepsilon]\cap[0,1]\), while the shaded region shows the finite-state underapproximation used by the abstraction: only the partition cell containing \(y\) is marked as covered. As the partition becomes finer, this underapproximation becomes more faithful to the true $\varepsilon$-coverage.}
+    \label{fig:epsilon-covering-underapprox}
+\end{figure}
