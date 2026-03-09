@@ -254,17 +254,15 @@ We now consider a program with recursion, where control flow may revisit the sam
 We now consider a more realistic example, modeling a stochastic coverage process over a continuous domain, involving higher-order functions and unbounded recursion. The program repeatedly samples points from a uniform distribution: each sample “covers” an $\varepsilon$-interval around it, and we underapproximate which regions of $[0,1]$ have been covered so far. The process continues for a random number of steps (via probabilistic stopping), and we finally check whether the entire interval has been covered.
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em]
-let eps = 0.2 in
-
 (* Sample a point *)
 let sample_point = fun _ -> uniform(0.0, 1.0) in
 
 (* Coverage predicates for grid cells *)
 let cover01 = fun y -> (y > 0.0) && (y < 0.2) in
-let cover03 = fun y -> (y > 0.2) && (y < 0.4) in
-let cover05 = fun y -> (y > 0.4) && (y < 0.6) in
-let cover07 = fun y -> (y > 0.6) && (y < 0.8) in
-let cover09 = fun y -> (y > 0.8) && (y < 1.0) in
+let cover02 = fun y -> (y > 0.2) && (y < 0.4) in
+let cover03 = fun y -> (y > 0.4) && (y < 0.6) in
+let cover04 = fun y -> (y > 0.6) && (y < 0.8) in
+let cover05 = fun y -> (y > 0.8) && (y < 1.0) in
 
 (* One step updates coverage state *)
 let step = fun st ->
@@ -272,7 +270,8 @@ let step = fun st ->
   (* unpack st = (b01, (b03, (b05, (b07, b09)))) *)
   ...
   (* update each flag with OR *)
-  (nb01, (nb03, (nb05, (nb07, nb09))))
+  (b01 || (cover01 y), (b02 || (cover02 y), (b03 || (cover03 y),
+  	 (b04 || (cover04 y), b05 || (cover05 y)))))
 in
 
 (* Check if all regions are covered *)
