@@ -9,10 +9,11 @@ We now establish the soundness of our approach in the following sense: For \emph
 %its discretized expression $\discretize{e : \bool} : \bool$ obtained from the rules in \Cref{fig:discretization-code}
 %
 % exact discretization as follows: every expression $e:\bool$ is semantically equivalent to $\discretize{e : \bool} : \bool$. 
- The first step is to make formal sense of semantic equivalence. For that, we will define a monadic operational semantics for our language. We will then proceed by proving the above claim. This is non-trivial:  Discretization decisions are driven by non-local, type-propagated information, so that we cannot proceed by a local rule-by-rule argument. To prove the claim rigorously, we relate the executions of $e$ and $\discretize{e}$ through a coupling-style logical relation. %We provide the high-level proof idea in the main text; all details are in \Cref{sec:app:soundness_new}.
+ The first step is to make formal sense of semantic equivalence. For that, we will define a monadic operational semantics for our language in \Cref{sec:opsem}. We will then proceed by proving the above claim. This is non-trivial:  Discretization decisions are driven by non-local, type-propagated information, so that we cannot proceed by a local rule-by-rule argument. To prove the claim rigorously, we relate the executions of $e$ and $\discretize{e}$ through a coupling-style logical relation in \Cref{sec:opsem}. %We provide the high-level proof idea in the main text; all details are in \Cref{sec:app:soundness_new}.
 %
 \kb{go back here}
 \subsection{Operational Semantics}
+\label{sec:opsem}
 %
 The type-directedness of our discretization function $\discretize{\cdot}$ requires our soundness argument to depend on the types of the given (sub-)expressions as well. We thus start by defining a \emph{type-dependent semantic functional}, i.e., we define for every type $\tau$ a function
 %
@@ -21,7 +22,6 @@ The type-directedness of our discretization function $\discretize{\cdot}$ requir
 \]
 %
 mapping each expression $e:\tau$ to a (possibly continuous) \emph{sub}-probability measure $\bigsem{e : \tau}$ over values of type $\tau$ or $\bot$. In the presence of possibly unbounded recursion \emph{and} conditioning, our semantics has to distinguish between non-termination and observation failure, which we realize as follows: The \enquote{missing} probability mass in $\bigsem{e : \tau}$ ist the probability that $e$ diverges. The probability of $\bot$ is the probability of encountering an observation failure. With this model, semantic equivalence indeed captures our sought-after correctness claim: If $\bigsem{e:\bool} = \bigsem{\discretize{e:\bool}:\bool}$, then both expressions have the same probability of producing $\true$, $\false$, or an observation failure.
-\kb{go back here}
 
 \subsubsection{Small Step Semantics}
 %
@@ -99,6 +99,7 @@ which is well-defined by the monotone convergence theorem: the sequence $(\bigse
 
 
 \subsection{Soundness via Probabilistic Couplings}
+\label{C}
 %
 We first state the central theorem, then outline out coupling-style relational argument.
 %
