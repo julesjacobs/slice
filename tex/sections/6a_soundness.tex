@@ -187,6 +187,7 @@ Let $(X,\Sigma)$ be a measurable space and let $x \in X$. The
 \todo[inline]{Mention that these constructions are nontrivial}
 
 \subsection{Measure space on expressions}
+\label{app:measure_space_expressions}
 To make the probabilistic semantics precise, we construct an appropriate measure space structure on the set of expressions by factoring out real numbers using the notion of what we call \emph{expression skeletons}.
 
 \begin{definition}[Expression Skeleton]
@@ -886,6 +887,7 @@ Let $X$ be a set equipped with a suitable measurable space so that $\mathcal{D}(
 \end{proof}
 
 \subsection{Small-Step Semantics}
+\label{app:small-step}
 \input{figures/sem_smallstep}
 
 Throughout this section, we denote by $e :\tau$ a well-typed expression of type $\tau$ and implicitly assume that all sub-expressions are annotated with types, as well. Moreover, for the typed expression $ e: \tau = \uniform(e_1 : \float[B_1; V_1], e_2 :\float[B_2;V_2]) : \float[B,V]$ with $B,B_1,B_2 \neq \top$ and $V_1,V_2\neq\top$, we introduce an auxiliary statement $\dc$ and let 

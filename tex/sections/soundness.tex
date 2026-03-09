@@ -25,9 +25,30 @@ mapping each expression $e:\tau$ to a (possibly continuous) \emph{sub}-probabili
 
 \subsubsection{Small Step Semantics}
 %
-The type-dependant semantic functional $\bigsem{\cdot}$ is defined via a \emph{small-step} semantic functional $\sem{\cdot}\colon Expr_\tau \to \mathcal{D}(Expr_\tau + \bot)$. Defining the latter requires to carefully design a suitable measurable space over the set of expressions of type $\tau$ and $\bot$. Care must be taken since, e.g., expressions of type $\floattype{\top}{\{0.3,0.5\}}$
-%
+The type-dependent semantic functional $\bigsem{\cdot}$ is defined via a \emph{small-step} semantic functional $\sem{\cdot}\colon Expr_\tau \to \mathcal{D}(Expr_\tau + \bot)$. Defining the latter requires to carefully design a suitable measurable space over the set of expressions of type $\tau$ and $\bot$. All details, including the required prerequisites from measure theory, are presented in \Cref{app:measure_space_expressions}. Let us consider the key idea here.
 
+Let $\tau=\bool$ for the sake of concreteness. Care must be taken since, e.g., sub-expressions of type $\floattype{B}{\{3.5,4.5\}}$ cannot evaluate to \emph{arbitrary} reals but are restricted to the values $\{3.5,4.5\}$. We tackle this by extracting from each type-annotated expression a suitable \emph{skeleton}, where float constants are replaced by \enquote{holes} (hence the term \enquote{skeleton}). For instance, the expression
+%
+\[
+	e \quad = \quad (x : \floattype{\clt{3.5}, \clt{4.5}}{\top}
+	\;<\;
+	y : \floattype{\clt{3.5}, \clt{4.5}}{\{3.5,4.5 \}})
+	: \bool
+\]
+%
+%
+gives rise to the skeleton
+%
+\[
+	s \quad = \quad (\square : \floattype{\clt{3.5}, \clt{4.5}}{\top}
+	\;<\;
+	\square : \floattype{\clt{3.5}, \clt{4.5}}{\{3.5,4.5 \}})
+	: \bool
+\]
+%
+and the type annotations tell us that the possible values these holes can be filled with are in $\Reals \times \{3.5,4.5 \}$. We can thus inherit a measurable space over over all well-typed expressions arising from $s$ from the standard Borel measurable space over $\Reals \times \{3.5,4.5 \}$. The measurable space over \emph{all} well-typed expressions of type $\bool$ (i.e., over $Expr_\bool$) is then obtained from the measurable spaces of \emph{all} such skeletons that give rise to expressions of type $\bool$.
+
+Equipped with this family of of measurable spaces, we define the small-step functional $\sem{\cdot}$ in the expected, type-preserving manner (cf.\ \Cref{tab:smallstep-1,tab:smallstep-2}). 
 
 \kbin{old}
 We start by defining a small-step operational functional $\sem{\cdot}\colon Expr_\tau \to\mathcal{D}(Expr_\tau + \bot)$ (cf.\ \Cref{tab:smallstep-1} on page \pageref{tab:smallstep-1}), mapping each expression $e$ of type $\tau$ to a (possibly continuous) subdistribution $\sem{e:\tau}$ over expressions of type $\tau$ or $\bot$. The missing probability mass corresponds to the probability of encountering an error due to ill-defined invocations of sampling instructions (e.g., $\uniform(1,0)$). The probability of $\bot$ is the probability of observation failure. 
