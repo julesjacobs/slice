@@ -28,6 +28,12 @@
     {\tau_1 <: \tau_2 \and \Gamma \vdash e : \tau_1}
     {\Gamma \vdash e : \tau_2}
 \end{mathpar}
-\caption{Subtyping relation for Slice types.}
+\caption{Subtyping relation. For both cut- and value sets, we let  $			\latticeelem \latticeleq \latticeelem'
+				~\text{iff}~
+				\begin{cases}
+						\latticeelem \subseteq \latticeelem' &\text{if $\latticeelem\neq \top$ and $\latticeelem'\neq \top$} \\
+						%
+						\latticeelem' = \top & \text{otherwise}~.
+					\end{cases}$}
 \label{fig:subtyping}
 \end{figure}
