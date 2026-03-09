@@ -46,7 +46,7 @@ gives rise to the skeleton
 	: \bool
 \]
 %
-and the type annotations tell us that the possible values these holes can be filled with are in $\Reals \times \{3.5,4.5 \}$. We can thus inherit a measurable space over over all well-typed expressions arising from $s$ from the standard Borel measurable space over $\Reals \times \{3.5,4.5 \}$. The measurable space over \emph{all} well-typed expressions of type $\bool$ (i.e., over $Expr_\bool$) is then obtained from the measurable spaces of \emph{all} such skeletons that give rise to expressions of type $\bool$.
+and the type annotations tell us that the possible values these holes can be filled with are in $\Reals \times \{3.5,4.5 \}$. We can thus inherit a measurable space over over all well-typed expressions arising from this partiuclar skeleton $s$ from the standard Borel measurable space over $\Reals \times \{3.5,4.5 \}$. The measurable space over \emph{all} well-typed expressions of type $\bool$ (i.e., over $Expr_\bool$) is then obtained from the measurable spaces of \emph{all} such skeletons that give rise to expressions of type $\bool$.
 
 Equipped with this family of of measurable spaces, we define the small-step functional $\sem{\cdot}$ in the expected, type-preserving manner (cf.\ \Cref{tab:smallstep-1,tab:smallstep-2}). For instance, if $e_1$ is not a value, then\footnote{Put formally, $(\mu \gg\!= f)(A) = \int f(x)(A) \cdot \mu(dx)$, see \Cref{def:dist-monad} for details. $\dirac{e}$ denotes the Dirac distribution of $e$.}
 %
