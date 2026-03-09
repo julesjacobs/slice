@@ -651,6 +651,7 @@ Note that in general, given $(X, \Sigma_X)$ and $(Y, \Sigma_Y)$ to be measurable
 Let $X$ be a set equipped with a suitable measurable space so that $\mathcal{D}(X + \bot)$ denotes the set of probability measures over $X + \bot$. We will make heavy use of the following generic monad construction, for which one easily verifies the monad laws:
 
 \begin{definition}[Distribution Monad with Error]
+	\label{def:dist-monad}
 	We define 
 	%
 	\begin{align*}
@@ -1814,6 +1815,7 @@ By~\Cref{lem:bigstepsem1,lem:bigstepsem2}, the sequence $\bigsemstep{e : \tau}{n
 \end{proof}
 
 \begin{lemma}[n-step projection]
+	\label{lem:proj_cont}
 	For all $n \in \Nats$, 
 	\begin{enumerate}
 		\item $\pi_1(\bigsemstep{e : \tau,\discretize{e} : \discretize{\tau}}{n}) = \bigsemstep{e : \tau}{n}$
