@@ -66,6 +66,7 @@ i.e., $\sem{ e_1 : \tau_1}$ yields the sub-distribution over expressions obtaine
  All details --- including proofs that all monadic binds are well-behaved since they operate on suitable Markov kernels --- are provided in \Cref{app:small-step}.
 
 \subsubsection{From Small-Step to Big-Step Semantics}
+\label{sec:smallsem_to_bigsem}
 %
 We now define $\bigsem{\cdot}$ via $\sem{\cdot}$. For that, we first lift the one-step semantics $\sem{\cdot}$ to an $n$-step semantics $\bigsemstep{\cdot}{n}$ in the expected way:
 %
@@ -88,7 +89,7 @@ This construction is well-defined since the functional $\sem{\cdot}$ itself give
 	\bigsem{e:\tau} = \lambda A. \lim_{n\to\infty} \bigsemstep{e:\tau}{n}(A)~,
 \]
 %
-which is well-defined by the monotone convergence theorem: the sequence $(\bigsemstep{e : \tau}{n})_{n\in\Nats}$ is montonically increasing for every measurable set over $Vals_\tau + \bot$ (cf.\ \Cref{lem:bigstepsem}) and upper-bounded by $1$. Intuitively, executing a program for more and more steps can only increase the probability of terminating in a given set of values or encountering an observation failure.
+which is well-defined by the monotone convergence theorem: the sequence $(\bigsemstep{e : \tau}{n})_{n\in\Nats}$ is montonically increasing for every measurable set $A$ over $Vals_\tau + \bot$ (cf.\ \Cref{lem:bigstepsem}) and upper-bounded by $1$. Intuitively, executing a program for more and more steps can only increase the probability of terminating in a given set of values or encountering an observation failure.
 
 %
 %\kbin{old}
@@ -101,7 +102,7 @@ which is well-defined by the monotone convergence theorem: the sequence $(\bigse
 \subsection{Soundness via Probabilistic Couplings}
 \label{C}
 %
-We first state the central theorem, then outline out coupling-style relational argument.
+We first state the central theorem, then outline our coupling-style correctness argument.
 %
 \begin{theorem}
 	\label{thm:maintext:sound}
@@ -128,7 +129,7 @@ Given $\mu \in \mathcal{D}(P_\tau + \bot)$, we define the \emph{projection of $\
 \]
 %
 %where $\delta_a$ denotes the Dirac distribution of $a$. 
-We recover the semantics of $e$ and $\discretize{e:\tau}$ as follows:
+With projections, we recover the semantics of $e$ and $\discretize{e:\tau}$ as follows:
 \begin{lemma}
 	\label{lem:maintext:small_step_coupling_props}
 	Let $e:\tau$. We have:
@@ -141,8 +142,12 @@ We recover the semantics of $e$ and $\discretize{e:\tau}$ as follows:
 		$\pi_2(\sem{e:\tau, \discretize{e : \tau} : \discretize{\tau}}) = \sem{\discretize{e : \tau}:\discretize{\tau}}$.
 	\end{enumerate}
 \end{lemma}
+%
+\begin{proof}
+	By induction on the typing derivation of $e:\tau$. See \Cref{lem:small_step_coupling_props}.
+\end{proof}
 
-Now, using a limit construction to obtain a coupled \emph{big-step} semantics $\bigsem{\cdot,\cdot} \colon Expr_\tau \to \mathcal{D}(V_\tau + \bot)$, where $V_\tau = \{ (v:\tau, \discretize{v} : \discretize{\tau}) ~|~ v:\tau~\text{is a value} \}$, we prove a suitable continuity property of projection (cf.\ \Cref{lem:proj_cont}) to prove that \ref{lem:maintext:small_step_coupling_props} transfers to $\bigsem{\cdot,\cdot}$. Finally observing that $V_\bool + \bot = \{(\true,\true), (\false,\false), \bot\}$ yields the desired claim:
+Now, using a limit construction analogous to \Cref{lem:small_step_coupling_props} for obtaining a coupled \emph{big-step} semantics $\bigsem{\cdot,\cdot} \colon Expr_\tau \to \mathcal{D}(V_\tau + \bot)$, where $V_\tau = \{ (v:\tau, \discretize{v} : \discretize{\tau}) ~|~ v:\tau~\text{is a value} \}$, we prove a suitable continuity property of projection (cf.\ \Cref{lem:proj_cont}) to conclude that \ref{lem:maintext:small_step_coupling_props} transfers to $\bigsem{\cdot,\cdot}$. Finally observing that $V_\bool + \bot = \{(\true,\true), (\false,\false), \bot\}$ yields the desired claim:
 
 %\noindent
 \emph{Proof of \Cref{thm:maintext:sound}}. Let $v \in \{\true,\false,\bot\}$. We have
