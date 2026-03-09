@@ -11,7 +11,6 @@ We now establish the soundness of our approach in the following sense: For \emph
 % exact discretization as follows: every expression $e:\bool$ is semantically equivalent to $\discretize{e : \bool} : \bool$. 
  The first step is to make formal sense of semantic equivalence. For that, we will define a monadic operational semantics for our language in \Cref{sec:opsem}. We will then proceed by proving the above claim. This is non-trivial:  Discretization decisions are driven by non-local, type-propagated information, so that we cannot proceed by a local rule-by-rule argument. To prove the claim rigorously, we relate the executions of $e$ and $\discretize{e}$ through a coupling-style logical relation in \Cref{sec:opsem}. %We provide the high-level proof idea in the main text; all details are in \Cref{sec:app:soundness_new}.
 %
-\kb{go back here}
 \subsection{Operational Semantics}
 \label{sec:opsem}
 %
@@ -147,7 +146,7 @@ With projections, we recover the semantics of $e$ and $\discretize{e:\tau}$ as f
 	By induction on the typing derivation of $e:\tau$. See \Cref{lem:small_step_coupling_props}.
 \end{proof}
 
-Now, using a limit construction analogous to \Cref{lem:small_step_coupling_props} for obtaining a coupled \emph{big-step} semantics $\bigsem{\cdot,\cdot} \colon Expr_\tau \to \mathcal{D}(V_\tau + \bot)$, where $V_\tau = \{ (v:\tau, \discretize{v} : \discretize{\tau}) ~|~ v:\tau~\text{is a value} \}$, we prove a suitable continuity property of projection (cf.\ \Cref{lem:proj_cont}) to conclude that \ref{lem:maintext:small_step_coupling_props} transfers to $\bigsem{\cdot,\cdot}$. Finally observing that $V_\bool + \bot = \{(\true,\true), (\false,\false), \bot\}$ yields the desired claim:
+Now, using a limit construction analogous to \Cref{sec:smallsem_to_bigsem} for obtaining a coupled \emph{big-step} semantics $\bigsem{\cdot,\cdot} \colon Expr_\tau \to \mathcal{D}(V_\tau + \bot)$, where $V_\tau = \{ (v:\tau, \discretize{v} : \discretize{\tau}) ~|~ v:\tau~\text{is a value} \}$, we prove a suitable continuity property of projection (cf.\ \Cref{lem:proj_cont}) to conclude that \ref{lem:maintext:small_step_coupling_props} transfers to $\bigsem{\cdot,\cdot}$. Finally observing that $V_\bool + \bot = \{(\true,\true), (\false,\false), \bot\}$ yields the desired claim:
 
 %\noindent
 \emph{Proof of \Cref{thm:maintext:sound}}. Let $v \in \{\true,\false,\bot\}$. We have
