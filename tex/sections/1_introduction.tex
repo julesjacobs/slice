@@ -5,6 +5,7 @@
 \kbin{TODO: clean up notation and spacing stuff in appendix}
 \kbin{TODO: Graphs in scaling figuer smaller}
 \kbin{TODO: Update eps-ball example using lists}
+\todo[inline]{TODO: Add diverge in syntax and typing rules}
 Probabilistic programming languages (PPLs) are widely used to model uncertainty~\cite{Moy2025Roulette,Holtzen2020Dice,DeRaedt2007ProbLog,Saad2021SPPL,Carpenter2017Stan,Salvatier2016PyMC3,Bingham2019Pyro,Dillon2017TFP,Tran2016Edward,Tolpin2016Anglican,Goodman2014WebPPL,Pfeffer2009Figaro,Minka2018InferNET,Ge2018Turing,CusumanoTowner2019Gen,Tehrani2020BeanMachine,Goodman2008Church}. Languages with {\em continuous} distributions capture rich models but require reasoning about uncountable domains, whereas purely {\em discrete} languages admit fast and precise inference but cannot express real-valued models.
 
 \Slice{} studies \emph{exact discretization}: a semantics-preserving source-to-source transformation that converts selected continuous behavior into discrete behavior. We target programs where continuous quantities are consumed in a finitely branching, comparison-driven way, so exact inference reduces to a finite problem. The key mechanism is type-directed cut inference: the type system tracks each constant threshold (or {\em cut}) used in comparisons and uses this information to partition continuous domains into finitely many intervals. For example, $\uniform(0,1) < 0.5$ discretizes to $\discrete(0.5,0.5) < 1$, yielding a purely discrete program that existing exact-inference tools can process.

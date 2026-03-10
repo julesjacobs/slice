@@ -249,13 +249,21 @@ We now consider a program with recursion, where control flow may revisit the sam
 
 \noindent Crucially, the resulting program has a finite state space. This enables exact reasoning via finite-state methods such as Markov chain analysis via Storm.
 
-\subsection{Stochastic Coverage with Unbounded Sampling}\label{sec:examples:8}
+\subsection{Random interval-covering over $[0,1]$}\label{sec:examples:8}
 
-We now consider a more realistic example, modeling a stochastic coverage process over a continuous domain, involving higher-order functions and unbounded recursion. The program repeatedly samples points from a uniform distribution: each sample “covers” an $\varepsilon$-interval around it, and we underapproximate which regions of $[0,1]$ have been covered so far. The process continues for a random number of steps (via probabilistic stopping), and we finally check whether the entire interval has been covered.
+We now consider a stochastic coverage process over a continuous domain with both higher-order functions and unbounded recursion. The program first samples four cut points $b_1,b_2,b_3,b_4$ from discrete distributions over candidate boundary values, thereby inducing a random partition of $[0,1]$ into subintervals. It then repeatedly samples points from a Gaussian distribution, marking each interval as covered once a sampled point falls inside it. The process stops after a geometrically distributed number of steps, and finally checks whether the entire interval has been covered.
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em]
 let within = fun lo -> fun hi -> fun y ->
-(y > lo) && (y <= hi)
+    (y >= lo) && (y < hi)
+in 
+
+let b = fun _ -> 
+    discrete(0.18: 0.05, 0.11: 0.24, 0.21: 0.37, 0.09: 0.58, 0.16: 0.78, 0.25: 0.89)
+in
+
+let init = (false, within 0.00 (b ())) :: (false, within (b ()) (b ())) ::
+  (false, within (b ()) (b ())) :: (false, within (b ()) 1.00) :: nil
 in 
 
 let update = fix update y := fun ys -> 
@@ -265,74 +273,25 @@ let update = fix update y := fun ys ->
     end
 in 
 
-let step = fun ys -> update (uniform(0,1)) ys
-in
+let step = fun ys -> update (gaussian(0,1)) ys in
 
-let done = fix done ys :=
-    match ys with 
-    | nil -> true 
-    | h :: t -> (fst h) && (done t)
-    end
-in 
-
-(* At each iteration, stop with a certain probability *)
 let cover = fix cover st :=
-  if uniform(0,1) < 0.01 then st 
-  else 
+if uniform(0,1) < 0.2 then st 
+else 
     cover (step st)
 in
 
-let init = (false, within 0.0 0.2) :: (false, within 0.2 0.4) ::
-  (false, within 0.4 0.6) :: (false, within 0.6 0.8) :: (false, within 0.8 1.0) :: nil
-in 
-
-(* Query if we covered the whole interval *)
-let final = cover init in
-done final
-\end{lstlisting}
-
-\noindent \Slice{} again observes that only a finite partition of the real line matters. The comparisons against the grid boundaries $\{0.0, 0.2, 0.4, 0.6, 0.8, 1.0\}$ induce a cut set that partitions $\R$ into intervals corresponding exactly to these regions. Each sampled point $y$ is therefore abstracted by the index of the region it falls into:
-\[
-[0,0.2),\ [0.2,0.4),\ [0.4,0.6),\ [0.6,0.8),\ [0.8,1].
-\]
-
-\noindent The resulting discretized program is:
-
-\begin{lstlisting}[aboveskip=1em,belowskip=1em]
-let within = fun lo -> fun hi -> fun y ->
-(y > lo) && (y <= hi)
-in 
-
-let update = fix update y := fun ys -> 
-    match ys with 
-    | nil -> nil
-    | h :: t -> ((fst h || ((snd h) y)), snd h) :: (update y t)
-    end
-in 
-
-let step = fun ys -> update (discrete(0, 0.2, 0.2, 0.2, 0.2, 0.2, 0)) ys
-in
-
-let done = fix done ys :=
+let is_covered = fix is_covered ys :=
     match ys with 
     | nil -> true 
-    | h :: t -> (fst h) && (done t)
+    | h :: t -> (fst h) && (is_covered t)
     end
 in 
 
-let cover = fix cover st :=
-    if discrete(0.01, 0.99) < 1 then st 
-    else 
-    cover (step st)
-in
-
-let init = (false, within 0 1) :: (false, within 1 2) ::
-    (false, within 2 3) :: (false, within 3 4) :: (false, within 4 5) :: nil
-in 
-
-let final = cover init in
-done final
+let final = cover init in is_covered final
 \end{lstlisting}
+
+\noindent \Slice{} again observes that only a finite partition of the real line matters. The comparisons against the grid boundaries induce a cut set that partitions $\R$ into intervals corresponding exactly to these regions. Each sampled point $y$ is therefore abstracted by the index of the region it falls into. 
 
 \noindent Crucially, the resulting program has a \emph{finite state space}: the continuous domain $[0,1]$ is reduced to a finite set of regions, and the coverage state is a tuple of Booleans. Despite the original program featuring unbounded sampling and recursion, its behavior is captured exactly by a finite-state system.
 

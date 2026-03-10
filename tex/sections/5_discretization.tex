@@ -108,7 +108,7 @@ where $B= \{ \clt{0.3},\clt{0.5} \}$. The cut set $B$ informs us that the probab
 	\intervals{B}_2 =[0.5, \infty)
 \]
 %
-induced by $B$. Hence, all expressions of type $\text{\ftbn{$B$}{$\ldots$}}$ can be discretized to expressions of the finite type $\fin{3}$, where $\finconst{k}{3}$ represents the $k$-th interval $\intervals{B}_k$ induced by $B$ for $k \in \{0,1,2\}$. 
+induced by $B$. Hence, all expressions of type $\text{\ftbn{B}{$\ldots$}}$ can be discretized to expressions of the finite type $\fin{3}$, where $\finconst{k}{3}$ represents the $k$-th interval $\intervals{B}_k$ induced by $B$ for $k \in \{0,1,2\}$. 
 
 Now consider the discretized expression obtained from computing $\discretize{e: \bool}$ given by 
 %
@@ -142,7 +142,7 @@ such that $c$ is an (open) endpoint of $\text{ToInts}(c)$ for all $c \in\{0.3,0.
 	< (5 : !{\ftb{<5}{5}}!)
 	\end{lstlisting}	
 	%
-	Why can this expression be discretized even though the argument to the second uniform sampling instruction is non-constant? The typing information $(x : \text{\ftbn{$\{\cleq{10},\cleq{20}\}$}{$\{10,20\}$}})$ correctly informs us about the fact that \emph{$x$ can only take the values $10$ and $20$}. Consequently, $x$ (and the $\ifkw$-expression generating it) can be discretized to a finite type $\fin{3}$ such that the probability of the resulting discrete expression evaluating to $\finconst{0}{3}$ (resp.\ $\finconst{1}{3}$) \emph{coincides} with the probability of the continuous expression evaluating to $10$ (resp.\ $20$). Let us (partially) apply $\discretize{e: \bool}$, resulting in:
+	Why can this expression be discretized even though the argument to the second uniform sampling instruction is non-constant? The typing information $(x : \text{\ftbn{\{<=10,<=20\}}{\{10,20\}}})$ correctly informs us about the fact that \emph{$x$ can only take the values $10$ and $20$}. Consequently, $x$ (and the $\ifkw$-expression generating it) can be discretized to a finite type $\fin{3}$ such that the probability of the resulting discrete expression evaluating to $\finconst{0}{3}$ (resp.\ $\finconst{1}{3}$) \emph{coincides} with the probability of the continuous expression evaluating to $10$ (resp.\ $20$). Let us (partially) apply $\discretize{e: \bool}$, resulting in:
 	%
     \begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!,mathescape]
         let x = if discrete(0.5, 0.5) <#2 1#2 then 0#3 else 1#3 in
@@ -173,7 +173,7 @@ A similar intuition applies to discretizable comparisons $e_1 < e_2$, where \emp
 		then 2.5 : !{\ftb{B}{2.5}}! else 3.5 : !{\ftb{B}{3.5}}!)
     \end{lstlisting}
 	%
-	where $B = \{\cleq{2.5}, \cleq{3.5}\}$, and where $e_1 : \text{\ftn{$B$}}$ and $e_2 : \text{\ftbn{$B$}{$\{2.5,3.5\}$}}$. Intuitively, $e_1$ samples from a mixture of a uniform and a dirac distribution, whereas $e_2$ samples from a finite distribution. Why can $e_1 \leq e_2$ be discretized even though neither $e_1$ nor $e_2$ is a constant? The reason is that, as suggested by its type, $e_2$ can only take finitely many values in $\{2.5,3.5\}$. Let us apply $\discretize{\cdot}$ and see what happens:
+	where $B = \{\cleq{2.5}, \cleq{3.5}\}$, and where $e_1 : \text{\ftn{B}}$ and $e_2 : \text{\ftbn{B}{\{2.5,3.5\}}}$. Intuitively, $e_1$ samples from a mixture of a uniform and a dirac distribution, whereas $e_2$ samples from a finite distribution. Why can $e_1 \leq e_2$ be discretized even though neither $e_1$ nor $e_2$ is a constant? The reason is that, as suggested by its type, $e_2$ can only take finitely many values in $\{2.5,3.5\}$. Let us apply $\discretize{\cdot}$ and see what happens:
 	%
 	%
     \begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!,mathescape]

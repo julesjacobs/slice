@@ -69,7 +69,7 @@
 
     \inferrule[\textsc{Unit}]
     {\ }
-    {\Gamma \vdash () : \text{unit}}
+    {\Gamma \vdash () : \unit}
 
     \inferrule[\textsc{FinConst}]
     {0 \leq k < n}
@@ -87,7 +87,7 @@
 
     \inferrule[\textsc{Observe}]
     {\Gamma \vdash e : \bool}
-    {\Gamma \vdash \observekw\; e : \text{unit}}
+    {\Gamma \vdash \observekw\; e : \unit}
 
     \inferrule[\textsc{Seq}]
     {\Gamma \vdash e_1 : \tau_1 \\
@@ -124,7 +124,7 @@
     \inferrule[\textsc{Assign}]
     {\Gamma \vdash e_1 : \text{ref}(\tau) \\
      \Gamma \vdash e_2 : \tau}
-    {\Gamma \vdash e_1 := e_2 : \text{unit}}
+    {\Gamma \vdash e_1 := e_2 : \unit}
 \end{mathpar}
 \caption{Typing rules for general language constructs}
 \label{fig:typing-general-all}

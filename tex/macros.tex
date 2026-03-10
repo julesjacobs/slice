@@ -25,18 +25,43 @@
 \newcommand{\sndkw}{\textnormal{\ttfamily\bfseries snd}}
 \newcommand{\funkw}{\textnormal{\ttfamily\bfseries fun}}
 \newcommand{\observekw}{\textnormal{\ttfamily\bfseries observe}}
-\newcommand{\bool}{\textnormal{\ttfamily\bfseries bool}}
 \newcommand{\matchkw}{\textnormal{\ttfamily\bfseries match}}
 \newcommand{\withkw}{\textnormal{\ttfamily\bfseries with}}
 \newcommand{\refkw}{\textnormal{\ttfamily\bfseries ref}}
 \newcommand{\fixkw}{\textnormal{\ttfamily\bfseries fix}}
+\newcommand{\matchcase}{\boldsymbol{\mid}} % The | in the match e with ...
+\newcommand{\diverge}{\textnormal{\ttfamily\bfseries diverge}}
+\newcommand{\logand}{\mathrel{\&\&}}                    % logical and
+\newcommand{\logor}{\mathrel{||}}                       % logical or
+\newcommand{\lognot}{\text{not}}                        % logical not
+
+% Types
+\newcommand{\bool}{\textnormal{\ttfamily\bfseries bool}}
 \newcommand{\intty}{\textnormal{\ttfamily\bfseries int}}
 \newcommand{\float}{\textnormal{\ttfamily\bfseries float}}
 \newcommand{\floattype}[2]{\mathnormal{\float}[#1; #2]}
 \newcommand{\fin}[1]{\textnormal{\ttfamily\bfseries fin}(#1)}
 \newcommand{\listty}[1]{\textnormal{\ttfamily\bfseries list}(#1)}
-\newcommand{\matchcase}{\boldsymbol{\mid}} % The | in the match e with ...
-\newcommand{\diverge}{\textnormal{\ttfamily\bfseries diverge}}
+\newcommand{\unit}{\textnormal{\ttfamily\bfseries unit}}
+
+% Macros for finite type operations
+\newcommand{\finconst}[2]{#1_{\##2}}                    % k_{#n}
+\newcommand{\finlt}[1]{<_{\#{#1}}}                      % <#n with subscript
+\newcommand{\finleq}[1]{\leq_{\#{#1}}}                  % <=#n with subscript
+\newcommand{\fingt}[1]{>_{\#{#1}}}                      % >#n with subscript
+\newcommand{\fingeq}[1]{\geq_{\#{#1}}}                  % >=#n with subscript
+\newcommand{\fineq}[1]{==_{\#{#1}}}                     % ==#n with subscript
+
+% Macros for float type notation with proper braces (to be used in lstlisting)
+\definecolor{typecolor}{HTML}{4169E1} % RoyalBlue
+\newcommand{\codetype}[1]{\textcolor{typecolor}{\ttfamily\bfseries#1}}
+\newcommand{\ftnv}[1]{\codetype{float[\{#1\}]}}  % Cuts only, no values
+\newcommand{\ftb}[2]{\codetype{float[\{#1\}; \{#2\}]}}  % Both bags have values
+\newcommand{\ft}[1]{\codetype{float[\{#1\}; T]}}        % Cuts only, values are T
+\newcommand{\ftbn}[2]{\codetype{float[#1; #2]}}  % Both bags have values
+\newcommand{\ftn}[1]{\codetype{float[#1; T]}}        % Cuts only, values are T
+\newcommand{\ftt}{\codetype{float[T; T]}}               % Both bags are T
+\newcommand{\ftv}[1]{\codetype{float[T; \{#1\}]}}       % Cuts are T, values specified
 
 \newcommand{\subst}[2]{[#1/#2]}
 % Meta variables
@@ -114,10 +139,9 @@
 % Macros for exact inference outputs
 \newcommand{\result}[2]{\{\textit{true}: #1, \textit{false}: #2\}}
 
-% Holes for the expression skeleton
-\newcommand{\holes}{\text{holes}}
-
-% Decomposition function for expression skeletons
+% Macros for expression skeletons
+\newcommand{\skel}{Skel}
+\newcommand{\holes}{holes}
 \newcommand{\decompose}{\mathsf{dec}}
 
 % Colors 

@@ -14,8 +14,8 @@
 				& \text{if } e = \finconst{k}{n} : \fin{n} \\[8pt]
 			(\diverge : \tau, ())
 				& \text{if } e = \diverge : \tau \\[8pt]
-			(() : \text{unit}, ())
-				& \text{if } e = () : \text{unit} \\[8pt]
+			(() : \unit, ())
+				& \text{if } e = () : \unit \\[8pt]
 			((\square, \floattype{B}{V}) : \floattype{B}{V}, c)
 				& \text{if } e = c : \floattype{B}{V} \\[8pt]
 			(\discrete(p_0,\ldots,p_{n-1}) : \fin{n}, ())
@@ -41,8 +41,8 @@
             (\letkw\; x = \decompose(e_1)_1\; \inkw\; \decompose(e_2)_1 : \tau, \\
             (\decompose(e_1)_2, \decompose(e_2)_2))
                 & \text{if } e = \letkw\; x = e_1\; \inkw\; e_2 : \tau \\[8pt]
-            (\observekw(\decompose(e_1)_1 : \bool) : \text{unit}, \decompose(e_1)_2)
-                & \text{if } e = \observekw(e_1 : \bool) : \text{unit} \\[8pt]
+            (\observekw(\decompose(e_1)_1 : \bool) : \unit, \decompose(e_1)_2)
+                & \text{if } e = \observekw(e_1 : \bool) : \unit \\[8pt]
 		\end{cases}
 	\end{align*}
 	\caption{Recursive definition of $\decompose$, a decomposition function, over typed expressions. $\decompose(\cdot)_1$ and $\decompose(\cdot)_2$ denote first and second projections of $\decompose$, respectively. $\decompose(\cdot)_2$ is canonically bijective to a flat vector in $\R^n$ via coordinate concatenation over holes.}

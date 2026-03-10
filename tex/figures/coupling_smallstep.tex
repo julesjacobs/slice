@@ -41,12 +41,12 @@
 			\midrule 
 			%
 			% --- observe ---
-			\multirow{3}{*}{$\observekw\; (e : \bool)  : \text{unit}$} 
+			\multirow{3}{*}{$\observekw\; (e : \bool)  : \unit$} 
 			
-			& $e = \true$ & $\dirac{(\text{unit}, \text{unit})}$ \\[0.5ex]
+			& $e = \true$ & $\dirac{(\unit, \unit)}$ \\[0.5ex]
 			& $e=\false$ & $\dirac{\bot}$ \\
 			& o.w.\ & \makecell[l]{$\sem{e: \bool, \discretize{e}: \bool}$ \\
-			$\gg\!= \lambda (g,g'). \dirac{(\observekw\; (g: \bool)  : \text{unit}, \observekw\; (g' : \bool)  : \text{unit})}$} \\
+			$\gg\!= \lambda (g,g'). \dirac{(\observekw\; (g: \bool)  : \unit, \observekw\; (g' : \bool)  : \unit)}$} \\
 			%
 			\midrule
 			%

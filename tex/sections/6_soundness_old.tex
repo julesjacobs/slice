@@ -583,7 +583,7 @@ To make the probabilistic semantics precise, we need to define an appropriate me
 An expression skeleton is an extended expression with ``holes'' where real-valued constants can appear. Formally, we define:
 
 \begin{definition}[Expression Skeleton]
-An expression skeleton $s$ is an extended expression where each occurrence of a float constant is replaced by a hole $\square_i$ for some index $i \in \mathbb{N}$. We denote by $\text{Skel}$ the set of all expression skeletons, and by $\text{holes}(s)$ the number of distinct holes in skeleton $s$.
+An expression skeleton $s$ is an extended expression where each occurrence of a float constant is replaced by a hole $\square_i$ for some index $i \in \mathbb{N}$. We denote by $\skel$ the set of all expression skeletons, and by $\text{holes}(s)$ the number of distinct holes in skeleton $s$.
 \end{definition}
 
 For example, the expression $\uniform(0.0, 1.0) < 0.5$ has the skeleton $\uniform(\square_1, \square_2) < \square_3$ with three holes.
@@ -594,12 +594,12 @@ Given a skeleton $s$ with $n = \text{holes}(s)$ holes, we can instantiate it wit
 
 The set of all extended expressions can then be represented as:
 \[
-\extexprs = \bigsqcup_{s \in \text{Skel}} \{s[\vec{r}] \mid \vec{r} \in \mathbb{R}^{\text{holes}(s)}\}
+\extexprs = \bigsqcup_{s \in \skel} \{s[\vec{r}] \mid \vec{r} \in \mathbb{R}^{\text{holes}(s)}\}
 \]
 
 This is a countable disjoint union because:
 \begin{enumerate}
-    \item The set of skeletons $\text{Skel}$ is countable (expressions have finite syntax trees)
+    \item The set of skeletons $\skel$ is countable (expressions have finite syntax trees)
     \item For each skeleton $s$, the set of instantiations forms a copy of $\mathbb{R}^{\text{holes}(s)}$
     \item Different skeletons produce disjoint sets of expressions
 \end{enumerate}
@@ -743,7 +743,7 @@ To make the probabilistic semantics precise, we define an appropriate measure sp
 	\end{align*}
 	with the understanding that $\square_i$ has type $\floattype{B}{V}$.
 	
-	We denote by $\text{Skel}$ the set of all expression skeletons, and by $\text{holes}(s)$ the number of distinct holes in skeleton $s$.
+	We denote by $\skel$ the set of all expression skeletons, and by $\text{holes}(s)$ the number of distinct holes in skeleton $s$.
 \end{definition}
 
 \begin{example}
@@ -751,7 +751,7 @@ To make the probabilistic semantics precise, we define an appropriate measure sp
 \end{example}
 
 \begin{lemma}[Skel is countable]
-	The set $\text{Skel}$ is countable.
+	The set $\skel$ is countable.
 \end{lemma}
 
 \begin{proof}
@@ -764,19 +764,19 @@ To make the probabilistic semantics precise, we define an appropriate measure sp
 \end{proof}
 
 \begin{definition}[Borel measurable space on expressions]\label{def:meas-space}
-	Let $s \in \text{Skel}$ be an expression skeleton with $n = \text{holes}(s)$. Each tuple of real numbers $\vec{r} = (r_1, \ldots, r_n) \in \R^n$ induces a concrete expression $s[\vec{r}] \in Expr$. We associate to $s[\vec{r}]$ the product space $\R^n$, equipped with the Borel $\sigma$-algebra $\mathcal{B}(\R^n)$. We then define the measurable space of expressions as the union
+	Let $s \in \skel$ be an expression skeleton with $n = \text{holes}(s)$. Each tuple of real numbers $\vec{r} = (r_1, \ldots, r_n) \in \R^n$ induces a concrete expression $s[\vec{r}] \in Expr$. We associate to $s[\vec{r}]$ the product space $\R^n$, equipped with the Borel $\sigma$-algebra $\mathcal{B}(\R^n)$. We then define the measurable space of expressions as the union
 	\[
-		Expr := \bigcup_{s \in \text{Skel}} \{s[\vec{r}] \mid \vec{r} \in \mathbb{R}^{\text{holes}(s)}\},
+		Expr := \bigcup_{s \in \skel} \{s[\vec{r}] \mid \vec{r} \in \mathbb{R}^{\text{holes}(s)}\},
 	\]
-	with the topology $\mathcal{T}_{Expr}$ defined as the union of Euclidean topologies on $\R^{\text{holes}(s)}$ for all $s \in \text{Skel}$, equipped with the Borel $\sigma$-algebra $\mathcal{F}_{Expr} := \sigma(\mathcal{T}_{Expr})$.
+	with the topology $\mathcal{T}_{Expr}$ defined as the union of Euclidean topologies on $\R^{\text{holes}(s)}$ for all $s \in \skel$, equipped with the Borel $\sigma$-algebra $\mathcal{F}_{Expr} := \sigma(\mathcal{T}_{Expr})$.
 \end{definition}
 
 \begin{lemma}
-	For a given $s \in \text{Skel}$, $(\R^{holes(s)}, \mathcal{B}(\R^{holes(s)}))$ is a Borel measurable space. Consequently, $(Expr, \mathcal{F}_{Expr})$ is also a Borel measurable space.
+	For a given $s \in \skel$, $(\R^{holes(s)}, \mathcal{B}(\R^{holes(s)}))$ is a Borel measurable space. Consequently, $(Expr, \mathcal{F}_{Expr})$ is also a Borel measurable space.
 \end{lemma}
 
 \begin{proof}
-	For each skeleton $s$ with $n = \text{holes}(s)$, the space $\R^n$ with its Borel $\sigma$-algebra is a Borel measureable space. Since $\text{Skel}$ is countable, the countable union of Borel measureable spaces remains a Borel measurable space. 
+	For each skeleton $s$ with $n = \text{holes}(s)$, the space $\R^n$ with its Borel $\sigma$-algebra is a Borel measureable space. Since $\skel$ is countable, the countable union of Borel measureable spaces remains a Borel measurable space. 
 \end{proof}
 
 \begin{definition}[Extension with error element]\label{def:meas-space-with-error}
@@ -816,7 +816,7 @@ We give some basic lemmas:
 \begin{proof}
 	We prove the measurability of $\vals$, $\{\bot\}$, and $N$ in separate parts.
 	\begin{enumerate}
-		\item \textbf{(Measurability of $\vals$):} By the construction of $\mathcal{F}_{Expr}$ in Definition~\ref{def:meas-space}, for each skeleton $s$ that represents a value, the set $\{s[\vec{r}] \mid \vec{r} \in \R^{\text{holes}(s)}\}$ is a measurable set in the union. The set $V$ is the countable union of all such sets corresponding to value skeletons. Since $\text{Skel}$ is countable, $V$ is a countable union of measurable sets and is therefore itself measurable, e.g. $V \in \mathcal{F}_{Expr}$. As $\mathcal{F}_{Expr} \subset \mathcal{F}_{Expr + \bot}$, it follows that $V \in \mathcal{F}_{Expr + \bot}$.
+		\item \textbf{(Measurability of $\vals$):} By the construction of $\mathcal{F}_{Expr}$ in Definition~\ref{def:meas-space}, for each skeleton $s$ that represents a value, the set $\{s[\vec{r}] \mid \vec{r} \in \R^{\text{holes}(s)}\}$ is a measurable set in the union. The set $V$ is the countable union of all such sets corresponding to value skeletons. Since $\skel$ is countable, $V$ is a countable union of measurable sets and is therefore itself measurable, e.g. $V \in \mathcal{F}_{Expr}$. As $\mathcal{F}_{Expr} \subset \mathcal{F}_{Expr + \bot}$, it follows that $V \in \mathcal{F}_{Expr + \bot}$.
 		
 		\item \textbf{(Measurability of $\{\bot\}$):} By Definition~\ref{def:meas-space-with-error}, the topology $\mathcal{T}_{Expr + \bot}$ contains all sets of the form $U \cup \{\bot\}$, where $U \in \mathcal{T}_{Expr}$. In particular, taking $U = \emptyset$ gives $\emptyset \cup \{\bot\} = \{\bot\} \in \mathcal{T}_{Expr + \bot}$. Since the Borel $\sigma$-algebra $\mathcal{F}_{Expr + \bot}$ is generated by $\mathcal{T}_{Expr + \bot}$, it follows that $\{\bot\} \in \mathcal{F}_{Expr + \bot}$.
 

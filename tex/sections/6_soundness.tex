@@ -583,7 +583,7 @@
 %An expression skeleton is an extended expression with ``holes'' where real-valued constants can appear. Formally, we define:
 %
 %\begin{definition}[Expression Skeleton]
-%An expression skeleton $s$ is an extended expression where each occurrence of a float constant is replaced by a hole $\square_i$ for some index $i \in \mathbb{N}$. We denote by $\text{Skel}$ the set of all expression skeletons, and by $\holes(s)$ the number of distinct holes in skeleton $s$.
+%An expression skeleton $s$ is an extended expression where each occurrence of a float constant is replaced by a hole $\square_i$ for some index $i \in \mathbb{N}$. We denote by $\skel$ the set of all expression skeletons, and by $\holes(s)$ the number of distinct holes in skeleton $s$.
 %\end{definition}
 %
 %For example, the expression $\uniform(0.0, 1.0) < 0.5$ has the skeleton $\uniform(\square_1, \square_2) < \square_3$ with three holes.
@@ -594,12 +594,12 @@
 %
 %The set of all extended expressions can then be represented as:
 %\[
-%\extexprs = \bigsqcup_{s \in \text{Skel}} \{s[\vec{r}] \mid \vec{r} \in \mathbb{R}^{\holes(s)}\}
+%\extexprs = \bigsqcup_{s \in \skel} \{s[\vec{r}] \mid \vec{r} \in \mathbb{R}^{\holes(s)}\}
 %\]
 %
 %This is a countable disjoint union because:
 %\begin{enumerate}
-%    \item The set of skeletons $\text{Skel}$ is countable (expressions have finite syntax trees)
+%    \item The set of skeletons $\skel$ is countable (expressions have finite syntax trees)
 %    \item For each skeleton $s$, the set of instantiations forms a copy of $\mathbb{R}^{\holes(s)}$
 %    \item Different skeletons produce disjoint sets of expressions
 %\end{enumerate}
@@ -762,7 +762,7 @@ To make the probabilistic semantics precise, we define an appropriate measure sp
 	\end{align*}
 	with the understanding that each hole $\square$ has type $\floattype{B}{V}$, and that all other types appearing in the original expression are preserved in its corresponding skeleton.
 	
-	We denote by $\text{Skel}_{\tau}$ the set of all expression skeletons, and by $\holes(s)$ the number of distinct holes in skeleton $s$.
+	We denote by $\skel_{\tau}$ the set of all expression skeletons, and by $\holes(s)$ the number of distinct holes in skeleton $s$.
 \end{definition}
 
 \begin{example}
@@ -770,7 +770,7 @@ To make the probabilistic semantics precise, we define an appropriate measure sp
 \end{example}
 
 \begin{lemma}[Skel is countable]\label{lem:skel-countable}
-	The set $\text{Skel}_{\tau}$ is countable.
+	The set $\skel_{\tau}$ is countable.
 \end{lemma}
 
 \begin{proof}
@@ -782,7 +782,7 @@ To make the probabilistic semantics precise, we define an appropriate measure sp
 	The set of all finite trees over countable labels is countable.
 \end{proof}
 
-Define the bijection $f\colon Expr_{\tau} \to \text{Skel}_{\tau} \times \R^n$ for some $n$, as shown in Figure~\ref{fig:decompose-definition}. This bijection holds because every well-typed expression can be uniquely decomposed into its skeleton (obtained by replacing constants with holes) and the corresponding tuple of real values filling those holes.
+Define the bijection $f\colon Expr_{\tau} \to \skel_{\tau} \times \R^n$ for some $n$, as shown in Figure~\ref{fig:decompose-definition}. This bijection holds because every well-typed expression can be uniquely decomposed into its skeleton (obtained by replacing constants with holes) and the corresponding tuple of real values filling those holes.
 
 \begin{figure}[t]
 	\centering
@@ -818,13 +818,13 @@ Define the bijection $f\colon Expr_{\tau} \to \text{Skel}_{\tau} \times \R^n$ fo
 \end{figure}
 	
 \begin{definition}[Measurable space on well-typed expressions]
-	For a given $s : \tau \in \text{Skel}_{\tau}$, define the subset:
+	For a given $s : \tau \in \skel_{\tau}$, define the subset:
 	\[
 		A_{s : \tau} := \{f(e : \tau)_2 \mid f(e : \tau)_1 = s : \tau \text{ and } e : \tau \in Expr_{\tau}\}.
 	\]
 	Let $s[\vec{r}] : \tau$ denote the (unique) well-typed expression of type $\tau$ obtained by filling the holes of $s$ with the coordinates of $\vec{r}$. We then define the measurable space of well-typed expressions as the union:
 	\[
-		Expr_{\tau} := \bigcup_{s : \tau \in \text{Skel}_{\tau}} \{s[\vec{r}] : \tau \mid \vec{r} \in A_{s : \tau}\}.
+		Expr_{\tau} := \bigcup_{s : \tau \in \skel_{\tau}} \{s[\vec{r}] : \tau \mid \vec{r} \in A_{s : \tau}\}.
 	\]
 \end{definition}
 
@@ -869,47 +869,47 @@ Define the bijection $f\colon Expr_{\tau} \to \text{Skel}_{\tau} \times \R^n$ fo
 \begin{proof}
 	Follows by structural recursion on expressions. 
 	
-	Fix an $s \in \text{Skel}$. At the base cases, we either get a finite value set $V$ (a finite union of Borel singletons, which is Borel), $V = \top$ (the entire $\R$, which is Borel), or $\emptyset$ (Borel). Each construct combines its subexpressions through Cartesian products (Borel sets are closed under finite products).
+	Fix an $s \in \skel$. At the base cases, we either get a finite value set $V$ (a finite union of Borel singletons, which is Borel), $V = \top$ (the entire $\R$, which is Borel), or $\emptyset$ (Borel). Each construct combines its subexpressions through Cartesian products (Borel sets are closed under finite products).
 
-	Since $\text{Skel}$ is countable by Lemma~\ref{lem:skel-countable}, and since Borel sets are closed under countable unions, $Expr_{\tau}$ forms a Borel measurable space.
+	Since $\skel$ is countable by Lemma~\ref{lem:skel-countable}, and since Borel sets are closed under countable unions, $Expr_{\tau}$ forms a Borel measurable space.
 \end{proof}
 
 
 {\color{red} ----- OLD -----}
 
 \begin{definition}[Borel measurable space on expressions]\label{def:meas-space}
-	Let $s \in \text{Skel}$ be an expression skeleton with $n = \holes(s)$. Each tuple of real numbers $\vec{r} = (r_1, \ldots, r_n) \in \R^n$ induces a concrete expression $s[\vec{r}] \in Expr$. We associate to $s[\vec{r}]$ the product space $\R^n$, equipped with the Borel $\sigma$-algebra $\mathcal{B}(\R^n)$. We then define the measurable space of expressions as the union
+	Let $s \in \skel$ be an expression skeleton with $n = \holes(s)$. Each tuple of real numbers $\vec{r} = (r_1, \ldots, r_n) \in \R^n$ induces a concrete expression $s[\vec{r}] \in Expr$. We associate to $s[\vec{r}]$ the product space $\R^n$, equipped with the Borel $\sigma$-algebra $\mathcal{B}(\R^n)$. We then define the measurable space of expressions as the union
 	\[
-		Expr := \bigcup_{s \in \text{Skel}} \{s[\vec{r}] \mid \vec{r} \in \mathbb{R}^{\holes(s)}\},
+		Expr := \bigcup_{s \in \skel} \{s[\vec{r}] \mid \vec{r} \in \mathbb{R}^{\holes(s)}\},
 	\]
-	with the topology $\mathcal{T}_{Expr}$ defined as the union of Euclidean topologies on $\R^{\holes(s)}$ for all $s \in \text{Skel}$, equipped with the Borel $\sigma$-algebra $\mathcal{F}_{Expr} := \sigma(\mathcal{T}_{Expr})$.
+	with the topology $\mathcal{T}_{Expr}$ defined as the union of Euclidean topologies on $\R^{\holes(s)}$ for all $s \in \skel$, equipped with the Borel $\sigma$-algebra $\mathcal{F}_{Expr} := \sigma(\mathcal{T}_{Expr})$.
 \end{definition}
 
 \begin{lemma}
-	For a given $s \in \text{Skel}$, $(\R^{holes(s)}, \mathcal{B}(\R^{holes(s)}))$ is a Borel measurable space. Consequently, $(Expr, \mathcal{F}_{Expr})$ is also a Borel measurable space.
+	For a given $s \in \skel$, $(\R^{holes(s)}, \mathcal{B}(\R^{holes(s)}))$ is a Borel measurable space. Consequently, $(Expr, \mathcal{F}_{Expr})$ is also a Borel measurable space.
 \end{lemma}
 
 \begin{proof}
-	For each skeleton $s$ with $n = \holes(s)$, the space $\R^n$ with its Borel $\sigma$-algebra is a Borel measureable space. Since $\text{Skel}$ is countable, the countable union of Borel measureable spaces remains a Borel measurable space. 
+	For each skeleton $s$ with $n = \holes(s)$, the space $\R^n$ with its Borel $\sigma$-algebra is a Borel measureable space. Since $\skel$ is countable, the countable union of Borel measureable spaces remains a Borel measurable space. 
 \end{proof}
 
 Now we extend the $Expr$ Borel measurable space construction to the subspace of well-typed expressions, $Expr_{\tau}$.
 
 \begin{definition}[Borel measurable space on well-typed expressions]
-	Let $s \in \text{Skel}$ be an expression skeleton with $n = \holes(s)$. Each real tuple $\vec{r} = (r_1, \ldots, r_n) \in \R^n$ induces a concrete expression $s[\vec{r}] \in Expr$. For a type $\tau$ such that $s[\vec{r}] : \tau$, define the subset 
+	Let $s \in \skel$ be an expression skeleton with $n = \holes(s)$. Each real tuple $\vec{r} = (r_1, \ldots, r_n) \in \R^n$ induces a concrete expression $s[\vec{r}] \in Expr$. For a type $\tau$ such that $s[\vec{r}] : \tau$, define the subset 
 	\[
 		A_{s,\tau} := \{\vec{r} \in \R^{\holes(s)} \mid \vdash s[\vec{r}] : \tau\}.
 	\]
 
 	We then define the measurable space of well-typed expressions as the union
 	\[
-		Expr_{\tau} := \bigcup_{s \in \text{Skel}} \{s[\vec{r}] \mid \vec{r} \in A_{s,\tau}\}.
+		Expr_{\tau} := \bigcup_{s \in \skel} \{s[\vec{r}] \mid \vec{r} \in A_{s,\tau}\}.
 	\]
-	with the topology $\mathcal{T}_{Expr_{\tau}}$ defined as the union of Euclidean topologies on $\R^{\holes(s)}$ restricted to $A_{s,\tau}$ for all $s \in \text{Skel}$, equipped with the Borel $\sigma$-algebra $\mathcal{F}_{Expr_{\tau}} := \sigma(\mathcal{T}_{Expr_{\tau}})$.
+	with the topology $\mathcal{T}_{Expr_{\tau}}$ defined as the union of Euclidean topologies on $\R^{\holes(s)}$ restricted to $A_{s,\tau}$ for all $s \in \skel$, equipped with the Borel $\sigma$-algebra $\mathcal{F}_{Expr_{\tau}} := \sigma(\mathcal{T}_{Expr_{\tau}})$.
 \end{definition}
 
 \begin{lemma}
-	For a given $s \in \text{Skel}$ and type $\tau$ such that $s[\vec{r}] : \tau$, $A_{s,\tau}$ is a Borel subset of $\R^{\holes(s)}$.
+	For a given $s \in \skel$ and type $\tau$ such that $s[\vec{r}] : \tau$, $A_{s,\tau}$ is a Borel subset of $\R^{\holes(s)}$.
 \end{lemma}
 
 \begin{proof}
@@ -962,7 +962,7 @@ Now we extend the $Expr$ Borel measurable space construction to the subspace of 
 \end{lemma}
 
 \begin{proof}
-	Given an expression skeleton $s \in \text{Skel}$ with $n = \holes(s)$ where $s[\vec{r}] : \tau$, $A_{s,\tau}$ is a Borel subset of $\R^n$. Since $\text{Skel}$ is countable, the countable union of Borel measurable spaces remains a Borel measurable space.
+	Given an expression skeleton $s \in \skel$ with $n = \holes(s)$ where $s[\vec{r}] : \tau$, $A_{s,\tau}$ is a Borel subset of $\R^n$. Since $\skel$ is countable, the countable union of Borel measurable spaces remains a Borel measurable space.
 \end{proof}
 
 
@@ -1003,7 +1003,7 @@ We give some basic lemmas:
 \begin{proof}
 	We prove the measurability of $\vals$, $\{\bot\}$, and $N$ in separate parts.
 	\begin{enumerate}
-		\item \textbf{(Measurability of $\vals$):} By the construction of $\mathcal{F}_{Expr_{\tau}}$, for each skeleton $s$ that represents a value, the set $\{\vec{r} \in \R^{\holes(s)} \mid \vdash s[\vec{r}] : \tau\}$ is a measurable set in the union. The set $V$ is the countable union of all such sets corresponding to value skeletons. Since $\text{Skel}$ is countable, $V$ is a countable union of measurable sets and is therefore itself measurable, e.g. $V \in \mathcal{F}_{Expr_{\tau}}$. As $\mathcal{F}_{Expr_{\tau}} \subset \mathcal{F}_{Expr_{\tau} + \bot}$, it follows that $V \in \mathcal{F}_{Expr_{\tau} + \bot}$.
+		\item \textbf{(Measurability of $\vals$):} By the construction of $\mathcal{F}_{Expr_{\tau}}$, for each skeleton $s$ that represents a value, the set $\{\vec{r} \in \R^{\holes(s)} \mid \vdash s[\vec{r}] : \tau\}$ is a measurable set in the union. The set $V$ is the countable union of all such sets corresponding to value skeletons. Since $\skel$ is countable, $V$ is a countable union of measurable sets and is therefore itself measurable, e.g. $V \in \mathcal{F}_{Expr_{\tau}}$. As $\mathcal{F}_{Expr_{\tau}} \subset \mathcal{F}_{Expr_{\tau} + \bot}$, it follows that $V \in \mathcal{F}_{Expr_{\tau} + \bot}$.
 		
 		\item \textbf{(Measurability of $\{\bot\}$):} By Definition~\ref{def:meas-space-with-error}, the topology $\mathcal{T}_{Expr_{\tau} + \bot}$ contains all sets of the form $U \cup \{\bot\}$, where $U \in \mathcal{T}_{Expr_{\tau}}$. In particular, taking $U = \emptyset$ gives $\emptyset \cup \{\bot\} = \{\bot\} \in \mathcal{T}_{Expr_{\tau} + \bot}$. Since the Borel $\sigma$-algebra $\mathcal{F}_{Expr_{\tau} + \bot}$ is generated by $\mathcal{T}_{Expr_{\tau} + \bot}$, it follows that $\{\bot\} \in \mathcal{F}_{Expr_{\tau} + \bot}$.
 
