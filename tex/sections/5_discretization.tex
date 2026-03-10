@@ -75,9 +75,9 @@
 	\label{fig:discretization-code}
 \end{figure}
 %
-This section presents local transformation rules for our type-directed discretization algorithm, with examples. The global objective is: given a typed expression $e : \tau$, compute, guided by type annotations, a (partially) \emph{discretized} expression $\discretize{e : \tau}$ such that $e$ and $\discretize{e : \tau}$ are \emph{semantically equivalent}, i.e., they induce the same distribution. We refer to this semantics-preserving transformation as \emph{exact discretization}, to distinguish it from \emph{quantization} approaches~\cite{Garg2024BitBlast,Huang2021AQUA} that approximate continuous programs via externally chosen precision parameters. Intuitively, when a program uses continuous quantities only through finitely many comparison outcomes, exact inference should reduce to a finite problem, and exact discretization makes that reduction explicit.
+This section presents local transformation rules for our type-directed discretization algorithm, with examples. The global objective is: given a typed expression $e : \bool$, compute, guided by type annotations, a \emph{discretized} expression $\discretize{e : \bool} : \bool$ such that $e$ and $\discretize{e : \tau}$ are \emph{semantically equivalent}, i.e., they induce the same distribution. We refer to this semantics-preserving transformation as \emph{exact discretization}, to distinguish it from \emph{quantization} approaches~\cite{Garg2024BitBlast,Huang2021AQUA} that approximate continuous programs via externally chosen precision parameters. Intuitively, when a program uses continuous quantities only through finitely many comparison outcomes, exact inference should reduce to a discrete problem, and exact discretization makes that reduction explicit.
 
-As shown in \Cref{fig:discretization-code}, $\discretize{e : \tau}$ is defined recursively on $e : \tau$; we focus on continuous uniform distributions, with others handled analogously. The only sub-expressions replaced by $\discretize{\cdot}$ are float constants and sampling instructions. The rule schemata are local, but their selection and parameters come from globally inferred cut/value information; \Cref{sec:soundness} proves that this non-local, type-mediated construction preserves semantics. Before detailing the rules, we outline how type annotations guide discretization. The type system is designed so that every typed sub-expression of the form 
+As shown in \Cref{fig:discretization-code}, $\discretize{e : \tau}$ is defined recursively on $e : \tau$ and its type annotations; we focus on continuous uniform distributions, with others handled analogously. The only sub-expressions replaced by $\discretize{\cdot}$ are float constants and sampling instructions. The rule schemata are local, but their selection and parameters come from globally inferred cut/value information; \Cref{sec:soundness} proves that this non-local, type-mediated construction preserves semantics. Before detailing the rules, we outline how type annotations guide discretization. The type system is designed so that every typed sub-expression of the form 
 $e = \uniform(e_1, e_2 )$ of type $\float[B;V]$ with $B=\{\sim_1\!\!b_1, \ldots, \sim_n\!\!b_n\} \neq \top$
 %
 can be \emph{discretized} to an expression $e' : \fin{n+1}$ such that 
@@ -88,7 +88,7 @@ In particular, if \emph{all} $\float[B;V]$-typed subexpressions are finite-cut, 
 
 \begin{example}
 	\label{ex:discretize_simple}
-Consider a uniform distribution whose outcomes are compared to constants, with typed expression $e: \bool$ (omitting irrelevant types):
+Consider a uniform distribution whose outcomes are compared to constants, with typed expression $e: \bool$ (omitting irrelevant types):\kb{resolve $\{B\}$}
 	%
 %
 %
@@ -108,12 +108,12 @@ where $B= \{ \clt{0.3},\clt{0.5} \}$. The cut set $B$ informs us that the probab
 	\intervals{B}_2 =[0.5, \infty)
 \]
 %
-induced by $B$. Hence, all expressions of type $\text{\ftbn{B}{$\ldots$}}$ can be discretized to expressions of the finite type $\fin{3}$, where $\finconst{k}{3}$ represents the $k$-th interval $\intervals{B}_k$ induced by $B$ for $k \in \{0,1,2\}$. 
+induced by $B$. Hence, all expressions of type $\text{\ftbn{B}{$\cdot$}}$ can be discretized to expressions of the finite type $\fin{3}$, where $\finconst{k}{3}$ represents the $k$-th interval $\intervals{B}_k$ induced by $B$ for $k \in \{0,1,2\}$. 
 
-Now consider the discretized expression obtained from computing $\discretize{e: \bool}$ given by 
+Now consider the discretized expression obtained from computing $\discretize{e: \bool}$, given by 
 %
 \begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!,mathescape]
-    let x = discrete(0.3, 0.2, 0.5) in (x <#3 1#3) || (x >=#3 2#3)
+    let x = discrete(0.3, 0.2, 0.5) in (x <#3 1#3) || (x >=#3 2#3).
 \end{lstlisting}
 %
 The probabilities appearing in $\discrete(\ldots)$ are determined by the cumulative distribution function (CDF) of the uniform distribution over $[0,1]$, ensuring that the probability of $x$ evaluating to $\finconst{k}{3}$ in $\discretize{e: \bool}$ \emph{coincides} with the probability of $x$ evaluating to a value in $\intervals{B}_k$ in $e$. Hence, the constants $0.3$ and $0.5$ in $e$ can be replaced by the constants $\finconst{1}{3}$ and $\finconst{2}{3}$, respectively,  in $\discretize{e: \bool}$, which shows that $e$ and $\discretize{e: \bool}$ are semantically equivalent. 
@@ -159,7 +159,7 @@ such that $c$ is an (open) endpoint of $\text{ToInts}(c)$ for all $c \in\{0.3,0.
 	The continuous $\uniform(0,x)$-expression is replaced by a case distinction on the discretizations of $\uniform(0,10)$ and $\uniform(0,20)$, where each of these cases is indeed executed with the correct probability $0.5$. Since this reduces the remaining discretization process to discretizing expressions with \emph{constant parameters only}, the remaining steps are completely analogous to Example~\ref{ex:discretize_simple}.
 \end{example}
 %
-Crucially, the \emph{distinguishes} constraints in the \textsc{Continuous}-rules from \Cref{fig:typing-float} ensure that, for finite-cut sampling expressions, it will always be the case that the parameter expressions can take only finitely many values, and that the cut sets are fine-grained enough to recover the values the parameter expressions evaluate to as demonstrated in the preceding example.
+Crucially, the \emph{distinguishes} constraints in the \textsc{Continuous}-rules from \Cref{fig:typing-float} ensure that the parameter expressions of the respective sampling expressions can take only finitely many values, and that the cut sets are fine-grained enough to recover the values the parameter expressions evaluate to as demonstrated in the preceding example.
 
 A similar intuition applies to discretizable comparisons $e_1 < e_2$, where \emph{both} expressions are non-constant but finite-cut. The \emph{answers} constraints in the rule \textsc{Less} (resp.\ \textsc{Less-Equal}) ensures that at least one of $e_1$ and $e_2$ evaluates to finitely many values only, which enables discretization:
 \begin{example}
@@ -189,7 +189,7 @@ A similar intuition applies to discretizable comparisons $e_1 < e_2$, where \emp
 
 
 \subsubsection{Discretization of Types}
-We conclude this section by extending the discretization function $\discretize{\cdot}$ formally to types. \Cref{fig:discretization-types} shows how type $\tau$ is discretized to type $\discretize{\tau}$. We then obtain the following natural result, proved in Appendix~\ref{proof:type-transformations}, regarding the transformation of types when applying $\discretize{\cdot}$ to programs:
+We conclude this section by extending the discretization function $\discretize{\cdot}$ formally to types. \Cref{fig:discretization-types} shows how type $\tau$ is discretized to type $\discretize{\tau}$. We then obtain the following natural result, proved in Appendix~\ref{proof:type-transformations}:
 %
 \begin{figure}[t]
 	\centering
