@@ -35,3 +35,34 @@ We next use benchmark suites from prior work for compatibility and coverage chec
 \Cref{tab:benchmarks_psi} in the appendix reports representative constant-factor runtimes for benchmarks containing at least one continuous distribution, drawn from the \PSI{} and \SPPL{} benchmark sets. \Slice{} handles the benchmarks in this subset that fit its current fragment; in particular, programs requiring numeric-transformation support remain outside the automatically discretized subset. We report (i) \Slice{}+\Dice{}, (ii) \Slice{}+\Roulette{}, and (iii) \SPPL{} in seconds. We omit \PSI{} runtimes in this snapshot for brevity. These results are supplemental compatibility snapshots, while the main empirical claim in this section is the asymptotic scaling trend above.
 %\subsection{Simple Baselines}\label{sec:baseline-benchmarks}
 %We finally evaluate \Slice{} on a set of benchmarks that were introduced in~\cite{gehr2016psi}. We evaluate \Slice{} on the hybrid programs in these benchmarks. The results are shown in Table 2. We omit the runs of PSI in the table due to its significantly slower performance than SPPL on all benchmarks. The first column in the table gives the benchmark name, and the remaining columns display the execution times in seconds of Slice with Dice, Slice with Roulette, and SPPL respectively. As both SPPL and \Slice{} are restricted languages, in order to test a broader range of programs, we converted several benchmarks with parameters inside distributions that depend on continuous random choices to a discretized version. The time taken by \Slice{} to solve these problems is nearly instant in all cases. 
+
+
+\kbin{move somwhere}
+\subsection{Unbounded Recursion}\label{sec:examples:7}
+
+We now consider a program with recursion, where control flow may revisit the same expression an unbounded number of times. Such programs are common in probabilistic modeling (e.g., geometric processes), but are challenging for sampling-based methods, which may fail to terminate due to self-loops.
+
+\begin{lstlisting}[aboveskip=1em,belowskip=1em]
+    (fix geom x := 
+        if x <= 0.5 then true
+        else if x <= 0.8 then geom x
+        else let y = uniform(0,1) in geom y) 1
+\end{lstlisting}
+
+\noindent This program repeatedly evaluates \texttt{geom}, potentially recursing indefinitely when $x \in (0.5, 0.8]$. In the final branch, a fresh sample is drawn and the process continues. While the recursion is unbounded, the key insight is that the observable behavior of the program depends only on which interval the current value of $x$ lies in.
+
+\noindent As in previous examples, \Slice{} extracts the relevant cut set from the comparisons against $0.5$ and $0.8$. These cuts partition the real line into three intervals:
+\[
+(-\infty, 0.5], \quad (0.5, 0.8], \quad (0.8, +\infty).
+\]
+
+\noindent The resulting discretized program is:
+
+\begin{lstlisting}[aboveskip=1em,belowskip=1em]
+    (fix geom x := 
+        if x <= 0 then true
+        else if x <= 1 then geom x
+        else let y = discrete(0.5, 0.3, 0.2) in geom y) 2
+\end{lstlisting}
+
+\noindent Crucially, the resulting program has a finite state space. This enables exact reasoning via finite-state methods such as Markov chain analysis via Storm.
