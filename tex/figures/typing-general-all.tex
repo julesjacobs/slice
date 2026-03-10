@@ -113,18 +113,22 @@
      \Gamma, h: \tau_1, t: \listty{\tau_1} \vdash e_2 : \tau_2}
     {\Gamma \vdash \text{match}\; e\; \text{with}\; \text{nil} \rightarrow e_1 \mid h :: t \rightarrow e_2\; \text{end} : \tau_2}
 
-    \inferrule[\textsc{Ref}]
-    {\Gamma \vdash e : \tau}
-    {\Gamma \vdash \text{ref}\; e : \text{ref}(\tau)}
+    % \inferrule[\textsc{Ref}]
+    % {\Gamma \vdash e : \tau}
+    % {\Gamma \vdash \text{ref}\; e : \text{ref}(\tau)}
 
-    \inferrule[\textsc{Deref}]
-    {\Gamma \vdash e : \text{ref}(\tau)}
-    {\Gamma \vdash !e : \tau}
+    % \inferrule[\textsc{Deref}]
+    % {\Gamma \vdash e : \text{ref}(\tau)}
+    % {\Gamma \vdash !e : \tau}
 
-    \inferrule[\textsc{Assign}]
-    {\Gamma \vdash e_1 : \text{ref}(\tau) \\
-     \Gamma \vdash e_2 : \tau}
-    {\Gamma \vdash e_1 := e_2 : \unit}
+    % \inferrule[\textsc{Assign}]
+    % {\Gamma \vdash e_1 : \text{ref}(\tau) \\
+    %  \Gamma \vdash e_2 : \tau}
+    % {\Gamma \vdash e_1 := e_2 : \unit}
+
+    \inferrule[\textsc{Diverge}]
+    {\ }
+    {\Gamma \vdash \diverge : \tau}
 \end{mathpar}
 \caption{Typing rules for general language constructs}
 \label{fig:typing-general-all}

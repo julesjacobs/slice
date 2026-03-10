@@ -36,7 +36,10 @@
         {\Gamma \vdash e_1 : \fin{n} \\
          \Gamma \vdash e_2 : \fin{n}}
         {\Gamma \vdash e_1 \finleq{n} e_2 : \bool}
-        
+
+        \inferrule[\textsc{Diverge}]
+        {\ }
+        {\Gamma \vdash \diverge : \tau}
     \end{mathpar}
     \caption{Typing rules for general language constructs}
         \label{fig:typing-general}

@@ -4,6 +4,19 @@
 \section{More motivating examples on language features}\label{ap:mot}
 This section provides more examples highlighting the language features of \Slice{}. As an additional demonstration, we provide exact inference results obtained by integrating \Slice{} with \Dice{} and \Roulette{}, the latter of which supports higher-order functions, recursion, and mutable state.
 
+\subsection{Control flow}
+\input{figures/cf-program.tex}
+
+\input{figures/cf-propagation.tex}
+
+\subsection{Discrete latent variable}
+\begin{lstlisting}[escapeinside={<@}{@>},aboveskip=1em,belowskip=1em]
+    let x = if flip() <@\textcolor{purple}{then}@> 0.5 <@\textcolor{purple}{else}@> 1.5 in gaussian(0, <@\textcolor{red}{x}@>) <@\textcolor{orange}{<}@> 0.5
+\end{lstlisting}
+
+\input{figures/latent-variable.tex}
+
+
 \subsection{Sequential Processes with Iterate}\label{sec:examples:8}
 
 \Slice{} provides the \texttt{iterate} construct to model sequential probabilistic processes. This example simulates a two-state weather model where tomorrow's weather depends on today's:
