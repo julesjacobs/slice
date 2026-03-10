@@ -105,56 +105,6 @@ The solver repeatedly processes constraints until reaching a fixed point, where 
 
 Lattice constraint solving takes time polynomial in the size of the program: at worst, every single constant in the program gets added to the cut set or value set of every subexpression of type $\float[B;V]$.
 
-\begin{example}
-    From the previous example, we obtained the constraint set displayed in \Cref{eq:cs}, which is then solved as follows:
-
- \noindent   \emph{Step 1: Subtyping reduction.} We replace each subtyping constraint as described above:
- \[
-  \begin{aligned}
-    \subtype{\float[B_i; V_i]}{\float[B_j; V_j]}
-      &\text{ becomes } B_i = B_j,\; V_i \sqsubseteq V_j, \\
-      &\text{for } (i,j) \in \{(3,7),(6,7),(9,11),(10,11)\}.
-  \end{aligned}
- \]
-%    \begin{itemize}
-%        \item $\subtype{\float[B_2; V_2]}{\float[B_5; V_5]}$ becomes $B_2 = B_5, V_2 \sqsubseteq V_5$
-%        \item $\subtype{\float[B_4; V_4]}{\float[B_5; V_5]}$ becomes $B_4 = B_5, V_4 \sqsubseteq V_5$
-%        \item $\subtype{\float[B_7; V_7]}{\float[B_9; V_9]}$ becomes $B_7 = B_9, V_7 \sqsubseteq V_9$
-%        \item $\subtype{\float[B_8; V_8]}{\float[B_9; V_9]}$ becomes $B_8 = B_9, V_8 \sqsubseteq V_9$
-%    \end{itemize}
-
-  \noindent   \emph{Step 2: Initialize.} All $B$ and $V$ variables start as $\emptyset$.
-
- \noindent    \emph{Step 3: Process value containment.} We update:
-    \[V_1 := \{0\} \quad V_2 := \{2\} \quad V_4 := \{0\} \quad V_5 := \{1\} \quad V_8 := \{1.5\} \quad V_9 := \{1.8\} \quad V_{10} := \{0.3\}\]
-
-
- \noindent    \emph{Step 4: Process top assignments.} We set $V_3 := \top$ and $V_6 := \top$.
-
- \noindent  \emph{Step 5: Process subset constraints (e.g. Figure~\ref{fig:control-flow-gaussian-b}).}
- For $V_3 \sqsubseteq V_7$: since $V_3 = \top$, update $V_7 := V_7 \sqcup \top = \top$. For
- $V_6 \sqsubseteq V_7$: already satisfied since $V_7 = \top$. For 
-$V_9 \sqsubseteq V_{11}$: we update $V_{11} := V_{11} \sqcup \{1.8\} = \{1.8\}$. For 
- $V_{10} \sqsubseteq V_{11}$: we update $V_{11} := V_{11} \sqcup \{0.3\} = \{0.3, 1.8\}$.
-
- \noindent    \emph{Step 8: Process answerability.} For $\answerslt{B_7}{V_7}{V_8}$: with $V_7 = \top$ and $V_8 = \{1.5\}$, we add $\clt{1.5}$ to \mbox{$B_7$}. For $\answersleq{B_7}{V_7}{V_{11}}$: with $V_7 = \top$ and $V_{11} = \{0.3, 1.8\}$, we add $\cleq{0.3}$ and $\cleq{1.8}$ to \mbox{$B_7$}.
-
- \noindent   \emph{Step 7: Process recoverability. }
-For each of
-\[
-  \distinguishes{B_1}{V_1},\;
-  \distinguishes{B_2}{V_2},\;
-  \distinguishes{B_4}{V_4},\;
-  \distinguishes{B_5}{V_5},
-\]
-we have $|V_i| = 1$ for $i \in \{1,2,4,5\}$, so the constraint is trivially satisfied.
-
-\noindent   \emph{Step 6: Process equalities.} Unifying all equality constraints: from comparisons: $B_7 = B_8$ and $B_7 = B_{11}$;
-       from subtyping: $B_3 = B_7$, $B_6 = B_7$, $B_9 = B_{11}$, $B_{10} = B_{11}$; result: $B_3 = B_6 = B_7 = B_8 = B_9 = B_{10} = B_{11}$.
-
- \noindent \emph{Final solution:} $B_1 = \emptyset$, $B_2 = \emptyset$, $B_4 = \emptyset$, $B_5 = \emptyset$, $B_3 = B_6 = B_7 = B_8 = B_9 = B_{10} = B_{11} = \{\clt{1.5}, \cleq{0.3}, \cleq{1.8}\}$, $V_1 = \{0\}$, $V_2 = \{2\}$, $V_3 = \top$, $V_4 = \{0\}$, $V_5 = \{1\}$, $V_6 = \top$, $V_7 = \top$, $V_8 = \{1.5\}$, $V_9 = \{1.8\}$, $V_{10} = \{0.3\}$, $V_{11} = \{0.3, 1.8\}$. Since none of $B_1$, $B_2$, $B_4$ are $\top$, the constraints $B_1 \equiv_{\top} B_3$ and $B_2 \equiv_{\top} B_3$ are satisfied.
-\end{example}
-
 \paragraph{Additional constraint for contextual equivalence.} 
 When the return type of the program involves a float type, either directly or as part of a larger compound type, we add an additional constraint to ensure that these float types are not discretized. For example:
 \[

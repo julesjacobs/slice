@@ -107,12 +107,10 @@ Notice how both $2.5$ and $4.5$ are discretized to $1$, because for the purpose 
 
 We now consider comparisons against an expression for which control flow determines which of several constant values it may take. Additionally, continuous values can flow through conditionals before reaching such a comparison:
 
-% \begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
-%     let x = if flip() then uniform(0,2) else gaussian(0,1) in
-%     let y = if 1.5 > x then 1.8 else 0.3 in x <= y
-% \end{lstlisting}
-
-\input{figures/cf-program.tex}
+\begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
+    let x = if flip() then uniform(0,2) else gaussian(0,1) in
+    let y = if 1.5 > x then 1.8 else 0.3 in x <= y
+\end{lstlisting}
 
 \noindent Here, $y$ evaluates to either $1.8$ or $0.3$ depending on $x$. Because $x \leq y$ may use either value, \Slice{} collects both constants and treats the comparison as over this finite set. This motivates enriching our float types with a \emph{value set}: a finite collection of concrete values that an expression may evaluate to. Figure \ref{fig:float-type-def} presents the full float type as is implemented by \Slice{}; each floating-point expression is annotated with such a type. The type-annotated program is thus (omitting the redundant and irrelevant types):
 
@@ -131,8 +129,6 @@ We now consider comparisons against an expression for which control flow determi
 \noindent Value sets refine an expression's cut set by contributing cuts at comparisons. For example, in the test $x \leq y$, the value set of $y$ contributes boundary points that must also appear in the cut set of $x$. This dependency is non-local: constants introduced in one branch can constrain how a sampled value from another branch must be discretized.
 
 More generally, whenever two expressions are compared, the type system equates their cut sets so they are discretized over the same intervals. These cut sets then propagate backward through the control flow to all contributing subexpressions. Figure~\ref{fig:control-flow-gaussian} illustrates this non-local propagation, which the soundness proof must relate through a semantic coupling relation.
-
-\input{figures/cf-propagation.tex}
 
 Now, the discretized program becomes:
 
@@ -165,7 +161,7 @@ Now, the discretized program becomes:
 Continuous distributions can have parameters that depend on discrete random choices. In this example, a Gaussian distribution's standard deviation is determined by such a random choice:
 
 \begin{lstlisting}[escapeinside={<@}{@>},aboveskip=1em,belowskip=1em]
-    let x = if flip() <@\textcolor{purple}{then}@> 0.5 <@\textcolor{purple}{else}@> 1.5 in gaussian(0, <@\textcolor{red}{x}@>) <@\textcolor{orange}{<}@> 0.5
+    let x = if flip() then 0.5 else 1.5 in gaussian(0, x) < 0.5
 \end{lstlisting}
 
 \noindent %This example shows how discrete choices can affect the parameters of continuous distributions. 
@@ -177,8 +173,6 @@ The type-annotations reveal how the variable $x$ determines the standard deviati
         : !{\ftb{<=0.5,<=1.5}{0.5,1.5}}! in
     (gaussian(0, x) : !{\ft{<0.5}}!) < (0.5 : !{\ftb{<0.5}{0.5}}!)
 \end{lstlisting}
-
-\input{figures/latent-variable.tex}
 
 \noindent Because $x$ is later used as a parameter to $\gaussian$, \Slice{} generates one case per value in its value set (0.5 and 1.5). To support this, the type system uses non-strict inequalities in cut sets, allowing these values to map to unique integer indices starting at 0. Specifically, 0.5 maps to index 0 via \codetype{\ftb{<=0.5,<=1.5}{0.5}}, and 1.5 maps to index 1 via \codetype{\ftb{<=0.5,<=1.5}{1.5}}. This is a non-local effect: an upstream discrete latent choice determines how a downstream continuous distribution is discretized. The resulting discretized program then branches on these values and instantiates the corresponding discrete distribution for the standard deviation selected by the initial flip:
 
