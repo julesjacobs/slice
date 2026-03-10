@@ -58,6 +58,6 @@
         node[operationleft, font=\footnotesize, align=center, yshift=-5mm, xshift=8mm] {Interpreter\\[-1mm]{\tiny \textcolor{gray}{interp.ml}}} (output.north);
     \draw[interp] (dast.south) .. controls +(0,-0.5) and +(0,1) .. (output.north);
 \end{tikzpicture}}
-\caption{One instantiation pipeline for exact discretization: typed \Slice{} programs are transformed into semantically equivalent discrete programs, then evaluated by discrete exact-inference engines. The transformation stage (type inference + discretization) is backend-agnostic; \Dice{} and \Roulette{} are current examples of target backends.}
+\caption{Pipeline for exact discretization: typed \Slice{} programs are transformed into semantically equivalent discrete programs, then evaluated by discrete exact-inference engines. The transformation stage (type inference + discretization) is backend-agnostic; \Dice{} and \Roulette{} are current examples of target backends.}
 \label{fig:architecture}
 \end{figure}
