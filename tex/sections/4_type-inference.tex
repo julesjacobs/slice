@@ -75,7 +75,7 @@ $\subtype{\float[B_2;V_2]}{\float[B_6;V_6]}$,
 each of which is then reduced to equality and subset constraints on the corresponding cut
 and value sets.
 This process is syntactic and continues until no subtyping constraints remain,
-leaving only constraints over $B$ and $V$ for lattice solving. 
+leaving only constraints over $B$ and $V$. 
 
 \paragraph{Lattice Solving.}
 The lattice solver keeps track of the current contents of all $B$ and $V$ variables.
@@ -103,11 +103,11 @@ Each of the constraints is handled as follows:
 
 The solver repeatedly processes constraints until reaching a fixed point, where no constraint causes any further updates to the variables. The monotonicity of the lattice operations ensures that this process terminates. This procedure may add more cuts to $B$s than strictly necessary, but it never sets $B=\top$ unless that is the only way to satisfy all constraints. In other words, the discretization itself may be suboptimal in terms of the number of cuts.
 
-Lattice constraint solving takes time polynomial in the size of the program: at worst, every single constant in the program gets added to the cut set or value set of every subexpression of type $\float[B;V]$.
+Lattice constraint solving takes time polynomial in the size of the program: at worst, \emph{every} constant in the program gets added to the cut set or value set of every subexpression \mbox{of type $\float[B;V]$.}
 
 \paragraph{Additional constraint for contextual equivalence.} 
 When the return type of the program involves a float type, either directly or as part of a larger compound type, we add an additional constraint to ensure that these float types are not discretized. For example:
 \[
   \float[B;V] \to \float[B';V'].
 \]
-We do this by recursively traversing the return type and setting all nested $B$ sets to $\top$. This ensures that the observable behavior of the program is preserved after discretization, regardless of the context in which the program is used. When the return type is basic, such as $\bool$, nothing needs to be done.
+We recursively traverse the return type and setting all nested $B$ sets to $\top$. This ensures that the observable behavior of the program is preserved after discretization, regardless of the context in which the program is used. When the return type is basic, such as $\bool$, nothing needs to be done.
