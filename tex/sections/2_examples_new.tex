@@ -1,7 +1,7 @@
 \input{figures/architecture.tex}
 
 \section{Slice by Example}\label{sec:examples}
-To build intuition for \Slice{}, we start with examples of increasing complexity.
+To build intuition for \Slice{}, we start with simple examples demonstrating the key ideas, and then provide a more involved example containing higher-order recursion and lists in \Cref{sec:examples:7}. Our pipeline can perform \emph{fully automatic exact inference} on all provided programs.
 
 \subsection{Branching on a Single Continuous Variable}\label{sec:examples:1}
 We consider a program that samples a real value from a standard Gaussian distribution and then performs two nested comparisons, first checking whether the sampled value is less than 0.8, then comparing that value against either 0.1 or 2.0:
