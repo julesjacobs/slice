@@ -73,8 +73,9 @@ Elements of $\{ \clt{x} ~|~ x \in \R \}	\cup \{ \cleq{x} ~|~ x \in \R \}$ are ca
  Given a non-empty cut set $B =\{ \sim_1\!\!x_1, \ldots, \sim_n\!\! x_n \}$ with $x_1 \leq \ldots \leq x_n$, we define
 %
 \begin{align*}
-	\intervals{B} \quad{}={}\quad &
-	\begin{cases}
+	&\intervals{B} \\
+	%
+	{}={}&\begin{cases}
 		 \{ (-\infty, x_1) \}& \text{if $\sim_1 = <$} \\
 		 %
 		 \{ (-\infty, x_1] \}& \text{if $\sim_1 = \leq$} \\
@@ -92,9 +93,10 @@ Elements of $\{ \clt{x} ~|~ x \in \R \}	\cup \{ \cleq{x} ~|~ x \in \R \}$ are ca
 	 	%
 	 	%
 	 	\{ (x_i, x_{i+1}] \}& \text{if $\sim_i = \leq$ and $\sim_{i+1} = \leq$} \\
-	 \end{cases} \\
+	 \end{cases} 
 	 %
-	 & {}\cup~~~
+	 %& {}\cup~~~
+	 ~~\cup~~ 
 	 %
 	 \begin{cases}
 	 	\{ (x_n, \infty) \}& \text{if $\sim_n = \leq$} \\

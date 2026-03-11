@@ -11,7 +11,7 @@ We consider a program that samples a real value from a standard Gaussian distrib
     if x < 0.8 then x < 0.1 else x < 2.0
 \end{lstlisting}
 
-\noindent Instead of sampling a real value, we sample the discrete interval containing it, as shown below and in Figure~\ref{fig:cuts-gaussian}:
+\noindent We discretize this program by sampling from appropriate \emph{intervals}, as shown below and in Figure~\ref{fig:cuts-gaussian}:
 
 \input{figures/cuts.tex}
 
@@ -20,9 +20,9 @@ We consider a program that samples a real value from a standard Gaussian distrib
     if x < 2 then x < 1 else x < 3
 \end{lstlisting}
 
-\noindent Here, \discrete(0.5398, 0.2483, 0.1891, 0.0228) already represents all four observationally distinguishable outcomes of the Gaussian sample. The precise real value of $x$ never mattered to the rest of the program; only the interval in which it falls does. This is the regime we target: continuous quantities used in an observationally discrete way. \textbf{Slice’s goal is to detect such situations automatically.} We partition the continuous expression into intervals that are indistinguishable to the rest of the program, and then map every real to the interval it inhabits. 
+\noindent Here, \discrete(0.5398, 0.2483, 0.1891, 0.0228) already represents all four observationally distinguishable outcomes of the Gaussian sample. The precise real value of $x$ never mattered to the rest of the program; only the interval in which it falls does. This is the regime we target: continuous quantities used in an observationally discrete way. \emph{Slice’s goal is to detect such situations automatically.} We partition the continuous expression into intervals that are indistinguishable to the rest of the program, and then map every real to the interval it inhabits. 
 
-The transformation is guided by our type system, driven by a \emph{cut set}: the set of comparison thresholds extracted from the program. A continuous expression is annotated with its cut set (either finite or $\top$, indicating comparison to a continuous value), recording the values it is compared against.
+The transformation is guided by our type system, driven by a \emph{cut set} --- the set of comparison thresholds extracted from the program. A continuous expression is annotated with its cut set, recording the values it is compared against. For our example, the type annotation looks as follows:
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
     let x = (gaussian(0,1) : !{\ftnv{<0.2,<0.5,<2}}!) in
@@ -41,21 +41,18 @@ The transformation is guided by our type system, driven by a \emph{cut set}: the
     if x < 0.5 then x < 0.2 else y < 0.1
 \end{lstlisting}
 
-\noindent In this program, the variable $x$ is drawn from \uniform(0, 1) and is compared against two different constants: $0.5$ and $0.2$. These two cuts $\clt{0.5}$ and $\clt{0.2}$ partition the real line $\R$ into three intervals: $(-\infty, 0.2)$, $[0.2, 0.5)$, and $[0.5, +\infty)$. Similarly, the variable $y$, drawn from \uniform(0, 2), is compared only with $0.1$. This single cut $\clt{0.1}$ partitions the real line $\R$ into two intervals, $(-\infty, 0.1)$ and $[0.1, +\infty)$.
+\noindent In this program, the variable $x$ is drawn from \uniform(0, 1) and is compared against two different constants: $0.5$ and $0.2$. These two cuts $\clt{0.5}$ and $\clt{0.2}$ partition the real line $\R$ into three intervals: $(-\infty, 0.2)$, $[0.2, 0.5)$, and $[0.5, +\infty)$. Similarly, the variable $y$, drawn from \uniform(0, 2), is compared only with $0.1$. This single cut $\clt{0.1}$ partitions the real line $\R$ into $(-\infty, 0.1)$ and $[0.1, +\infty)$.
 
-Type inference performs this analysis by collecting all cuts for each continuous variable. For $x$, it discovers the cuts $\clt{0.2}$ and $\clt{0.5}$, giving it the type \ftnv{<0.2,<0.5}. For $y$, it only finds $\clt{0.1}$, giving it the type \ftnv{<0.1}. This information is captured in the annotated program below (omitting the redundant types):
+Type inference performs this analysis by collecting all cuts for each continuous variable. For $x$, it discovers the cuts $\clt{0.2}$ and $\clt{0.5}$, giving it the type \ftnv{<0.2,<0.5}. For $y$, it only finds $\clt{0.1}$, giving it the type \ftnv{<0.1}. This information is captured in the annotated program below:
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
     let x = uniform(0, 1) : !{\ftnv{<0.2,<0.5}}! in
     let y = uniform(0, 2) : !{\ftnv{<0.1}}! in
-    if x < 0.5 then
-      x < 0.2
-    else
-      y < 0.1
+    if x < 0.5 then x < 0.2 else y < 0.1
 \end{lstlisting}
 
 
-\Slice{} therefore discretizes $x$ into three outcomes \discrete(0.2, 0.3, 0.5) and $y$ into two outcomes \discrete(0.05, 0.95), where each probability is the measure of the original interval. Comparisons now operate over the integer indices of those intervals:
+\Slice{} therefore discretizes $x$ into three outcomes \discrete(0.2, 0.3, 0.5) and $y$ into two outcomes \discrete(0.05, 0.95), where each probability is the respective measure of the original interval. Comparisons now operate over the integer indices of those intervals:
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em]
     let x = discrete(0.2, 0.3, 0.5) in
@@ -112,7 +109,7 @@ We now consider comparisons against an expression for which control flow determi
     let y = if 1.5 > x then 1.8 else 0.3 in x <= y
 \end{lstlisting}
 
-\noindent Here, $y$ evaluates to either $1.8$ or $0.3$ depending on $x$. Because $x \leq y$ may use either value, \Slice{} collects both constants and treats the comparison as over this finite set. This motivates enriching our float types with a \emph{value set}: a finite collection of concrete values that an expression may evaluate to. Figure \ref{fig:float-type-def} presents the full float type as is implemented by \Slice{}; each floating-point expression is annotated with such a type. The type-annotated program is thus (omitting the redundant and irrelevant types):
+\noindent Here, $y$ evaluates to either $1.8$ or $0.3$ depending on $x$. Because $x \leq y$ may use either value, \Slice{} collects both constants and treats the comparison as over this finite set. This motivates enriching our float types with a \emph{value set}: a finite collection of concrete values that an expression may evaluate to. Figure \ref{fig:float-type-def} presents the full float type as is implemented by \Slice{}; each floating-point expression is annotated with such a type. The type-annotated program is thus:
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
     let x = if flip()
@@ -152,7 +149,7 @@ Now, the discretized program becomes:
     \underbrace{\text{value-set}}_{\footnotesize\begin{array}{c}\text{set of concrete values }\text{(e.g., }\{0.1, 0.4, 0.5\}\text{)}\\\text{or }\top\text{ (any continuous value)}\end{array}}
     ]
     \]
-    \caption{The type \lstinline{float[cut-set; value-set]} captures two aspects of a floating-point expression. The cut set is determined either by \emph{i) the constants the expression is compared against or ii) the constant itself if the expression is a float constant}. The value set is determined by \emph{what concrete values the expression can take}. The discretization is driven by the cut set: the $n$ cuts define $n+1$ intervals over the real line.}
+    \caption{The type \lstinline{float[cut-set; value-set]} captures two aspects of a floating-point expression. The cut set is determined either by (i) the constants the expression is compared against or (ii) the constant itself if the expression is a float constant. The value set is determined by {what concrete values the expression can take}. The discretization is driven by the cut set: the $n$ cuts define $n+1$ intervals over the real line.}
     \label{fig:float-type-def}
 \end{figure}
 
@@ -206,13 +203,12 @@ The type-annotations reveal how the variable $x$ determines the standard deviati
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em]
     let x = discrete(0.2, 0.3, 0.5) in
-    let _ = observe (x < 2) in
-    x < 1
+    let _ = observe (x < 2) in x < 1
 \end{lstlisting}
 
 \noindent Observation $x<2$ eliminates the discrete state corresponding to the original interval $[0.5,+\infty)$, mirroring the conditioning on $x<0.5$.
 
-Exact equalities can be encoded with $\observekw\; (x \leq c \mathrel{\&\&} x \geq c)$. Measure-zero observations remain delicate~\cite{Jacobs2021ParadoxesProbProg}; our semantics handles them by recording observation failure mass instead of renormalizing, so discretization preserves an even stronger equivalence. Scoring semantics for true measure-zero events are out of scope; users should instead approximate them with narrow intervals.
+Exact equalities are encoded with $\observekw\; (x \leq c \mathrel{\&\&} x \geq c)$. Measure-zero observations remain delicate~\cite{Jacobs2021ParadoxesProbProg}; our semantics handles them by recording observation failure mass instead of renormalizing, so discretization preserves an even stronger equivalence. Scoring semantics for true measure-zero events are out of scope; users should instead approximate them \mbox{with narrow intervals.}
 
 
 
