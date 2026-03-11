@@ -260,7 +260,7 @@ let final = cover init in is_covered final(* Run entire process on sampled inter
 	\caption{TODODOTDODODODODODOTODOD}
 		\label{fig:epsball}
 \end{figure}
-\noindent
+\noindent\kb{add discretized program to appendix. Refer to it in last paragraph.}
 We will now consider a more involved example shown in \Cref{fig:epsball} that \Slice discretizes in a fully automatic manner. This example emphasizes how our type inference procedure operates across higher-order functions, unbounded recursion, and lists to obtain appropriate type-annotations, which guide the subsequent discretization process.
 
 The program models the following process: We start by randomly sampling $4$ intervals (l.\ \ref{ln:b} and \ref{ln:init}), stored as a list of pairs, where the first component contains a flag used later and the second component contains a function that can be called to determine whether a given point falls within that interval. We then employ unbounded recursion (l.\ \ref{ln:cover}) to repeat the following a potentially unbounded number of times according to a geomtric distribution: Sample a point $y$ from a gaussian (l.\ \ref{ln:step}), and update the flag of every interval to $\true$ whenever $y$ falls within that interval (l.\ \ref{ln:update}). Finally, the program returns $\true$ iff \emph{all} intervals have been hit at least once (l. \ref{ln:final} and \ref{ln:iscovered}). Performing exact inference on this program hence corresponds to computing the probability that the modeled infinite stochastic process will hit every interval at least once.
