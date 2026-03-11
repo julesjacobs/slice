@@ -1,10 +1,101 @@
-\section{Evaluation}\label{sec:implem_eval}
+\section{Implementation and Evaluation}\label{sec:implem_eval}
 
-We use experiments to characterize the empirical consequences of exact discretization, emphasizing asymptotic scaling as program size grows. We evaluate \Slice{}+\Dice{} and \Slice{}+\Roulette{} on (i) constructed scaling benchmarks and (ii) benchmark suites from prior literature, and report results with \SPPL{}. These systems are complementary exact-inference pathways: \SPPL{} performs direct symbolic exact inference over its supported fragment (including numeric transformations and conditioning on measure-zero events), while \Slice{} applies an exact source-to-source transformation to a discrete form solved by discrete backends.
+We use experiments to characterize the empirical consequences of exact discretization. 
+We set out to answer the following questions:
+\begin{enumerate}
+    \item Is \Slice{} able to perform exact inference on programs that could not be handled rigorously before?
+    \item How does \Slice{} perform on instances that could already be solved (e.g. by \SPPL{})? 
+\end{enumerate}
+
+We answer the first question in~\Cref{sec:case-studies} by demonstrating examples that existing exact inference systems have largely not supported directly, and the second in~\Cref{sec:synthetic-benchmarks,sec:fairness-benchmarks} by evaluating \Slice{}+\Dice{} and \Slice{}+\Roulette{} on (i) constructed scaling benchmarks and (ii) benchmark suites from prior literature, and report results with \SPPL{}. 
+%These systems are complementary exact-inference pathways: \SPPL{} performs direct symbolic exact inference over its supported fragment (including numeric transformations and conditioning on measure-zero events), while \Slice{} applies an exact source-to-source transformation to a discrete form solved by discrete backends.
 
 The \Slice{} compiler consists of approximately 3,400 lines of OCaml code (including the lexer, parser, type inference and discretization engines, and \Dice{}/\Roulette{} code generators). We use the OCaml GSL package~\cite{gsl} to compute the CDFs of the probability distributions. The system is open-source and available at \url{https://github.com/[anonymized]}, along with benchmarks, documentation, and a Docker image. All benchmarks were run within that Docker image on an Apple M3 with 16GB RAM.
 
-\subsubsection{New Benchmarks for Scaling}\label{sec:synthetic-benchmarks} We designed scalable benchmarks of conditionally independent continuous programs with varying variable dependencies. Formally, all programs in our benchmark can be described by the conditional independence structure: $X_i \perp\!\!\!\perp \{\,X_j : j < i, j \neq \pi(i)\,\}
+\subsection{Case Studies}\label{sec:case-studies}
+
+We turn to three case studies that illustrate the kinds of continuous probabilistic programs \Slice{} is designed to handle. Each combines continuous sampling with features that are traditionally difficult for exact inference, including unbounded (but finite state) recursion, higher-order functions, and conditioning inside stochastic loops. At first sight, these programs appear to range over genuinely infinite state spaces: they manipulate real-valued samples and may run for an unbounded number of steps. The central point of \Slice{} is that this apparent behavior can nevertheless collapse to a finite exact model when the program only inspects continuous values through finitely many comparison outcomes. 
+
+\subsubsection{Geometric Loop}
+
+We first study a small but revealing program with unbounded recursion:
+\begin{lstlisting}[aboveskip=0.4em,belowskip=0.4em]
+(fix geom x :=
+   if x <= 0.5 then true
+   else if x <= 0.8 then geom x
+   else let y = uniform(0,1) in geom y) 1
+\end{lstlisting}
+
+Operationally, this program may recurse forever: when $x \in (0.5,0.8]$, execution returns immediately to the same call \lstinline{geom x}, producing a self-loop. Even outside that branch, the program may resample and recurse again, so the overall computation unfolds as an unbounded stochastic process. A naive state-space view would treat the current real value of $x$ as part of an infinite continuous state.
+
+What makes this program discretizable is that the recursion does not depend on the exact value of $x$, but only on which side of the cuts $0.5$ and $0.8$ it lies. Once those comparisons are fixed, the rest of the real line becomes observationally irrelevant. \Slice{} therefore infers the cut set induced by these constants and partitions the line into the three regions
+\[
+(-\infty,0.5], \qquad (0.5,0.8], \qquad (0.8,+\infty).
+\]
+After this transformation, the program no longer ranges over arbitrary reals, but over three abstract states corresponding exactly to these intervals. The recursion remains, but it is now recursion over a finite discrete state space:
+
+\begin{lstlisting}[aboveskip=1em,belowskip=1em]
+    (fix geom x := 
+        if x <= 0 then true
+        else if x <= 1 then geom x
+        else let y = discrete(0.5, 0.3, 0.2) in geom y) 2
+\end{lstlisting}
+
+
+\subsubsection{Random Interval Covering of $[0,1]$ with Conditioning}
+
+Our second case study is an extension of~\Cref{sec:examples:7}, now with conditioning. The program models a stochastic covering process over $[0,1]$ in which the interval paritions are themselves random, the program state is stored as a list, and each list element contains a higher-order predicate:
+\begin{lstlisting}[aboveskip=0.4em,belowskip=0.4em]
+let within = fun lo -> fun hi -> fun y ->
+    (y >= lo) && (y < hi)
+in
+...
+let cover = fix cover st :=
+  if uniform(0,1) < 0.1 then st
+  else
+    let y = gaussian(0,1) in
+    let _ = observe (non_overlap y false st) in
+    cover (step y st)
+in
+...
+let final = cover init in
+is_covered final
+\end{lstlisting}
+
+The program first samples boundary values and builds a list of interval predicates. Each element stores a Boolean flag indicating whether the interval has been covered, together with a closure that tests membership in that interval. Because these boundaries are sampled independently, the induced intervals need not be disjoint: they may overlap. The loop repeatedly samples a Gaussian point, conditions on the event that the point does \emph{not} lie in multiple overlapping intervals, updates the coverage flags by recursively traversing the list, and stops according to a geometric condition. The final query asks whether all intervals have been covered.
+
+This program is challenging for exact inference on several fronts: the loop is unbounded, the state is higher-order, the list-processing functions are recursive, and conditioning occurs inside the loop rather than once at the top level. Nevertheless, the program uses each Gaussian sample only through comparisons against finitely many sampled boundaries. The closures created by \lstinline{within} depend only on which intervals a point hits, and \lstinline{non_overlap} only checks that overlapping hits do not occur. \Slice{} therefore replaces each Gaussian draw by the index of its observationally relevant region, yielding a finite representation of the coverage process.
+
+\subsubsection{Bloom Filter}
+
+Our final case study models a small Bloom filter populated by continuous samples:
+\begin{lstlisting}[aboveskip=0.4em,belowskip=0.4em]
+let h1 = fun q ->
+    if q <= -2 then 0
+    else if -2 < q && q <= 0 then 1
+    else if 0 < q && q <= 2 then 2
+    else 3
+in
+
+let h2 = fun q ->
+    if q <= -2 then 3
+    else if -2 < q && q <= 0 then 2
+    else if 0 < q && q <= 2 then 1
+    else 0
+in
+...
+let q1 = gaussian(0,1) in
+...
+let q5 = gaussian(0,1) in
+search q5 h1 h2 updated_bf_4
+\end{lstlisting}
+
+The program samples four Gaussian values, inserts them into a four-bit Bloom filter using two hash functions, and then queries the probability that a fifth Gaussian value yields a false positive. Unlike the previous two case studies, the difficulty here is not unbounded recursion but the interaction between continuous randomness and a structured discrete data structure. Each sampled real is passed through two comparison-based hash functions, those hash outcomes determine correlated writes to a nested tuple representing the bit vector, and the final query depends on the joint effect of all prior insertions.
+
+The key simplification is that the hash functions never inspect the exact value of a sample. They only ask which threshold-defined region it falls into, using the cut points $-2$, $0$, and $2$. These cuts partition the line into four regions, which already coincide with the Bloom filter's index space. \Slice{} therefore replaces each Gaussian draw by its bucket index while preserving exactly the probability of every collision pattern relevant to insertion and search.
+
+
+\subsection{New Benchmarks for Scaling}\label{sec:synthetic-benchmarks} We designed scalable benchmarks of conditionally independent continuous programs with varying variable dependencies. Formally, all programs in our benchmark can be described by the conditional independence structure: $X_i \perp\!\!\!\perp \{\,X_j : j < i, j \neq \pi(i)\,\}
 \;\Big|\; X_{\pi(i)}$, where $\pi(i) \in \{1, \ldots, i-1\}$ is the parent index of $X_i$. Schematically:
 %
     \begin{lstlisting}[aboveskip=0.1em,belowskip=.1em]
@@ -28,7 +119,7 @@ The \Slice{} compiler consists of approximately 3,400 lines of OCaml code (inclu
 
 \input{figures/scaling-main.tex}
 
-\subsubsection{Existing Benchmarks}\label{sec:fairness-benchmarks}
+\subsection{Existing Benchmarks}\label{sec:fairness-benchmarks}
 
 We next use benchmark suites from prior work for compatibility and coverage checks. Detailed tables (\Cref{tab:benchmarks_dt} and \Cref{tab:benchmarks_dt_extra}) are in the supplemental appendix; we summarize their structure here. The decision-tree benchmarks from~\cite{albarghouthi2017fairsquare} assess fairness properties under different population models. DT$_n$ denotes a tree with $n$ conditionals, the second column specifies the population model, and the remaining columns report runtimes. We split \SPPL{} execution into translation and fairness-judgment phases to make phase costs explicit.
 
@@ -37,32 +128,32 @@ We next use benchmark suites from prior work for compatibility and coverage chec
 %We finally evaluate \Slice{} on a set of benchmarks that were introduced in~\cite{gehr2016psi}. We evaluate \Slice{} on the hybrid programs in these benchmarks. The results are shown in Table 2. We omit the runs of PSI in the table due to its significantly slower performance than SPPL on all benchmarks. The first column in the table gives the benchmark name, and the remaining columns display the execution times in seconds of Slice with Dice, Slice with Roulette, and SPPL respectively. As both SPPL and \Slice{} are restricted languages, in order to test a broader range of programs, we converted several benchmarks with parameters inside distributions that depend on continuous random choices to a discretized version. The time taken by \Slice{} to solve these problems is nearly instant in all cases. 
 
 
-\kbin{move somwhere}
-\subsection{Unbounded Recursion}\label{sec:examples:7}
+% \kbin{move somwhere}
+% \subsection{Unbounded Recursion}\label{sec:examples:7}
 
-We now consider a program with recursion, where control flow may revisit the same expression an unbounded number of times. Such programs are common in probabilistic modeling (e.g., geometric processes), but are challenging for sampling-based methods, which may fail to terminate due to self-loops.
+% We now consider a program with recursion, where control flow may revisit the same expression an unbounded number of times. Such programs are common in probabilistic modeling (e.g., geometric processes), but are challenging for sampling-based methods, which may fail to terminate due to self-loops.
 
-\begin{lstlisting}[aboveskip=1em,belowskip=1em]
-    (fix geom x := 
-        if x <= 0.5 then true
-        else if x <= 0.8 then geom x
-        else let y = uniform(0,1) in geom y) 1
-\end{lstlisting}
+% \begin{lstlisting}[aboveskip=1em,belowskip=1em]
+%     (fix geom x := 
+%         if x <= 0.5 then true
+%         else if x <= 0.8 then geom x
+%         else let y = uniform(0,1) in geom y) 1
+% \end{lstlisting}
 
-\noindent This program repeatedly evaluates \texttt{geom}, potentially recursing indefinitely when $x \in (0.5, 0.8]$. In the final branch, a fresh sample is drawn and the process continues. While the recursion is unbounded, the key insight is that the observable behavior of the program depends only on which interval the current value of $x$ lies in.
+% \noindent This program repeatedly evaluates \texttt{geom}, potentially recursing indefinitely when $x \in (0.5, 0.8]$. In the final branch, a fresh sample is drawn and the process continues. While the recursion is unbounded, the key insight is that the observable behavior of the program depends only on which interval the current value of $x$ lies in.
 
-\noindent As in previous examples, \Slice{} extracts the relevant cut set from the comparisons against $0.5$ and $0.8$. These cuts partition the real line into three intervals:
-\[
-(-\infty, 0.5], \quad (0.5, 0.8], \quad (0.8, +\infty).
-\]
+% \noindent As in previous examples, \Slice{} extracts the relevant cut set from the comparisons against $0.5$ and $0.8$. These cuts partition the real line into three intervals:
+% \[
+% (-\infty, 0.5], \quad (0.5, 0.8], \quad (0.8, +\infty).
+% \]
 
-\noindent The resulting discretized program is:
+% \noindent The resulting discretized program is:
 
-\begin{lstlisting}[aboveskip=1em,belowskip=1em]
-    (fix geom x := 
-        if x <= 0 then true
-        else if x <= 1 then geom x
-        else let y = discrete(0.5, 0.3, 0.2) in geom y) 2
-\end{lstlisting}
+% \begin{lstlisting}[aboveskip=1em,belowskip=1em]
+%     (fix geom x := 
+%         if x <= 0 then true
+%         else if x <= 1 then geom x
+%         else let y = discrete(0.5, 0.3, 0.2) in geom y) 2
+% \end{lstlisting}
 
-\noindent Crucially, the resulting program has a finite state space. This enables exact reasoning via finite-state methods such as Markov chain analysis via Storm.
+% \noindent Crucially, the resulting program has a finite state space. This enables exact reasoning via finite-state methods such as Markov chain analysis via Storm.
