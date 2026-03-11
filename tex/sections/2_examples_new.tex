@@ -227,11 +227,11 @@ let within = fun lo -> fun hi -> fun y -> (* Returns true (*@if@*) y is (*@in@*)
 let b = fun _ ->  (* Function for sampling interval bounds *)(*@\linelabel{ln:b}@*)
   discrete(0.18: 0.05, 0.11: 0.24, 0.21: 0.37, 0.09: 0.58, 0.16: 0.78, 0.25: 0.89) in
 
-(* Initialize intervals and sample their respective (possibly overlapping) bounds*)(*@\linelabel{ln:init}@ *)
+(* Initialize intervals by sample their respective (possibly overlapping) bounds*)(*@\linelabel{ln:init}@ *)
 let init = (false, within 0.00 (b ())) :: (false, within (b ()) (b ())) ::
   (false, within (b ()) (b ())) :: (false, within (b ()) 1.00) :: nil in 
 
-(* Update flags depending on y falling within the respective interval  *)(*@\linelabel{ln:update}@ *)
+(* Update flags depending on y falling within the respective interval *)(*@\linelabel{ln:update}@ *)
 let update = fix update y := fun ys -> 
   match ys with 
     | nil -> nil
@@ -239,7 +239,7 @@ let update = fix update y := fun ys ->
   end
 in 
 
-(* Sample from a (*@gaussian@*), (*@then@*) use so-obtained value to update flag  *)(*@\linelabel{ln:step}@ *)
+(* Sample from a (*@gaussian@*), (*@then@*) use so-obtained value to update flags  *)(*@\linelabel{ln:step}@ *)
 let step = fun ys -> update (gaussian(0,1)) ys in
 
 (* Number of samples determined by unbounded recursion *)(*@\linelabel{ln:cover}@ *)
