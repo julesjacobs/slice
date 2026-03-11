@@ -215,12 +215,19 @@ Exact equalities are encoded with $\observekw\; (x \leq c \mathrel{\&\&} x \geq 
 \subsection{Unbounded Recursion, Higher-Order Functions, and Lists}\label{sec:examples:7}
 
 We now consider a stochastic coverage process over a continuous domain with both higher-order functions and unbounded recursion. The program first samples four cut points $b_1,b_2,b_3,b_4$ from discrete distributions over candidate boundary values, thereby inducing a random partition of $[0,1]$ into subintervals. It then repeatedly samples points from a Gaussian distribution, marking each interval as covered once a sampled point falls inside it. The process stops after a geometrically distributed number of steps, and finally checks whether the entire interval has been covered.
+\ref{ln:within}
 
-\begin{lstlisting}[aboveskip=1em,belowskip=1em]
+\newcommand{\linelabel}[1]{%
+	\edef\@currentlabel{\thelstnumber}%
+	\label{#1}%
+}
+
+\begin{lstlisting}[aboveskip=1em,belowskip=1em,escapeinside={(*@}{@*)},numbers=right,
+	stepnumber=1]
 let within = fun lo -> fun hi -> fun y ->
   (y >= lo) && (y < hi) in 
 
-let b = fun _ -> 
+let b = fun _ ->  (* blablabla *)(*@\linelabel{ln:within}@*)
   discrete(0.18: 0.05, 0.11: 0.24, 0.21: 0.37, 0.09: 0.58, 0.16: 0.78, 0.25: 0.89) in
 
 let init = (false, within 0.00 (b ())) :: (false, within (b ()) (b ())) ::
