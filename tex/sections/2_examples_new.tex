@@ -213,26 +213,25 @@ Exact equalities are encoded with $\observekw\; (x \leq c \mathrel{\&\&} x \geq 
 
 
 \subsection{Unbounded Recursion, Higher-Order Functions, and Lists}\label{sec:examples:7}
-
-We now consider a stochastic coverage process over a continuous domain with both higher-order functions and unbounded recursion. The program first samples four cut points $b_1,b_2,b_3,b_4$ from discrete distributions over candidate boundary values, thereby inducing a random partition of $[0,1]$ into subintervals. It then repeatedly samples points from a Gaussian distribution, marking each interval as covered once a sampled point falls inside it. The process stops after a geometrically distributed number of steps, and finally checks whether the entire interval has been covered.
-\ref{ln:within}
-
 \newcommand{\linelabel}[1]{%
 	\edef\@currentlabel{\thelstnumber}%
 	\label{#1}%
 }
-
-\begin{lstlisting}[aboveskip=1em,belowskip=1em,escapeinside={(*@}{@*)},numbers=right,
-	stepnumber=1]
-let within = fun lo -> fun hi -> fun y ->
+%
+\begin{figure}[t]
+	\begin{lstlisting}[aboveskip=1em,belowskip=1em,escapeinside={(*@}{@*)},numbers=right,
+		stepnumber=1]
+let within = fun lo -> fun hi -> fun y -> (* Returns true (*@if@*) y is (*@in@*)  [lo,hi)*)(*@\linelabel{ln:within}@ *)
   (y >= lo) && (y < hi) in 
 
-let b = fun _ ->  (* blablabla *)(*@\linelabel{ln:within}@*)
+let b = fun _ ->  (* Function for sampling interval bounds *)(*@\linelabel{ln:b}@*)
   discrete(0.18: 0.05, 0.11: 0.24, 0.21: 0.37, 0.09: 0.58, 0.16: 0.78, 0.25: 0.89) in
 
+(* Initialize intervals and sample their respective (possibly overlapping) bounds*)(*@\linelabel{ln:init}@ *)
 let init = (false, within 0.00 (b ())) :: (false, within (b ()) (b ())) ::
   (false, within (b ()) (b ())) :: (false, within (b ()) 1.00) :: nil in 
 
+(* Update flags depending on y falling within the respective interval  *)(*@\linelabel{ln:update}@ *)
 let update = fix update y := fun ys -> 
   match ys with 
     | nil -> nil
@@ -240,24 +239,41 @@ let update = fix update y := fun ys ->
   end
 in 
 
+(* Sample from a (*@gaussian@*), (*@then@*) use so-obtained value to update flag  *)(*@\linelabel{ln:step}@ *)
 let step = fun ys -> update (gaussian(0,1)) ys in
 
+(* Number of samples determined by unbounded recursion *)(*@\linelabel{ln:cover}@ *)
 let cover = fix cover st :=
-  if uniform(0,1) < 0.2 then st 
-  else cover (step st) in
+  if uniform(0,1) < 0.2 then st else cover (step st) in
 
-let is_covered = fix is_covered ys :=
-    match ys with 
+(* Have all intervals been covered at least once? *)(*@\linelabel{ln:iscovered}@ *)
+let is_covered = fix is_covered ys := 
+  match ys with 
     | nil -> true 
     | h :: t -> (fst h) && (is_covered t)
-    end
+  end
 in 
 
-let final = cover init in is_covered final
-\end{lstlisting}
+let final = cover init in is_covered final(* Run entire process on sampled intervals *)(*@\linelabel{ln:final}@ *)
+	\end{lstlisting}
+	
+	\label{fig:epsball}
+	\caption{TODODOTDODODODODODOTODOD}
+\end{figure}
+\noindent
+We will now consider a more involved example shown in \Cref{fig:epsball} that \Slice discretizes in a fully automatic manner. This example emphasizes how our type inference procedure operates across higher-order functions, unbounded recursion, and lists to obtain appropriate type-annotations, which guide the subsequent discretization process.
 
-\noindent \Slice{}  observes that only a finite partition of the real line matters. The comparisons against the grid boundaries induce a cut set that partitions $\R$ into intervals corresponding exactly to these regions. Each sampled point $y$ is therefore abstracted by the index of the region it falls into. 
+The program models the following process: We start by randomly sampling $4$ intervals (l.\ \ref{ln:b} and \ref{ln:init}), stored as a list of pairs, where the first component contains a flag used later and the second component contains a function that can be called to determine whether a given point falls within that interval. We then employ unbounded recursion (l.\ \ref{ln:cover}) to repeat the following a potentially unbounded number of times according to a geomtric distribution: Sample a point $y$ from a gaussian (l.\ \ref{ln:step}), and update the flag of every interval to $\true$ whenever $y$ falls within that interval (l.\ \ref{ln:update}). Finally, the program returns $\true$ iff \emph{all} intervals have been hit at least onve (l. \ref{ln:final} and \ref{ln:iscovered}).
 
-\noindent Crucially, the resulting program has a \emph{finite state space}: the continuous domain $[0,1]$ is reduced to a finite set of regions, and the coverage state is a tuple of Booleans. Despite the original program featuring unbounded sampling and recursion, its behavior is captured exactly by a \mbox{finite-state system.}
+\Slice automatically produces a provably equivalent (cf.\ \Cref{sec:soundness}) discrete program. Even though this program still contains unbounded recursion, our back-end automatically determines that it can be modelled as a \emph{finite-state} Markov chain. We feed this Markov chain into the probabilistic model checker \Storm, which automatically computes that the sought-after probability is $0.018226..$. To the best of our knowledge, our pipeline is the first that is capable of performing exact inference on programs containing continuous exampling, higher-order functions, and unbounded recursion. In \Cref{sec:casestudy:epsball}, we extend this program by conditioning \emph{inside of the unbounded recursion}. 
+
+%We now consider a stochastic coverage process over a continuous domain with both higher-order functions and unbounded recursion. The program first samples four cut points $b_1,b_2,b_3,b_4$ from discrete distributions over candidate boundary values, thereby inducing a random partition of $[0,1]$ into subintervals. It then repeatedly samples points from a Gaussian distribution, marking each interval as covered once a sampled point falls inside it. The process stops after a geometrically distributed number of steps, and finally checks whether the entire interval has been covered.
+%\ref{ln:within}
+%
+%
+%
+%\noindent \Slice{}  observes that only a finite partition of the real line matters. The comparisons against the grid boundaries induce a cut set that partitions $\R$ into intervals corresponding exactly to these regions. Each sampled point $y$ is therefore abstracted by the index of the region it falls into. 
+%
+%\noindent Crucially, the resulting program has a \emph{finite state space}: the continuous domain $[0,1]$ is reduced to a finite set of regions, and the coverage state is a tuple of Booleans. Despite the original program featuring unbounded sampling and recursion, its behavior is captured exactly by a \mbox{finite-state system.}
 
 %\input{figures/epsilon-ball.tex}
