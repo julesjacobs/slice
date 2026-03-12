@@ -214,39 +214,75 @@ Exact equalities are encoded with $\observekw\; (x \leq c \mathrel{\&\&} x \geq 
 
 \subsection{Unbounded Recursion, Higher-Order Functions, and Lists}\label{sec:examples:7}
 \newcommand{\linelabel}[1]{%
-	\edef\@currentlabel{\thelstnumber}%
-	\label{#1}%
+  \edef\@currentlabel{\thelstnumber}%
+  \label{#1}%
 }
-%
-\begin{figure}[t]
-	\begin{lstlisting}[aboveskip=1em,belowskip=1em,escapeinside={(*@}{@*)},numbers=right,
-		stepnumber=1]
-let within = fun lo -> fun hi -> fun y -> (* Returns true (*@if@*) y is (*@in@*)  [lo,hi)*)(*@\linelabel{ln:within}@ *)
+
+\begin{figure*}[t]
+\centering
+\begin{minipage}[t]{0.46\textwidth}
+\vspace{0pt}
+\begin{lstlisting}[aboveskip=1em,belowskip=1em,
+  escapeinside={(*@}{@*)},
+  numbers=right,
+  stepnumber=1,
+  numberstyle=\color{gray}\scriptsize,
+  numbersep=7pt,
+  basicstyle=\ttfamily\footnotesize]
+let within = fun lo -> fun hi -> fun y -> 
+(* Returns true (*@if@*) y is (*@in@*) [lo,hi)*)(*@\linelabel{ln:within}@ *)
   (y >= lo) && (y < hi) in 
 
 let b = fun _ ->  (* Function for sampling interval bounds *)(*@\linelabel{ln:b}@*)
-  discrete(0.18: 0.05, 0.11: 0.24, 0.21: 0.37, 0.09: 0.58, 0.16: 0.78, 0.25: 0.89) in
+  discrete(0.18: 0.05, 0.11: 0.24, 
+          0.21: 0.37, 0.09: 0.58, 
+          0.16: 0.78, 0.25: 0.89) in
 
-(* Initialize intervals by sample their respective (possibly overlapping) bounds*)(*@\linelabel{ln:init}@ *)
-let init = (false, within 0.00 (b ())) :: (false, within (b ()) (b ())) ::
-  (false, within (b ()) (b ())) :: (false, within (b ()) 1.00) :: nil in 
+(* Initialize intervals by sampling their 
+respective (possibly overlapping) bounds *)(*@\linelabel{ln:init}@ *)
+let init =
+  (false, within 0.00 (b ())) ::
+  (false, within (b ()) (b ())) ::
+  (false, within (b ()) (b ())) ::
+  (false, within (b ()) 1.00) ::
+  nil in 
 
-(* Update flags depending on y falling within the respective interval *)(*@\linelabel{ln:update}@ *)
+(* Update flags depending on y falling within
+   the respective interval *)(*@\linelabel{ln:update}@ *)
 let update = fix update y := fun ys -> 
   match ys with 
     | nil -> nil
-    | h :: t -> ((fst h || ((snd h) y)), snd h) :: (update y t)
+    | h :: t ->
+        ((fst h || ((snd h) y)), snd h)
+        :: (update y t)
   end
-in 
+in
+\end{lstlisting}
+\end{minipage}
+\hfill
+\begin{minipage}[t]{0.46\textwidth}
+\vspace{0pt}
+\begin{lstlisting}[aboveskip=1em,belowskip=1em,
+  escapeinside={(*@}{@*)},
+  numbers=right,
+  stepnumber=1,
+  firstnumber=last,
+  numberstyle=\color{gray}\scriptsize,
+  numbersep=7pt,
+  basicstyle=\ttfamily\footnotesize]
+(* Sample from a (*@gaussian@*), (*@then@*) use
+   so-obtained value to update flags *)(*@\linelabel{ln:step}@ *)
+let step = fun ys -> 
+  update (gaussian(0,1)) ys in
 
-(* Sample from a (*@gaussian@*), (*@then@*) use so-obtained value to update flags  *)(*@\linelabel{ln:step}@ *)
-let step = fun ys -> update (gaussian(0,1)) ys in
-
-(* Number of samples determined by unbounded recursion *)(*@\linelabel{ln:cover}@ *)
+(* Number of samples determined by 
+   unbounded recursion *)(*@\linelabel{ln:cover}@ *)
 let cover = fix cover st :=
-  if uniform(0,1) < 0.2 then st else cover (step st) in
+  if uniform(0,1) < 0.2 then st
+  else cover (step st) in
 
-(* Have all intervals been covered at least once? *)(*@\linelabel{ln:iscovered}@ *)
+(* Have all intervals been covered
+   at least once? *)(*@\linelabel{ln:iscovered}@ *)
 let is_covered = fix is_covered ys := 
   match ys with 
     | nil -> true 
@@ -254,12 +290,15 @@ let is_covered = fix is_covered ys :=
   end
 in 
 
-let final = cover init in is_covered final(* Run entire process on sampled intervals *)(*@\linelabel{ln:final}@ *)
-	\end{lstlisting}
-	
-	\caption{An infinite stochastic process involving continuous sampling, higher-order recursion, and lists.}
-		\label{fig:epsball}
-\end{figure}
+(* Run entire process on sampled intervals *)
+let final = cover init in
+is_covered final (*@\linelabel{ln:final}@ *)
+\end{lstlisting}
+\end{minipage}
+
+\caption{An infinite stochastic process involving continuous sampling, higher-order recursion, and lists.}
+\label{fig:epsball}
+\end{figure*}
 
 We will now consider a more involved example shown in \Cref{fig:epsball} that \Slice discretizes in a fully automatic manner. This example emphasizes how our type inference procedure operates across higher-order functions, unbounded recursion, and lists to obtain appropriate type-annotations, which guide the subsequent discretization process.
 
