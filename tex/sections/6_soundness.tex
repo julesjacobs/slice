@@ -829,29 +829,29 @@ Define the bijection $f\colon Expr_{\tau} \to \skel_{\tau} \times \R^n$ for some
 \end{definition}
 
 \begin{example}
-	Given $s : \tau = (\square : \floattype{\clt{3.5}, \clt{4.5}}{\top} < \square : \floattype{\clt{3.5}, \clt{4.5}}{3.5,4.5}) : \bool$, we compute $A_{s : \tau}$.
+	Given $s : \tau = (\square : \floattype{\{\clt{3.5}, \clt{4.5}\}}{\top} < \square : \floattype{\{\clt{3.5}, \clt{4.5}\}}{\{3.5,4.5\}}) : \bool$, we compute $A_{s : \tau}$.
 
 	\begin{align*}
 		f(e : \bool)_1 
-			&= (\square : \floattype{\clt{3.5}, \clt{4.5}}{\top} 
-				< \square : \floattype{\clt{3.5}, \clt{4.5}}{3.5,4.5}) : \bool \\[6pt]
+			&= (\square : \floattype{\{\clt{3.5}, \clt{4.5}\}}{\top} 
+				< \square : \floattype{\{\clt{3.5}, \clt{4.5}\}}{\{3.5,4.5\}}) : \bool \\[6pt]
 		\iff\;& 
 			e = e_1 < e_2 \\[3pt]
 		&\quad 
-			f(e_1 : \floattype{\clt{3.5}, \clt{4.5}}{\top})_1 
-			= \square : \floattype{\clt{3.5}, \clt{4.5}}{\top}, \\[3pt]
+			f(e_1 : \floattype{\{\clt{3.5}, \clt{4.5}\}}{\top})_1 
+			= \square : \floattype{\{\clt{3.5}, \clt{4.5}\}}{\top}, \\[3pt]
 		&\quad 
-			f(e_2 : \floattype{\clt{3.5}, \clt{4.5}}{3.5,4.5})_1 
-				= \square : \floattype{\clt{3.5}, \clt{4.5}}{3.5,4.5} \\[6pt]
+			f(e_2 : \floattype{\{\clt{3.5}, \clt{4.5}\}}{\{3.5,4.5\}})_1 
+				= \square : \floattype{\{\clt{3.5}, \clt{4.5}\}}{\{3.5,4.5\}} \\[6pt]
 		\iff\;& 
 			e_1 = c \in \R, \quad e_2 \in \{3.5, 4.5\}.
 	\end{align*}
 	
 	Thus,
 	\begin{align*}
-		f(c : \floattype{\clt{3.5}, \clt{4.5}}{\top})_2 &= \R, \\[3pt]
-		f(3.5 : \floattype{\clt{3.5}, \clt{4.5}}{3.5,4.5})_2 &= \{3.5\}, \\[3pt]
-		f(4.5 : \floattype{\clt{3.5}, \clt{4.5}}{3.5,4.5})_2 &= \{4.5\}.
+		f(c : \floattype{\{\clt{3.5}, \clt{4.5}\}}{\top})_2 &= \R, \\[3pt]
+		f(3.5 : \floattype{\{\clt{3.5}, \clt{4.5}\}}{\{3.5,4.5\}})_2 &= \{3.5\}, \\[3pt]
+		f(4.5 : \floattype{\{\clt{3.5}, \clt{4.5}\}}{\{3.5,4.5\}})_2 &= \{4.5\}.
 	\end{align*}
 	
 	Hence,
@@ -1115,8 +1115,8 @@ And the semantics is as follows:
 \begin{align*}
 	&\sem{ \dc(e_1 : \tau_1, e_2 : \tau_2) : \tau} \\
 	&= \begin{cases}
-		\sem{ \discretize{\uniform(v_i, w_j) : \floattype{B}{\top}} : \tau } \quad &\text{ if } e_1 = \discretize{v_i : \floattype{B_1}{v_i}} = v', \\
-		&e_2 = \discretize{w_j : \floattype{B_2}{w_j}} = w' \\
+		\sem{ \discretize{\uniform(v_i, w_j) : \floattype{B}{\top}} : \tau } \quad &\text{ if } e_1 = \discretize{v_i : \floattype{B_1}{\{v_i\}}} = v', \\
+		&e_2 = \discretize{w_j : \floattype{B_2}{\{w_j\}}} = w' \\
 		\sem{ e_2 : \tau_2 } \gg\!= \lambda f. \sem{ \dc(v' : \tau_1, f) } \quad &\text{ if } e_1 = v', e_2 \neq w' \\
 		\sem{ e_1 : \tau_1 } \gg\!= \lambda f. \sem{ \dc(f, e_2 : \tau_2) } \quad &\text{ otherwise } \\
 	\end{cases} \\
@@ -1772,8 +1772,8 @@ We assume the expressions $e, e'$ are well-typed.
 	&\dc(\discretize{e_1 : \tau_1} : \discretize{\tau_1}, \discretize{e_2 : \tau_2} : \discretize{\tau_2}) : \discretize{\tau}} \\
 	&= \begin{cases}
 		\sem{ \uniform(v : \tau_1, w : \tau_2) : \tau, \discretize{\uniform(v_i,w_j) : \floattype{B}{\top}} : \discretize{\tau}} \\
-		\text{s.t. } \discretize{v_i : \floattype{B_1}{v_i}} = \discretize{v : \floattype{B_1}{v}} \\
-		\text{ and } \discretize{w_j : \floattype{B_2}{w_j}} = \discretize{w : \floattype{B_2}{w}} \quad &\text{ if } e_1 = v, e_2 = w \\
+		\text{s.t. } \discretize{v_i : \floattype{B_1}{\{v_i\}}} = \discretize{v : \floattype{B_1}{\{v\}}} \\
+		\text{ and } \discretize{w_j : \floattype{B_2}{\{w_j\}}} = \discretize{w : \floattype{B_2}{\{w\}}} \quad &\text{ if } e_1 = v, e_2 = w \\
 		\sem{e_2 : \tau_2, \discretize{e_2 : \tau_2} : \discretize{\tau_2}} \gg\!= \lambda (f,f').\sem{ \uniform(v : \tau_1, f) : \tau, \\
 		\dc(\discretize{v : \tau_1} : \discretize{\tau_1}, f')} \quad &\text{ if } e_1 = v, e_2 \neq w \\
 		\sem{e_1 : \tau_1, \discretize{e_1 : \tau_1} : \discretize{\tau_1}} \gg\!= \lambda (f,f').\sem{ \uniform(f, e_2 : \tau_2) : \tau, \\
@@ -2074,8 +2074,8 @@ We assume the expressions $e, e'$ are well-typed.
 		From the semantics,
 		\begin{align*}
 			\sem{ \uniform(v : \tau_1, w : \tau_2) : \tau, \discretize{\uniform(v_i,w_j) : \floattype{B}{\top}} : \discretize{\tau}} \\
-			\text{s.t. } \discretize{v_i : \floattype{B_1}{v_i}} = \discretize{v : \floattype{B_1}{v}} \\
-			\text{ and } \discretize{w_j : \floattype{B_2}{w_j}} = \discretize{w : \floattype{B_2}{w}}
+			\text{s.t. } \discretize{v_i : \floattype{B_1}{\{v_i\}}} = \discretize{v : \floattype{B_1}{\{v\}}} \\
+			\text{ and } \discretize{w_j : \floattype{B_2}{\{w_j\}}} = \discretize{w : \floattype{B_2}{\{w\}}}
 		\end{align*}
 
 		If $e_1 = v$ and $e_2 = w$, then by Lemma~\ref{lem:form-preservation}, $\discretize{v} = v'$ and $\discretize{w} = w'$ are also values, namely discretized values where $v'$ and $w'$ are indices of $\intervals{B_1}$ and $\intervals{B_2}$, by definition of the discretization function (float constant case). 

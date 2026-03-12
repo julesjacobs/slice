@@ -44,9 +44,9 @@
   % =====================================================
   % Subfigure 2: Constraints + Solver updates
   % =====================================================
-  \begin{subfigure}[t]{0.58\linewidth}
+  \begin{subfigure}[t]{0.7\linewidth}
       \centering
-      \begin{tabular}{c p{0.35\linewidth} p{0.35\linewidth}}
+      \begin{tabular}{c p{0.28\linewidth} p{0.38\linewidth}}
 
       &
       \shortstack{\textbf{Constraints}\\\textbf{processed}}
@@ -176,7 +176,10 @@
         & $\textcolor{brown}{B_7 := B_7 \sqcup \{\clt{1.5}\} = \{\clt{1.5}\}}$ \\
 
       & $\textcolor{brown}{\answersleq{B_7}{V_7}{V_{11}}}$
-        & $\textcolor{brown}{B_7 := B_7 \sqcup \{\cleq{0.3}, \cleq{1.8}\} = \{\clt{1.5}, \cleq{0.3}, \cleq{1.8}\}}$ \\[0.6em]
+        & $\textcolor{brown}{\begin{array}[t]{@{}r@{}l@{}}
+            B_7 :=\; &B_7 \sqcup \{\cleq{0.3}, \cleq{1.8}\} \\
+                =\; &\{\clt{1.5}, \cleq{0.3}, \cleq{1.8}\}
+          \end{array}}$ \\[0.6em]
 
       % =====================================================
       % Equality constraints
@@ -207,7 +210,7 @@
   % =====================================================
   % Subfigure 3: Cut sets + Value sets
   % =====================================================
-  \begin{subfigure}[t]{0.2\linewidth}
+  \begin{subfigure}[t]{0.24\linewidth}
       \centering
       \begin{tabular}{p{0.95\linewidth}}
 

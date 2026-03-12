@@ -1,63 +1,62 @@
 \begin{figure}
-\centering
-\scalebox{.99}{
-\begin{tikzpicture}[
-    node distance=1.2cm and 2cm,
-    data/.style={rectangle, draw, dashed, minimum width=2.5cm, minimum height=0.9cm, align=center, font=\small},
-    arrow/.style={->, thick},
-    interp/.style={->, thick},
-    operation/.style={font=\footnotesize, midway, above},
-    operationside/.style={font=\footnotesize, midway, right},
-    operationleft/.style={font=\footnotesize, midway, left},
-    bigbox/.style={draw, thick, rounded corners, inner sep=0.3cm},
-    impl/.style={font=\tiny, text=gray}
-]
-    % Slice compiler pipeline (horizontal inside the box)
-    \node[data] (ast) {AST\\{\tiny\texttt{expr}}};
-    \node[data, right=of ast] (tast) {Typed AST\\{\tiny\texttt{texpr}}};
-    \node[data, right=of tast] (dast) {Discretized\\{\tiny \texttt{expr}}};
+    \centering
+    \scalebox{.99}{
+    \begin{tikzpicture}[
+        node distance=1.2cm and 2cm,
+        data/.style={rectangle, draw, dashed, minimum width=2.5cm, minimum height=0.9cm, align=center, font=\small},
+        arrow/.style={->, thick},
+        interp/.style={->, thick},
+        operation/.style={font=\footnotesize, midway, above},
+        operationside/.style={font=\footnotesize, midway, right},
+        operationleft/.style={font=\footnotesize, midway, left},
+        bigbox/.style={draw, thick, rounded corners, inner sep=0.3cm},
+        impl/.style={font=\tiny, text=gray}
+    ]
+        % Slice compiler pipeline (horizontal inside the box)
+        \node[data] (ast) {AST\\{\tiny\texttt{expr}}};
+        \node[data, right=of ast] (tast) {Typed AST\\{\tiny\texttt{texpr}}};
+        \node[data, right=of tast] (dast) {Discretized\\{\tiny \texttt{expr}}};
+        
+        % Input above AST
+        \node[data, above=1.5cm of ast] (input) {\texttt{.slice} file\\{\footnotesize continuous program}};
+        
+        % Slice compiler box
+        \node[bigbox, fit=(ast)(tast)(dast), inner sep=0.5cm, label=above:{\textbf{\Slice{} Discretizer}}] (slicebox) {};
+        
+        % ast.ml in top right corner of compiler box
+        \node[impl] at ($(slicebox.south) + (0.0,0.25)$) {ast.ml, utils.ml, pretty.ml};
+        
+        % Output below dast
+        \node[data, below=1.55cm of dast] (dice) {\texttt{.dice} / \texttt{.rkt} / \\\texttt{.tra} / \texttt{.lab} file\\{\footnotesize discrete program}};
+        
+        % Dice engine result to the left of dice output
+        \node[data, left=2.6cm of dice] (output) {Probability\\Distribution};
+        
+        % Arrows with operations
+        % Input to compiler
+        \draw[arrow] (input) -- node[operationside, yshift=5mm, xshift=1mm] {Parse} (ast);
+        \node[impl, align=center] at ($(input)!0.5!(ast) + (0.6,0.1)$) {parser.mly\\lexer.mll};
+        
+        % Inside compiler
+        \draw[arrow] (ast) -- node[operation] {Type Infer} (tast);
+        \node[impl, align=center] at ($(ast)!0.5!(tast) + (0,-0.4)$) {inference.ml\\lats.ml(i)};
     
-    % Input above AST
-    \node[data, above=1.5cm of ast] (input) {\texttt{.slice} file\\{\footnotesize continuous program}};
-    
-    % Slice compiler box
-    \node[bigbox, fit=(ast)(tast)(dast), inner sep=0.5cm, label=above:{\textbf{\Slice{} Compiler}}] (slicebox) {};
-    
-    % ast.ml in top right corner of compiler box
-    \node[impl] at ($(slicebox.south) + (0.0,0.2)$) {ast.ml, utils.ml, pretty.ml};
-    
-    % Output below dast
-    \node[data, below=1.5cm of dast] (dice) {\texttt{.dice} / \texttt{.rkt} file\\{\footnotesize discrete program}};
-    
-    % Dice engine result to the left of dice output
-    \node[data, below=1.5cm of tast] (output) {Probability\\Distribution};
-    
-    % Arrows with operations
-    % Input to compiler
-    \draw[arrow] (input) -- node[operationside, yshift=5mm, xshift=1mm] {Parse} (ast);
-    \node[impl, align=center] at ($(input)!0.5!(ast) + (0.6,0.1)$) {parser.mly\\lexer.mll};
-    
-    % Inside compiler
-    \draw[arrow] (ast) -- node[operation] {Type Infer} (tast);
-    \node[impl, align=center] at ($(ast)!0.5!(tast) + (0,-0.3)$) {inference.ml\\lats.ml(i)};
-
-
-    \draw[arrow] (tast) -- node[operation] {Discretize} (dast);
-    \node[impl, align=center] at ($(tast)!0.5!(dast) + (0,-0.3)$) {discretization.ml\\distributions.ml};
-    
-    % Compiler to output
-    \draw[arrow] (dast) -- node[operationside, yshift=-1mm] {Convert} (dice);
-    \node[impl, align=center] at ($(dast)!0.5!(dice) + (1.3,-0.4)$) {to\_dice.ml / to\_roulette.ml};
-    
-    % Dice engine - horizontal arrow from dice to output
-    \draw[arrow] (dice) -- node[operation, align=center] {Dice / Roulette\\Engine} (output);
-    \node[impl, align=center] at ($(dice)!0.5!(output) + (0,-0.2)$) {BDD + WMC};
-    
-    % Interpreter arrows (dashed blue)
-    \draw[interp] (ast.south) .. controls +(0,-0.5) and +(0,1) .. 
-        node[operationleft, font=\footnotesize, align=center, yshift=-5mm, xshift=8mm] {Interpreter\\[-1mm]{\tiny \textcolor{gray}{interp.ml}}} (output.north);
-    \draw[interp] (dast.south) .. controls +(0,-0.5) and +(0,1) .. (output.north);
-\end{tikzpicture}}
-\caption{Pipeline for exact discretization: typed \Slice{} programs are transformed into semantically equivalent discrete programs, then evaluated by discrete exact-inference engines. The transformation stage (type inference + discretization) is backend-agnostic; \Dice{} and \Roulette{} are current examples of target backends.}
-\label{fig:architecture}
+        \draw[arrow] (tast) -- node[operation] {Discretize} (dast);
+        \node[impl, align=center] at ($(tast)!0.5!(dast) + (0,-0.4)$) {discretization.ml\\distributions.ml};
+        
+        % Compiler to output
+        \draw[arrow] (dast) -- node[operationside, yshift=-1mm] {Convert} (dice);
+        \node[impl, align=center] at ($(dast)!0.5!(dice) + (1.3,-0.4)$) {to\_\{dice,roulette,mc\}.ml};
+        
+        % Backend engine - horizontal arrow from dice to output
+        \draw[arrow] (dice.west) -- node[operation, align=center] {Dice / Roulette / \\ Storm Engine} (output.east);
+        \node[impl, align=center] at ($(dice)!0.5!(output) + (0,-0.4)$) {BDD + WMC / \\ DTMC model checking};
+        
+        % Interpreter arrows
+        \draw[interp] (ast.south) .. controls +(0,-0.5) and +(0,1) .. 
+            node[operationleft, font=\footnotesize, align=center, yshift=-5mm, xshift=8mm] {Interpreter\\[-1mm]{\tiny \textcolor{gray}{interp.ml}}} (output.north);
+        \draw[interp] (dast.south) .. controls +(0,-0.5) and +(0,1) .. (output.north);
+    \end{tikzpicture}}
+    \caption{Pipeline for exact discretization: typed \Slice{} programs are transformed into semantically equivalent discrete programs, then evaluated by discrete exact-inference engines. The transformation stage (type inference + discretization) is backend-agnostic; \Dice{}, \Roulette{}, and \Storm{} are current examples of target backends.}
+    \label{fig:architecture}
 \end{figure}

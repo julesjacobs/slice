@@ -29,9 +29,9 @@ The type-dependent semantic functional $\bigsem{\cdot}$ is defined via a \emph{s
 Let $\tau=\bool$ for the sake of concreteness. Care must be taken since, e.g., sub-expressions of type $\floattype{B}{\{3.5,4.5\}}$ cannot evaluate to \emph{arbitrary} reals but are restricted to the values $\{3.5,4.5\}$. We tackle this by extracting from each type-annotated expression a suitable \emph{skeleton}, where float constants are replaced by \enquote{holes} (hence the term \enquote{skeleton}). For instance, the expression
 %
 \[
-	e \quad = \quad (x : \floattype{\clt{3.5}, \clt{4.5}}{\top}
+	e \quad = \quad (x : \floattype{\{\clt{3.5}, \clt{4.5}\}}{\top}
 	\;<\;
-	y : \floattype{\clt{3.5}, \clt{4.5}}{\{3.5,4.5 \}})
+	y : \floattype{\{\clt{3.5}, \clt{4.5}\}}{\{3.5,4.5 \}})
 	: \bool
 \]
 %
@@ -39,9 +39,9 @@ Let $\tau=\bool$ for the sake of concreteness. Care must be taken since, e.g., s
 gives rise to the skeleton
 %
 \[
-	s \quad = \quad (\square : \floattype{\clt{3.5}, \clt{4.5}}{\top}
+	s \quad = \quad (\square : \floattype{\{\clt{3.5}, \clt{4.5}\}}{\top}
 	\;<\;
-	\square : \floattype{\clt{3.5}, \clt{4.5}}{\{3.5,4.5 \}})
+	\square : \floattype{\{\clt{3.5}, \clt{4.5}\}}{\{3.5,4.5 \}})
 	: \bool
 \]
 %
@@ -60,7 +60,7 @@ Equipped with this family of of measurable spaces, we define the small-step func
 	}_{\text{standard probabilistic monadic bind over suitable Markov kernels}}~,
 \]
 %
-i.e., $\sem{ e_1 : \tau_1}$ yields the sub-distribution over expressions obtained from executing $e_1$ for \emph{one step}, and the monadic bind $\gg\!=$ \enquote{folds} this distribution back into the surrounding $\letkw$-statement. The intuition for the remaining statements is analogous. Crucially, $\gg\!=$ is defined in a way that propagates the probability of encountering $\bot$ --- an observation failure --- through executions. For instance, assume that $e_1$ from above is given by $\observekw\; (\false : \bool)  : \unit$\kb{why do bool and unit have different fonts? Be consistent.}. Since $e_1$ encounters an observation failure with probability $1$, i.e., $\sem{\observekw\; (\false : \bool)  : \unit}(\{\bot\}) = 1$, the same holds for the surrounding $\letkw$-statement, i.e., also $\sem{(\letkw \; x = e_1 : \tau_1 \; \inkw \; e_2 : \tau_2) : \tau_2}(\{\bot\})=1$.
+i.e., $\sem{ e_1 : \tau_1}$ yields the sub-distribution over expressions obtained from executing $e_1$ for \emph{one step}, and the monadic bind $\gg\!=$ \enquote{folds} this distribution back into the surrounding $\letkw$-statement. The intuition for the remaining statements is analogous. Crucially, $\gg\!=$ is defined in a way that propagates the probability of encountering $\bot$ --- an observation failure --- through executions. For instance, assume that $e_1$ from above is given by $\observekw\; (\false : \bool)  : \unit$. Since $e_1$ encounters an observation failure with probability $1$, i.e., $\sem{\observekw\; (\false : \bool)  : \unit}(\{\bot\}) = 1$, the same holds for the surrounding $\letkw$-statement, i.e., also $\sem{(\letkw \; x = e_1 : \tau_1 \; \inkw \; e_2 : \tau_2) : \tau_2}(\{\bot\})=1$.
 %
  All details --- including proofs that all monadic binds are well-behaved since they operate on suitable Markov kernels --- are provided in \Cref{app:small-step}.
 

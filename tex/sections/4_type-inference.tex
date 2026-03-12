@@ -29,20 +29,7 @@ The type inference rules closely mirror the typing rules in Figure~\ref{fig:typi
 \input{figures/typing-infer.tex}
 
 \begin{example}
-    To make the constraint generation process concrete, Figure~\ref{fig:constraint-generation} walks through Example~\ref{sec:examples:4} from Section~\ref{sec:examples}, where each subexpression is annotated with type variables for the cut sets ($B_i$) and value sets ($V_i$), and the constraints produced at every step are shown explicitly. Aggregating these constraints yields the complete constraint set:\kb{can we remove the following? looks ugly.}
-
-    \begin{equation}\label{eq:cs}
-        \begin{array}{lll}
-        C = \Big\{&\; \has{V_1}{0}, \has{V_2}{2}, \has{V_4}{0}, \has{V_5}{1}, \has{V_8}{1.5}, \has{V_9}{1.8}, \has{V_{10}}{0.3}, \\
-            &\; \distinguishes{B_1}{V_1}, B_1 \equiv_{\top} B_3, \distinguishes{B_2}{V_2}, B_2 \equiv_{\top} B_3, V_3 = \top, \\
-            &\; \distinguishes{B_4}{V_4}, B_4 \equiv_{\top} B_6, \distinguishes{B_5}{V_5}, B_5 \equiv_{\top} B_6, V_6 = \top, \\
-            &\; \subtype{\float[B_3; V_3]}{\float[B_7; V_7]}, \subtype{\float[B_6; V_6]}{\float[B_7; V_7]}, \\
-            &\; \subtype{\float[B_9; V_9]}{\float[B_{11}; V_{11}]}, \subtype{\float[B_{10}; V_{10}]}{\float[B_{11}; V_{11}]}, \\
-            &\; \answerslt{B_{7}}{V_7}{V_8}, B_{7} = B_8,
-             \answersleq{B_{7}}{V_7}{V_{11}}, B_{7} = B_{11} & \Big\}
-        \end{array}
-    \end{equation}
-        
+  To make the constraint generation process concrete, Figure~\ref{fig:constraint-generation} walks through Example~\ref{sec:examples:4} from Section~\ref{sec:examples}, where each subexpression is annotated with type variables for the cut sets ($B_i$) and value sets ($V_i$), and the constraints produced at every step are shown explicitly.
 \end{example}
 
 \input{figures/constraint-gen.tex}
@@ -111,3 +98,7 @@ When the return type of the program involves a float type, either directly or as
   \float[B;V] \to \float[B';V'].
 \]
 We recursively traverse the return type and setting all nested $B$ sets to $\top$. This ensures that the observable behavior of the program is preserved after discretization, regardless of the context in which the program is used. When the return type is basic, such as $\bool$, nothing needs to be done.
+
+\begin{example}
+  To make the constraint solving process concrete, \Cref{fig:constraint-solving} walks through~\Cref{sec:examples:4}, where each constraint obtained from the constraint generation phase is processed by the solver, then collected altogether to obtain the final cut and value sets.
+\end{example}

@@ -30,9 +30,9 @@ In this example, the only cut is $\clt{0.5}$, which splits $\R$ into $(-\infty,0
 In our type system, this is captured as follows, using $\float[B; V]$ types:
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
-    (uniform(0, 1) : !{\ft{<0.5}}!) < (0.5 : !{\ftb{<0.5}{0.5}}!)
+    (uniform(0, 1) : !{\ft{\{<0.5\}}}!) < (0.5 : !{\ftb{\{<0.5\}}{\{0.5\}}}!)
 \end{lstlisting}
-A type $\float[B; V]$ records the relevant finite cut set $B$ and a finite value set $V$ (either may be~$\top$, indicating continuous range). In the listing, the uniform sample has type \ft{<0.5}: only two intervals matter and the value is otherwise unrestricted. The constant $0.5$ has type \ftb{<0.5}{0.5}, meaning it sits exactly on the cut. Whenever we compare $x < y$, the type system equates their cut sets so both expressions are discretized with the same intervals. Figure~\ref{fig:float-type-def} explains the float type, and Figure~\ref{fig:cuts-distr} visualizes cuts.
+A type $\float[B; V]$ records the relevant finite cut set $B$ and a finite value set $V$ (either may be~$\top$, indicating continuous range). In the listing, the uniform sample has type \ft{\{<0.5\}}: only two intervals matter and the value is otherwise unrestricted. The constant $0.5$ has type \ftb{\{<0.5\}}{\{0.5\}}, meaning it sits exactly on the cut. Whenever we compare $x < y$, the type system equates their cut sets so both expressions are discretized with the same intervals. Figure~\ref{fig:float-type-def} explains the float type, and Figure~\ref{fig:cuts-distr} visualizes cuts.
 
 \begin{figure}
 \[
@@ -63,15 +63,15 @@ A type $\float[B; V]$ records the relevant finite cut set $B$ and a finite value
 \noindent In this program, the variable $x$ is drawn from \uniform(0, 1) and is compared against two different constants: $0.5$ and $0.2$. These two cuts $\clt{0.5}$ and $\clt{0.2}$ partition the real line $\R$ into three intervals: $(-\infty, 0.2)$, $[0.2, 0.5)$, and $[0.5, +\infty)$. Similarly, the variable $y$, drawn from \uniform(0, 2), is compared only with $0.1$. This single cut $\clt{0.1}$ partitions the real line $\R$ into two intervals, $(-\infty, 0.1)$ and $[0.1, +\infty)$.
 
 
-This analysis is done by the type inference process, which collects all cuts for each continuous variable. For $x$, the type inference algorithm discovers the cuts $\clt{0.2}$ and $\clt{0.5}$, giving it the type \ft{<0.2,<0.5}. For $y$, it only finds $\clt{0.1}$, giving it the type \ft{<0.1}. This information is captured in the annotated program below (omitting the redundant types):
+This analysis is done by the type inference process, which collects all cuts for each continuous variable. For $x$, the type inference algorithm discovers the cuts $\clt{0.2}$ and $\clt{0.5}$, giving it the type \ft{\{<0.2,<0.5\}}. For $y$, it only finds $\clt{0.1}$, giving it the type \ft{\{<0.1\}}. This information is captured in the annotated program below (omitting the redundant types):
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
-    let x = uniform(0, 1) : !{\ft{<0.2,<0.5}}! in
-    let y = uniform(0, 2) : !{\ft{<0.1}}! in
-    if x < (0.5 : !{\ftb{<0.2,<0.5}{0.5}}!) then
-      x < (0.2 : !{\ftb{<0.2,<0.5}{0.2}}!)
+    let x = uniform(0, 1) : !{\ft{\{<0.2,<0.5\}}}! in
+    let y = uniform(0, 2) : !{\ft{\{<0.1\}}}! in
+    if x < (0.5 : !{\ftb{\{<0.2,<0.5\}}{\{0.5\}}}!) then
+      x < (0.2 : !{\ftb{\{<0.2,<0.5\}}{\{0.2\}}}!)
     else
-      y < (0.1 : !{\ftb{<0.1}{0.1}}!)
+      y < (0.1 : !{\ftb{\{<0.1\}}{\{0.1\}}}!)
 \end{lstlisting}
 
 
@@ -102,15 +102,15 @@ Consider the program:
 This yields the annotated program after type inference:
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
-    let x = if flip() then (0.2 : !{\ftb{<0.5}{0.2}}!)
-            else (if flip() then (2.5 : !{\ftb{<0.5}{2.5}}!)
-            else (4.5 : !{\ftb{<0.5}{4.5}}!) 
-            : !{\ftb{<0.5}{2.5, 4.5}}!)
-            : !{\ftb{<0.5}{0.2, 2.5, 4.5}}! in
-    let y = 0.5 : !{\ftb{<0.5}{0.5}}! in x < y
+    let x = if flip() then (0.2 : !{\ftb{\{<0.5\}}{\{0.2\}}}!)
+            else (if flip() then (2.5 : !{\ftb{\{<0.5\}}{\{2.5\}}}!)
+            else (4.5 : !{\ftb{\{<0.5\}}{\{4.5\}}}!) 
+            : !{\ftb{\{<0.5\}}{\{2.5, 4.5\}}}!)
+            : !{\ftb{\{<0.5\}}{\{0.2, 2.5, 4.5\}}}! in
+    let y = 0.5 : !{\ftb{\{<0.5\}}{\{0.5\}}}! in x < y
 \end{lstlisting}
 
-Both $x$ and $y$ can only take on finitely many values --- a fact which is reflected by the value sets in the type annotations. By locating where each value in the value set falls relative to the cuts in the cut set, \Slice{} determines the corresponding interval index for each value. \codetype{\ftb{<0.5}{0.2}} corresponds to the index 0, and types \codetype{\ftb{<0.5}{2.5}}, \codetype{\ftb{<0.5}{4.5}}, and \codetype{\ftb{<0.5}{0.5}} all correspond to the index 1. The value sets in types \codetype{\ftb{<0.5}{0.2, 2.5, 4.5}} and \codetype{\ftb{<0.5}{2.5, 4.5}} arise from taking the union of the value sets from each prior conditional branch. This in turn yields the following discretized program:
+Both $x$ and $y$ can only take on finitely many values --- a fact which is reflected by the value sets in the type annotations. By locating where each value in the value set falls relative to the cuts in the cut set, \Slice{} determines the corresponding interval index for each value. \codetype{\ftb{\{<0.5\}}{\{0.2\}}} corresponds to the index 0, and types \codetype{\ftb{\{<0.5\}}{\{2.5\}}}, \codetype{\ftb{\{<0.5\}}{\{4.5\}}}, and \codetype{\ftb{\{<0.5\}}{\{0.5\}}} all correspond to the index 1. The value sets in types \codetype{\ftb{\{<0.5\}}{\{0.2, 2.5, 4.5\}}} and \codetype{\ftb{\{<0.5\}}{\{2.5, 4.5\}}} arise from taking the union of the value sets from each prior conditional branch. This in turn yields the following discretized program:
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em]
     let x = if flip() then 0
@@ -138,16 +138,16 @@ Continuous values often flow through conditionals before being compared. The sam
 %\end{lstlisting}
 \begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
     let x = if flip()
-            then (uniform(0,2) : !{\ft{<=0.3,<1.5,<=1.8}}!)
-            else (gaussian(0,1) : !{\ft{<=0.3,<1.5,<=1.8}}!)
-            : !{\ft{<=0.3,<1.5,<=1.8}}! in
-    let y = if (1.5 : !{\ftb{<=0.3,<1.5,<=1.8}{1.5}}!) > x
-            then (1.8 : !{\ftb{<=0.3,<1.5,<=1.8}{1.8}}!)
-            else (0.3 : !{\ftb{<=0.3,<1.5,<=1.8}{0.3}}!)
-            : !{\ftb{<=0.3,<1.5,<=1.8}{0.3,1.8}}! in
+            then (uniform(0,2) : !{\ft{\{<=0.3,<1.5,<=1.8\}}}!)
+            else (gaussian(0,1) : !{\ft{\{<=0.3,<1.5,<=1.8\}}}!)
+            : !{\ft{\{<=0.3,<1.5,<=1.8\}}}! in
+    let y = if (1.5 : !{\ftb{\{<=0.3,<1.5,<=1.8\}}{\{1.5\}}}!) > x
+            then (1.8 : !{\ftb{\{<=0.3,<1.5,<=1.8\}}{\{1.8\}}}!)
+            else (0.3 : !{\ftb{\{<=0.3,<1.5,<=1.8\}}{\{0.3\}}}!)
+            : !{\ftb{\{<=0.3,<1.5,<=1.8\}}{\{0.3,1.8\}}}! in
     x <= y
 \end{lstlisting}
-\noindent \Slice{} propagates the cuts introduced in $y$ back to the samplings of $x$. Because the final comparison forces both sides to share cuts, every subexpression uses $\cleq{0.3}$, $\clt{1.5}$, and $\cleq{1.8}$, i.e.\ type \codetype{\ft{<=0.3,<1.5,<=1.8}}. The resulting intervals are $(-\infty,0.3]$, $(0.3,1.5)$, $[1.5,1.8]$, and $(1.8,+\infty)$; the strict comparison excludes 1.5 from the second one. The guard in $y$ therefore reads indices 1, 2, or 0 coming from types \codetype{\ftb{<=0.3,<1.5,<=1.8}{1.5}}, \codetype{\ftb{<=0.3,<1.5,<=1.8}{1.8}}, and \codetype{\ftb{<=0.3,<1.5,<=1.8}{0.3}} respectively. Discretization yields:
+\noindent \Slice{} propagates the cuts introduced in $y$ back to the samplings of $x$. Because the final comparison forces both sides to share cuts, every subexpression uses $\cleq{0.3}$, $\clt{1.5}$, and $\cleq{1.8}$, i.e.\ type \codetype{\ft{\{<=0.3,<1.5,<=1.8\}}}. The resulting intervals are $(-\infty,0.3]$, $(0.3,1.5)$, $[1.5,1.8]$, and $(1.8,+\infty)$; the strict comparison excludes 1.5 from the second one. The guard in $y$ therefore reads indices 1, 2, or 0 coming from types \codetype{\ftb{\{<=0.3,<1.5,<=1.8\}}{\{1.5\}}}, \codetype{\ftb{\{<=0.3,<1.5,<=1.8\}}{\{1.8\}}}, and \codetype{\ftb{\{<=0.3,<1.5,<=1.8\}}{\{0.3\}}} respectively. Discretization yields:
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em]
     let x = if flip() then
@@ -172,13 +172,13 @@ Continuous distributions can have parameters that depend on discrete random choi
 The type-annotations reveal how the variable $x$ determines the standard deviation of the Gaussian:
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
-    let x = if flip() then (0.5 : !{\ftb{<=0.5,<=1.5}{0.5}}!)
-                      else (1.5 : !{\ftb{<=0.5,<=1.5}{1.5}}!)
-             : !{\ftb{<=0.5,<=1.5}{0.5,1.5}}! in
-            (gaussian(0, x) : !{\ft{<0.5}}!) < (0.5 : !{\ftb{<0.5}{0.5}}!)
+    let x = if flip() then (0.5 : !{\ftb{\{<=0.5,<=1.5\}}{\{0.5\}}}!)
+                      else (1.5 : !{\ftb{\{<=0.5,<=1.5\}}{\{1.5\}}}!)
+             : !{\ftb{\{<=0.5,<=1.5\}}{\{0.5,1.5\}}}! in
+            (gaussian(0, x) : !{\ft{\{<0.5\}}}!) < (0.5 : !{\ftb{\{<0.5\}}{\{0.5\}}}!)
 \end{lstlisting}
 
-\noindent Since the variable $x$ is later used as a parameter to the $\gaussian$ distribution, \Slice{} generates a separate case for each possible value that $x$ can take (namely 0.5 and 1.5). To support this, the type system uses non-strict inequalities in the cut sets, enabling these values to be mapped to integer indices starting from 0. Specifically, the value 0.5 corresponds to index 0 via the type \codetype{\ftb{<=0.5,<=1.5}{0.5}}, and 1.5 corresponds to 1 via \codetype{\ftb{<=0.5,<=1.5}{1.5}}. The resulting discretized program then branches on these values and instantiates the corresponding discrete distribution, depending on which standard deviation was selected by the initial flip.
+\noindent Since the variable $x$ is later used as a parameter to the $\gaussian$ distribution, \Slice{} generates a separate case for each possible value that $x$ can take (namely 0.5 and 1.5). To support this, the type system uses non-strict inequalities in the cut sets, enabling these values to be mapped to integer indices starting from 0. Specifically, the value 0.5 corresponds to index 0 via the type \codetype{\ftb{\{<=0.5,<=1.5\}}{\{0.5\}}}, and 1.5 corresponds to 1 via \codetype{\ftb{\{<=0.5,<=1.5\}}{\{1.5\}}}. The resulting discretized program then branches on these values and instantiates the corresponding discrete distribution, depending on which standard deviation was selected by the initial flip.
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em]
     let x = if flip() then 0 else 1 in
@@ -202,9 +202,9 @@ The type-annotations reveal how the variable $x$ determines the standard deviati
 %\noindent The type annotations show how observation points become cuts:
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
-    let x = (uniform(0.0, 1.0) : !{\ft{<0.2,<0.5}}!) in
-    let _ = observe (x < (0.5 : !{\ftb{<0.2,<0.5}{0.5}}!)) in
-    x < (0.2 : !{\ftb{<0.2,<0.5}{0.2}}!)
+    let x = (uniform(0.0, 1.0) : !{\ft{\{<0.2,<0.5\}}}!) in
+    let _ = observe (x < (0.5 : !{\ftb{\{<0.2,<0.5\}}{\{0.5\}}}!)) in
+    x < (0.2 : !{\ftb{\{<0.2,<0.5\}}{\{0.2\}}}!)
 \end{lstlisting}
 
 \noindent Discretization again replaces reals by interval indices:

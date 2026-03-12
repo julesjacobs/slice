@@ -142,6 +142,9 @@
 
 \begin{document}
 
+% Build an appendix-only TOC by hiding pre-appendix entries in the .toc stream.
+\addtocontents{toc}{\protect\setcounter{tocdepth}{-10}}
+
 \input{sections/0_abstract}
 
 \maketitle
@@ -166,6 +169,7 @@
 \bibliographystyle{ACM-Reference-Format}
 \bibliography{refs}
 
+\addtocontents{toc}{\protect\setcounter{tocdepth}{2}}
 \input{sections/9_appendix.tex}
 
 

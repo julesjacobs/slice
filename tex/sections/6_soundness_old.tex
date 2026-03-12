@@ -926,8 +926,8 @@ And the semantics is as follows:
 \begin{align*}
 	&\sem{ \dc(e_1 : \tau_1, e_2 : \tau_2) : \tau} \\
 	&= \begin{cases}
-		\sem{ \discretize{\uniform(v_i, w_j) : \floattype{B}{\top}} : \tau } \quad &\text{ if } e_1 = \discretize{v_i : \floattype{B_1}{v_i}} = v', \\
-		&e_2 = \discretize{w_j : \floattype{B_2}{w_j}} = w' \\
+		\sem{ \discretize{\uniform(v_i, w_j) : \floattype{B}{\top}} : \tau } \quad &\text{ if } e_1 = \discretize{v_i : \floattype{B_1}{\{v_i\}}} = v', \\
+		&e_2 = \discretize{w_j : \floattype{B_2}{\{w_j\}}} = w' \\
 		\sem{ e_2 : \tau_2 } \gg\!= \lambda f. \sem{ \dc(v' : \tau_1, f) } \quad &\text{ if } e_1 = v', e_2 \neq w' \\
 		\sem{ e_1 : \tau_1 } \gg\!= \lambda f. \sem{ \dc(f, e_2 : \tau_2) } \quad &\text{ otherwise } \\
 	\end{cases} \\
@@ -1581,8 +1581,8 @@ We assume the expressions $e, e'$ are well-typed.
 	&\dc(\discretize{e_1 : \tau_1} : \discretize{\tau_1}, \discretize{e_2 : \tau_2} : \discretize{\tau_2}) : \discretize{\tau}} \\
 	&= \begin{cases}
 		\sem{ \uniform(v : \tau_1, w : \tau_2) : \tau, \discretize{\uniform(v_i,w_j) : \floattype{B}{\top}} : \discretize{\tau}} \\
-		\text{s.t. } \discretize{v_i : \floattype{B_1}{v_i}} = \discretize{v : \floattype{B_1}{v}} \\
-		\text{ and } \discretize{w_j : \floattype{B_2}{w_j}} = \discretize{w : \floattype{B_2}{w}} \quad &\text{ if } e_1 = v, e_2 = w \\
+		\text{s.t. } \discretize{v_i : \floattype{B_1}{\{v_i\}}} = \discretize{v : \floattype{B_1}{\{v\}}} \\
+		\text{ and } \discretize{w_j : \floattype{B_2}{\{w_j\}}} = \discretize{w : \floattype{B_2}{\{w\}}} \quad &\text{ if } e_1 = v, e_2 = w \\
 		\sem{e_2 : \tau_2, \discretize{e_2 : \tau_2} : \discretize{\tau_2}} \gg\!= \lambda (f,f').\sem{ \uniform(v : \tau_1, f) : \tau, \\
 		\dc(\discretize{v : \tau_1} : \discretize{\tau_1}, f')} \quad &\text{ if } e_1 = v, e_2 \neq w \\
 		\sem{e_1 : \tau_1, \discretize{e_1 : \tau_1} : \discretize{\tau_1}} \gg\!= \lambda (f,f').\sem{ \uniform(f, e_2 : \tau_2) : \tau, \\
@@ -1885,8 +1885,8 @@ We assume the expressions $e, e'$ are well-typed.
 		From the semantics,
 		\begin{align*}
 			\sem{ \uniform(v : \tau_1, w : \tau_2) : \tau, \discretize{\uniform(v_i,w_j) : \floattype{B}{\top}} : \discretize{\tau}} \\
-			\text{s.t. } \discretize{v_i : \floattype{B_1}{v_i}} = \discretize{v : \floattype{B_1}{v}} \\
-			\text{ and } \discretize{w_j : \floattype{B_2}{w_j}} = \discretize{w : \floattype{B_2}{w}}
+			\text{s.t. } \discretize{v_i : \floattype{B_1}{\{v_i\}}} = \discretize{v : \floattype{B_1}{\{v\}}} \\
+			\text{ and } \discretize{w_j : \floattype{B_2}{\{w_j\}}} = \discretize{w : \floattype{B_2}{\{w\}}}
 		\end{align*}
 
 		\item At least $e_1$ or $e_2$ is an expression. Analogous to float less than case when $e_1$ or $e_2$ is an expression.

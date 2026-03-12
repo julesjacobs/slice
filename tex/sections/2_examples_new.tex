@@ -25,7 +25,7 @@ We consider a program that samples a real value from a standard Gaussian distrib
 The transformation is guided by our type system, driven by a \emph{cut set} --- the set of comparison thresholds extracted from the program. A continuous expression is annotated with its cut set, recording the values it is compared against. For our example, the type annotation looks as follows:
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
-    let x = (gaussian(0,1) : !{\ftnv{<0.2,<0.5,<2}}!) in
+    let x = (gaussian(0,1) : !{\ftnv{\{<0.2,<0.5,<2\}}}!) in
     if x < 0.5 then x < 0.2 else x < 2.0
 \end{lstlisting}
 
@@ -43,11 +43,11 @@ The transformation is guided by our type system, driven by a \emph{cut set} --- 
 
 \noindent In this program, the variable $x$ is drawn from \uniform(0, 1) and is compared against two different constants: $0.5$ and $0.2$. These two cuts $\clt{0.5}$ and $\clt{0.2}$ partition the real line $\R$ into three intervals: $(-\infty, 0.2)$, $[0.2, 0.5)$, and $[0.5, +\infty)$. Similarly, the variable $y$, drawn from \uniform(0, 2), is compared only with $0.1$. This single cut $\clt{0.1}$ partitions the real line $\R$ into $(-\infty, 0.1)$ and $[0.1, +\infty)$.
 
-Type inference performs this analysis by collecting all cuts for each continuous variable. For $x$, it discovers the cuts $\clt{0.2}$ and $\clt{0.5}$, giving it the type \ftnv{<0.2,<0.5}. For $y$, it only finds $\clt{0.1}$, giving it the type \ftnv{<0.1}. This information is captured in the annotated program below:
+Type inference performs this analysis by collecting all cuts for each continuous variable. For $x$, it discovers the cuts $\clt{0.2}$ and $\clt{0.5}$, giving it the type \ftnv{\{<0.2,<0.5\}}. For $y$, it only finds $\clt{0.1}$, giving it the type \ftnv{\{<0.1\}}. This information is captured in the annotated program below:
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
-    let x = uniform(0, 1) : !{\ftnv{<0.2,<0.5}}! in
-    let y = uniform(0, 2) : !{\ftnv{<0.1}}! in
+    let x = uniform(0, 1) : !{\ftnv{\{<0.2,<0.5\}}}! in
+    let y = uniform(0, 2) : !{\ftnv{\{<0.1\}}}! in
     if x < 0.5 then x < 0.2 else y < 0.1
 \end{lstlisting}
 
@@ -79,15 +79,15 @@ Consider the program:
 This yields the annotated program after type inference:
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
-    let x = if flip() then (0.2 : !{\ftb{<0.5}{0.2}}!)
-            else (if flip() then (2.5 : !{\ftb{<0.5}{2.5}}!)
-            else (4.5 : !{\ftb{<0.5}{4.5}}!) 
-            : !{\ftb{<0.5}{2.5, 4.5}}!)
-            : !{\ftb{<0.5}{0.2, 2.5, 4.5}}! in
-    let y = 0.5 : !{\ftb{<0.5}{0.5}}! in x < y
+    let x = if flip() then (0.2 : !{\ftb{\{<0.5\}}{\{0.2\}}}!)
+            else (if flip() then (2.5 : !{\ftb{\{<0.5\}}{\{2.5\}}}!)
+            else (4.5 : !{\ftb{\{<0.5\}}{\{4.5\}}}!) 
+            : !{\ftb{\{<0.5\}}{\{2.5, 4.5\}}}!)
+            : !{\ftb{\{<0.5\}}{\{0.2, 2.5, 4.5\}}}! in
+    let y = 0.5 : !{\ftb{\{<0.5\}}{\{0.5\}}}! in x < y
 \end{lstlisting}
 
-Both $x$ and $y$ can only take on finitely many values --- a fact which is reflected by the value sets in the type annotations. By locating where each value in the value set falls relative to the cuts in the cut set, \Slice{} determines the corresponding interval index for each value. \codetype{\ftb{<0.5}{0.2}} corresponds to the index 0, and types \codetype{\ftb{<0.5}{2.5}}, \codetype{\ftb{<0.5}{4.5}}, and \codetype{\ftb{<0.5}{0.5}} all correspond to the index 1. The value sets in types \codetype{\ftb{<0.5}{0.2, 2.5, 4.5}} and \codetype{\ftb{<0.5}{2.5, 4.5}} arise from taking the union of the value sets from each prior conditional branch. This in turn yields the following discretized program:
+Both $x$ and $y$ can only take on finitely many values --- a fact which is reflected by the value sets in the type annotations. By locating where each value in the value set falls relative to the cuts in the cut set, \Slice{} determines the corresponding interval index for each value. \codetype{\ftb{\{<0.5\}}{\{0.2\}}} corresponds to the index 0, and types \codetype{\ftb{\{<0.5\}}{\{2.5\}}}, \codetype{\ftb{\{<0.5\}}{\{4.5\}}}, and \codetype{\ftb{\{<0.5\}}{\{0.5\}}} all correspond to the index 1. The value sets in types \codetype{\ftb{\{<0.5\}}{\{0.2, 2.5, 4.5\}}} and \codetype{\ftb{\{<0.5\}}{\{2.5, 4.5\}}} arise from taking the union of the value sets from each prior conditional branch. This in turn yields the following discretized program:
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em]
     let x = if flip() then 0
@@ -113,13 +113,13 @@ We now consider comparisons against an expression for which control flow determi
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
     let x = if flip()
-            then (uniform(0,2) : !{\ft{<=0.3,<1.5,<=1.8}}!)
-            else (gaussian(0,1) : !{\ft{<=0.3,<1.5,<=1.8}}!)
-            : !{\ft{<=0.3,<1.5,<=1.8}}! in
-    let y = if (1.5 : !{\ftb{<=0.3,<1.5,<=1.8}{1.5}}!) > x
-            then (1.8 : !{\ftb{<=0.3,<1.5,<=1.8}{1.8}}!)
-            else (0.3 : !{\ftb{<=0.3,<1.5,<=1.8}{0.3}}!)
-            : !{\ftb{<=0.3,<1.5,<=1.8}{0.3,1.8}}! in
+            then (uniform(0,2) : !{\ft{\{<=0.3,<1.5,<=1.8\}}}!)
+            else (gaussian(0,1) : !{\ft{\{<=0.3,<1.5,<=1.8\}}}!)
+            : !{\ft{\{<=0.3,<1.5,<=1.8\}}}! in
+    let y = if (1.5 : !{\ftb{\{<=0.3,<1.5,<=1.8\}}{\{1.5\}}}!) > x
+            then (1.8 : !{\ftb{\{<=0.3,<1.5,<=1.8\}}{\{1.8\}}}!)
+            else (0.3 : !{\ftb{\{<=0.3,<1.5,<=1.8\}}{\{0.3\}}}!)
+            : !{\ftb{\{<=0.3,<1.5,<=1.8\}}{\{0.3,1.8\}}}! in
     x <= y
 \end{lstlisting}
 
@@ -165,13 +165,13 @@ Continuous distributions can have parameters that depend on discrete random choi
 The type-annotations reveal how the variable $x$ determines the standard deviation of the Gaussian, and Figure~\ref{fig:control-flow-distinguishes} illustrates how type information is propagated:
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
-    let x = if flip() then (0.5 : !{\ftb{<=0.5,<=1.5}{0.5}}!)
-        else (1.5 : !{\ftb{<=0.5,<=1.5}{1.5}}!)
-        : !{\ftb{<=0.5,<=1.5}{0.5,1.5}}! in
-    (gaussian(0, x) : !{\ft{<0.5}}!) < (0.5 : !{\ftb{<0.5}{0.5}}!)
+    let x = if flip() then (0.5 : !{\ftb{\{<=0.5,<=1.5\}}{\{0.5\}}}!)
+        else (1.5 : !{\ftb{\{<=0.5,<=1.5\}}{\{1.5\}}}!)
+        : !{\ftb{\{<=0.5,<=1.5\}}{\{0.5,1.5\}}}! in
+    (gaussian(0, x) : !{\ft{\{<0.5\}}}!) < (0.5 : !{\ftb{\{<0.5\}}{\{0.5\}}}!)
 \end{lstlisting}
 
-\noindent Because $x$ is later used as a parameter to $\gaussian$, \Slice{} generates one case per value in its value set (0.5 and 1.5). To support this, the type system uses non-strict inequalities in cut sets, allowing these values to map to unique integer indices starting at 0. Specifically, 0.5 maps to index 0 via \codetype{\ftb{<=0.5,<=1.5}{0.5}}, and 1.5 maps to index 1 via \codetype{\ftb{<=0.5,<=1.5}{1.5}}. This is a non-local effect: an upstream discrete latent choice determines how a downstream continuous distribution is discretized. The resulting discretized program then branches on these values and instantiates the corresponding discrete distribution for the standard deviation selected by the initial flip:
+\noindent Because $x$ is later used as a parameter to $\gaussian$, \Slice{} generates one case per value in its value set (0.5 and 1.5). To support this, the type system uses non-strict inequalities in cut sets, allowing these values to map to unique integer indices starting at 0. Specifically, 0.5 maps to index 0 via \codetype{\ftb{\{<=0.5,<=1.5\}}{\{0.5\}}}, and 1.5 maps to index 1 via \codetype{\ftb{\{<=0.5,<=1.5\}}{\{1.5\}}}. This is a non-local effect: an upstream discrete latent choice determines how a downstream continuous distribution is discretized. The resulting discretized program then branches on these values and instantiates the corresponding discrete distribution for the standard deviation selected by the initial flip:
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em]
     let x = if flip() then 0 else 1 in
@@ -194,9 +194,9 @@ The type-annotations reveal how the variable $x$ determines the standard deviati
 %\noindent The type annotations show how observation points become cuts:
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
-    let x = (uniform(0.0, 1.0) : !{\ft{<0.2,<0.5}}!) in
-    let _ = observe (x < (0.5 : !{\ftb{<0.2,<0.5}{0.5}}!)) in
-    x < (0.2 : !{\ftb{<0.2,<0.5}{0.2}}!)
+    let x = (uniform(0.0, 1.0) : !{\ft{\{<0.2,<0.5\}}}!) in
+    let _ = observe (x < (0.5 : !{\ftb{\{<0.2,<0.5\}}{\{0.5\}}}!)) in
+    x < (0.2 : !{\ftb{\{<0.2,<0.5\}}{\{0.2\}}}!)
 \end{lstlisting}
 
 \noindent Discretization again replaces reals by interval indices:
@@ -260,12 +260,12 @@ let final = cover init in is_covered final(* Run entire process on sampled inter
 	\caption{An infinite stochastic process involving continuous sampling, higher-order recursion, and lists.}
 		\label{fig:epsball}
 \end{figure}
-\noindent\kb{add discretized program to appendix. Refer to it in last paragraph.}
+
 We will now consider a more involved example shown in \Cref{fig:epsball} that \Slice discretizes in a fully automatic manner. This example emphasizes how our type inference procedure operates across higher-order functions, unbounded recursion, and lists to obtain appropriate type-annotations, which guide the subsequent discretization process.
 
 The program models the following process: We start by randomly sampling $4$ intervals (l.\ \ref{ln:b} and \ref{ln:init}), stored as a list of pairs, where the first component contains a flag used later and the second component contains a function that can be called to determine whether a given point falls within that interval. We then employ unbounded recursion (l.\ \ref{ln:cover}) to repeat the following a potentially unbounded number of times according to a geomtric distribution: Sample a point $y$ from a gaussian (l.\ \ref{ln:step}), and update the flag of every interval to $\true$ whenever $y$ falls within that interval (l.\ \ref{ln:update}). Finally, the program returns $\true$ iff \emph{all} intervals have been hit at least once (l. \ref{ln:final} and \ref{ln:iscovered}). Performing exact inference on this program hence corresponds to computing the probability that the modeled infinite stochastic process will hit every interval at least once.
 
-\Slice \emph{automatically} produces a \emph{provably equivalent} (cf.\ \Cref{sec:soundness}) discrete program. Even though this program still contains unbounded recursion, our back-end automatically determines that it can be modelled as a \emph{finite-state} Markov chain. We feed this Markov chain into the probabilistic model checker \Storm, which automatically computes that the sought-after probability is $0.018226..$. To the best of our knowledge, our pipeline is the first that is capable of performing exact inference on programs containing continuous sampling, higher-order functions, and unbounded recursion. In \Cref{sec:casestudy:epsball}, we extend this program by conditioning \emph{inside of the unbounded recursion}. \kb{maybe tone down a little. canot always do that}
+\Slice \emph{automatically} produces a \emph{provably equivalent} (cf.\ \Cref{ap:epsball, sec:soundness}) discrete program. Even though this program still contains unbounded recursion, our back-end automatically determines that it can be modelled as a \emph{finite-state} Markov chain. We feed this Markov chain into the probabilistic model checker \Storm, which automatically computes that the sought-after probability is $0.018226..$. To the best of our knowledge, our pipeline is the first that is capable of performing exact inference on programs containing continuous sampling, higher-order functions, and unbounded recursion. In \Cref{sec:casestudy:epsball}, we extend this program by conditioning \emph{inside of the unbounded recursion}. 
 
 %We now consider a stochastic coverage process over a continuous domain with both higher-order functions and unbounded recursion. The program first samples four cut points $b_1,b_2,b_3,b_4$ from discrete distributions over candidate boundary values, thereby inducing a random partition of $[0,1]$ into subintervals. It then repeatedly samples points from a Gaussian distribution, marking each interval as covered once a sampled point falls inside it. The process stops after a geometrically distributed number of steps, and finally checks whether the entire interval has been covered.
 %\ref{ln:within}
