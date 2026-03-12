@@ -515,12 +515,50 @@ let rec step (e : A.expr) : (float * succ) list =
 
 (* ---------- Graph construction ---------- *)
 
+let prob_is_one (p : float) : bool =
+  Float.abs (p -. 1.0) <= 1e-12
+
+(* Collapse short deterministic chains (p=1, single successor). *)
+let normalize_state (e0 : A.expr) : A.expr =
+  let max_collapse_steps = 64 in
+  let seen : (A.expr, unit) Hashtbl.t = Hashtbl.create 64 in
+  let rec loop fuel (e : A.expr) : A.expr =
+    let e = simplify e in
+    if fuel <= 0 || Hashtbl.mem seen e then
+      e
+    else begin
+      Hashtbl.add seen e ();
+      match step e with
+      | [ (p, Next e') ] when prob_is_one p -> loop (fuel - 1) e'
+      | _ -> e
+    end
+  in
+  loop max_collapse_steps e0
+
 let expr_key (e : A.expr) : string =
   let h = Hashtbl.hash e in
   string_of_int h ^ ":" ^ Marshal.to_string e [ Marshal.No_sharing ]
 
+let merge_transitions (ts : transition list) : transition list =
+  let tbl : ((int * int), float) Hashtbl.t = Hashtbl.create (max 16 (List.length ts)) in
+  List.iter
+    (fun { src; dst; prob } ->
+      let key = (src, dst) in
+      let prev =
+        match Hashtbl.find_opt tbl key with
+        | Some p -> p
+        | None -> 0.0
+      in
+      Hashtbl.replace tbl key (prev +. prob))
+    ts;
+  Hashtbl.fold
+    (fun (src, dst) prob acc ->
+      if prob <= 0.0 then acc else { src; dst; prob } :: acc)
+    tbl
+    []
+
 let to_mc (e0 : A.expr) : mc =
-  let e0 = simplify e0 in
+  let e0 = normalize_state e0 in
 
   let id_of : (string, int) Hashtbl.t = Hashtbl.create 4096 in
   let expr_of : (int, A.expr) Hashtbl.t = Hashtbl.create 4096 in
@@ -528,6 +566,7 @@ let to_mc (e0 : A.expr) : mc =
   let next_id = ref 0 in
 
   let add_state (e : A.expr) : int option =
+    let e = normalize_state e in
     let key = expr_key e in
     match Hashtbl.find_opt id_of key with
     | Some id -> Some id
@@ -577,7 +616,6 @@ let to_mc (e0 : A.expr) : mc =
                 has_fail := true;
                 fail_srcs := (sid, p) :: !fail_srcs
             | Next e' ->
-                let e' = simplify e' in
                 match add_state e' with
                 | Some tid ->
                     transitions_rev := { src = sid; dst = tid; prob = p } :: !transitions_rev
@@ -609,13 +647,14 @@ let to_mc (e0 : A.expr) : mc =
         , [ { src = fid; dst = fid; prob = 1.0 } ] )
   in
   (* Sort transitions for nicer output *)
+  let merged = merge_transitions (done_self :: (fail_self @ fail_edges @ from_terminals @ base)) in
   let transitions =
     List.sort
       (fun a b ->
         match compare a.src b.src with
         | 0 -> (match compare a.dst b.dst with 0 -> compare a.prob b.prob | c -> c)
         | c -> c)
-      (done_self :: (fail_self @ fail_edges @ from_terminals @ base))
+      merged
   in
   { num_states; sink = done_id; transitions; expr_of; has_observe = !has_fail; fail = fail_id }
 

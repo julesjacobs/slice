@@ -13,14 +13,14 @@
 		>{\raggedright\arraybackslash}p{0.18\textwidth}
 		@{\hspace{1em}}
 		>{\raggedright\arraybackslash}p{0.47\textwidth}@{}}
-	\toprule
-	\toprule
-	\textbf{$e : \tau$} & \textbf{Condition} & \textbf{Discretization $\discretize{e : \tau}$} \\
+		\toprule
+		\toprule
+	$\boldsymbol{e : \tau}$ & \textbf{Condition} & \textbf{Discretization} $\boldsymbol{\discretize{e : \tau}}$ \\
 	\midrule
 	${x : \tau}$
 	&
 	&
-	$x$ \\[1.8ex]
+	$x$ \\
 	\midrule
 	${c : \float[B;V]}$
 	&
@@ -34,17 +34,17 @@
 		\finconst{k}{(|B|+1)} \text{ such that } c \in \intervals{B}_k
 	\end{array}
 	$
-	\\[2.6ex]
+	\\
 	\midrule
 	${\letkw\; x = e_1 : \tau_1\; \inkw\; e_2 : \tau_2 : \tau_2}$
 	&
 	&
-	$\letkw\; x = \discretize{e_1 : \tau_1}\; \inkw\; \discretize{e_2 : \tau_2}$ \\[1.8ex]
+	$\letkw\; x = \discretize{e_1 : \tau_1}\; \inkw\; \discretize{e_2 : \tau_2}$ \\
 	\midrule
 	${(\ifkw\; e_1 : \bool\; \thenkw\; e_2 : \tau\; \elsekw\; e_3 : \tau) : \tau}$
 	&
 	&
-	$\ifkw\; \discretize{e_1 : \bool}\; \thenkw\; \discretize{e_2 : \tau}\; \elsekw\; \discretize{e_3 : \tau}$ \\[1.2ex]
+	$\ifkw\; \discretize{e_1 : \bool}\; \thenkw\; \discretize{e_2 : \tau}\; \elsekw\; \discretize{e_3 : \tau}$ \\
 	\midrule
 	${ (e_1 : \float[B;V_1] < e_2 : \float[B;V_2]) : \bool }$
 	&
@@ -58,7 +58,7 @@
 		\discretize{e_1 : \float[B;V_1]} < \discretize{e_2 : \float[B;V_2]}
 	\end{array}
 	$
-	\\[2.8ex]
+	\\
 	\midrule
 	${ (e_1 : \float[B;V_1] \leq e_2 : \float[B;V_2]) : \bool }$
 	&
@@ -72,16 +72,16 @@
 		\discretize{e_1 : \float[B;V_1]} \leq \discretize{e_2 : \float[B;V_2]}
 	\end{array}
 	$
-	\\[1.2ex]
+	\\
 	\midrule
-	\vspace{0pt}%
+	\vspace{-8pt}%
 	$\begin{array}{@{}l@{}}
 	\\[20ex]
 	\uniform(e_1 : \float[B_1;V_1], \\
 	\quad e_2 : \float[B_2;V_2]) : \float[B;V]
 	\end{array}$
 	&
-	\vspace{0pt}%
+	\vspace{-8pt}%
 	$
 	\begin{array}[t]{@{}l@{}}
 		e_1, e_2 \in \mathbb{R},\; e_1 > e_2 \\[1ex]
@@ -101,7 +101,7 @@
 		\end{array}
 	\end{array}$
 	&
-	\vspace{0pt}%
+	\vspace{-8pt}%
 	$\begin{array}{@{}l@{}}
 		\diverge : \tau \\[1ex]
 		\uniform(\discretize{e_1 : \float[B_1;V_1]}, \discretize{e_2 : \float[B_2;V_2]}) \\[1ex]
@@ -125,7 +125,7 @@
 		\end{array}
 	\end{array}
 	$
-	\\[1.2ex]
+	\\
 	\bottomrule
 	\bottomrule
 	\end{tabular}
