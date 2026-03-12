@@ -4,131 +4,137 @@
 
 \begin{figure*}[t]
     \centering
-\scriptsize
-\setlength{\tabcolsep}{6pt}
-\renewcommand{\arraystretch}{1.2}
-\begin{adjustbox}{max width=\textwidth}
-\begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.27\textwidth}
-    @{\hspace{6em}}
-    >{\raggedright\arraybackslash}p{0.47\textwidth}
-    @{\hspace{1em}}
-    >{\raggedright\arraybackslash}p{0.18\textwidth}@{}}
-\toprule
-\textbf{$e : \tau$} & \textbf{Discretization $\discretize{e : \tau}$} & \textbf{Condition} \\
-\midrule
-${x : \tau}$
-& $x$
-& \\[1.8ex]
-${c : \float[B;V]}$
-&
-$\left\{
-\begin{array}{@{}l@{}}
-    c \\[0.6ex]
-    \finconst{k}{(|B|+1)} \text{ such that } c \in \intervals{B}_k
-\end{array}
-\right.$
-&
-$\begin{array}{@{}l@{}}
-    \text{if } B = \top, \\[0.6ex]
-    \text{if } B \neq \top.
-\end{array}$
-\\[2.6ex]
-${\letkw\; x = e_1 : \tau_1\; \inkw\; e_2 : \tau_2 : \tau_2}$
-& $\letkw\; x = \discretize{e_1 : \tau_1}\; \inkw\; \discretize{e_2 : \tau_2}$
-& \\[1.8ex]
-${(\ifkw\; e_1 : \bool\; \thenkw\; e_2 : \tau\; \elsekw\; e_3 : \tau) : \tau}$
-& $\ifkw\; \discretize{e_1 : \bool}\; \thenkw\; \discretize{e_2 : \tau}\; \elsekw\; \discretize{e_3 : \tau}$
-& \\[1.2ex]
-\midrule
-${ (e_1 : \float[B;V_1] < e_2 : \float[B;V_2]) : \bool }$
-&
-$\left\{
-\begin{array}{@{}l@{}}
-    \discretize{e_1 : \float[B;V_1]} \finlt{(|B|+1)} \discretize{e_2 : \float[B;V_2]} \\[0.8ex]
-    \discretize{e_1 : \float[B;V_1]} < \discretize{e_2 : \float[B;V_2]}
-\end{array}
-\right.$
-&
-$\begin{array}{@{}l@{}}
-    \text{if } B \neq \top, \\[0.8ex]
-    \text{if } B = \top.
-\end{array}$
-\\[2.8ex]
-${ (e_1 : \float[B;V_1] \leq e_2 : \float[B;V_2]) : \bool }$
-&
-$\left\{
-\begin{array}{@{}l@{}}
-    \discretize{e_1 : \float[B;V_1]} \finleq{(|B|+1)} \discretize{e_2 : \float[B;V_2]} \\[0.8ex]
-    \discretize{e_1 : \float[B;V_1]} \leq \discretize{e_2 : \float[B;V_2]}
-\end{array}
-\right.$
-&
-$\begin{array}{@{}l@{}}
-    \text{if } B \neq \top, \\[0.8ex]
-    \text{if } B = \top.
-\end{array}$
-\\[1.2ex]
-\midrule
-\vspace{0pt}%
-$\begin{array}{@{}l@{}}
-\\[20ex]
-\uniform(e_1 : \float[B_1;V_1], \\
-\quad e_2 : \float[B_2;V_2]) : \float[B;V]
-\end{array}$
-&
-\vspace{0pt}%
-$\left\{
-\begin{array}{@{}l@{}}
-    \diverge : \tau \\[1ex]
-    \uniform(\discretize{e_1 : \float[B_1;V_1]}, \discretize{e_2 : \float[B_2;V_2]}) \\[1ex]
-    \begin{array}{@{}l@{}}
-        \discrete(p_0, \ldots, p_n) \\
-        \quad \text{where } p_k = \mathrm{CDF}(b_{k+1}) - \mathrm{CDF}(b_k)
-    \end{array}
-    \\[5ex]
-    \begin{array}{@{}l@{}}
-        \letkw \; v_1' = \discretize{e_1 : \float[B_1; V_1]} \; \inkw \\
-        \letkw \; v_2' = \discretize{e_2 : \float[B_2; V_2]} \; \inkw \\
-        \ifkw\; v_1' \fineq{(|B_1|+1)} \discretize{v_1 : \floattype{B_1}{\{v_1\}}} \\
-        \quad \logand\; v_2' \fineq{(|B_2|+1)} \discretize{w_1 : \floattype{B_2}{\{w_1\}}}\; \thenkw \\
-        \quad\quad \discretize{\uniform(v_1, w_1) : \float[B;V]} \\
-        \ldots \\
-        \elsekw\; \ifkw\; v_1' \fineq{(|B_1|+1)} \discretize{v_i : \floattype{B_1}{\{v_i\}}} \\
-        \quad \logand\; v_2' \fineq{(|B_2|+1)} \discretize{w_j : \floattype{B_2}{\{w_j\}}}\; \thenkw \\
-        \quad\quad \discretize{\uniform(v_{i+1}, w_{j+1}) : \float[B;V]} \\
-        \ldots \\
-        \elsekw\; \discretize{\uniform(v_n, w_m) : \float[B;V]}
-    \end{array}
-\end{array}
-\right.$
-&
-\vspace{0pt}%
-$\begin{array}[t]{@{}l@{}}
-    \text{if } e_1, e_2 \in \mathbb{R},\; e_1 > e_2, \\[1ex]
-    \text{if } B = \top, \\[1ex]
-    \begin{array}[t]{@{}l@{}}
-        \text{if } e_1, e_2 \in \mathbb{R}, \\
-        B = \{\sim_1\!\!b_1, \ldots, \sim_n\!\!b_n\},
-    \end{array}
-    \\[5ex]
-    \begin{array}[t]{@{}l@{}}
+	\scriptsize
+	\setlength{\tabcolsep}{6pt}
+	\renewcommand{\arraystretch}{1.2}
+	\begin{adjustbox}{max width=\textwidth}
+	\begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.27\textwidth}
+		@{\hspace{6em}}
+		>{\raggedright\arraybackslash}p{0.18\textwidth}
+		@{\hspace{1em}}
+		>{\raggedright\arraybackslash}p{0.47\textwidth}@{}}
+	\toprule
+	\toprule
+	\textbf{$e : \tau$} & \textbf{Condition} & \textbf{Discretization $\discretize{e : \tau}$} \\
+	\midrule
+	${x : \tau}$
+	&
+	&
+	$x$ \\[1.8ex]
+	\midrule
+	${c : \float[B;V]}$
+	&
+	$\begin{array}{@{}l@{}}
+		B = \top \\[0.6ex]
+		B \neq \top
+	\end{array}$
+	&
+	$\begin{array}{@{}l@{}}
+		c \\[0.6ex]
+		\finconst{k}{(|B|+1)} \text{ such that } c \in \intervals{B}_k
+	\end{array}
+	$
+	\\[2.6ex]
+	\midrule
+	${\letkw\; x = e_1 : \tau_1\; \inkw\; e_2 : \tau_2 : \tau_2}$
+	&
+	&
+	$\letkw\; x = \discretize{e_1 : \tau_1}\; \inkw\; \discretize{e_2 : \tau_2}$ \\[1.8ex]
+	\midrule
+	${(\ifkw\; e_1 : \bool\; \thenkw\; e_2 : \tau\; \elsekw\; e_3 : \tau) : \tau}$
+	&
+	&
+	$\ifkw\; \discretize{e_1 : \bool}\; \thenkw\; \discretize{e_2 : \tau}\; \elsekw\; \discretize{e_3 : \tau}$ \\[1.2ex]
+	\midrule
+	${ (e_1 : \float[B;V_1] < e_2 : \float[B;V_2]) : \bool }$
+	&
+	$\begin{array}{@{}l@{}}
+		B \neq \top \\[0.8ex]
+		B = \top
+	\end{array}$
+	&
+	$\begin{array}{@{}l@{}}
+		\discretize{e_1 : \float[B;V_1]} \finlt{(|B|+1)} \discretize{e_2 : \float[B;V_2]} \\[0.8ex]
+		\discretize{e_1 : \float[B;V_1]} < \discretize{e_2 : \float[B;V_2]}
+	\end{array}
+	$
+	\\[2.8ex]
+	\midrule
+	${ (e_1 : \float[B;V_1] \leq e_2 : \float[B;V_2]) : \bool }$
+	&
+	$\begin{array}{@{}l@{}}
+		B \neq \top \\[0.8ex]
+		B = \top
+	\end{array}$
+	&
+	$\begin{array}{@{}l@{}}
+		\discretize{e_1 : \float[B;V_1]} \finleq{(|B|+1)} \discretize{e_2 : \float[B;V_2]} \\[0.8ex]
+		\discretize{e_1 : \float[B;V_1]} \leq \discretize{e_2 : \float[B;V_2]}
+	\end{array}
+	$
+	\\[1.2ex]
+	\midrule
+	\vspace{0pt}%
+	$\begin{array}{@{}l@{}}
+	\\[20ex]
+	\uniform(e_1 : \float[B_1;V_1], \\
+	\quad e_2 : \float[B_2;V_2]) : \float[B;V]
+	\end{array}$
+	&
+	\vspace{0pt}%
+	$
+	\begin{array}[t]{@{}l@{}}
+		e_1, e_2 \in \mathbb{R},\; e_1 > e_2 \\[1ex]
+		B = \top \\[1ex]
+		\begin{array}[t]{@{}l@{}}
+			e_1, e_2 \in \mathbb{R}, \\
+			B = \{\sim_1\!\!b_1, \ldots, \sim_n\!\!b_n\}
+		\end{array}
 		\\[5ex]
-        \text{if } B \neq \top, \\
-        B_1 \neq \top, \\
-        B_2 \neq \top, \\
-        V_1 = \{v_1, \ldots, v_n\}, \\
-        V_2 = \{w_1, \ldots, w_m\}
-    \end{array}
-\end{array}$
-\\[1.2ex]
-\bottomrule
-\end{tabular}
-\end{adjustbox}
-\caption{Discretization function, where $\mathrm{CDF}(b_{0}) = 0$ and $\mathrm{CDF}(b_{n+1}) = 1$.
-    For the $\uniform$ distribution, $V = \top$ is implicit, and all other cases for the cut and value
-    sets are ruled out by the constraints enforced during type inference. For all other language
-    constructs, $\discretize{\cdot}$ straightforwardly recurses on their structure.}
-\label{fig:discretization-code}
+		\begin{array}[t]{@{}l@{}}
+			\\[5ex]
+			B \neq \top, \\
+			B_1 \neq \top, \\
+			B_2 \neq \top, \\
+			V_1 = \{v_1, \ldots, v_n\}, \\
+			V_2 = \{w_1, \ldots, w_m\}
+		\end{array}
+	\end{array}$
+	&
+	\vspace{0pt}%
+	$\begin{array}{@{}l@{}}
+		\diverge : \tau \\[1ex]
+		\uniform(\discretize{e_1 : \float[B_1;V_1]}, \discretize{e_2 : \float[B_2;V_2]}) \\[1ex]
+		\begin{array}{@{}l@{}}
+			\discrete(p_0, \ldots, p_n) \\
+			\quad \text{where } p_k = \mathrm{CDF}(b_{k+1}) - \mathrm{CDF}(b_k)
+		\end{array}
+		\\[5ex]
+		\begin{array}{@{}l@{}}
+			\letkw \; v_1' = \discretize{e_1 : \float[B_1; V_1]} \; \inkw \\
+			\letkw \; v_2' = \discretize{e_2 : \float[B_2; V_2]} \; \inkw \\
+			\ifkw\; v_1' \fineq{(|B_1|+1)} \discretize{v_1 : \floattype{B_1}{\{v_1\}}} \\
+			\quad \logand\; v_2' \fineq{(|B_2|+1)} \discretize{w_1 : \floattype{B_2}{\{w_1\}}}\; \thenkw \\
+			\quad\quad \discretize{\uniform(v_1, w_1) : \float[B;V]} \\
+			\ldots \\
+			\elsekw\; \ifkw\; v_1' \fineq{(|B_1|+1)} \discretize{v_i : \floattype{B_1}{\{v_i\}}} \\
+			\quad \logand\; v_2' \fineq{(|B_2|+1)} \discretize{w_j : \floattype{B_2}{\{w_j\}}}\; \thenkw \\
+			\quad\quad \discretize{\uniform(v_{i+1}, w_{j+1}) : \float[B;V]} \\
+			\ldots \\
+			\elsekw\; \discretize{\uniform(v_n, w_m) : \float[B;V]}
+		\end{array}
+	\end{array}
+	$
+	\\[1.2ex]
+	\bottomrule
+	\bottomrule
+	\end{tabular}
+	\end{adjustbox}
+	\caption{Discretization function, where $\mathrm{CDF}(b_{0}) = 0$ and $\mathrm{CDF}(b_{n+1}) = 1$.
+		For the $\uniform$ distribution, $V = \top$ is implicit, and all other cases for the cut and value
+		sets are ruled out by the constraints enforced during type inference. For all other language
+		constructs, $\discretize{\cdot}$ straightforwardly recurses on their structure.}
+	\label{fig:discretization-code}
 \end{figure*}
 %
 This section presents local transformation rules for our type-directed discretization algorithm, with examples. The global objective is: given a typed expression $e : \bool$, compute, guided by type annotations, a \emph{discretized} expression $\discretize{e : \bool} : \bool$ such that $e$ and $\discretize{e : \tau}$ are \emph{semantically equivalent}, i.e., they induce the same distribution. We refer to this semantics-preserving transformation as \emph{exact discretization}, to distinguish it from \emph{quantization} approaches~\cite{Garg2024BitBlast,Huang2021AQUA} that approximate continuous programs via externally chosen precision parameters. Intuitively, when a program uses continuous quantities only through finitely many comparison outcomes, exact inference should reduce to a discrete problem, and exact discretization makes that reduction explicit.
