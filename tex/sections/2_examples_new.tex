@@ -6,7 +6,7 @@ To build intuition for \Slice{}, we start with simple examples demonstrating the
 \subsection{Branching on a Single Continuous Variable}\label{sec:examples:1}
 We consider a program that samples a real value from a standard Gaussian distribution and then performs two nested comparisons, first checking whether the sampled value is less than 0.8, then comparing that value against either 0.1 or 2.0:
 
-\begin{lstlisting}[aboveskip=1em,belowskip=1em]
+\begin{lstlisting}[aboveskip=1em,belowskip=1em,gobble=4]
     let x = gaussian(0,1) in 
     if x < 0.8 then x < 0.1 else x < 2.0
 \end{lstlisting}
@@ -15,7 +15,7 @@ We consider a program that samples a real value from a standard Gaussian distrib
 
 \input{figures/cuts.tex}
 
-\begin{lstlisting}[aboveskip=1em,belowskip=1em]
+\begin{lstlisting}[aboveskip=1em,belowskip=1em,gobble=4]
     let x = discrete(0.5398, 0.2483, 0.1891, 0.0228) in
     if x < 2 then x < 1 else x < 3
 \end{lstlisting}
@@ -24,7 +24,7 @@ We consider a program that samples a real value from a standard Gaussian distrib
 
 The transformation is guided by our type system, driven by a \emph{cut set} --- the set of comparison thresholds extracted from the program. A continuous expression is annotated with its cut set, recording the values it is compared against. For our example, the type annotation looks as follows:
 
-\begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
+\begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!,gobble=4]
     let x = (gaussian(0,1) : !{\ftnv{\{<0.2,<0.5,<2\}}}!) in
     if x < 0.5 then x < 0.2 else x < 2.0
 \end{lstlisting}
@@ -35,7 +35,7 @@ The transformation is guided by our type system, driven by a \emph{cut set} --- 
 
 \noindent Different expressions may induce different cut sets, and \Slice{} computes the appropriate set for each expression independently. Consider an example with multiple continuous variables:
 
-\begin{lstlisting}[aboveskip=1em,belowskip=1em]
+\begin{lstlisting}[aboveskip=1em,belowskip=1em,gobble=4]
     let x = uniform(0, 1) in
     let y = uniform(0, 2) in
     if x < 0.5 then x < 0.2 else y < 0.1
@@ -43,24 +43,39 @@ The transformation is guided by our type system, driven by a \emph{cut set} --- 
 
 \noindent In this program, the variable $x$ is drawn from \uniform(0, 1) and is compared against two different constants: $0.5$ and $0.2$. These two cuts $\clt{0.5}$ and $\clt{0.2}$ partition the real line $\R$ into three intervals: $(-\infty, 0.2)$, $[0.2, 0.5)$, and $[0.5, +\infty)$. Similarly, the variable $y$, drawn from \uniform(0, 2), is compared only with $0.1$. This single cut $\clt{0.1}$ partitions the real line $\R$ into $(-\infty, 0.1)$ and $[0.1, +\infty)$.
 
-Type inference performs this analysis by collecting all cuts for each continuous variable. For $x$, it discovers the cuts $\clt{0.2}$ and $\clt{0.5}$, giving it the type \ftnv{\{<0.2,<0.5\}}. For $y$, it only finds $\clt{0.1}$, giving it the type \ftnv{\{<0.1\}}. This information is captured in the annotated program below:
+Type inference performs this analysis by collecting all cuts for each continuous variable. For $x$, it discovers the cuts $\clt{0.2}$ and $\clt{0.5}$, giving it the type \ftnv{\{<0.2,<0.5\}}. For $y$, it only finds $\clt{0.1}$, giving it the type \ftnv{\{<0.1\}}. This information is captured in the annotated program below (left):
 
-\begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
+\begin{figure}[h]
+    \centering
+    
+    \begin{subfigure}[b]{0.42\linewidth}
+    \centering
+    \begin{lstlisting}[aboveskip=0.6em,belowskip=0.6em,escapechar=!,gobble=4]
     let x = uniform(0, 1) : !{\ftnv{\{<0.2,<0.5\}}}! in
     let y = uniform(0, 2) : !{\ftnv{\{<0.1\}}}! in
     if x < 0.5 then x < 0.2 else y < 0.1
-\end{lstlisting}
-
-
-\Slice{} therefore discretizes $x$ into three outcomes \discrete(0.2, 0.3, 0.5) and $y$ into two outcomes \discrete(0.05, 0.95), where each probability is the respective measure of the original interval. Comparisons now operate over the integer indices of those intervals:
-
-\begin{lstlisting}[aboveskip=1em,belowskip=1em]
+    \end{lstlisting}
+    \caption{Type-annotated program}
+    \label{fig:uniform-two-var-original}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.4\linewidth}
+    \centering
+    \begin{lstlisting}[aboveskip=0.6em,belowskip=0.6em,gobble=4]
     let x = discrete(0.2, 0.3, 0.5) in
     let y = discrete(0.05, 0.95) in
-    if x < 2 then x < 1 else  y < 1
-\end{lstlisting}
+    if x < 2 then x < 1 else y < 1
+    \end{lstlisting}
+    \caption{Discretized program}
+    \label{fig:uniform-two-var-discrete}
+    \end{subfigure}
+    
+    \caption{Branching on multiple continuous variables.}
+    \label{fig:uniform-two-var-discretized}
+\end{figure}
 
-\noindent The constants $0.5$ and $0.2$ map to indices 2 and 1, respectively, in the partition $(-\infty,0.2)\cup[0.2,0.5)\cup[0.5,+\infty)$ for $x$. The constant $0.1$ maps to index 1 in the partition $(-\infty,0.1)\cup[0.1,+\infty)$ for $y$.
+
+\Slice{} therefore discretizes $x$ into three outcomes \discrete(0.2, 0.3, 0.5) and $y$ into two outcomes \discrete(0.05, 0.95), where each probability is the respective measure of the original interval. Comparisons now operate over the integer indices of those intervals: the constants $0.5$ and $0.2$ map to indices 2 and 1, respectively, in the partition $(-\infty,0.2)\cup[0.2,0.5)\cup[0.5,+\infty)$ for $x$; the constant $0.1$ maps to index 1 in the partition $(-\infty,0.1)\cup[0.1,+\infty)$ for $y$.
 
 
 \iffalse
@@ -69,7 +84,7 @@ The example in Section~\ref{sec:examples:2} involves comparisons with literal co
 \Slice{} does not require the comparison to have a syntactic constant right-hand or left-hand side. Instead, it analyzes the dataflow of the program to determine which constants are relevant, and how these constants are mapped to discrete indices.
 Consider the program:
 
-\begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
+\begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!,gobble=4]
     let x = if flip() then 0.2 
             else if flip() then 2.5
             else 4.5 in 
@@ -78,7 +93,7 @@ Consider the program:
 
 This yields the annotated program after type inference:
 
-\begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
+\begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!,gobble=4]
     let x = if flip() then (0.2 : !{\ftb{\{<0.5\}}{\{0.2\}}}!)
             else (if flip() then (2.5 : !{\ftb{\{<0.5\}}{\{2.5\}}}!)
             else (4.5 : !{\ftb{\{<0.5\}}{\{4.5\}}}!) 
@@ -89,7 +104,7 @@ This yields the annotated program after type inference:
 
 Both $x$ and $y$ can only take on finitely many values --- a fact which is reflected by the value sets in the type annotations. By locating where each value in the value set falls relative to the cuts in the cut set, \Slice{} determines the corresponding interval index for each value. \codetype{\ftb{\{<0.5\}}{\{0.2\}}} corresponds to the index 0, and types \codetype{\ftb{\{<0.5\}}{\{2.5\}}}, \codetype{\ftb{\{<0.5\}}{\{4.5\}}}, and \codetype{\ftb{\{<0.5\}}{\{0.5\}}} all correspond to the index 1. The value sets in types \codetype{\ftb{\{<0.5\}}{\{0.2, 2.5, 4.5\}}} and \codetype{\ftb{\{<0.5\}}{\{2.5, 4.5\}}} arise from taking the union of the value sets from each prior conditional branch. This in turn yields the following discretized program:
 
-\begin{lstlisting}[aboveskip=1em,belowskip=1em]
+\begin{lstlisting}[aboveskip=1em,belowskip=1em,gobble=4]
     let x = if flip() then 0
             else if flip() then 1
             else 1 in
@@ -104,41 +119,58 @@ Notice how both $2.5$ and $4.5$ are discretized to $1$, because for the purpose 
 
 We now consider comparisons against an expression for which control flow determines which of several constant values it may take. Additionally, continuous values can flow through conditionals before reaching such a comparison:
 
-\begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
+\begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!,gobble=4,gobble=4]
     let x = if flip() then uniform(0,2) else gaussian(0,1) in
     let y = if 1.5 > x then 1.8 else 0.3 in x <= y
 \end{lstlisting}
 
-\noindent Here, $y$ evaluates to either $1.8$ or $0.3$ depending on $x$. Because $x \leq y$ may use either value, \Slice{} collects both constants and treats the comparison as over this finite set. This motivates enriching our float types with a \emph{value set}: a finite collection of concrete values that an expression may evaluate to. Figure \ref{fig:float-type-def} presents the full float type as is implemented by \Slice{}; each floating-point expression is annotated with such a type. The type-annotated program is thus:
+\noindent Here, $y$ evaluates to either $1.8$ or $0.3$ depending on $x$. Because $x \leq y$ may use either value, \Slice{} collects both constants and treats the comparison as over this finite set. This motivates enriching our float types with a \emph{value set}: a finite collection of concrete values that an expression may evaluate to. Figure \ref{fig:float-type-def} presents the full float type as is implemented by \Slice{}; each floating-point expression is annotated with such a type. The type-annotated program is below (left):
 
-\begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
-    let x = if flip()
-            then (uniform(0,2) : !{\ft{\{<=0.3,<1.5,<=1.8\}}}!)
-            else (gaussian(0,1) : !{\ft{\{<=0.3,<1.5,<=1.8\}}}!)
-            : !{\ft{\{<=0.3,<1.5,<=1.8\}}}! in
-    let y = if (1.5 : !{\ftb{\{<=0.3,<1.5,<=1.8\}}{\{1.5\}}}!) > x
-            then (1.8 : !{\ftb{\{<=0.3,<1.5,<=1.8\}}{\{1.8\}}}!)
-            else (0.3 : !{\ftb{\{<=0.3,<1.5,<=1.8\}}{\{0.3\}}}!)
-            : !{\ftb{\{<=0.3,<1.5,<=1.8\}}{\{0.3,1.8\}}}! in
-    x <= y
-\end{lstlisting}
+\begin{figure}[h]
+    \centering
+    
+    \begin{subfigure}[b]{0.58\linewidth}
+    \centering
+    \begin{lstlisting}[aboveskip=0.6em,belowskip=0.6em,escapechar=!,gobble=4]
+    let x = if flip() then 
+    (uniform(0,2) : !{\ft{\{<=0.3,<1.5,<=1.8\}}}!)
+    else 
+    (gaussian(0,1) : !{\ft{\{<=0.3,<1.5,<=1.8\}}}!)
+    : !{\ft{\{<=0.3,<1.5,<=1.8\}}}! in
+    let y = 
+    if (1.5 : !{\ftb{\{<=0.3,<1.5,<=1.8\}}{\{1.5\}}}!) > x
+    then (1.8 : !{\ftb{\{<=0.3,<1.5,<=1.8\}}{\{1.8\}}}!)
+    else (0.3 : !{\ftb{\{<=0.3,<1.5,<=1.8\}}{\{0.3\}}}!)
+    : !{\ftb{\{<=0.3,<1.5,<=1.8\}}{\{0.3,1.8\}}}! in x <= y
+    \end{lstlisting}
+    \caption{Type-annotated program}
+    \label{fig:mix-original}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.4\linewidth}
+    \centering
+    \begin{lstlisting}[aboveskip=0.6em,belowskip=0.6em,gobble=4]
+    let x = if flip() then
+    discrete(0.15, 0.6, 0.15, 0.1)
+    else
+    discrete(0.62, 0.32, 0.03, 0.04) 
+    in
+    let y = if 1 > x then 2 else 0 
+    in x <= y
+    \end{lstlisting}
+    \caption{Discretized program}
+    \label{fig:mix-discretized}
+    \end{subfigure}
+    
+    \caption{Control flow. (Discrete distribution parameters rounded to nearest hundredth.)}
+    \label{fig:mix-example}
+\end{figure}
 
 \noindent Value sets refine an expression's cut set by contributing cuts at comparisons. For example, in the test $x \leq y$, the value set of $y$ contributes boundary points that must also appear in the cut set of $x$. This dependency is non-local: constants introduced in one branch can constrain how a sampled value from another branch must be discretized.
 
 More generally, whenever two expressions are compared, the type system equates their cut sets so they are discretized over the same intervals. These cut sets then propagate backward through the control flow to all contributing subexpressions. Figure~\ref{fig:control-flow-gaussian} illustrates this non-local propagation, which the soundness proof must relate through a semantic coupling relation.
 
-Now, the discretized program becomes:
-
-\begin{lstlisting}[aboveskip=1em,belowskip=1em]
-    let x = if flip() then
-        discrete(0.15, 0.6, 0.15, 0.1)
-      else
-        discrete(0.617911, 0.315281, 0.0308769, 0.0359303) in
-    let y = if 1 > x then 2 else 0 in
-    x <= y
-\end{lstlisting}
-
-\noindent The cuts $\cleq{0.3}$, $\clt{1.5}$, and $\cleq{1.8}$ induce the intervals $(-\infty, 0.3]$, $(0.3, 1.5)$, $[1.5, 1.8]$, and $(1.8, +\infty)$; the strict comparison excludes 1.5 from the second one. Each \discrete-expression lists the mass of those four intervals. For instance, \uniform(0,2) assigns $(0.15, 0.6, 0.15, 0.1)$. 
+\noindent The discretized program is shown on the right. The cuts $\cleq{0.3}$, $\clt{1.5}$, and $\cleq{1.8}$ induce the intervals $(-\infty, 0.3]$, $(0.3, 1.5)$, $[1.5, 1.8]$, and $(1.8, +\infty)$; the strict comparison excludes 1.5 from the second one. Each \discrete-expression lists the mass of those four intervals. For instance, \uniform(0,2) assigns $(0.15, 0.6, 0.15, 0.1)$. 
 
 \begin{figure}
     \[
@@ -157,28 +189,46 @@ Now, the discretized program becomes:
 
 Continuous distributions can have parameters that depend on discrete random choices. In this example, a Gaussian distribution's standard deviation is determined by such a random choice:
 
-\begin{lstlisting}[escapeinside={<@}{@>},aboveskip=1em,belowskip=1em]
+\begin{lstlisting}[escapeinside={<@}{@>},aboveskip=1em,belowskip=1em,gobble=4]
     let x = if flip() then 0.5 else 1.5 in gaussian(0, x) < 0.5
 \end{lstlisting}
 
 \noindent %This example shows how discrete choices can affect the parameters of continuous distributions. 
-The type-annotations reveal how the variable $x$ determines the standard deviation of the Gaussian, and Figure~\ref{fig:control-flow-distinguishes} illustrates how type information is propagated:
+The type-annotations reveal how the variable $x$ determines the standard deviation of the Gaussian, and Figure~\ref{fig:control-flow-distinguishes} illustrates how type information is propagated.
 
-\begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
-    let x = if flip() then (0.5 : !{\ftb{\{<=0.5,<=1.5\}}{\{0.5\}}}!)
-        else (1.5 : !{\ftb{\{<=0.5,<=1.5\}}{\{1.5\}}}!)
-        : !{\ftb{\{<=0.5,<=1.5\}}{\{0.5,1.5\}}}! in
-    (gaussian(0, x) : !{\ft{\{<0.5\}}}!) < (0.5 : !{\ftb{\{<0.5\}}{\{0.5\}}}!)
-\end{lstlisting}
+\begin{figure}[h]
+    \centering
 
-\noindent Because $x$ is later used as a parameter to $\gaussian$, \Slice{} generates one case per value in its value set (0.5 and 1.5). To support this, the type system uses non-strict inequalities in cut sets, allowing these values to map to unique integer indices starting at 0. Specifically, 0.5 maps to index 0 via \codetype{\ftb{\{<=0.5,<=1.5\}}{\{0.5\}}}, and 1.5 maps to index 1 via \codetype{\ftb{\{<=0.5,<=1.5\}}{\{1.5\}}}. This is a non-local effect: an upstream discrete latent choice determines how a downstream continuous distribution is discretized. The resulting discretized program then branches on these values and instantiates the corresponding discrete distribution for the standard deviation selected by the initial flip:
+    \begin{subfigure}[b]{0.56\linewidth}
+    \begin{lstlisting}[aboveskip=0.6em,belowskip=0.6em,escapechar=!,gobble=4]
+    let x = if flip() then 
+    (0.5 : !{\ftb{\{<=0.5,<=1.5\}}{\{0.5\}}}!)
+    else (1.5 : !{\ftb{\{<=0.5,<=1.5\}}{\{1.5\}}}!)
+    : !{\ftb{\{<=0.5,<=1.5\}}{\{0.5,1.5\}}}! in
+    (gaussian(0, x) : !{\ft{\{<0.5\}}}!) 
+    < (0.5 : !{\ftb{\{<0.5\}}{\{0.5\}}}!)
+    \end{lstlisting}
+    \caption{Type-annotated program}
+    \label{fig:gaussian-scale-original}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.40\linewidth}
+    \begin{lstlisting}[aboveskip=0.6em,belowskip=0.6em,gobble=4]
+    let x = if flip() then 
+    0 else 1 in 
+    (if x == 0 then 
+    discrete(0.84, 0.16)
+    else discrete(0.63, 0.37)) < 1
+    \end{lstlisting}
+    \caption{Discretized program}
+    \label{fig:gaussian-scale-discretized}
+    \end{subfigure}
 
-\begin{lstlisting}[aboveskip=1em,belowskip=1em]
-    let x = if flip() then 0 else 1 in
-    (if x == 0 then  discrete(0.841345, 0.158655)
-               else  discrete(0.630559, 0.369441)) < 1
-\end{lstlisting}
-%
+    \caption{Discrete latent variable.}
+    \label{fig:gaussian-scale-example}
+\end{figure}
+
+\noindent Because $x$ is later used as a parameter to $\gaussian$, \Slice{} generates one case per value in its value set (0.5 and 1.5). To support this, the type system uses non-strict inequalities in cut sets, allowing these values to map to unique integer indices starting at 0. Specifically, 0.5 maps to index 0 via \codetype{\ftb{\{<=0.5,<=1.5\}}{\{0.5\}}}, and 1.5 maps to index 1 via \codetype{\ftb{\{<=0.5,<=1.5\}}{\{1.5\}}}. This is a non-local effect: an upstream discrete latent choice determines how a downstream continuous distribution is discretized. The resulting discretized program then branches on these values and instantiates the corresponding discrete distribution for the standard deviation selected by the initial flip.
 \noindent
 
 \subsection{Conditioning}\label{sec:examples:6}
@@ -193,18 +243,36 @@ The type-annotations reveal how the variable $x$ determines the standard deviati
 %
 %\noindent The type annotations show how observation points become cuts:
 
-\begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
-    let x = (uniform(0.0, 1.0) : !{\ft{\{<0.2,<0.5\}}}!) in
-    let _ = observe (x < (0.5 : !{\ftb{\{<0.2,<0.5\}}{\{0.5\}}}!)) in
-    x < (0.2 : !{\ftb{\{<0.2,<0.5\}}{\{0.2\}}}!)
-\end{lstlisting}
+\begin{figure}[h]
+    \centering
 
-\noindent Discretization again replaces reals by interval indices:
-
-\begin{lstlisting}[aboveskip=1em,belowskip=1em]
+    \begin{subfigure}[b]{0.58\linewidth}
+    \begin{lstlisting}[aboveskip=0.6em,belowskip=0.6em,escapechar=!,gobble=4]
+    let x = 
+    (uniform(0.0, 1.0) : !{\ft{\{<0.2,<0.5\}}}!) 
+    in let _ = 
+    observe (x < (0.5 : !{\ftb{\{<0.2,<0.5\}}{\{0.5\}}}!)) 
+    in x < (0.2 : !{\ftb{\{<0.2,<0.5\}}{\{0.2\}}}!)
+    \end{lstlisting}
+    \caption{Type-annotated program}
+    \label{fig:observe-original}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.4\linewidth}
+    \begin{lstlisting}[aboveskip=0.6em,belowskip=0.6em,gobble=4]
     let x = discrete(0.2, 0.3, 0.5) in
-    let _ = observe (x < 2) in x < 1
-\end{lstlisting}
+    let _ = observe (x < 2) in 
+    x < 1
+    \end{lstlisting}
+    \caption{Discretized program}
+    \label{fig:observe-discretized}
+    \end{subfigure}
+
+    \caption{Conditioning.}
+    \label{fig:observe-example}
+\end{figure}
+
+\noindent Discretization again replaces reals by interval indices, as shown on the right.
 
 \noindent Observation $x<2$ eliminates the discrete state corresponding to the original interval $[0.5,+\infty)$, mirroring the conditioning on $x<0.5$.
 

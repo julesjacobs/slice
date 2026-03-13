@@ -62,6 +62,91 @@ This gives the output \result{0.17325}{0.82675} when run with \Dice{} and \Roule
 
 
 \subsection{Random Interval Covering}\label{ap:epsball}
+
+\begin{figure*}[t]
+\centering
+\begin{minipage}[t]{0.46\textwidth}
+\vspace{0pt}
+\begin{lstlisting}[aboveskip=1em,belowskip=1em,
+  escapeinside={(*@}{@*)},
+  numbers=right,
+  stepnumber=1,
+  numberstyle=\color{gray}\scriptsize,
+  numbersep=7pt,
+  basicstyle=\ttfamily\footnotesize]
+let within = fun lo -> fun hi -> fun y -> 
+(* Returns true (*@if@*) y is (*@in@*) [lo,hi)*)
+  (y >= lo) && (y < hi) in 
+
+let b = fun _ ->  (* Function for sampling interval bounds *)
+  discrete(0.18: 0.05, 0.11: 0.24, 
+          0.21: 0.37, 0.09: 0.58, 
+          0.16: 0.78, 0.25: 0.89) in
+
+(* Initialize intervals by sampling their 
+respective (possibly overlapping) bounds *)
+let init =
+  (false, within 0.00 (b ())) ::
+  (false, within (b ()) (b ())) ::
+  (false, within (b ()) (b ())) ::
+  (false, within (b ()) 1.00) ::
+  nil in 
+
+(* Update flags depending on y falling within
+   the respective interval *)
+let update = fix update y := fun ys -> 
+  match ys with 
+    | nil -> nil
+    | h :: t ->
+        ((fst h || ((snd h) y)), snd h)
+        :: (update y t)
+  end
+in
+\end{lstlisting}
+\end{minipage}
+\hfill
+\begin{minipage}[t]{0.46\textwidth}
+\vspace{0pt}
+\begin{lstlisting}[aboveskip=1em,belowskip=1em,
+  escapeinside={(*@}{@*)},
+  numbers=right,
+  stepnumber=1,
+  firstnumber=last,
+  numberstyle=\color{gray}\scriptsize,
+  numbersep=7pt,
+  basicstyle=\ttfamily\footnotesize]
+(* Sample from a (*@gaussian@*), (*@then@*) use
+   so-obtained value to update flags *)
+let step = fun ys -> 
+  update (gaussian(0,1)) ys in
+
+(* Number of samples determined by 
+   unbounded recursion *)
+let cover = fix cover st :=
+  if uniform(0,1) < 0.2 then st
+  else cover (step st) in
+
+(* Have all intervals been covered
+   at least once? *)
+let is_covered = fix is_covered ys := 
+  match ys with 
+    | nil -> true 
+    | h :: t -> (fst h) && (is_covered t)
+  end
+in 
+
+(* Run entire process on sampled intervals *)
+let final = cover init in
+is_covered final 
+\end{lstlisting}
+\end{minipage}
+
+\caption{An infinite stochastic process involving continuous sampling, higher-order recursion, and lists.}
+\label{fig:epsball}
+\end{figure*}
+
+
+
 \begin{lstlisting}[aboveskip=1em,belowskip=1em]
 (* Random interval-covering over [0,1].
 
