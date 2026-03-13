@@ -2,20 +2,49 @@
 \appendix
 \tableofcontents
 
-\section{Slice by Example (continued)}\label{ap:mot}
+\section{Slice Examples (continued)}\label{ap:mot}
 This section provides more examples highlighting the language features of \Slice{}. As an additional demonstration, we provide exact inference results obtained by integrating \Slice{} with \Dice{} and \Roulette{}.
 
-\subsection{Control Flow}
+\subsection{Control Flow}\label{app:examples:4}
+
+We revisit the control-flow example from \Cref{sec:examples:4}:
+\begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!,gobble=4]
+    let x = if flip() then uniform(0,2) else gaussian(0,1) in
+    let y = if 1.5 > x then 1.8 else 0.3 in x <= y
+\end{lstlisting}
+The salient feature of this program is that the comparison $x \leq y$ is governed by control flow: the right-hand side is not a single constant, but may evaluate to either $0.3$ or $1.8$ depending on the outcome of the earlier test $1.5 > x$. Consequently, the discretization of $x$ must account for both values, even though they arise indirectly through a conditional.
+
 \input{figures/cf-program.tex}
+
+\Cref{fig:control-flow-gaussian} makes these dependencies explicit using a constraint graph over float-typed subexpressions. Solid edges denote data flow through conditionals, while dashed edges denote comparison constraints. In this example, the comparisons $1.5 > x$ and $x \leq y$ jointly determine the cut structure relevant to $x$. In particular, although neither branch defining $x$ syntactically mentions all cuts, the constants $1.5$, $0.3$, and $1.8$ become relevant through the comparison structure of the program.
 
 \input{figures/cf-propagation.tex}
 
-\subsection{Discrete Latent Variable}
+The propagation process of float type information proceeds in four stages. First, literal constants contribute singleton value sets, while continuous samples are assigned value set $\top$ (\Cref{fig:control-flow-gaussian-a}). Second, value sets propagate forward along data-flow edges, yielding in particular that $y$ has value set $\{0.3,1.8\}$ (\Cref{fig:control-flow-gaussian-b}). Third, comparison sites generate cut information: $1.5 > x$ contributes the threshold $1.5$, and $x \leq y$ contributes the possible values of $y$, namely $0.3$ and $1.8$ (\Cref{fig:control-flow-gaussian-c}). Since both operands of a comparison must be discretized against compatible interval boundaries, these cut sets are unified across the compared expressions. Finally, the resulting cut set propagates backward along data-flow edges to all contributing subexpressions (\Cref{fig:control-flow-gaussian-d}).
+
+The final cut set is
+\[
+\{\cleq{0.3}, \clt{1.5}, \cleq{1.8}\},
+\]
+inducing the intervals $(-\infty,0.3]$, $(0.3,1.5)$, $[1.5,1.8]$, and $(1.8,\infty)$. Both branches defining $x$ are therefore discretized with respect to this common partition. This example highlights the non-locality addressed by \Slice{}: cut information is not determined syntactically at the sampling site, but rather by global interaction between data flow and comparison structure.
+
+
+\subsection{Discrete Latent Variable}\label{app:examples:5}
+
+We revisit the discrete latent variable example from \Cref{sec:examples:5}:
 \begin{lstlisting}[escapeinside={<@}{@>},aboveskip=1em,belowskip=1em]
     let x = if flip() <@\textcolor{purple}{then}@> 0.5 <@\textcolor{purple}{else}@> 1.5 in gaussian(0, <@\textcolor{red}{x}@>) <@\textcolor{orange}{<}@> 0.5
 \end{lstlisting}
+The essential feature here is that the parameter of the continuous distribution is itself determined by a discrete choice. Thus, although the final comparison is only against the constant $0.5$, the discretization of the program must also account for the fact that the Gaussian is instantiated at two distinct parameter values.
 
 \input{figures/latent-variable.tex}
+
+\Cref{fig:control-flow-distinguishes} presents the corresponding constraint graph. The variable $x$ is formed by control flow from the two constants $0.5$ and $1.5$, and therefore has value set $\{0.5,1.5\}$. This value information is not used only for subsequent comparisons: because $x$ appears as a parameter to $\gaussian(0,x)$, the transformation must recover which concrete value of $x$ was selected in order to choose the corresponding discretized distribution. The figure records this dependency by the \emph{recovers} constraint on $x$.
+
+Operationally, the recovers constraint requires that the values in the value set of $x$ be represented by distinct discrete indices. This is why the type system uses non-strict cuts for such values: the cut set $\{\cleq{0.5},\cleq{1.5}\}$ induces a partition in which $0.5$ and $1.5$ occupy distinguishable regions, allowing them to be mapped to separate cases in the discretized program. The final comparison $\gaussian(0,x) < 0.5$ contributes the cut $\clt{0.5}$ for the sampled Gaussian result, while the value-set information on $x$ determines which discrete Gaussian approximation is selected.
+
+This example isolates a second kind of non-locality handled by \Slice{}. The relevant discretization of a continuous expression may depend not only on comparison structure, but also on latent choices that determine its parameters. In the transformed program, this dependency appears as a case split over the values of $x$, with one discretized Gaussian for each possible standard deviation.
+
 
 \subsection{Indian GPA Problem}\label{sec:gpa}
 
@@ -63,6 +92,7 @@ This gives the output \result{0.17325}{0.82675} when run with \Dice{} and \Roule
 
 \subsection{Random Interval Covering}\label{ap:epsball}
 
+% Discretized version
 \begin{figure*}[t]
 \centering
 \begin{minipage}[t]{0.46\textwidth}
@@ -86,10 +116,10 @@ let b = fun _ ->  (* Function for sampling interval bounds *)
 (* Initialize intervals by sampling their 
 respective (possibly overlapping) bounds *)
 let init =
-  (false, within 0.00 (b ())) ::
+  (false, within 1 (b ())) ::
   (false, within (b ()) (b ())) ::
   (false, within (b ()) (b ())) ::
-  (false, within (b ()) 1.00) ::
+  (false, within (b ()) 8) ::
   nil in 
 
 (* Update flags depending on y falling within
@@ -118,12 +148,16 @@ in
 (* Sample from a (*@gaussian@*), (*@then@*) use
    so-obtained value to update flags *)
 let step = fun ys -> 
-  update (gaussian(0,1)) ys in
+  update (discrete(0.5, 0.0199388, 
+            0.0748961, 0.0494739, 
+            0.0747339, 0.0632619, 
+            0.0309625, 0.0280777, 
+            0.158655)) ys in
 
 (* Number of samples determined by 
    unbounded recursion *)
 let cover = fix cover st :=
-  if uniform(0,1) < 0.2 then st
+  if discrete(0.2, 0.8) < 1 then st
   else cover (step st) in
 
 (* Have all intervals been covered
@@ -141,241 +175,247 @@ is_covered final
 \end{lstlisting}
 \end{minipage}
 
-\caption{An infinite stochastic process involving continuous sampling, higher-order recursion, and lists.}
+\caption{A \emph{discretized} infinite stochastic process involving continuous sampling, higher-order recursion, and lists.}
 \label{fig:epsball}
 \end{figure*}
 
 
-
-\begin{lstlisting}[aboveskip=1em,belowskip=1em]
-(* Random interval-covering over [0,1].
-
-The program keeps sampling points until it random decides to stop (hence an unbounded loop),
-then checks whether if by stopping time has covered every part of the interval [0,1]. *)
-
-
-let within = fun lo -> fun hi -> fun y ->
-    (y >= lo) && (y < hi)
-in 
-
-let b = fun _ -> discrete(0.18: 0.05, 0.11: 0.24, 0.21: 0.37, 0.09: 0.58, 0.16: 0.78, 0.25: 0.89) in
-
-let init =
-(false, within 0.00 (b ())) ::
-(false, within (b ()) (b ())) ::
-(false, within (b ()) (b ())) ::
-(false, within (b ()) 1.00) ::
-nil
-in 
-
-let update = fix update y := fun ys -> 
-    match ys with 
-    | nil -> nil
-    | h :: t -> ((fst h || ((snd h) y)), snd h) :: (update y t)
-    end
-in 
-
-let step = fun ys -> update (gaussian(0,1)) ys
-in
-
-let cover = fix cover st :=
-if uniform(0,1) < 0.2 then st 
-else 
-    cover (step st)
-in
-
-let is_covered = fix is_covered ys :=
-    match ys with 
-    | nil -> true 
-    | h :: t -> (fst h) && (is_covered t)
-    end
-in 
-
-(* Query if we covered the whole interval *)
-let final = cover init in
-is_covered final  
-\end{lstlisting}
-
-Discretized program:
-
-\begin{lstlisting}[aboveskip=1em,belowskip=1em]
-(* Random interval-covering over [0,1].
-
-The program keeps sampling points until it random decides to stop (hence an unbounded loop),
-then checks whether if by stopping time has covered every part of the interval [0,1]. *)
-
-
-let within = fun lo -> fun hi -> fun y ->
-    (y >= lo) && (y < hi)
-in 
-
-let b = fun _ -> discrete(0.18: 0.05, 0.11: 0.24, 0.21: 0.37, 0.09: 0.58, 0.16: 0.78, 0.25: 0.89) in
-
-let init =
-(false, within 0.00 (b ())) ::
-(false, within (b ()) (b ())) ::
-(false, within (b ()) (b ())) ::
-(false, within (b ()) 1.00) ::
-nil
-in 
-
-let update = fix update y := fun ys -> 
-    match ys with 
-    | nil -> nil
-    | h :: t -> ((fst h || ((snd h) y)), snd h) :: (update y t)
-    end
-in 
-
-let step = fun ys -> update (discrete(0.5: 0#9, 0.0199388: 1#9, 0.0748961: 2#9, 0.0494739: 3#9, 0.0747339: 4#9, 0.0632619: 5#9, 0.0309625: 6#9, 0.0280777: 7#9, 0.158655: 8#9)) ys
-in
-
-let cover = fix cover st :=
-if discrete(0.2, 0.8) < 1 then st 
-else 
-    cover (step st)
-in
-
-let is_covered = fix is_covered ys :=
-    match ys with 
-    | nil -> true 
-    | h :: t -> (fst h) && (is_covered t)
-    end
-in 
-
-(* Query if we covered the whole interval *)
-let final = cover init in
-is_covered final  
-\end{lstlisting}
-
 \subsection{Random Interval Covering with Conditioning}\label{sec:epsball-observe}
-\begin{lstlisting}[aboveskip=1em,belowskip=1em]
-(* Random interval-covering over [0,1] with conditioning.
 
-The program keeps sampling points until it randomly decides to stop (hence an unbounded loop),
-then checks whether if by stopping time has covered every part of the interval [0,1]. *)
-
-
+% Continuous version
+\begin{figure*}[t]
+    \centering
+    \begin{minipage}[t]{0.46\textwidth}
+    \vspace{0pt}
+    \begin{lstlisting}[aboveskip=1em,belowskip=1em,
+      escapeinside={(*@}{@*)},
+      numbers=right,
+      stepnumber=1,
+      numberstyle=\color{gray}\scriptsize,
+      numbersep=7pt,
+      basicstyle=\ttfamily\footnotesize]
 let within = fun lo -> fun hi -> fun y ->
+(* Returns true (*@if@*) y is (*@in@*) [lo,hi) *)
     (y >= lo) && (y < hi)
 in 
 
-let b = fun _ -> discrete(0.18: 0.05, 0.11: 0.24, 0.21: 0.37, 0.09: 0.58, 0.16: 0.78, 0.25: 0.89) in
-
-let init =
-(false, within 0.00 (b ())) ::
-(false, within (b ()) (b ())) ::
-(false, within (b ()) (b ())) ::
-(false, within (b ()) 1.00) ::
-nil
-in 
-
-let update = fix update y := fun ys -> 
-    match ys with 
-    | nil -> nil
-    | h :: t -> ((fst h || ((snd h) y)), snd h) :: (update y t)
-    end
-in 
-
-let non_overlap = fix non_overlap y := fun seen -> fun ys ->
-match ys with
-| nil -> true
-| h :: t ->
-    let hit = (snd h) y in
-    if hit && seen then false
-    else non_overlap y (seen || hit) t
-end
+let b = fun _ ->  (* Function for sampling interval bounds *)
+    discrete(0.18: 0.05, 0.11: 0.24,
+            0.21: 0.37, 0.09: 0.58,
+            0.16: 0.78, 0.25: 0.89)
 in
 
+(* Initialize intervals by sampling their
+    respective (possibly overlapping) 
+    bounds *)
+let init =
+    (false, within 0.00 (b ())) ::
+    (false, within (b ()) (b ())) ::
+    (false, within (b ()) (b ())) ::
+    (false, within (b ()) 1.00) ::
+    nil
+in 
+
+(* Update flags depending on y falling 
+    within the respective interval *)
+let update = fix update y := fun ys ->
+    match ys with
+    | nil -> nil
+    | h :: t ->
+        ((fst h || ((snd h) y)), snd h)
+        :: (update y t)
+    end
+in
+
+(* Ensure sampled y hits at most one 
+    interval *)
+let non_overlap = 
+    fix non_overlap y := fun seen -> fun ys ->
+    match ys with
+    | nil -> true
+    | h :: t ->
+        let hit = (snd h) y in
+        if hit && seen then false
+        else non_overlap y (seen || hit) t
+    end
+in
+    \end{lstlisting}
+    \end{minipage}
+    \hfill
+    \begin{minipage}[t]{0.46\textwidth}
+    \vspace{0pt}
+    \begin{lstlisting}[aboveskip=1em,belowskip=1em,
+      escapeinside={(*@}{@*)},
+      numbers=right,
+      stepnumber=1,
+      firstnumber=last,
+      numberstyle=\color{gray}\scriptsize,
+      numbersep=7pt,
+      basicstyle=\ttfamily\footnotesize]
+    
+(* Sample from a (*@gaussian@*), observe 
+    non-overlap, then use the sampled value 
+    to update flags *)
 let step = fun y -> fun ys -> update y ys
 in
 
+(* Number of samples determined by
+    unbounded recursion *)
 let cover = fix cover st :=
-if uniform(0,1) < 0.1 then st 
-else 
+    if uniform(0,1) < 0.1 then st
+    else
     let y = gaussian(0,1) in
     let _ = observe(non_overlap y false st) in
     cover (step y st)
 in
 
+(* Have all intervals been covered
+    at least once? *)
 let is_covered = fix is_covered ys :=
-    match ys with 
-    | nil -> true 
+    match ys with
+    | nil -> true
     | h :: t -> (fst h) && (is_covered t)
     end
-in 
+in
 
 (* Query if we covered the whole interval *)
 let final = cover init in
-is_covered final  
-\end{lstlisting}
-
-Discretized program:
-
-\begin{lstlisting}[aboveskip=1em,belowskip=1em]
-(* Random interval-covering over [0,1] with conditioning.
-
-The program keeps sampling points until it randomly decides to stop (hence an unbounded loop),
-then checks whether if by stopping time has covered every part of the interval [0,1]. *)
+is_covered final
+    \end{lstlisting}
+    \end{minipage}
+    
+    \caption{A stochastic coverage process over $[0,1]$ with conditioning, continuous sampling, higher-order recursion, and lists.}
+    \label{fig:coverage-conditioning}
+\end{figure*}
 
 
+% Discretized version
+\begin{figure*}[t]
+    \centering
+    \begin{minipage}[t]{0.46\textwidth}
+    \vspace{0pt}
+    \begin{lstlisting}[aboveskip=1em,belowskip=1em,
+      escapeinside={(*@}{@*)},
+      numbers=right,
+      stepnumber=1,
+      numberstyle=\color{gray}\scriptsize,
+      numbersep=7pt,
+      basicstyle=\ttfamily\footnotesize]
 let within = fun lo -> fun hi -> fun y ->
+(* Returns true (*@if@*) y is (*@in@*) [lo,hi) *)
     (y >= lo) && (y < hi)
 in 
 
-let b = fun _ -> discrete(0.18: 0.05, 0.11: 0.24, 0.21: 0.37, 0.09: 0.58, 0.16: 0.78, 0.25: 0.89) in
-
-let init =
-(false, within 0.00 (b ())) ::
-(false, within (b ()) (b ())) ::
-(false, within (b ()) (b ())) ::
-(false, within (b ()) 1.00) ::
-nil
-in 
-
-let update = fix update y := fun ys -> 
-    match ys with 
-    | nil -> nil
-    | h :: t -> ((fst h || ((snd h) y)), snd h) :: (update y t)
-    end
-in 
-
-let non_overlap = fix non_overlap y := fun seen -> fun ys ->
-match ys with
-| nil -> true
-| h :: t ->
-    let hit = (snd h) y in
-    if hit && seen then false
-    else non_overlap y (seen || hit) t
-end
+let b = fun _ ->  (* Function for sampling interval bounds *)
+    discrete(0.18: 0.05, 0.11: 0.24,
+            0.21: 0.37, 0.09: 0.58,
+            0.16: 0.78, 0.25: 0.89)
 in
 
+(* Initialize intervals by sampling their
+    respective (possibly overlapping) 
+    bounds *)
+let init =
+    (false, within 1 (b ())) ::
+    (false, within (b ()) (b ())) ::
+    (false, within (b ()) (b ())) ::
+    (false, within (b ()) 8) ::
+    nil
+in 
+
+(* Update flags depending on y falling 
+    within the respective interval *)
+let update = fix update y := fun ys ->
+    match ys with
+    | nil -> nil
+    | h :: t ->
+        ((fst h || ((snd h) y)), snd h)
+        :: (update y t)
+    end
+in
+
+(* Ensure sampled y hits at most one 
+    interval *)
+let non_overlap = 
+    fix non_overlap y := fun seen -> fun ys ->
+    match ys with
+    | nil -> true
+    | h :: t ->
+        let hit = (snd h) y in
+        if hit && seen then false
+        else non_overlap y (seen || hit) t
+    end
+in
+    \end{lstlisting}
+    \end{minipage}
+    \hfill
+    \begin{minipage}[t]{0.46\textwidth}
+    \vspace{0pt}
+    \begin{lstlisting}[aboveskip=1em,belowskip=1em,
+      escapeinside={(*@}{@*)},
+      numbers=right,
+      stepnumber=1,
+      firstnumber=last,
+      numberstyle=\color{gray}\scriptsize,
+      numbersep=7pt,
+      basicstyle=\ttfamily\footnotesize]
+    
+(* Sample from a (*@gaussian@*), observe 
+    non-overlap, then use the sampled value 
+    to update flags *)
 let step = fun y -> fun ys -> update y ys
 in
 
+(* Number of samples determined by
+    unbounded recursion *)
 let cover = fix cover st :=
-if discrete(0.1,0.9) < 1 then st 
-else 
-    let y = discrete(0.5: 0#9, 0.0199388: 1#9, 0.0748961: 2#9, 0.0494739: 3#9, 0.0747339: 4#9, 0.0632619: 5#9, 0.0309625: 6#9, 0.0280777: 7#9, 0.158655: 8#9) in
+    if discrete(0.1, 0.9) < 1 then st
+    else
+    let y = discrete(0.5, 0.0199388, 
+                    0.0748961, 0.0494739, 
+                    0.0747339, 0.0632619, 
+                    0.0309625, 0.0280777, 
+                    0.158655) in
     let _ = observe(non_overlap y false st) in
     cover (step y st)
 in
 
+(* Have all intervals been covered
+    at least once? *)
 let is_covered = fix is_covered ys :=
-    match ys with 
-    | nil -> true 
+    match ys with
+    | nil -> true
     | h :: t -> (fst h) && (is_covered t)
     end
-in 
+in
 
 (* Query if we covered the whole interval *)
 let final = cover init in
-is_covered final  
-\end{lstlisting}
+is_covered final
+    \end{lstlisting}
+    \end{minipage}
+    
+    \caption{A \emph{discretized} stochastic coverage process over $[0,1]$ with conditioning, continuous sampling, higher-order recursion, and lists.}
+    \label{fig:coverage-conditioning}
+\end{figure*}
 
 
 \subsection{Bloom Filter}
-\begin{lstlisting}[aboveskip=1em,belowskip=1em]
-(* set bf[idx] := true, where idx is 0..3 and bf = (b0, (b1, (b2, b3))) *)
+
+% Continuous version
+\begin{figure*}[t]
+    \centering
+    \begin{minipage}[t]{0.46\textwidth}
+    \vspace{0pt}
+    \begin{lstlisting}[aboveskip=1em,belowskip=1em,
+      escapeinside={(*@}{@*)},
+      numbers=right,
+      stepnumber=1,
+      numberstyle=\color{gray}\scriptsize,
+      numbersep=7pt,
+      basicstyle=\ttfamily\footnotesize]
+(* Set bf[idx] := true, where idx is 0..3 and
+    bf = (b0, (b1, (b2, b3))) *)
 let set_true = fun bf -> fun idx ->
     let b0 = fst bf in
     let tail1 = snd bf in
@@ -394,7 +434,7 @@ let set_true = fun bf -> fun idx ->
     (b0, (b1, (b2, true)))
 in
 
-(* get bf[idx], where idx is 0..3 *)
+(* Get bf[idx], where idx is 0..3 *)
 let get = fun bf -> fun idx ->
     let b0 = fst bf in
     let tail1 = snd bf in
@@ -408,18 +448,30 @@ let get = fun bf -> fun idx ->
     else if idx <= 2 then b2
     else b3
 in
-
-(* Insertion: insert element q into the Bloom filter bf, given hash functions h1 and h2 *)
-let insert = fun q -> fun h1 -> fun h2 -> fun bf ->
+let insert = fun q -> fun h1 -> fun h2 
+                -> fun bf ->
     let index1 = h1 q in
     let index2 = h2 q in
     let bf1 = set_true bf index1 in
     let bf2 = set_true bf1 index2 in
     bf2
 in
+    \end{lstlisting}
+    \end{minipage}
+    \hfill
+    \begin{minipage}[t]{0.46\textwidth}
+    \vspace{0pt}
+    \begin{lstlisting}[aboveskip=1em,belowskip=1em,
+      escapeinside={(*@}{@*)},
+      numbers=right,
+      stepnumber=1,
+      firstnumber=last,
+      numberstyle=\color{gray}\scriptsize,
+      numbersep=7pt,
+      basicstyle=\ttfamily\footnotesize]
 
-(* Search: search for element q in the Bloom filter bf, given hash functions h1 and h2 *)
-let search = fun q -> fun h1 -> fun h2 -> fun bf ->
+let search = fun q -> fun h1 -> fun h2 
+                -> fun bf ->
     let index1 = h1 q in
     let index2 = h2 q in
     let b01 = get bf index1 in
@@ -427,45 +479,60 @@ let search = fun q -> fun h1 -> fun h2 -> fun bf ->
     b01 && b02
 in
 
-(* Hash functions *)
 let h1 = fun q ->
     if q <= -2 then 0
     else if -2 < q && q <= 0 then 1
-    else if 0 < q && q <= 2 then 2 
+    else if 0 < q && q <= 2 then 2
     else 3
 in
 
 let h2 = fun q ->
     if q <= -2 then 3
     else if -2 < q && q <= 0 then 2
-    else if 0 < q && q <= 2 then 1 
+    else if 0 < q && q <= 2 then 1
     else 0
 in
 
-(* Initial, empty Bloom filter *)
 let init = (false, (false, (false, false))) in
 
-(* Sample points iid from a continuous distribution *)
 let q1 = gaussian(0,1) in
 let q2 = gaussian(0,1) in
 let q3 = gaussian(0,1) in
 let q4 = gaussian(0,1) in
 
-(* Insert sampled points into the Bloom filter *)
-let updated_bf_1 = insert q1 h1 h2 init in
-let updated_bf_2 = insert q2 h1 h2 updated_bf_1 in
-let updated_bf_3 = insert q3 h1 h2 updated_bf_2 in
-let updated_bf_4 = insert q4 h1 h2 updated_bf_3 in
+let updated_bf_1 = 
+    insert q1 h1 h2 init in
+let updated_bf_2 = 
+    insert q2 h1 h2 updated_bf_1 in
+let updated_bf_3 = 
+    insert q3 h1 h2 updated_bf_2 in
+let updated_bf_4 = 
+    insert q4 h1 h2 updated_bf_3 in
 
-(* Probability of obtaining a false positive *)
-let q5 = gaussian(0,1) in 
-search q5 h1 h2 updated_bf_4    
-\end{lstlisting}
+let q5 = gaussian(0,1) in
+search q5 h1 h2 updated_bf_4
+    \end{lstlisting}
+    \end{minipage}
+    
+    \caption{A Bloom filter program with continuous samples, threshold-based hash functions, and a false-positive query.}
+    \label{fig:bloom-filter}
+\end{figure*}
 
-Discretized program:
 
-\begin{lstlisting}[aboveskip=1em,belowskip=1em]
-(* set bf[idx] := true, where idx is 0..3 and bf = (b0, (b1, (b2, b3))) *)
+% Discretized version
+\begin{figure*}[t]
+    \centering
+    \begin{minipage}[t]{0.46\textwidth}
+    \vspace{0pt}
+    \begin{lstlisting}[aboveskip=1em,belowskip=1em,
+      escapeinside={(*@}{@*)},
+      numbers=right,
+      stepnumber=1,
+      numberstyle=\color{gray}\scriptsize,
+      numbersep=7pt,
+      basicstyle=\ttfamily\footnotesize]
+(* Set bf[idx] := true, where idx is 0..3 and
+    bf = (b0, (b1, (b2, b3))) *)
 let set_true = fun bf -> fun idx ->
     let b0 = fst bf in
     let tail1 = snd bf in
@@ -484,7 +551,7 @@ let set_true = fun bf -> fun idx ->
     (b0, (b1, (b2, true)))
 in
 
-(* get bf[idx], where idx is 0..3 *)
+(* Get bf[idx], where idx is 0..3 *)
 let get = fun bf -> fun idx ->
     let b0 = fst bf in
     let tail1 = snd bf in
@@ -499,17 +566,32 @@ let get = fun bf -> fun idx ->
     else b3
 in
 
-(* Insertion: insert element q into the Bloom filter bf, given hash functions h1 and h2 *)
-let insert = fun q -> fun h1 -> fun h2 -> fun bf ->
+(* Insertion: insert element q into the 
+    Bloom filter bf, given hash functions h1 
+    and h2 *)
+let insert = fun q -> fun h1 -> fun h2 
+                -> fun bf ->
     let index1 = h1 q in
     let index2 = h2 q in
     let bf1 = set_true bf index1 in
     let bf2 = set_true bf1 index2 in
     bf2
 in
-
-(* Search: search for element q in the Bloom filter bf, given hash functions h1 and h2 *)
-let search = fun q -> fun h1 -> fun h2 -> fun bf ->
+    \end{lstlisting}
+    \end{minipage}
+    \hfill
+    \begin{minipage}[t]{0.46\textwidth}
+    \vspace{0pt}
+    \begin{lstlisting}[aboveskip=1em,belowskip=1em,
+      escapeinside={(*@}{@*)},
+      numbers=right,
+      stepnumber=1,
+      firstnumber=last,
+      numberstyle=\color{gray}\scriptsize,
+      numbersep=7pt,
+      basicstyle=\ttfamily\footnotesize]
+let search = fun q -> fun h1 -> fun h2 
+                -> fun bf ->
     let index1 = h1 q in
     let index2 = h2 q in
     let b01 = get bf index1 in
@@ -517,46 +599,57 @@ let search = fun q -> fun h1 -> fun h2 -> fun bf ->
     b01 && b02
 in
 
-(* Hash functions *)
 let h1 = fun q ->
-    if q <= -2 then 0
-    else if -2 < q && q <= 0 then 1
-    else if 0 < q && q <= 2 then 2 
+    if q <= 0 then 0
+    else if 0 < q && q <= 1 then 1
+    else if 1 < q && q <= 2 then 2
     else 3
 in
 
 let h2 = fun q ->
-    if q <= -2 then 3
-    else if -2 < q && q <= 0 then 2
-    else if 0 < q && q <= 2 then 1 
+    if q <= 0 then 3
+    else if 0 < q && q <= 1 then 2
+    else if 1 < q && q <= 2 then 1
     else 0
 in
 
-(* Initial, empty Bloom filter *)
 let init = (false, (false, (false, false))) in
 
-(* Sample points iid from a continuous distribution *)
-let q1 = discrete(0.0227501: 0#4, 0.47725: 1#4, 0.47725: 2#4, 0.0227501: 3#4) in
-let q2 = discrete(0.0227501: 0#4, 0.47725: 1#4, 0.47725: 2#4, 0.0227501: 3#4) in
-let q3 = discrete(0.0227501: 0#4, 0.47725: 1#4, 0.47725: 2#4, 0.0227501: 3#4) in
-let q4 = discrete(0.0227501: 0#4, 0.47725: 1#4, 0.47725: 2#4, 0.0227501: 3#4) in
+let q1 = discrete(0.0227501, 0.47725, 
+                    0.47725, 0.0227501)  in
+let q2 = discrete(0.0227501, 0.47725, 
+                    0.47725, 0.0227501) in
+let q3 = discrete(0.0227501, 0.47725, 
+                    0.47725, 0.0227501) in
+let q4 = discrete(0.0227501, 0.47725, 
+                    0.47725, 0.0227501) in
 
-(* Insert sampled points into the Bloom filter *)
-let updated_bf_1 = insert q1 h1 h2 init in
-let updated_bf_2 = insert q2 h1 h2 updated_bf_1 in
-let updated_bf_3 = insert q3 h1 h2 updated_bf_2 in
-let updated_bf_4 = insert q4 h1 h2 updated_bf_3 in
+let updated_bf_1 = 
+    insert q1 h1 h2 init in
+let updated_bf_2 = 
+    insert q2 h1 h2 updated_bf_1 in
+let updated_bf_3 = 
+    insert q3 h1 h2 updated_bf_2 in
+let updated_bf_4 = 
+    insert q4 h1 h2 updated_bf_3 in
 
-(* Probability of obtaining a false positive *)
-let q5 = discrete(0.0227501: 0#4, 0.47725: 1#4, 0.47725: 2#4, 0.0227501: 3#4) in 
-search q5 h1 h2 updated_bf_4    
-\end{lstlisting}
+let q5 = discrete(0.0227501, 0.47725, 
+                    0.47725, 0.0227501) in
+search q5 h1 h2 updated_bf_4
+    \end{lstlisting}
+    \end{minipage}
+    
+    \caption{A \emph{discretized} Bloom filter program with continuous samples, threshold-based hash functions, and a false-positive query.}
+    \label{fig:bloom-filter}
+\end{figure*}
+
 
 
 \section{List of Supported \Slice{} Distributions}\label{appen:supported-distributions}
 
 The list of distributions supported by \Slice{}, along with their probability density / mass functions, is given in the following table. \Slice{} supports discrete distributions by applying the same cut-set and value-set analysis used for continuous distributions, \emph{provided that the discrete distribution admits a well-defined CDF}. The extension to discrete distributions does not introduce any fundamental changes to the discretization algorithm.
 
+\begin{figure}[h]
 \begin{tabular}{l l @{\qquad} l l}
     \toprule
     \textbf{Distribution} & \textbf{Density} & \textbf{Distribution} & \textbf{Density} \\
@@ -594,6 +687,7 @@ The list of distributions supported by \Slice{}, along with their probability de
         & Multinomial & $\frac{n!}{x_1! \cdots x_k!} p_1^{x_1} \cdots p_k^{x_k}$ \\
     \bottomrule
 \end{tabular}
+\end{figure}
 
     
     
