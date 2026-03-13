@@ -239,8 +239,8 @@ skeletons by adding a distinguished typing rule for holes.
 \end{definition}
 
 \begin{remark}
-	Both $\skel_\tau$ and $Expr_\tau$ are understood as the set of all well-typed skeletons and expressions, respectively, equipped
-	with their full \emph{subtype} information.
+	Both $\skel_\tau$ and $Expr_\tau$ are to be understood as the set of all well-typed skeletons and expressions, respectively, \emph{equipped
+	with their full subtype information}.
 
 	For example,
 	\[
@@ -566,7 +566,7 @@ This union is disjoint because every typed expression $e : \tau$ has a unique sk
 	\]
 \end{definition}
 
-\begin{lemma}
+\begin{lemma}\label{lem:measurable-expr-t-error}
     $(Expr_\tau+\bot,\mathcal F_{Expr_\tau+\bot})$ is a measurable space.
 \end{lemma}
 
@@ -611,37 +611,37 @@ Finally, we can equip this measurable space $(Expr_{\tau} + \bot, \mathcal{F}_{E
 
 We give some basic lemmas:
 
-\begin{lemma} 
-	Let $(Expr_{\tau} + \bot, \mathcal{F}_{Expr_{\tau} + \bot})$ be the Borel measurable space of well-typed expressions with error from Definition~\ref{def:meas-space-with-error}. Let $V \subset Expr_{\tau}$ be the set of all value expressions. Let $N \subset Expr_{\tau}$, defined as $N = Expr_{\tau} \setminus V$, be the set of non-value expressions. Let $\{\bot\}$ be the singleton set containing the error element $\bot$. The following are true:
+\begin{lemma}
+	Let $(Expr_{\tau} + \bot, \mathcal{F}_{Expr_{\tau} + \bot})$ be the Borel measurable space of well-typed expressions with error from Definition~\ref{def:meas-space-with-error}. Let $\vals_{\tau} \subset Expr_{\tau}$ be the set of all well-typed value expressions. Let $N_{\tau} \subset Expr_{\tau}$, defined as $N = Expr_{\tau} \setminus \vals_{\tau}$, be the set of all well-typed non-value expressions. Let $\{\bot\}$ be the singleton set containing the error element $\bot$. The following are true:
 	\begin{enumerate}
-		\item The set $\vals \in \mathcal{F}_{Expr_{\tau} + \bot}$.
-		\item The set $\{\bot\} \in \mathcal{F}_{Expr_{\tau} + \bot}$.
-		\item The set $\nonvals \in \mathcal{F}_{Expr_{\tau} + \bot}$.
+		\item\label{lem:measurable-vals} The set $\vals_{\tau} \in \mathcal{F}_{Expr_{\tau} + \bot}$.
+		\item\label{lem:measurable-error} The set $\{\bot\} \in \mathcal{F}_{Expr_{\tau} + \bot}$.
+		\item\label{lem:measurable-nonvals} The set $\nonvals_{\tau} \in \mathcal{F}_{Expr_{\tau} + \bot}$.
 	\end{enumerate}
 \end{lemma}
 
 \begin{proof}
-	We prove the measurability of $\vals$, $\{\bot\}$, and $N$ in separate parts. For each, we show that it belongs to the $\sigma$-algebra $\mathcal{F}_{Expr_{\tau} + \bot}$ on the extended expression space $Expr_{\tau} + \bot$.
+	We prove the measurability of $\vals_\tau$, $\{\bot\}$, and $N_{\tau}$ in separate parts. For each, we show that it belongs to the $\sigma$-algebra $\mathcal{F}_{Expr_{\tau} + \bot}$ on the extended expression space $Expr_{\tau} + \bot$.
 
 	\begin{enumerate}
-		\item \textbf{(Measurability of $\vals$):} Every expression skeleton $s \in \skel_{\tau}$ is either a value skeleton or a non-value skeleton, depending on whether the syntactic form of $s$ is a value. An expression $e \in Expr_{\tau}$ is a value iff its skeleton is a value skeleton.
+		\item \textbf{(Measurability of $\vals_{\tau}$):} Every expression skeleton $s \in \skel_{\tau}$ is either a value skeleton or a non-value skeleton, depending on whether the syntactic form of $s$ is a value. An expression $e \in Expr_{\tau}$ is a value iff its skeleton is a value skeleton.
 		
-		To show $V \in \mathcal{F}_{Expr_{\tau}}$, by~\Cref{def:sigma-algebra-construction-expressions}, it suffices to show that $\forall s \in \skel_{\tau}$, $V \cap Expr_{s;\tau} \in \mathcal{F}_{Expr_{s;\tau}}$.
+		To show $\vals_{\tau} \in \mathcal{F}_{Expr_{\tau}}$, by~\Cref{def:sigma-algebra-construction-expressions}, it suffices to show that $\forall s \in \skel_{\tau}$, $\vals_{\tau} \cap Expr_{s;\tau} \in \mathcal{F}_{Expr_{s;\tau}}$.
 
 		Fix $s \in \skel_{\tau}$:
 		\begin{itemize}
-			\item If $s$ is a value skeleton, then every expression in $Expr_{s;\tau}$ is a value, so $V \cap Expr_{s;\tau} = Expr_{s;\tau} \in \mathcal{F}_{Expr_{s;\tau}}$.
-			\item If $s$ is a non-value skeleton, then no expression in $Expr_{s;\tau}$ is a value, so $V \cap Expr_{s;\tau} = \emptyset \in \mathcal{F}_{Expr_{s;\tau}}$.
+			\item If $s$ is a value skeleton, then every expression in $Expr_{s;\tau}$ is a value, so $\vals_{\tau} \cap Expr_{s;\tau} = Expr_{s;\tau} \in \mathcal{F}_{Expr_{s;\tau}}$.
+			\item If $s$ is a non-value skeleton, then no expression in $Expr_{s;\tau}$ is a value, so $\vals_{\tau} \cap Expr_{s;\tau} = \emptyset \in \mathcal{F}_{Expr_{s;\tau}}$.
 		\end{itemize} 
 
-		Thus, $V \cap Expr_{s;\tau} \in \mathcal{F}_{Expr_{s;\tau}}$ for any $s \in \skel_{\tau}$, so $V \in \mathcal{F}_{Expr_{\tau}} \subseteq \mathcal{F}_{Expr_{\tau} + \bot}$.
+		Thus, $\vals_{\tau} \cap Expr_{s;\tau} \in \mathcal{F}_{Expr_{s;\tau}}$ for any $s \in \skel_{\tau}$, so $\vals_{\tau} \in \mathcal{F}_{Expr_{\tau}} \subseteq \mathcal{F}_{Expr_{\tau} + \bot}$.
 
 		\item \textbf{(Measurability of $\{\bot\}$):} Taking $A = \emptyset$ in 
         Definition~\ref{def:meas-space-with-error} gives $\{\bot\} \in \mathcal{F}_{Expr_\tau + \bot}$.
 
-        \item \textbf{(Measurability of $N$):} $N = Expr_\tau \setminus V$ is the 
-        complement of $V$ in $Expr_\tau$. Since $V \in \mathcal{F}_{Expr_\tau}$ 
-        and $\mathcal{F}_{Expr_\tau}$ is a $\sigma$-algebra, $N \in 
+        \item \textbf{(Measurability of $N_{\tau}$):} $N_{\tau} = Expr_\tau \setminus \vals_{\tau}$ is the 
+        complement of $\vals_{\tau}$ in $Expr_\tau$. Since $\vals_{\tau} \in \mathcal{F}_{Expr_\tau}$ 
+        and $\mathcal{F}_{Expr_\tau}$ is a $\sigma$-algebra, $N_{\tau} \in 
         \mathcal{F}_{Expr_\tau} \subseteq \mathcal{F}_{Expr_\tau + \bot}$.
 	\end{enumerate}
 \end{proof}
@@ -1649,14 +1649,14 @@ As a sanity check, we show that the $n$-step semantics defines a Markov kernel.
 \end{proof}
 
 
-For every type $\tau$, we denote by $Vals_\tau$ the set of values of type $\tau$ and equip it with a suitable measurable sub-space of the measurable space over $Expr_\tau$. Moreover, let $V_\tau = \{ (v:\tau, \discretize{v} : \discretize{\tau}) ~|~ v:\tau \}$.
+For every type $\tau$, we denote by $\vals_\tau$ the set of values of type $\tau$ and equip it with a suitable measurable sub-space of the measurable space over $Expr_\tau + \bot$ (cf.~\Cref{lem:measurable-vals}). Moreover, let $V_\tau = \{ (v:\tau, \discretize{v} : \discretize{\tau}) ~|~ v:\tau \}$.
 
 
 \begin{lemma}[Basic Properties of $\bigsemstep{\cdot}{n}$]
 	\label{lem:bigstepsem}
-	Let $e : \tau \in Expr_{\tau}$ and $n \in \mathbb{N}$. Let $V$ be the measurable set of values. We have:
+	Let $e : \tau \in Expr_{\tau}$ and $n \in \mathbb{N}$. Let $\vals_{\tau}$ be the measurable set of values. We have:
 	\begin{enumerate}
-		\item\label{lem:bigstepsem1} $\bigsemstep{e : \tau}{n}(V) \leq \bigsemstep{e : \tau}{n+1}(V)$
+		\item\label{lem:bigstepsem1} $\bigsemstep{e : \tau}{n}(\vals_{\tau}) \leq \bigsemstep{e : \tau}{n+1}(\vals_{\tau})$
 		\item\label{lem:bigstepsem2} $\bigsemstep{e : \tau}{n}(\bot) \leq \bigsemstep{e : \tau}{n+1}(\bot)$
 	\end{enumerate}
 \end{lemma}
@@ -1666,7 +1666,7 @@ For every type $\tau$, we denote by $Vals_\tau$ the set of values of type $\tau$
 
 	\underline{Base case}: $n=0$.
 
-	We must show $\bigsemstep{e : \tau}{0}(V) \leq \bigsemstep{e : \tau}{1}(V)$.
+	We must show $\bigsemstep{e : \tau}{0}(\vals_{\tau}) \leq \bigsemstep{e : \tau}{1}(\vals_{\tau})$.
 
 	By definition,
 	\[
@@ -1675,10 +1675,10 @@ For every type $\tau$, we denote by $Vals_\tau$ the set of values of type $\tau$
 
 	Therefore,
 	\[
-		\bigsemstep{e : \tau}{0}(V) =
+		\bigsemstep{e : \tau}{0}(\vals_{\tau}) =
 		\begin{cases}
-			1 &\text{ if } e \in V \\
-			0 &\text{ if } e \notin V
+			1 &\text{ if } e \in \vals_{\tau} \\
+			0 &\text{ if } e \notin \vals_{\tau}
 		\end{cases}
 	\]
 
@@ -1689,7 +1689,7 @@ For every type $\tau$, we denote by $Vals_\tau$ the set of values of type $\tau$
 
 	We analyze the two cases for $e$:
 
-	\textbf{Case 1:} $e$ is a value $v$. Then, $\bigsemstep{e : \tau}{0}(V) = 1$.
+	\textbf{Case 1:} $e$ is a value $v$. Then, $\bigsemstep{e : \tau}{0}(\vals_{\tau}) = 1$.
 
 	For $n=1$:
 	\[
@@ -1699,24 +1699,24 @@ For every type $\tau$, we denote by $Vals_\tau$ the set of values of type $\tau$
 	\[
 		\bigsemstep{e : \tau}{1}(V) = 1,
 	\]
-	and thus $\bigsemstep{e : \tau}{0}(V) \leq \bigsemstep{e : \tau}{1}(V)$.
+	and thus $\bigsemstep{e : \tau}{0}(\vals_{\tau}) \leq \bigsemstep{e : \tau}{1}(\vals_{\tau})$.
 
-	\textbf{Case 2:} $e$ is an expression. Then, $\bigsemstep{e : \tau}{0}(V) = 0$.
+	\textbf{Case 2:} $e$ is an expression. Then, $\bigsemstep{e : \tau}{0}(\vals_{\tau}) = 0$.
 
 	For $n=1$:
 	\[
 		\bigsemstep{e : \tau}{1} = \delta_{e : \tau} \gg\!= \lambda e'.\sem{e'} = \sem{e : \tau}.
 	\]
-	From the semantics, $\sem{e : \tau}$ may step to either a value, which means $\sem{e : \tau}(V) \geq 0$, or an expression, which means $\sem{e : \tau}(V) = 0$. In either case, 
+	From the semantics, $\sem{e : \tau}$ may step to either a value, which means $\sem{e : \tau}(\vals_{\tau}) \geq 0$, or an expression, which means $\sem{e : \tau}(\vals_{\tau}) = 0$. In either case, 
 	\[
-		\bigsemstep{e : \tau}{1}(V) \geq 0,
+		\bigsemstep{e : \tau}{1}(\vals_{\tau}) \geq 0,
 	\]
-	and thus $\bigsemstep{e : \tau}{0}(V) \leq \bigsemstep{e : \tau}{1}(V)$.
+	and thus $\bigsemstep{e : \tau}{0}(\vals_{\tau}) \leq \bigsemstep{e : \tau}{1}(\vals_{\tau})$.
 
 	\underline{Inductive step}:
 	We want to show that for $n = k+1$:
 	\begin{align*}
-		\bigsemstep{e : \tau}{k+1}(V) \leq \bigsemstep{e : \tau}{k+2}(V).
+		\bigsemstep{e : \tau}{k+1}(\vals_{\tau}) \leq \bigsemstep{e : \tau}{k+2}(\vals_{\tau}).
 	\end{align*}
 
 	By the recursive definition:
@@ -1728,44 +1728,44 @@ For every type $\tau$, we denote by $Vals_\tau$ the set of values of type $\tau$
 
 	By the IH,
 	\begin{align*}
-		\bigsemstep{e : \tau}{k}(V) \leq \bigsemstep{e : \tau}{k+1}(V).
+		\bigsemstep{e : \tau}{k}(\vals_{\tau}) \leq \bigsemstep{e : \tau}{k+1}(\vals_{\tau}).
 	\end{align*}
 
-	We do a case analysis on $e'$ and $e''$, whether they are in $N$ or $V$.
+	We do a case analysis on $e'$ and $e''$, whether they are in $N_{\tau}$ or $\vals_{\tau}$.
 
-	\textbf{Case} $e' \in V$, $e'' \in V$.
+	\textbf{Case} $e' \in \vals_{\tau}$, $e'' \in \vals_{\tau}$.
 
 	Then, from the semantics, $\sem{e'}$ and $\sem{e''}$ are both Diracs over a value. Combined with the IH and the fact that $\sem{\cdot}$ does not change the probability mass of $\cdot$ if it is a value, 
 	\[
-		\bigsemstep{e : \tau}{k+1}(V) \leq \bigsemstep{e : \tau}{k+2}(V).
+		\bigsemstep{e : \tau}{k+1}(\vals_{\tau}) \leq \bigsemstep{e : \tau}{k+2}(\vals_{\tau}).
 	\]
 
-	\textbf{Case} $e' \in V$, $e'' \in N$.
+	\textbf{Case} $e' \in \vals_{\tau}$, $e'' \in N_{\tau}$.
 	
-	Then, from the semantics, $\sem{e'}$ is a Dirac over a value and $\sem{e''}$ is a distribution over a non-value expression. Combined with the IH and the fact that $\sem{\cdot}$ does not change the probability mass of $\cdot$ if it is a value and that $\sem{\cdot}$ does not add any probability mass to $V$ if $\cdot$ is a non-value expression,
+	Then, from the semantics, $\sem{e'}$ is a Dirac over a value and $\sem{e''}$ is a distribution over a non-value expression. Combined with the IH and the fact that $\sem{\cdot}$ does not change the probability mass of $\cdot$ if it is a value and that $\sem{\cdot}$ does not add any probability mass to $\vals_{\tau}$ if $\cdot$ is a non-value expression,
 	\[
-		\bigsemstep{e : \tau}{k+1}(V) \leq \bigsemstep{e : \tau}{k+2}(V).
+		\bigsemstep{e : \tau}{k+1}(\vals_{\tau}) \leq \bigsemstep{e : \tau}{k+2}(\vals_{\tau}).
 	\]
 
-	\textbf{Case} $e' \in V$, $e'' \in N$.
+	\textbf{Case} $e' \in \vals_{\tau}$, $e'' \in N_{\tau}$.
 
 	Analogous to the previous case, but with $e'$ and $e''$ switched.
 
-	\textbf{Case} $e' \in N$, $e'' \in N$.
+	\textbf{Case} $e' \in N_{\tau}$, $e'' \in N_{\tau}$.
 
-	Then, from the semantics,  $\sem{e'}$ and $\sem{e''}$ are both distributions over a non-value expression. Combined with the IH and the fact that $\sem{\cdot}$ does not add any probability mass to $V$ if $\cdot$ is a non-value expression, 
+	Then, from the semantics,  $\sem{e'}$ and $\sem{e''}$ are both distributions over a non-value expression. Combined with the IH and the fact that $\sem{\cdot}$ does not add any probability mass to $\vals_{\tau}$ if $\cdot$ is a non-value expression, 
 	\[
-		\bigsemstep{e : \tau}{k+1}(V) \leq \bigsemstep{e : \tau}{k+2}(V).
+		\bigsemstep{e : \tau}{k+1}(\vals_{\tau}) \leq \bigsemstep{e : \tau}{k+2}(\vals_{\tau}).
 	\]
 
-	In all cases, $\bigsemstep{e : \tau}{k+1}(V) \leq \bigsemstep{e : \tau}{k+2}(V)$.
+	In all cases, $\bigsemstep{e : \tau}{k+1}(\vals_{\tau}) \leq \bigsemstep{e : \tau}{k+2}(\vals_{\tau})$.
 \end{proof}
 
 
 \begin{lemma}[Basic properties of $\bigsemstep{\cdot, \cdot}{n}$]
-	Let $(e : \tau, \discretize{e'} : \discretize{\tau'}) \in P_{\tau}$ and $n \in \mathbb{N}$. Let $V \times V$ be the measurable set of value pairs. We have:
+	Let $(e : \tau, \discretize{e'} : \discretize{\tau'}) \in P_{\tau}$ and $n \in \mathbb{N}$. Let $V_{\tau}$ be the measurable set of value pairs. We have:
 	\begin{enumerate}
-		\item\label{lem:bigstepsem1-pairing} $\bigsemstep{e : \tau, \discretize{e'} : \discretize{\tau'}}{n}(V \times V) \leq \bigsemstep{e : \tau, \discretize{e'} : \discretize{\tau'}}{n+1}(V \times V)$
+		\item\label{lem:bigstepsem1-pairing} $\bigsemstep{e : \tau, \discretize{e'} : \discretize{\tau'}}{n}(V_{\tau}) \leq \bigsemstep{e : \tau, \discretize{e'} : \discretize{\tau'}}{n+1}(V_{\tau})$
 		\item\label{lem:bigstepsem2-pairing} $\bigsemstep{e : \tau, \discretize{e'} : \discretize{\tau'}}{n}(\bot) \leq \bigsemstep{e : \tau, \discretize{e'} : \discretize{\tau'}}{n+1}(\bot)$
 	\end{enumerate}
 \end{lemma}
@@ -1777,7 +1777,7 @@ For every type $\tau$, we denote by $Vals_\tau$ the set of values of type $\tau$
 
 %
 \begin{definition}
-	Let $e:\tau$. The \emph{(big-step) semantics} $\bigsem{e:\tau} \in \mathcal{D}(Vals_\tau + \bot)$ and $\bigsem{e:\tau} \in \mathcal{D}(V_\tau + \bot)$ are respectively defined as 
+	Let $e:\tau$. The \emph{(big-step) semantics} $\bigsem{e:\tau} \in \mathcal{D}(Vals_\tau + \bot)$ and $\bigsem{e:\tau, \discretize{e : \tau} : \discretize{\tau}} \in \mathcal{D}(V_\tau + \bot)$ are respectively defined as 
 	%
 	\begin{align*}
 		\bigsem{e:\tau} ={}& \lambda A. \lim_{n\to\infty} \bigsemstep{e:\tau}{n}(A) \\
