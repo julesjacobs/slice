@@ -30,6 +30,7 @@
 \newcommand{\refkw}{\textnormal{\ttfamily\bfseries ref}}
 \newcommand{\fixkw}{\textnormal{\ttfamily\bfseries fix}}
 \newcommand{\matchcase}{\boldsymbol{\mid}} % The | in the match e with ...
+\newcommand{\nil}{\text{nil}}
 \newcommand{\diverge}{\textnormal{\ttfamily\bfseries diverge}}
 \newcommand{\logand}{\mathrel{\&\&}}                    % logical and
 \newcommand{\logor}{\mathrel{||}}                       % logical or
@@ -142,6 +143,11 @@
 \newcommand{\skel}{Skel}
 \newcommand{\holes}{holes}
 \newcommand{\decompose}{\mathsf{dec}}
+
+% Macros for SOS rules for Markov chain construction
+\newcommand{\step}[3]{#1 \xrightarrow{#2} #3}
+\newcommand{\fail}{\mathbf{fail}}
+\newcommand{\done}{\mathbf{done}}
 
 % Colors 
 \colorlet{green}{green!70!black}

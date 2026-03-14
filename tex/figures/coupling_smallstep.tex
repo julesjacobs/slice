@@ -36,7 +36,7 @@
 			& $e_1=\true$ & $\dirac{(e_2 : \tau, \discretize{e_2 : \tau} : \discretize{\tau})} $ \\
 			& $e_1=\false$ & $\dirac{(e_3 : \tau, \discretize{e_3 : \tau} : \discretize{\tau})} $ \\
 			& o.w.\ & \makecell[l]{$\sem{ e_1 : \bool, \discretize{e_1 : \bool} : \discretize{\bool}}$ \\
-			$\gg\!= \lambda (g,g'). \dirac{(\ifkw \; g\; \thenkw \; e_2 : \tau \; \elsekw \; e_3 : \tau : \tau, \ifkw \; g' \; \thenkw \; \discretize{e_2 : \tau} : \discretize{\tau} \; \elsekw \; \discretize{e_3 : \tau} : \discretize{\tau} : \discretize{\tau})} $} \\
+			$\gg\!= \lambda (g,g'). \delta_{\begin{subarray}{l}(\ifkw \; g\; \thenkw \; e_2 : \tau \; \elsekw \; e_3 : \tau : \tau, \\ \ifkw \; g' \; \thenkw \; \discretize{e_2 : \tau} : \discretize{\tau} \; \elsekw \; \discretize{e_3 : \tau} : \discretize{\tau} : \discretize{\tau})\end{subarray}}$} \\
 			%
 			\midrule 
 			%
