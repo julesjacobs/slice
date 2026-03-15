@@ -1,12 +1,12 @@
 \section{Implementation and Evaluation}\label{sec:implem_eval}
 
-We use experiments to evaluate the practical consequences of exact discretization. Our evaluation is organized around two questions:
+In this section, we evaluate the practical impact of exact discretization through experiments. Our evaluation is organized around two questions:
 \begin{enumerate}
     \item Does \Slice{} enable rigorous analysis of continuous probabilistic programs that existing exact systems do not directly support?
     \item What is the cost of applying \Slice{} on benchmarks that were already within the scope of prior exact techniques (e.g.~\SPPL{})?
 \end{enumerate}
 
-We address the first question in~\Cref{sec:case-studies} through a collection of case studies that involve continuous distributions together with recursion, higher-order functions, lists, or conditioning patterns that existing exact systems have largely not handled directly. For these examples, we use \Slice{} to transform the original programs to finite discrete models and analyze the resulting model with \Storm{}.
+We address the first question in~\Cref{sec:case-studies} through a collection of case studies that involve continuous distributions together with recursion, higher-order functions, lists, or conditioning patterns that existing exact systems have largely not handled directly. For these examples, we use \Slice{} to transform the original programs to finite discrete models and analyze the resulting model with \Storm{}, a probabilistic model checker.
 
 We address the second question in~\Cref{sec:synthetic-benchmarks} and~\Cref{sec:fairness-benchmarks} by evaluating \Slice{} + \Dice{} and \Slice{} + \Roulette{} on two classes of benchmarks: (i) synthetic scaling benchmarks that let us vary program size and dependency structure in a controlled way, and (ii) benchmark suites from prior work. 
 
@@ -16,9 +16,9 @@ Our implementation of \Slice{} is in OCaml. To compute the interval masses induc
 
 \todo[inline]{Add citations for examples}
 
-We turn to several case studies combining continuous sampling with features that are typically difficult for exact analysis, including unbounded recursion, higher-order functions, and conditioning inside unbounded loops. Although these programs appear to range over infinite state spaces, \Slice{} collapses such programs to a finite exact model when continuous values are observed only through finitely many comparison outcomes.
+We first turn to several case studies combining continuous sampling with features that are typically difficult for exact analysis, including unbounded recursion, higher-order functions, and conditioning inside unbounded loops. Although these programs appear to range over infinite state spaces, \Slice{} collapses such programs to a finite exact model when continuous values are observed only through finitely many comparison outcomes.
 
-For each case study, we apply \Slice{} to obtain a discrete program and then construct a finite Markov chain from that program using the structural operational semantics in~\Cref{ap:sos-rules}. The full continuous and discretized programs are given in~\Cref{ap:mot}.
+For each case study, we apply \Slice{} to obtain a discrete program and then construct a finite Markov chain from that program using the structural operational semantics given in~\Cref{ap:sos-rules}. From here, \Storm{} can be used to perform exact quantitative analysis. The full continuous and discretized programs are given in~\Cref{ap:mot}.
 
 \subsubsection{Conditional Resampling Loop}
 
@@ -34,12 +34,13 @@ We first study a small but revealing program with unbounded recursion (cf.~\Cref
     \vspace{0pt}
     
     \textbf{Continuous Program}
-    \begin{lstlisting}[aboveskip=0.5em,belowskip=0.8em,gobble=4,
+    \begin{lstlisting}[aboveskip=0.4em,belowskip=0.4em,gobble=4,
     escapechar=!,
     numbers=left,
     stepnumber=1,
     numberstyle=\color{gray}\scriptsize,
-    numbersep=7pt]
+    numbersep=7pt,
+    basicstyle=\ttfamily\footnotesize]
     (fix resample x :=
       let _ = observe(x >= 0.2) in !\linelabel{ln:cr-obs}!
       if x <= 0.5 then true !\linelabel{ln:cr-true}!
@@ -50,12 +51,14 @@ We first study a small but revealing program with unbounded recursion (cf.~\Cref
     \end{lstlisting}
     
     \textbf{Discretized Program}
-    \begin{lstlisting}[aboveskip=0.5em,belowskip=0em,gobble=4,
+    \begin{lstlisting}[aboveskip=0.4em,belowskip=0.4em,gobble=4,
     escapechar=!,
     numbers=left,
     stepnumber=1,
+    firstnumber=last,
     numberstyle=\color{gray}\scriptsize,
-    numbersep=7pt]
+    numbersep=7pt,
+    basicstyle=\ttfamily\footnotesize]
     (fix resample x :=
       let _ = observe(x >= 1) in !\linelabel{ln:dcr-obs}!
       if x <= 1 then true !\linelabel{ln:dcr-true}!
@@ -74,7 +77,7 @@ We first study a small but revealing program with unbounded recursion (cf.~\Cref
         \vspace{0.5em}
         
         \begin{tikzpicture}[
-            scale=0.96,
+            scale=0.82,
             transform shape,
             >=Stealth,
             every node/.style={font=\footnotesize},
@@ -165,15 +168,14 @@ We first study a small but revealing program with unbounded recursion (cf.~\Cref
     \label{fig:conditional-resampling}
 \end{figure*}
 
-
 \subsubsection{Random Interval Covering of $[0,1]$ with Conditioning}
 \label{sec:casestudy:epsball}
 
-Our second case study is an extension of~\Cref{sec:examples:7}, now with conditioning. The program begins by sampling random interval boundaries and building a list-valued state whose elements pair a Boolean coverage flag with a higher-order interval-membership predicate (l.\ \ref{ln:cov-init}). It then runs an unbounded stochastic loop (l.\ \ref{ln:cov-cover}) that samples a Gaussian point and conditions on that point not lying in more than one interval, as checked by the recursive predicate \lstinline{non_overlap} (l.\ \ref{ln:cov-nonoverlap} and \ref{ln:cov-obs}). The final query asks whether all intervals have been covered (l.\ \ref{ln:cov-final}).
+Our second case study extends the random interval covering example from \Cref{sec:examples:7} by adding conditioning inside the unbounded stochastic loop. As before, the program maintains a list-valued state of interval predicates and coverage flags; here we show only the new snippets relevant to the conditioning behavior.
 
 \begin{minipage}[t]{0.48\textwidth}
     \vspace{0pt}
-    \begin{lstlisting}[aboveskip=0.4em,belowskip=0.4em,
+    \begin{lstlisting}[aboveskip=0.4em,belowskip=0.4em,gobble=4,
       language=OCaml,
       escapechar=!,
       numbers=left,
@@ -181,29 +183,21 @@ Our second case study is an extension of~\Cref{sec:examples:7}, now with conditi
       numberstyle=\color{gray}\scriptsize,
       numbersep=7pt,
       basicstyle=\ttfamily\footnotesize]
-    let init = !\linelabel{ln:cov-init}!
-      (false, within 0.00 (b ())) ::
-      (false, within (b ()) (b ())) ::
-      (false, within (b ()) (b ())) ::
-      (false, within (b ()) 1.00) ::
-      nil
-    in
-    let non_overlap = fix non_overlap y :=
-      fun seen -> fun ys -> !\linelabel{ln:cov-nonoverlap}!
+    let non_overlap = fix non_overlap y := !\linelabel{ln:cov-nonoverlap}!
+      fun seen -> fun ys -> 
         match ys with
         | nil -> true
         | h :: t ->
             let hit = (snd h) y in
             if hit && seen then false
             else non_overlap y (seen || hit) t
-        end
-    in
+        end in
     \end{lstlisting}
     \end{minipage}
     \hfill
     \begin{minipage}[t]{0.48\textwidth}
     \vspace{0pt}
-    \begin{lstlisting}[aboveskip=0.4em,belowskip=0.4em,
+    \begin{lstlisting}[aboveskip=0.4em,belowskip=0.4em,gobble=4,
       language=OCaml,
       escapechar=!,
       numbers=left,
@@ -212,7 +206,6 @@ Our second case study is an extension of~\Cref{sec:examples:7}, now with conditi
       numberstyle=\color{gray}\scriptsize,
       numbersep=7pt,
       basicstyle=\ttfamily\footnotesize]
-    
     let cover = fix cover st := !\linelabel{ln:cov-cover}!
       if uniform(0,1) < 0.1 then st
       else
@@ -220,18 +213,19 @@ Our second case study is an extension of~\Cref{sec:examples:7}, now with conditi
         let _ = observe(non_overlap y false st) in !\linelabel{ln:cov-obs}!
         cover (step y st)
     in
-    
     let final = cover init in
     is_covered final !\linelabel{ln:cov-final}!
     \end{lstlisting}
 \end{minipage}
 
-The program remains discretizable: each sampled point is used only through comparisons against finitely many sampled interval boundaries. The elements stored in the list do not depend on the exact real value of $y$, but only on which observationally relevant region it falls into, and \lstinline{non_overlap} checks only the resulting hit pattern. \Slice{} therefore replaces each Gaussian draw by its region index, yielding a discrete program with a finite exact state space.
+The key new component is the recursive predicate \lstinline{non_overlap} (l.\ \ref{ln:cov-nonoverlap}), which checks whether a sampled point $y$ hits more than one interval in the current state. The loop \lstinline{cover} (l.\ \ref{ln:cov-cover}) repeatedly samples a Gaussian point and immediately conditions on this predicate via \lstinline{observe} (l.\ \ref{ln:cov-obs}), so only executions in which the point lies in at most one interval are retained. The final query remains whether all intervals have been covered by stopping time (l.\ \ref{ln:cov-final}).
+
+The program remains discretizable: each sampled point is still used only through comparisons against finitely many sampled interval boundaries, and \lstinline{non_overlap} depends only on the resulting hit pattern, not on the exact real value of $y$. \Slice{} therefore replaces each Gaussian draw by its interval index, yielding a discrete program with a finite exact state space.
 
 \subsubsection{Bloom Filter}
 \label{sec:casestudy:bloom}
 
-We model a small Bloom filter populated by continuous samples. The program samples four Gaussian values and inserts them into an initially empty four-bit Bloom filter (l.\ \ref{ln:bloom-samples} and \ref{ln:bloom-build}). Each insertion hashes the sampled real twice using the comparison-based functions \lstinline{h1} and \lstinline{h2} (l.\ \ref{ln:bloom-h1} and \ref{ln:bloom-h2}), and sets the corresponding bits via \lstinline{insert} (l.\ \ref{ln:bloom-insert}). It then samples a fifth Gaussian value and queries the filter using the same two hash functions (l.\ \ref{ln:bloom-final} and \ref{ln:bloom-search}), so the overall query asks for the probability that this final lookup returns \lstinline{true}.
+We model a Bloom filter populated by continuous samples, a generalization of the original Bloom filter~\cite{Bloom1970SpaceTime}. The program samples four Gaussian values and inserts them into an initially empty four-bit Bloom filter (l.\ \ref{ln:bloom-samples} and \ref{ln:bloom-build}). Each insertion hashes the sampled real twice using the comparison-based functions \lstinline{h1} and \lstinline{h2} (l.\ \ref{ln:bloom-h1} and \ref{ln:bloom-h2}), and sets the corresponding bits via \lstinline{insert} (l.\ \ref{ln:bloom-insert}). It then samples a fifth Gaussian value and queries the filter using the same two hash functions (l.\ \ref{ln:bloom-final} and \ref{ln:bloom-search}), so the overall query asks for the probability that this final lookup returns \lstinline{true}.
 
 \begin{minipage}[t]{0.48\textwidth}
 \vspace{0pt}
@@ -243,14 +237,16 @@ We model a small Bloom filter populated by continuous samples. The program sampl
   numberstyle=\color{gray}\scriptsize,
   numbersep=7pt,
   basicstyle=\ttfamily\footnotesize]
-let insert = fun q -> fun h1 -> fun h2 -> fun bf -> !\linelabel{ln:bloom-insert}!
+let insert = fun q -> fun h1 -> 
+    fun h2 -> fun bf -> !\linelabel{ln:bloom-insert}!
   let index1 = h1 q in
   let index2 = h2 q in
   let bf1 = set_true bf index1 in
   set_true bf1 index2
 in
 
-let search = fun q -> fun h1 -> fun h2 -> fun bf -> !\linelabel{ln:bloom-search}!
+let search = fun q -> fun h1 -> 
+    fun h2 -> fun bf -> !\linelabel{ln:bloom-search}!
   let index1 = h1 q in
   let index2 = h2 q in
   (get bf index1) && (get bf index2)
@@ -304,7 +300,8 @@ The key simplification is that the hash functions never inspect the exact value 
 \subsubsection{Mondrian-Style Recursive Partitioning}
 \label{sec:casestudy:mondrian}
 
-Our final case study models a Mondrian-style recursive partition process over the unit square. The program asks whether two fixed points $p$ and $q$ remain in the same cell when the random partitioning process stops.
+\todo[inline]{Extra}
+Our final case study models a Mondrian-style recursive partition process over the unit square~\cite{RoyTeh2008Mondrian}. The program asks whether two fixed points $p$ and $q$ remain in the same cell when the random partitioning process stops.
 
 The program maintains a pair of higher-order predicates encoding which future $x$- and $y$-cuts would separate the two points. Initially, these predicates are just the intervals between the coordinates of $p$ and $q$ (l.\ \ref{ln:mond-init}). The recursive process then repeatedly either stops with probability $0.2$ (l.\ \ref{ln:mond-loop}), or chooses an axis and samples a cut location $c$ (l.\ \ref{ln:mond-axis}). If the sampled cut falls between the two points on that axis, the process returns \lstinline{false}, since $p$ and $q$ have been separated (l.\ \ref{ln:mond-sep-x} and \ref{ln:mond-sep-y}); otherwise, it refines the corresponding separator predicate to the surviving sub-cell and recurses (l.\ \ref{ln:mond-recurse-x} and \ref{ln:mond-recurse-y}). \Slice{} therefore replaces each continuous cut by its observationally relevant region, yielding a discrete program with a finite exact state space.
 
