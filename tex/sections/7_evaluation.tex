@@ -1,8 +1,8 @@
 \section{Implementation and Evaluation}\label{sec:implem_eval}
 
-In this section, we evaluate the practical impact of exact discretization through experiments. Our evaluation is organized around two questions:
+In this section, we evaluate the practical impact of exact discretization through experiments. Our evaluation is organized around two questions:\kb{come back gere}
 \begin{enumerate}
-    \item Does \Slice{} enable rigorous analysis of continuous probabilistic programs that existing exact systems do not directly support?
+    \item Does \Slice{} enable rigorous analysis of continuous probabilistic programs that existing exact systems do not directly support?\kb{be careful here}
     \item What is the cost of applying \Slice{} on benchmarks that were already within the scope of prior exact techniques (e.g.~\SPPL{})?
 \end{enumerate}
 
@@ -12,7 +12,8 @@ We address the second question in~\Cref{sec:synthetic-benchmarks} and~\Cref{sec:
 
 Our implementation of \Slice{} is in OCaml. To compute the interval masses induced by continuous distributions, we use the OCaml GSL package~\cite{gsl} for cumulative distribution function calculations. The implementation is open-source and available at \url{https://github.com/[anonymized]}, together with all benchmarks, scripts, and a Docker image for reproduction. All experiments were run inside this Docker image on an Apple M3 machine with 16\,GB of RAM. 
 
-\subsection{Case Studies}\label{sec:case-studies}
+\subsection{\Storm Backend and Case Studies}\label{sec:case-studies}
+%
 
 \todo[inline]{Add citations for examples}
 
@@ -297,13 +298,13 @@ search q5 h1 h2 bf !\linelabel{ln:bloom-final}!
 
 The key simplification is that the hash functions never inspect the exact value of a sample. They only ask which region the sample falls into, using the cut points $-2$, $0$, and $2$. These cuts partition the line into four regions, which already coincide with the Bloom filter's index space. \Slice{} therefore replaces each Gaussian draw by its bucket index while preserving exactly the probability of every collision pattern relevant to insertion and search.
 
-\subsubsection{Mondrian-Style Recursive Partitioning}
-\label{sec:casestudy:mondrian}
-
-\todo[inline]{Extra}
-Our final case study models a Mondrian-style recursive partition process over the unit square~\cite{RoyTeh2008Mondrian}. The program asks whether two fixed points $p$ and $q$ remain in the same cell when the random partitioning process stops.
-
-The program maintains a pair of higher-order predicates encoding which future $x$- and $y$-cuts would separate the two points. Initially, these predicates are just the intervals between the coordinates of $p$ and $q$ (l.\ \ref{ln:mond-init}). The recursive process then repeatedly either stops with probability $0.2$ (l.\ \ref{ln:mond-loop}), or chooses an axis and samples a cut location $c$ (l.\ \ref{ln:mond-axis}). If the sampled cut falls between the two points on that axis, the process returns \lstinline{false}, since $p$ and $q$ have been separated (l.\ \ref{ln:mond-sep-x} and \ref{ln:mond-sep-y}); otherwise, it refines the corresponding separator predicate to the surviving sub-cell and recurses (l.\ \ref{ln:mond-recurse-x} and \ref{ln:mond-recurse-y}). \Slice{} therefore replaces each continuous cut by its observationally relevant region, yielding a discrete program with a finite exact state space.
+%\subsubsection{Mondrian-Style Recursive Partitioning}
+%\label{sec:casestudy:mondrian}
+%
+%\todo[inline]{Extra}
+%Our final case study models a Mondrian-style recursive partition process over the unit square~\cite{RoyTeh2008Mondrian}. The program asks whether two fixed points $p$ and $q$ remain in the same cell when the random partitioning process stops.
+%
+%The program maintains a pair of higher-order predicates encoding which future $x$- and $y$-cuts would separate the two points. Initially, these predicates are just the intervals between the coordinates of $p$ and $q$ (l.\ \ref{ln:mond-init}). The recursive process then repeatedly either stops with probability $0.2$ (l.\ \ref{ln:mond-loop}), or chooses an axis and samples a cut location $c$ (l.\ \ref{ln:mond-axis}). If the sampled cut falls between the two points on that axis, the process returns \lstinline{false}, since $p$ and $q$ have been separated (l.\ \ref{ln:mond-sep-x} and \ref{ln:mond-sep-y}); otherwise, it refines the corresponding separator predicate to the surviving sub-cell and recurses (l.\ \ref{ln:mond-recurse-x} and \ref{ln:mond-recurse-y}). \Slice{} therefore replaces each continuous cut by its observationally relevant region, yielding a discrete program with a finite exact state space.
 
 \subsection{New Benchmarks for Scaling}\label{sec:synthetic-benchmarks} We designed scalable benchmarks of conditionally independent continuous programs with varying variable dependencies. Formally, all programs in our benchmark can be described by the conditional independence structure: $X_i \perp\!\!\!\perp \{\,X_j : j < i, j \neq \pi(i)\,\}
 \;\Big|\; X_{\pi(i)}$, where $\pi(i) \in \{1, \ldots, i-1\}$ is the parent index of $X_i$. Schematically:
