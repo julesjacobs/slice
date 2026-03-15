@@ -127,8 +127,10 @@
 
 \lstdefinelanguage{OCaml}{
     morekeywords={let, in, if, then, else, fst, snd, fun, match, rec},
+    morekeywords=[2]{uniform, discrete, gaussian, exponential, beta, flip},
     basicstyle=\ttfamily\small,
     keywordstyle=\bfseries,                            % default keywords
+    keywordstyle=[2]\bfseries,                        % probabilistic distributions
     keywordstyle=[3]\color{pink}\bfseries,           % types in pink
     commentstyle=\color{green!50!black}\itshape,
     stringstyle=\ttfamily,

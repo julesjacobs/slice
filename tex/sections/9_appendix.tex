@@ -176,7 +176,7 @@ is_covered final
 \end{minipage}
 
 \caption{A \emph{discretized} infinite stochastic process involving continuous sampling, higher-order recursion, and lists.}
-\label{fig:epsball}
+\label{fig:app:epsball}
 \end{figure*}
 
 
@@ -643,6 +643,73 @@ search q5 h1 h2 updated_bf_4
     \label{fig:bloom-filter}
 \end{figure*}
 
+\subsection{Mondrian-Style Recursive Partitioning}
+\begin{minipage}[t]{0.48\textwidth}
+    \vspace{0pt}
+    \begin{lstlisting}[aboveskip=0.4em,belowskip=0.4em,
+      language=OCaml,
+      escapechar=!,
+      numbers=left,
+      stepnumber=1,
+      numberstyle=\color{gray}\scriptsize,
+      numbersep=7pt,
+      basicstyle=\ttfamily\footnotesize]
+    let between = fun lo -> fun hi -> fun z ->
+      (lo < z) && (z <= hi)
+    in
+    
+    let p = (0.3, 0.2) in
+    let q = (0.7, 0.8) in
+    
+    let mondrian = fix mondrian tests := !\linelabel{ln:mond-loop}!
+      if uniform(0,1) < 0.2 then
+        true
+      else
+        let split_x = discrete(0.5: true, 0.5: false) in !\linelabel{ln:mond-axis}!
+        let c = uniform(0,1) in
+        if split_x then
+          if (fst tests) c then false !\linelabel{ln:mond-sep-x}!
+          else
+            let old_sep_x = fst tests in
+            let new_sep_x =
+              if c < (fst p)
+              then fun c' -> (old_sep_x c') && (c < c')
+              else fun c' -> (old_sep_x c') && (c' < c)
+            in
+    \end{lstlisting}
+    \end{minipage}
+    \hfill
+    \begin{minipage}[t]{0.48\textwidth}
+    \vspace{0pt}
+    \begin{lstlisting}[aboveskip=0.4em,belowskip=0.4em,
+      language=OCaml,
+      escapechar=!,
+      numbers=left,
+      stepnumber=1,
+      firstnumber=last,
+      numberstyle=\color{gray}\scriptsize,
+      numbersep=7pt,
+      basicstyle=\ttfamily\footnotesize]
+            mondrian (new_sep_x, snd tests) !\linelabel{ln:mond-recurse-x}!
+        else
+          if (snd tests) c then false !\linelabel{ln:mond-sep-y}!
+          else
+            let old_sep_y = snd tests in
+            let new_sep_y =
+              if c < (snd p)
+              then fun c' -> (old_sep_y c') && (c < c')
+              else fun c' -> (old_sep_y c') && (c' < c)
+            in
+            mondrian (fst tests, new_sep_y) !\linelabel{ln:mond-recurse-y}!
+    in
+    
+    mondrian (between (fst p) (fst q),
+              between (snd p) (snd q)) !\linelabel{ln:mond-init}!
+    \end{lstlisting}
+\end{minipage}
+    
+    
+
 
 
 \section{List of Supported \Slice{} Distributions}\label{appen:supported-distributions}
@@ -909,7 +976,7 @@ Thus each program is a Bayesian network of conditionally independent nodes, diff
 %\input{sections/6_soundness}
 
 
-\section{Structural Operational Semantics for Markov Chain Construction}
+\section{Structural Operational Semantics for Markov Chain Construction}\label{ap:sos-rules}
 
 Values:
 \[

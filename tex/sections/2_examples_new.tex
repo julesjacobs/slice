@@ -69,12 +69,12 @@ Type inference performs this analysis by collecting all cuts for each continuous
     \smallskip
     \begin{minipage}{0.42\linewidth}
     \centering
-    \textit{a) Type-annotated program}
+    \textit{a) Type-Annotated Program}
     \end{minipage}
     \hfill
     \begin{minipage}{0.4\linewidth}
     \centering
-    \textit{b) Discretized program}
+    \textit{b) Discretized Program}
     \end{minipage}
     \label{fig:examples:2}
 \end{center}
@@ -174,12 +174,12 @@ We now consider comparisons against an expression for which control flow determi
     \smallskip
     \begin{minipage}{0.42\linewidth}
     \centering
-    \textit{a) Type-annotated program}
+    \textit{a) Type-Annotated Program}
     \end{minipage}
     \hfill
     \begin{minipage}{0.4\linewidth}
     \centering
-    \textit{b) Discretized program}
+    \textit{b) Discretized Program}
     \end{minipage}
     \label{fig:examples:4}
 \end{center}
@@ -249,12 +249,12 @@ The type-annotations reveal how the variable $x$ determines the standard deviati
     \smallskip
     \begin{minipage}{0.42\linewidth}
     \centering
-    \textit{a) Type-annotated program}
+    \textit{a) Type-Annotated Program}
     \end{minipage}
     \hfill
     \begin{minipage}{0.40\linewidth}
     \centering
-    \textit{b) Discretized program}
+    \textit{b) Discretized Program}
     \end{minipage}
     \label{fig:examples:5}
 \end{center}
@@ -301,12 +301,12 @@ The type-annotations reveal how the variable $x$ determines the standard deviati
     \smallskip
     \begin{minipage}{0.42\linewidth}
     \centering
-    \textit{a) Type-annotated program}
+    \textit{a) Type-Annotated Program}
     \end{minipage}
     \hfill
     \begin{minipage}{0.4\linewidth}
     \centering
-    \textit{b) Discretized program}
+    \textit{b) Discretized Program}
     \end{minipage}
     \label{fig:examples:6}
 \end{center}
@@ -331,34 +331,36 @@ Exact equalities are encoded with $\observekw\; (x \leq c \mathrel{\&\&} x \geq 
 \begin{minipage}[t]{0.46\textwidth}
 \vspace{0pt}
 \begin{lstlisting}[aboveskip=1em,belowskip=1em,
-  escapeinside={(*@}{@*)},
+  language=OCaml,
+  escapechar=!,
   numbers=right,
   stepnumber=1,
   numberstyle=\color{gray}\scriptsize,
   numbersep=7pt,
-  basicstyle=\ttfamily\footnotesize]
-(* Returns true (*@if@*) y is (*@in@*) [lo,hi)*)(*@\linelabel{ln:within}@ *)
-let within = fun lo -> fun hi -> fun y -> 
+  basicstyle=\ttfamily\footnotesize,
+  commentstyle=\color{ForestGreen}\itshape]
+(* Returns true if y is in [lo,hi)*)
+let within = fun lo -> fun hi -> fun y -> !\linelabel{ln:within}!
   (y >= lo) && (y < hi) in 
 
-(* Function for sampling interval bounds *)(*@\linelabel{ln:b}@*)
-let b = fun _ ->  
+(* Function for sampling interval bounds *)
+let b = fun _ ->  !\linelabel{ln:b}!
   discrete(0.18: 0.05, 0.11: 0.24, 
           0.21: 0.37, 0.09: 0.58, 
           0.16: 0.78, 0.25: 0.89) in
 
 (* Initialize intervals by sampling their 
-respective (possibly overlapping) bounds *)(*@\linelabel{ln:init}@ *)
-let init =
+respective (possibly overlapping) bounds *)
+let init =!\linelabel{ln:init}!
   (false, within 0.00 (b ())) ::
   (false, within (b ()) (b ())) ::
   (false, within (b ()) (b ())) ::
   (false, within (b ()) 1.00) ::
   nil in 
 
-(* Update flags depending on y falling within
-   the respective interval *)(*@\linelabel{ln:update}@ *)
-let update = fix update y := fun ys -> 
+(* Update flags depending on y falling 
+   within the respective interval *)
+let update = fix update y := fun ys -> !\linelabel{ln:update}!
   match ys with 
     | nil -> nil
     | h :: t ->
@@ -372,27 +374,29 @@ in
 \begin{minipage}[t]{0.46\textwidth}
 \vspace{0pt}
 \begin{lstlisting}[aboveskip=1em,belowskip=1em,
-  escapeinside={(*@}{@*)},
+  language=OCaml,
+  escapechar=!,
   numbers=right,
   stepnumber=1,
   firstnumber=last,
   numberstyle=\color{gray}\scriptsize,
   numbersep=7pt,
-  basicstyle=\ttfamily\footnotesize]
-(* Sample from a (*@gaussian@*), (*@then@*) use
-   so-obtained value to update flags *)(*@\linelabel{ln:step}@ *)
-let step = fun ys -> 
+  basicstyle=\ttfamily\footnotesize,
+  commentstyle=\color{ForestGreen}\itshape]
+(* Sample from a gaussian, then use
+   so-obtained value to update flags *)
+let step = fun ys -> !\linelabel{ln:step}!
   update (gaussian(0,1)) ys in
 
 (* Number of samples determined by 
-   unbounded recursion *)(*@\linelabel{ln:cover}@ *)
-let cover = fix cover st :=
+   unbounded recursion *)
+let cover = fix cover st :=!\linelabel{ln:cover}!
   if uniform(0,1) < 0.2 then st
   else cover (step st) in
 
-(* Have all intervals been covered
-   at least once? *)(*@\linelabel{ln:iscovered}@ *)
-let is_covered = fix is_covered ys := 
+(* Have all intervals been covered at 
+   least once? *)
+let is_covered = fix is_covered ys := !\linelabel{ln:iscovered}!
   match ys with 
     | nil -> true 
     | h :: t -> (fst h) && (is_covered t)
@@ -401,7 +405,7 @@ in
 
 (* Run entire process on sampled intervals *)
 let final = cover init in
-is_covered final (*@\linelabel{ln:final}@ *)
+is_covered final !\linelabel{ln:final}!
 \end{lstlisting}
 \end{minipage}
 
@@ -411,9 +415,9 @@ is_covered final (*@\linelabel{ln:final}@ *)
 
 We will now consider a more involved example shown in \Cref{fig:epsball} that \Slice discretizes in a fully automatic manner. This example emphasizes how our type inference procedure operates across higher-order functions, unbounded recursion, and lists to obtain appropriate type-annotations, which guide the subsequent discretization process.
 
-The program models the following process: We start by randomly sampling $4$ intervals (l.\ \ref{ln:b} and \ref{ln:init}), stored as a list of pairs, where the first component contains a flag used later and the second component contains a function that can be called to determine whether a given point falls within that interval. We then employ unbounded recursion (l.\ \ref{ln:cover}) to repeat the following a potentially unbounded number of times according to a geomtric distribution: Sample a point $y$ from a gaussian (l.\ \ref{ln:step}), and update the flag of every interval to $\true$ whenever $y$ falls within that interval (l.\ \ref{ln:update}). Finally, the program returns $\true$ iff \emph{all} intervals have been hit at least once (l. \ref{ln:final} and \ref{ln:iscovered}). Performing exact inference on this program hence corresponds to computing the probability that the modeled infinite stochastic process will hit every interval at least once.
+The program models the following process: We start by randomly sampling $4$ intervals (l.\ \ref{ln:b} and \ref{ln:init}), stored as a list of pairs, where the first component contains a flag used later and the second component contains a function that can be called to determine whether a given point falls within that interval. We then employ unbounded recursion (l.\ \ref{ln:cover}) to repeat the following a potentially unbounded number of times according to a geometric distribution: Sample a point $y$ from a gaussian (l.\ \ref{ln:step}), and update the flag of every interval to $\true$ whenever $y$ falls within that interval (l.\ \ref{ln:update}). Finally, the program returns $\true$ iff \emph{all} intervals have been hit at least once (l. \ref{ln:final} and \ref{ln:iscovered}). Performing exact inference on this program hence corresponds to computing the probability that the modeled infinite stochastic process will hit every interval at least once.
 
-\Slice \emph{automatically} produces a \emph{provably equivalent} (cf.\ \Cref{sec:soundness}) discrete program (provided in \Cref{ap:epsball}). Even though this program still contains unbounded recursion, our back-end automatically determines that it can be modelled as a \emph{finite-state} Markov chain. We feed this Markov chain into the probabilistic model checker \Storm, which automatically computes that the sought-after probability is $0.018226..$. To the best of our knowledge, our pipeline is the first that is capable of performing exact inference on programs containing continuous sampling, higher-order functions, and unbounded recursion. In \Cref{sec:casestudy:epsball}, we extend this program by conditioning \emph{inside of the unbounded recursion}. 
+\Slice \emph{automatically} produces a \emph{provably equivalent} (cf.\ \Cref{sec:soundness}) discrete program (provided in \Cref{ap:epsball}). Even though this program still contains unbounded recursion, our backend automatically determines that it can be modeled as a \emph{finite-state} Markov chain. We feed this Markov chain into the probabilistic model checker \Storm, which automatically computes that the sought-after probability is $0.018226..$. To the best of our knowledge, our pipeline is the first that is capable of performing exact inference on programs containing continuous sampling, higher-order functions, and unbounded recursion. In \Cref{sec:casestudy:epsball}, we extend this program by conditioning \emph{inside of the unbounded recursion}. 
 
 %We now consider a stochastic coverage process over a continuous domain with both higher-order functions and unbounded recursion. The program first samples four cut points $b_1,b_2,b_3,b_4$ from discrete distributions over candidate boundary values, thereby inducing a random partition of $[0,1]$ into subintervals. It then repeatedly samples points from a Gaussian distribution, marking each interval as covered once a sampled point falls inside it. The process stops after a geometrically distributed number of steps, and finally checks whether the entire interval has been covered.
 %\ref{ln:within}
