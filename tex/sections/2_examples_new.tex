@@ -43,7 +43,7 @@ The transformation is guided by our type system, driven by a \emph{cut set} --- 
 
 \noindent In this program, the variable $x$ is drawn from \uniform(0, 1) and is compared against two different constants: $0.5$ and $0.2$. These two cuts $\clt{0.5}$ and $\clt{0.2}$ partition the real line $\R$ into three intervals: $(-\infty, 0.2)$, $[0.2, 0.5)$, and $[0.5, +\infty)$. Similarly, the variable $y$, drawn from \uniform(0, 2), is compared only with $0.1$. This single cut $\clt{0.1}$ partitions the real line $\R$ into $(-\infty, 0.1)$ and $[0.1, +\infty)$.
 
-Type inference performs this analysis by collecting all cuts for each continuous variable. For $x$, it discovers the cuts $\clt{0.2}$ and $\clt{0.5}$, giving it the type \ftnv{\{<0.2,<0.5\}}. For $y$, it only finds $\clt{0.1}$, giving it the type \ftnv{\{<0.1\}}. This information is captured in the annotated program below (left):
+Type inference performs this analysis by collecting all cuts for each continuous variable. For $x$, it discovers the cuts $\clt{0.2}$ and $\clt{0.5}$, giving it the type \ftnv{\{<0.2,<0.5\}}. For $y$, it only finds $\clt{0.1}$, giving it the type \ftnv{\{<0.1\}}. This information is captured in the program below (left):
 
 \begin{center}
     \begin{minipage}[c]{0.42\linewidth}
@@ -260,12 +260,12 @@ The type-annotations reveal how the variable $x$ determines the standard deviati
 \end{center}
 \vspace{0.6em}
 
-\noindent Because $x$ is later used as a parameter to $\gaussian$, \Slice{} generates one case per value in its value set (0.5 and 1.5). To support this, the type system uses non-strict inequalities in cut sets, allowing these values to map to unique integer indices starting at 0. Specifically, 0.5 maps to index 0 via \codetype{\ftb{\{<=0.5,<=1.5\}}{\{0.5\}}}, and 1.5 maps to index 1 via \codetype{\ftb{\{<=0.5,<=1.5\}}{\{1.5\}}}. This is a non-local effect: an upstream discrete latent choice determines how a downstream continuous distribution is discretized. The resulting discretized program then branches on these values and instantiates the corresponding discrete distribution for the standard deviation selected by the initial flip.
+\noindent Because $x$ is later used as a parameter to $\gaussian$, \Slice{} generates one case per value in its value set $\{0.5,1.5\}$. To support this, the type system uses non-strict inequalities in cut sets, allowing these values to map to unique integer indices starting at 0. Specifically, 0.5 maps to index 0 via \codetype{\ftb{\{<=0.5,<=1.5\}}{\{0.5\}}}, and 1.5 maps to index 1 via \codetype{\ftb{\{<=0.5,<=1.5\}}{\{1.5\}}}. This is a non-local effect: an upstream discrete latent choice determines how a downstream continuous distribution is discretized. The discretized program branches on these values and instantiates the corresponding discrete distribution for the standard deviation selected by the initial flip.
 \noindent
 
 \subsection{Conditioning}\label{sec:examples:6}
 
-\Slice{} supports conditioning via $\observekw$. The program below (already type-annotated) computes $\Pr[x<0.2 \mid x<0.5]$ for $x \sim \uniform(0,1)$:
+\Slice{} supports conditioning via $\observekw$. Consider the following program: %$\Pr[x<0.2 \mid x<0.5]$ for $x \sim \uniform(0,1)$:
 
 %\begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
 %    let x = uniform(0.0, 1.0) in
@@ -312,9 +312,9 @@ The type-annotations reveal how the variable $x$ determines the standard deviati
 \end{center}
 \vspace{0.6em}
 
-\noindent Discretization again replaces reals by interval indices, as shown on the right.
-
-\noindent Observation $x<2$ eliminates the discrete state corresponding to the original interval $[0.5,+\infty)$, mirroring the conditioning on $x<0.5$.
+\noindent
+Discretization again replaces reals by interval indices, as shown on the right. 
+ The observation $x<2$ eliminates the discrete state corresponding to the original interval $[0.5,+\infty)$, mirroring the conditioning on $x<0.5$.
 
 Exact equalities are encoded with $\observekw\; (x \leq c \mathrel{\&\&} x \geq c)$. Measure-zero observations remain delicate~\cite{Jacobs2021ParadoxesProbProg}; our semantics handles them by recording observation failure mass instead of renormalizing, so discretization preserves an even stronger equivalence. Scoring semantics for true measure-zero events are out of scope; users should instead approximate them \mbox{with narrow intervals.}
 
@@ -412,7 +412,7 @@ is_covered final !\linelabel{ln:final}!
 \caption{An infinite stochastic process involving continuous sampling, higher-order recursion, and lists.}
 \label{fig:epsball}
 \end{figure*}
-
+\noindent
 We will now consider a more involved example shown in \Cref{fig:epsball} that \Slice discretizes in a fully automatic manner. This example emphasizes how our type inference procedure operates across higher-order functions, unbounded recursion, and lists to obtain appropriate type-annotations, which guide the subsequent discretization process.
 
 The program models the following process: We start by randomly sampling $4$ intervals (l.\ \ref{ln:b} and \ref{ln:init}), stored as a list of pairs, where the first component contains a flag used later and the second component contains a function that can be called to determine whether a given point falls within that interval. We then employ unbounded recursion (l.\ \ref{ln:cover}) to repeat the following a potentially unbounded number of times according to a geometric distribution: Sample a point $y$ from a gaussian (l.\ \ref{ln:step}), and update the flag of every interval to $\true$ whenever $y$ falls within that interval (l.\ \ref{ln:update}). Finally, the program returns $\true$ iff \emph{all} intervals have been hit at least once (l. \ref{ln:final} and \ref{ln:iscovered}). Performing exact inference on this program hence corresponds to computing the probability that the modeled infinite stochastic process will hit every interval at least once.
