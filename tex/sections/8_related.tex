@@ -1,4 +1,4 @@
-\section{Related Work and Discussion}
+\section{Related and Future Work}
 \label{sec:related}
 %We organize related work along three axes: discretization method, exact-inference strategy, and proof technique.
 
@@ -36,8 +36,8 @@ Our soundness argument uses a coupling-style semantic relation between source an
 % \paragraph{Logical relations for probabilistic programs.}
 % Our soundness proof builds on logical relations for probabilistic programs, including early work on denotational models~\cite{Kozen1981Semantics,Jones1989Probabilistic}, step-indexed relations for higher-order languages~\cite{Bizjak2015Step,Wand2018Contextual}, and program logics for verification~\cite{Barthe2009Formal,Barthe2012Privacy}. We adapt these techniques to prove discretization preserves semantics.
 
-\paragraph{Our work. }  
-Our main contribution is a \emph{language-level, non-local transformation}: type inference determines where continuous behavior can be partitioned exactly, and discretization re-expresses those behaviors over finite domains while preserving semantics. The proof obligation this creates is inherently relational, and we discharge it with a coupling-based semantic argument. This perspective complements direct symbolic exact-inference systems by providing a principled transformation route to discrete backends.
+%\paragraph{Our work. }  
+%Our main contribution is a \emph{language-level, non-local transformation}: type inference determines where continuous behavior can be partitioned exactly, and discretization re-expresses those behaviors over finite domains while preserving semantics. The proof obligation this creates is inherently relational, and we discharge it with a coupling-based semantic argument. This perspective complements direct symbolic exact-inference systems by providing a principled transformation route to discrete backends.
 
-\paragraph{Future work.}
-Beyond our current results, several directions remain. First, we would like to extend our work to symbolically integrate tractable combinations of continuous distributions beyond the cumulative distribution function. Second, we look to incorporate more discrete backends aside from inference, for example for verification using Caesar~\cite{Batz2025FoundationsDeductiveVerification} or for conditioning on measure-zero events~\cite{Jacobs2021ParadoxesProbProg}. Finally, supporting polymorphism in \Slice{}'s type system (including cut-set and value-set polymorphism) is an interesting avenue for future work.
+\paragraph{Future work}
+We would like to extend our work to symbolically integrate tractable combinations of continuous distributions beyond the cumulative distribution function. Second, we look to incorporate more discrete backends aside from inference, for example for verification using Caesar~\cite{Batz2025FoundationsDeductiveVerification} or for conditioning on measure-zero events~\cite{Jacobs2021ParadoxesProbProg}. Finally, supporting polymorphism in \Slice{}'s type system (including cut-set and value-set polymorphism) is an interesting avenue for future work.
