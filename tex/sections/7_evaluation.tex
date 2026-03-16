@@ -2,7 +2,7 @@
 
 In this section, we evaluate our implementation driven by two questions:\kb{come back gere}
 \begin{enumerate}
-    \item Does \Slice{} enable exact inferemce of interesting continuous probabilistic programs that existing approaches do not support?
+    \item Does \Slice{} enable exact inference of interesting continuous probabilistic programs that existing approaches do not support?
     \item How does \Slice{} perform on benchmarks that were already within the scope of prior exact state-of-the-art techniques such as \SPPL{}?
 \end{enumerate}
 
@@ -12,7 +12,7 @@ We address the second question in~\Cref{sec:synthetic-benchmarks} and~\Cref{sec:
 
 Our implementation of \Slice{} is in OCaml. To compute the interval masses induced by continuous distributions, we use the OCaml GSL package~\cite{gsl} for cumulative distribution function calculations. The implementation is open-source and available at \url{https://github.com/[anonymized]}, together with all benchmarks, scripts, and a Docker image for reproduction. All experiments were run inside this Docker image on an Apple M3 machine with 16\,GB of RAM. 
 
-\subsection{\Stormbf Backend and Case Studies}\label{sec:case-studies}
+\subsection{\Slicebf+\Stormbf: Case Studies}\label{sec:case-studies}
 %
 When discretized expressions contain unbounded recursion, no exact inference engines exist. Our key insight is to use \emph{probabilistic model checking}: The small-step semantics of our language (cf.\ \Cref{tab:smallstep-1,tab:smallstep-2}) for discrete expressions gives rise to a \emph{Markov chain} modeling the potentially infinite stochastic process of program execution. If that Markov chain is finite, we can use the probabilistic model checker \Storm \cite{storm} for exact inference. Let us start with an illustrative example.
 %\kbin{old}
@@ -79,7 +79,7 @@ Now, using the probabilistic model checker \Storm, we can peform exact inference
     \begin{minipage}[t]{0.56\textwidth}
         \vspace{0pt}
         \raggedright
-        \textbf{Markov Chain Construction}
+        \textbf{Markov Chain Construction and Model Checking}
         
         \vspace{0.5em}
         
@@ -316,7 +316,7 @@ The key simplification is that the hash functions never inspect the exact value 
 %
 %The program maintains a pair of higher-order predicates encoding which future $x$- and $y$-cuts would separate the two points. Initially, these predicates are just the intervals between the coordinates of $p$ and $q$ (l.\ \ref{ln:mond-init}). The recursive process then repeatedly either stops with probability $0.2$ (l.\ \ref{ln:mond-loop}), or chooses an axis and samples a cut location $c$ (l.\ \ref{ln:mond-axis}). If the sampled cut falls between the two points on that axis, the process returns \lstinline{false}, since $p$ and $q$ have been separated (l.\ \ref{ln:mond-sep-x} and \ref{ln:mond-sep-y}); otherwise, it refines the corresponding separator predicate to the surviving sub-cell and recurses (l.\ \ref{ln:mond-recurse-x} and \ref{ln:mond-recurse-y}). \Slice{} therefore replaces each continuous cut by its observationally relevant region, yielding a discrete program with a finite exact state space.
 
-\subsection{New Benchmarks for Scaling}\label{sec:synthetic-benchmarks} 
+\subsection{\Slicebf+\Dicebf~and \Slicebf+\Roulettebf: New Benchmarks for Scaling}\label{sec:synthetic-benchmarks} 
 In the absence of unbounded recursion, we can use \Dice or \Roulette as inference backends.
 We designed scalable benchmarks of conditionally independent continuous programs with varying variable dependencies. Formally, all programs in our benchmark can be described by the conditional independence structure: $X_i \perp\!\!\!\perp \{\,X_j : j < i, j \neq \pi(i)\,\}
 \;\Big|\; X_{\pi(i)}\}$, where $\pi(i) \in \{1, \ldots, i-1\}$ is the parent index of $X_i$. Schematically:
@@ -342,7 +342,7 @@ We designed scalable benchmarks of conditionally independent continuous programs
 
 \input{figures/scaling-main.tex}
 
-\subsection{Existing Benchmarks}\label{sec:fairness-benchmarks}
+\subsection{\Slicebf+\Dicebf~and \Slicebf+\Roulettebf: Existing Benchmarks}\label{sec:fairness-benchmarks}
 
 We next use benchmark suites from prior work for compatibility and coverage checks. Detailed tables (\Cref{tab:benchmarks_dt} and \Cref{tab:benchmarks_dt_extra}) are in the supplemental appendix; we summarize their structure here. The decision-tree benchmarks from~\cite{albarghouthi2017fairsquare} assess fairness properties under different population models. DT$_n$ denotes a tree with $n$ conditionals, the second column specifies the population model, and the remaining columns report runtimes. We split \SPPL{} execution into translation and fairness-judgment phases to make phase costs explicit.
 
