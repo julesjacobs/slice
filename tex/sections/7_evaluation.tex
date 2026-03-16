@@ -6,7 +6,7 @@ In this section, we evaluate our implementation driven by two questions:
     \item How does \Slice{} perform on benchmarks that were already within the scope of prior exact state-of-the-art techniques such as \SPPL{}?
 \end{enumerate}
 
-We address the first question in~\Cref{sec:case-studies} through a collection of case studies that involve continuous distributions together with recursion, higher-order functions, lists, or conditioning. For these examples, we use \Slice{} to transform the original programs to finite discrete models and analyze the resulting program with \Storm{} \cite{storm}, a probabilistic model checker.
+We address the first question in~\Cref{sec:case-studies} through a collection of case studies that involve continuous distributions together with recursion, higher-order functions, lists, or conditioning. For these examples, we use \Slice{} to transform the original programs to finite discrete models and analyze the resulting program with \Storm{} \cite{storm} --- a probabilistic model checker.
 
 We address the second question in~\Cref{sec:synthetic-benchmarks} and~\Cref{sec:fairness-benchmarks} by evaluating \Slice{} + \Dice{} and \Slice{} + \Roulette{} on two classes of benchmarks: (i) synthetic scaling benchmarks that let us vary program size and dependency structure in a controlled way, and (ii) benchmark suites from prior work. 
 
@@ -226,7 +226,9 @@ Our second case study extends the random interval covering example from  by addi
 \noindent
 The key new component is the recursive function \lstinline{non_overlap} (l.\ \ref{ln:cov-nonoverlap}), which checks whether a sampled point $y$ hits more than one interval of the initally samped intervals. The loop \lstinline{cover} (l.\ \ref{ln:cov-cover}) repeatedly samples a Gaussian point and immediately conditions on this predicate via \lstinline{observe} (l.\ \ref{ln:cov-obs}), so only executions in which the point lies in at most one interval are retained. The final query remains whether all intervals have been covered by stopping time (l.\ \ref{ln:cov-final}).
 
-The program remains discretizable: each sampled point is still used only through comparisons against finitely many sampled interval boundaries, and \lstinline{non_overlap} depends only on the resulting hit pattern, not on the exact real value of $y$. \Slice{} therefore replaces each Gaussian draw by its interval index, yielding a discrete program with a finite exact state space. We generate a Markov chain consisting of $268878$ in $80$ seconds. \Storm takes $4.7$ seconds for model checking.
+The program remains discretizable: each sampled point is still used only through comparisons against finitely many sampled interval boundaries, and \lstinline{non_overlap} depends only on the resulting hit pattern, not on the exact real value of $y$. \Slice{} therefore replaces each Gaussian draw by its interval index, yielding a discrete program with a finite exact state space. We generate a Markov chain consisting of $268878$ in $80$ seconds. \Storm takes $4.7$ seconds for model checking. 
+
+Currently, our Markov chain construction process is rather naive: extending the number of sampling points or intervals yields the Markov chain to be infeasible large. Developing efficient discrete inference engines for higher-order programs with unbounded recursion is not in the scope of this paper. However, our approach is an excellent motivation for this future direction. \kb{admit naive}
 
 \subsubsection{Bloom Filter}
 \label{sec:casestudy:bloom}
