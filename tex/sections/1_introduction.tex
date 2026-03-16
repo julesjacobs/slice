@@ -21,9 +21,9 @@ Discretization itself is not new. Garg et al.~\cite{Garg2024BitBlast} encode rea
 \noindent\emph{Outline.} Starting from concrete examples (\Cref{sec:examples}), we:
 \begin{description}[leftmargin=0.3cm,topsep=3pt,itemsep=1pt]
     \item[Type System (\Cref{sec:language})] Characterize when expressions are discretizable.
-       \item[Type Inference (\Cref{sec:type-inference})] Automatically infer types which will guide the discretizaton process.%Solve automatically for the cut and value sets required by the transformation.
+       \item[Type Inference (\Cref{sec:type-inference})] Automatically infer types to guide the discretizaton process.%Solve automatically for the cut and value sets required by the transformation.
     \item[Exact Discretization (\Cref{sec:discretization})] Define a type-directed transformation from continuous programs to discrete ones using inferred cut information.
-    \item[Soundness (\Cref{sec:soundness})] Prove semantic preservation with a coupling-style relational argument 
+    \item[Soundness (\Cref{sec:soundness})] Prove semantic preservation of the discretization transformation with a coupling-style relational argument 
     %suited to a global, non-local transformation
     \cite{Bizjak2015Step,Wand2018Contextual}.
     \item[Implementation and Case Studies (\Cref{sec:implem_eval})] Implement \Slice{} type inference and discretization transformation in OCaml, and implement \Dice, \Roulette, and \Storm backends for running the discretized programs. We provide (i) case studies that \Slice+\Storm handle which cannot be handled by existing techniques, and (ii) case studies where \Slice+\Dice and \Slice+\Roulette show favorable scaling and empirical performance on new and existing benchmarks.\kb{citations}
