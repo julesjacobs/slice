@@ -1,19 +1,23 @@
 \begin{figure}[!t]
-\begin{align*}
-e ::= &\; x \mid c \mid \text{true} \mid \text{false} \mid \finconst{k}{n} \mid () & \text{constants} \\
-    | &\; \letkw \; x = e_1\; \inkw \; e_2  & \text{let binding} \\
-    | &\; \uniform(e_1, e_2) \mid \gaussian(e_1, e_2) \mid \exponential(e) \mid \ldots & \text{continuous distributions} \\
-    | &\; \discrete(p_0, \ldots, p_{n})      & \text{discrete distribution} \\
-    | &\; e_1 < e_2 \mid e_1 \leq e_2 \mid e_1 \finlt{n} e_2 \mid e_1 \finleq{n} e_2 & \text{comparisons} \\
-    | &\; e_1 \logand e_2 \mid e_1 \logor e_2 \mid \text{not}\; e & \text{Boolean operations} \\
-    | &\; \ifkw \; e_1\; \thenkw \; e_2\; \elsekw \; e_3 & \text{conditional} \\
-    | &\; (e_1, e_2) \mid \fstkw \; e \mid \sndkw \; e & \text{pairs} \\
-    | &\; \funkw \; x \; \rightarrow \; e \mid e_1 \; e_2 \mid \fixkw\; f\; x := e & \text{functions} \\
-    | &\; \observekw\; e \mid e_1; e_2 & \text{effects} \\
-    | &\; \text{nil} \mid e_1 :: e_2 \mid ( \matchkw \; e \; \withkw \matchcase \text{nil} \rightarrow e_{\text{nil}} \matchcase e_1 :: e_2 \rightarrow e_{\text{cons}}\; {\textnormal{\ttfamily\bfseries end}}) & \text{lists} \\
-    % | &\; \refkw\; e \mid\ !e \mid e_1 := e_2 & \text{references} \\
-    | &\; \diverge\; & \text{diverge} \\
-\end{align*}
+	\scalebox{0.8}{
+	\begin{minipage}{1\textwidth}
+	\begin{align*}
+		e ::= &\; x \mid c \mid \text{true} \mid \text{false} \mid \finconst{k}{n} \mid () & \text{constants} \\
+		| &\; \letkw \; x = e_1\; \inkw \; e_2  & \text{let binding} \\
+		| &\; \uniform(e_1, e_2) \mid \gaussian(e_1, e_2) \mid \exponential(e) \mid \ldots & \text{continuous distributions} \\
+		| &\; \discrete(p_0, \ldots, p_{n})      & \text{discrete distribution} \\
+		| &\; e_1 < e_2 \mid e_1 \leq e_2 \mid e_1 \finlt{n} e_2 \mid e_1 \finleq{n} e_2 & \text{comparisons} \\
+		| &\; e_1 \logand e_2 \mid e_1 \logor e_2 \mid \text{not}\; e & \text{Boolean operations} \\
+		| &\; \ifkw \; e_1\; \thenkw \; e_2\; \elsekw \; e_3 & \text{conditional} \\
+		| &\; (e_1, e_2) \mid \fstkw \; e \mid \sndkw \; e & \text{pairs} \\
+		| &\; \funkw \; x \; \rightarrow \; e \mid e_1 \; e_2 \mid \fixkw\; f\; x := e & \text{functions} \\
+		| &\; \observekw\; e \mid e_1; e_2 & \text{effects} \\
+		| &\; \text{nil} \mid e_1 :: e_2 \mid ( \matchkw \; e \; \withkw \matchcase \text{nil} \rightarrow e_{\text{nil}} \matchcase e_1 :: e_2 \rightarrow e_{\text{cons}}\; {\textnormal{\ttfamily\bfseries end}}) & \text{lists} \\
+		% | &\; \refkw\; e \mid\ !e \mid e_1 := e_2 & \text{references} \\
+		| &\; \diverge\; & \text{diverge} \\
+	\end{align*}
+	\end{minipage}
+}
 \caption{Syntax of the \Slice{} language. \Slice{} supports a variety of continuous distributions with one and two parameters; for a full list of supported distributions, see Appendix~\ref{appen:supported-distributions}.}
 \label{fig:grammar}
 \end{figure}

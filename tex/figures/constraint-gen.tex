@@ -12,6 +12,7 @@
     }
     
     % ---- Two-column aligned table ----
+    \scalebox{0.9}{
     \begin{tabular}{p{0.35\linewidth} p{0.7\linewidth}}
 
     \textbf{Program} & \textbf{Constraints emitted} \\[0.4em]
@@ -80,6 +81,7 @@
       & $\textcolor{brown}{+\; \answersleq{B_7}{V_7}{V_{11}}, B_7 = B_{11}}$ \\
     
     \end{tabular}
+}
     
     \caption{Program from example~\ref{sec:examples:4} (left) and its emitted constraints from each line (right) from \textcolor{blue}{\textsc{TFloat-Const}}, \textcolor{violet}{\textsc{TContinuous-2}}, \textcolor{teal}{\textsc{TIf}}, \textcolor{olive}{\textsc{TVar}}, and \textcolor{brown}{\textsc{TLess} and \textsc{TLessEq}} following the constraint generation rules in Figure~\ref{fig:type-inference}. Lines annotated with $\emptyset$ emit no constraints.}
     \label{fig:constraint-generation}
