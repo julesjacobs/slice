@@ -1,16 +1,18 @@
-\section{Implementation and Evaluation}\label{sec:implem_eval}
+\section{Implementation and Case Studies}\label{sec:implem_eval}
 
-In this section, we evaluate our implementation driven by two questions:
+We have implemented the \Slice{} type inference and discretization procedures in OCaml. The implementation is open-source and available at \url{https://github.com/[anonymized]}, together with all benchmarks, scripts, and a Docker image for reproduction. To compute the interval masses induced by continuous distributions, we use the OCaml GSL package~\cite{gsl} for cumulative distribution function calculations. All experiments were run inside this Docker image on an Apple M3 machine with 16\,GB of RAM.
+
+In the rest of this section, we present two types of case studies:
 \begin{enumerate}
-    \item Does \Slice{} enable exact inference of interesting continuous probabilistic programs that existing approaches do not support?
-    \item How does \Slice{} perform on benchmarks that were already within the scope of prior exact state-of-the-art techniques such as \SPPL{}?
+    \item Case studies where \Slice{} enables exact inference of interesting continuous probabilistic programs that existing approaches do not support.
+    \item Case studies where \Slice{} can achieve speedups over existing tools by making use of fast exact inference procedures for discrete programs.
 \end{enumerate}
 
-We address the first question in~\Cref{sec:case-studies} through a collection of case studies that involve continuous distributions together with recursion, higher-order functions, lists, or conditioning. For these examples, we use \Slice{} to transform the original programs to finite discrete models and analyze the resulting program with \Storm{} \cite{storm} --- a probabilistic model checker.
+We present the first kind in~\Cref{sec:case-studies} through a collection of case studies that involve continuous distributions together with recursion, higher-order functions, lists, or conditioning. For these examples, we use \Slice{} to transform the original programs to finite discrete models and analyze the resulting program with \Storm{} \cite{storm} --- a probabilistic model checker.
 
-We address the second question in~\Cref{sec:synthetic-benchmarks} and~\Cref{sec:fairness-benchmarks} by evaluating \Slice{} + \Dice{} and \Slice{} + \Roulette{} on two classes of benchmarks: (i) synthetic scaling benchmarks that let us vary program size and dependency structure in a controlled way, and (ii) benchmark suites from prior work. 
+We present the second kind in~\Cref{sec:synthetic-benchmarks} and~\Cref{sec:fairness-benchmarks} by evaluating \Slice{} + \Dice{} and \Slice{} + \Roulette{} on two classes of benchmarks: (i) synthetic scaling benchmarks that let us vary program size and dependency structure in a controlled way, and (ii) benchmark suites from prior work.
 
-Our implementation of \Slice{} is in OCaml. To compute the interval masses induced by continuous distributions, we use the OCaml GSL package~\cite{gsl} for cumulative distribution function calculations. The implementation is open-source and available at \url{https://github.com/[anonymized]}, together with all benchmarks, scripts, and a Docker image for reproduction. All experiments were run inside this Docker image on an Apple M3 machine with 16\,GB of RAM. 
+The discretization process itself is quite fast for these case studies: type inference plus discretization takes less than $0.01$ seconds for each example.
 
 \subsection{\Slicebf+\Stormbf: Case Studies}\label{sec:case-studies}
 %
