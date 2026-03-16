@@ -26,6 +26,6 @@ Discretization itself is not new. Garg et al.~\cite{Garg2024BitBlast} encode rea
     \item[Soundness (\Cref{sec:soundness})] Prove semantic preservation with a coupling-style relational argument 
     %suited to a global, non-local transformation
     \cite{Bizjak2015Step,Wand2018Contextual}.
-    \item[Implementation and Evaluation (\Cref{sec:implem_eval})] Provide an open-source implementation targeting \Dice, \Roulette, and \Storm. We provide (i) case studies that \Slice+\Storm handle which cannot be handled by existing techniques, and (ii) evaluate the asymptotic scaling of \Slice+\Dice and \Slice+\Roulette as well as empirical performance on new and existing benchmarks.\kb{citations}
+    \item[Implementation and Case Studies (\Cref{sec:implem_eval})] Implement \Slice{} type inference and discretization transformation in OCaml, and implement \Dice, \Roulette, and \Storm backends for running the discretized programs. We provide (i) case studies that \Slice+\Storm handle which cannot be handled by existing techniques, and (ii) case studies where \Slice+\Dice and \Slice+\Roulette show favorable scaling and empirical performance on new and existing benchmarks.\kb{citations}
 \end{description}
 We conclude with related and future work (\Cref{sec:related}).
