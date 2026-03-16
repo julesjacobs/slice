@@ -247,7 +247,7 @@ $
 %
 %
 \begin{theorem}[Discretization Is Well-Typed]\label{lem:type-transformations}
-	Let $\Gamma \vdash e : \tau$ be a well-typed expression, where $\Gamma$ is a typing environment assigning types to variables. Let $\discretize{e : \tau}$ be the discretization function from Figure~\ref{fig:discretization-code}, and $\discretize{\tau}$ be the type transformation function as defined in Figure~\ref{fig:discretization-types}. Then,
+	Let $\Gamma \vdash e : \tau$. We have
 	\[
 	\discretize{\Gamma} \vdash \discretize{e : \tau} : \discretize{\tau},
 	\]
