@@ -231,7 +231,7 @@ The program remains discretizable: each sampled point is still used only through
 \subsubsection{Bloom Filter}
 \label{sec:casestudy:bloom}
 
-We model a probabilistcally populated variant of a Bloom filter \cite{Bloom1970SpaceTime}. A Bloom filter is a data structure using hash functions for storing data in a space efficient manner: one can insert data into a Bloom filter and subsequently query whether a given data point is stored in the Bloom filter. Due to aggressive compression via hashing, this process can be faulty: while it can never produce false-negatives, it can produce false-positives. Now conisder the following program:
+We model a probabilistcally populated variant of a Bloom filter \cite{Bloom1970SpaceTime}. A Bloom filter is a data structure using hash functions for storing data in a space efficient manner: one can insert data into a Bloom filter and subsequently query whether a given data point is stored in the Bloom filter. Due to aggressive compression via hashing, this process can be faulty: while it can never produce false-negatives, it can produce false-positives. Now conisder the following program (full program shown in~\Cref{ap:casestudy:bloom}):
 
 \begin{minipage}[t]{0.48\textwidth}
 \vspace{0pt}
@@ -243,16 +243,16 @@ We model a probabilistcally populated variant of a Bloom filter \cite{Bloom1970S
   numberstyle=\color{gray}\scriptsize,
   numbersep=7pt,
   basicstyle=\ttfamily\footnotesize]
-let insert = fun q -> fun h1 -> 
-    fun h2 -> fun bf -> !\linelabel{ln:bloom-insert}!
+let insert = fun q -> fun h1 -> !\linelabel{ln:bloom-insert}!
+    fun h2 -> fun bf -> 
   let index1 = h1 q in
   let index2 = h2 q in
   let bf1 = set_true bf index1 in
   set_true bf1 index2
 in
 
-let search = fun q -> fun h1 -> 
-    fun h2 -> fun bf -> !\linelabel{ln:bloom-search}!
+let search = fun q -> fun h1 -> !\linelabel{ln:bloom-search}!
+    fun h2 -> fun bf -> 
   let index1 = h1 q in
   let index2 = h2 q in
   (get bf index1) && (get bf index2)
@@ -285,25 +285,26 @@ let h2 = fun q -> !\linelabel{ln:bloom-h2}!
   else 0
 in
 
-let init = (false, (false, (false, false))) in
-let q1 = gaussian(0,1) in !\linelabel{ln:bloom-samples}!
-let q2 = gaussian(0,1) in
-let q3 = gaussian(0,1) in
-let q4 = gaussian(0,1) in
-let q5 = gaussian(0,1) in
+let init = (false, (false, (false, false))) in !\linelabel{ln:bloom-init}!
 
-let bf =
-  insert q4 h1 h2
-    (insert q3 h1 h2
-      (insert q2 h1 h2
-        (insert q1 h1 h2 init))) in !\linelabel{ln:bloom-build}!
-search q5 h1 h2 bf !\linelabel{ln:bloom-final}!
+let key = gaussian(0,1) in !\linelabel{ln:bloom-key}!
+
+let search_before_full = fix loop bf :=
+  if (full bf) then bf
+  else if (search key h1 h2 bf) then bf
+  else
+    let q = gaussian(0,1) in !\linelabel{ln:bloom-samples}!
+    loop (insert q h1 h2 bf) !\linelabel{ln:bloom-build}!
+in
+
+let bf_final = (search_before_full init) in 
+not (full bf_final) !\linelabel{ln:bloom-final}!
 \end{lstlisting}
 \end{minipage}
 
+The program samples a Gaussian key (l. \ref{ln:bloom-key}) and starts from an empty four-bit Bloom filter (l. \ref{ln:bloom-init}). It then builds the filter recursively by drawing fresh Gaussian samples (l.\ \ref{ln:bloom-samples}) and inserting each one into the filter by hashing the sampled real twice using the comparison-based hash functions \lstinline{h1} and \lstinline{h2} (l.\ \ref{ln:bloom-h1} and \ref{ln:bloom-h2}), following a locality-sensitive hashing technique that hashes similar input items into the same buckets with high probability. Each insertion sets the corresponding bits in the filter using \lstinline{insert} (l.\ \ref{ln:bloom-insert}). The recursion continues until either the filter becomes full or the key is reported present by \lstinline{search} (l.\ \ref{ln:bloom-search} and \ref{ln:bloom-build}). The final Boolean result, \lstinline{not (full bf_final)} (l.\ \ref{ln:bloom-final}), therefore asks whether the key was found strictly before the filter became full.
 
-The program samples four Gaussian values and inserts them into an initially empty four-bit Bloom filter (l.\ \ref{ln:bloom-samples} and \ref{ln:bloom-build}). Each insertion hashes the sampled real twice using the comparison-based functions \lstinline{h1} and \lstinline{h2} (l.\ \ref{ln:bloom-h1} and \ref{ln:bloom-h2}), and sets the corresponding bits via \lstinline{insert} (l.\ \ref{ln:bloom-insert}). It then samples a fifth Gaussian value and queries the filter using the same two hash functions (l.\ \ref{ln:bloom-final} and \ref{ln:bloom-search}), so the program returns $\true$ if the probabilistically populated Bloom filter reports that this last sample is stored in it.
-The key simplification is that the hash functions never inspect the exact value of a sample. They only ask which region the sample falls into, using the cut points $-2$, $0$, and $2$. These cuts partition the real line into four regions, which already coincide with the Bloom filter's index space. \Slice{} therefore replaces each Gaussian draw by its bucket index while preserving exactly the probability of every collision pattern relevant to insertion and search. We generate a Markov chain consisting of $139$ in $0.07$ seconds. \Storm takes less than $0.01$ seconds for model checking.
+The key simplification is that the hash functions never inspect the exact value of a sample. They only ask which region the sample falls into, using the cut points $-2$, $0$, and $2$. These cuts partition the real line into four regions, which already coincide with the Bloom filter's index space. \Slice{} therefore replaces each Gaussian draw by its bucket index while preserving exactly the probability of every collision pattern relevant to insertion and search. The fully discretized program is shown in~\Cref{ap:casestudy:bloom}. We generate a Markov chain consisting of $14$ states in $0.016$ seconds. \Storm takes $0.003$ seconds for model checking.
 
 %\subsubsection{Mondrian-Style Recursive Partitioning}
 %\label{sec:casestudy:mondrian}
