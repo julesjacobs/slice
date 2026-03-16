@@ -1,6 +1,6 @@
 \section{Implementation and Evaluation}\label{sec:implem_eval}
 
-In this section, we evaluate our implementation driven by two questions:\kb{come back gere}
+In this section, we evaluate our implementation driven by two questions:
 \begin{enumerate}
     \item Does \Slice{} enable exact inference of interesting continuous probabilistic programs that existing approaches do not support?
     \item How does \Slice{} perform on benchmarks that were already within the scope of prior exact state-of-the-art techniques such as \SPPL{}?
@@ -227,7 +227,6 @@ Our second case study extends the random interval covering example from  by addi
 The key new component is the recursive function \lstinline{non_overlap} (l.\ \ref{ln:cov-nonoverlap}), which checks whether a sampled point $y$ hits more than one interval of the initally samped intervals. The loop \lstinline{cover} (l.\ \ref{ln:cov-cover}) repeatedly samples a Gaussian point and immediately conditions on this predicate via \lstinline{observe} (l.\ \ref{ln:cov-obs}), so only executions in which the point lies in at most one interval are retained. The final query remains whether all intervals have been covered by stopping time (l.\ \ref{ln:cov-final}).
 
 The program remains discretizable: each sampled point is still used only through comparisons against finitely many sampled interval boundaries, and \lstinline{non_overlap} depends only on the resulting hit pattern, not on the exact real value of $y$. \Slice{} therefore replaces each Gaussian draw by its interval index, yielding a discrete program with a finite exact state space. We generate a Markov chain consisting of $268878$ in $80$ seconds. \Storm takes $4.7$ seconds for model checking.
-\kb{mention storm results}
 
 \subsubsection{Bloom Filter}
 \label{sec:casestudy:bloom}
@@ -305,8 +304,6 @@ search q5 h1 h2 bf !\linelabel{ln:bloom-final}!
 
 The program samples four Gaussian values and inserts them into an initially empty four-bit Bloom filter (l.\ \ref{ln:bloom-samples} and \ref{ln:bloom-build}). Each insertion hashes the sampled real twice using the comparison-based functions \lstinline{h1} and \lstinline{h2} (l.\ \ref{ln:bloom-h1} and \ref{ln:bloom-h2}), and sets the corresponding bits via \lstinline{insert} (l.\ \ref{ln:bloom-insert}). It then samples a fifth Gaussian value and queries the filter using the same two hash functions (l.\ \ref{ln:bloom-final} and \ref{ln:bloom-search}), so the program returns $\true$ if the probabilistically populated Bloom filter reports that this last sample is stored in it.
 The key simplification is that the hash functions never inspect the exact value of a sample. They only ask which region the sample falls into, using the cut points $-2$, $0$, and $2$. These cuts partition the real line into four regions, which already coincide with the Bloom filter's index space. \Slice{} therefore replaces each Gaussian draw by its bucket index while preserving exactly the probability of every collision pattern relevant to insertion and search. We generate a Markov chain consisting of $139$ in $0.07$ seconds. \Storm takes less than $0.01$ seconds for model checking.
-
-\kb{mention Storm}
 
 %\subsubsection{Mondrian-Style Recursive Partitioning}
 %\label{sec:casestudy:mondrian}
