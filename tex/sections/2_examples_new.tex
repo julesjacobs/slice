@@ -316,7 +316,7 @@ The type-annotations reveal how the variable $x$ determines the standard deviati
 Discretization again replaces reals by interval indices, as shown on the right. 
  The observation $x<2$ eliminates the discrete state corresponding to the original interval $[0.5,+\infty)$, mirroring the conditioning on $x<0.5$.
 
-Exact equalities are encoded with $\observekw\; (x \leq c \mathrel{\&\&} x \geq c)$. Measure-zero observations remain delicate~\cite{Jacobs2021ParadoxesProbProg}; our semantics handles them by recording observation failure mass instead of renormalizing, so discretization preserves an even stronger equivalence. Scoring semantics for true measure-zero events are out of scope; users should instead approximate them \mbox{with narrow intervals.}
+Exact equalities are encoded with $\observekw\; (x \leq c \mathrel{\&\&} x \geq c)$. See~\Cref{ap:gpa} for an example. Measure-zero observations remain delicate~\cite{Jacobs2021ParadoxesProbProg}; our semantics handles them by recording observation failure mass instead of renormalizing, so discretization preserves an even stronger equivalence. Scoring semantics for true measure-zero events are out of scope; users should instead approximate them \mbox{with narrow intervals.}
 
 
 

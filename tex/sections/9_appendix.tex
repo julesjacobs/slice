@@ -3,7 +3,7 @@
 \tableofcontents
 
 \section{Slice Examples (continued)}\label{ap:mot}
-This section provides more examples highlighting the language features of \Slice{}. As an additional demonstration, we provide exact inference results obtained by integrating \Slice{} with \Dice{} and \Roulette{}.
+This section is a continuation of~\Cref{sec:examples}, describing more in detail the following examples: \Cref{sec:examples:4,sec:examples:5,sec:examples:6,sec:examples:7}.
 
 \subsection{Control Flow}\label{app:examples:4}
 
@@ -12,88 +12,84 @@ We revisit the control-flow example from \Cref{sec:examples:4}:
     let x = if flip() then uniform(0,2) else gaussian(0,1) in
     let y = if 1.5 > x then 1.8 else 0.3 in x <= y
 \end{lstlisting}
-The salient feature of this program is that the comparison $x \leq y$ is governed by control flow: the right-hand side is not a single constant, but may evaluate to either $0.3$ or $1.8$ depending on the outcome of the earlier test $1.5 > x$. Consequently, the discretization of $x$ must account for both values, even though they arise indirectly through a conditional.
+The main feature of this program is that the comparison $x \leq y$ is governed by control flow: the right-hand side is not a single constant, but may evaluate to either $0.3$ or $1.8$ depending on the outcome of the earlier test $1.5 > x$. Consequently, the discretization of $x$ must account for both these values.
 
 \input{figures/cf-program.tex}
 
-\Cref{fig:control-flow-gaussian} makes these dependencies explicit using a constraint graph over float-typed subexpressions. Solid edges denote data flow through conditionals, while dashed edges denote comparison constraints. In this example, the comparisons $1.5 > x$ and $x \leq y$ jointly determine the cut structure relevant to $x$. In particular, although neither branch defining $x$ syntactically mentions all cuts, the constants $1.5$, $0.3$, and $1.8$ become relevant through the comparison structure of the program.
+We show, at a high-level, how the float type information for this program is propagated. First, \Cref{fig:constraint-graph-gaussian} makes these dependencies explicit using a constraint graph over float-typed subexpressions. Solid edges denote data flow through conditionals, while dashed edges denote comparison constraints. In this example, the comparisons $1.5 > x$ and $x \leq y$ jointly determine the cut structure relevant to $x$. The data flow edges record how continuous samples from $\uniform(0,2)$ and $\gaussian(0,1)$ flow into $x$, while the constants $1.8$ and $0.3$ flow into $y$ through its two branches.
 
 \input{figures/cf-propagation.tex}
 
-The propagation process of float type information proceeds in four stages. First, literal constants contribute singleton value sets, while continuous samples are assigned value set $\top$ (\Cref{fig:control-flow-gaussian-a}). Second, value sets propagate forward along data-flow edges, yielding in particular that $y$ has value set $\{0.3,1.8\}$ (\Cref{fig:control-flow-gaussian-b}). Third, comparison sites generate cut information: $1.5 > x$ contributes the threshold $1.5$, and $x \leq y$ contributes the possible values of $y$, namely $0.3$ and $1.8$ (\Cref{fig:control-flow-gaussian-c}). Since both operands of a comparison must be discretized against compatible interval boundaries, these cut sets are unified across the compared expressions. Finally, the resulting cut set propagates backward along data-flow edges to all contributing subexpressions (\Cref{fig:control-flow-gaussian-d}).
+The propagation process of float type information proceeds in four stages (\Cref{fig:control-flow-gaussian}). First, literal constants contribute singleton value sets, while continuous samples are assigned value set $\top$ (\Cref{fig:control-flow-gaussian-a}). Second, value sets propagate forward along data-flow edges, yielding in particular that $y$ has value set $\{0.3,1.8\}$ (\Cref{fig:control-flow-gaussian-b}). Third, comparison sites generate cut information: $1.5 > x$ contributes the threshold $1.5$, and $x \leq y$ contributes the possible values of $y$, namely $0.3$ and $1.8$ (\Cref{fig:control-flow-gaussian-c}). Since both operands of a comparison must be discretized against compatible interval boundaries, these cut sets are unified across the compared expressions. Finally, the resulting cut set propagates backward along data flow edges to all contributing subexpressions (\Cref{fig:control-flow-gaussian-d}).
 
 The final cut set is
 \[
 \{\cleq{0.3}, \clt{1.5}, \cleq{1.8}\},
 \]
-inducing the intervals $(-\infty,0.3]$, $(0.3,1.5)$, $[1.5,1.8]$, and $(1.8,\infty)$. Both branches defining $x$ are therefore discretized with respect to this common partition. This example highlights the non-locality addressed by \Slice{}: cut information is not determined syntactically at the sampling site, but rather by global interaction between data flow and comparison structure.
+inducing the intervals $(-\infty,0.3]$, $(0.3,1.5)$, $[1.5,1.8]$, and $(1.8,\infty)$. 
 
 
 \subsection{Discrete Latent Variable}\label{app:examples:5}
 
 We revisit the discrete latent variable example from \Cref{sec:examples:5}:
 \begin{lstlisting}[escapeinside={<@}{@>},aboveskip=1em,belowskip=1em]
-    let x = if flip() <@\textcolor{purple}{then}@> 0.5 <@\textcolor{purple}{else}@> 1.5 in gaussian(0, <@\textcolor{red}{x}@>) <@\textcolor{orange}{<}@> 0.5
+    let x = if flip() then 0.5 else 1.5 in gaussian(0, x) < 0.5
 \end{lstlisting}
-The essential feature here is that the parameter of the continuous distribution is itself determined by a discrete choice. Thus, although the final comparison is only against the constant $0.5$, the discretization of the program must also account for the fact that the Gaussian is instantiated at two distinct parameter values.
+The essential feature here is that the parameter of the continuous distribution is itself determined by a discrete choice. Thus, the discretization of the program must also account for the fact that the Gaussian is instantiated at two distinct parameter values.
 
 \input{figures/latent-variable.tex}
 
-\Cref{fig:control-flow-distinguishes} presents the corresponding constraint graph. The variable $x$ is formed by control flow from the two constants $0.5$ and $1.5$, and therefore has value set $\{0.5,1.5\}$. This value information is not used only for subsequent comparisons: because $x$ appears as a parameter to $\gaussian(0,x)$, the transformation must recover which concrete value of $x$ was selected in order to choose the corresponding discretized distribution. The figure records this dependency by the \emph{recovers} constraint on $x$.
+\Cref{fig:control-flow-distinguishes} presents the corresponding constraint graph. The variable $x$ is formed by control flow from the two constants $0.5$ and $1.5$, and therefore has value set $\{0.5,1.5\}$. Because $x$ appears as a parameter to $\gaussian(0,x)$, \Slice{} must recover which concrete value of $x$ was selected in order to instantiate the appropriate Gaussian distribution. The figure records this dependency by the \emph{recovers} constraint on $x$.
 
-Operationally, the recovers constraint requires that the values in the value set of $x$ be represented by distinct discrete indices. This is why the type system uses non-strict cuts for such values: the cut set $\{\cleq{0.5},\cleq{1.5}\}$ induces a partition in which $0.5$ and $1.5$ occupy distinguishable regions, allowing them to be mapped to separate cases in the discretized program. The final comparison $\gaussian(0,x) < 0.5$ contributes the cut $\clt{0.5}$ for the sampled Gaussian result, while the value-set information on $x$ determines which discrete Gaussian approximation is selected.
+Operationally, the recovers constraint requires that the values in the value set of $x$ be represented by distinct discrete indices. This is why the type system uses non-strict cuts for such values: the cut set $\{\cleq{0.5},\cleq{1.5}\}$ induces a partition in which $0.5$ and $1.5$ occupy distinguishable regions, allowing them to be mapped to separate cases in the discretized program. The final comparison $\gaussian(0,x) < 0.5$ contributes the cut $\clt{0.5}$ for the sampled Gaussian result, while the value-set information on $x$ determines which discretized Gaussian is selected.
 
-This example isolates a second kind of non-locality handled by \Slice{}. The relevant discretization of a continuous expression may depend not only on comparison structure, but also on latent choices that determine its parameters. In the transformed program, this dependency appears as a case split over the values of $x$, with one discretized Gaussian for each possible standard deviation.
+\subsection{Indian GPA Problem}\label{ap:gpa}
 
-
-\subsection{Indian GPA Problem}\label{sec:gpa}
-
-This example involves both discrete and continuous random variables and models a student's GPA based on nationality (India or USA) and whether they have a perfect record. The GPA is deterministic for perfect students (10.0 for India, 4.0 for USA) but drawn from a uniform distribution otherwise. The program computes the probability that a student's GPA falls below 1.0:
-
-\todo[inline]{Add conditioning}
+This example involves both discrete and continuous random variables and models a student's GPA based on nationality (India or USA) and whether they have a perfect record. The GPA is deterministic for perfect students (10.0 for India, 4.0 for USA) but drawn from a uniform distribution otherwise. \Slice{} correctly handles conditioning on a positive-measure atom at 4 or 10:
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
   let nationality = discrete(0.5, 0.5) in
   let perfect = discrete(0.01, 0.99) in
   let gpa = if nationality <= 0 then
           if perfect <= 0 then
-            (10.0 : !{\ftb{\{<1\}}{\{10\}}}!)
+            (10.0 : !{\ftb{\{<10,<=10\}}{\{10\}}}!)
           else
-            (uniform(0, 10) : !{\ft{\{<1\}}}!)
+            (uniform(0, 10) : !{\ft{\{<10,<=10\}}}!)
         else
           if perfect <= 0 then
-            (4.0 : !{\ftb{\{<1\}}{\{4\}}}!)
+            (4.0 : !{\ftb{\{<10,<=10\}}{\{4\}}}!)
           else
-            (uniform(0, 4) : !{\ft{\{<1\}}}!)
+            (uniform(0, 4) : !{\ft{\{<10,<=10\}}}!)
         : !{\ft{\{<1\}}}! in
-  gpa < (1.0 : !{\ftb{\{<1\}}{\{1.0\}}}!)
+  let _ = observe(gpa : !{\ft{\{<10,<=10\}}}! <= 10 : !{\ftb{\{<10,<=10\}}{\{10\}}}!
+            && gpa : !{\ft{\{<10,<=10\}}}! >= 10 : !{\ftb{\{<10,<=10\}}{\{10\}}}!) in 
+  nationality > 0
 \end{lstlisting}
 
-\noindent The type system collects the cut $<1$ for all GPA expressions. This splits each uniform distribution into two intervals at the threshold 1.0. The discretized version becomes:
+\noindent The type system collects the cuts $<10, \leq 10$ for all GPA expressions. This splits each uniform distribution into three intervals at the thresholds $<10, \leq 10$. The discretized version becomes:
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em]
   let nationality = discrete(0.5, 0.5) in
-ountable  let perfect = discrete(0.01, 0.99) in
+  let perfect = discrete(0.01, 0.99) in
   let gpa = if nationality <= 0 then
           if perfect <= 0 then  1
           else
-            discrete(0.1, 0.9)
+            discrete(1.0, 0.0, 0.0)
         else
-          if perfect <= 0 then  1
+          if perfect <= 0 then 0
           else
-            discrete(0.25, 0.75) in
-  gpa < 1
+            discrete(1.0, 0.0, 0.0) in
+  let _ = observe(gpa <= 1 && gpa >= 1)
+  nationality > 0
 \end{lstlisting}
 
-\noindent Here, \uniform(0,10) becomes \discrete(0.1, 0.9) representing 10\% probability for $[0,1)$ and 90\% for $[1,10]$. Similarly, \uniform(0,4) becomes \discrete(0.25, 0.75). Constants 10.0 and 4.0 fall into the second interval in the partition $(-\infty, 1) \cup [1,+\infty)$ and are thus both mapped to index 1 in the discretized program.
-
-This gives the output \result{0.17325}{0.82675} when run with \Dice{} and \Roulette{}.
+% \noindent Here, \uniform(0,10) becomes \discrete(1.0, 0.0, 0.0) representing 10\% probability for $[0,1)$ and 90\% for $[1,10]$. Similarly, \uniform(0,4) becomes \discrete(0.25, 0.75). Constants 10.0 and 4.0 fall into the second interval in the partition $(-\infty, 1) \cup [1,+\infty)$ and are thus both mapped to index 1 in the discretized program.
 
 
 \subsection{Random Interval Covering}\label{ap:epsball}
 
 % Discretized version
-\begin{figure*}[t]
+\begin{figure*}[h]
 \centering
 \begin{minipage}[t]{0.46\textwidth}
 \vspace{0pt}
@@ -179,6 +175,8 @@ is_covered final
 \label{fig:app:epsball}
 \end{figure*}
 
+
+\section{Slice Case Studies (continued)}
 
 \subsection{Random Interval Covering with Conditioning}\label{sec:epsball-observe}
 
@@ -284,10 +282,9 @@ is_covered final
     \end{lstlisting}
     \end{minipage}
     
-    \caption{A stochastic coverage process over $[0,1]$ with conditioning, continuous sampling, higher-order recursion, and lists.}
+\caption{A stochastic coverage process over $[0,1]$ with conditioning, continuous sampling, higher-order recursion, and lists.}
     \label{fig:coverage-conditioning}
 \end{figure*}
-
 
 % Discretized version
 \begin{figure*}[t]
@@ -518,7 +515,6 @@ search q5 h1 h2 updated_bf_4
     \label{fig:bloom-filter}
 \end{figure*}
 
-
 % Discretized version
 \begin{figure*}[t]
     \centering
@@ -644,6 +640,9 @@ search q5 h1 h2 updated_bf_4
 \end{figure*}
 
 \subsection{Mondrian-Style Recursive Partitioning}
+
+\begin{figure*}[t]
+\centering
 \begin{minipage}[t]{0.48\textwidth}
     \vspace{0pt}
     \begin{lstlisting}[aboveskip=0.4em,belowskip=0.4em,
@@ -707,7 +706,7 @@ search q5 h1 h2 updated_bf_4
               between (snd p) (snd q)) !\linelabel{ln:mond-init}!
     \end{lstlisting}
 \end{minipage}
-    
+\end{figure*}
     
 
 
