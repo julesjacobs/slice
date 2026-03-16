@@ -442,11 +442,11 @@ def generate_line_graphs(benchmark_results, output_path,
     
     # Set larger font sizes globally for this figure
     plt.rcParams.update({
-        'axes.labelsize': 26,     # axis labels
-        'axes.titlesize': 26,     # plot title (if any)
-        'xtick.labelsize': 22,    # x tick labels
-        'ytick.labelsize': 22,    # y tick labels
-        'legend.fontsize': 24,    # legend text
+        'axes.labelsize': 30,     # axis labels
+        'axes.titlesize': 30,     # plot title (if any)
+        'xtick.labelsize': 24,    # x tick labels
+        'ytick.labelsize': 24,    # y tick labels
+        'legend.fontsize': 22,    # legend text
         'lines.markersize': 8     # marker size
     })
     

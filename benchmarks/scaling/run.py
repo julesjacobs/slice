@@ -438,11 +438,11 @@ def generate_line_graphs(benchmark_results, output_path,
     
     # Set larger font sizes globally for this figure
     plt.rcParams.update({
-        'axes.labelsize': 18,     # axis labels
-        'axes.titlesize': 18,     # plot title (if any)
-        'xtick.labelsize': 14,    # x tick labels
-        'ytick.labelsize': 14,    # y tick labels
-        'legend.fontsize': 14,    # legend text
+        'axes.labelsize': 36,     # axis labels
+        'axes.titlesize': 36,     # plot title (if any)
+        'xtick.labelsize': 30,    # x tick labels
+        'ytick.labelsize': 30,    # y tick labels
+        'legend.fontsize': 24,    # legend text
         'lines.markersize': 8     # marker size
     })
     
@@ -476,7 +476,7 @@ def generate_line_graphs(benchmark_results, output_path,
         plt.plot(all_prog_sizes, roulette_times, label="Slice+Roulette", color="forestgreen", marker='D', markevery=[-1], linewidth=3.0)
 
     plt.xlabel("Program Size")
-    plt.ylabel("Execution Time (seconds)")
+    plt.ylabel("Time (s)")
     
     # Remove top and right borders
     plt.gca().spines['top'].set_visible(False)
@@ -528,15 +528,15 @@ def main():
     tests_1_arg = [
         #build_conditional_independent_slice,
         #build_conditional_independent_fork_slice,
-        #build_conditional_random_independent_slice_1,
+        build_conditional_random_independent_slice_1,
         #build_conditional_random_independent_slice_2,
     ]
     
     tests_2_args = [
-        #build_alternating_guard_slice_1,
-        build_alternating_guard_slice_2,
+        build_alternating_guard_slice_1,
+        #build_alternating_guard_slice_2,
         #build_alternating_guard_slice_3,
-        #build_random_alternating_guard_slice
+        build_random_alternating_guard_slice
     ]
     
     # Run all benchmarks
