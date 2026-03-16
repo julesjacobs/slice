@@ -9,7 +9,7 @@ We use a constraint language as shown in Figure~\ref{fig:constraints-grammar} to
 The type inference rules closely mirror the typing rules in Figure~\ref{fig:typing-float}, with two key differences: First, the inference rules generate a constraint set instead of having those constraints be part of the premises of the rules. Second, subtyping is handled in a syntax-directed way, where instead of a general subtyping rule, we bake the subtyping relation into each rule.
 
 \begin{figure}[!t]
-    \begin{align*}
+    \scalebox{0.9}{$\begin{aligned}
     C &::= \; \tau_1 <: \tau_2  %\text{\quad (subtyping)} \\
           \mid \distinguishes{B}{V}  %\text{\quad (distinguishability)} \\
           \mid \answerslt{B}{V_1}{V_2}  %\text{\quad (less-than answerability)} \\
@@ -21,7 +21,7 @@ The type inference rules closely mirror the typing rules in Figure~\ref{fig:typi
           \mid V_1 = V_2  %\text{\quad (value set equality)} \\
           \mid B_1 \equiv_{\top} B_2   %\text{\quad (join only if $B_1 = \top$ or $B_2 = \top$)} \\
           \mid C_1, C_2   %\text{\quad (conjunction)}
-    \end{align*}
+    \end{aligned}$}
 \caption{Syntax for our constraint language. Constraints correspond to the semantic requirements in our type system: subtyping ensures type compatibility, $\distinguishes{B}{V}$ ensures that distribution parameters can be recovered after discretization, $\answerslt{B}{V_1}{V_2}$ and $\answersleq{B}{V_1}{V_2}$ ensure that comparison results can be determined after discretization, and $\has{V}{c}$ ensures that constants are properly tracked.}
 \label{fig:constraints-grammar}
 \end{figure}
