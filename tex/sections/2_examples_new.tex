@@ -123,7 +123,7 @@ Notice how both $2.5$ and $4.5$ are discretized to $1$, because for the purpose 
 \fi
 \subsection{Control Flow}\label{sec:examples:4}
 
-We now consider comparisons against an expression for which control flow determines which of several constant values it may take. Additionally, continuous values can flow through conditionals before reaching such a comparison:
+We now consider comparisons against an expression for which control flow determines which of several constant values it may take. Additionally, continuous values can flow through conditionals:
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!,gobble=4]
     let x = if flip() then uniform(0,2) else gaussian(0,1) in
