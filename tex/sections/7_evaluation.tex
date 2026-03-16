@@ -14,21 +14,28 @@ Our implementation of \Slice{} is in OCaml. To compute the interval masses induc
 
 \subsection{\Storm Backend and Case Studies}\label{sec:case-studies}
 %
-
+When discretized expressions contain unbounded recursion, no exact inference engines exist. Our key insight is to use \emph{probabilistic model checking}: The small-step semantics of our language (cf.\ \Cref{tab:smallstep-1,tab:smallstep-2}) for discrete expressions gives rise to a \emph{Markov chain} modeling the potentially infinite stochastic process of program execution. If that Markov chain is finite, we can use the probabilistic model checker \Storm for exact inference. Let us start with an illustrative example.
+%\kbin{old}
 \todo[inline]{Add citations for examples}
 
-We first turn to several case studies combining continuous sampling with features that are typically difficult for exact analysis, including unbounded recursion, higher-order functions, and conditioning inside unbounded loops. Although these programs appear to range over infinite state spaces, \Slice{} collapses such programs to a finite exact model when continuous values are observed only through finitely many comparison outcomes.
 
-For each case study, we apply \Slice{} to obtain a discrete program and then construct a finite Markov chain from that program using the structural operational semantics given in~\Cref{ap:sos-rules}. From here, \Storm{} can be used to perform exact quantitative analysis. The full continuous and discretized programs are given in~\Cref{ap:mot}.
+%We first turn to several case studies combining continuous sampling with features that are typically difficult for exact analysis, including unbounded recursion, higher-order functions, and conditioning inside unbounded loops. Although these programs appear to range over infinite state spaces, \Slice{} collapses such programs to a finite exact model when continuous values are observed only through finitely many comparison outcomes.
+%
+%For each case study, we apply \Slice{} to obtain a discrete program and then construct a finite Markov chain from that program using the structural operational semantics given in~\Cref{ap:sos-rules}. From here, \Storm{} can be used to perform exact quantitative analysis. The full continuous and discretized programs are given in~\Cref{ap:mot}.
+\kb{put ref to discretized programs in appendix}
 
 \subsubsection{Conditional Resampling Loop}
+Consider the continuous program depicted in \Cref{fig:conditional-resampling}, containing continuous sampling, unbounded recusion, and conditioning inside of the recursion. \Slice automatically discretizes this program, also shown in \Cref{fig:conditional-resampling}. We generate the corresponding Markvov chain by unfolding the small-step semantics in a breadth-first manner. In the presence of unbounded recursion, this Markov chain \emph{might} be infinite and this process might thus diverge. If, however, it terminates, the resulting Markov chain is finite and precisely captures the execution behavior of the discretized program. For this example, this is the case: Even though the discretized program contains unbounded recursion, its execution behavior can be modelled as a finite-state Markov chain\footnote{We apply a straightforward optimization: Intermediate execution steps that do not branch probabilistically can be collapsed into a single transition. This is the reason why all states in \Cref{fig:conditional-resampling} correspond to the header of the recursive function.}, where $\bot$ is a special state entered when encountered an observation failure.
 
-We first study a small but revealing program with unbounded recursion (cf.~\Cref{fig:conditional-resampling}). Starting from $x=1$ (l.\ \ref{ln:cr-init}), it first conditions on $x \ge 0.2$ (l.\ \ref{ln:cr-obs}), then either terminates with \lstinline{true} if $x \le 0.5$ (l.\ \ref{ln:cr-true}), recurses on the same value if $0.5 < x \le 0.8$ (l.\ \ref{ln:cr-loop}), or samples a fresh $y \sim \uniform(0,1)$ and continues from $y$ (l.\ \ref{ln:cr-sample}). Thus, although execution may continue for an unbounded number of steps, the control flow depends only on the outcomes of comparisons against the constants $0.2$, $0.5$, and $0.8$.
+Now, using the probabilistic model checker \Storm, we can peform exact inference: It is immediate that the Markov chain's probability $\Pr(\lozenge \texttt{true} \mid 
+\square \lnot \bot)$  of eventually reaching $\true$ (in LTL: $\lozenge\true$)  \emph{given} that we never enter the observation-failure state $\bot$ (in LTL: $\square \lnot \bot$) equals the measure of $\true$ in the program's normalized posterior distribution. 
 
-\Slice{} exploits exactly this fact. It partitions the sampled interval into finitely many regions induced by these cuts, and rewrites the program so that it ranges over abstract discrete states instead of arbitrary reals. In the discretized program, the observation and branch conditions are rewritten over these abstract states (l.\ \ref{ln:dcr-obs}--\ref{ln:dcr-loop}), and the continuous resampling step is replaced by the exact discrete distribution \lstinline{discrete(0.2,0.3,0.3,0.2)} (l.\ \ref{ln:dcr-sample}).
+%We first study a small but revealing program with unbounded recursion (cf.~\Cref{fig:conditional-resampling}). Starting from $x=1$ (l.\ \ref{ln:cr-init}), it first conditions on $x \ge 0.2$ (l.\ \ref{ln:cr-obs}), then either terminates with \lstinline{true} if $x \le 0.5$ (l.\ \ref{ln:cr-true}), recurses on the same value if $0.5 < x \le 0.8$ (l.\ \ref{ln:cr-loop}), or samples a fresh $y \sim \uniform(0,1)$ and continues from $y$ (l.\ \ref{ln:cr-sample}). Thus, although execution may continue for an unbounded number of steps, the control flow depends only on the outcomes of comparisons against the constants $0.2$, $0.5$, and $0.8$.
+%
+%\Slice{} exploits exactly this fact. It partitions the sampled interval into finitely many regions induced by these cuts, and rewrites the program so that it ranges over abstract discrete states instead of arbitrary reals. In the discretized program, the observation and branch conditions are rewritten over these abstract states (l.\ \ref{ln:dcr-obs}--\ref{ln:dcr-loop}), and the continuous resampling step is replaced by the exact discrete distribution \lstinline{discrete(0.2,0.3,0.3,0.2)} (l.\ \ref{ln:dcr-sample}).
 
 
-\begin{figure*}[h]
+\begin{figure*}[t]
     \centering
     
     \begin{minipage}[t]{0.38\textwidth}
@@ -165,19 +172,20 @@ We first study a small but revealing program with unbounded recursion (cf.~\Cref
 
     \todo[inline]{Explain the $\lozenge$ and $\square$ symbols.}
     
-    \caption{Conditional resampling loop and its discretization. The continuous program is transformed into a finite-state discrete program, which induces a finite Markov chain and can then be analyzed by \Storm.}
+    \caption{Conditional resampling loop and its discretization. The continuous program is transformed into a finite-state discrete program, which induces a finite Markov chain and can then be analyzed by \Storm. The $\bot$-state in that Markov chain is entered when encountering an observation failure.}
     \label{fig:conditional-resampling}
 \end{figure*}
 
 \subsubsection{Random Interval Covering of $[0,1]$ with Conditioning}
 \label{sec:casestudy:epsball}
 
-Our second case study extends the random interval covering example from \Cref{sec:examples:7} by adding conditioning inside the unbounded stochastic loop. As before, the program maintains a list-valued state of interval predicates and coverage flags; here we show only the new snippets relevant to the conditioning behavior.
+Our second case study extends the random interval covering example from  by adding conditioning inside the unbounded stochastic loop: We condition on \emph{every} sample fallin within \emph{at most} one interval. Let us consider the difference of the new program and the one from \Cref{sec:examples:7}:
+%As before, the program maintains a list-valued state of interval predicates and coverage flags; here we only show the difference to the program in \Cref{fig:epsball}:
+%
 
 \begin{minipage}[t]{0.48\textwidth}
     \vspace{0pt}
     \begin{lstlisting}[aboveskip=0.4em,belowskip=0.4em,gobble=4,
-      language=OCaml,
       escapechar=!,
       numbers=left,
       stepnumber=1,
@@ -199,7 +207,6 @@ Our second case study extends the random interval covering example from \Cref{se
     \begin{minipage}[t]{0.48\textwidth}
     \vspace{0pt}
     \begin{lstlisting}[aboveskip=0.4em,belowskip=0.4em,gobble=4,
-      language=OCaml,
       escapechar=!,
       numbers=left,
       stepnumber=1,
@@ -218,15 +225,18 @@ Our second case study extends the random interval covering example from \Cref{se
     is_covered final !\linelabel{ln:cov-final}!
     \end{lstlisting}
 \end{minipage}
+%
 
-The key new component is the recursive predicate \lstinline{non_overlap} (l.\ \ref{ln:cov-nonoverlap}), which checks whether a sampled point $y$ hits more than one interval in the current state. The loop \lstinline{cover} (l.\ \ref{ln:cov-cover}) repeatedly samples a Gaussian point and immediately conditions on this predicate via \lstinline{observe} (l.\ \ref{ln:cov-obs}), so only executions in which the point lies in at most one interval are retained. The final query remains whether all intervals have been covered by stopping time (l.\ \ref{ln:cov-final}).
+\noindent
+The key new component is the recursive function \lstinline{non_overlap} (l.\ \ref{ln:cov-nonoverlap}), which checks whether a sampled point $y$ hits more than one interval of the initally samped intervals. The loop \lstinline{cover} (l.\ \ref{ln:cov-cover}) repeatedly samples a Gaussian point and immediately conditions on this predicate via \lstinline{observe} (l.\ \ref{ln:cov-obs}), so only executions in which the point lies in at most one interval are retained. The final query remains whether all intervals have been covered by stopping time (l.\ \ref{ln:cov-final}).
 
 The program remains discretizable: each sampled point is still used only through comparisons against finitely many sampled interval boundaries, and \lstinline{non_overlap} depends only on the resulting hit pattern, not on the exact real value of $y$. \Slice{} therefore replaces each Gaussian draw by its interval index, yielding a discrete program with a finite exact state space.
+\kbin{mention storm results}
 
 \subsubsection{Bloom Filter}
 \label{sec:casestudy:bloom}
 
-We model a Bloom filter populated by continuous samples, a generalization of the original Bloom filter~\cite{Bloom1970SpaceTime}. The program samples four Gaussian values and inserts them into an initially empty four-bit Bloom filter (l.\ \ref{ln:bloom-samples} and \ref{ln:bloom-build}). Each insertion hashes the sampled real twice using the comparison-based functions \lstinline{h1} and \lstinline{h2} (l.\ \ref{ln:bloom-h1} and \ref{ln:bloom-h2}), and sets the corresponding bits via \lstinline{insert} (l.\ \ref{ln:bloom-insert}). It then samples a fifth Gaussian value and queries the filter using the same two hash functions (l.\ \ref{ln:bloom-final} and \ref{ln:bloom-search}), so the overall query asks for the probability that this final lookup returns \lstinline{true}.
+We model a probabilistcally populated variant of a Bloom filter \cite{Bloom1970SpaceTime}. A Bloom filter is a data structure using hash functions for storing data in a space efficient manner: one can insert data into a Bloom filter and subsequently query whether a given data point is stored in the Bloom filter. Due to aggressive compression via hashing, this process can be faulty: while it can never produce false-negatives, it can produce false-positives. Now conisder the following program:
 
 \begin{minipage}[t]{0.48\textwidth}
 \vspace{0pt}
@@ -296,7 +306,11 @@ search q5 h1 h2 bf !\linelabel{ln:bloom-final}!
 \end{lstlisting}
 \end{minipage}
 
-The key simplification is that the hash functions never inspect the exact value of a sample. They only ask which region the sample falls into, using the cut points $-2$, $0$, and $2$. These cuts partition the line into four regions, which already coincide with the Bloom filter's index space. \Slice{} therefore replaces each Gaussian draw by its bucket index while preserving exactly the probability of every collision pattern relevant to insertion and search.
+\noindent
+The program samples four Gaussian values and inserts them into an initially empty four-bit Bloom filter (l.\ \ref{ln:bloom-samples} and \ref{ln:bloom-build}). Each insertion hashes the sampled real twice using the comparison-based functions \lstinline{h1} and \lstinline{h2} (l.\ \ref{ln:bloom-h1} and \ref{ln:bloom-h2}), and sets the corresponding bits via \lstinline{insert} (l.\ \ref{ln:bloom-insert}). It then samples a fifth Gaussian value and queries the filter using the same two hash functions (l.\ \ref{ln:bloom-final} and \ref{ln:bloom-search}), so the program returns $\true$ if the probabilistically populated Bloom filter reports that this last sample is stored in it.
+The key simplification is that the hash functions never inspect the exact value of a sample. They only ask which region the sample falls into, using the cut points $-2$, $0$, and $2$. These cuts partition the real line into four regions, which already coincide with the Bloom filter's index space. \Slice{} therefore replaces each Gaussian draw by its bucket index while preserving exactly the probability of every collision pattern relevant to insertion and search.
+
+\kbin{mention Storm}
 
 %\subsubsection{Mondrian-Style Recursive Partitioning}
 %\label{sec:casestudy:mondrian}
