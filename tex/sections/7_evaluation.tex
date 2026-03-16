@@ -302,7 +302,7 @@ search q5 h1 h2 bf !\linelabel{ln:bloom-final}!
 \end{lstlisting}
 \end{minipage}
 
-\noindent
+
 The program samples four Gaussian values and inserts them into an initially empty four-bit Bloom filter (l.\ \ref{ln:bloom-samples} and \ref{ln:bloom-build}). Each insertion hashes the sampled real twice using the comparison-based functions \lstinline{h1} and \lstinline{h2} (l.\ \ref{ln:bloom-h1} and \ref{ln:bloom-h2}), and sets the corresponding bits via \lstinline{insert} (l.\ \ref{ln:bloom-insert}). It then samples a fifth Gaussian value and queries the filter using the same two hash functions (l.\ \ref{ln:bloom-final} and \ref{ln:bloom-search}), so the program returns $\true$ if the probabilistically populated Bloom filter reports that this last sample is stored in it.
 The key simplification is that the hash functions never inspect the exact value of a sample. They only ask which region the sample falls into, using the cut points $-2$, $0$, and $2$. These cuts partition the real line into four regions, which already coincide with the Bloom filter's index space. \Slice{} therefore replaces each Gaussian draw by its bucket index while preserving exactly the probability of every collision pattern relevant to insertion and search. We generate a Markov chain consisting of $139$ in $0.07$ seconds. \Storm takes less than $0.01$ seconds for model checking.
 
