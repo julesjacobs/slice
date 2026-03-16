@@ -1,4 +1,5 @@
 \begin{figure}
+	\scalebox{0.75}{
 \begin{mathpar}
     \inferrule[\textsc{Sub-Refl}]
     {\tau\in\{\intty,\bool,\fin{n}\}}
@@ -28,6 +29,7 @@
     {\tau_1 <: \tau_2 \and \Gamma \vdash e : \tau_1}
     {\Gamma \vdash e : \tau_2}
 \end{mathpar}
+}
 \caption{Subtyping relation. For both cut- and value sets, we let  $			\latticeelem \latticeleq \latticeelem'
 				~\text{iff}~
 				\begin{cases}

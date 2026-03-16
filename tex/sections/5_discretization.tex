@@ -1,7 +1,5 @@
 \section{Discretization}\label{sec:discretization}
 % \alexandra{This description needs a clear explanation that there are two parts to the discretization: types and then functions. If I understand correctly the text before the next subsection is describing what is in Figure 6. This is completely unclear now... As far as I can see Fig.6 is not mentioned anywhere? }
-\kbin{explain why diverge makes sense.}
-
 \begin{figure*}[t]
     \centering
     \scriptsize
@@ -228,18 +226,21 @@ We conclude this section by extending the discretization function $\discretize{\
 %
 \begin{figure}[t]
 	\centering
-	\begin{align*}
-		\discretize{\tau} &= 
+	\scalebox{0.9}{
+	$
+		\discretize{\tau} = 
 		\begin{cases}
 			\fin{|B|+1} & \text{if } \tau = \float[B; V] \text{ and } B \neq \top \\[0.5em]
 			\floattype{B}{V} & \text{if } \tau = \float[B; V] \text{ and } B = \top \\[0.5em]
-			\discretize{A} \to \discretize{B} & \text{if } \tau = A \to B \\[0.5em]
-			\discretize{A} \times \discretize{B} & \text{if } \tau = A \times B \\[0.5em]
-			\listty{\discretize{A}} & \text{if } \tau = \listty{A} \\[0.5em]
+			\text{(straightforward recursion on type structure)} & \text{otherwise}
+			%\discretize{A} \to \discretize{B} & \text{if } \tau = A \to B \\[0.5em]
+			%\discretize{A} \times \discretize{B} & \text{if } \tau = A \times B \\[0.5em]
+			%\listty{\discretize{A}} & \text{if } \tau = \listty{A} \\[0.5em]
 			% \texttt{ref}(\discretize{A}) & \text{if } \tau = \texttt{ref}(A) \\[0.5em]
-			\tau & \text{otherwise}\\[-1ex]
+			%\tau & \text{otherwise}\\[-1ex]
 		\end{cases}
-	\end{align*}
+$
+}
 	\caption{Transformation of types under $\mathcal{D}$, where $\mathcal{D}$ acts on types.}
 	\label{fig:discretization-types}
 \end{figure}

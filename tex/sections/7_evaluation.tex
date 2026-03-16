@@ -1,22 +1,21 @@
 \section{Implementation and Evaluation}\label{sec:implem_eval}
 
-In this section, we evaluate the practical impact of exact discretization through experiments. Our evaluation is organized around two questions:\kb{come back gere}
+In this section, we evaluate our implementation driven by two questions:\kb{come back gere}
 \begin{enumerate}
-    \item Does \Slice{} enable rigorous analysis of continuous probabilistic programs that existing exact systems do not directly support?\kb{be careful here}
-    \item What is the cost of applying \Slice{} on benchmarks that were already within the scope of prior exact techniques (e.g.~\SPPL{})?
+    \item Does \Slice{} enable exact inferemce of interesting continuous probabilistic programs that existing approaches do not support?
+    \item How does \Slice{} perform on benchmarks that were already within the scope of prior exact state-of-the-art techniques such as \SPPL{}?
 \end{enumerate}
 
-We address the first question in~\Cref{sec:case-studies} through a collection of case studies that involve continuous distributions together with recursion, higher-order functions, lists, or conditioning patterns that existing exact systems have largely not handled directly. For these examples, we use \Slice{} to transform the original programs to finite discrete models and analyze the resulting model with \Storm{}, a probabilistic model checker.
+We address the first question in~\Cref{sec:case-studies} through a collection of case studies that involve continuous distributions together with recursion, higher-order functions, lists, or conditioning. For these examples, we use \Slice{} to transform the original programs to finite discrete models and analyze the resulting model with \Storm{} \cite{storm}, a probabilistic model checker.
 
 We address the second question in~\Cref{sec:synthetic-benchmarks} and~\Cref{sec:fairness-benchmarks} by evaluating \Slice{} + \Dice{} and \Slice{} + \Roulette{} on two classes of benchmarks: (i) synthetic scaling benchmarks that let us vary program size and dependency structure in a controlled way, and (ii) benchmark suites from prior work. 
 
 Our implementation of \Slice{} is in OCaml. To compute the interval masses induced by continuous distributions, we use the OCaml GSL package~\cite{gsl} for cumulative distribution function calculations. The implementation is open-source and available at \url{https://github.com/[anonymized]}, together with all benchmarks, scripts, and a Docker image for reproduction. All experiments were run inside this Docker image on an Apple M3 machine with 16\,GB of RAM. 
 
-\subsection{\Storm Backend and Case Studies}\label{sec:case-studies}
+\subsection{\Stormbf Backend and Case Studies}\label{sec:case-studies}
 %
-When discretized expressions contain unbounded recursion, no exact inference engines exist. Our key insight is to use \emph{probabilistic model checking}: The small-step semantics of our language (cf.\ \Cref{tab:smallstep-1,tab:smallstep-2}) for discrete expressions gives rise to a \emph{Markov chain} modeling the potentially infinite stochastic process of program execution. If that Markov chain is finite, we can use the probabilistic model checker \Storm for exact inference. Let us start with an illustrative example.
+When discretized expressions contain unbounded recursion, no exact inference engines exist. Our key insight is to use \emph{probabilistic model checking}: The small-step semantics of our language (cf.\ \Cref{tab:smallstep-1,tab:smallstep-2}) for discrete expressions gives rise to a \emph{Markov chain} modeling the potentially infinite stochastic process of program execution. If that Markov chain is finite, we can use the probabilistic model checker \Storm \cite{storm} for exact inference. Let us start with an illustrative example.
 %\kbin{old}
-\todo[inline]{Add citations for examples}
 
 
 %We first turn to several case studies combining continuous sampling with features that are typically difficult for exact analysis, including unbounded recursion, higher-order functions, and conditioning inside unbounded loops. Although these programs appear to range over infinite state spaces, \Slice{} collapses such programs to a finite exact model when continuous values are observed only through finitely many comparison outcomes.
@@ -169,9 +168,6 @@ Now, using the probabilistic model checker \Storm, we can peform exact inference
         };
         \end{tikzpicture}
     \end{minipage}
-
-    \todo[inline]{Explain the $\lozenge$ and $\square$ symbols.}
-    
     \caption{Conditional resampling loop and its discretization. The continuous program is transformed into a finite-state discrete program, which induces a finite Markov chain and can then be analyzed by \Storm. The $\bot$-state in that Markov chain is entered when encountering an observation failure.}
     \label{fig:conditional-resampling}
 \end{figure*}
@@ -231,7 +227,7 @@ Our second case study extends the random interval covering example from  by addi
 The key new component is the recursive function \lstinline{non_overlap} (l.\ \ref{ln:cov-nonoverlap}), which checks whether a sampled point $y$ hits more than one interval of the initally samped intervals. The loop \lstinline{cover} (l.\ \ref{ln:cov-cover}) repeatedly samples a Gaussian point and immediately conditions on this predicate via \lstinline{observe} (l.\ \ref{ln:cov-obs}), so only executions in which the point lies in at most one interval are retained. The final query remains whether all intervals have been covered by stopping time (l.\ \ref{ln:cov-final}).
 
 The program remains discretizable: each sampled point is still used only through comparisons against finitely many sampled interval boundaries, and \lstinline{non_overlap} depends only on the resulting hit pattern, not on the exact real value of $y$. \Slice{} therefore replaces each Gaussian draw by its interval index, yielding a discrete program with a finite exact state space.
-\kbin{mention storm results}
+\kb{mention storm results}
 
 \subsubsection{Bloom Filter}
 \label{sec:casestudy:bloom}
@@ -310,7 +306,7 @@ search q5 h1 h2 bf !\linelabel{ln:bloom-final}!
 The program samples four Gaussian values and inserts them into an initially empty four-bit Bloom filter (l.\ \ref{ln:bloom-samples} and \ref{ln:bloom-build}). Each insertion hashes the sampled real twice using the comparison-based functions \lstinline{h1} and \lstinline{h2} (l.\ \ref{ln:bloom-h1} and \ref{ln:bloom-h2}), and sets the corresponding bits via \lstinline{insert} (l.\ \ref{ln:bloom-insert}). It then samples a fifth Gaussian value and queries the filter using the same two hash functions (l.\ \ref{ln:bloom-final} and \ref{ln:bloom-search}), so the program returns $\true$ if the probabilistically populated Bloom filter reports that this last sample is stored in it.
 The key simplification is that the hash functions never inspect the exact value of a sample. They only ask which region the sample falls into, using the cut points $-2$, $0$, and $2$. These cuts partition the real line into four regions, which already coincide with the Bloom filter's index space. \Slice{} therefore replaces each Gaussian draw by its bucket index while preserving exactly the probability of every collision pattern relevant to insertion and search.
 
-\kbin{mention Storm}
+\kb{mention Storm}
 
 %\subsubsection{Mondrian-Style Recursive Partitioning}
 %\label{sec:casestudy:mondrian}
@@ -321,7 +317,7 @@ The key simplification is that the hash functions never inspect the exact value 
 %The program maintains a pair of higher-order predicates encoding which future $x$- and $y$-cuts would separate the two points. Initially, these predicates are just the intervals between the coordinates of $p$ and $q$ (l.\ \ref{ln:mond-init}). The recursive process then repeatedly either stops with probability $0.2$ (l.\ \ref{ln:mond-loop}), or chooses an axis and samples a cut location $c$ (l.\ \ref{ln:mond-axis}). If the sampled cut falls between the two points on that axis, the process returns \lstinline{false}, since $p$ and $q$ have been separated (l.\ \ref{ln:mond-sep-x} and \ref{ln:mond-sep-y}); otherwise, it refines the corresponding separator predicate to the surviving sub-cell and recurses (l.\ \ref{ln:mond-recurse-x} and \ref{ln:mond-recurse-y}). \Slice{} therefore replaces each continuous cut by its observationally relevant region, yielding a discrete program with a finite exact state space.
 
 \subsection{New Benchmarks for Scaling}\label{sec:synthetic-benchmarks} We designed scalable benchmarks of conditionally independent continuous programs with varying variable dependencies. Formally, all programs in our benchmark can be described by the conditional independence structure: $X_i \perp\!\!\!\perp \{\,X_j : j < i, j \neq \pi(i)\,\}
-\;\Big|\; X_{\pi(i)}$, where $\pi(i) \in \{1, \ldots, i-1\}$ is the parent index of $X_i$. Schematically:
+\;\Big|\; X_{\pi(i)}\}$, where $\pi(i) \in \{1, \ldots, i-1\}$ is the parent index of $X_i$. Schematically:
 %
     \begin{lstlisting}[aboveskip=0.1em,belowskip=.1em]
         let x1 = uniform(0,1) in 
