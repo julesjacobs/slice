@@ -87,6 +87,7 @@ This example involves both discrete and continuous random variables and models a
 
 
 \subsection{Random Interval Covering}\label{ap:epsball}
+The discretized program for the case study from \Cref{sec:examples:7} is shown in \Cref{fig:app:epsball}.
 
 % Discretized version
 \begin{figure*}[h]
@@ -179,6 +180,7 @@ is_covered final
 \section{Slice Case Studies (continued)}
 
 \subsection{Random Interval Covering with Conditioning}\label{sec:epsball-observe}
+The full program for the case study from \Cref{sec:casestudy:epsball} is shown in \Cref{fig:coverage-conditioning}. The discretized program is shown in \Cref{fig:coverage-conditioning}.
 
 % Continuous version
 \begin{figure*}[t]
@@ -398,6 +400,7 @@ is_covered final
 
 
 \subsection{Bloom Filter}\label{ap:casestudy:bloom}
+The full program for the case study from \Cref{sec:casestudy:bloom} is shown in \Cref{fig:bloom-filter}. The discretized program is shown in \Cref{fig:bloom-filter:disc}.
 
 % Continuous version
 \begin{figure*}[t]
@@ -636,7 +639,7 @@ search q5 h1 h2 updated_bf_4
     \end{minipage}
     
     \caption{A \emph{discretized} Bloom filter program with continuous samples, threshold-based hash functions, and a false-positive query.}
-    \label{fig:bloom-filter}
+    \label{fig:bloom-filter:disc}
 \end{figure*}
 
 \subsection{Mondrian-Style Recursive Partitioning}
@@ -711,7 +714,7 @@ search q5 h1 h2 updated_bf_4
 
 
 
-\section{List of Supported \Slice{} Distributions}\label{appen:supported-distributions}
+\section{List of Supported \Slicebf\xspace Distributions}\label{appen:supported-distributions}
 
 The list of distributions supported by \Slice{}, along with their probability density / mass functions, is given in the following table. \Slice{} supports discrete distributions by applying the same cut-set and value-set analysis used for continuous distributions, \emph{provided that the discrete distribution admits a well-defined CDF}. The extension to discrete distributions does not introduce any fundamental changes to the discretization algorithm.
 
@@ -757,7 +760,7 @@ The list of distributions supported by \Slice{}, along with their probability de
 
     
     
-\section{Typing Rules for Full \Slice{} Language}\label{appen:typing-rules}
+\section{Typing Rules for Full \Slicebf{} Language}\label{appen:typing-rules}
 
 The typing rules for general language constructs is given in \Cref{fig:typing-general-all}.
 
@@ -975,227 +978,227 @@ Thus each program is a Bayesian network of conditionally independent nodes, diff
 %\input{sections/6_soundness}
 
 
-\section{Structural Operational Semantics for Markov Chain Construction}\label{ap:sos-rules}
+%\section{Structural Operational Semantics for Markov Chain Construction}\label{ap:sos-rules}
+%
+%Values:
+%\[
+%  v \;::=\; \finconst{k}{n} \mid c \mid \mathtt{true} \mid \mathtt{false} \mid
+%         () \mid \nil \mid v_1 :: v_2 \mid (v_1, v_2)
+%         \mid \mathbf{fun}\; x \to e \mid \mathbf{fix}\; f\; x :=\, e
+%\]
+%
+%The step relation $\step{e}{p}{e'}$ denotes a transition with probability
+%$p \in (0,1]$.  The special target $\fail$ is an absorbing failure state
+%produced by \textsc{Obs-False}.
+%
+%%% -----------------------------------------------------------------------
+%%% Figure 1: Let, Application, Conditionals, Comparisons
+%%% -----------------------------------------------------------------------
+%\begin{figure}[t]
+%    \begin{mathpar}
+%    %% Let
+%    \inferrule*[right=Let-Step]
+%      {\step{e_1}{p}{e_1'}}
+%      {\step{\mathtt{let}\; x = e_1 \;\mathtt{in}\; e_2}{p}
+%            {\mathtt{let}\; x = e_1' \;\mathtt{in}\; e_2}}
+%    
+%    \inferrule*[right=Let-Val]
+%      { }
+%      {\step{\mathtt{let}\; x = v \;\mathtt{in}\; e_2}{1}{e_2[v/x]}}
+%    
+%    %% Application
+%    \inferrule*[right=App-Step-1]
+%      {\step{e_1}{p}{e_1'}}
+%      {\step{e_1\; e_2}{p}{e_1'\; e_2}}
+%    
+%    \inferrule*[right=App-Step-2]
+%      {\step{e_2}{p}{e_2'}}
+%      {\step{v\; e_2}{p}{v\; e_2'}}
+%    
+%    \inferrule*[right=App-Beta]
+%      { }
+%      {\step{(\mathbf{fun}\; x \to e)\; v}{1}{e[v/x]}}
+%    
+%    \inferrule*[right=App-Fix]
+%      { }
+%      {\step{(\mathbf{fix}\; f\; x := e)\; v}{1}{e[\,v/x\,]}}
+%    
+%    %% Conditionals
+%    \inferrule*[right=If-Step]
+%      {\step{e_c}{p}{e_c'}}
+%      {\step{\mathtt{if}\; e_c \;\mathtt{then}\; e_t \;\mathtt{else}\; e_f}{p}
+%            {\mathtt{if}\; e_c' \;\mathtt{then}\; e_t \;\mathtt{else}\; e_f}}
+%    
+%    \inferrule*[right=If-True]
+%      { }
+%      {\step{\mathtt{if}\; \mathtt{true} \;\mathtt{then}\; e_t \;\mathtt{else}\; e_f}{1}{e_t}}
+%    
+%    \inferrule*[right=If-False]
+%      { }
+%      {\step{\mathtt{if}\; \mathtt{false} \;\mathtt{then}\; e_t \;\mathtt{else}\; e_f}{1}{e_f}}
+%    
+%    %% Comparisons
+%    \inferrule*[right=Cmp-Step-1]
+%      {\step{e_1}{p}{e_1'}}
+%      {\step{\mathtt{cmp}(e_1,\, e_2)}{p}{\mathtt{cmp}(e_1',\, e_2)}}
+%    
+%    \inferrule*[right=Cmp-Step-2]
+%      {\step{e_2}{p}{e_2'}}
+%      {\step{\mathtt{cmp}(v,\, e_2)}{p}{\mathtt{cmp}(v,\, e_2')}}
+%    
+%    \inferrule*[right=CmpLt-T]
+%      {v_1 < v_2}
+%      {\step{\mathtt{cmp}_{<}(v_1,\, v_2)}{1}{\mathtt{true}}}
+%    
+%    \inferrule*[right=CmpLt-F]
+%      {v_1 \geq v_2}
+%      {\step{\mathtt{cmp}_{<}(v_1,\, v_2)}{1}{\mathtt{false}}}
+%    
+%    \inferrule*[right=CmpLe-T]
+%      {v_1 \leq v_2}
+%      {\step{\mathtt{cmp}_{\leq}(v_1,\, v_2)}{1}{\mathtt{true}}}
+%    
+%    \inferrule*[right=CmpLe-F]
+%      {v_1 > v_2}
+%      {\step{\mathtt{cmp}_{\leq}(v_1,\, v_2)}{1}{\mathtt{false}}}
+%    \end{mathpar}
+%    \caption{Small-step semantics (part 1): let-binding, application, conditionals, and comparisons.}
+%    \label{fig:sos-1}
+%    \end{figure}
+%    
+%    %% -----------------------------------------------------------------------
+%    %% Figure 2: Booleans, Pairs, Lists
+%    %% -----------------------------------------------------------------------
+%    \begin{figure}[t]
+%    \begin{mathpar}
+%    %% Boolean operators
+%    \inferrule*[right=And-Step]
+%      {\step{e_1}{p}{e_1'}}
+%      {\step{e_1 \logand e_2}{p}{e_1' \logand e_2}}
+%    
+%    \inferrule*[right=And-False]
+%      { }
+%      {\step{\mathtt{false} \logand e}{1}{\mathtt{false}}}
+%    
+%    \inferrule*[right=And-True]
+%      { }
+%      {\step{\mathtt{true} \logand e}{1}{e}}
+%    
+%    \inferrule*[right=Or-Step]
+%      {\step{e_1}{p}{e_1'}}
+%      {\step{e_1 \logor e_2}{p}{e_1' \logor e_2}}
+%    
+%    \inferrule*[right=Or-True]
+%      { }
+%      {\step{\mathtt{true} \logor e}{1}{\mathtt{true}}}
+%    
+%    \inferrule*[right=Or-False]
+%      { }
+%      {\step{\mathtt{false} \logor e}{1}{e}}
+%    
+%    \inferrule*[right=Not-Step]
+%      {\step{e}{p}{e'}}
+%      {\step{\lognot\, e}{p}{\lognot\, e'}}
+%    
+%    \inferrule*[right=Not-True]
+%      { }
+%      {\step{\lognot\, \mathtt{true}}{1}{\mathtt{false}}}
+%    
+%    \inferrule*[right=Not-False]
+%      { }
+%      {\step{\lognot\, \mathtt{false}}{1}{\mathtt{true}}}
+%    
+%    %% Pairs
+%    \inferrule*[right=Pair-Step-1]
+%      {\step{e_1}{p}{e_1'}}
+%      {\step{(e_1,\, e_2)}{p}{(e_1',\, e_2)}}
+%    
+%    \inferrule*[right=Pair-Step-2]
+%      {\step{e_2}{p}{e_2'}}
+%      {\step{(v,\, e_2)}{p}{(v,\, e_2')}}
+%    
+%    \inferrule*[right=Fst-Step]
+%      {\step{e}{p}{e'}}
+%      {\step{\mathtt{fst}(e)}{p}{\mathtt{fst}(e')}}
+%    
+%    \inferrule*[right=Fst-Val]
+%      { }
+%      {\step{\mathtt{fst}(v_1,\, v_2)}{1}{v_1}}
+%    
+%    \inferrule*[right=Snd-Step]
+%      {\step{e}{p}{e'}}
+%      {\step{\mathtt{snd}(e)}{p}{\mathtt{snd}(e')}}
+%    
+%    \inferrule*[right=Snd-Val]
+%      { }
+%      {\step{\mathtt{snd}(v_1,\, v_2)}{1}{v_2}}
+%    
+%    %% Lists
+%    \inferrule*[right=Cons-Step-1]
+%      {\step{e_1}{p}{e_1'}}
+%      {\step{e_1 :: e_2}{p}{e_1' :: e_2}}
+%    
+%    \inferrule*[right=Cons-Step-2]
+%      {\step{e_2}{p}{e_2'}}
+%      {\step{v :: e_2}{p}{v :: e_2'}}
+%    
+%    \inferrule*[right=Match-Step]
+%      {\step{e}{p}{e'}}
+%      {\step{\mathtt{match}\; e \;\mathtt{with}\; \nil \to e_n \mid x{::}xs \to e_c}
+%            {p}
+%            {\mathtt{match}\; e' \;\mathtt{with}\; \nil \to e_n \mid x{::}xs \to e_c}}
+%    
+%    \inferrule*[right=Match-Nil]
+%      { }
+%      {\step{\mathtt{match}\; \nil \;\mathtt{with}\; \nil \to e_n \mid x{::}xs \to e_c}
+%            {1}{e_n}}
+%    
+%    \inferrule*[right=Match-Cons]
+%      { }
+%      {\step{\mathtt{match}\;(v_h :: v_t)\;\mathtt{with}\; \nil \to e_n \mid x{::}xs \to e_c}
+%            {1}{e_c[v_h/x][v_t/xs]}}
+%    \end{mathpar}
+%    \caption{Small-step semantics (part 2): boolean operators, pairs, and lists.}
+%    \label{fig:sos-2}
+%    \end{figure}
+%    
+%    %% -----------------------------------------------------------------------
+%    %% Figure 3: Sequencing, Discrete distribution, Observe
+%    %% -----------------------------------------------------------------------
+%    \begin{figure}[t]
+%    \begin{mathpar}
+%    %% Sequencing
+%    \inferrule*[right=Seq-Step]
+%      {\step{e_1}{p}{e_1'}}
+%      {\step{e_1;\; e_2}{p}{e_1';\; e_2}}
+%    
+%    \inferrule*[right=Seq-Val]
+%      { }
+%      {\step{v;\; e_2}{1}{e_2}}
+%    
+%    %% Discrete distribution
+%    \inferrule*[right=Discrete]
+%      {\ }
+%      {\step{\mathtt{discrete}(p_0,\;\ldots,\; p_n)}{p_i}{i}}
+%    
+%    %% Observe
+%    \inferrule*[right=Obs-Step]
+%      {\step{e}{p}{e'}}
+%      {\step{\mathtt{observe}\; e}{p}{\mathtt{observe}\; e'}}
+%    
+%    \inferrule*[right=Obs-True]
+%      { }
+%      {\step{\mathtt{observe}\; \mathtt{true}}{1}{()}}
+%    
+%    \inferrule*[right=Obs-False]
+%      { }
+%      {\step{\mathtt{observe}\; \mathtt{false}}{1}{\fail}}
+%    \end{mathpar}
+%    \caption{Small-step semantics (part 3): sequencing, discrete distributions, and observations. The target $\fail$ in \textsc{Obs-False} is an absorbing failure state.}
+%    \label{fig:sos-3}
+%\end{figure}
 
-Values:
-\[
-  v \;::=\; \finconst{k}{n} \mid c \mid \mathtt{true} \mid \mathtt{false} \mid
-         () \mid \nil \mid v_1 :: v_2 \mid (v_1, v_2)
-         \mid \mathbf{fun}\; x \to e \mid \mathbf{fix}\; f\; x :=\, e
-\]
-
-The step relation $\step{e}{p}{e'}$ denotes a transition with probability
-$p \in (0,1]$.  The special target $\fail$ is an absorbing failure state
-produced by \textsc{Obs-False}.
-
-%% -----------------------------------------------------------------------
-%% Figure 1: Let, Application, Conditionals, Comparisons
-%% -----------------------------------------------------------------------
-\begin{figure}[t]
-    \begin{mathpar}
-    %% Let
-    \inferrule*[right=Let-Step]
-      {\step{e_1}{p}{e_1'}}
-      {\step{\mathtt{let}\; x = e_1 \;\mathtt{in}\; e_2}{p}
-            {\mathtt{let}\; x = e_1' \;\mathtt{in}\; e_2}}
-    
-    \inferrule*[right=Let-Val]
-      { }
-      {\step{\mathtt{let}\; x = v \;\mathtt{in}\; e_2}{1}{e_2[v/x]}}
-    
-    %% Application
-    \inferrule*[right=App-Step-1]
-      {\step{e_1}{p}{e_1'}}
-      {\step{e_1\; e_2}{p}{e_1'\; e_2}}
-    
-    \inferrule*[right=App-Step-2]
-      {\step{e_2}{p}{e_2'}}
-      {\step{v\; e_2}{p}{v\; e_2'}}
-    
-    \inferrule*[right=App-Beta]
-      { }
-      {\step{(\mathbf{fun}\; x \to e)\; v}{1}{e[v/x]}}
-    
-    \inferrule*[right=App-Fix]
-      { }
-      {\step{(\mathbf{fix}\; f\; x := e)\; v}{1}{e[\,v/x\,]}}
-    
-    %% Conditionals
-    \inferrule*[right=If-Step]
-      {\step{e_c}{p}{e_c'}}
-      {\step{\mathtt{if}\; e_c \;\mathtt{then}\; e_t \;\mathtt{else}\; e_f}{p}
-            {\mathtt{if}\; e_c' \;\mathtt{then}\; e_t \;\mathtt{else}\; e_f}}
-    
-    \inferrule*[right=If-True]
-      { }
-      {\step{\mathtt{if}\; \mathtt{true} \;\mathtt{then}\; e_t \;\mathtt{else}\; e_f}{1}{e_t}}
-    
-    \inferrule*[right=If-False]
-      { }
-      {\step{\mathtt{if}\; \mathtt{false} \;\mathtt{then}\; e_t \;\mathtt{else}\; e_f}{1}{e_f}}
-    
-    %% Comparisons
-    \inferrule*[right=Cmp-Step-1]
-      {\step{e_1}{p}{e_1'}}
-      {\step{\mathtt{cmp}(e_1,\, e_2)}{p}{\mathtt{cmp}(e_1',\, e_2)}}
-    
-    \inferrule*[right=Cmp-Step-2]
-      {\step{e_2}{p}{e_2'}}
-      {\step{\mathtt{cmp}(v,\, e_2)}{p}{\mathtt{cmp}(v,\, e_2')}}
-    
-    \inferrule*[right=CmpLt-T]
-      {v_1 < v_2}
-      {\step{\mathtt{cmp}_{<}(v_1,\, v_2)}{1}{\mathtt{true}}}
-    
-    \inferrule*[right=CmpLt-F]
-      {v_1 \geq v_2}
-      {\step{\mathtt{cmp}_{<}(v_1,\, v_2)}{1}{\mathtt{false}}}
-    
-    \inferrule*[right=CmpLe-T]
-      {v_1 \leq v_2}
-      {\step{\mathtt{cmp}_{\leq}(v_1,\, v_2)}{1}{\mathtt{true}}}
-    
-    \inferrule*[right=CmpLe-F]
-      {v_1 > v_2}
-      {\step{\mathtt{cmp}_{\leq}(v_1,\, v_2)}{1}{\mathtt{false}}}
-    \end{mathpar}
-    \caption{Small-step semantics (part 1): let-binding, application, conditionals, and comparisons.}
-    \label{fig:sos-1}
-    \end{figure}
-    
-    %% -----------------------------------------------------------------------
-    %% Figure 2: Booleans, Pairs, Lists
-    %% -----------------------------------------------------------------------
-    \begin{figure}[t]
-    \begin{mathpar}
-    %% Boolean operators
-    \inferrule*[right=And-Step]
-      {\step{e_1}{p}{e_1'}}
-      {\step{e_1 \logand e_2}{p}{e_1' \logand e_2}}
-    
-    \inferrule*[right=And-False]
-      { }
-      {\step{\mathtt{false} \logand e}{1}{\mathtt{false}}}
-    
-    \inferrule*[right=And-True]
-      { }
-      {\step{\mathtt{true} \logand e}{1}{e}}
-    
-    \inferrule*[right=Or-Step]
-      {\step{e_1}{p}{e_1'}}
-      {\step{e_1 \logor e_2}{p}{e_1' \logor e_2}}
-    
-    \inferrule*[right=Or-True]
-      { }
-      {\step{\mathtt{true} \logor e}{1}{\mathtt{true}}}
-    
-    \inferrule*[right=Or-False]
-      { }
-      {\step{\mathtt{false} \logor e}{1}{e}}
-    
-    \inferrule*[right=Not-Step]
-      {\step{e}{p}{e'}}
-      {\step{\lognot\, e}{p}{\lognot\, e'}}
-    
-    \inferrule*[right=Not-True]
-      { }
-      {\step{\lognot\, \mathtt{true}}{1}{\mathtt{false}}}
-    
-    \inferrule*[right=Not-False]
-      { }
-      {\step{\lognot\, \mathtt{false}}{1}{\mathtt{true}}}
-    
-    %% Pairs
-    \inferrule*[right=Pair-Step-1]
-      {\step{e_1}{p}{e_1'}}
-      {\step{(e_1,\, e_2)}{p}{(e_1',\, e_2)}}
-    
-    \inferrule*[right=Pair-Step-2]
-      {\step{e_2}{p}{e_2'}}
-      {\step{(v,\, e_2)}{p}{(v,\, e_2')}}
-    
-    \inferrule*[right=Fst-Step]
-      {\step{e}{p}{e'}}
-      {\step{\mathtt{fst}(e)}{p}{\mathtt{fst}(e')}}
-    
-    \inferrule*[right=Fst-Val]
-      { }
-      {\step{\mathtt{fst}(v_1,\, v_2)}{1}{v_1}}
-    
-    \inferrule*[right=Snd-Step]
-      {\step{e}{p}{e'}}
-      {\step{\mathtt{snd}(e)}{p}{\mathtt{snd}(e')}}
-    
-    \inferrule*[right=Snd-Val]
-      { }
-      {\step{\mathtt{snd}(v_1,\, v_2)}{1}{v_2}}
-    
-    %% Lists
-    \inferrule*[right=Cons-Step-1]
-      {\step{e_1}{p}{e_1'}}
-      {\step{e_1 :: e_2}{p}{e_1' :: e_2}}
-    
-    \inferrule*[right=Cons-Step-2]
-      {\step{e_2}{p}{e_2'}}
-      {\step{v :: e_2}{p}{v :: e_2'}}
-    
-    \inferrule*[right=Match-Step]
-      {\step{e}{p}{e'}}
-      {\step{\mathtt{match}\; e \;\mathtt{with}\; \nil \to e_n \mid x{::}xs \to e_c}
-            {p}
-            {\mathtt{match}\; e' \;\mathtt{with}\; \nil \to e_n \mid x{::}xs \to e_c}}
-    
-    \inferrule*[right=Match-Nil]
-      { }
-      {\step{\mathtt{match}\; \nil \;\mathtt{with}\; \nil \to e_n \mid x{::}xs \to e_c}
-            {1}{e_n}}
-    
-    \inferrule*[right=Match-Cons]
-      { }
-      {\step{\mathtt{match}\;(v_h :: v_t)\;\mathtt{with}\; \nil \to e_n \mid x{::}xs \to e_c}
-            {1}{e_c[v_h/x][v_t/xs]}}
-    \end{mathpar}
-    \caption{Small-step semantics (part 2): boolean operators, pairs, and lists.}
-    \label{fig:sos-2}
-    \end{figure}
-    
-    %% -----------------------------------------------------------------------
-    %% Figure 3: Sequencing, Discrete distribution, Observe
-    %% -----------------------------------------------------------------------
-    \begin{figure}[t]
-    \begin{mathpar}
-    %% Sequencing
-    \inferrule*[right=Seq-Step]
-      {\step{e_1}{p}{e_1'}}
-      {\step{e_1;\; e_2}{p}{e_1';\; e_2}}
-    
-    \inferrule*[right=Seq-Val]
-      { }
-      {\step{v;\; e_2}{1}{e_2}}
-    
-    %% Discrete distribution
-    \inferrule*[right=Discrete]
-      {\ }
-      {\step{\mathtt{discrete}(p_0,\;\ldots,\; p_n)}{p_i}{i}}
-    
-    %% Observe
-    \inferrule*[right=Obs-Step]
-      {\step{e}{p}{e'}}
-      {\step{\mathtt{observe}\; e}{p}{\mathtt{observe}\; e'}}
-    
-    \inferrule*[right=Obs-True]
-      { }
-      {\step{\mathtt{observe}\; \mathtt{true}}{1}{()}}
-    
-    \inferrule*[right=Obs-False]
-      { }
-      {\step{\mathtt{observe}\; \mathtt{false}}{1}{\fail}}
-    \end{mathpar}
-    \caption{Small-step semantics (part 3): sequencing, discrete distributions, and observations. The target $\fail$ in \textsc{Obs-False} is an absorbing failure state.}
-    \label{fig:sos-3}
-\end{figure}
-
-\todo[inline]{Add accept/done states in the semantics}
+%\todo[inline]{Add accept/done states in the semantics}
 
 \section{Benchmarks}
 \label{app:benchmarks}

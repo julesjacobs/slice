@@ -1,7 +1,7 @@
 % !TeX root = ../slice.tex
 \section{Soundness Proof}
 \label{sec:app:soundness_new}
-\newpage
+
 \subsection{Measure Theory Preliminaries}
 
 We first give a brief overview of basic measure-theoretic terms and lemmas, and refer the reader to standard textbooks for further background~\cite{SteinShakarchi2005RealAnalysis,Tao2011MeasureTheory}.
@@ -188,7 +188,6 @@ for all $A \in \mathcal{F}_Y$.
 	Then, $\pi_1(\mu)$ is a measure on $(X + \bot, \Sigma_{X + \bot})$ and $\pi_2(\mu)$ is a measure on $(Y + \bot, \Sigma_{Y + \bot})$.
 \end{definition}
 
-\todo[inline]{Mention that these constructions are nontrivial}
 
 \subsection{Measure Space on Expressions}
 \label{app:measure_space_expressions}
@@ -211,7 +210,6 @@ To make the probabilistic semantics precise, we construct an appropriate measure
 	We denote by $\skel$ the set of all expression skeletons, and by $\holes(s)$ the number of distinct holes in skeleton $s$.
 \end{definition}
 
-\todo[inline]{Fix with annotations}
 
 \begin{example}
 	The expression $\uniform(0.0, 1.0) < 0.5$ has the skeleton $\uniform(\square, \square) < \square$ with three holes. 
