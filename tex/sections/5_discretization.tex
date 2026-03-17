@@ -189,7 +189,7 @@ such that $c$ is an (open) endpoint of $\text{ToInts}(c)$ for all $c \in\{0.3,0.
 		The continuous $\uniform(0,x)$-expression is replaced by a case distinction on the discretizations of $\uniform(0,10)$ and $\uniform(0,20)$, with each case executed with the correct probability $0.5$. Since this reduces the remaining discretization process to discretizing expressions with \emph{constant parameters only}, the remaining steps are completely analogous to Example~\ref{ex:discretize_simple}.
 \end{example}
 %
-Crucially, the \emph{distinguishability} constraints in the \textsc{Continuous}-rules from \Cref{fig:typing-float} ensure that the parameter expressions of the respective sampling expressions can take only finitely many values, and that the cut sets are fine-grained enough to recover the values the parameter expressions evaluate to, as demonstrated in the preceding example.
+Crucially, the \emph{recoverability} constraints in the \textsc{Continuous}-rules from \Cref{fig:typing-float} ensure that the parameter expressions of the respective sampling expressions can take only finitely many values, and that the cut sets are fine-grained enough to recover the values the parameter expressions evaluate to, as demonstrated in the preceding example.
 
 A similar intuition applies to discretizable comparisons $e_1 < e_2$, where \emph{both} expressions are non-constant but finite-cut. The \emph{answers} constraints in the rule \textsc{Less} (resp.\ \textsc{Less-Equal}) ensure that at least one of $e_1$ and $e_2$ evaluates to finitely many values only, which enables discretization:
 \begin{example}
