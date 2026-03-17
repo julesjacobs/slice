@@ -67,10 +67,10 @@ We formalize the types that \Slice{} supports.
 %\end{definition}
 %
 %These lattice structures are exemplified in \Cref{fig:lattice}.
-A \emph{value} set $V$ is a non-empty finite sets of reals or $\top$.
+A \emph{value} set $V$ is a non-empty finite set of reals or $\top$.
 Elements of $\{ \clt{x} ~|~ x \in \R \}	\cup \{ \cleq{x} ~|~ x \in \R \}$ are called \emph{cuts}. Cut sets induce intervals partitioning the reals as follows:
  Given a non-empty cut set $B =\{ \sim_1\!\!x_1, \ldots, \sim_n\!\! x_n \}$ with $x_1 \leq \ldots \leq x_n$, we define the set $\intervals{B}$ of intervals it induces as expected, e.g., 
- $\intervals{\{\clt{0.1},\cleq{0.5}\}} = \{(-\infty,0,1), [0,1,0.5], (0.5,\infty)\}$.
+ $\intervals{\{\clt{0.1},\cleq{0.5}\}} = \{(-\infty,0.1), [0.1,0.5], (0.5,\infty)\}$.
 %
 %\begin{align*}
 %	&\intervals{B} \\
@@ -105,7 +105,7 @@ Elements of $\{ \clt{x} ~|~ x \in \R \}	\cup \{ \cleq{x} ~|~ x \in \R \}$ are ca
 %	 \end{cases} 
 %\end{align*}
 %
-Moreover, we let $\intervals{\emptyset} = \{(-\infty,\infty)\}$ and $\intervals{\top} = 2^\Reals$. We denote by $\intervals{B}_i$ the $i$-th interval of $\intervals{B}$, assuming $\intervals{B}$ is $0$-indexed, i.e., $i \in \{0,...,n\}$. We denote the set of all cut- and value sets, respectivly, by $\cutsets$ and $\valsets$. This gives us:
+Moreover, we let $\intervals{\emptyset} = \{(-\infty,\infty)\}$ and $\intervals{\top} = 2^\Reals$. We denote by $\intervals{B}_i$ the $i$-th interval of $\intervals{B}$, assuming $\intervals{B}$ is $0$-indexed, i.e., $i \in \{0,...,n\}$. We denote the set of all cut- and value sets, respectively, by $\cutsets$ and $\valsets$. This gives us:
 %
 \begin{definition}[Types]
 	For $n \in \Nats$, $B \in \cutsets$, and $V \in \valsets$, types $\tau$ adhere to the grammar
@@ -127,7 +127,7 @@ Moreover, we let $\intervals{\emptyset} = \{(-\infty,\infty)\}$ and $\intervals{
 \end{definition}
 %
 Standard types cover integers, booleans, ordered pairs, functions, and lists. 
-Finite types $\fin{n}$ contain $\{\finconst{0}{n},\ldots,\finconst{(n-1)}{n}\}$; the ${\#n}$-subscript reminds inference backends such as \Dice{} that these values live in a finite domain. The float type $\float[B; V]$ annotates a real-valued expression with its cut set $B$ (an over-approximation of the comparisons it participates in) and value set $V$ (an over-approximation of the values it can take. $B=\top$ means the expression may be compared to arbitrary reals; $B=\emptyset$ means it will never be compared; $V=\top$ indicates an unrestricted result.
+Finite types $\fin{n}$ contain $\{\finconst{0}{n},\ldots,\finconst{(n-1)}{n}\}$; the ${\#n}$-subscript reminds inference backends such as \Dice{} that these values live in a finite domain. The float type $\float[B; V]$ annotates a real-valued expression with its cut set $B$ (an over-approximation of the comparisons it participates in) and value set $V$ (an over-approximation of the values it can take). $B=\top$ means the expression may be compared to arbitrary reals; $B=\emptyset$ means it will never be compared; $V=\top$ indicates an unrestricted result.
 
 %Finally, we say that an expression $e : \float[B;V]$ is \textit{finite-cut} (\emph{infinite-cut}) if $B \neq \top$ ($B=\top$). 
 
@@ -183,7 +183,7 @@ A type $\float$[B; V] is discretized as follows:
     If $B = \top$, then no discretization is performed, and the type remains $\float$.
 %\end{itemize}
 
-To understand the typing rules, keep in mind that the cut sets $B$ set needs to be sufficiently fine-grained --- i.e., contain enough cuts --- so that the discretized program has enough information to determine how the original continuous program behaved.
+To understand the typing rules, keep in mind that the cut sets $B$ need to be sufficiently fine-grained --- i.e., contain enough cuts --- so that the discretized program has enough information to determine how the original continuous program behaved.
 
 \input{figures/typing-float}
 
@@ -193,7 +193,7 @@ Rule \textsc{Float-Const} assigns a constant $c$ the type $\float[B; V]$ wheneve
 \paragraph{Continuous distributions.} Rule \textsc{Continuous-1} types a single-argument distribution when its argument $e$ has type $\float[B; V]$ and $\distinguishes{B}{V}$:
 \begin{definition}
 	\label{def:distinguishes}
-	Let $B\in \cutsets$ and $V\in\valsets$. We say that \emph{$\distinguishes{B}{V}$}, if $B = \top$ or ($V \neq \top$ and every interval $I$ induced by $B$ contains at most one value in $V$, i.e., $
+		Let $B\in \cutsets$ and $V\in\valsets$. We say that \emph{$\distinguishes{B}{V}$} if $B = \top$ or ($V \neq \top$ and every interval $I$ induced by $B$ contains at most one value in $V$, i.e., $
 	\forall I \in \intervals{B}\colon | V \cap I|  \leq 1
 	$).
 	%$B$ distinguishes $V$ if every interval in $B$ contains at most one value in $V$, or $B = \top$.
