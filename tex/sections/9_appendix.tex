@@ -2,7 +2,7 @@
 \appendix
 \tableofcontents
 
-\section{Slice Examples (continued)}\label{ap:mot}
+\section{\Slicebf{} Examples (continued)}\label{ap:mot}
 This section is a continuation of~\Cref{sec:examples}, describing more in detail the following examples: \Cref{sec:examples:4,sec:examples:5,sec:examples:6,sec:examples:7}. Additionally, we include an extra example based on the Indian GPA problem, a canonical example in the probabilistic programming literature~\cite{Wu2018DiscreteContinuousMixtures}.
 
 \subsection{Control Flow}\label{app:examples:4}
@@ -94,8 +94,8 @@ Under this partition, both continuous branches, \texttt{uniform(0,10)} and \text
 After discretization, the equality test $\texttt{gpa} = 10$ becomes the discrete test that the GPA index is exactly the one corresponding to the singleton region $\{10\}$. 
 
 
-\subsection{Random Interval Covering over $\boldmath{[0,1]}$}\label{ap:epsball}
-The discretized program for the case study from \Cref{sec:examples:7} is shown in \Cref{fig:app:epsball}.
+\subsection{Random Interval Covering Over $\boldmath{[0,1]}$}\label{ap:epsball}
+The discretized program for the case study from \Cref{sec:examples:7} is shown in \Cref{fig:app:epsball}. \Slice{} takes 0.000s, and we generate a Markov chain consisting of $192365$ states in $38.69$ seconds. \Storm takes $0.69$ seconds for model checking, and reports that the sought-after probability is $0.01692...$.
 
 % Discretized version
 \begin{figure*}[t]
@@ -191,9 +191,9 @@ The discretized program for the case study from \Cref{sec:examples:7} is shown i
 \end{figure*}
 
 
-\section{Slice Case Studies (continued)}
+\section{\Slicebf{} Case Studies (continued)}
 
-\subsection{Random Interval Covering over $\boldmath{[0,1]}$ with Conditioning}\label{sec:epsball-observe}
+\subsection{Random Interval Covering Over $\boldmath{[0,1]}$ with Conditioning}\label{sec:epsball-observe}
 The full program for the case study from \Cref{sec:casestudy:epsball} is shown in \Cref{fig:app:epsball-observe}. The discretized program is shown in \Cref{fig:app:epsball-observe:disc}.
 
 % Continuous version
@@ -1046,7 +1046,19 @@ The typing rules for general language constructs is given in \Cref{fig:typing-ge
 \label{app:benchmarks}
 \subsection{Asymptotic Scaling}
 
-\subsubsection{Code Sketches for Scaling Benchmarks}\label{appen:synthetic-sketches}
+\subsubsection{Code Sketches for Scaling Benchmarks}\label{app:synthetic-sketches}
+Schematically:
+%
+\begin{lstlisting}[aboveskip=0.1em,belowskip=.1em]
+let x1 = uniform(0,1) in 
+let x2 = if x1 < r1 then uniform(0,2) else uniform(0,3) in 
+let x3 = if x2 < r2 ...
+...
+xn < rn
+\end{lstlisting}
+%
+ Each program consists of a sequence of conditionals, where each branch depends on a previous variable sampled from a uniform distribution, proceeding until the final condition $x_n < r_n$ is reached. Here $0 \leq r_i \leq 1$ are fixed float constants.
+
 This section contains code snippets of the programs used in the scaling experiments in Section~\ref{sec:synthetic-benchmarks}. We implemented a Python script that automatically generates these programs based on configurable parameters such as program size, guard structure, and dependency pattern. For reproducibility, we used a fixed random seed to generate each program. All $r_i$ values in the generated programs, where $0 \leq r_i \leq 1$ is randomly chosen, are rounded to two decimal places.
 
 All of these programs follow the same structural pattern: they define a sequence of random variables $X_1,\ldots,X_n$, where each $X_i$ is drawn from a uniform distribution whose parameters depend on the value of a single predecessor variable through a conditional branch of the form
@@ -1302,8 +1314,10 @@ Tables~\ref{tab:benchmarks_dt} and~\ref{tab:benchmarks_dt_extra} show the decisi
 \end{table}
 
 
-\subsection{Constant-Factor Snapshot Benchmarks}
-\Cref{tab:benchmarks_psi} reports representative constant-factor runtimes for benchmarks containing at least one continuous distribution, drawn from the \PSI{} and \SPPL{} benchmark sets. \Slice{} handles the benchmarks in this subset that fit its current fragment; in particular, programs requiring numeric-transformation support remain outside the automatically discretized subset. We report (i) \Slice{}+\Dice{}, (ii) \Slice{}+\Roulette{}, and (iii) \SPPL{} in seconds. We omit \PSI{} runtimes in this snapshot for brevity.
+\subsection{Baseline Benchmarks}
+%We finally evaluate \Slice{} on a set of benchmarks that were introduced in~\cite{gehr2016psi}. We evaluate \Slice{} on the hybrid programs in these benchmarks. The results are shown in Table 2. We omit the runs of PSI in the table due to its significantly slower performance than SPPL on all benchmarks. The first column in the table gives the benchmark name, and the remaining columns display the execution times in seconds of Slice with Dice, Slice with Roulette, and SPPL respectively. As both SPPL and \Slice{} are restricted languages, in order to test a broader range of programs, we converted several benchmarks with parameters inside distributions that depend on continuous random choices to a discretized version. The time taken by \Slice{} to solve these problems is nearly instant in all cases. 
+
+\Cref{tab:benchmarks_psi} reports representative runtimes for benchmarks containing at least one continuous distribution, drawn from the \PSI{} and \SPPL{} benchmark sets. \Slice{} handles the benchmarks in this subset that fit its current fragment; in particular, programs requiring numeric-transformation support remain outside the automatically discretized subset. We report (i) \Slice{}+\Dice{}, (ii) \Slice{}+\Roulette{}, and (iii) \SPPL{} in seconds. We omit \PSI{} runtimes in this snapshot for brevity. The second column shows the number of datasets on which to condition the program.
 
 \begin{table}[!t]
 \centering \vspace{-.3cm}
