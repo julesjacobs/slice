@@ -13,10 +13,6 @@ For the first question, we provide a collection of case studies that involve con
 
 For the second question, we evaluate \Slice{} + \Dice{} and \Slice{} + \Roulette{} on two classes of benchmarks in \Cref{sec:synthetic-benchmarks,sec:fairness-benchmarks}: (i) synthetic scaling benchmarks that let us vary program size and dependency structure in a controlled way, and (ii) benchmark suites from prior work \cite{Saad2021SPPL,gehr2016psi}. We compare against \SPPL \cite{Saad2021SPPL} on benchmarks that \emph{both} \Slice and \SPPL support. We remark, however, that \SPPL supports (linear) arithmetic, as well as (soft) conditioning (on measure zero events), which \Slice does not support. Our evaluation merely serves the purpose of investigating (i) the overhead of discretization and (ii) the benefits of being able to use efficient BDD-based inference back-ends (i.e., \Dice and \Roulette) for exact inference on continuous programs.
 
-
-\kb{incorporate: The discretization process itself is typically quite fast for these case studies: type inference plus discretization takes less than $0.01$ seconds for each case study.}
- \kb{Jules:We should mention the decision tree benchmarks somewhere because those scale poorly. Or maybe remove this whole point.}
-
 \subsection{\Slicebf+\Stormbf: Case Studies}\label{sec:case-studies}
 \kb{incorporate Slice time -> very fast. Bottleneck is MC generation: Future work!}
 %
