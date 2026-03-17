@@ -7,8 +7,7 @@ To build intuition for \Slice{}, we start with simple examples demonstrating the
 We consider a program that samples a real value from a standard Gaussian distribution and then performs two nested comparisons, first checking whether the sampled value is less than 0.8, then comparing that value against either 0.1 or 2.0:
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em,gobble=4]
-    let x = gaussian(0,1) in 
-    if x < 0.8 then x < 0.1 else x < 2.0
+    let x = gaussian(0,1) in if x < 0.8 then x < 0.1 else x < 2.0
 \end{lstlisting}
 
 \noindent We discretize this program by sampling from appropriate \emph{intervals}, as shown below and in Figure~\ref{fig:cuts-gaussian}:
@@ -16,8 +15,7 @@ We consider a program that samples a real value from a standard Gaussian distrib
 \input{figures/cuts.tex}
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em,gobble=4]
-    let x = discrete(0.5398, 0.2483, 0.1891, 0.0228) in
-    if x < 2 then x < 1 else x < 3
+    let x = discrete(0.5398, 0.2483, 0.1891, 0.0228) in if x < 2 then x < 1 else x < 3
 \end{lstlisting}
 
 \noindent Here, \discrete(0.5398, 0.2483, 0.1891, 0.0228) already represents all four observationally distinguishable outcomes of the Gaussian sample. The precise real value of $x$ never mattered to the rest of the program; only the interval in which it falls does. This is the regime we target: continuous quantities used in an observationally discrete way. \emph{Slice’s goal is to detect such situations automatically.} We partition the continuous expression into intervals that are indistinguishable to the rest of the program, and then map every real to the interval it inhabits. 
@@ -25,8 +23,7 @@ We consider a program that samples a real value from a standard Gaussian distrib
 The transformation is guided by our type system, driven by a \emph{cut set} --- the set of comparison thresholds extracted from the program. A continuous expression is annotated with its cut set, recording the values it is compared against. For our example, the type annotation looks as follows:
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!,gobble=4]
-    let x = (gaussian(0,1) : !{\ftnv{\{<0.2,<0.5,<2\}}}!) in
-    if x < 0.5 then x < 0.2 else x < 2.0
+    let x = (gaussian(0,1) : !{\ftnv{\{<0.2,<0.5,<2\}}}!) in if x < 0.5 then x < 0.2 else x < 2.0
 \end{lstlisting}
 
 \noindent Intuitively, the cuts $\{\clt{0.1}, \clt{0.2}, \clt{0.5}\}$ partition the real line $\R$ into four intervals $(-\infty, 0.1)$, $[0.1, 0.2)$, $[0.2, 0.5)$, $[0.5, +\infty)$, and only the interval in which the Gaussian sample $x$ falls affects the rest of the computation. \Slice{} uses these cuts to replace the continuous expression with a discrete one whose outcomes correspond exactly to these intervals, and each floating-point constant is mapped to the index of the interval that contains it.
@@ -187,19 +184,21 @@ We now consider comparisons against an expression for which control flow determi
 
 \noindent Value sets refine an expression's cut set by contributing cuts at comparisons. For example, in the test $x \leq y$, the value set of $y$ contributes boundary points that must also appear in the cut set of $x$. This dependency is non-local: constants introduced in one branch can constrain how a sampled value from another branch must be discretized.
 
-More generally, whenever two expressions are compared, the type system equates their cut sets so they are discretized over the same intervals. These cut sets then propagate backward through the control flow to all contributing subexpressions. Figure~\ref{fig:control-flow-gaussian} illustrates this non-local propagation, which the soundness proof must relate through a semantic coupling relation.
+Whenever two expressions are compared, the type system equates their cut sets so they are discretized over the same intervals. These cut sets then propagate backward through the control flow to all contributing subexpressions. Figure~\ref{fig:control-flow-gaussian} illustrates this non-local propagation, which the soundness proof must relate through a semantic coupling relation.
 
-\noindent The discretized program is shown on the right. The cuts $\cleq{0.3}$, $\clt{1.5}$, and $\cleq{1.8}$ induce the intervals $(-\infty, 0.3]$, $(0.3, 1.5)$, $[1.5, 1.8]$, and $(1.8, +\infty)$; the strict comparison excludes 1.5 from the second one. Each \discrete-expression lists the mass of those four intervals. For instance, \uniform(0,2) assigns $(0.15, 0.6, 0.15, 0.1)$. 
+\noindent The discretized program is shown on the right. The cuts $\cleq{0.3}$, $\clt{1.5}$, $\cleq{1.8}$ induce the intervals $(-\infty, 0.3]$, $(0.3, 1.5)$, $[1.5, 1.8]$, $(1.8, +\infty)$. Each \discrete-expression lists the mass of these intervals. 
 
 \begin{figure}
-    \[
+	\scalebox{0.9}{
+    $
     \textbf{float}
     [
-    \underbrace{\text{cut-set}}_{\footnotesize\begin{array}{c}\text{set of cuts}\text{ (e.g., }\{<\!0.1, <\!0.5, \leq\!0.8\}\text{)}\\\text{or }\top\text{ (uncut)}\end{array}}
+    \underbrace{\text{cut-set}}_{\footnotesize\begin{array}{c}\text{set of cuts}\text{ (e.g., }\{<\!0.1, <\!0.5, \leq\!0.8\}\text{)}\text{ or }\top\text{ (uncut)}\end{array}}
     ;
-    \underbrace{\text{value-set}}_{\footnotesize\begin{array}{c}\text{set of concrete values }\text{(e.g., }\{0.1, 0.4, 0.5\}\text{)}\\\text{or }\top\text{ (any continuous value)}\end{array}}
+    \underbrace{\text{value-set}}_{\footnotesize\begin{array}{c}\text{set of concrete values }\text{(e.g., }\{0.1, 0.4, 0.5\}\text{)}\text{ or }\top\text{ (any value)}\end{array}}
     ]
-    \]
+    $
+}
     \caption{The type \lstinline{float[cut-set; value-set]} captures two aspects of a floating-point expression. The cut set is determined either by (i) the constants the expression is compared against or (ii) the constant itself if the expression is a float constant. The value set is determined by {what concrete values the expression can take}. The discretization is driven by the cut set: the $n$ cuts define $n+1$ intervals over the real line.}
     \label{fig:float-type-def}
 \end{figure}
@@ -282,8 +281,7 @@ The type-annotations reveal how the variable $x$ determines the standard deviati
     let x =
      (uniform(0.0, 1.0) : !{\ft{\{<0.2,<0.5\}}}!) in
     let _ =
-     observe(x < (0.5 : !{\ftb{\{<0.2,<0.5\}}{\{0.5\}}}!))
-    in
+     observe(x < (0.5 : !{\ftb{\{<0.2,<0.5\}}{\{0.5\}}}!)) in
     x < (0.2 : !{\ftb{\{<0.2,<0.5\}}{\{0.2\}}}!)
     \end{lstlisting}
     \end{minipage}
@@ -415,7 +413,7 @@ We will now consider a more involved example shown in \Cref{fig:epsball} that \S
 
 The program models the following process: We start by randomly sampling $4$ intervals (l.\ \ref{ln:b} and \ref{ln:init}), stored as a list of pairs, where the first component contains a flag used later and the second component contains a function that can be called to determine whether a given point falls within that interval. We then employ unbounded recursion (l.\ \ref{ln:cover}) to repeat the following a potentially unbounded number of times according to a geometric distribution: Sample a point $y$ from a gaussian (l.\ \ref{ln:step}), and update the flag of every interval to $\true$ whenever $y$ falls within that interval (l.\ \ref{ln:update}). Finally, the program returns $\true$ iff \emph{all} intervals have been hit at least once (l. \ref{ln:final} and \ref{ln:iscovered}). Performing exact inference on this program hence corresponds to computing the probability that the modeled infinite stochastic process will hit every interval at least once.
 
-\Slice \emph{automatically} produces a \emph{provably equivalent} (cf.\ \Cref{sec:soundness}) discrete program (provided in \Cref{ap:epsball}). Even though this program still contains unbounded recursion, our back-end automatically determines that its stochastic execution behavior can be modelled as a \emph{finite-state} Markov chain. Our key insight here is that exact inference can then be performed via \emph{probabilistic model checking}: We use the model checker \Storm\kb{cite when dblp is alivequi}, which automatically computes that the sought-after probability is $0.018226..$. See \Cref{sec:case-studies} for details. To the best of our knowledge, our pipeline is the first that is capable of performing exact inference on suitable programs containing continuous sampling, higher-order functions, and unbounded recursion. In \Cref{sec:casestudy:epsball}, we extend this program by conditioning \emph{inside of the unbounded recursion}. \kb{maybe tone this down a little}
+\Slice \emph{automatically} produces a \emph{provably equivalent} (cf.\ \Cref{sec:soundness}) discrete program (provided in \Cref{ap:epsball}). Even though this program still contains unbounded recursion, our back-end automatically determines that its stochastic execution behavior can be modelled as a \emph{finite-state} Markov chain. Our key insight here is that exact inference can then be performed via \emph{probabilistic model checking}: We use  \Storm \cite{storm}, which automatically computes that the sought-after probability is $0.018226..$. See \Cref{sec:case-studies} for details. To the best of our knowledge, our pipeline is the first that is capable of performing exact inference on suitable programs containing continuous sampling, higher-order functions, and unbounded recursion. In \Cref{sec:casestudy:epsball}, we extend this program by conditioning \emph{inside of the recursion}. 
 
 %We now consider a stochastic coverage process over a continuous domain with both higher-order functions and unbounded recursion. The program first samples four cut points $b_1,b_2,b_3,b_4$ from discrete distributions over candidate boundary values, thereby inducing a random partition of $[0,1]$ into subintervals. It then repeatedly samples points from a Gaussian distribution, marking each interval as covered once a sampled point falls inside it. The process stops after a geometrically distributed number of steps, and finally checks whether the entire interval has been covered.
 %\ref{ln:within}

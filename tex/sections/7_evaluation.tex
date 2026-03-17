@@ -177,7 +177,7 @@ Now, using the probabilistic model checker \Storm, we can peform exact inference
 \subsubsection{Random Interval Covering of $[0,1]$ with Conditioning}
 \label{sec:casestudy:epsball}
 
-Our second case study extends the random interval covering example from  by adding conditioning inside the unbounded stochastic loop: We condition on \emph{every} sample fallin within \emph{at most} one interval. Let us consider the difference of the new program and the one from \Cref{sec:examples:7}:
+Our second case study extends the random interval covering example from \Cref{sec:examples:7}  by conditioning inside of the recursion: We condition on \emph{every} sample fallin within \emph{at most} one interval. The difference to the propgram in \Cref{sec:examples:7} is:
 %As before, the program maintains a list-valued state of interval predicates and coverage flags; here we only show the difference to the program in \Cref{fig:epsball}:
 %
 
@@ -232,10 +232,10 @@ The program remains discretizable: each sampled point is still used only through
 
 Currently, our Markov chain construction process is rather naive: extending the number of sampling points or intervals yields the Markov chain to be infeasible large. Developing efficient symbolic discrete inference engines for higher-order programs with unbounded recursion is not in the scope of this paper. However, our approach is an excellent motivation for this future direction. \kb{admit naive}
 
-\subsubsection{Bloom Filter}\kb{read}
+\subsubsection{Bloom Filter}
 \label{sec:casestudy:bloom}
-
-We model a probabilistcally populated variant of a Bloom filter \cite{Bloom1970SpaceTime}. A Bloom filter is a data structure using hash functions for storing data in a space efficient manner: one can insert data into a Bloom filter and subsequently query whether a given data point is stored in the Bloom filter. Due to aggressive compression via hashing, this process can be faulty: while it can never produce false-negatives, it can produce false-positives. Now conisder the following program (full program shown in~\Cref{ap:casestudy:bloom}):
+%
+We model a probabilistcally populated variant of a Bloom filter \cite{Bloom1970SpaceTime}, which is a data structure using hash functions for storing data space efficiently: one can insert data into a Bloom filter and subsequently query whether a given data point is stored in it. Due to aggressive compression via hashing, this process can be faulty: while it can never produce false-negatives, it can produce false-positives. Now conisder the following program (full program shown in~\Cref{ap:casestudy:bloom}):
 
 \begin{minipage}[t]{0.48\textwidth}
 \vspace{0pt}
@@ -252,22 +252,19 @@ let insert = fun q -> fun h1 -> !\linelabel{ln:bloom-insert}!
   let index1 = h1 q in
   let index2 = h2 q in
   let bf1 = set_true bf index1 in
-  set_true bf1 index2
-in
+  set_true bf1 index2 in
 
 let search = fun q -> fun h1 -> !\linelabel{ln:bloom-search}!
     fun h2 -> fun bf -> 
   let index1 = h1 q in
   let index2 = h2 q in
-  (get bf index1) && (get bf index2)
-in
+  (get bf index1) && (get bf index2) in
 
 let h1 = fun q -> !\linelabel{ln:bloom-h1}!
   if q <= -2 then 0
   else if q <= 0 then 1
   else if q <= 2 then 2
-  else 3
-in
+  else 3 in
 \end{lstlisting}
 \end{minipage}
 \hfill
@@ -286,8 +283,7 @@ let h2 = fun q -> !\linelabel{ln:bloom-h2}!
   if q <= -2 then 3
   else if q <= 0 then 2
   else if q <= 2 then 1
-  else 0
-in
+  else 0 in
 
 let init = (false, (false, (false, false))) in !\linelabel{ln:bloom-init}!
 
@@ -298,17 +294,16 @@ let search_before_full = fix loop bf :=
   else if (search key h1 h2 bf) then bf
   else
     let q = gaussian(0,1) in !\linelabel{ln:bloom-samples}!
-    loop (insert q h1 h2 bf)
-in
+    loop (insert q h1 h2 bf) in
 
 let bf_final = (search_before_full init) in 
-not (full bf_final) !\linelabel{ln:bloom-final}!
+  not (full bf_final) !\linelabel{ln:bloom-final}!
 \end{lstlisting}
 \end{minipage}
 
-The program samples a Gaussian key (l. \ref{ln:bloom-key}) and starts from an empty four-bit Bloom filter (l. \ref{ln:bloom-init}). It then builds the filter recursively by drawing fresh Gaussian samples (l.\ \ref{ln:bloom-samples}) and inserting each one into the filter by hashing the sampled real twice using the comparison-based hash functions \lstinline{h1} and \lstinline{h2} (l.\ \ref{ln:bloom-h1} and \ref{ln:bloom-h2}), following a locality-sensitive hashing technique that hashes similar input items into the same buckets with high probability. Each insertion sets the corresponding bits in the filter using \lstinline{insert} (l.\ \ref{ln:bloom-insert}). The recursion continues until either the filter becomes full or the key is reported present by \lstinline{search} (l.\ \ref{ln:bloom-search}). The final Boolean result, \lstinline{not (full bf_final)} (l.\ \ref{ln:bloom-final}), therefore asks whether the key was found strictly before the filter became full.
+The program samples a Gaussian key (l. \ref{ln:bloom-key}) and starts from an empty four-bit Bloom filter (l. \ref{ln:bloom-init}). It then builds the filter recursively by drawing fresh Gaussian samples (l.\ \ref{ln:bloom-samples}) and inserting each one into the filter by hashing the sampled real twice using the comparison-based hash functions \lstinline{h1} and \lstinline{h2} (l.\ \ref{ln:bloom-h1} and \ref{ln:bloom-h2}), following a locality-sensitive hashing technique that hashes similar input items into the same buckets. Each insertion sets the corresponding bits in the filter using \lstinline{insert} (l.\ \ref{ln:bloom-insert}). The unbounded recursion continues until either the filter becomes full or the key is reported present by \lstinline{search} (l.\ \ref{ln:bloom-search}). The final Boolean result, \lstinline{not (full bf_final)} (l.\ \ref{ln:bloom-final}), therefore asks whether the key was found strictly before the filter became full.
 
-The key simplification is that the hash functions never inspect the exact value of a sample. They only ask which region the sample falls into, using the cut points $-2$, $0$, and $2$. These cuts partition the real line into four regions, which already coincide with the Bloom filter's index space. \Slice{} therefore replaces each Gaussian draw by its bucket index while preserving exactly the probability of every collision pattern relevant to insertion and search. The fully discretized program is shown in~\Cref{ap:casestudy:bloom}. We generate a Markov chain consisting of $14$ states in $0.016$ seconds. \Storm takes $0.003$ seconds for model checking.
+The key simplification is that the hash functions never inspect the exact value of a sample. They only ask which region the sample falls into, using the cut points $-2$, $0$, and $2$. These cuts partition the real line into four regions, which already coincide with the Bloom filter's index space. \Slice{} therefore replaces each Gaussian draw by its bucket index while preserving exactly the probability of every collision pattern relevant to insertion and search. The fully discretized program is shown in~\Cref{ap:casestudy:bloom}. We generate a Markov chain consisting of $14$ states in $0.016$ seconds. \Storm takes $0.003$ seconds for model checking, and reports that the sought-after probability is $0.91314...$.
 
 %\subsubsection{Mondrian-Style Recursive Partitioning}
 %\label{sec:casestudy:mondrian}
@@ -333,7 +328,7 @@ We designed scalable benchmarks of conditionally independent continuous programs
 %
  Each program consists of a sequence of conditionals, where each branch depends on a previous variable sampled from a uniform distribution, proceeding until the final condition $x_n < 0.5$ is reached. Here $0 \leq r_i \leq 1$ are fixed float constants. Results are depicted in \Cref{fig:alt-benchmarks-main}. Detailed listings and graphs for variants of these benchmarks appear in the supplemental Appendix~\ref{appen:synthetic-sketches}.
 
- We report runtime (seconds) for (i) \SPPL{}, (ii) \Slice{} (discretization only), (iii) \Slice{}+\Dice{} (discretization plus inference via \Dice{}), and (iv) \Slice{}+\Roulette{} (discretization plus inference via \Roulette{}). The timeout is 120 seconds. Program sizes are evaluated in increments of 5, from 0 to 50. For each size, we generate $10$ random instances and report average runtime.\kb{Jules: Verify exact run count used for the plotted scaling results; the current scripts default to 10 unless overridden.} We observe that discretization remains small across sizes, and takes less than $0.01$ seconds for each program. End-to-end runtimes for \Slice{} with discrete backends grow more mildly on these families; \SPPL reaches a clear timeout frontier at larger instances (cf.\ \Cref{fig:alt-benchmarks-main}). We conclude that using efficient BDD-based back-ends for exact inference on continuous programs via discretization can pay off.
+ We report runtime (seconds) for (i) \SPPL{}, (ii) \Slice{} (discretization only), (iii) \Slice{}+\Dice{} (discretization plus inference via \Dice{}), and (iv) \Slice{}+\Roulette{} (discretization plus inference via \Roulette{}). The timeout is 120 seconds. Program sizes are evaluated in increments of 5, from 0 to 50. For each size, we generate $10$ random instances and report average runtime.\kb{Jules: Verify exact run count used for the plotted scaling results; the current scripts default to 10 unless overridden.} We observe that discretization remains small across sizes, and takes less than $0.01$ seconds for each program. End-to-end runtimes for \Slice{} with discrete backends grow more mildly on these families; \SPPL reaches a timeout frontier at larger instances (cf.\ \Cref{fig:alt-benchmarks-main}). We conclude that using efficient BDD-based back-ends for exact inference on continuous programs via discretization can pay off.
  
 % The programs in \Cref{fig:cond-benchmarks-a} follow the scheme depicted above where the program size is $n$, i.e., the number of comparisons performed is $n$. In \Cref{fig:cond-benchmarks-b}, every conditional guard compares against the initial variable $x_1$, so all branches depend on the same root variable. In \Cref{fig:cond-benchmarks-c}, each $x_i$ does not necessarily depend on $x_{i-1}$ but on some randomly chosen predecessor\footnote{We generate these programs in a randomized manner with a fixed seed for reproducibility}. In \Cref{fig:cond-benchmarks-d}, we additionally choose at random whether the guards of the conditionals and the branches are either some predecessor variable $x_i$ or a  $\uniform$-sampling instruction.
 % %
