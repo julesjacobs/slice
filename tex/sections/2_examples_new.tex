@@ -189,14 +189,16 @@ Whenever two expressions are compared, the type system equates their cut sets so
 \noindent The discretized program is shown on the right. The cuts $\cleq{0.3}$, $\clt{1.5}$, $\cleq{1.8}$ induce the intervals $(-\infty, 0.3]$, $(0.3, 1.5)$, $[1.5, 1.8]$, $(1.8, +\infty)$. Each \discrete-expression lists the mass of these intervals. 
 
 \begin{figure}
-    \[
+	\scalebox{0.9}{
+    $
     \textbf{float}
     [
-    \underbrace{\text{cut-set}}_{\footnotesize\begin{array}{c}\text{set of cuts}\text{ (e.g., }\{<\!0.1, <\!0.5, \leq\!0.8\}\text{)}\\\text{or }\top\text{ (uncut)}\end{array}}
+    \underbrace{\text{cut-set}}_{\footnotesize\begin{array}{c}\text{set of cuts}\text{ (e.g., }\{<\!0.1, <\!0.5, \leq\!0.8\}\text{)}\text{ or }\top\text{ (uncut)}\end{array}}
     ;
-    \underbrace{\text{value-set}}_{\footnotesize\begin{array}{c}\text{set of concrete values }\text{(e.g., }\{0.1, 0.4, 0.5\}\text{)}\\\text{or }\top\text{ (any continuous value)}\end{array}}
+    \underbrace{\text{value-set}}_{\footnotesize\begin{array}{c}\text{set of concrete values }\text{(e.g., }\{0.1, 0.4, 0.5\}\text{)}\text{ or }\top\text{ (any value)}\end{array}}
     ]
-    \]
+    $
+}
     \caption{The type \lstinline{float[cut-set; value-set]} captures two aspects of a floating-point expression. The cut set is determined either by (i) the constants the expression is compared against or (ii) the constant itself if the expression is a float constant. The value set is determined by {what concrete values the expression can take}. The discretization is driven by the cut set: the $n$ cuts define $n+1$ intervals over the real line.}
     \label{fig:float-type-def}
 \end{figure}
