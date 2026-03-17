@@ -187,9 +187,9 @@ We now consider comparisons against an expression for which control flow determi
 
 \noindent Value sets refine an expression's cut set by contributing cuts at comparisons. For example, in the test $x \leq y$, the value set of $y$ contributes boundary points that must also appear in the cut set of $x$. This dependency is non-local: constants introduced in one branch can constrain how a sampled value from another branch must be discretized.
 
-More generally, whenever two expressions are compared, the type system equates their cut sets so they are discretized over the same intervals. These cut sets then propagate backward through the control flow to all contributing subexpressions. Figure~\ref{fig:control-flow-gaussian} illustrates this non-local propagation, which the soundness proof must relate through a semantic coupling relation.
+Whenever two expressions are compared, the type system equates their cut sets so they are discretized over the same intervals. These cut sets then propagate backward through the control flow to all contributing subexpressions. Figure~\ref{fig:control-flow-gaussian} illustrates this non-local propagation, which the soundness proof must relate through a semantic coupling relation.
 
-\noindent The discretized program is shown on the right. The cuts $\cleq{0.3}$, $\clt{1.5}$, and $\cleq{1.8}$ induce the intervals $(-\infty, 0.3]$, $(0.3, 1.5)$, $[1.5, 1.8]$, and $(1.8, +\infty)$; the strict comparison excludes 1.5 from the second one. Each \discrete-expression lists the mass of those four intervals. For instance, \uniform(0,2) assigns $(0.15, 0.6, 0.15, 0.1)$. 
+\noindent The discretized program is shown on the right. The cuts $\cleq{0.3}$, $\clt{1.5}$, $\cleq{1.8}$ induce the intervals $(-\infty, 0.3]$, $(0.3, 1.5)$, $[1.5, 1.8]$, $(1.8, +\infty)$. Each \discrete-expression lists the mass of these intervals. 
 
 \begin{figure}
     \[
