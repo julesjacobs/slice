@@ -7,8 +7,7 @@ To build intuition for \Slice{}, we start with simple examples demonstrating the
 We consider a program that samples a real value from a standard Gaussian distribution and then performs two nested comparisons, first checking whether the sampled value is less than 0.8, then comparing that value against either 0.1 or 2.0:
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em,gobble=4]
-    let x = gaussian(0,1) in 
-    if x < 0.8 then x < 0.1 else x < 2.0
+    let x = gaussian(0,1) in if x < 0.8 then x < 0.1 else x < 2.0
 \end{lstlisting}
 
 \noindent We discretize this program by sampling from appropriate \emph{intervals}, as shown below and in Figure~\ref{fig:cuts-gaussian}:
@@ -16,8 +15,7 @@ We consider a program that samples a real value from a standard Gaussian distrib
 \input{figures/cuts.tex}
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em,gobble=4]
-    let x = discrete(0.5398, 0.2483, 0.1891, 0.0228) in
-    if x < 2 then x < 1 else x < 3
+    let x = discrete(0.5398, 0.2483, 0.1891, 0.0228) in if x < 2 then x < 1 else x < 3
 \end{lstlisting}
 
 \noindent Here, \discrete(0.5398, 0.2483, 0.1891, 0.0228) already represents all four observationally distinguishable outcomes of the Gaussian sample. The precise real value of $x$ never mattered to the rest of the program; only the interval in which it falls does. This is the regime we target: continuous quantities used in an observationally discrete way. \emph{Slice’s goal is to detect such situations automatically.} We partition the continuous expression into intervals that are indistinguishable to the rest of the program, and then map every real to the interval it inhabits. 
@@ -25,8 +23,7 @@ We consider a program that samples a real value from a standard Gaussian distrib
 The transformation is guided by our type system, driven by a \emph{cut set} --- the set of comparison thresholds extracted from the program. A continuous expression is annotated with its cut set, recording the values it is compared against. For our example, the type annotation looks as follows:
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!,gobble=4]
-    let x = (gaussian(0,1) : !{\ftnv{\{<0.2,<0.5,<2\}}}!) in
-    if x < 0.5 then x < 0.2 else x < 2.0
+    let x = (gaussian(0,1) : !{\ftnv{\{<0.2,<0.5,<2\}}}!) in if x < 0.5 then x < 0.2 else x < 2.0
 \end{lstlisting}
 
 \noindent Intuitively, the cuts $\{\clt{0.1}, \clt{0.2}, \clt{0.5}\}$ partition the real line $\R$ into four intervals $(-\infty, 0.1)$, $[0.1, 0.2)$, $[0.2, 0.5)$, $[0.5, +\infty)$, and only the interval in which the Gaussian sample $x$ falls affects the rest of the computation. \Slice{} uses these cuts to replace the continuous expression with a discrete one whose outcomes correspond exactly to these intervals, and each floating-point constant is mapped to the index of the interval that contains it.
@@ -282,8 +279,7 @@ The type-annotations reveal how the variable $x$ determines the standard deviati
     let x =
      (uniform(0.0, 1.0) : !{\ft{\{<0.2,<0.5\}}}!) in
     let _ =
-     observe(x < (0.5 : !{\ftb{\{<0.2,<0.5\}}{\{0.5\}}}!))
-    in
+     observe(x < (0.5 : !{\ftb{\{<0.2,<0.5\}}{\{0.5\}}}!)) in
     x < (0.2 : !{\ftb{\{<0.2,<0.5\}}{\{0.2\}}}!)
     \end{lstlisting}
     \end{minipage}

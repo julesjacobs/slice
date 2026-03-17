@@ -108,7 +108,7 @@ We first state the central theorem, then outline our coupling-style correctness 
 	Let $e:\bool$. Then $\bigsem{e:\bool} = \bigsem{\discretize{e:\bool} : \bool}$.
 \end{theorem}
 %
-Intuitively, we prove that the two programs can execute in a synchronized manner such that their probabilities of terminating in value $v$ coincide for each $v \in \{\true,\false,\bot\}$. Because sub-expressions may have types other than $\bool$, this argument must (i) apply to expressions of \emph{arbitrary} type and (ii) be strong enough to imply \Cref{thm:maintext:sound}.
+Intuitively, we prove that the two programs can execute in a synchronized manner such that their probabilities of terminating in value $v$ coincide for each $v \in \{\true,\false,\bot\}$. %Because sub-expressions may have types other than $\bool$, this argument must (i) apply to expressions of \emph{arbitrary} type and (ii) be strong enough to imply \Cref{thm:maintext:sound}.
 %e, and which lets us conclude semantic equivalence for expressions of type $\bool$.
 %more general argument which enables us to conclude semantic equivalence.% The crucial point is when we encounter a continuous sampling instruction in $e$, in which case we have to prove that its discretized counterpart $\discretize{e:\tau}$
 

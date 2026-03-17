@@ -113,17 +113,16 @@ Moreover, we let $\intervals{\emptyset} = \{(-\infty,\infty)\}$ and $\intervals{
 	\begin{align*}
 		\tau {}::={} &\phantom{|} \textbf{int} 
 		\mid \textbf{bool}
+		\mid \unit
+		 \mid\fin{n} 
+		%
+		\mid \float[B; V]
 		 \mid \tau_1 * \tau_2 
 		 \mid \tau_1 \rightarrow \tau_2 
-		 \mid \unit
-		 \mid\listty{\tau}
+		 \mid\listty{\tau}~.
 		 %\mid \textbf{ref}(\tau) 
-		 \tag{standard types}\\
-		 %
-		 &|~ \fin{n} 
-		 %
-		 ~|~ \float[B; V]
-		   \tag{finite value types/float types}
+		 %&
+		   %\tag{finite value types/float types}
 	\end{align*}
 \end{definition}
 %
