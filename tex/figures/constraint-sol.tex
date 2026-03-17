@@ -16,7 +16,7 @@
           escapechar=!,
           mathescape=true
       }
-
+	\scalebox{0.9}{
       \begin{tabular}{p{0.42\linewidth} p{0.6\linewidth}}
 
       \textbf{Subtyping Constraint}
@@ -35,6 +35,7 @@
         & $\textcolor{teal}{B_{10} = B_{11}},\; \textcolor{teal}{V_{10} \sqsubseteq V_{11}}$ \\
 
       \end{tabular}
+    }
 
       \caption{Subtyping constraint decomposition. Each subtyping constraint over float types is decomposed into an equality constraint on cut sets and a subset constraint on value sets.}
   \end{subfigure}
@@ -46,6 +47,7 @@
   % =====================================================
   \begin{subfigure}[t]{0.7\linewidth}
       \centering
+      \scalebox{0.9}{
       \begin{tabular}{c p{0.28\linewidth} p{0.38\linewidth}}
 
       &
@@ -204,6 +206,7 @@
         & $\textcolor{teal}{B_9 = B_{11}, B_{10} = B_{11}}$ \\
 
       \end{tabular}
+    }
       \caption{Lattice solving. Each pass performs monotone updates to $B_i$ or $V_i$. Lines annotated with $\emptyset$ denote constraint is trivially satisfied.}
   \end{subfigure}
   \hfill
