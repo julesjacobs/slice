@@ -103,12 +103,12 @@
     \end{tabular}
     \end{adjustbox}
     \caption{Discretization function, where $\mathrm{CDF}(b_{0}) = 0$ and $\mathrm{CDF}(b_{n+1}) = 1$.
-        For the $\uniform$ distribution, $V = \top$ is implicit, and all other cases for the cut and value
-        sets are ruled out by the constraints enforced during type inference. For all other language
-        constructs, $\discretize{\cdot}$ straightforwardly recurses on their structure.}
+        For the $\uniform$ distribution, $V = \top$ is implicit, and all remaining cut-set and value-set
+        cases are ruled out by the constraints enforced during type inference. For all other language
+        constructs, $\discretize{\cdot}$ recurses structurally over them.}
     \label{fig:discretization-code}
 \end{figure*}
-This section presents local transformation rules for our type-directed discretization algorithm, with examples. The global objective is: given a typed expression $e : \bool$, compute, guided by type annotations, a \emph{discretized} expression $\discretize{e : \bool} : \bool$ such that $e$ and $\discretize{e : \tau}$ are \emph{semantically equivalent}, i.e., they induce the same distribution. We refer to this semantics-preserving transformation as \emph{exact discretization}, to distinguish it from \emph{quantization} approaches~\cite{Garg2024BitBlast,Huang2021AQUA} that approximate continuous programs via externally chosen precision parameters. Intuitively, when a program uses continuous quantities only through finitely many comparison outcomes, exact inference should reduce to a discrete problem, and exact discretization makes that reduction explicit.
+This section presents local transformation rules for our type-directed discretization algorithm, with examples. Our goal is to compute, from a typed expression $e : \bool$ and its type annotations, a \emph{discretized} expression $\discretize{e : \bool} : \bool$ such that $e$ and $\discretize{e : \bool}$ are \emph{semantically equivalent}, i.e., they induce the same distribution. We refer to this semantics-preserving transformation as \emph{exact discretization}, to distinguish it from \emph{quantization} approaches~\cite{Garg2024BitBlast,Huang2021AQUA} that approximate continuous programs via externally chosen precision parameters. Intuitively, when a program uses continuous quantities only through finitely many comparison outcomes, exact inference should reduce to a discrete problem, and exact discretization makes that reduction explicit.
 
 As shown in \Cref{fig:discretization-code}, $\discretize{e : \tau}$ is defined recursively on $e : \tau$ and its type annotations; we focus on continuous uniform distributions, with others handled analogously. The only sub-expressions replaced by $\discretize{\cdot}$ are float constants and sampling instructions. The rule schemata are local, but their selection and parameters come from globally inferred cut/value information; \Cref{sec:soundness} proves that this non-local, type-mediated construction preserves semantics. Before detailing the rules, we outline how type annotations guide discretization. The type system is designed so that every typed sub-expression of the form 
 $e = \uniform(e_1, e_2 )$ of type $\float[B;V]$ with $B=\{\sim_1\!\!b_1, \ldots, \sim_n\!\!b_n\} \neq \top$
@@ -152,7 +152,7 @@ Now consider the discretized expression obtained from computing $\discretize{e: 
 The probabilities appearing in $\discrete(\ldots)$ are determined by the cumulative distribution function (CDF) of the uniform distribution over $[0,1]$, ensuring that the probability of $x$ evaluating to $\finconst{k}{3}$ in $\discretize{e: \bool}$ \emph{coincides} with the probability of $x$ evaluating to a value in $\intervals{B}_k$ in $e$. Hence, the constants $0.3$ and $0.5$ in $e$ can be replaced by the constants $\finconst{1}{3}$ and $\finconst{2}{3}$  in $\discretize{e: \bool}$.
 \end{example}
 %
-Crucially, the \emph{answers} constraint in the premise of the typing rules for comparisons (cf.\ \Cref{fig:typing-float}) ensures that $B$ is a sufficiently fine-grained partitioning of $\Reals$, i.e., there is an injective function
+Crucially, the \emph{answers} constraint in the premise of the typing rules for comparisons (cf.\ \Cref{fig:typing-float}) ensures that $B$ is a sufficiently fine-grained partition of $\Reals$, i.e., there is an injective function
 %
 $
 	\text{ToInts} \colon \{0.3, 0.5\} \to \intervals{B}
@@ -174,7 +174,7 @@ such that $c$ is an (open) endpoint of $\text{ToInts}(c)$ for all $c \in\{0.3,0.
 	  < (5 : !{\ftb{\{<5\}}{\{5\}}}!)
 	\end{lstlisting}	
 	%
-	Why can this expression be discretized even though the argument to the second uniform sampling instruction is non-constant? The typing information $(x : \text{\ftb{\{<=10,<=20\}}{\{10,20\}}})$ correctly informs us about the fact that \emph{$x$ can only take the values $10$ and $20$}. Consequently, $x$ (and the $\ifkw$-expression generating it) can be discretized to a finite type $\fin{3}$ such that the probability of the resulting discrete expression evaluating to $\finconst{0}{3}$ (resp.\ $\finconst{1}{3}$) \emph{coincides} with the probability of the continuous expression evaluating to $10$ (resp.\ $20$). Let us (partially) apply $\discretize{e: \bool}$, resulting in:
+		Why can this expression be discretized even though the argument to the second uniform sampling instruction is non-constant? The typing information $(x : \text{\ftb{\{<=10,<=20\}}{\{10,20\}}})$ correctly tells us that \emph{$x$ can only take the values $10$ and $20$}. Consequently, $x$ (and the $\ifkw$-expression generating it) can be discretized to a finite type $\fin{3}$ such that the probability of the resulting discrete expression evaluating to $\finconst{0}{3}$ (resp.\ $\finconst{1}{3}$) \emph{coincides} with the probability of the continuous expression evaluating to $10$ (resp.\ $20$). Let us (partially) apply $\discretize{e: \bool}$, resulting in:
 	%
     \begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!,mathescape]
         let x = if discrete(0.5, 0.5) <#2 1#2 then 0#3 else 1#3 in
@@ -186,12 +186,12 @@ such that $c$ is an (open) endpoint of $\text{ToInts}(c)$ for all $c \in\{0.3,0.
             else !$\discretize{\texttt{\uniform(0,20) : \ft{\{<5\}}}}$! ) <#2 !$\discretize{\texttt{5 : \ftb{\{<5\}}{\{5\}}}}$!
         \end{lstlisting}	
 	%
-	The continuous $\uniform(0,x)$-expression is replaced by a case distinction on the discretizations of $\uniform(0,10)$ and $\uniform(0,20)$, where each of these cases is indeed executed with the correct probability $0.5$. Since this reduces the remaining discretization process to discretizing expressions with \emph{constant parameters only}, the remaining steps are completely analogous to Example~\ref{ex:discretize_simple}.
+		The continuous $\uniform(0,x)$-expression is replaced by a case distinction on the discretizations of $\uniform(0,10)$ and $\uniform(0,20)$, with each case executed with the correct probability $0.5$. Since this reduces the remaining discretization process to discretizing expressions with \emph{constant parameters only}, the remaining steps are completely analogous to Example~\ref{ex:discretize_simple}.
 \end{example}
 %
-Crucially, the \emph{distinguishes} constraints in the \textsc{Continuous}-rules from \Cref{fig:typing-float} ensure that the parameter expressions of the respective sampling expressions can take only finitely many values, and that the cut sets are fine-grained enough to recover the values the parameter expressions evaluate to as demonstrated in the preceding example.
+Crucially, the \emph{distinguishability} constraints in the \textsc{Continuous}-rules from \Cref{fig:typing-float} ensure that the parameter expressions of the respective sampling expressions can take only finitely many values, and that the cut sets are fine-grained enough to recover the values the parameter expressions evaluate to, as demonstrated in the preceding example.
 
-A similar intuition applies to discretizable comparisons $e_1 < e_2$, where \emph{both} expressions are non-constant but finite-cut. The \emph{answers} constraints in the rule \textsc{Less} (resp.\ \textsc{Less-Equal}) ensures that at least one of $e_1$ and $e_2$ evaluates to finitely many values only, which enables discretization:
+A similar intuition applies to discretizable comparisons $e_1 < e_2$, where \emph{both} expressions are non-constant but finite-cut. The \emph{answers} constraints in the rule \textsc{Less} (resp.\ \textsc{Less-Equal}) ensure that at least one of $e_1$ and $e_2$ evaluates to finitely many values only, which enables discretization:
 \begin{example}
 	Consider the following typed expression $(e_1 \leq e_2) : \bool$, given by
 	%
@@ -212,7 +212,7 @@ A similar intuition applies to discretizable comparisons $e_1 < e_2$, where \emp
         (if discrete(0.5, 0.5) <#2 1#2 then 0#3 else 1#3)
     \end{lstlisting}
 	%
-	Notice that the probability of $e_1$ evaluating to some value in $(-\infty, 2.5]$ indeed \emph{coincides} with the probability of $e_1's$ discretization evaluating to $\finconst{0}{3}$. For $e_2$, on the other hand, the probability of it evaluating to $2.5$ (resp.\ $3.5$) \emph{coincides} with the probability of its discretization evaluating to $\finconst{0}{3}$ (resp.\ $\finconst{1}{3}$). It is for this reason that we indeed produce a semantically equivalent discretization of $e_1 \leq e_2$.
+		Notice that the probability of $e_1$ evaluating to some value in $(-\infty, 2.5]$ indeed \emph{coincides} with the probability of the discretization of $e_1$ evaluating to $\finconst{0}{3}$. For $e_2$, on the other hand, the probability of it evaluating to $2.5$ (resp.\ $3.5$) \emph{coincides} with the probability of its discretization evaluating to $\finconst{0}{3}$ (resp.\ $\finconst{1}{3}$). For this reason, we obtain a semantically equivalent discretization of $e_1 \leq e_2$.
 \end{example}
 
 
