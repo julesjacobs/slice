@@ -20,7 +20,7 @@ We consider a program that samples a real value from a standard Gaussian distrib
 
 \noindent Here, \discrete(0.5398, 0.2483, 0.1891, 0.0228) already represents all four observationally distinguishable outcomes of the Gaussian sample. The precise real value of $x$ never mattered to the rest of the program; only the interval in which it falls does. This is the regime we target: continuous quantities observed only through finitely many comparison outcomes. \emph{Slice’s goal is to detect such situations automatically.} We partition the continuous distribution into intervals that are indistinguishable to the rest of the program, and then map every real to the interval it inhabits.
 
-The transformation is guided by our type system and, in particular, by a \emph{cut set} --- the set of comparison thresholds extracted from the program. A continuous distribution is annotated with its cut set, recording the values it is compared against. For our example, the type annotation looks as follows:
+The transformation is guided by our type system and, in particular, by a \emph{cut set} --- the set of comparison thresholds extracted from the program. A continuous distribution is annotated with its cut set, recording the values it is compared against. For our example, the type annotation is:
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!,gobble=4]
     let x = (gaussian(0,1) : !{\ftnv{\{<0.1,<0.8,<2\}}}!) in if x < 0.8 then x < 0.1 else x < 2.0
@@ -30,7 +30,7 @@ The transformation is guided by our type system and, in particular, by a \emph{c
 
 \subsection{Branching on Multiple Continuous Variables}\label{sec:examples:2}
 
-\noindent Different continuous quantities in a program may induce different cut sets, and \Slice{} computes the appropriate set for each one independently. Consider an example with multiple continuous variables:
+\noindent Different continuous quantities may induce different cut sets, and \Slice{} computes the appropriate set for each one independently. Consider an example with multiple continuous variables:
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em,gobble=4]
     let x = uniform(0, 1) in
@@ -186,7 +186,7 @@ We now consider comparisons against a continuous quantity whose value is determi
 
 Whenever two expressions are compared, the type system equates their cut sets so they are discretized over the same intervals. These cut sets then propagate backward through the control flow to all contributing subexpressions. Figure~\ref{fig:control-flow-gaussian} illustrates this non-local propagation, which the soundness proof must relate through a semantic coupling relation.
 
-\noindent The discretized program is shown on the right. The cuts $\cleq{0.3}$, $\clt{1.5}$, $\cleq{1.8}$ induce the intervals $(-\infty, 0.3]$, $(0.3, 1.5)$, $[1.5, 1.8]$, $(1.8, +\infty)$. Each \discrete distribution lists the mass of these intervals. 
+\noindent The discretized program is shown on the right. The cuts $\cleq{0.3}$, $\clt{1.5}$, $\cleq{1.8}$ induce the intervals $(-\infty, 0.3]$, $(0.3, 1.5)$, $[1.5, 1.8]$, $(1.8, +\infty)$. Each \discrete{} statement \mbox{lists the mass of these intervals.}
 
 \begin{figure}
 	\scalebox{0.9}{
@@ -311,9 +311,9 @@ The type annotations reveal how the variable $x$ determines the standard deviati
 \vspace{0.6em}
 
 \noindent
-Discretization again replaces reals by interval indices, as shown on the right. The observation $x<2$ eliminates the discrete state corresponding to the original interval $[0.5,+\infty)$, mirroring the conditioning on $x<0.5$.
+In the discretized program, the observation $x<2$ eliminates the discrete state corresponding to the original interval $[0.5,+\infty)$, mirroring the conditioning on $x<0.5$.
 
-Exact equalities are encoded with $\observekw\; (x \leq c \mathrel{\&\&} x \geq c)$. See~\Cref{ap:gpa} for an example. Measure-zero observations remain delicate~\cite{Jacobs2021ParadoxesProbProg}; our semantics handles them by recording observation failure mass instead of renormalizing, so discretization preserves an even stronger equivalence. Scoring semantics for true measure-zero events are out of scope; users should instead approximate them \mbox{with narrow intervals.}
+Exact equalities are encoded with $\observekw\; (x \leq c \mathrel{\&\&} x \geq c)$. See~\Cref{ap:gpa} for an example. Measure-zero observations remain delicate~\cite{Jacobs2021ParadoxesProbProg}; our semantics handles them by recording observation failure mass instead of renormalizing (cf.\ \Cref{sec:soundness}). Scoring semantics for true measure-zero events are out of scope; users should instead approximate them \mbox{with narrow intervals {(see \cite{Jacobs2021ParadoxesProbProg} for details)}.}
 
 
 
@@ -404,13 +404,13 @@ let final = cover init in
 \end{lstlisting}
 \end{minipage}
 
-\caption{An infinite stochastic process for random interval covering over $[0,1]$, involving continuous sampling, higher-order recursion, and lists.}
+\caption{An infinite stochastic process for random interval covering over $[0,1]$.}
 \label{fig:epsball}
 \end{figure*}
 \noindent
 We now turn to the more involved example in \Cref{fig:epsball}, which \Slice{} discretizes in a fully automatic manner. This example emphasizes how our discretization procedure operates across higher-order functions, unbounded recursion, and lists.
 
-The program models the following process: We start by randomly sampling $4$ intervals (l.\ \ref{ln:b} and \ref{ln:init}), stored as a list of pairs, where the first component is a flag and the second component is a function that determines whether a given point falls within that interval. We then employ unbounded recursion (l.\ \ref{ln:cover}) to repeat the following a potentially unbounded number of times according to a geometric distribution: sample a point $y$ from a gaussian (l.\ \ref{ln:step}), and update the flag of every interval to $\true$ whenever $y$ falls within that interval (l.\ \ref{ln:update}). Finally, the program returns $\true$ iff \emph{all} intervals have been hit at least once (l. \ref{ln:final} and \ref{ln:iscovered}). Exact inference on this program therefore amounts to computing the probability that the modeled infinite stochastic process hits every interval at least once.
+The program models the following process: We start by randomly sampling $4$ intervals (l.\ \ref{ln:b} and \ref{ln:init}), stored as a list of pairs, where the first component is a flag and the second component is a function that determines whether a given point falls within that interval. We then employ unbounded recursion (l.\ \ref{ln:cover}) to repeat the following a potentially unbounded number of times according to a geometric distribution: sample a point $y$ from a gaussian (l.\ \ref{ln:step}), and update the flag of every interval to $\true$ whenever $y$ falls within that interval (l.\ \ref{ln:update}). Tthe program returns $\true$ iff \emph{all} intervals have been hit at least once (l. \ref{ln:final} and \ref{ln:iscovered}). Exact inference on this program therefore determines the probability that this infinite stochastic process hits every interval at least once.
 
 \Slice{} \emph{automatically} produces a \emph{provably equivalent} (cf.\ \Cref{sec:soundness}) discrete program (shown in \Cref{ap:epsball}). Even though this program still contains unbounded recursion, our back-end automatically determines that its stochastic execution behavior can be modeled as a \emph{finite-state} Markov chain. Our key insight here is that exact inference can then be performed via \emph{probabilistic model checking}: we use \Storm{} \cite{storm}, which automatically computes that the sought-after probability is $0.018226..$. See \Cref{sec:case-studies} for details. To the best of our knowledge, our pipeline is the first capable of performing exact inference on suitable programs containing continuous sampling, higher-order functions, and unbounded recursion. In \Cref{sec:casestudy:epsball}, we extend this program by conditioning \emph{inside the recursion}.
 
