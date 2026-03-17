@@ -15,7 +15,7 @@ For the second question, we evaluate \Slice{}+\Dice{} and \Slice{}+\Roulette{} o
 
 \subsection{\Slicebf+\Stormbf: Case Studies}\label{sec:case-studies}
 %
-When discretized expressions contain unbounded recursion, no efficient exact inference engines exist. Our key insight is to use \emph{probabilistic model checking}: The small-step semantics of our language (cf.\ \Cref{tab:smallstep-1,tab:smallstep-2}) for discrete expressions gives rise to a \emph{Markov chain} modeling the potentially infinite stochastic process of program execution. If that Markov chain is finite, we can use the probabilistic model checker \Storm \cite{storm} for exact inference. Let us start with an illustrative example.
+When discretized expressions contain unbounded recursion, no efficient exact inference engines exist. Our key insight is to use \emph{probabilistic model checking}: The small-step semantics of our language (cf.\ \Cref{tab:smallstep-1,tab:smallstep-2}) for discrete expressions gives rise to a \emph{Markov chain} modeling the potentially infinite stochastic process of program execution, inspired by~\cite{Jansen2022BoundedModelCheckingProbPrograms} on imperative programs. If that Markov chain is finite, we can use the probabilistic model checker \Storm \cite{storm} for exact inference. Let us start with an illustrative example.
 %\kbin{old}
 
 

@@ -18,19 +18,19 @@ We consider a program that samples a real value from a standard Gaussian distrib
     let x = discrete(0.5398, 0.2483, 0.1891, 0.0228) in if x < 2 then x < 1 else x < 3
 \end{lstlisting}
 
-\noindent Here, \discrete(0.5398, 0.2483, 0.1891, 0.0228) already represents all four observationally distinguishable outcomes of the Gaussian sample. The precise real value of $x$ never mattered to the rest of the program; only the interval in which it falls does. This is the regime we target: continuous quantities observed only through finitely many comparison outcomes. \emph{Slice’s goal is to detect such situations automatically.} We partition the continuous expression into intervals that are indistinguishable to the rest of the program, and then map every real to the interval it inhabits.
+\noindent Here, \discrete(0.5398, 0.2483, 0.1891, 0.0228) already represents all four observationally distinguishable outcomes of the Gaussian sample. The precise real value of $x$ never mattered to the rest of the program; only the interval in which it falls does. This is the regime we target: continuous quantities observed only through finitely many comparison outcomes. \emph{Slice’s goal is to detect such situations automatically.} We partition the continuous distribution into intervals that are indistinguishable to the rest of the program, and then map every real to the interval it inhabits.
 
-The transformation is guided by our type system and, in particular, by a \emph{cut set} --- the set of comparison thresholds extracted from the program. A continuous expression is annotated with its cut set, recording the values it is compared against. For our example, the type annotation looks as follows:
+The transformation is guided by our type system and, in particular, by a \emph{cut set} --- the set of comparison thresholds extracted from the program. A continuous distribution is annotated with its cut set, recording the values it is compared against. For our example, the type annotation looks as follows:
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!,gobble=4]
     let x = (gaussian(0,1) : !{\ftnv{\{<0.1,<0.8,<2\}}}!) in if x < 0.8 then x < 0.1 else x < 2.0
 \end{lstlisting}
 
-\noindent Intuitively, the cuts $\{\clt{0.1}, \clt{0.8}, \clt{2.0}\}$ partition the real line $\R$ into four intervals $(-\infty, 0.1)$, $[0.1, 0.8)$, $[0.8, 2.0)$, $[2.0, +\infty)$, and only the interval in which the Gaussian sample $x$ falls affects the rest of the computation. \Slice{} uses these cuts to replace the continuous expression with a discrete one whose outcomes correspond exactly to these intervals, and each floating-point constant is mapped to the index of the interval that contains it.
+\noindent Intuitively, the cuts $\{\clt{0.1}, \clt{0.8}, \clt{2.0}\}$ partition the real line $\R$ into four intervals $(-\infty, 0.1)$, $[0.1, 0.8)$, $[0.8, 2.0)$, $[2.0, +\infty)$, and only the interval in which the Gaussian sample $x$ falls affects the rest of the computation. \Slice{} uses these cuts to replace the continuous distribution with a discrete one whose outcomes correspond exactly to these intervals, and each floating-point constant is mapped to the index of the interval that contains it.
 
 \subsection{Branching on Multiple Continuous Variables}\label{sec:examples:2}
 
-\noindent Different expressions may induce different cut sets, and \Slice{} computes the appropriate set for each expression independently. Consider an example with multiple continuous variables:
+\noindent Different continuous quantities in a program may induce different cut sets, and \Slice{} computes the appropriate set for each one independently. Consider an example with multiple continuous variables:
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em,gobble=4]
     let x = uniform(0, 1) in
@@ -120,7 +120,7 @@ Notice how both $2.5$ and $4.5$ are discretized to $1$, because for the purpose 
 \fi
 \subsection{Control Flow}\label{sec:examples:4}
 
-We now consider comparisons against an expression whose value is determined by control flow. Additionally, continuous values can flow through conditionals:
+We now consider comparisons against a continuous quantity whose value is determined by control flow. Additionally, continuous values can flow through conditionals:
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!,gobble=4]
     let x = if flip() then uniform(0,2) else gaussian(0,1) in
@@ -186,7 +186,7 @@ We now consider comparisons against an expression whose value is determined by c
 
 Whenever two expressions are compared, the type system equates their cut sets so they are discretized over the same intervals. These cut sets then propagate backward through the control flow to all contributing subexpressions. Figure~\ref{fig:control-flow-gaussian} illustrates this non-local propagation, which the soundness proof must relate through a semantic coupling relation.
 
-\noindent The discretized program is shown on the right. The cuts $\cleq{0.3}$, $\clt{1.5}$, $\cleq{1.8}$ induce the intervals $(-\infty, 0.3]$, $(0.3, 1.5)$, $[1.5, 1.8]$, $(1.8, +\infty)$. Each \discrete-expression lists the mass of these intervals. 
+\noindent The discretized program is shown on the right. The cuts $\cleq{0.3}$, $\clt{1.5}$, $\cleq{1.8}$ induce the intervals $(-\infty, 0.3]$, $(0.3, 1.5)$, $[1.5, 1.8]$, $(1.8, +\infty)$. Each \discrete distribution lists the mass of these intervals. 
 
 \begin{figure}
 	\scalebox{0.9}{
