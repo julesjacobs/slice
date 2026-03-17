@@ -35,6 +35,8 @@ The type inference rules closely mirror the typing rules in Figure~\ref{fig:typi
 \input{figures/constraint-gen.tex}
 
 \subsection{Constraint Solving}
+  \kb{fix weird captions in tables}
+ \noindent
 Once constraint generation completes, we obtain a system of constraints over type variables, cut sets $B$, and value sets $V$. The constraint solving phase proceeds in two steps:
 
 \input{figures/constraint-sol.tex}
@@ -93,10 +95,10 @@ The solver repeatedly processes constraints until reaching a fixed point, where 
 Lattice constraint solving takes time polynomial in the size of the program: at worst, \emph{every} constant in the program gets added to the cut set or value set of every subexpression \mbox{of type $\float[B;V]$.}
 
 \paragraph{Additional constraint for contextual equivalence.} 
-When the return type of the program involves a float type, either directly or as part of a larger compound type, we add an additional constraint to ensure that these float types are not discretized. For example:
-\[
-  \float[B;V] \to \float[B';V'].
-\]
+When the return type of the program involves a float type, either directly or as part of a larger compound type (e.g., $\float[B;V] \to \float[B';V']$), we add an additional constraint to ensure that these float types are not discretized. %For example:
+%\[
+%  \float[B;V] \to \float[B';V'].
+%\]
 We recursively traverse the return type and setting all nested $B$ sets to $\top$. This ensures that the observable behavior of the program is preserved after discretization, regardless of the context in which the program is used. When the return type is basic, such as $\bool$, nothing needs to be done.
 
 \begin{example}

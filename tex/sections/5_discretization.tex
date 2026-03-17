@@ -127,8 +127,8 @@ Consider a uniform distribution whose outcomes are compared to constants, with t
 %
 \begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
     let x = uniform(0, 1) : !{\ft{B}}! in
-    (x : !{\ft{B}}! < (0.3 : !{\ftb{B}{\{0.3\}}}!)) || 
-    (x : !{\ft{B}}! >= (0.5 : !{\ftb{B}{\{0.5\}}}!))
+      (x : !{\ft{B}}! < (0.3 : !{\ftb{B}{\{0.3\}}}!)) || 
+       (x : !{\ft{B}}! >= (0.5 : !{\ftb{B}{\{0.5\}}}!))
 \end{lstlisting}    
 %
 where $B= \{ \clt{0.3},\clt{0.5} \}$. The cut set $B$ informs us that the probability of the comparisons evaluating to $\true$ is determined by the probability of $x$ evaluating to one of the intervals 
@@ -247,9 +247,9 @@ $
 %
 \begin{theorem}[Discretization Is Well-Typed]\label{lem:type-transformations}
 	Let $\Gamma \vdash e : \tau$. We have
-	\[
+	$
 	\discretize{\Gamma} \vdash \discretize{e : \tau} : \discretize{\tau},
-	\]
+	$
 	where $\discretize{\Gamma}$ transforms all types in $\Gamma$, i.e., $\discretize{\Gamma}(x) = \discretize{\Gamma(x)}$ for all $x \in \textnormal{dom}(\Gamma)$.
 \end{theorem}
 %
