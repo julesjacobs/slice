@@ -3,7 +3,7 @@
 \tableofcontents
 
 \section{Slice Examples (continued)}\label{ap:mot}
-This section is a continuation of~\Cref{sec:examples}, describing more in detail the following examples: \Cref{sec:examples:4,sec:examples:5,sec:examples:6,sec:examples:7}.
+This section is a continuation of~\Cref{sec:examples}, describing more in detail the following examples: \Cref{sec:examples:4,sec:examples:5,sec:examples:6,sec:examples:7}. Additionally, we include an extra example based on the Indian GPA problem, a canonical example in the probabilistic programming literature~\cite{Wu2018DiscreteContinuousMixtures}.
 
 \subsection{Control Flow}\label{app:examples:4}
 
@@ -45,7 +45,8 @@ Operationally, the recovers constraint requires that the values in the value set
 
 \subsection{Indian GPA Problem}\label{ap:gpa}
 
-This example involves both discrete and continuous random variables and models a student's GPA based on nationality (India or USA) and whether they have a perfect record. The GPA is deterministic for perfect students (10.0 for India, 4.0 for USA) but drawn from a uniform distribution otherwise. \Slice{} correctly handles conditioning on a positive-measure atom at 4 or 10:
+This example involves both discrete and continuous random variables and models a student's GPA based on nationality (India or USA) and whether they have a perfect record. The GPA is deterministic for perfect students (10.0 for India, 4.0 for USA) but drawn from a uniform distribution otherwise. \Slice{} correctly handles conditioning on a positive-measure atom at 10:
+
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
   let nationality = discrete(0.5, 0.5) in
@@ -60,19 +61,25 @@ This example involves both discrete and continuous random variables and models a
             (4.0 : !{\ftb{\{<10,<=10\}}{\{4\}}}!)
           else
             (uniform(0, 4) : !{\ft{\{<10,<=10\}}}!)
-        : !{\ft{\{<1\}}}! in
+        : !{\ft{\{<10,<=10\}}}! in
   let _ = observe(gpa : !{\ft{\{<10,<=10\}}}! <= 10 : !{\ftb{\{<10,<=10\}}{\{10\}}}!
             && gpa : !{\ft{\{<10,<=10\}}}! >= 10 : !{\ftb{\{<10,<=10\}}{\{10\}}}!) in 
   nationality > 0
 \end{lstlisting}
 
-\noindent The type system collects the cuts $<10, \leq 10$ for all GPA expressions. This splits each uniform distribution into three intervals at the thresholds $<10, \leq 10$. The discretized version becomes:
+\noindent
+The type system propagates the cuts $\clt{10}$ and $\cleq{10}$ for all GPA expressions. These cuts induce the three regions:
+\[
+(-\infty,10), \qquad \{10\}, \qquad (10,\infty).
+\]
+Under this partition, both continuous branches, \texttt{uniform(0,10)} and \texttt{uniform(0,4)}, place all of their probability mass in the first region. The constant 10.0 is mapped to the singleton region $\{10\}$, while the constant 4.0 is mapped to the region $(-\infty,10)$. The resulting discretized program is therefore:
+
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em]
   let nationality = discrete(0.5, 0.5) in
   let perfect = discrete(0.01, 0.99) in
   let gpa = if nationality <= 0 then
-          if perfect <= 0 then  1
+          if perfect <= 0 then 1
           else
             discrete(1.0, 0.0, 0.0)
         else
@@ -83,35 +90,239 @@ This example involves both discrete and continuous random variables and models a
   nationality > 0
 \end{lstlisting}
 
-% \noindent Here, \uniform(0,10) becomes \discrete(1.0, 0.0, 0.0) representing 10\% probability for $[0,1)$ and 90\% for $[1,10]$. Similarly, \uniform(0,4) becomes \discrete(0.25, 0.75). Constants 10.0 and 4.0 fall into the second interval in the partition $(-\infty, 1) \cup [1,+\infty)$ and are thus both mapped to index 1 in the discretized program.
+\noindent
+After discretization, the equality test $\texttt{gpa} = 10$ becomes the discrete test that the GPA index is exactly the one corresponding to the singleton region $\{10\}$. 
 
 
-\subsection{Random Interval Covering}\label{ap:epsball}
+\subsection{Random Interval Covering over $\boldmath{[0,1]}$}\label{ap:epsball}
 The discretized program for the case study from \Cref{sec:examples:7} is shown in \Cref{fig:app:epsball}.
 
 % Discretized version
-\begin{figure*}[h]
-\centering
-\begin{minipage}[t]{0.46\textwidth}
-\vspace{0pt}
-\begin{lstlisting}[aboveskip=1em,belowskip=1em,
-  escapeinside={(*@}{@*)},
-  numbers=right,
-  stepnumber=1,
-  numberstyle=\color{gray}\scriptsize,
-  numbersep=7pt,
-  basicstyle=\ttfamily\footnotesize]
-let within = fun lo -> fun hi -> fun y -> 
-(* Returns true (*@if@*) y is (*@in@*) [lo,hi)*)
+\begin{figure*}[t]
+    \centering
+    \begin{minipage}[t]{0.46\textwidth}
+    \vspace{0pt}
+    \begin{lstlisting}[aboveskip=0.4em,belowskip=0.4em,
+      language=OCaml,
+      escapechar=!,
+      numbers=right,
+      stepnumber=1,
+      numberstyle=\color{gray}\scriptsize,
+      numbersep=7pt,
+      basicstyle=\ttfamily\footnotesize,
+      commentstyle=\color{ForestGreen}\itshape,
+      gobble=4]
+    (* Returns true if y is in [lo,hi) *)
+    let within = fun lo -> fun hi -> fun y -> !\linelabel{ln:within}!
+      (y >= lo) && (y < hi) in 
+    
+    (* Function for sampling interval bounds *)
+    let b = fun _ ->  !\linelabel{ln:b}!
+      discrete(0.18: 0.05, 0.11: 0.24, 
+              0.21: 0.37, 0.09: 0.58, 
+              0.41: 0.78) in
+    
+    (* Initialize intervals by sampling their 
+    respective (possibly overlapping) bounds *)
+    let init =!\linelabel{ln:init}!
+      (false, within 1 (b ())) ::
+      (false, within (b ()) (b ())) ::
+      (false, within (b ()) (b ())) ::
+      (false, within (b ()) 8) ::
+      nil in 
+    
+    (* Update flags depending on y falling 
+       within the respective interval *)
+    let update = fix update y := fun ys -> !\linelabel{ln:update}!
+      match ys with 
+        | nil -> nil
+        | h :: t ->
+            ((fst h || ((snd h) y)), snd h)
+            :: (update y t)
+      end in
+    \end{lstlisting}
+    \end{minipage}
+    \hfill
+    \begin{minipage}[t]{0.46\textwidth}
+    \vspace{0pt}
+    \begin{lstlisting}[aboveskip=0.4em,belowskip=0.4em,
+      language=OCaml,
+      escapechar=!,
+      numbers=right,
+      stepnumber=1,
+      firstnumber=last,
+      numberstyle=\color{gray}\scriptsize,
+      numbersep=7pt,
+      basicstyle=\ttfamily\footnotesize,
+      commentstyle=\color{ForestGreen}\itshape,
+      gobble=4]
+    (* Sample from a discretized gaussian, 
+        then use so-obtained value to update 
+        flags *)
+    let step = fun ys -> 
+       update (discrete(0.5, 0.0199388, 
+                        0.0748961, 0.0494739, 
+                        0.0747339, 0.0632619, 
+                        0.0309625, 0.0280777, 
+                        0.158655)) ys in
+     
+     (* Number of samples determined by 
+        unbounded recursion *)
+     let cover = fix cover st :=
+       if discrete(0.2, 0.8) < 1 then st
+       else cover (step st) in
+    
+    (* Have all intervals been covered at 
+       least once? *)
+    let is_covered = fix is_covered ys := !\linelabel{ln:iscovered}!
+      match ys with 
+        | nil -> true 
+        | h :: t -> (fst h) && (is_covered t)
+      end in 
+    
+    (* Run entire process on sampled intervals *)
+    let final = cover init in
+      is_covered final !\linelabel{ln:final}!
+    \end{lstlisting}
+    \end{minipage}
+    
+    \caption{A \emph{discretized} infinite stochastic process for random interval covering over $[0,1]$, involving continuous sampling, higher-order recursion, and lists.}
+    \label{fig:app:epsball}
+\end{figure*}
+
+
+\section{Slice Case Studies (continued)}
+
+\subsection{Random Interval Covering over $\boldmath{[0,1]}$ with Conditioning}\label{sec:epsball-observe}
+The full program for the case study from \Cref{sec:casestudy:epsball} is shown in \Cref{fig:app:epsball-observe}. The discretized program is shown in \Cref{fig:app:epsball-observe:disc}.
+
+% Continuous version
+\begin{figure*}[t]
+    \centering
+    \begin{minipage}[t]{0.46\textwidth}
+    \vspace{0pt}
+    \begin{lstlisting}[aboveskip=0.4em,belowskip=0.4em,
+      language=OCaml,
+      escapechar=!,
+      numbers=right,
+      stepnumber=1,
+      numberstyle=\color{gray}\scriptsize,
+      numbersep=7pt,
+      basicstyle=\ttfamily\footnotesize,
+      commentstyle=\color{ForestGreen}\itshape]
+(* Returns true if y is in [lo,hi) *)
+let within = fun lo -> fun hi -> fun y ->
   (y >= lo) && (y < hi) in 
 
-let b = fun _ ->  (* Function for sampling interval bounds *)
-  discrete(0.18: 0.05, 0.11: 0.24, 
-          0.21: 0.37, 0.09: 0.58, 
+(* Function for sampling interval bounds *)
+let b = fun _ ->
+  discrete(0.18: 0.05, 0.11: 0.24,
+          0.21: 0.37, 0.09: 0.58,
           0.16: 0.78, 0.25: 0.89) in
 
-(* Initialize intervals by sampling their 
-respective (possibly overlapping) bounds *)
+(* Initialize intervals by sampling their
+   respective (possibly overlapping) bounds *)
+let init =
+  (false, within 0.00 (b ())) ::
+  (false, within (b ()) (b ())) ::
+  (false, within (b ()) (b ())) ::
+  (false, within (b ()) 1.00) ::
+  nil in 
+
+(* Update flags depending on y falling 
+   within the respective interval *)
+let update = fix update y := fun ys ->
+  match ys with
+    | nil -> nil
+    | h :: t ->
+        ((fst h || ((snd h) y)), snd h)
+        :: (update y t)
+  end in
+
+(* Ensure sampled y hits at most one 
+   interval *)
+let non_overlap = 
+  fix non_overlap y := fun seen -> fun ys ->
+    match ys with
+      | nil -> true
+      | h :: t ->
+          let hit = (snd h) y in
+          if hit && seen then false
+          else non_overlap y (seen || hit) t
+    end in
+    \end{lstlisting}
+    \end{minipage}
+    \hfill
+    \begin{minipage}[t]{0.46\textwidth}
+    \vspace{0pt}
+    \begin{lstlisting}[aboveskip=0.4em,belowskip=0.4em,
+      language=OCaml,
+      escapechar=! ,
+      numbers=right,
+      stepnumber=1,
+      firstnumber=last,
+      numberstyle=\color{gray}\scriptsize,
+      numbersep=7pt,
+      basicstyle=\ttfamily\footnotesize,
+      commentstyle=\color{ForestGreen}\itshape]
+(* Use the sampled value to update flags *)
+let step = fun y -> fun ys ->
+  update y ys in
+
+(* Number of samples determined by
+   unbounded recursion *)
+let cover = fix cover st :=
+  if uniform(0,1) < 0.1 then st
+  else
+    let y = gaussian(0,1) in
+    let _ = observe(non_overlap y false st) in
+    cover (step y st) in
+
+(* Have all intervals been covered
+   at least once? *)
+let is_covered = fix is_covered ys :=
+  match ys with
+    | nil -> true
+    | h :: t -> (fst h) && (is_covered t)
+  end in
+
+(* Run the process and query whether
+   the whole interval was covered *)
+let final = cover init in
+  is_covered final
+    \end{lstlisting}
+    \end{minipage}
+    
+\caption{An infinite stochastic process for random interval covering over $[0,1]$, involving conditioning, continuous sampling, higher-order recursion, and lists.}
+    \label{fig:app:epsball-observe}
+\end{figure*}
+
+% Discretized version
+\begin{figure*}[t]
+    \centering
+    \begin{minipage}[t]{0.46\textwidth}
+    \vspace{0pt}
+    \begin{lstlisting}[aboveskip=0.4em,belowskip=0.4em,
+      language=OCaml,
+      escapechar=!,
+      numbers=right,
+      stepnumber=1,
+      numberstyle=\color{gray}\scriptsize,
+      numbersep=7pt,
+      basicstyle=\ttfamily\footnotesize,
+      commentstyle=\color{ForestGreen}\itshape]
+(* Returns true if y is in [lo,hi) *)
+let within = fun lo -> fun hi -> fun y ->
+  (y >= lo) && (y < hi) in 
+
+(* Function for sampling interval bounds *)
+let b = fun _ ->
+  discrete(0.18: 0.05, 0.11: 0.24,
+          0.21: 0.37, 0.09: 0.58,
+          0.16: 0.78, 0.25: 0.89) in
+
+(* Initialize intervals by sampling their
+   respective (possibly overlapping) bounds *)
 let init =
   (false, within 1 (b ())) ::
   (false, within (b ()) (b ())) ::
@@ -119,403 +330,208 @@ let init =
   (false, within (b ()) 8) ::
   nil in 
 
-(* Update flags depending on y falling within
-   the respective interval *)
-let update = fix update y := fun ys -> 
-  match ys with 
+(* Update flags depending on y falling 
+   within the respective interval *)
+let update = fix update y := fun ys ->
+  match ys with
     | nil -> nil
     | h :: t ->
         ((fst h || ((snd h) y)), snd h)
         :: (update y t)
-  end
-in
-\end{lstlisting}
-\end{minipage}
-\hfill
-\begin{minipage}[t]{0.46\textwidth}
-\vspace{0pt}
-\begin{lstlisting}[aboveskip=1em,belowskip=1em,
-  escapeinside={(*@}{@*)},
-  numbers=right,
-  stepnumber=1,
-  firstnumber=last,
-  numberstyle=\color{gray}\scriptsize,
-  numbersep=7pt,
-  basicstyle=\ttfamily\footnotesize]
-(* Sample from a (*@gaussian@*), (*@then@*) use
-   so-obtained value to update flags *)
-let step = fun ys -> 
-  update (discrete(0.5, 0.0199388, 
-            0.0748961, 0.0494739, 
-            0.0747339, 0.0632619, 
-            0.0309625, 0.0280777, 
-            0.158655)) ys in
+  end in
 
-(* Number of samples determined by 
+(* Ensure sampled y hits at most one 
+   interval *)
+let non_overlap = 
+  fix non_overlap y := fun seen -> fun ys ->
+    match ys with
+      | nil -> true
+      | h :: t ->
+          let hit = (snd h) y in
+          if hit && seen then false
+          else non_overlap y (seen || hit) t
+    end in
+    \end{lstlisting}
+    \end{minipage}
+    \hfill
+    \begin{minipage}[t]{0.46\textwidth}
+    \vspace{0pt}
+    \begin{lstlisting}[aboveskip=0.4em,belowskip=0.4em,
+      language=OCaml,
+      escapechar=! ,
+      numbers=right,
+      stepnumber=1,
+      firstnumber=last,
+      numberstyle=\color{gray}\scriptsize,
+      numbersep=7pt,
+      basicstyle=\ttfamily\footnotesize,
+      commentstyle=\color{ForestGreen}\itshape]
+(* Use the sampled value to update flags *)
+let step = fun y -> fun ys ->
+  update y ys in
+
+(* Number of samples determined by
    unbounded recursion *)
 let cover = fix cover st :=
-  if discrete(0.2, 0.8) < 1 then st
-  else cover (step st) in
-
-(* Have all intervals been covered
-   at least once? *)
-let is_covered = fix is_covered ys := 
-  match ys with 
-    | nil -> true 
-    | h :: t -> (fst h) && (is_covered t)
-  end
-in 
-
-(* Run entire process on sampled intervals *)
-let final = cover init in
-is_covered final 
-\end{lstlisting}
-\end{minipage}
-
-\caption{A \emph{discretized} infinite stochastic process involving continuous sampling, higher-order recursion, and lists.}
-\label{fig:app:epsball}
-\end{figure*}
-
-
-\section{Slice Case Studies (continued)}
-
-\subsection{Random Interval Covering with Conditioning}\label{sec:epsball-observe}
-The full program for the case study from \Cref{sec:casestudy:epsball} is shown in \Cref{fig:coverage-conditioning}. The discretized program is shown in \Cref{fig:coverage-conditioning}.
-
-% Continuous version
-\begin{figure*}[t]
-    \centering
-    \begin{minipage}[t]{0.46\textwidth}
-    \vspace{0pt}
-    \begin{lstlisting}[aboveskip=1em,belowskip=1em,
-      escapeinside={(*@}{@*)},
-      numbers=right,
-      stepnumber=1,
-      numberstyle=\color{gray}\scriptsize,
-      numbersep=7pt,
-      basicstyle=\ttfamily\footnotesize]
-let within = fun lo -> fun hi -> fun y ->
-(* Returns true (*@if@*) y is (*@in@*) [lo,hi) *)
-    (y >= lo) && (y < hi)
-in 
-
-let b = fun _ ->  (* Function for sampling interval bounds *)
-    discrete(0.18: 0.05, 0.11: 0.24,
-            0.21: 0.37, 0.09: 0.58,
-            0.16: 0.78, 0.25: 0.89)
-in
-
-(* Initialize intervals by sampling their
-    respective (possibly overlapping) 
-    bounds *)
-let init =
-    (false, within 0.00 (b ())) ::
-    (false, within (b ()) (b ())) ::
-    (false, within (b ()) (b ())) ::
-    (false, within (b ()) 1.00) ::
-    nil
-in 
-
-(* Update flags depending on y falling 
-    within the respective interval *)
-let update = fix update y := fun ys ->
-    match ys with
-    | nil -> nil
-    | h :: t ->
-        ((fst h || ((snd h) y)), snd h)
-        :: (update y t)
-    end
-in
-
-(* Ensure sampled y hits at most one 
-    interval *)
-let non_overlap = 
-    fix non_overlap y := fun seen -> fun ys ->
-    match ys with
-    | nil -> true
-    | h :: t ->
-        let hit = (snd h) y in
-        if hit && seen then false
-        else non_overlap y (seen || hit) t
-    end
-in
-    \end{lstlisting}
-    \end{minipage}
-    \hfill
-    \begin{minipage}[t]{0.46\textwidth}
-    \vspace{0pt}
-    \begin{lstlisting}[aboveskip=1em,belowskip=1em,
-      escapeinside={(*@}{@*)},
-      numbers=right,
-      stepnumber=1,
-      firstnumber=last,
-      numberstyle=\color{gray}\scriptsize,
-      numbersep=7pt,
-      basicstyle=\ttfamily\footnotesize]
-    
-(* Sample from a (*@gaussian@*), observe 
-    non-overlap, then use the sampled value 
-    to update flags *)
-let step = fun y -> fun ys -> update y ys
-in
-
-(* Number of samples determined by
-    unbounded recursion *)
-let cover = fix cover st :=
-    if uniform(0,1) < 0.1 then st
-    else
-    let y = gaussian(0,1) in
-    let _ = observe(non_overlap y false st) in
-    cover (step y st)
-in
-
-(* Have all intervals been covered
-    at least once? *)
-let is_covered = fix is_covered ys :=
-    match ys with
-    | nil -> true
-    | h :: t -> (fst h) && (is_covered t)
-    end
-in
-
-(* Query if we covered the whole interval *)
-let final = cover init in
-is_covered final
-    \end{lstlisting}
-    \end{minipage}
-    
-\caption{A stochastic coverage process over $[0,1]$ with conditioning, continuous sampling, higher-order recursion, and lists.}
-    \label{fig:coverage-conditioning}
-\end{figure*}
-
-% Discretized version
-\begin{figure*}[t]
-    \centering
-    \begin{minipage}[t]{0.46\textwidth}
-    \vspace{0pt}
-    \begin{lstlisting}[aboveskip=1em,belowskip=1em,
-      escapeinside={(*@}{@*)},
-      numbers=right,
-      stepnumber=1,
-      numberstyle=\color{gray}\scriptsize,
-      numbersep=7pt,
-      basicstyle=\ttfamily\footnotesize]
-let within = fun lo -> fun hi -> fun y ->
-(* Returns true (*@if@*) y is (*@in@*) [lo,hi) *)
-    (y >= lo) && (y < hi)
-in 
-
-let b = fun _ ->  (* Function for sampling interval bounds *)
-    discrete(0.18: 0.05, 0.11: 0.24,
-            0.21: 0.37, 0.09: 0.58,
-            0.16: 0.78, 0.25: 0.89)
-in
-
-(* Initialize intervals by sampling their
-    respective (possibly overlapping) 
-    bounds *)
-let init =
-    (false, within 1 (b ())) ::
-    (false, within (b ()) (b ())) ::
-    (false, within (b ()) (b ())) ::
-    (false, within (b ()) 8) ::
-    nil
-in 
-
-(* Update flags depending on y falling 
-    within the respective interval *)
-let update = fix update y := fun ys ->
-    match ys with
-    | nil -> nil
-    | h :: t ->
-        ((fst h || ((snd h) y)), snd h)
-        :: (update y t)
-    end
-in
-
-(* Ensure sampled y hits at most one 
-    interval *)
-let non_overlap = 
-    fix non_overlap y := fun seen -> fun ys ->
-    match ys with
-    | nil -> true
-    | h :: t ->
-        let hit = (snd h) y in
-        if hit && seen then false
-        else non_overlap y (seen || hit) t
-    end
-in
-    \end{lstlisting}
-    \end{minipage}
-    \hfill
-    \begin{minipage}[t]{0.46\textwidth}
-    \vspace{0pt}
-    \begin{lstlisting}[aboveskip=1em,belowskip=1em,
-      escapeinside={(*@}{@*)},
-      numbers=right,
-      stepnumber=1,
-      firstnumber=last,
-      numberstyle=\color{gray}\scriptsize,
-      numbersep=7pt,
-      basicstyle=\ttfamily\footnotesize]
-    
-(* Sample from a (*@gaussian@*), observe 
-    non-overlap, then use the sampled value 
-    to update flags *)
-let step = fun y -> fun ys -> update y ys
-in
-
-(* Number of samples determined by
-    unbounded recursion *)
-let cover = fix cover st :=
-    if discrete(0.1, 0.9) < 1 then st
-    else
+  if discrete(0.1, 0.9) < 1 then st
+  else
     let y = discrete(0.5, 0.0199388, 
                     0.0748961, 0.0494739, 
                     0.0747339, 0.0632619, 
                     0.0309625, 0.0280777, 
                     0.158655) in
     let _ = observe(non_overlap y false st) in
-    cover (step y st)
-in
+    cover (step y st) in
 
 (* Have all intervals been covered
-    at least once? *)
+   at least once? *)
 let is_covered = fix is_covered ys :=
-    match ys with
+  match ys with
     | nil -> true
     | h :: t -> (fst h) && (is_covered t)
-    end
-in
+  end in
 
-(* Query if we covered the whole interval *)
+(* Run the process and query whether
+   the whole interval was covered *)
 let final = cover init in
-is_covered final
+  is_covered final
     \end{lstlisting}
     \end{minipage}
     
-    \caption{A \emph{discretized} stochastic coverage process over $[0,1]$ with conditioning, continuous sampling, higher-order recursion, and lists.}
-    \label{fig:coverage-conditioning}
+    \caption{A \emph{discretized} infinite stochastic process for random interval covering over $[0,1]$, involving conditioning, continuous sampling, higher-order recursion, and lists.}
+    \label{fig:app:epsball-observe:disc}
 \end{figure*}
 
 
 \subsection{Bloom Filter}\label{ap:casestudy:bloom}
-The full program for the case study from \Cref{sec:casestudy:bloom} is shown in \Cref{fig:bloom-filter}. The discretized program is shown in \Cref{fig:bloom-filter:disc}.
+The full program for the case study from \Cref{sec:casestudy:bloom} is shown in \Cref{fig:app:bloom-filter}. The discretized program is shown in \Cref{fig:app:bloom-filter:disc}.
 
 % Continuous version
 \begin{figure*}[t]
     \centering
     \begin{minipage}[t]{0.46\textwidth}
     \vspace{0pt}
-    \begin{lstlisting}[aboveskip=1em,belowskip=1em,
-      escapeinside={(*@}{@*)},
+    \begin{lstlisting}[aboveskip=0.4em,belowskip=0.4em,
+      language=OCaml,
+      escapechar=!,
       numbers=right,
       stepnumber=1,
       numberstyle=\color{gray}\scriptsize,
       numbersep=7pt,
-      basicstyle=\ttfamily\footnotesize]
+      basicstyle=\ttfamily\footnotesize,
+      commentstyle=\color{ForestGreen}\itshape]
 (* Set bf[idx] := true, where idx is 0..3 and
-    bf = (b0, (b1, (b2, b3))) *)
+   bf = (b0, (b1, (b2, b3))) *)
 let set_true = fun bf -> fun idx ->
-    let b0 = fst bf in
-    let tail1 = snd bf in
-    let b1 = fst tail1 in
-    let tail2 = snd tail1 in
-    let b2 = fst tail2 in
-    let b3 = snd tail2 in
-
-    if idx <= 0 then
+  let b0 = fst bf in
+  let tail1 = snd bf in
+  let b1 = fst tail1 in
+  let tail2 = snd tail1 in
+  let b2 = fst tail2 in
+  let b3 = snd tail2 in
+  if idx <= 0 then
     (true, (b1, (b2, b3)))
-    else if idx <= 1 then
+  else if idx <= 1 then
     (b0, (true, (b2, b3)))
-    else if idx <= 2 then
+  else if idx <= 2 then
     (b0, (b1, (true, b3)))
-    else
-    (b0, (b1, (b2, true)))
-in
+  else
+    (b0, (b1, (b2, true))) in
 
 (* Get bf[idx], where idx is 0..3 *)
 let get = fun bf -> fun idx ->
-    let b0 = fst bf in
-    let tail1 = snd bf in
-    let b1 = fst tail1 in
-    let tail2 = snd tail1 in
-    let b2 = fst tail2 in
-    let b3 = snd tail2 in
+  let b0 = fst bf in
+  let tail1 = snd bf in
+  let b1 = fst tail1 in
+  let tail2 = snd tail1 in
+  let b2 = fst tail2 in
+  let b3 = snd tail2 in
+  if idx <= 0 then b0
+  else if idx <= 1 then b1
+  else if idx <= 2 then b2
+  else b3 in
 
-    if idx <= 0 then b0
-    else if idx <= 1 then b1
-    else if idx <= 2 then b2
-    else b3
-in
-let insert = fun q -> fun h1 -> fun h2 
-                -> fun bf ->
-    let index1 = h1 q in
-    let index2 = h2 q in
-    let bf1 = set_true bf index1 in
-    let bf2 = set_true bf1 index2 in
-    bf2
-in
+(* Insert element q into bf using hash
+   functions h1 and h2 *)
+let insert = fun q -> fun h1 
+            -> fun h2 -> fun bf ->
+  let index1 = h1 q in
+  let index2 = h2 q in
+  let bf1 = set_true bf index1 in
+  let bf2 = set_true bf1 index2 in
+  bf2 in
+
+(* Search for q in bf using hash
+   functions h1 and h2 *)
+let search = fun q -> fun h1 
+            -> fun h2 -> fun bf ->
+  let index1 = h1 q in
+  let index2 = h2 q in
+  let b01 = get bf index1 in
+  let b02 = get bf index2 in
+  b01 && b02 in
     \end{lstlisting}
     \end{minipage}
     \hfill
     \begin{minipage}[t]{0.46\textwidth}
     \vspace{0pt}
-    \begin{lstlisting}[aboveskip=1em,belowskip=1em,
-      escapeinside={(*@}{@*)},
+    \begin{lstlisting}[aboveskip=0.4em,belowskip=0.4em,
+      language=OCaml,
+      escapechar=!,
       numbers=right,
       stepnumber=1,
       firstnumber=last,
       numberstyle=\color{gray}\scriptsize,
       numbersep=7pt,
-      basicstyle=\ttfamily\footnotesize]
-
-let search = fun q -> fun h1 -> fun h2 
-                -> fun bf ->
-    let index1 = h1 q in
-    let index2 = h2 q in
-    let b01 = get bf index1 in
-    let b02 = get bf index2 in
-    b01 && b02
-in
-
+      basicstyle=\ttfamily\footnotesize,
+      commentstyle=\color{ForestGreen}\itshape]
+(* Hash functions *)
 let h1 = fun q ->
-    if q <= -2 then 0
-    else if -2 < q && q <= 0 then 1
-    else if 0 < q && q <= 2 then 2
-    else 3
-in
+  if q <= -2 then 0
+  else if -2 < q && q <= 0 then 1
+  else if 0 < q && q <= 2 then 2
+  else 3 in
 
 let h2 = fun q ->
-    if q <= -2 then 3
-    else if -2 < q && q <= 0 then 2
-    else if 0 < q && q <= 2 then 1
-    else 0
-in
+  if q <= -2 then 3
+  else if -2 < q && q <= 0 then 2
+  else if 0 < q && q <= 2 then 1
+  else 0 in
 
+(* Test whether the Bloom filter is full *)
+let full = fun bf ->
+  let b0 = fst bf in
+  let t1 = snd bf in
+  let b1 = fst t1 in
+  let t2 = snd t1 in
+  let b2 = fst t2 in
+  let b3 = snd t2 in
+  b0 && b1 && b2 && b3 in
+
+(* Initial, empty Bloom filter *)
 let init = (false, (false, (false, false))) in
 
-let q1 = gaussian(0,1) in
-let q2 = gaussian(0,1) in
-let q3 = gaussian(0,1) in
-let q4 = gaussian(0,1) in
+(* Query key *)
+let key = gaussian(0,1) in
 
-let updated_bf_1 = 
-    insert q1 h1 h2 init in
-let updated_bf_2 = 
-    insert q2 h1 h2 updated_bf_1 in
-let updated_bf_3 = 
-    insert q3 h1 h2 updated_bf_2 in
-let updated_bf_4 = 
-    insert q4 h1 h2 updated_bf_3 in
+(* Insert gaussian samples until bf is full
+   or the key is reported present *)
+let search_before_full = fix loop bf :=
+  if full bf then bf
+  else if search key h1 h2 bf then bf
+  else
+    let q = gaussian(0,1) in
+    loop (insert q h1 h2 bf) in
 
-let q5 = gaussian(0,1) in
-search q5 h1 h2 updated_bf_4
+(* Query whether search terminated before
+   the filter became full *)
+let bf_final = search_before_full init in
+  not (full bf_final)
     \end{lstlisting}
     \end{minipage}
     
-    \caption{A Bloom filter program with continuous samples, threshold-based hash functions, and a false-positive query.}
-    \label{fig:bloom-filter}
+    \caption{A 4-bit Bloom filter program with continuous samples, locality-sensitive hash functions, and search and insert functions.}
+    \label{fig:app:bloom-filter}
 \end{figure*}
 
 % Discretized version
@@ -523,194 +539,133 @@ search q5 h1 h2 updated_bf_4
     \centering
     \begin{minipage}[t]{0.46\textwidth}
     \vspace{0pt}
-    \begin{lstlisting}[aboveskip=1em,belowskip=1em,
-      escapeinside={(*@}{@*)},
+    \begin{lstlisting}[aboveskip=0.4em,belowskip=0.4em,
+      language=OCaml,
+      escapechar=!,
       numbers=right,
       stepnumber=1,
       numberstyle=\color{gray}\scriptsize,
       numbersep=7pt,
-      basicstyle=\ttfamily\footnotesize]
+      basicstyle=\ttfamily\footnotesize,
+      commentstyle=\color{ForestGreen}\itshape]
 (* Set bf[idx] := true, where idx is 0..3 and
-    bf = (b0, (b1, (b2, b3))) *)
+   bf = (b0, (b1, (b2, b3))) *)
 let set_true = fun bf -> fun idx ->
-    let b0 = fst bf in
-    let tail1 = snd bf in
-    let b1 = fst tail1 in
-    let tail2 = snd tail1 in
-    let b2 = fst tail2 in
-    let b3 = snd tail2 in
-
-    if idx <= 0 then
+  let b0 = fst bf in
+  let tail1 = snd bf in
+  let b1 = fst tail1 in
+  let tail2 = snd tail1 in
+  let b2 = fst tail2 in
+  let b3 = snd tail2 in
+  if idx <= 0 then
     (true, (b1, (b2, b3)))
-    else if idx <= 1 then
+  else if idx <= 1 then
     (b0, (true, (b2, b3)))
-    else if idx <= 2 then
+  else if idx <= 2 then
     (b0, (b1, (true, b3)))
-    else
-    (b0, (b1, (b2, true)))
-in
+  else
+    (b0, (b1, (b2, true))) in
 
 (* Get bf[idx], where idx is 0..3 *)
 let get = fun bf -> fun idx ->
-    let b0 = fst bf in
-    let tail1 = snd bf in
-    let b1 = fst tail1 in
-    let tail2 = snd tail1 in
-    let b2 = fst tail2 in
-    let b3 = snd tail2 in
+  let b0 = fst bf in
+  let tail1 = snd bf in
+  let b1 = fst tail1 in
+  let tail2 = snd tail1 in
+  let b2 = fst tail2 in
+  let b3 = snd tail2 in
+  if idx <= 0 then b0
+  else if idx <= 1 then b1
+  else if idx <= 2 then b2
+  else b3 in
 
-    if idx <= 0 then b0
-    else if idx <= 1 then b1
-    else if idx <= 2 then b2
-    else b3
-in
+(* Insert element q into bf using hash
+   functions h1 and h2 *)
+let insert = fun q -> fun h1 
+            -> fun h2 -> fun bf ->
+  let index1 = h1 q in
+  let index2 = h2 q in
+  let bf1 = set_true bf index1 in
+  let bf2 = set_true bf1 index2 in
+  bf2 in
 
-(* Insertion: insert element q into the 
-    Bloom filter bf, given hash functions h1 
-    and h2 *)
-let insert = fun q -> fun h1 -> fun h2 
-                -> fun bf ->
-    let index1 = h1 q in
-    let index2 = h2 q in
-    let bf1 = set_true bf index1 in
-    let bf2 = set_true bf1 index2 in
-    bf2
-in
+(* Search for q in bf using hash
+   functions h1 and h2 *)
+let search = fun q -> fun h1 
+            -> fun h2 -> fun bf ->
+  let index1 = h1 q in
+  let index2 = h2 q in
+  let b01 = get bf index1 in
+  let b02 = get bf index2 in
+  b01 && b02 in
     \end{lstlisting}
     \end{minipage}
     \hfill
     \begin{minipage}[t]{0.46\textwidth}
     \vspace{0pt}
-    \begin{lstlisting}[aboveskip=1em,belowskip=1em,
-      escapeinside={(*@}{@*)},
+    \begin{lstlisting}[aboveskip=0.4em,belowskip=0.4em,
+      language=OCaml,
+      escapechar=!,
       numbers=right,
       stepnumber=1,
       firstnumber=last,
       numberstyle=\color{gray}\scriptsize,
       numbersep=7pt,
-      basicstyle=\ttfamily\footnotesize]
-let search = fun q -> fun h1 -> fun h2 
-                -> fun bf ->
-    let index1 = h1 q in
-    let index2 = h2 q in
-    let b01 = get bf index1 in
-    let b02 = get bf index2 in
-    b01 && b02
-in
-
+      basicstyle=\ttfamily\footnotesize,
+      commentstyle=\color{ForestGreen}\itshape]
+(* Hash functions *)
 let h1 = fun q ->
-    if q <= 0 then 0
-    else if 0 < q && q <= 1 then 1
-    else if 1 < q && q <= 2 then 2
-    else 3
-in
+  if q <= 0 then 0
+  else if 0 < q && q <= 1 then 1
+  else if 1 < q && q <= 2 then 2
+  else 3 in
 
 let h2 = fun q ->
-    if q <= 0 then 3
-    else if 0 < q && q <= 1 then 2
-    else if 1 < q && q <= 2 then 1
-    else 0
-in
+  if q <= 0 then 3
+  else if 0 < q && q <= 1 then 2
+  else if 1 < q && q <= 2 then 1
+  else 0 in
 
+(* Test whether the Bloom filter is full *)
+let full = fun bf ->
+  let b0 = fst bf in
+  let t1 = snd bf in
+  let b1 = fst t1 in
+  let t2 = snd t1 in
+  let b2 = fst t2 in
+  let b3 = snd t2 in
+  b0 && b1 && b2 && b3 in
+
+(* Initial, empty Bloom filter *)
 let init = (false, (false, (false, false))) in
 
-let q1 = discrete(0.0227501, 0.47725, 
-                    0.47725, 0.0227501)  in
-let q2 = discrete(0.0227501, 0.47725, 
-                    0.47725, 0.0227501) in
-let q3 = discrete(0.0227501, 0.47725, 
-                    0.47725, 0.0227501) in
-let q4 = discrete(0.0227501, 0.47725, 
-                    0.47725, 0.0227501) in
+(* Query key *)
+let key = discrete(0.0227501, 
+                    0.47725, 
+                    0.47725, 
+                    0.0227501) in
 
-let updated_bf_1 = 
-    insert q1 h1 h2 init in
-let updated_bf_2 = 
-    insert q2 h1 h2 updated_bf_1 in
-let updated_bf_3 = 
-    insert q3 h1 h2 updated_bf_2 in
-let updated_bf_4 = 
-    insert q4 h1 h2 updated_bf_3 in
-
-let q5 = discrete(0.0227501, 0.47725, 
+(* Insert discretized gaussian samples until 
+    bf is full or the key is reported
+    present *)
+let search_before_full = fix loop bf :=
+  if full bf then bf
+  else if search key h1 h2 bf then bf
+  else
+    let q = discrete(0.0227501, 0.47725, 
                     0.47725, 0.0227501) in
-search q5 h1 h2 updated_bf_4
+    loop (insert q h1 h2 bf) in
+
+(* Query whether search terminated before
+   the filter became full *)
+let bf_final = search_before_full init in
+  not (full bf_final)
     \end{lstlisting}
     \end{minipage}
     
-    \caption{A \emph{discretized} Bloom filter program with continuous samples, threshold-based hash functions, and a false-positive query.}
-    \label{fig:bloom-filter:disc}
+    \caption{A \emph{discretized} 4-bit Bloom filter program with continuous samples, locality-sensitive hash functions, and search and insert functions.}
+    \label{fig:app:bloom-filter:disc}
 \end{figure*}
-
-\subsection{Mondrian-Style Recursive Partitioning}
-
-\begin{figure*}[t]
-\centering
-\begin{minipage}[t]{0.48\textwidth}
-    \vspace{0pt}
-    \begin{lstlisting}[aboveskip=0.4em,belowskip=0.4em,
-      language=OCaml,
-      escapechar=!,
-      numbers=left,
-      stepnumber=1,
-      numberstyle=\color{gray}\scriptsize,
-      numbersep=7pt,
-      basicstyle=\ttfamily\footnotesize]
-    let between = fun lo -> fun hi -> fun z ->
-      (lo < z) && (z <= hi)
-    in
-    
-    let p = (0.3, 0.2) in
-    let q = (0.7, 0.8) in
-    
-    let mondrian = fix mondrian tests := !\linelabel{ln:mond-loop}!
-      if uniform(0,1) < 0.2 then
-        true
-      else
-        let split_x = discrete(0.5: true, 0.5: false) in !\linelabel{ln:mond-axis}!
-        let c = uniform(0,1) in
-        if split_x then
-          if (fst tests) c then false !\linelabel{ln:mond-sep-x}!
-          else
-            let old_sep_x = fst tests in
-            let new_sep_x =
-              if c < (fst p)
-              then fun c' -> (old_sep_x c') && (c < c')
-              else fun c' -> (old_sep_x c') && (c' < c)
-            in
-    \end{lstlisting}
-    \end{minipage}
-    \hfill
-    \begin{minipage}[t]{0.48\textwidth}
-    \vspace{0pt}
-    \begin{lstlisting}[aboveskip=0.4em,belowskip=0.4em,
-      language=OCaml,
-      escapechar=!,
-      numbers=left,
-      stepnumber=1,
-      firstnumber=last,
-      numberstyle=\color{gray}\scriptsize,
-      numbersep=7pt,
-      basicstyle=\ttfamily\footnotesize]
-            mondrian (new_sep_x, snd tests) !\linelabel{ln:mond-recurse-x}!
-        else
-          if (snd tests) c then false !\linelabel{ln:mond-sep-y}!
-          else
-            let old_sep_y = snd tests in
-            let new_sep_y =
-              if c < (snd p)
-              then fun c' -> (old_sep_y c') && (c < c')
-              else fun c' -> (old_sep_y c') && (c' < c)
-            in
-            mondrian (fst tests, new_sep_y) !\linelabel{ln:mond-recurse-y}!
-    in
-    
-    mondrian (between (fst p) (fst q),
-              between (snd p) (snd q)) !\linelabel{ln:mond-init}!
-    \end{lstlisting}
-\end{minipage}
-\end{figure*}
-    
 
 
 
@@ -777,120 +732,6 @@ The typing rules for general language constructs is given in \Cref{fig:typing-ge
 % 	Suppose by contradiction that $B \neq \top$ but $B$ distinguishes $V = \top$. Since $B \neq \top$, the set $\intervals{B}$ partitions $\mathbb{R}$ into finitely many intervals. However, since $V = \top$ represents the set of all real numbers, and there are uncountably many real values, it is impossible for every interval in $\intervals{B}$ to contain at most one element from $V$. In particular, at least one interval must contain more than one value from $V$, violating the condition in Definition~\ref{def:distinguishes}. Therefore, $B = \top$.
 % \end{proof}
 
-
-\section{Code Sketches for Scaling Benchmarks}\label{appen:synthetic-sketches}
-This section contains code snippets of the programs used in the scaling experiments in Section~\ref{sec:synthetic-benchmarks}. We implemented a Python script that automatically generates these programs based on configurable parameters such as program size, guard structure, and dependency pattern. For reproducibility, we used a fixed random seed to generate each program. All $r_i$ values in the generated programs, where $0 \leq r_i \leq 1$ is randomly chosen, are rounded to two decimal places.
-
-All of these programs follow the same structural pattern: they define a sequence of random variables $X_1,\ldots,X_n$, where each $X_i$ is drawn from a uniform distribution whose parameters depend on the value of a single predecessor variable through a conditional branch of the form
-\[
-X_i =
-  \begin{cases}
-    \mathrm{Unif}(a_i,b_i), & X_{\pi(i)} < r_i, \\[2pt]
-    \mathrm{Unif}(a'_i,b'_i), & \text{otherwise},
-  \end{cases}
-\]
-for some parent-selection function $\pi : \{2,\ldots,n\} \to \{1,\ldots,i-1\}$.  
-Thus each program is a Bayesian network of conditionally independent nodes, differing only in the choice of $\pi(i)$ that determines the dependency pattern.
-
-
-\begin{figure}
-    \begin{lstlisting}
-        let x1 = uniform(0,1) in
-        let x2 = if x1 < 0.56 then uniform(0,2) else uniform(0,3) in
-        let x3 = if x2 < 0.92 then uniform(0,4) else uniform(0,5) in
-        let x4 = if x3 < 0.47 then uniform(0,6) else uniform(0,7) in
-        let x5 = if x4 < 0.51 then uniform(0,8) else uniform(0,9) in
-        x5 < 0.5
-    \end{lstlisting}
-    \caption{Conditional Independent (Figure~\ref{fig:cond-benchmarks-a}): Program of size 5. Each variable depends on its immediate predecessor variable via a conditional branch. Each uniform distribution is distinct.}
-\end{figure}
-
-\begin{figure}
-    \begin{lstlisting}
-        let x1 = uniform(0,1) in
-        let x2 = if x1 < 0.56 then uniform(0,2) else uniform(0,3) in
-        let x3 = if x1 < 0.45 then uniform(0,4) else uniform(0,5) in
-        let x4 = if x1 < 0.18 then uniform(0,6) else uniform(0,7) in
-        let x5 = if x1 < 0.48 then uniform(0,8) else uniform(0,9) in
-        x5 < 0.5
-    \end{lstlisting}
-    \caption{Conditional Independent Fork (Figure~\ref{fig:cond-benchmarks-b}): 
-    Program of size 5. Each variable $x_i$ depends on the same predecessor variable $x_1$ through a conditional branch. This creates a fork-shaped dependency pattern in which $x_1$ serves as the sole parent of all subsequent variables. Each uniform distribution is distinct.}
-\end{figure}
-
-\begin{figure}
-    \begin{lstlisting}
-        let x1 = uniform(0,1) in
-        let x2 = if x1 < 0.18 then uniform(0,2) else uniform(0,3) in
-        let x3 = if x1 < 0.63 then uniform(0,4) else uniform(0,5) in
-        let x4 = if x2 < 0.09 then uniform(0,6) else uniform(0,7) in
-        let x5 = if x1 < 0.14 then uniform(0,8) else uniform(0,9) in
-        x5 < 0.5
-    \end{lstlisting}
-    \caption{Conditional Random 1 (Figure~\ref{fig:cond-benchmarks-c}): Program of size 5. Each variable depends on a randomly selected predecessor via a conditional branch. Note that this structure may lead to unused variables; that is, some previously defined $x_i$ may not influence any subsequent computation. Each uniform distribution is distinct.}
-\end{figure}
-
-\begin{figure}
-    \begin{lstlisting}
-        let x1 = uniform(0, 10) in
-        let x2 = if x1 < 0.06 then x1 else x1 in
-        let x3 = if uniform(0, 4) < 0.64 then x2 else x1 in
-        let x4 = if x3 < 0.71 then uniform(0, 5) else x1 in
-        let x5 = if uniform(0, 4) < 0.4 then x1 else uniform(0, 2) in
-        x4 < 0.5
-    \end{lstlisting}
-    \caption{Conditional Random 2 (Figure~\ref{fig:cond-benchmarks-d}): Program of size 5. Each variable uses a randomized conditional expression where the guard and both branches may involve either a randomly selected predecessor variable or a fresh uniform distribution. The second parameter of the uniform distribution is a random integer between 0 and 10, so this may result in repeated bounds across different variables, meaning not all distributions are guaranteed to be unique.}
-\end{figure}
-
-\begin{figure}
-    \begin{lstlisting}
-        let x1 = uniform(0,1) in
-        let x2 = if x1 < 0.02 then uniform(0,2) else uniform(0,3) in
-        let x3 = if x2 < 0.68 then uniform(0,4) else uniform(0,5) in
-        let x4 = if x1 < 0.21 then uniform(0,6) else uniform(0,7) in
-        let x5 = if x2 < 0.93 then uniform(0,8) else uniform(0,9) in
-        x5 < 0.5
-    \end{lstlisting}
-    \caption{Alternating Guard 1 (Figure~\ref{fig:alt-benchmarks-a}): Program of size 5 with guard span 2. Guard variables in the comparisons cycle with a fixed span of 2. Note this may lead to unused variables, in particular those variables $x_i$ where $i$ is greater than the span.}
-\end{figure}
-
-\begin{figure}
-    \begin{lstlisting}
-        let x1 = uniform(0,1) in
-        let x2 = if x1 < 0.38 then uniform(0,2) else x1 in
-        let x3 = if x2 < 0.71 then uniform(0,4) else x2 in
-        let x4 = if x1 < 0.42 then uniform(0,6) else x3 in
-        let x5 = if x2 < 0.57 then uniform(0,8) else x4 in
-        x5 < 0.5
-    \end{lstlisting}
-    \caption{Alternating Guard 2 (Figure~\ref{fig:alt-benchmarks-b}): Program of size 5 with guard span 2. Guard variables in the comparisons cycle with a fixed span of 2. Unlike Alternating Guard 1, all variables are used in subsequent branches, either as guards or else branch expressions. This construction ensures that every variable contributes to the final computation. Each uniform distribution generated is unique.}
-\end{figure}
-
-\begin{figure}
-    \begin{lstlisting}
-        let x1 = uniform(0,1) in
-        let x2 = if x1 < 0.67 then uniform(0,2) else uniform(0,3) in
-        let x3 = if x2 < 0.5 then x2 else uniform(0,4) in
-        let x4 = if x1 < 0.5 then x3 else uniform(0,6) in
-        let x5 = if x2 < 0.5 then x4 else uniform(0,8) in
-        x5 < 0.5
-    \end{lstlisting}
-    \caption{Alternating Guard 3 (Figure~\ref{fig:alt-benchmarks-c}): Program of size 5 with guard span 2. Guard variables in the comparisons cycle with a fixed span of 2. Unlike Alternating Guard 1, all variables are used in subsequent branches, either as guards or if branch expressions. This construction ensures that every variable contributes to the final computation. Each uniform distribution generated is unique.}
-\end{figure}
-
-\begin{figure}
-    \begin{lstlisting}
-        let x1 = uniform(0,2) in
-        let x2 = if x1 < 0.13 then uniform(0,2) else uniform(0,1) in
-        let x3 = if x2 < 0.06 then uniform(0,8) else uniform(0,3) in
-        let x4 = if x1 < 0.68 then uniform(0,4) else uniform(0,8) in
-        let x5 = if x2 < 0.51 then uniform(0,3) else uniform(0,7) in
-        x5 < 0.5
-    \end{lstlisting}
-    \caption{Random Alternating (Figure~\ref{fig:alt-benchmarks-d}): Program of size 5 with guard span 2. Guard variables in the comparisons cycle with a fixed span of 2. The second parameter of the uniform distribution is a random integer between 0 and 10, so this may result in repeated bounds across different variables, meaning not all distributions are guaranteed to be unique.}
-\end{figure}
-
-\pagebreak
 
 \section{Proofs for Discretization}
 \subsection{Proof of Lemma~\ref{lem:type-transformations}}
@@ -1200,22 +1041,133 @@ Thus each program is a Bayesian network of conditionally independent nodes, diff
 
 %\todo[inline]{Add accept/done states in the semantics}
 
+
 \section{Benchmarks}
 \label{app:benchmarks}
 \subsection{Asymptotic Scaling}
-We designed a set of synthetic benchmarks to study how exact-inference runtime varies with program size under different dependency structures. Schematically:
-%
-    \begin{lstlisting}[aboveskip=0.1em,belowskip=.1em]
-        let x1 = uniform(0,1) in 
-        let x2 = if x1 < r1 then uniform(0,2) else uniform(0,3) in 
-        let x3 = if x2 < r2 ...
-        ...
-        x_n < 0.5
+
+\subsubsection{Code Sketches for Scaling Benchmarks}\label{appen:synthetic-sketches}
+This section contains code snippets of the programs used in the scaling experiments in Section~\ref{sec:synthetic-benchmarks}. We implemented a Python script that automatically generates these programs based on configurable parameters such as program size, guard structure, and dependency pattern. For reproducibility, we used a fixed random seed to generate each program. All $r_i$ values in the generated programs, where $0 \leq r_i \leq 1$ is randomly chosen, are rounded to two decimal places.
+
+All of these programs follow the same structural pattern: they define a sequence of random variables $X_1,\ldots,X_n$, where each $X_i$ is drawn from a uniform distribution whose parameters depend on the value of a single predecessor variable through a conditional branch of the form
+\[
+X_i =
+  \begin{cases}
+    \mathrm{Unif}(a_i,b_i), & X_{\pi(i)} < r_i, \\[2pt]
+    \mathrm{Unif}(a'_i,b'_i), & \text{otherwise},
+  \end{cases}
+\]
+for some parent-selection function $\pi : \{2,\ldots,n\} \to \{1,\ldots,i-1\}$.  
+Thus each program is a Bayesian network of conditionally independent nodes, differing only in the choice of $\pi(i)$ that determines the dependency pattern.
+
+
+\begin{figure}
+    \begin{lstlisting}
+        let x1 = uniform(0,1) in
+        let x2 = if x1 < 0.56 then uniform(0,2) else uniform(0,3) in
+        let x3 = if x2 < 0.92 then uniform(0,4) else uniform(0,5) in
+        let x4 = if x3 < 0.47 then uniform(0,6) else uniform(0,7) in
+        let x5 = if x4 < 0.51 then uniform(0,8) else uniform(0,9) in
+        x5 < 0.5
     \end{lstlisting}
-%
-Each program is a sequence of nested conditionals in which each branch depends on a previous variable sampled from a uniform distribution, terminating at the final condition $x_n < 0.5$. Here $0 \leq r_i \leq 1$ are fixed float constants. Using these programs (listed in Appendix \ref{appen:synthetic-sketches}), we study asymptotic runtime trends for discretization plus exact inference.
+    \caption{Conditional Independent (Figure~\ref{fig:cond-benchmarks-a}): Program of size 5. Each variable depends on its immediate predecessor variable via a conditional branch. Each uniform distribution is distinct.}
+    \label{fig:cond-benchmarks-a-example}
+\end{figure}
+
+\begin{figure}
+    \begin{lstlisting}
+        let x1 = uniform(0,1) in
+        let x2 = if x1 < 0.56 then uniform(0,2) else uniform(0,3) in
+        let x3 = if x1 < 0.45 then uniform(0,4) else uniform(0,5) in
+        let x4 = if x1 < 0.18 then uniform(0,6) else uniform(0,7) in
+        let x5 = if x1 < 0.48 then uniform(0,8) else uniform(0,9) in
+        x5 < 0.5
+    \end{lstlisting}
+    \caption{Conditional Independent Fork (Figure~\ref{fig:cond-benchmarks-b}): 
+    Program of size 5. Each variable $x_i$ depends on the same predecessor variable $x_1$ through a conditional branch. This creates a fork-shaped dependency pattern in which $x_1$ serves as the sole parent of all subsequent variables. Each uniform distribution is distinct.}
+    \label{fig:cond-benchmarks-b-example}
+\end{figure}
+
+\begin{figure}
+    \begin{lstlisting}
+        let x1 = uniform(0,1) in
+        let x2 = if x1 < 0.18 then uniform(0,2) else uniform(0,3) in
+        let x3 = if x1 < 0.63 then uniform(0,4) else uniform(0,5) in
+        let x4 = if x2 < 0.09 then uniform(0,6) else uniform(0,7) in
+        let x5 = if x1 < 0.14 then uniform(0,8) else uniform(0,9) in
+        x5 < 0.5
+    \end{lstlisting}
+    \caption{Conditional Random 1 (Figure~\ref{fig:cond-benchmarks-c}): Program of size 5. Each variable depends on a randomly selected predecessor via a conditional branch. Note that this structure may lead to unused variables; that is, some previously defined $x_i$ may not influence any subsequent computation. Each uniform distribution is distinct.}
+    \label{fig:cond-benchmarks-c-example}
+\end{figure}
+
+\begin{figure}
+    \begin{lstlisting}
+        let x1 = uniform(0, 10) in
+        let x2 = if x1 < 0.06 then x1 else x1 in
+        let x3 = if uniform(0, 4) < 0.64 then x2 else x1 in
+        let x4 = if x3 < 0.71 then uniform(0, 5) else x1 in
+        let x5 = if uniform(0, 4) < 0.4 then x1 else uniform(0, 2) in
+        x4 < 0.5
+    \end{lstlisting}
+    \caption{Conditional Random 2 (Figure~\ref{fig:cond-benchmarks-d}): Program of size 5. Each variable uses a randomized conditional expression where the guard and both branches may involve either a randomly selected predecessor variable or a fresh uniform distribution. The second parameter of the uniform distribution is a random integer between 0 and 10, so this may result in repeated bounds across different variables, meaning not all distributions are guaranteed to be unique.}
+    \label{fig:cond-benchmarks-d-example}
+\end{figure}
+
+\begin{figure}
+    \begin{lstlisting}
+        let x1 = uniform(0,1) in
+        let x2 = if x1 < 0.02 then uniform(0,2) else uniform(0,3) in
+        let x3 = if x2 < 0.68 then uniform(0,4) else uniform(0,5) in
+        let x4 = if x1 < 0.21 then uniform(0,6) else uniform(0,7) in
+        let x5 = if x2 < 0.93 then uniform(0,8) else uniform(0,9) in
+        x5 < 0.5
+    \end{lstlisting}
+    \caption{Alternating Guard 1 (Figure~\ref{fig:alt-benchmarks-a}): Program of size 5 with guard span 2. Guard variables in the comparisons cycle with a fixed span of 2. Note this may lead to unused variables, in particular those variables $x_i$ where $i$ is greater than the span.}
+    \label{fig:alt-benchmarks-a-example}
+\end{figure}
+
+\begin{figure}
+    \begin{lstlisting}
+        let x1 = uniform(0,1) in
+        let x2 = if x1 < 0.38 then uniform(0,2) else x1 in
+        let x3 = if x2 < 0.71 then uniform(0,4) else x2 in
+        let x4 = if x1 < 0.42 then uniform(0,6) else x3 in
+        let x5 = if x2 < 0.57 then uniform(0,8) else x4 in
+        x5 < 0.5
+    \end{lstlisting}
+    \caption{Alternating Guard 2 (Figure~\ref{fig:alt-benchmarks-b}): Program of size 5 with guard span 2. Guard variables in the comparisons cycle with a fixed span of 2. Unlike Alternating Guard 1, all variables are used in subsequent branches, either as guards or else branch expressions. This construction ensures that every variable contributes to the final computation. Each uniform distribution generated is unique.}
+    \label{fig:alt-benchmarks-b-example}
+\end{figure}
+
+\begin{figure}
+    \begin{lstlisting}
+        let x1 = uniform(0,1) in
+        let x2 = if x1 < 0.67 then uniform(0,2) else uniform(0,3) in
+        let x3 = if x2 < 0.5 then x2 else uniform(0,4) in
+        let x4 = if x1 < 0.5 then x3 else uniform(0,6) in
+        let x5 = if x2 < 0.5 then x4 else uniform(0,8) in
+        x5 < 0.5
+    \end{lstlisting}
+    \caption{Alternating Guard 3 (Figure~\ref{fig:alt-benchmarks-c}): Program of size 5 with guard span 2. Guard variables in the comparisons cycle with a fixed span of 2. Unlike Alternating Guard 1, all variables are used in subsequent branches, either as guards or if branch expressions. This construction ensures that every variable contributes to the final computation. Each uniform distribution generated is unique.}
+    \label{fig:alt-benchmarks-c-example}
+\end{figure}
+
+\begin{figure}
+    \begin{lstlisting}
+        let x1 = uniform(0,2) in
+        let x2 = if x1 < 0.13 then uniform(0,2) else uniform(0,1) in
+        let x3 = if x2 < 0.06 then uniform(0,8) else uniform(0,3) in
+        let x4 = if x1 < 0.68 then uniform(0,4) else uniform(0,8) in
+        let x5 = if x2 < 0.51 then uniform(0,3) else uniform(0,7) in
+        x5 < 0.5
+    \end{lstlisting}
+    \caption{Random Alternating (Figure~\ref{fig:alt-benchmarks-d}): Program of size 5 with guard span 2. Guard variables in the comparisons cycle with a fixed span of 2. The second parameter of the uniform distribution is a random integer between 0 and 10, so this may result in repeated bounds across different variables, meaning not all distributions are guaranteed to be unique.}
+    \label{fig:alt-benchmarks-d-example}
+\end{figure}
+
  
-The programs in \Cref{fig:cond-benchmarks-a} follow the scheme depicted above where the program size is $n$, i.e., the number of comparisons performed is $n$. In \Cref{fig:cond-benchmarks-b}, each $x_i$ does not necessarily depend on $x_{i-1}$ but on some randomly chosen predecessor\footnote{We generate these programs in a randomized manner with a fixed seed for reproducibility}. In \Cref{fig:cond-benchmarks-c}, we additionally choose at random whether the guards of the conditionals and the branches are either some predecessor variable $x_i$ or a  $\uniform$-sampling instruction.
+The programs in \Cref{fig:cond-benchmarks-a,fig:cond-benchmarks-a-example} follow the scheme depicted above where the program size is $n$, i.e., the number of comparisons performed is $n$. In \Cref{fig:cond-benchmarks-b,fig:cond-benchmarks-b-example}, each $x_i$ does not necessarily depend on $x_{i-1}$ but on some randomly chosen predecessor\footnote{We generate these programs in a randomized manner with a fixed seed for reproducibility}. In \Cref{fig:cond-benchmarks-c,fig:cond-benchmarks-c-example,fig:cond-benchmarks-d,fig:cond-benchmarks-d-example}, we additionally choose at random whether the guards of the conditionals and the branches are either some predecessor variable $x_i$ or a  $\uniform$-sampling instruction.
  %\input{figures/nested-conditionals.tex}
 
 %\subsubsection{Conditional Independence}
@@ -1230,9 +1182,9 @@ The programs in \Cref{fig:cond-benchmarks-a} follow the scheme depicted above wh
 %
 \input{figures/scaling-conditional}
 %
- The programs in \Cref{fig:alt-benchmarks-a} also follow the scheme depicted above but where the variables used in the guards cycle with a fixed span size of $m$. For instance, for $m=2$, the pattern is $x_1,x_2,x_1,\ldots$. The programs in \Cref{fig:alt-benchmarks-b,fig:alt-benchmarks-c,fig:alt-benchmarks-d} follow a similar pattern, see Appendix~\ref{appen:synthetic-sketches} for details.
+ The programs in \Cref{fig:alt-benchmarks-a,fig:alt-benchmarks-a-example} also follow the scheme depicted above but where the variables used in the guards cycle with a fixed span size of $m$. For instance, for $m=2$, the pattern is $x_1,x_2,x_1,\ldots$. The programs in \Cref{fig:alt-benchmarks-b,fig:alt-benchmarks-b-example,fig:alt-benchmarks-c,fig:alt-benchmarks-c-example,fig:alt-benchmarks-d,fig:alt-benchmarks-d-example} follow a similar pattern.
 
-We report runtime (seconds) for (i) \SPPL{}, (ii) \Slice{} (discretization only), (iii) \Slice{}+\Dice{} (discretization + inference via \Dice{}), and (iv) \Slice{}+\Roulette{} (discretization + inference via \Roulette{}). The timeout is 120 seconds.\jules{Confirm timeout provenance for these appendix plots; earlier scripts and notes sometimes mention 300s.}
+We report runtime (seconds) for (i) \SPPL{}, (ii) \Slice{} (discretization only), (iii) \Slice{}+\Dice{} (discretization + inference via \Dice{}), and (iv) \Slice{}+\Roulette{} (discretization + inference via \Roulette{}). The timeout is 120 seconds.
 
 %\subsubsection{Alternating Guards}
 %We test programs in which comparison guards alternate in a pattern:
