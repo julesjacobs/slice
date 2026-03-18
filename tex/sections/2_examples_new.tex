@@ -1,10 +1,10 @@
 \input{figures/architecture.tex}
 
 \section{Slice by Example}\label{sec:examples}
-To build intuition for \Slice{}, we start with simple examples demonstrating the key ideas, and then provide a more involved example containing higher-order recursion and lists in \Cref{sec:examples:7}. Our pipeline can perform \emph{fully automatic exact inference} on all provided programs.
+To build intuition for \Slice{}, we start with simple examples demonstrating the key ideas, and then provide a more involved example containing higher-order recursion and lists in \Cref{sec:examples:7}. Our pipeline performs \emph{fully automatic exact inference} on all provided programs.
 
 \subsection{Branching on a Single Continuous Variable}\label{sec:examples:1}
-We consider a program that samples a real value from a standard Gaussian distribution and then performs two nested comparisons, first checking whether the sampled value is less than 0.8, then comparing that value to either 0.1 or 2.0:
+Consider a program that samples a real value from a standard Gaussian distribution and then performs two nested comparisons: first checking whether the sample is less than 0.8, then comparing it to either 0.1 or 2.0:
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em,gobble=4]
     let x = gaussian(0,1) in if x < 0.8 then x < 0.1 else x < 2.0
@@ -18,15 +18,15 @@ We consider a program that samples a real value from a standard Gaussian distrib
     let x = discrete(0.5398, 0.2483, 0.1891, 0.0228) in if x < 2 then x < 1 else x < 3
 \end{lstlisting}
 
-\noindent Here, \discrete(0.5398, 0.2483, 0.1891, 0.0228) already represents all four observationally distinguishable outcomes of the Gaussian sample. The precise real value of $x$ never mattered to the rest of the program; only the interval in which it falls does. This is the regime we target: continuous quantities observed only through finitely many comparison outcomes. \emph{Slice’s goal is to detect such situations automatically.} We partition the continuous distribution into intervals that are indistinguishable to the rest of the program, and then map every real to the interval it inhabits.
+\noindent Here, \discrete(0.5398, 0.2483, 0.1891, 0.0228) already represents all four observationally distinguishable outcomes of the Gaussian sample. The precise real value of $x$ never matters to the rest of the program; only the interval in which it falls does. This is the regime we target: continuous quantities observed only through finitely many comparison outcomes. \emph{Slice’s goal is to detect such situations automatically.} We partition the continuous distribution into intervals that are indistinguishable to the rest of the program, then map every real to the interval it inhabits.
 
-The transformation is guided by our type system and, in particular, by a \emph{cut set} --- the set of comparison thresholds extracted from the program. A continuous distribution is annotated with its cut set, recording the values it is compared against. For our example, the type annotation is:
+Our type system guides the transformation, in particular through a \emph{cut set} --- the set of comparison thresholds extracted from the program. A continuous distribution is annotated with its cut set, which records the values it is compared against. For our example, the type annotation is:
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!,gobble=4]
     let x = (gaussian(0,1) : !{\ftnv{\{<0.1,<0.8,<2\}}}!) in if x < 0.8 then x < 0.1 else x < 2.0
 \end{lstlisting}
 
-\noindent Intuitively, the cuts $\{\clt{0.1}, \clt{0.8}, \clt{2.0}\}$ partition the real line $\R$ into four intervals $(-\infty, 0.1)$, $[0.1, 0.8)$, $[0.8, 2.0)$, $[2.0, +\infty)$, and only the interval in which the Gaussian sample $x$ falls affects the rest of the computation. \Slice{} uses these cuts to replace the continuous distribution with a discrete one whose outcomes correspond exactly to these intervals, and each floating-point constant is mapped to the index of the interval that contains it.
+\noindent Intuitively, the cuts $\{\clt{0.1}, \clt{0.8}, \clt{2.0}\}$ partition the real line $\R$ into four intervals $(-\infty, 0.1)$, $[0.1, 0.8)$, $[0.8, 2.0)$, $[2.0, +\infty)$, and only the interval containing the Gaussian sample $x$ affects the rest of the computation. \Slice{} uses these cuts to replace the continuous distribution with a discrete one whose outcomes correspond exactly to these intervals, and each floating-point constant is mapped to the index of the interval that contains it.
 
 \subsection{Branching on Multiple Continuous Variables}\label{sec:examples:2}
 
@@ -38,7 +38,7 @@ The transformation is guided by our type system and, in particular, by a \emph{c
     if x < 0.5 then x < 0.2 else y < 0.1
 \end{lstlisting}
 
-\noindent In this program, the variable $x$ is drawn from \uniform(0, 1) and is compared against two different constants: $0.5$ and $0.2$. These two cuts $\clt{0.5}$ and $\clt{0.2}$ partition the real line $\R$ into three intervals: $(-\infty, 0.2)$, $[0.2, 0.5)$, and $[0.5, +\infty)$. Similarly, the variable $y$, drawn from \uniform(0, 2), is compared only with $0.1$. This single cut $\clt{0.1}$ partitions the real line $\R$ into $(-\infty, 0.1)$ and $[0.1, +\infty)$.
+\noindent In this program, the variable $x$ is drawn from \uniform(0, 1) and compared against two constants: $0.5$ and $0.2$. These cuts $\clt{0.5}$ and $\clt{0.2}$ partition the real line $\R$ into three intervals: $(-\infty, 0.2)$, $[0.2, 0.5)$, and $[0.5, +\infty)$. Similarly, the variable $y$, drawn from \uniform(0, 2), is compared only with $0.1$. This single cut $\clt{0.1}$ partitions the real line $\R$ into $(-\infty, 0.1)$ and $[0.1, +\infty)$.
 
 Type inference performs this analysis by collecting all cuts for each continuous variable. For $x$, it discovers the cuts $\clt{0.2}$ and $\clt{0.5}$, giving it the type \ftnv{\{<0.2,<0.5\}}. For $y$, it only finds $\clt{0.1}$, giving it the type \ftnv{\{<0.1\}}. This information is captured in the program below (left):
 
@@ -78,19 +78,19 @@ Type inference performs this analysis by collecting all cuts for each continuous
 \vspace{0.6em}
 
 
-\Slice{} therefore discretizes $x$ into three outcomes \discrete(0.2, 0.3, 0.5) and $y$ into two outcomes \discrete(0.05, 0.95), where each probability of the discrete distribution is the respective measure of the original interval. Comparisons now operate over the integer indices of those intervals. The constants $0.5$ and $0.2$ map to indices 2 and 1, respectively, in the partition $(-\infty,0.2)\cup[0.2,0.5)\cup[0.5,+\infty)$ for $x$; the constant $0.1$ maps to index 1 in the partition $(-\infty,0.1)\cup[0.1,+\infty)$ for $y$.
+\Slice{} therefore discretizes $x$ into three outcomes \discrete(0.2, 0.3, 0.5) and $y$ into two outcomes \discrete(0.05, 0.95), where each probability in the discrete distribution is the measure of the corresponding original interval. Comparisons then operate over the integer indices of those intervals. The constants $0.5$ and $0.2$ map to indices 2 and 1, respectively, in the partition $(-\infty,0.2)\cup[0.2,0.5)\cup[0.5,+\infty)$ for $x$; the constant $0.1$ maps to index 1 in the partition $(-\infty,0.1)\cup[0.1,+\infty)$ for $y$.
 
 
 \iffalse
 \subsection{Discretizing Float Constants}\label{sec:examples:3}
-The example in Section~\ref{sec:examples:2} involves comparisons with literal constant right-hand sides (such as $e < 0.5$). 
+The example in Section~\ref{sec:examples:2} involves comparisons with literal constant right-hand sides (such as $e < 0.5$).
 \Slice{} does not require the comparison to have a syntactic constant right-hand or left-hand side. Instead, it analyzes the dataflow of the program to determine which constants are relevant, and how these constants are mapped to discrete indices.
 Consider the program:
 
 \begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!,gobble=4]
-    let x = if flip() then 0.2 
+    let x = if flip() then 0.2
             else if flip() then 2.5
-            else 4.5 in 
+            else 4.5 in
     let y = 0.5 in x < y
 \end{lstlisting}
 
@@ -99,7 +99,7 @@ This yields the annotated program after type inference:
 \begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!,gobble=4]
     let x = if flip() then (0.2 : !{\ftb{\{<0.5\}}{\{0.2\}}}!)
             else (if flip() then (2.5 : !{\ftb{\{<0.5\}}{\{2.5\}}}!)
-            else (4.5 : !{\ftb{\{<0.5\}}{\{4.5\}}}!) 
+            else (4.5 : !{\ftb{\{<0.5\}}{\{4.5\}}}!)
             : !{\ftb{\{<0.5\}}{\{2.5, 4.5\}}}!)
             : !{\ftb{\{<0.5\}}{\{0.2, 2.5, 4.5\}}}! in
     let y = 0.5 : !{\ftb{\{<0.5\}}{\{0.5\}}}! in x < y
@@ -211,8 +211,8 @@ Continuous distributions can have parameters that depend on discrete random choi
     let x = if flip() then 0.5 else 1.5 in gaussian(0, x) < 0.5
 \end{lstlisting}
 
-\noindent %This example shows how discrete choices can affect the parameters of continuous distributions. 
-The type annotations reveal how the variable $x$ determines the standard deviation of the Gaussian, and Figure~\ref{fig:control-flow-distinguishes} illustrates how type information is propagated.
+\noindent %This example shows how discrete choices can affect the parameters of continuous distributions.
+The type annotations show how the variable $x$ determines the Gaussian's standard deviation, and Figure~\ref{fig:control-flow-distinguishes} illustrates how type information is propagated.
 
 \begin{center}
     \begin{minipage}[c]{0.56\linewidth}
@@ -338,27 +338,27 @@ Exact equalities are encoded with $\observekw\; (x \leq c \mathrel{\&\&} x \geq 
   commentstyle=\color{ForestGreen}\itshape]
 (* Returns true if y is in [lo,hi) *)
 let within = fun lo -> fun hi -> fun y -> !\linelabel{ln:within}!
-  (y >= lo) && (y < hi) in 
+  (y >= lo) && (y < hi) in
 
 (* Function for sampling interval bounds *)
 let b = fun _ ->  !\linelabel{ln:b}!
-  discrete(0.18: 0.05, 0.11: 0.24, 
-          0.21: 0.37, 0.09: 0.58, 
+  discrete(0.18: 0.05, 0.11: 0.24,
+          0.21: 0.37, 0.09: 0.58,
           0.41: 0.78) in
 
-(* Initialize intervals by sampling their 
+(* Initialize intervals by sampling their
 respective (possibly overlapping) bounds *)
 let init =!\linelabel{ln:init}!
   (false, within 0.00 (b ())) ::
   (false, within (b ()) (b ())) ::
   (false, within (b ()) (b ())) ::
   (false, within (b ()) 1.00) ::
-  nil in 
+  nil in
 
-(* Update flags depending on y falling 
+(* Update flags depending on y falling
    within the respective interval *)
 let update = fix update y := fun ys -> !\linelabel{ln:update}!
-  match ys with 
+  match ys with
     | nil -> nil
     | h :: t ->
         ((fst h || ((snd h) y)), snd h)
@@ -384,19 +384,19 @@ let update = fix update y := fun ys -> !\linelabel{ln:update}!
 let step = fun ys -> !\linelabel{ln:step}!
   update (gaussian(0,1)) ys in
 
-(* Number of samples determined by 
+(* Number of samples determined by
    unbounded recursion *)
 let cover = fix cover st :=!\linelabel{ln:cover}!
   if uniform(0,1) < 0.2 then st
   else cover (step st) in
 
-(* Have all intervals been covered at 
+(* Have all intervals been covered at
    least once? *)
 let is_covered = fix is_covered ys := !\linelabel{ln:iscovered}!
-  match ys with 
-    | nil -> true 
+  match ys with
+    | nil -> true
     | h :: t -> (fst h) && (is_covered t)
-  end in 
+  end in
 
 (* Run entire process on sampled intervals *)
 let final = cover init in
@@ -408,18 +408,18 @@ let final = cover init in
 \label{fig:epsball}
 \end{figure*}
 \noindent
-We now turn to the more involved example in \Cref{fig:epsball}, which \Slice{} discretizes in a fully automatic manner. This example emphasizes how our discretization procedure operates across higher-order functions, unbounded recursion, and lists.
+We now turn to the more involved example in \Cref{fig:epsball}, which \Slice{} discretizes automatically. This example emphasizes how our discretization procedure operates across higher-order functions, unbounded recursion, and lists.
 
-The program models the following process: We start by randomly sampling $4$ intervals (l.\ \ref{ln:b} and \ref{ln:init}), stored as a list of pairs, where the first component is a flag and the second component is a function that determines whether a given point falls within that interval. We then employ unbounded recursion (l.\ \ref{ln:cover}) to repeat the following a potentially unbounded number of times according to a geometric distribution: sample a point $y$ from a gaussian (l.\ \ref{ln:step}), and update the flag of every interval to $\true$ whenever $y$ falls within that interval (l.\ \ref{ln:update}). Tthe program returns $\true$ iff \emph{all} intervals have been hit at least once (l. \ref{ln:final} and \ref{ln:iscovered}). Exact inference on this program therefore determines the probability that this infinite stochastic process hits every interval at least once.
+The program models the following process: We start by randomly sampling $4$ intervals (l.\ \ref{ln:b} and \ref{ln:init}), stored as a list of pairs, where the first component is a flag and the second component is a function that determines whether a given point falls within that interval. We then employ unbounded recursion (l.\ \ref{ln:cover}) to repeat the following a potentially unbounded number of times according to a geometric distribution: sample a point $y$ from a gaussian (l.\ \ref{ln:step}), and update the flag of every interval to $\true$ whenever $y$ falls within that interval (l.\ \ref{ln:update}). The program returns $\true$ iff \emph{all} intervals have been hit at least once (l. \ref{ln:final} and \ref{ln:iscovered}). Exact inference on this program therefore determines the probability that this infinite stochastic process hits every interval at least once.
 
-\Slice{} \emph{automatically} produces a \emph{provably equivalent} (cf.\ \Cref{sec:soundness}) discrete program (shown in \Cref{ap:epsball}). Even though this program still contains unbounded recursion, our back-end automatically determines that its stochastic execution behavior can be modeled as a \emph{finite-state} Markov chain. Our key insight here is that exact inference can then be performed via \emph{probabilistic model checking}: we use \Storm{} \cite{storm}, which automatically computes that the sought-after probability is $0.018226..$. See \Cref{sec:case-studies} for details. To the best of our knowledge, our pipeline is the first capable of performing exact inference on suitable programs containing continuous sampling, higher-order functions, and unbounded recursion. In \Cref{sec:casestudy:epsball}, we extend this program by conditioning \emph{inside the recursion}.
+\Slice{} \emph{automatically} produces a \emph{provably equivalent} (cf.\ \Cref{sec:soundness}) discrete program (shown in \Cref{ap:epsball}). Even though this program still contains unbounded recursion, our back-end automatically determines that its stochastic execution behavior can be modeled as a \emph{finite-state} Markov chain. Our key insight is that exact inference can then be performed via \emph{probabilistic model checking}: we use \Storm{} \cite{storm}, which automatically computes that the sought-after probability is $0.018226..$. See \Cref{sec:case-studies} for details. To the best of our knowledge, our pipeline is the first capable of performing exact inference on suitable programs containing continuous sampling, higher-order functions, and unbounded recursion. In \Cref{sec:casestudy:epsball}, we extend this program by conditioning \emph{inside the recursion}.
 
 %We now consider a stochastic coverage process over a continuous domain with both higher-order functions and unbounded recursion. The program first samples four cut points $b_1,b_2,b_3,b_4$ from discrete distributions over candidate boundary values, thereby inducing a random partition of $[0,1]$ into subintervals. It then repeatedly samples points from a Gaussian distribution, marking each interval as covered once a sampled point falls inside it. The process stops after a geometrically distributed number of steps, and finally checks whether the entire interval has been covered.
 %\ref{ln:within}
 %
 %
 %
-%\noindent \Slice{}  observes that only a finite partition of the real line matters. The comparisons against the grid boundaries induce a cut set that partitions $\R$ into intervals corresponding exactly to these regions. Each sampled point $y$ is therefore abstracted by the index of the region it falls into. 
+%\noindent \Slice{}  observes that only a finite partition of the real line matters. The comparisons against the grid boundaries induce a cut set that partitions $\R$ into intervals corresponding exactly to these regions. Each sampled point $y$ is therefore abstracted by the index of the region it falls into.
 %
 %\noindent Crucially, the resulting program has a \emph{finite state space}: the continuous domain $[0,1]$ is reduced to a finite set of regions, and the coverage state is a tuple of Booleans. Despite the original program featuring unbounded sampling and recursion, its behavior is captured exactly by a \mbox{finite-state system.}
 
