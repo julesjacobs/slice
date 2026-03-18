@@ -95,7 +95,7 @@ After discretization, the equality test $\texttt{gpa} = 10$ becomes the discrete
 
 
 \subsection{Random Interval Covering Over $\boldmath{[0,1]}$}\label{ap:epsball}
-The discretized program for the case study from \Cref{sec:examples:7} is shown in \Cref{fig:app:epsball}. \Slice{} takes 0.000s, and we generate a Markov chain consisting of $192365$ states in $38.69$ seconds. \Storm takes $0.69$ seconds for model checking, and reports that the sought-after probability is $0.01692...$.
+The discretized program for the case study from \Cref{sec:examples:7} is shown in \Cref{fig:app:epsball}. \Slice{} takes 0.000s, and we generate a Markov chain consisting of $192365$ states in $38.69$ seconds. \Storm takes $0.69$ seconds for model checking, and reports that the sought-after probability is $0.034474...$.
 
 % Discretized version
 \begin{figure*}[t]
@@ -120,7 +120,7 @@ The discretized program for the case study from \Cref{sec:examples:7} is shown i
     let b = fun _ ->  !\linelabel{ap-ln:b}!
       discrete(0.18: 0.05, 0.11: 0.24, 
               0.21: 0.37, 0.09: 0.58, 
-              0.41: 0.78) in
+              0.41: 0.89) in
     
     (* Initialize intervals by sampling their 
     respective (possibly overlapping) bounds *)
@@ -169,7 +169,7 @@ The discretized program for the case study from \Cref{sec:examples:7} is shown i
      (* Number of samples determined by 
         unbounded recursion *)
      let cover = fix cover st :=
-       if discrete(0.2, 0.8) < 1 then st
+       if discrete(0.1, 0.9) < 1 then st
        else cover (step st) in
     
     (* Have all intervals been covered at 
@@ -218,7 +218,7 @@ let within = fun lo -> fun hi -> fun y ->
 let b = fun _ ->
   discrete(0.18: 0.05, 0.11: 0.24,
           0.21: 0.37, 0.09: 0.58,
-          0.16: 0.78, 0.25: 0.89) in
+          0.41: 0.89) in
 
 (* Initialize intervals by sampling their
    respective (possibly overlapping) bounds *)
@@ -319,7 +319,7 @@ let within = fun lo -> fun hi -> fun y ->
 let b = fun _ ->
   discrete(0.18: 0.05, 0.11: 0.24,
           0.21: 0.37, 0.09: 0.58,
-          0.16: 0.78, 0.25: 0.89) in
+          0.41: 0.89) in
 
 (* Initialize intervals by sampling their
    respective (possibly overlapping) bounds *)

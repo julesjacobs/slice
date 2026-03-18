@@ -203,7 +203,7 @@ A similar intuition applies to discretizable comparisons $e_1 < e_2$, where \emp
 		then 2.5 : !{\ftb{B}{\{2.5\}}}! else 3.5 : !{\ftb{B}{\{3.5\}}}!)
     \end{lstlisting}
 	%
-	where $B = \{\cleq{2.5}, \cleq{3.5}\}$, and where $e_1 : \text{\ft{B}}$ and $e_2 : \text{\ftb{B}{\{2.5,3.5\}}}$. Intuitively, $e_1$ samples from a mixture of a uniform and a dirac distribution, whereas $e_2$ samples from a finite distribution. Why can $e_1 \leq e_2$ be discretized even though neither $e_1$ nor $e_2$ is a constant? The reason is that, as suggested by its type, $e_2$ can take only finitely many values, namely $\{2.5,3.5\}$. We apply $\discretize{\cdot}$:
+	where $B = \{\cleq{2.5}, \cleq{3.5}\}$, and where $e_1 : \text{\ft{B}}$ and $e_2 : \text{\ftb{B}{\{2.5,3.5\}}}$. Intuitively, $e_1$ samples from a mixture of a uniform and a dirac distribution, and $e_2$ samples from a finite distribution. Why can $e_1 \leq e_2$ be discretized even though neither $e_1$ nor $e_2$ is a constant? As suggested by its type, $e_2$ can take only finitely many values, namely $\{2.5,3.5\}$. We apply $\discretize{\cdot}$:
 	%
 	%
     \begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!,mathescape]

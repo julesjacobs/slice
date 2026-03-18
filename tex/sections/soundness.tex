@@ -146,7 +146,7 @@ With projections, we recover the semantics of $e$ and $\discretize{e:\tau}$ as f
 %	By induction on the typing derivation of $e:\tau$. See \Cref{lem:small_step_coupling_props}.
 %\end{proof}
 
-Now, using a limit construction analogous to \Cref{sec:smallsem_to_bigsem} for obtaining a coupled \emph{big-step} semantics $\bigsem{\cdot,\cdot} \colon Expr_\tau \to \mathcal{D}(V_\tau + \bot)$, where $V_\tau = \{ (v:\tau, \discretize{v} : \discretize{\tau}) ~|~ v:\tau~\text{is a value} \}$, we prove a suitable continuity property of projection (cf.\ \Cref{lem:proj_cont}) to conclude that \Cref{lem:maintext:small_step_coupling_props} transfers to $\bigsem{\cdot,\cdot}$. Finally, observing that $V_\bool + \bot = \{(\true,\true), (\false,\false), \bot\}$ yields the desired claim:
+Now, using a limit construction analogous to \Cref{sec:smallsem_to_bigsem} for obtaining a coupled \emph{big-step} semantics $\bigsem{\cdot,\cdot} \colon P_\tau \to \mathcal{D}(V_\tau + \bot)$, where $V_\tau = \{ (v:\tau, \discretize{v} : \discretize{\tau}) ~|~ v:\tau~\text{is a value} \}$, we prove a suitable continuity property of projection (cf.\ \Cref{lem:proj_cont}) to conclude that \Cref{lem:maintext:small_step_coupling_props} transfers to $\bigsem{\cdot,\cdot}$. Finally, observing that $V_\bool + \bot = \{(\true,\true), (\false,\false), \bot\}$ yields the desired claim:
 
 %\noindent
 \emph{Proof of \Cref{thm:maintext:sound}}. Let $v \in \{\true,\false,\bot\}$. We have
