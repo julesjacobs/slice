@@ -23,7 +23,7 @@ Discretization itself is not new. Garg et al.~\cite{Garg2024BitBlast} encode rea
     \item[Exact Discretization (\Cref{sec:discretization})] Define a type-directed transformation from continuous programs to discrete ones using inferred type information.
     \item[Soundness (\Cref{sec:soundness})] Prove semantic preservation of the discretization transformation with a coupling-style relational argument
     %suited to a global, non-local transformation
-    \cite{Bizjak2015Step,Wand2018Contextual}.
-    \item[Implementation and Case Studies (\Cref{sec:implem_eval})] Implement \Slice{} type inference and the discretization transformation in OCaml, and provide \Dice{}, \Roulette{}, and \Storm{} backends for running the discretized programs. We provide (i) case studies that \Slice+\Storm can handle but existing techniques cannot, and (ii) case studies where \Slice+\Dice and \Slice+\Roulette show favorable scaling and empirical performance on new and existing benchmarks~\cite{gehr2016psi,Saad2021SPPL}.
+    \cite{Bizjak2015Step,Wand2018Contextual,Culpepper2017ContextualScoring}.
+    \item[Implementation and Case Studies (\Cref{sec:implem_eval})] Implement \Slice{} type inference and the discretization transformation in OCaml, and provide \Dice{}, \Roulette{}, and \Storm{} backends for running the discretized programs. We provide (i) case studies that \Slice{}+\Storm{} can handle but existing exact inference tools cannot, and (ii) case studies where \Slice{}+\Dice{} and \Slice{}+\Roulette{} show favorable scaling and empirical performance on new and existing benchmarks~\cite{gehr2016psi,Saad2021SPPL}.
 \end{description}
 %We conclude with related and future work (\Cref{sec:related}).

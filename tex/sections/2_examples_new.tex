@@ -127,7 +127,7 @@ We now consider comparisons against a continuous quantity whose value is determi
     let y = if 1.5 > x then 1.8 else 0.3 in x <= y
 \end{lstlisting}
 
-\noindent Here, $y$ evaluates to either $1.8$ or $0.3$ depending on $x$. Because $x \leq y$ may use either value, \Slice{} collects both constants and treats the comparison as ranging over this finite set. This motivates enriching our float types with a \emph{value set}: a finite collection of concrete values that an expression may evaluate to. Figure~\ref{fig:float-type-def} presents the full float type implemented by \Slice{}; each floating-point expression is annotated with such a type. The type-annotated program is below (left):
+\noindent Here, $y$ evaluates to either $1.8$ or $0.3$ depending on $x$. Because $x \leq y$ may use either value, \Slice{} collects both constants and treats the comparison as ranging over this finite set. This motivates enriching our float types with a \emph{value set}: a finite collection of concrete values that an expression may evaluate to. Figure~\ref{fig:float-type-def} presents the \emph{full} float type implemented by \Slice{}; each floating-point expression is annotated with such a type. The type-annotated program is below (left):
 
 \begin{center}
     \begin{minipage}[c]{0.58\linewidth}
@@ -259,12 +259,11 @@ The type annotations show how the variable $x$ determines the Gaussian's standar
 \end{center}
 \vspace{0.6em}
 
-\noindent Because $x$ is later used as a parameter to $\gaussian$, \Slice{} generates one case per value in its value set $\{0.5,1.5\}$. To support this, the type system uses non-strict inequalities in cut sets, allowing these values to map to unique integer indices starting at 0. Specifically, 0.5 maps to index 0 via \codetype{\ftb{\{<=0.5,<=1.5\}}{\{0.5\}}}, and 1.5 maps to index 1 via \codetype{\ftb{\{<=0.5,<=1.5\}}{\{1.5\}}}. This is a non-local effect: an upstream discrete latent choice determines how a downstream continuous distribution is discretized. The discretized program branches on these values and instantiates the corresponding discrete distribution for the standard deviation selected by the initial flip.
-\noindent
+\noindent Because $x$ is used as a parameter to the $\gaussian$ distribution, \Slice{} generates a separate case for each possible value that $x$ can take (namely 0.5 and 1.5). To support this, the type system uses non-strict inequalities in cut sets, allowing these values to map to unique integer indices starting at 0. Specifically, 0.5 maps to index 0 via \codetype{\ftb{\{<=0.5,<=1.5\}}{\{0.5\}}}, and 1.5 maps to index 1 via \codetype{\ftb{\{<=0.5,<=1.5\}}{\{1.5\}}}. The resulting discretized program then branches on these values and instantiates the corresponding discrete distribution, depending on which standard deviation was selected by the initial flip, as shown in the program on the right.
 
 \subsection{Conditioning}\label{sec:examples:6}
 
-\Slice{} supports conditioning via $\observekw$. Consider the following program: %$\Pr[x<0.2 \mid x<0.5]$ for $x \sim \uniform(0,1)$:
+\Slice{} supports conditioning via $\observekw$. Consider the following: %$\Pr[x<0.2 \mid x<0.5]$ for $x \sim \uniform(0,1)$:
 
 %\begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
 %    let x = uniform(0.0, 1.0) in
@@ -311,7 +310,7 @@ The type annotations show how the variable $x$ determines the Gaussian's standar
 \vspace{0.6em}
 
 \noindent
-In the discretized program, the observation $x<2$ eliminates the discrete state corresponding to the original interval $[0.5,+\infty)$, mirroring the conditioning on $x<0.5$.
+In the discretized program, the observation $x<2$ eliminates the discrete state corresponding to the original interval $[0.5,+\infty)$, thereby preserving the effect of conditioning on $x<0.5$.
 
 Exact equalities are encoded with $\observekw\; (x \leq c \mathrel{\&\&} x \geq c)$. See~\Cref{ap:gpa} for an example. Measure-zero observations remain delicate~\cite{Jacobs2021ParadoxesProbProg}; our semantics handles them by recording observation-failure mass instead of renormalizing (cf.\ \Cref{sec:soundness}). Scoring semantics for true measure-zero events are out of scope; users should instead approximate them with narrow intervals (see \cite{Jacobs2021ParadoxesProbProg} for details).
 
