@@ -1,12 +1,12 @@
 \section{Type Inference}\label{sec:type-inference}
 
-We now describe our type inference algorithm, where the goal is to annotate each subexpression of a program with its most precise type. Specifically, we describe our type inference algorithm for expressions with type $\float[B;V]$, showing how \Slice{} populates the cut set $B$ and value set $V$, which will later determine how and whether the expression can be discretized. Type inference for all other types is standard and follows the classic Hindley-Milner type inference algorithm. For our type inference algorithm on float-typed expressions, we follow a standard two-phase approach: the first phase traverses the program once to generate a set of constraints over cut and value sets; the second phase solves these constraints to produce a fully annotated program.
+We now describe our type inference algorithm, whose goal is to annotate each subexpression of a program with its most precise type. Specifically, we focus on expressions of type $\float[B;V]$ and show how \Slice{} populates the cut set $B$ and value set $V$, which later determine how and whether the expression can be discretized. Type inference for all other types is standard and follows the classic Hindley-Milner algorithm. For float-typed expressions, we use a two-phase approach: the first phase traverses the program once to generate constraints over cut and value sets; the second phase solves those constraints to produce a fully annotated program.
 
 \subsection{Constraint Generation}
 
-We use a constraint language as shown in Figure~\ref{fig:constraints-grammar} to express requirements over the type structure and float refinements. We adopt the framework presented in~\cite{Odersky1999ConstrainedTypes}, introducing a new judgment of the form $\Gamma \vdash e : \tau \mid C$, which reads as \emph{in the environment $\Gamma$, $e$ has type $\tau$ and produces the set of constraints $C$}. In this judgment, $\Gamma$ and $e$ are inputs to the type inference algorithm, while $\tau$ and $C$ are outputs—the algorithm infers the type $\tau$ for expression $e$ and generates the constraints $C$ that must be satisfied for this typing to be valid. The inference rules formalize what constraint $C$ must be generated (and later solved) for a given expression $e$ to have inferred type $\tau$. Figure~\ref{fig:type-inference} gives the constraint generation rules for \Slice{}. We focus on a small but representative subset of constructs in \Slice{}, capturing the key ideas on how constraints are generated for the \emph{full} \Slice{} language.
+We use the constraint language in Figure~\ref{fig:constraints-grammar} to express requirements over the type structure and float refinements. We adopt the framework of~\cite{Odersky1999ConstrainedTypes}, introducing a new judgment of the form $\Gamma \vdash e : \tau \mid C$, which reads as \emph{in the environment $\Gamma$, $e$ has type $\tau$ and produces the set of constraints $C$}. In this judgment, $\Gamma$ and $e$ are inputs to the type inference algorithm, while $\tau$ and $C$ are outputs: the algorithm infers the type $\tau$ for expression $e$ and generates the constraints $C$ that must hold for this typing to be valid. The inference rules formalize which constraint $C$ must be generated, and later solved, for a given expression $e$ to have inferred type $\tau$. Figure~\ref{fig:type-inference} gives the constraint generation rules for \Slice{}. We focus on a small but representative subset of constructs in \Slice{}, capturing the key ideas behind constraint generation for the \emph{full} language.
 
-The type inference rules closely mirror the typing rules in Figure~\ref{fig:typing-float}, with two key differences: First, the inference rules generate a constraint set instead of having those constraints be part of the premises of the rules. Second, subtyping is handled in a syntax-directed way, where instead of a general subtyping rule, we bake the subtyping relation into each rule.
+The type inference rules closely mirror the typing rules in Figure~\ref{fig:typing-float}, with two key differences. First, the inference rules generate a constraint set instead of having those constraints appear in the premises. Second, subtyping is handled in a syntax-directed way: rather than using a general subtyping rule, we bake the subtyping relation into each rule.
 
 \begin{figure}[!t]
     \scalebox{0.9}{$\begin{aligned}
@@ -29,26 +29,25 @@ The type inference rules closely mirror the typing rules in Figure~\ref{fig:typi
 \input{figures/typing-infer.tex}
 
 \begin{example}
-  To make the constraint generation process concrete, Figure~\ref{fig:constraint-generation} walks through Example~\ref{sec:examples:4} from Section~\ref{sec:examples}, where each subexpression is annotated with type variables for the cut sets ($B_i$) and value sets ($V_i$), and the constraints produced at every step are shown explicitly.
+  To make the constraint generation process concrete, Figure~\ref{fig:constraint-generation} walks through Example~\ref{sec:examples:4} from Section~\ref{sec:examples}. Each subexpression is annotated with type variables for the cut sets ($B_i$) and value sets ($V_i$), and the constraints produced at each step are shown explicitly.
 \end{example}
 
 \input{figures/constraint-gen.tex}
 
 \subsection{Constraint Solving}
  \noindent
-Once constraint generation completes, we obtain a system of constraints over type variables, cut sets $B$, and value sets $V$. The constraint solving phase proceeds in two steps:
+Once constraint generation completes, we obtain a system of constraints over type variables, cut sets $B$, and value sets $V$. The constraint-solving phase proceeds in two steps:
 
 \input{figures/constraint-sol.tex}
 
 \begin{enumerate}
-    \item \textbf{Subtyping reduction}: We first process all subtyping constraints of the form $\subtype{\tau_1}{\tau_2}$. Since subtyping for float types follows the rule $\subtype{\float[B_1;V_1]}{\float[B_2;V_2]}$ if and only if $B_1 = B_2$ and $V_1 \sqsubseteq V_2$, we reduce each subtyping constraint into corresponding equality and subset constraints on the cut sets and value sets. Subtyping constraint elimination continues until we have only constraints among $B$'s and $V$'s.
-    
-    \item \textbf{Lattice constraint solving}: After subtyping reduction, we are left with constraints purely over cut sets and value sets—equalities, subset relations, and the specialized constraints like $\distinguishes{B}{V}$, $\answerslt{B}{V_1}{V_2}$, and $\has{V}{c}$. These constraints are solved using a monotone fixed point algorithm for lattices over the cut sets and value sets.
+    \item \textbf{Subtyping reduction}: We first process all subtyping constraints of the form $\subtype{\tau_1}{\tau_2}$. Since subtyping for float types follows the rule $\subtype{\float[B_1;V_1]}{\float[B_2;V_2]}$ if and only if $B_1 = B_2$ and $V_1 \sqsubseteq V_2$, we reduce each subtyping constraint to corresponding equality and subset constraints on the cut and value sets. Subtyping elimination continues until only constraints among $B$'s and $V$'s remain.
+
+    \item \textbf{Lattice constraint solving}: After subtyping reduction, we are left with constraints purely over cut sets and value sets: equalities, subset relations, and the specialized constraints $\distinguishes{B}{V}$, $\answerslt{B}{V_1}{V_2}$, and $\has{V}{c}$. These constraints are solved using a monotone fixed-point algorithm over the cut and value lattices.
 \end{enumerate}
 
 \paragraph{Subtyping Reduction.}
-Subtyping reduction eliminates all remaining type-level subtyping constraints by recursively
-decomposing them according to the structure of types.
+Subtyping reduction eliminates all remaining type-level subtyping constraints by recursively decomposing them according to type structure.
 For base float types, a constraint
 $\subtype{\float[B_1;V_1]}{\float[B_2;V_2]}$
 is reduced to the conjunction $B_1 = B_2$ and $V_1 \sqsubseteq V_2$.
@@ -62,8 +61,7 @@ and
 $\subtype{\float[B_2;V_2]}{\float[B_6;V_6]}$,
 each of which is then reduced to equality and subset constraints on the corresponding cut
 and value sets.
-This process is syntactic and continues until no subtyping constraints remain,
-leaving only constraints over $B$ and $V$. 
+This process is syntactic and continues until no subtyping constraints remain, leaving only constraints over $B$ and $V$.
 
 \paragraph{Lattice Solving.}
 The lattice solver keeps track of the current contents of all $B$ and $V$ variables.
@@ -73,19 +71,19 @@ Each of the constraints is handled as follows:
 
 \begin{itemize}[leftmargin=*]
     \item \textbf{Value containment} ($\has{V}{c}$): We update $V$ to include the constant $c$, i.e., $V := V \sqcup \{c\}$. If $V$ is already $\top$, the constraint is trivially satisfied. \circled{1}
-    
+
     \item \textbf{Top assignment} ($V = \top$): We immediately set $V$ to $\top$, representing that the value set contains all possible float values. \circled{2}
-    
+
     \item \textbf{Subset constraints} ($B_1 \sqsubseteq B_2$ or $V_1 \sqsubseteq V_2$): We ensure that the contents of the first variable are always a subset of the second. When $B_1$ or $V_1$ is updated, we propagate the changes to $B_2$ or $V_2$ by taking the least upper bound. \circled{3}
-    
-    \item \textbf{Recoverability} ($\distinguishes{B}{V}$): This constraint ensures that the cut set $B$ can distinguish between all values in $V$. If $V$ is a finite set $\{v_1, ..., v_n\}$ with $n > 1$, we require that $B$ contains at least $n-1$ cuts to separate these values. If the cuts do not separate the values at the current solver state, we insert additional cuts to satisfy this condition. There is no canonical way to do this, so we use a heuristic: we insert a cut $\clt{x}$ for each value $x \in V$ that is not already separated by existing cuts.  If $B = \top$, the constraint is trivially satisfied. \circled{4}
-    
+
+    \item \textbf{Recoverability} ($\distinguishes{B}{V}$): This constraint ensures that the cut set $B$ can distinguish all values in $V$. If $V$ is a finite set $\{v_1, ..., v_n\}$ with $n > 1$, we require that $B$ contains at least $n-1$ cuts to separate these values. If the cuts do not separate the values in the current solver state, we insert additional cuts to satisfy this condition. There is no canonical way to do this, so we use a heuristic: we insert a cut $\clt{x}$ for each value $x \in V$ that is not already separated by existing cuts.  If $B = \top$, the constraint is trivially satisfied. \circled{4}
+
     \item \textbf{Less-than answerability} ($\answerslt{B}{V_1}{V_2}$): Intuitively, this constraint ensures that $B$ contains enough cuts to answer all possible comparisons of the form ``$v_1 < v_2$'' where $v_1 \in V_1$ and $v_2 \in V_2$.
     If $B = \top$, the constraint is trivially satisfied.
     Otherwise, we again have a heuristic choice: we add a cut $\clt{v}$ for each value $v \in V_2$ (if $V_2 \neq \top$) and $\cleq{v}$ for each value $v \in V_1$ (if $V_1 \neq \top$). If $V_1$ and $V_2$ are both $\top$, we set $B$ to $\top$. \circled{5}
-    
+
     \item \textbf{Less-equal answerability} ($\answersleq{B}{V_1}{V_2}$): Analogous to less-than. \circled{5}
-    
+
     \item \textbf{Equality constraints} ($B_1 = B_2$ or $V_1 = V_2$): We unify the variables, treating them as the same variable throughout the solving process. Any update to one variable is immediately reflected in all variables unified with it. \circled{6}
 \end{itemize}
 
@@ -93,13 +91,13 @@ The solver repeatedly processes constraints until reaching a fixed point, where 
 
 Lattice constraint solving takes time polynomial in the size of the program: at worst, \emph{every} constant in the program gets added to the cut set or value set of every subexpression \mbox{of type $\float[B;V]$.}
 
-\paragraph{Additional constraint for contextual equivalence.} 
+\paragraph{Additional constraint for contextual equivalence.}
 When the return type of the program involves a float type, either directly or as part of a larger compound type (e.g., $\float[B;V] \to \float[B';V']$), we add an additional constraint to ensure that these float types are not discretized. %For example:
 %\[
 %  \float[B;V] \to \float[B';V'].
 %\]
-We recursively traverse the return type and setting all nested $B$ sets to $\top$. This ensures that the observable behavior of the program is preserved after discretization, regardless of the context in which the program is used. When the return type is basic, such as $\bool$, nothing needs to be done.
+We recursively traverse the return type and set all nested $B$ sets to $\top$. This ensures that the observable behavior of the program is preserved after discretization, regardless of the context in which the program is used. When the return type is basic, such as $\bool$, nothing needs to be done.
 
 \begin{example}
-  To make the constraint solving process concrete, \Cref{fig:constraint-solving} walks through~\Cref{sec:examples:4}, where each constraint obtained from the constraint generation phase is processed by the solver, then collected altogether to obtain the final cut and value sets.
+  To make the constraint solving process concrete, \Cref{fig:constraint-solving} walks through~\Cref{sec:examples:4}. Each constraint obtained from the generation phase is processed by the solver, then collected to obtain the final cut and value sets.
 \end{example}
