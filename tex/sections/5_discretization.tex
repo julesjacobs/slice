@@ -191,7 +191,7 @@ such that $c$ is an (open) endpoint of $\text{ToInts}(c)$ for all $c \in\{0.3,0.
 %
 Crucially, the \emph{recoverability} constraints in the \textsc{Continuous}-rules from \Cref{fig:typing-float} ensure that the parameter expressions of the respective sampling expressions can take only finitely many values, and that the cut sets are fine-grained enough to recover the values the parameter expressions evaluate to, as demonstrated in the preceding example.
 
-A similar intuition applies to discretizable comparisons $e_1 < e_2$, where \emph{both} expressions are non-constant but finite-cut. The \emph{answers} constraints in the rule \textsc{Less} (resp.\ \textsc{Less-Equal}) ensure that at least one of $e_1$ and $e_2$ evaluates to finitely many values only, which enables discretization:
+A similar intuition applies to discretizable comparisons $e_1 < e_2$, where \emph{both} expressions are non-constant but finite-cut. The \emph{answers} constraints in the rule \textsc{Less} (resp.\ \textsc{Less-Equal}) ensure that at least one of $e_1$ and $e_2$ evaluates to only finitely many values, which enables discretization:
 \begin{example}
 	Consider the following typed expression $(e_1 \leq e_2) : \bool$, given by
 	%
@@ -203,7 +203,7 @@ A similar intuition applies to discretizable comparisons $e_1 < e_2$, where \emp
 		then 2.5 : !{\ftb{B}{\{2.5\}}}! else 3.5 : !{\ftb{B}{\{3.5\}}}!)
     \end{lstlisting}
 	%
-	where $B = \{\cleq{2.5}, \cleq{3.5}\}$, and where $e_1 : \text{\ft{B}}$ and $e_2 : \text{\ftb{B}{\{2.5,3.5\}}}$. Intuitively, $e_1$ samples from a mixture of a uniform and a dirac distribution, whereas $e_2$ samples from a finite distribution. Why can $e_1 \leq e_2$ be discretized even though neither $e_1$ nor $e_2$ is a constant? The reason is that, as suggested by its type, $e_2$ can only take finitely many values in $\{2.5,3.5\}$. We apply $\discretize{\cdot}$:
+	where $B = \{\cleq{2.5}, \cleq{3.5}\}$, and where $e_1 : \text{\ft{B}}$ and $e_2 : \text{\ftb{B}{\{2.5,3.5\}}}$. Intuitively, $e_1$ samples from a mixture of a uniform and a dirac distribution, whereas $e_2$ samples from a finite distribution. Why can $e_1 \leq e_2$ be discretized even though neither $e_1$ nor $e_2$ is a constant? The reason is that, as suggested by its type, $e_2$ can take only finitely many values, namely $\{2.5,3.5\}$. We apply $\discretize{\cdot}$:
 	%
 	%
     \begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!,mathescape]
