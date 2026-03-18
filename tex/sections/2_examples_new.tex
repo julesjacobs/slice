@@ -127,7 +127,7 @@ We now consider comparisons against a continuous quantity whose value is determi
     let y = if 1.5 > x then 1.8 else 0.3 in x <= y
 \end{lstlisting}
 
-\noindent Here, $y$ evaluates to either $1.8$ or $0.3$ depending on $x$. Because $x \leq y$ may use either value, \Slice{} collects both constants and treats the comparison as over this finite set. This motivates enriching our float types with a \emph{value set}: a finite collection of concrete values that an expression may evaluate to. Figure~\ref{fig:float-type-def} presents the full float type implemented by \Slice{}; each floating-point expression is annotated with such a type. The type-annotated program is below (left):
+\noindent Here, $y$ evaluates to either $1.8$ or $0.3$ depending on $x$. Because $x \leq y$ may use either value, \Slice{} collects both constants and treats the comparison as ranging over this finite set. This motivates enriching our float types with a \emph{value set}: a finite collection of concrete values that an expression may evaluate to. Figure~\ref{fig:float-type-def} presents the full float type implemented by \Slice{}; each floating-point expression is annotated with such a type. The type-annotated program is below (left):
 
 \begin{center}
     \begin{minipage}[c]{0.58\linewidth}
@@ -380,7 +380,7 @@ let update = fix update y := fun ys -> !\linelabel{ln:update}!
   basicstyle=\ttfamily\footnotesize,
   commentstyle=\color{ForestGreen}\itshape]
 (* Sample from a gaussian, then use
-   so-obtained value to update flags *)
+   the resulting value to update flags *)
 let step = fun ys -> !\linelabel{ln:step}!
   update (gaussian(0,1)) ys in
 

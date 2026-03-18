@@ -224,7 +224,7 @@ Intuitively, $\distinguishes{B}{V}$ means that the discretization induced by $B$
 
 
 \paragraph{Comparisons.} 
-For $e < c$ with $e : \float[B_1; \top]$ and $c : \float[B_2; \{c\}]$, the discretized $e$ must still decide the predicate, so $B_1$ must include $\clt{c}$. If $c$ can take any value in $V_2$, every $\clt{v}$ for $v\in V_2$ must appear. Symmetrically, for $c < e$ with $e : \float[B_2; V_2]$, $B_2$ must contain $\cleq{c}$ so the discretized intervals know on which “side’’ of $c$ they fall. For example, $2.3<e$ requires cuts separating $(-\infty,2.3]$ from $(2.3,\infty)$; finer partitions are allowed but not required.
+For $e < c$ with $e : \float[B_1; \top]$ and $c : \float[B_2; \{c\}]$, the discretized $e$ must still decide the predicate, so $B_1$ must include $\clt{c}$. If $c$ can take any value in $V_2$, every $\clt{v}$ for $v\in V_2$ must appear. Symmetrically, for $c < e$ with $e : \float[B_2; V_2]$, $B_2$ must contain $\cleq{c}$ so the discretized intervals know on which side of $c$ they fall. For example, $2.3<e$ requires cuts separating $(-\infty,2.3]$ from $(2.3,\infty)$; finer partitions are allowed but not required.
 
 
 In general, the typing rule for $e_1 < e_2$ requires that the expressions share a cut set $B$, and that their respective value sets $V_1, V_2$ are related in a way that allows the comparison to be determined after discretization, via the $\answerslt{B}{V_1}{V_2}$ relation:
@@ -238,7 +238,7 @@ In general, the typing rule for $e_1 < e_2$ requires that the expressions share 
 
 % This definition is subtle and it requires some explanation to understand why it makes sense and ensures that the comparison result can still be determined after discretization.
 
-To understand this definition, we first want to introduce two different perspectives on the $B$ set. The first perspective is that $B$ specifies a set of intervals, such that values of the expression will be mapped to their respective interval index. The second perspective is that this discretized index \emph{still contains enough information to evaluate all comparisons in $B$ when viewed as predicates}. That is, if $B$ contains $\clt{x}$ then, the discretized value of $e : \float[B; V]$ still contains enough information to answer $e < x$ precisely: if after discretization, we have an interval index below the index of $\clt{x}$, then the comparison is false, and otherwise it is true.
+To understand this definition, we first want to introduce two different perspectives on the $B$ set. The first perspective is that $B$ specifies a set of intervals, such that values of the expression will be mapped to their respective interval index. The second perspective is that this discretized index \emph{still contains enough information to evaluate all comparisons in $B$ when viewed as predicates}. That is, if $B$ contains $\clt{x}$ then the discretized value of $e : \float[B; V]$ still contains enough information to answer $e < x$ precisely: if after discretization, we have an interval index below the index of $\clt{x}$, then the comparison is false, and otherwise it is true.
 
 Now, if $e_1 : \float[B; V_1]$ and $e_2 : \float[B; V_2]$, then $\answerslt{B}{V_1}{V_2}$ ensures that the comparison result can still be determined after discretization because:
 

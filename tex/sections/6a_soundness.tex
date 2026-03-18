@@ -14,11 +14,11 @@ Given a topological space $(X, \mathcal{T})$, the Borel $\sigma$-algebra $\mathc
 \paragraph{Measurable space} A measurable space is a pair $(X,\Sigma)$ consisting of a set $X$ and a $\sigma$-algebra $\Sigma$ on $X$.
 When $\Sigma$ is the Borel $\sigma$-algebra on a topological space $X$, we call $(X, \Sigma)$ a Borel measurable space.
 
-\paragraph{Measure} Let $(X,\Sigma)$ be a measurable space. A function $\mu : \Sigma \to \R^+$ is called a measure if it satisfies the following properties: nonnegativity, $\mu(\emptyset) = 0$, and countable additivity. 
+\paragraph{Measure} Let $(X,\Sigma)$ be a measurable space. A function $\mu : \Sigma \to [0,\infty]$ is called a measure if it satisfies the following properties: nonnegativity, $\mu(\emptyset) = 0$, and countable additivity.
 When $\Sigma$ is a Borel $\sigma$-algebra, $\mu$ is called a Borel measure.
 
 \paragraph{Measure space} The triple $(X, \Sigma, \mu)$ is called a measure space.
- When $\Sigma$ is the Borel $\sigma$-algebra and $\mu$ is the Borel measure, $(X, \Sigma, \mu)$ is called a Borel measure space.
+ When $\Sigma$ is the Borel $\sigma$-algebra and $\mu$ is a Borel measure, $(X, \Sigma, \mu)$ is called a Borel measure space.
 
 \paragraph{Subprobability measure} Let $(X, \Sigma, \mu)$ be a measure space. When $\mu(X) \leq 1$, $\mu$ is called a (Borel) subprobability measure. When $\mu(X) = 1$, $\mu$ is called a (Borel) probability measure and $(X, \Sigma, \mu)$ a (Borel) probability space.
 
@@ -1350,7 +1350,7 @@ The missing probability mass in $\sem{e :\tau}$ is the probability of encounteri
 %	Let $\tau$ be a type, and let $P_\tau = \{ (e:\tau, \discretize{e} : \discretize{\tau}) ~|~ e:\tau \}$. Given a suitable measurable space, we denote by $\mathcal{D}(P_\tau + \bot)$ 
 %	the set of sub-probability measures over $P_\tau$. 
 %\end{definition}
-Define $P_\tau = \{ (e:\tau, \discretize{e:\tau} : \discretize{\tau}) ~|~ e:\tau \}$. Exploiting that $e:\tau$ is a value iff $\discretize{e} : \discretize{\tau}$ value, we define:
+Define $P_\tau = \{ (e:\tau, \discretize{e:\tau} : \discretize{\tau}) ~|~ e:\tau \}$. Exploiting that $e:\tau$ is a value iff $\discretize{e} : \discretize{\tau}$ is a value, we define:
 %
 \begin{definition}
 	The small-step coupling  $\sem{e :\tau, \discretize{e}: \discretize{\tau}} \in \mathcal{D}(P_{\tau} + \bot)$ is defined recursively on the structure of $e:\tau$ by the rules in \Cref{tab:coupling_smallstep_1,tab:coupling_smallstep_2}. 
@@ -1936,11 +1936,11 @@ The following will imply our desired equivalence claim:
 %
 %
 \begin{theorem}\label{thm:contextual-equivalence}
-	Let $e:\bool$. Then $\bigsem{e:bool} = \bigsem{\discretize{e:bool} : \bool}$.
+	Let $e:\bool$. Then $\bigsem{e:\bool} = \bigsem{\discretize{e:\bool} : \bool}$.
 \end{theorem}
 %
 \begin{proof}
-	Since $\mathcal{D}(Vals_\tau + \bot)$ contains only discrete distributions, we proceed by caste distinction on the probality of the final outcome $v\in\{\true,\false,\bot\}$.\\
+	Since $\mathcal{D}(Vals_\tau + \bot)$ contains only discrete distributions, we proceed by case distinction on the probability of the final outcome $v\in\{\true,\false,\bot\}$.\\
 	%
 	
 	\emph{The case $v=\true$.} We have 

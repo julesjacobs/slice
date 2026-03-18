@@ -113,18 +113,18 @@ The discretized program for the case study from \Cref{sec:examples:7} is shown i
       commentstyle=\color{ForestGreen}\itshape,
       gobble=4]
     (* Returns true if y is in [lo,hi) *)
-    let within = fun lo -> fun hi -> fun y -> !\linelabel{ln:within}!
+    let within = fun lo -> fun hi -> fun y -> !\linelabel{ap-ln:within}!
       (y >= lo) && (y < hi) in 
     
     (* Function for sampling interval bounds *)
-    let b = fun _ ->  !\linelabel{ln:b}!
+    let b = fun _ ->  !\linelabel{ap-ln:b}!
       discrete(0.18: 0.05, 0.11: 0.24, 
               0.21: 0.37, 0.09: 0.58, 
               0.41: 0.78) in
     
     (* Initialize intervals by sampling their 
     respective (possibly overlapping) bounds *)
-    let init =!\linelabel{ln:init}!
+    let init =!\linelabel{ap-ln:init}!
       (false, within 1 (b ())) ::
       (false, within (b ()) (b ())) ::
       (false, within (b ()) (b ())) ::
@@ -133,7 +133,7 @@ The discretized program for the case study from \Cref{sec:examples:7} is shown i
     
     (* Update flags depending on y falling 
        within the respective interval *)
-    let update = fix update y := fun ys -> !\linelabel{ln:update}!
+    let update = fix update y := fun ys -> !\linelabel{ap-ln:update}!
       match ys with 
         | nil -> nil
         | h :: t ->
@@ -157,7 +157,7 @@ The discretized program for the case study from \Cref{sec:examples:7} is shown i
       commentstyle=\color{ForestGreen}\itshape,
       gobble=4]
     (* Sample from a discretized gaussian, 
-        then use so-obtained value to update 
+        then use the resulting value to update
         flags *)
     let step = fun ys -> 
        update (discrete(0.5, 0.0199388, 
@@ -174,7 +174,7 @@ The discretized program for the case study from \Cref{sec:examples:7} is shown i
     
     (* Have all intervals been covered at 
        least once? *)
-    let is_covered = fix is_covered ys := !\linelabel{ln:iscovered}!
+    let is_covered = fix is_covered ys := !\linelabel{ap-ln:iscovered}!
       match ys with 
         | nil -> true 
         | h :: t -> (fst h) && (is_covered t)
@@ -182,7 +182,7 @@ The discretized program for the case study from \Cref{sec:examples:7} is shown i
     
     (* Run entire process on sampled intervals *)
     let final = cover init in
-      is_covered final !\linelabel{ln:final}!
+      is_covered final !\linelabel{ap-ln:final}!
     \end{lstlisting}
     \end{minipage}
     
