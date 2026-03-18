@@ -6,7 +6,7 @@ We now describe the language (\Cref{sec:sub_language}), its types (\Cref{sec:typ
 %
 \input{figures/grammar}
 %
-The syntax in \Cref{fig:grammar} extends a standard higher-order functional core with probabilistic choices. Beyond constants, variables, comparisons, Boolean operators, conditionals, pairs, and lists, \Slice{} offers first-class functions, recursion, and observations. The construct $\observekw(e)$ conditions on $e$ holding. Finite-domain constants $\finconst{k}{n}$ range over $\{\finconst{0}{n},\ldots,\finconst{(n-1)}{n}\}$ as discussed below. For random sampling, we include the usual discrete distributions and any continuous distribution with a tractable cumulative distribution function (one- or two-argument variants such as exponential, laplace, uniform, gaussian, beta, gamma). Adding further distributions is straightforward as long as their CDFs are known; Appendix~\ref{appen:supported-distributions} lists the ones implemented.
+The syntax in \Cref{fig:grammar} extends a standard higher-order functional core with probabilistic choices. Beyond constants, variables, comparisons, Boolean operators, conditionals, pairs, and lists, \Slice{} offers first-class functions, recursion, and observations. The construct $\observekw(e)$ conditions on $e$ holding. Finite-domain constants $\finconst{k}{n}$ range over $\{\finconst{0}{n},\ldots,\finconst{(n-1)}{n}\}$ as discussed below. For random sampling, we include the usual discrete distributions and any continuous distribution with a tractable cumulative distribution function (one- or two-argument variants such as exponential, laplace, uniform, gaussian, beta, gamma). Adding further distributions is straightforward as long as their CDFs are known; \Cref{appen:supported-distributions} lists the ones implemented.
 
 % \item \textbf{Discrete distributions}: The $\discrete(p_0, \ldots, p_{n-1})$ construct returns a finite type value $\finconst{k}{n}$ \kevin{let's maybe explain the types first?  $\finconst{k}{n}$ is not introduced} with probability $p_k$.
 
@@ -199,7 +199,7 @@ Rule \textsc{Float-Const} assigns a constant $c$ the type $\float[B; V]$ wheneve
 	%$B$ distinguishes $V$ if every interval in $B$ contains at most one value in $V$, or $B = \top$.
 \end{definition}
 %
-Intuitively, $\distinguishes{B}{V}$ means that the discretization induced by $B$ is lossless on $V$: from the resulting interval index, the original value in $V$ can be uniquely recovered. For example, $\exponential(e)$ can be discretized only when $e$ takes finitely many recoverable values. Thus $V$ must be finite and $B$ must separate those values so the discretized program can determine which one occurred. Section~\ref{sec:discretization} revisits this invariant. The rule for two-argument distributions is analogous. 
+Intuitively, $\distinguishes{B}{V}$ means that the discretization induced by $B$ is lossless on $V$: from the resulting interval index, the original value in $V$ can be uniquely recovered. For example, $\exponential(e)$ can be discretized only when $e$ takes finitely many recoverable values. Thus $V$ must be finite and $B$ must separate those values so the discretized program can determine which one occurred. \Cref{sec:discretization} revisits this invariant. The rule for two-argument distributions is analogous. 
 %inte-cut
 % The following observations will be useful in the sequel:
 % \begin{theorem}\label{thm:distinguishes-singleton}
@@ -268,7 +268,7 @@ Finally, for non-strict comparisons, the rule is analogous to \Cref{def:answers-
 \paragraph{Subtyping.}
 The type system includes a subtyping relation that captures when one type can be replaced by another. The subtyping rules are shown in Figure~\ref{fig:subtyping}. For float types $\float[B;V]$, subtyping follows the lattice ordering on $V$: an expression known to range over some set of values can also be considered to range over a superset of those values. For $B$, we require equality to make sure that the discretized representation of the expression is not changed by subtyping.
 
-All other typing rules are standard and depicted in Figure \ref{fig:typing-general} and Appendix~\ref{appen:typing-rules}, respectively.
+All other typing rules are standard and depicted in Figure~\ref{fig:typing-general} and~\Cref{appen:typing-rules}, respectively.
 
 
 \input{figures/subtyping}
