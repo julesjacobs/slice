@@ -897,7 +897,7 @@ Throughout this section, we denote by $e :\tau$ a well-typed expression of type 
 	\discretize{ e: \tau} = \dc(\discretize{e_1 : \float[B_1; V_1]}, \discretize{e_2 :\float[B_2;V_2]})~.
 \]
 %
-We define the semantics of $\dc$ in such a way that it behaves like the discretized program in the last case of \Cref{fig:discretization-code} but resolves the let-bindings and the conditional choices in a single step, which will simpify our proof. We equip this statement with the following typing rule :
+We define the semantics of $\dc$ in such a way that it behaves like the discretized program in the last case of \Cref{fig:discretization-code} but resolves the let-bindings and the conditional choices in a single step, which will simplify our proof. We equip this statement with the following typing rule :
 %
 \begin{align*}
 	\inferrule[\textsc{TDiscreteCase}]
@@ -1361,7 +1361,7 @@ Define $P_\tau = \{ (e:\tau, \discretize{e:\tau} : \discretize{\tau}) ~|~ e:\tau
 %Define $P_\tau = \{ (e:\tau, \discretize{e} : \discretize{\tau}) ~|~ e:\tau \}$.
 
 \begin{lemma}\label{lem:bind-kernel-coupling}
-	For every occurence of a monadic bind $\mu \monbind (f,f')$ given in the small-step operational coupling semantics in~\Cref{tab:coupling_smallstep_1,tab:coupling_smallstep_2}, $(f,f') \colon (P_{\tau} + \bot) \to \mathcal{D}(P_{\tau} + \bot)$ is a Markov kernel.
+	For every occurrence of a monadic bind $\mu \monbind (f,f')$ given in the small-step operational coupling semantics in~\Cref{tab:coupling_smallstep_1,tab:coupling_smallstep_2}, $(f,f') \colon (P_{\tau} + \bot) \to \mathcal{D}(P_{\tau} + \bot)$ is a Markov kernel.
 \end{lemma}
 
 \begin{proof}
@@ -1592,7 +1592,7 @@ We have the following key property:
 
 \subsection{Big-Step Semantics and Correctness of Discretization}
 %
-We extend both of the small-step semantics canoncially to an $n$-step semantics by%
+We extend both of the small-step semantics canonically to an $n$-step semantics by%
 \begin{align*}
 		\bigsemstep{e : \tau}{n} &{}= 
 		\begin{cases}
@@ -1680,7 +1680,7 @@ For every type $\tau$, we denote by $\vals_\tau$ the set of values of type $\tau
 		\end{cases}
 	\]
 
-	Now, for $n=1$, by defintiion,
+	Now, for $n=1$, by definition,
 	\[
 		\bigsemstep{e : \tau}{1} = \delta_{e : \tau} \gg\!= \lambda e'.\sem{e'} = \sem{e : \tau}.
 	\]
@@ -1798,7 +1798,7 @@ By~\Cref{lem:bigstepsem1,lem:bigstepsem2}, the sequence $\bigsemstep{e : \tau}{n
 \end{lemma}
 
 \begin{proof}
-	We prove part i) in detail; the proof of part ii) is analogous. Fix an aribitrary measurable $A \in \Sigma_1$:
+	We prove part i) in detail; the proof of part ii) is analogous. Fix an arbitrary measurable $A \in \Sigma_1$:
 	\begin{align*}
 		&\pi_1(\lim_{n \to \infty} \bigsemstep{e,e'}{n})(A) \\
 		&= \left(\lim_{n \to \infty} \bigsemstep{e,e'}{n}\right)(A \times X_2) \tag{by definition of $\pi_1$}\\
