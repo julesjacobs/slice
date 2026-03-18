@@ -1047,18 +1047,6 @@ The typing rules for general language constructs is given in \Cref{fig:typing-ge
 \subsection{Asymptotic Scaling}
 
 \subsubsection{Code Sketches for Scaling Benchmarks}\label{app:synthetic-sketches}
-Schematically:
-%
-\begin{lstlisting}[aboveskip=0.1em,belowskip=.1em]
-let x1 = uniform(0,1) in 
-let x2 = if x1 < r1 then uniform(0,2) else uniform(0,3) in 
-let x3 = if x2 < r2 ...
-...
-xn < rn
-\end{lstlisting}
-%
- Each program consists of a sequence of conditionals, where each branch depends on a previous variable sampled from a uniform distribution, proceeding until the final condition $x_n < r_n$ is reached. Here $0 \leq r_i \leq 1$ are fixed float constants.
-
 This section contains code snippets of the programs used in the scaling experiments in Section~\ref{sec:synthetic-benchmarks}. We implemented a Python script that automatically generates these programs based on configurable parameters such as program size, guard structure, and dependency pattern. For reproducibility, we used a fixed random seed to generate each program. All $r_i$ values in the generated programs, where $0 \leq r_i \leq 1$ is randomly chosen, are rounded to two decimal places.
 
 All of these programs follow the same structural pattern: they define a sequence of random variables $X_1,\ldots,X_n$, where each $X_i$ is drawn from a uniform distribution whose parameters depend on the value of a single predecessor variable through a conditional branch of the form
@@ -1179,22 +1167,25 @@ Thus each program is a Bayesian network of conditionally independent nodes, diff
 \end{figure}
 
  
-The programs in \Cref{fig:cond-benchmarks-a,fig:cond-benchmarks-a-example} follow the scheme depicted above where the program size is $n$, i.e., the number of comparisons performed is $n$. In \Cref{fig:cond-benchmarks-b,fig:cond-benchmarks-b-example}, each $x_i$ does not necessarily depend on $x_{i-1}$ but on some randomly chosen predecessor\footnote{We generate these programs in a randomized manner with a fixed seed for reproducibility}. In \Cref{fig:cond-benchmarks-c,fig:cond-benchmarks-c-example,fig:cond-benchmarks-d,fig:cond-benchmarks-d-example}, we additionally choose at random whether the guards of the conditionals and the branches are either some predecessor variable $x_i$ or a  $\uniform$-sampling instruction.
- %\input{figures/nested-conditionals.tex}
+The programs in \Cref{fig:cond-benchmarks-a-example} follow the scheme depicted above where the program size is $n$, i.e., the number of comparisons performed is $n$. In \Cref{fig:cond-benchmarks-b-example}, each $x_i$ does not necessarily depend on $x_{i-1}$ but on some randomly chosen predecessor\footnote{We generate these programs in a randomized manner with a fixed seed for reproducibility}. In \Cref{fig:cond-benchmarks-c-example,fig:cond-benchmarks-d-example}, we additionally choose at random whether the guards of the conditionals and the branches are either some predecessor variable $x_i$ or a  $\uniform$-sampling instruction.
 
-%\subsubsection{Conditional Independence}
-%We test programs where each variable's distribution depends on comparisons with previous variables:
-%
-%\begin{itemize}
-%\item Each variable $x_i$ depends on its immediate predecessor via a conditional branch $x_{i-1} < r_{i-1}$, forming a sequential dependency chain. See Figure~\ref{fig:cond-benchmarks-a}.
-%\item Each variable $x_i$ depends on a randomly selected predecessor $x_j$ (for $j < i$) via a conditional branch $x_j < r_{i-1}$. See Figures~\ref{fig:cond-benchmarks-b}.
-%\item Each variable $x_i$ uses a randomized conditional expression, where the guard and both branches may involve either a randomly selected predecessor $x_j$ (for $j < i$) or a freshly sampled uniform value. See Figure~\ref{fig:cond-benchmarks-c}.
-%\end{itemize}
-%
 %
 \input{figures/scaling-conditional}
 %
- The programs in \Cref{fig:alt-benchmarks-a,fig:alt-benchmarks-a-example} also follow the scheme depicted above but where the variables used in the guards cycle with a fixed span size of $m$. For instance, for $m=2$, the pattern is $x_1,x_2,x_1,\ldots$. The programs in \Cref{fig:alt-benchmarks-b,fig:alt-benchmarks-b-example,fig:alt-benchmarks-c,fig:alt-benchmarks-c-example,fig:alt-benchmarks-d,fig:alt-benchmarks-d-example} follow a similar pattern.
+ The programs in \Cref{fig:alt-benchmarks-a-example} also follow the scheme depicted above but where the variables used in the guards cycle with a fixed span size of $m$. For instance, for $m=2$, the pattern is $x_1,x_2,x_1,\ldots$. The programs in \Cref{fig:alt-benchmarks-b-example,fig:alt-benchmarks-c-example,fig:alt-benchmarks-d-example} follow a similar pattern.
+
+\paragraph{Benchmark/example correspondence.}
+Each scaling graph is paired with a representative generated program from the same family:
+\begin{itemize}[leftmargin=1.5em]
+    \item \Cref{fig:cond-benchmarks-a} $\leftrightarrow$ \Cref{fig:cond-benchmarks-a-example}
+    \item \Cref{fig:cond-benchmarks-b} $\leftrightarrow$ \Cref{fig:cond-benchmarks-b-example}
+    \item \Cref{fig:cond-benchmarks-c} $\leftrightarrow$ \Cref{fig:cond-benchmarks-c-example}
+    \item \Cref{fig:cond-benchmarks-d} $\leftrightarrow$ \Cref{fig:cond-benchmarks-d-example}
+    \item \Cref{fig:alt-benchmarks-a} $\leftrightarrow$ \Cref{fig:alt-benchmarks-a-example}
+    \item \Cref{fig:alt-benchmarks-b} $\leftrightarrow$ \Cref{fig:alt-benchmarks-b-example}
+    \item \Cref{fig:alt-benchmarks-c} $\leftrightarrow$ \Cref{fig:alt-benchmarks-c-example}
+    \item \Cref{fig:alt-benchmarks-d} $\leftrightarrow$ \Cref{fig:alt-benchmarks-d-example}
+\end{itemize}
 
 We report runtime (seconds) for (i) \SPPL{}, (ii) \Slice{} (discretization only), (iii) \Slice{}+\Dice{} (discretization + inference via \Dice{}), and (iv) \Slice{}+\Roulette{} (discretization + inference via \Roulette{}). The timeout is 120 seconds.
 
@@ -1209,7 +1200,7 @@ We report runtime (seconds) for (i) \SPPL{}, (ii) \Slice{} (discretization only)
 
 \input{figures/scaling-alternating}
 
-\paragraph{Results.} The dominant pattern is a growth-rate contrast: discretization time remains small, and \Slice{}+\Dice{}/\Roulette{} scales more gently on these families, while direct symbolic inference in \SPPL{} grows more sharply and times out earlier on several variants. This appears most clearly in \Cref{fig:cond-benchmarks-b} and \Cref{fig:alt-benchmarks-a,fig:alt-benchmarks-b,fig:alt-benchmarks-d}. In \Cref{fig:cond-benchmarks-c}, the small-size regime is mixed, while larger sizes show clearer separation. These measurements are best interpreted as asymptotic trend evidence for complementary exact-inference pathways, not as a universal ranking across language features.
+\paragraph{Results.} The dominant pattern is a growth-rate contrast: discretization time remains small, and \Slice{}+\Dice{}/\Roulette{} scale more gently on these families, while direct symbolic inference in \SPPL{} grows more sharply and times out earlier on several variants. 
 
 
 \subsection{Decision Trees}
@@ -1229,95 +1220,88 @@ We report runtime (seconds) for (i) \SPPL{}, (ii) \Slice{} (discretization only)
           \textbf{Slice} & \textbf{Roulette} & \textbf{Total} &
           \textbf{Trans.} & \textbf{Judg.} & \textbf{Total} \\
     \midrule
-    DT$_4$            & Ind  & 0.002 & 0.031 & \textbf{0.033} & 0.002 & 0.026 & \textbf{0.028} & 0.074 & 0.011 & \textbf{0.085} \\
-                      & BN1  & 0.002 & 0.033 & \textbf{0.035} & 0.002 & 0.031 & \textbf{0.033} & 0.245 & 0.028 & \textbf{0.273} \\
-                      & BN2  & 0.002 & 0.035 & \textbf{0.037} & 0.003 & 0.034 & \textbf{0.037} & 0.268 & 0.030 & \textbf{0.298} \\
+    DT$_4$            & Ind  & 0.002 & 0.031 & 0.033 & 0.002 & 0.026 & \textbf{0.028} & 0.074 & 0.011 & 0.085 \\
+                      & BN1  & 0.002 & 0.033 & 0.035 & 0.002 & 0.031 & \textbf{0.033} & 0.245 & 0.028 & 0.273 \\
+                      & BN2  & 0.002 & 0.035 & \textbf{0.037} & 0.003 & 0.034 & \textbf{0.037} & 0.268 & 0.030 & 0.298 \\
     \midrule
-    DT$_{14}$         & Ind  & 0.002 & 0.047 & \textbf{0.049} & 0.002 & 0.049 & \textbf{0.051} & 0.153 & 0.024 & \textbf{0.177} \\
-                      & BN1  & 0.002 & 0.056 & \textbf{0.058} & 0.002 & 0.074 & \textbf{0.076} & 0.597 & 0.076 & \textbf{0.673} \\
-                      & BN2  & 0.002 & 0.058 & \textbf{0.060} & 0.002 & 0.073 & \textbf{0.075} & 0.535 & 0.072 & \textbf{0.607} \\
+    DT$_{14}$         & Ind  & 0.002 & 0.047 & \textbf{0.049} & 0.002 & 0.049 & 0.051 & 0.153 & 0.024 & 0.177 \\
+                      & BN1  & 0.002 & 0.056 & \textbf{0.058} & 0.002 & 0.074 & 0.076 & 0.597 & 0.076 & 0.673 \\
+                      & BN2  & 0.002 & 0.058 & \textbf{0.060} & 0.002 & 0.073 & 0.075 & 0.535 & 0.072 & 0.607 \\
     \midrule
-    DT$_{16}$         & Ind  & 0.002 & 0.045 & \textbf{0.047} & 0.002 & 0.054 & \textbf{0.056} & 0.176 & 0.026 & \textbf{0.202} \\
-                      & BN1  & 0.002 & 0.053 & \textbf{0.055} & 0.002 & 0.079 & \textbf{0.081} & 0.535 & 0.088 & \textbf{0.623} \\
-                      & BN2  & 0.003 & 0.053 & \textbf{0.056} & 0.003 & 0.079 & \textbf{0.082} & 0.554 & 0.090 & \textbf{0.644} \\
+    DT$_{16}$         & Ind  & 0.002 & 0.045 & \textbf{0.047} & 0.002 & 0.054 & 0.056 & 0.176 & 0.026 & 0.202 \\
+                      & BN1  & 0.002 & 0.053 & \textbf{0.055} & 0.002 & 0.079 & 0.081 & 0.535 & 0.088 & 0.623 \\
+                      & BN2  & 0.003 & 0.053 & \textbf{0.056} & 0.003 & 0.079 & 0.082 & 0.554 & 0.090 & 0.644 \\
     \midrule
-    DT$^{\alpha}_{16}$ & Ind & 0.002 & 0.034 & \textbf{0.036} & 0.002 & 0.052 & \textbf{0.054} & 0.201 & 0.029 & \textbf{0.230} \\
-                       & BN1 & 0.002 & 0.042 & \textbf{0.044} & 0.003 & 0.191 & \textbf{0.194} & 0.597 & 0.080 & \textbf{0.677} \\
-                       & BN2 & 0.003 & 0.049 & \textbf{0.052} & 0.003 & 0.224 & \textbf{0.227} & 0.642 & 0.075 & \textbf{0.717} \\
+    DT$^{\alpha}_{16}$ & Ind & 0.002 & 0.034 & \textbf{0.036} & 0.002 & 0.052 & 0.054 & 0.201 & 0.029 & 0.230 \\
+                       & BN1 & 0.002 & 0.042 & \textbf{0.044} & 0.003 & 0.191 & 0.194 & 0.597 & 0.080 & 0.677 \\
+                       & BN2 & 0.003 & 0.049 & \textbf{0.052} & 0.003 & 0.224 & 0.227 & 0.642 & 0.075 & 0.717 \\
     \midrule
-    DT$_{44}$         & Ind  & 0.002 & 0.099 & \textbf{0.101} & 0.002 & 0.276 & \textbf{0.278} & 0.402 & 0.073 & \textbf{0.475} \\
-                      & BN1  & 0.003 & 0.120 & \textbf{0.123} & 0.003 & 0.550 & \textbf{0.553} & 1.043 & 0.309 & \textbf{1.352} \\
-                      & BN2  & 0.003 & 0.122 & \textbf{0.125} & 0.003 & 0.546 & \textbf{0.549} & 1.135 & 0.346 & \textbf{1.481} \\
-    \midrule
-    DT$_{1000}$         & Ind  & 3.352 & 1.913 & \textbf{5.265} & 3.606 & t.o. & \textbf{t.o.} & 17.491 & 0.288 & \textbf{17.779} \\
-                    & BN1  & 4.022 & 2.044 & \textbf{6.066} & 4.030 & t.o. & \textbf{t.o.} & 33.300 & 1.553 & \textbf{34.853} \\
-                    & BN2  & 4.120 & 2.179 & \textbf{6.299} & 4.080 & t.o. & \textbf{t.o.} & 33.108 & 1.592 & \textbf{34.700} \\
+    DT$_{44}$         & Ind  & 0.002 & 0.099 & \textbf{0.101} & 0.002 & 0.276 & 0.278 & 0.402 & 0.073 & 0.475 \\
+                      & BN1  & 0.003 & 0.120 & \textbf{0.123} & 0.003 & 0.550 & 0.553 & 1.043 & 0.309 & 1.352 \\
+                      & BN2  & 0.003 & 0.122 & \textbf{0.125} & 0.003 & 0.546 & 0.549 & 1.135 & 0.346 & 1.481 \\
     \bottomrule
     \end{tabular}
     \caption{Execution times (seconds) for the benchmarks from \cite{albarghouthi2017fairsquare}, with a timeout of 120s.}
         \label{tab:benchmarks_dt}
-    \end{table}
+  \end{table}
 
-Tables~\ref{tab:benchmarks_dt} and~\ref{tab:benchmarks_dt_extra} show the decision tree benchmarks, of varying sizes of $n$.
+Tables~\ref{tab:benchmarks_dt} and~\ref{tab:benchmarks_dt_extra} show the decision tree benchmarks, of varying sizes of $n$. We observe that \Slice{}+\Dice{} achieves the lowest total runtime in practically all $DT$ programs. \Slice{}+\Roulette{} is competitive only on very small trees, and becomes substantially slower by $DT_{100}$--$DT_{500}$ and times out from $DT_{800}$ onward. Additionally, the discretization cost grows substantially by $DT_{1000}$--$DT_{5000}$.
 
 \begin{table}[!t]
-    \centering
-    \small
-    \setlength{\tabcolsep}{3.5pt}
-    \begin{tabular}{llccccccccc}
-    \toprule
-    \makecell{\textbf{Decision}\\\textbf{Program}} &
-    \makecell{\textbf{Population}\\\textbf{Model}} &
-    \multicolumn{3}{c}{\textbf{Slice+Dice (s)}} &
-    \multicolumn{3}{c}{\textbf{Slice+Roulette (s)}} &
-    \multicolumn{3}{c}{\textbf{\textsc{SPPL} (s)}} \\
-    \cmidrule(lr){3-5} \cmidrule(lr){6-8} \cmidrule(lr){9-11}
-     &  & \textbf{Slice} & \textbf{Dice} & \textbf{Total} &
-          \textbf{Slice} & \textbf{Roulette} & \textbf{Total} &
-          \textbf{Trans.} & \textbf{Judg.} & \textbf{Total} \\
-    \midrule
-    DT$_{50}$         & Ind  & 0.006 & 0.094 & \textbf{0.100} & 0.004 & 0.156 & \textbf{0.160} & 0.765 & 0.029 & \textbf{0.793} \\
-                      & BN1  & 0.007 & 0.079 & \textbf{0.086} & 0.006 & 0.451 & \textbf{0.457} & 1.646 & 0.085 & \textbf{1.731} \\
-                      & BN2  & 0.007 & 0.083 & \textbf{0.090} & 0.006 & 0.403 & \textbf{0.409} & 1.580 & 0.080 & \textbf{1.660} \\
-    \midrule
-    DT$_{100}$        & Ind  & 0.011 & 0.138 & \textbf{0.149} & 0.011 & 0.654 & \textbf{0.665} & 1.455 & 0.036 & \textbf{1.490} \\
-                      & BN1  & 0.015 & 0.148 & \textbf{0.163} & 0.016 & 1.775 & \textbf{1.791} & 2.867 & 0.150 & \textbf{3.017} \\
-                      & BN2  & 0.017 & 0.153 & \textbf{0.170} & 0.016 & 1.775 & \textbf{1.791} & 2.914 & 0.152 & \textbf{3.066} \\
-    \midrule
-    DT$_{200}$        & Ind  & 0.045 & 0.289 & \textbf{0.334} & 0.045 & 4.089 & \textbf{4.134} & 2.710 & 0.059 & \textbf{2.770} \\
-                      & BN1  & 0.064 & 0.322 & \textbf{0.386} & 0.064 & 9.496 & \textbf{9.560} & 5.836 & 0.318 & \textbf{6.154} \\
-                      & BN2  & 0.068 & 0.305 & \textbf{0.373} & 0.068 & 9.556 & \textbf{9.624} & 5.797 & 0.302 & \textbf{6.099} \\
-    \midrule
-    DT$_{500}$        & Ind  & 0.479 & 0.879 & \textbf{1.358} & 0.515 & 55.677 & \textbf{56.192} & 7.908 & 0.141 & \textbf{8.049} \\
-                      & BN1  & 0.599 & 0.961 & \textbf{1.560} & 0.636 & 113.426 & \textbf{114.062} & 15.017 & 0.787 & \textbf{15.804} \\
-                      & BN2  & 0.616 & 0.999 & \textbf{1.615} & 0.610 & 112.976 & \textbf{113.586} & 15.330 & 0.889 & \textbf{16.219} \\
-    \midrule
-    DT$_{800}$        & Ind  & 1.738 & 1.592 & \textbf{3.330} & 1.738 & t.o. & \textbf{t.o.} & 14.698 & 0.238 & \textbf{14.937} \\
-                      & BN1  & 2.184 & 1.690 & \textbf{3.874} & 2.184 & t.o. & \textbf{t.o.} & 26.297 & 1.265 & \textbf{27.561} \\
-                      & BN2  & 2.151 & 1.704 & \textbf{3.855} & 2.151 & t.o. & \textbf{t.o.} & 26.542 & 1.298 & \textbf{27.840} \\
-    \midrule
-    DT$_{1000}$       & Ind  & 3.584 & 2.096 & \textbf{5.680} & 3.584 & t.o. & \textbf{t.o.} & 17.626 & 0.279 & \textbf{17.905} \\
-                      & BN1  & 4.125 & 2.192 & \textbf{6.317} & 4.125 & t.o. & \textbf{t.o.} & 33.417 & 1.537 & \textbf{34.954} \\
-                      & BN2  & 4.052 & 2.152 & \textbf{6.204} & 4.052 & t.o. & \textbf{t.o.} & 34.225 & 1.612 & \textbf{35.837} \\
-    \midrule
-    DT$_{2000}$       & Ind  & 26.791 & 4.607 & \textbf{31.398} & 26.791 & t.o. & \textbf{t.o.} & 44.957 & 0.786 & \textbf{45.742} \\
-                      & BN1  & 29.148 & 4.726 & \textbf{33.874} & 29.148 & t.o. & \textbf{t.o.} & 84.744 & 3.227 & \textbf{87.972} \\
-                      & BN2  & 30.353 & 4.715 & \textbf{35.068} & 30.353 & t.o. & \textbf{t.o.} & 76.398 & 3.152 & \textbf{79.550} \\
-    \midrule
-    DT$_{5000}$       & Ind  & t.o. & t.o. & \textbf{t.o.} & t.o. & t.o. & \textbf{t.o.} & err. & err. & \textbf{err.} \\
-                    & BN1  & t.o. & t.o. & \textbf{t.o.} & t.o. & t.o. & \textbf{t.o.} & err. & err. & \textbf{err.} \\
-                    & BN2  & t.o. & t.o. & \textbf{t.o.} & t.o. & t.o. & \textbf{t.o.} & err. & err. & \textbf{err.} \\
-    \bottomrule
-    \end{tabular}
-    \caption{Execution times (seconds) for the decision tree benchmarks, with a timeout of 120s. For DT$_{5000}$ under our setup, SPPL returned a maximum recursion depth exceeded error (reported as \texttt{err.}).}
-    \label{tab:benchmarks_dt_extra}
+  \centering
+  \small
+  \setlength{\tabcolsep}{3.5pt}
+  \begin{tabular}{llccccccccc}
+  \toprule
+  \makecell{\textbf{Decision}\\\textbf{Program}} &
+  \makecell{\textbf{Population}\\\textbf{Model}} &
+  \multicolumn{3}{c}{\textbf{Slice+Dice (s)}} &
+  \multicolumn{3}{c}{\textbf{Slice+Roulette (s)}} &
+  \multicolumn{3}{c}{\textbf{\textsc{SPPL} (s)}} \\
+  \cmidrule(lr){3-5} \cmidrule(lr){6-8} \cmidrule(lr){9-11}
+   &  & \textbf{Slice} & \textbf{Dice} & \textbf{Total} &
+        \textbf{Slice} & \textbf{Roulette} & \textbf{Total} &
+        \textbf{Trans.} & \textbf{Judg.} & \textbf{Total} \\
+  \midrule
+  DT$_{50}$         & Ind  & 0.006 & 0.094 & \textbf{0.100} & 0.004 & 0.156 & 0.160 & 0.765 & 0.029 & 0.793 \\
+                    & BN1  & 0.007 & 0.079 & \textbf{0.086} & 0.006 & 0.451 & 0.457 & 1.646 & 0.085 & 1.731 \\
+                    & BN2  & 0.007 & 0.083 & \textbf{0.090} & 0.006 & 0.403 & 0.409 & 1.580 & 0.080 & 1.660 \\
+  \midrule
+  DT$_{100}$        & Ind  & 0.011 & 0.138 & \textbf{0.149} & 0.011 & 0.654 & 0.665 & 1.455 & 0.036 & 1.490 \\
+                    & BN1  & 0.015 & 0.148 & \textbf{0.163} & 0.016 & 1.775 & 1.791 & 2.867 & 0.150 & 3.017 \\
+                    & BN2  & 0.017 & 0.153 & \textbf{0.170} & 0.016 & 1.775 & 1.791 & 2.914 & 0.152 & 3.066 \\
+  \midrule
+  DT$_{200}$        & Ind  & 0.045 & 0.289 & \textbf{0.334} & 0.045 & 4.089 & 4.134 & 2.710 & 0.059 & 2.770 \\
+                    & BN1  & 0.064 & 0.322 & \textbf{0.386} & 0.064 & 9.496 & 9.560 & 5.836 & 0.318 & 6.154 \\
+                    & BN2  & 0.068 & 0.305 & \textbf{0.373} & 0.068 & 9.556 & 9.624 & 5.797 & 0.302 & 6.099 \\
+  \midrule
+  DT$_{500}$        & Ind  & 0.479 & 0.879 & \textbf{1.358} & 0.515 & 55.677 & 56.192 & 7.908 & 0.141 & 8.049 \\
+                    & BN1  & 0.599 & 0.961 & \textbf{1.560} & 0.636 & 113.426 & 114.062 & 15.017 & 0.787 & 15.804 \\
+                    & BN2  & 0.616 & 0.999 & \textbf{1.615} & 0.610 & 112.976 & 113.586 & 15.330 & 0.889 & 16.219 \\
+  \midrule
+  DT$_{800}$        & Ind  & 1.738 & 1.592 & \textbf{3.330} & 1.738 & t.o. & t.o. & 14.698 & 0.238 & 14.937 \\
+                    & BN1  & 2.184 & 1.690 & \textbf{3.874} & 2.184 & t.o. & t.o. & 26.297 & 1.265 & 27.561 \\
+                    & BN2  & 2.151 & 1.704 & \textbf{3.855} & 2.151 & t.o. & t.o. & 26.542 & 1.298 & 27.840 \\
+  \midrule
+  DT$_{1000}$       & Ind  & 3.584 & 2.096 & \textbf{5.680} & 3.584 & t.o. & t.o. & 17.626 & 0.279 & 17.905 \\
+                    & BN1  & 4.125 & 2.192 & \textbf{6.317} & 4.125 & t.o. & t.o. & 33.417 & 1.537 & 34.954 \\
+                    & BN2  & 4.052 & 2.152 & \textbf{6.204} & 4.052 & t.o. & t.o. & 34.225 & 1.612 & 35.837 \\
+  \midrule
+  DT$_{2000}$       & Ind  & 26.791 & 4.607 & \textbf{31.398} & 26.791 & t.o. & t.o. & 44.957 & 0.786 & 45.742 \\
+                    & BN1  & 29.148 & 4.726 & \textbf{33.874} & 29.148 & t.o. & t.o. & 84.744 & 3.227 & 87.972 \\
+                    & BN2  & 30.353 & 4.715 & \textbf{35.068} & 30.353 & t.o. & t.o. & 76.398 & 3.152 & 79.550 \\
+  \midrule
+  DT$_{5000}$       & Ind  & t.o. & t.o. & \textbf{t.o.} & t.o. & t.o. & \textbf{t.o.} & err. & err. & \textbf{err.} \\
+                  & BN1  & t.o. & t.o. & \textbf{t.o.} & t.o. & t.o. & \textbf{t.o.} & err. & err. & \textbf{err.} \\
+                  & BN2  & t.o. & t.o. & \textbf{t.o.} & t.o. & t.o. & \textbf{t.o.} & err. & err. & \textbf{err.} \\
+  \bottomrule
+  \end{tabular}
+  \caption{Execution times (seconds) for the decision tree benchmarks, with a timeout of 120s. For $DT_{5000}$ under our setup, SPPL returned a maximum recursion depth exceeded error (reported as \texttt{err.}).}
+  \label{tab:benchmarks_dt_extra}
 \end{table}
 
-
-\subsection{Baseline Benchmarks}
-%We finally evaluate \Slice{} on a set of benchmarks that were introduced in~\cite{gehr2016psi}. We evaluate \Slice{} on the hybrid programs in these benchmarks. The results are shown in Table 2. We omit the runs of PSI in the table due to its significantly slower performance than SPPL on all benchmarks. The first column in the table gives the benchmark name, and the remaining columns display the execution times in seconds of Slice with Dice, Slice with Roulette, and SPPL respectively. As both SPPL and \Slice{} are restricted languages, in order to test a broader range of programs, we converted several benchmarks with parameters inside distributions that depend on continuous random choices to a discretized version. The time taken by \Slice{} to solve these problems is nearly instant in all cases. 
-
-\Cref{tab:benchmarks_psi} reports representative runtimes for benchmarks containing at least one continuous distribution, drawn from the \PSI{} and \SPPL{} benchmark sets. \Slice{} handles the benchmarks in this subset that fit its current fragment; in particular, programs requiring numeric-transformation support remain outside the automatically discretized subset. We report (i) \Slice{}+\Dice{}, (ii) \Slice{}+\Roulette{}, and (iii) \SPPL{} in seconds. We omit \PSI{} runtimes in this snapshot for brevity. The second column shows the number of datasets on which to condition the program.
+\subsection{Baselines}
+We finally evaluate \Slice{} on a set of benchmarks that were introduced in~\cite{gehr2016psi,Saad2021SPPL}. We evaluate \Slice{} on the hybrid programs in these benchmarks. The results are shown in~\Cref{tab:benchmarks_dt}. We omit the runs of PSI in the table due to its significantly slower performance than SPPL on all benchmarks. The first column in the table gives the benchmark name, the second column shows the number of datasets on which to condition the program, and the remaining columns display the execution times in seconds of \Slice{}+\Dice{}, \Slice{}+\Roulette{}, and \SPPL{}, respectively. 
 
 \begin{table}[!t]
 \centering \vspace{-.3cm}
@@ -1337,7 +1321,7 @@ Tables~\ref{tab:benchmarks_dt} and~\ref{tab:benchmarks_dt_extra} show the decisi
     \bottomrule
     \end{tabular}  
 }  
-\caption{Representative execution times (seconds) for benchmarks from PSI~\cite{gehr2016psi} and SPPL~\cite{Saad2021SPPL}. Parenthesized factors provide SPPL-relative runtime context for each benchmark.}
+\caption{Representative execution times (seconds) for benchmarks from PSI~\cite{gehr2016psi} and SPPL~\cite{Saad2021SPPL}.}
     \label{tab:benchmarks_psi}
 \end{table}
 
