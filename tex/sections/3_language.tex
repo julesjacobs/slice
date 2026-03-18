@@ -244,7 +244,7 @@ Now, if $e_1 : \float[B; V_1]$ and $e_2 : \float[B; V_2]$, then $\answerslt{B}{V
 
 \begin{enumerate}
 	\item If $B = \top$, then no discretization is performed, and the comparison can just be performed on the real-valued expression.
-	\item If $B \neq \top$ and $V_2 \neq \top$, then the expression is discretized into intervals as determined by $B$, but in this case the right hand side can only take on values in $V_2$. In this case, all $\clt{x}$ for $x \in V_2$ must be contained in $B$, which means that the value of $e_2$ can be exactly recovered from its interval index.
+	\item If $B \neq \top$ and $V_2 \neq \top$, then the expression is discretized into intervals as determined by $B$, but in this case the right-hand side can only take on values in $V_2$. In this case, all $\clt{x}$ for $x \in V_2$ must be contained in $B$, which means that the value of $e_2$ can be exactly recovered from its interval index.
 	Then, given the previous observation, we can determine the comparison result by comparing the interval index of $e_1$ to the interval index of $e_2$.
 	\item If $B \neq \top$ and $V_1 \neq \top$, then the situation is similar to the previous case.
 \end{enumerate}
@@ -266,7 +266,7 @@ Finally, for non-strict comparisons, the rule is analogous to \Cref{def:answers-
 \input{figures/typing-general-core}
 
 \paragraph{Subtyping.}
-The type system includes a subtyping relation that captures when one type can be replaced by another. The subtyping rules are shown in Figure~\ref{fig:subtyping}. For float types $\float[B;V]$, subtyping follows the lattice ordering on $V$: An expression known to range over some set of values can also be considered to range over a superset of those values. For $B$, we require equality to make sure that the discretized representation of the expression is not changed by subtyping.
+The type system includes a subtyping relation that captures when one type can be replaced by another. The subtyping rules are shown in Figure~\ref{fig:subtyping}. For float types $\float[B;V]$, subtyping follows the lattice ordering on $V$: an expression known to range over some set of values can also be considered to range over a superset of those values. For $B$, we require equality to make sure that the discretized representation of the expression is not changed by subtyping.
 
 All other typing rules are standard and depicted in Figure \ref{fig:typing-general} and Appendix~\ref{appen:typing-rules}, respectively.
 
