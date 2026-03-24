@@ -442,7 +442,7 @@ def generate_line_graphs(benchmark_results, output_path,
         'axes.titlesize': 36,     # plot title (if any)
         'xtick.labelsize': 30,    # x tick labels
         'ytick.labelsize': 30,    # y tick labels
-        'legend.fontsize': 24,    # legend text
+        'legend.fontsize': 28,    # legend text
         'lines.markersize': 8     # marker size
     })
     

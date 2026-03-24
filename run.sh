@@ -64,7 +64,11 @@ if [ "$RUN_STORM" = true ]; then
   TRA="${EXAMPLE_ABS}.tra"
   LAB="${EXAMPLE_ABS}.lab"
 
-  ./_build/default/bin/main.exe --storm "$EXAMPLE_ABS"
+  if [ "$TIME_FLAG" = true ]; then
+    ./_build/default/bin/main.exe --storm --time "$EXAMPLE_ABS"
+  else
+    ./_build/default/bin/main.exe --storm "$EXAMPLE_ABS"
+  fi
 
   if [ ! -f "$TRA" ]; then
     echo "Error: missing transition file: $TRA" >&2

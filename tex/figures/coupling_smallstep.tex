@@ -266,7 +266,7 @@
 			& o.w.\ &
 			\makecell[l]{%
 			$\sem{ e : \listty{\tau_1}, \discretize{e} : \listty{\discretize{\tau_1}} }$ \\
-			$\monbind \lambda (g,g').\dirac{\begin{array}{l}
+			$\monbind \lambda (g,g').\dirac{\begin{subarray}{l}
 			(\matchkw\; g\; \withkw\;
 				\matchcase \text{nil} \rightarrow e_1 : \tau_2\;
 				\matchcase h::t \rightarrow e_2 : \tau_2\;
@@ -275,7 +275,7 @@
 				\matchcase \text{nil} \rightarrow \discretize{e_1 : \tau_2} : \discretize{\tau_2}\;
 				\matchcase h::t \rightarrow \discretize{e_2 : \tau_2} : \discretize{\tau_2}\;
 			{\textnormal{\ttfamily\bfseries end}} : \discretize{\tau_2})
-			\end{array}}$} \\
+			\end{subarray}}$} \\
 			%
 			\bottomrule
 			\bottomrule

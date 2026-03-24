@@ -584,7 +584,7 @@ This union is disjoint because every typed expression $e : \tau$ has a unique sk
 	Let $C \in \mathcal{F}_{Expr_{\tau} + \bot}$. There are two cases:
 
 	\begin{itemize}
-		\item If $C = A$: Then, $(Expr_{\tau} + \bot) \setminus A = (Expr_{\tau} \setminus A) \cup \{\bot\}$. Since $\mathcal{F}_Expr_{\tau}$ is a $\sigma$-algebra, $Expr_{\tau} \setminus A \in \mathcal{F}_{Expr_{\tau}}$, so $(Expr_{\tau} \setminus A) \cup \{\bot\}$ is of the form $A \cup \{\bot\}$ for some $A \in \mathcal{F}_{Expr_{\tau}}$ and hence lies in $\mathcal{F}_{Expr_{\tau} + \bot}$.
+		\item If $C = A$: Then, $(Expr_{\tau} + \bot) \setminus A = (Expr_{\tau} \setminus A) \cup \{\bot\}$. Since $\mathcal{F}_{Expr_{\tau}}$ is a $\sigma$-algebra, $Expr_{\tau} \setminus A \in \mathcal{F}_{Expr_{\tau}}$, so $(Expr_{\tau} \setminus A) \cup \{\bot\}$ is of the form $A \cup \{\bot\}$ for some $A \in \mathcal{F}_{Expr_{\tau}}$ and hence lies in $\mathcal{F}_{Expr_{\tau} + \bot}$.
 		
 		\item If $C = A \cup \{\bot\}$: Then, $(Expr_{\tau} + \bot) \setminus (A \cup \{\bot\}) = Expr_{\tau} \setminus A$. Since $\mathcal{F}_{Expr_{\tau}}$ is a $\sigma$-algebra, $Expr_{\tau} \setminus A \in \mathcal{F}_{Expr_{\tau}}$, so $Expr_{\tau} \setminus A$ is of the form $A$ for some $A \in \mathcal{F}_{Expr_{\tau}}$ and hence lies in $\mathcal{F}_{Expr_{\tau} + \bot}$.
 	\end{itemize}
@@ -594,7 +594,7 @@ This union is disjoint because every typed expression $e : \tau$ has a unique sk
 
 	\paragraph{(iii) Closure under countable unions:}
 
-	Let $(C_n)_{n \in \Nats}$ be a sequence with $C_n\in\mathcal{F}_{Expr_\tau+\bot}$ for all $n$. For each $n$, write $C_n = A_n$ or $C_n = A_n\cup\{\bot\}$ for some $A_n\in\mathcal{F}_{Expr_\tau}$. In either case, $C_n\cap Expr_\tau = A_n\in\mathcal{F}_{Expr_\tau}$.
+	Let $(C_n)_{n \in \Nats}$ be a sequence with $C_n\in\mathcal{F}_{Expr_\tau+\bot}$ for all $n$. For each $n$, define $A_n := C_n \cap Expr_\tau \in \mathcal{F}_{Expr_\tau}$, where the latter holds since $C_n$ is of the form $A$ or $A \cup \{\bot\}$ for some $A \in \mathcal{F}_{Expr_\tau}$, and in either case $C_n \cap Expr_\tau = A$.
 
 	Let $A := \bigcup_{n\in\mathbb{N}} A_n$. Since $\mathcal{F}_{Expr_\tau}$ is a $\sigma$-algebra, $A\in\mathcal{F}_{Expr_\tau}$. Now observe:
 	\[
@@ -609,7 +609,7 @@ Finally, we can equip this measurable space $(Expr_{\tau} + \bot, \mathcal{F}_{E
 
 We give some basic lemmas:
 
-\begin{lemma}
+\begin{lemma}\label{lem:measurable-subsets}
 	Let $(Expr_{\tau} + \bot, \mathcal{F}_{Expr_{\tau} + \bot})$ be the Borel measurable space of well-typed expressions with error from Definition~\ref{def:meas-space-with-error}. Let $\vals_{\tau} \subset Expr_{\tau}$ be the set of all well-typed value expressions. Let $N_{\tau} \subset Expr_{\tau}$, defined as $N = Expr_{\tau} \setminus \vals_{\tau}$, be the set of all well-typed non-value expressions. Let $\{\bot\}$ be the singleton set containing the error element $\bot$. The following are true:
 	\begin{enumerate}
 		\item\label{lem:measurable-vals} The set $\vals_{\tau} \in \mathcal{F}_{Expr_{\tau} + \bot}$.
@@ -1282,7 +1282,7 @@ The missing probability mass in $\sem{e :\tau}$ is the probability of encounteri
 \end{proof}
 
 \begin{lemma}[Small-step semantics is a Markov kernel]\label{lem:small-step-kernel}
-    For each type $\tau$, the small-step operational semantics $\sem{e : \tau} \colon Expr_{\tau} \to \mathcal{D}(Expr_{\tau} + \bot)$ defines a Markov kernel.
+    For each type $\tau$, the small-step operational semantics $\sem{\cdot} \colon Expr_{\tau} \to \mathcal{D}(Expr_{\tau} + \bot)$ defines a Markov kernel.
 \end{lemma}
 \begin{proof}
     By induction on the typing derivation of $e : \tau$. We show in each case that the map $e \mapsto \sem{e : \tau}$ is a Markov kernel.
@@ -1360,8 +1360,8 @@ Define $P_\tau = \{ (e:\tau, \discretize{e:\tau} : \discretize{\tau}) ~|~ e:\tau
 %\kevin{todo: the following must be measurable} \\
 %Define $P_\tau = \{ (e:\tau, \discretize{e} : \discretize{\tau}) ~|~ e:\tau \}$.
 
-\begin{lemma}\label{lem:bind-kernel-coupling}
-	For every occurrence of a monadic bind $\mu \monbind (f,f')$ given in the small-step operational coupling semantics in~\Cref{tab:coupling_smallstep_1,tab:coupling_smallstep_2}, $(f,f') \colon (P_{\tau} + \bot) \to \mathcal{D}(P_{\tau} + \bot)$ is a Markov kernel.
+\begin{lemma}[Monadic bind is a Markov kernel]\label{lem:bind-kernel-coupling}
+	For every occurrence of a monadic bind $\mu \monbind (f,f')$ given in the small-step operational coupling semantics in~\Cref{tab:coupling_smallstep_1,tab:coupling_smallstep_2}, $(f,f') \colon (P_{\tau_1} + \bot) \to \mathcal{D}(P_{\tau_2} + \bot)$ is a Markov kernel.
 \end{lemma}
 
 \begin{proof}
@@ -1369,7 +1369,7 @@ Define $P_\tau = \{ (e:\tau, \discretize{e:\tau} : \discretize{\tau}) ~|~ e:\tau
 \end{proof}
 
 \begin{lemma}[Small-step coupling semantics is a Markov kernel]\label{lem:small-step-coupling-kernel}
-	For each type $\tau$, the small-step operational coupling semantics $\sem{e : \tau, \discretize{e : \tau} : \discretize{\tau}} \colon (P_{\tau}, \mathcal{F}_{P_{\tau}})$ to $(P_{\tau} + \bot, \mathcal{F}_{P_{\tau} + \bot})$ defines a Markov kernel.
+	For each type $\tau$, the small-step operational coupling semantics $\sem{\cdot, \cdot} \colon P_{\tau} \to \mathcal{D}(P_\tau + \bot)$ defines a Markov kernel.
 \end{lemma}
 
 \begin{proof}
@@ -1388,7 +1388,7 @@ We now define suitable projection functions on measures $\mu \in \mathcal{D}(P_{
 %
 We have the following key property:
 %
-\begin{lemma}
+\begin{lemma}[Small-step coupling projection]
 	\label{lem:small_step_coupling_props}
 	Let $e:\tau$. We have:
 	%
@@ -1616,7 +1616,7 @@ We extend both of the small-step semantics canonically to an $n$-step semantics 
 %
 As a sanity check, we show that the $n$-step semantics defines a Markov kernel.
 
-\begin{lemma}\label{lem:big-step-n-kernel}
+\begin{lemma}[$n$-step semantics is a Markov kernel]\label{lem:big-step-n-kernel}
 	For all $n \in \Nats$, $\bigsemstep{\cdot}{n} : Expr_{\tau} \to \mathcal{D}(Expr_{\tau} + \bot)$ is a Markov kernel.
 \end{lemma}
 
@@ -1638,8 +1638,8 @@ As a sanity check, we show that the $n$-step semantics defines a Markov kernel.
 	By the I.H., $\bigsemstep{\cdot}{n-1} \colon Expr_{\tau} \to \mathcal{D}(Expr_{\tau} + \bot)$ is a Markov kernel. By~\Cref{lem:small-step-kernel}, $\lambda e' .\sem{e' : \tau} : Expr_{\tau} \to \mathcal{D}(Expr_{\tau} + \bot)$ is a Markov kernel. By~\Cref{lem:bot-extension-kernel}, its $\bot$-extension from $(Expr_{\tau} + \bot)$ to $\mathcal{D}(Expr_{\tau} + \bot)$ is also a Markov kernel. By~\Cref{lem:kernel-composition}, $\bigsemstep{e : \tau}{n-1} \monbind  \lambda e'. \sem{e' : \tau}$ is a Markov kernel.
 \end{proof}
 
-\begin{lemma}\label{lem:big-step-n-coupling-kernel}
-	For all $n \in \Nats$, $\bigsemstep{\cdot, \discretize{\cdot}}{n} : P_{\tau} \to \mathcal{D}(P_{\tau} + \bot)$ is a Markov kernel.
+\begin{lemma}[$n$-step coupling semantics is a Markov kernel]\label{lem:big-step-n-coupling-kernel}
+	For all $n \in \Nats$, $\bigsemstep{\cdot, \cdot}{n} : P_{\tau} \to \mathcal{D}(P_{\tau} + \bot)$ is a Markov kernel.
 \end{lemma}
 
 \begin{proof}
@@ -1647,7 +1647,7 @@ As a sanity check, we show that the $n$-step semantics defines a Markov kernel.
 \end{proof}
 
 
-For every type $\tau$, we denote by $\vals_\tau$ the set of values of type $\tau$ and equip it with a suitable measurable sub-space of the measurable space over $Expr_\tau + \bot$ (cf.~\Cref{lem:measurable-vals}). Moreover, let $V_\tau = \{ (v:\tau, \discretize{v} : \discretize{\tau}) ~|~ v:\tau \}$.
+For every type $\tau$, we denote by $\vals_\tau$ the set of values of type $\tau$ and equip it with a suitable measurable sub-space of the measurable space over $Expr_\tau + \bot$ (cf. \Cref{lem:measurable-subsets}.\ref{lem:measurable-vals}). Moreover, let $V_\tau = \{ (v:\tau, \discretize{v} : \discretize{\tau}) ~|~ v:\tau \}$.
 
 
 \begin{lemma}[Basic Properties of $\bigsemstep{\cdot}{n}$]
@@ -1761,15 +1761,15 @@ For every type $\tau$, we denote by $\vals_\tau$ the set of values of type $\tau
 
 
 \begin{lemma}[Basic properties of $\bigsemstep{\cdot, \cdot}{n}$]
-	Let $(e : \tau, \discretize{e'} : \discretize{\tau'}) \in P_{\tau}$ and $n \in \mathbb{N}$. Let $V_{\tau}$ be the measurable set of value pairs. We have:
+	Let $(e : \tau, \discretize{e} : \discretize{\tau}) \in P_{\tau}$ and $n \in \mathbb{N}$. Let $V_{\tau}$ be the measurable set of value pairs. We have:
 	\begin{enumerate}
-		\item\label{lem:bigstepsem1-pairing} $\bigsemstep{e : \tau, \discretize{e'} : \discretize{\tau'}}{n}(V_{\tau}) \leq \bigsemstep{e : \tau, \discretize{e'} : \discretize{\tau'}}{n+1}(V_{\tau})$
-		\item\label{lem:bigstepsem2-pairing} $\bigsemstep{e : \tau, \discretize{e'} : \discretize{\tau'}}{n}(\bot) \leq \bigsemstep{e : \tau, \discretize{e'} : \discretize{\tau'}}{n+1}(\bot)$
+		\item\label{lem:bigstepsem1-pairing} $\bigsemstep{e : \tau, \discretize{e} : \discretize{\tau}}{n}(V_{\tau}) \leq \bigsemstep{e : \tau, \discretize{e} : \discretize{\tau}}{n+1}(V_{\tau})$
+		\item\label{lem:bigstepsem2-pairing} $\bigsemstep{e : \tau, \discretize{e} : \discretize{\tau}}{n}(\bot) \leq \bigsemstep{e : \tau, \discretize{e} : \discretize{\tau}}{n+1}(\bot)$
 	\end{enumerate}
 \end{lemma}
 
 \begin{proof}
-	By induction on $n$. Similar to proof for single case.
+	By induction on $n$. Analogous to proof of~\Cref{lem:bigstepsem}.
 \end{proof}
 
 
@@ -1813,7 +1813,7 @@ By~\Cref{lem:bigstepsem1,lem:bigstepsem2}, the sequence $\bigsemstep{e : \tau}{n
 	as desired.
 \end{proof}
 
-\begin{lemma}[n-step projection]
+\begin{lemma}[$n$-step coupling projection]
 	\label{lem:proj_cont}
 	For all $n \in \Nats$, 
 	\begin{enumerate}
@@ -1829,7 +1829,7 @@ By~\Cref{lem:bigstepsem1,lem:bigstepsem2}, the sequence $\bigsemstep{e : \tau}{n
 	\underline{Base case:} $n=0$
 	\begin{align*}
 		&\pi_1\!\left(\bigsemstep{e:\tau,\,\discretize{e'}:\discretize{\tau'}}{0}\right) \\
-		= \quad&\pi_1(\delta_{(e:\tau,\,\discretize{e'}:\discretize{\tau'})}) \tag{definition of $n$-step pairing semantics}\\
+		= \quad&\pi_1(\delta_{(e:\tau,\,\discretize{e'}:\discretize{\tau'})}) \tag{definition of $n$-step coupling semantics}\\
 		= \quad&\delta_{e:\tau} \tag{projection of Dirac} \\
 		= \quad&\bigsemstep{e:\tau}{0}. \tag{definition of $n$-step semantics}\\
 	\end{align*}
@@ -1838,7 +1838,7 @@ By~\Cref{lem:bigstepsem1,lem:bigstepsem2}, the sequence $\bigsemstep{e : \tau}{n
 	\begin{align*}
 		&\pi_1\!\left(\bigsemstep{e:\tau,\,\discretize{e'}:\discretize{\tau'}}{n}\right) \\
 		%
-		= \quad&\pi_1(\bigsemstep{e : \tau, \discretize{e} : \discretize{\tau}}{n-1} \monbind  \lambda (f, g). \sem{f : \tau, g : \discretize{\tau}}) \tag{definition of $n$-step pairing semantics}\\
+		= \quad&\pi_1(\bigsemstep{e : \tau, \discretize{e} : \discretize{\tau}}{n-1} \monbind  \lambda (f, g). \sem{f : \tau, g : \discretize{\tau}}) \tag{definition of $n$-step coupling semantics}\\
 		%
 		= \quad&(\bigsemstep{e : \tau, \discretize{e} : \discretize{\tau}}{n-1} \monbind  \lambda (f, g). \sem{f : \tau, g : \discretize{\tau}}) \monbind \lambda (f,g).\dirac{f} \tag{by (2)} \\
 		%
@@ -1846,7 +1846,7 @@ By~\Cref{lem:bigstepsem1,lem:bigstepsem2}, the sequence $\bigsemstep{e : \tau}{n
 		%
 		= \quad&\bigsemstep{e : \tau, \discretize{e} : \discretize{\tau}}{n-1} \monbind  \lambda (f, g). \pi_1(\sem{f,g}) \tag{by (2)}\\
 		%
-		= \quad&\bigsemstep{e : \tau, \discretize{e} : \discretize{\tau}}{n-1} \monbind  \lambda (f, g). \sem{f} \tag{\Cref{lem:small_step_coupling_props1}}\\
+		= \quad&\bigsemstep{e : \tau, \discretize{e} : \discretize{\tau}}{n-1} \monbind  \lambda (f, g). \sem{f} \tag{\Cref{lem:small_step_coupling_props}.\ref{lem:small_step_coupling_props1}}\\
 		%
 		= \quad&\bigsemstep{e : \tau, \discretize{e} : \discretize{\tau}}{n-1} \monbind  \lambda (f, g). (\dirac{f} \monbind \lambda f.\sem{f}) \tag{monad unit}\\
 		%
@@ -1895,7 +1895,7 @@ By~\Cref{lem:bigstepsem1,lem:bigstepsem2}, the sequence $\bigsemstep{e : \tau}{n
 
 The following will imply our desired equivalence claim:
 
-\begin{lemma}[Coupling projection for big-step]\label{lem:big_step_coupling_props}
+\begin{lemma}[Big-step coupling projection]\label{lem:big_step_coupling_props}
 	Let $\bigsem{e : \tau, \discretize{e'} : \discretize{\tau'}} \in \mathcal{D}(P_{\tau} + \bot)$. Then,
 	\begin{enumerate}
 		\item\label{lem:big_step_coupling_props1} $\pi_1(\bigsem{e : \tau, \discretize{e'} : \discretize{\tau'}}) = \bigsem{e : \tau}$
@@ -1906,7 +1906,7 @@ The following will imply our desired equivalence claim:
 \begin{proof}
 	\begin{align*}
 		&\pi_1(\bigsem{e : \tau, \discretize{e'} : \discretize{\tau'}}) \\
-		&= \pi_1(\lim_{n \to \infty} \bigsemstep{e : \tau, \discretize{e'} : \discretize{\tau'}}{n}) \tag{by defintion of big-step pairing semantics} \\
+		&= \pi_1(\lim_{n \to \infty} \bigsemstep{e : \tau, \discretize{e'} : \discretize{\tau'}}{n}) \tag{by defintion of big-step coupling semantics} \\
 		&= \lim_{n \to \infty} \pi_1(\bigsemstep{e : \tau, \discretize{e'} : \discretize{\tau'}}{n}) \tag{by communitivity lemma} \\
 		&= \lim_{n \to \infty} \bigsemstep{e : \tau}{n} \tag{by definition of n-step projection lemma} \\
 		&= \bigsem{e : \tau} \tag{by definition of big-step semantics}

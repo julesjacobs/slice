@@ -733,79 +733,94 @@ The typing rules for general language constructs is given in \Cref{fig:typing-ge
 % \end{proof}
 
 
-\section{Proofs for Discretization}
+\section{Discretization Proofs}
 \subsection{Proof of Lemma~\ref{lem:type-transformations}}
+\begin{theorem}[Discretization Is Well-Typed]
+	Let $\Gamma \vdash e : \tau$. We have
+	$
+	\discretize{\Gamma} \vdash \discretize{e : \tau} : \discretize{\tau},
+	$
+	where $\discretize{\Gamma}$ transforms all types in $\Gamma$, i.e., $\discretize{\Gamma}(x) = \discretize{\Gamma(x)}$ for all $x \in \textnormal{dom}(\Gamma)$.
+\end{theorem}
+
 \begin{proof}\label{proof:type-transformations}
-    We proceed by induction on the structure of the typing derivation $\Gamma \vdash e : \tau$. That is, we match each typing rule and show that it remains valid after applying $\discretize{\cdot}$ to the context, expression, and type.
-    
-    \textbf{Case 1:} $e = x$
-    \begin{itemize}
-        \item We have that $\discretize{x : \tau} = x$, and since $\Gamma(x) = \tau$, we have that $\discretize{\Gamma}(x) = \discretize{\tau} = \tau$ for $x \in \text{dom}(\Gamma)$. Thus, $\discretize{\Gamma} \vdash x : \discretize{\tau}$.
-    \end{itemize}
-
-    \textbf{Case 2:} $e = (c : \float[B;V])$
-    \begin{itemize}
-        \item If $B = \top$, then $\discretize{c : \float[B;V]} = c$, and $\discretize{\float[B;V]} = \float$. As per the float typing rules in Figure~\ref{fig:typing-float}, $c$ is a constant of type $\float$.
-        \item If $B \neq \top$, then $\discretize{e : \float[B;V]} = \finconst{k}{n+1}$ for some $k$ such that $c \in \intervals{B}_k$, and $\discretize{\float[B;V]} = \fin{n+1}$. As per the typing rules in Figure~\ref{fig:typing-general}, $\finconst{k}{n+1}$ is a constant of type $\fin{n+1}$.
-    \end{itemize}
-
-    \textbf{Case 3:} $e = (\letkw \; x = e_1 : \tau_1 \; \inkw \; e_2 : \tau_2)$
-    \begin{itemize}
-        \item The \textsc{Let} typing rule is shown in Figure~\ref{fig:typing-general}. By the inductive hypothesis, we assume $\discretize{\Gamma} \vdash \discretize{e_1 : \tau_1} : \discretize{\tau_1}$ and $\discretize{\Gamma, x : \tau_1} \vdash \discretize{e_2 : \tau_2} : \discretize{\tau_2}$. Then, we can conclude:
-        \[ \discretize{\Gamma} \vdash \letkw \; x = \discretize{e_1 : \tau_1} \; \inkw \; \discretize{e_2 : \tau_2} : \discretize{\tau_2}. \]
-    \end{itemize}
-
-    \textbf{Case 4:} $e = (e_1 : \float[B_1; V_1] < e_2 : \float[B_2; V_2])$
-    \begin{itemize}
-        \item The \textsc{Less} typing rule is shown in Figure~\ref{fig:typing-float}. By the inductive hypothesis, we assume $\discretize{\Gamma} \vdash \discretize{e_1 : \tau_1} : \discretize{\tau_1}$ and $\discretize{\Gamma} \vdash \discretize{e_2 : \tau_2} : \discretize{\tau_2}$, where $\tau_1$ and $\tau_2$ are $\float[B_1;V_1]$ and $\float[B_2;V_2]$, respectively. Since both discretized expressions are either floats or finite-typed values, the comparison remains well-typed under standard typing rules:
-        \[
-        \discretize{\Gamma} \vdash \discretize{e_1 : \float[B_1; V_1]} < \discretize{e_2 : \float[B_2; V_2]} : \discretize{\bool}.
-        \]
-    \end{itemize}
-
-    \textbf{Case 5:} $e = (\ifkw\; e_1 : \bool \; \thenkw\; e_2 : \tau \; \elsekw\; e_3 : \tau)$
-
-    \begin{itemize}
-        \item The \textsc{If} typing rule is shown in Figure~\ref{fig:typing-general}. By the inductive hypothesis, we assume $\discretize{\Gamma} \vdash \discretize{e_1 : \bool} : \discretize{\bool}$, $\discretize{\Gamma} \vdash \discretize{e_2 : \tau} : \discretize{\tau}$, and $ \discretize{\Gamma} \vdash \discretize{e_3 : \tau} : \discretize{\tau}$. Then, we can conclude:
-        \[
-            \discretize{\Gamma} \vdash \ifkw\; \discretize{e_1 : \bool} \; \thenkw\; \discretize{e_2 : \tau} \; \elsekw\; \discretize{e_3 : \tau} : \discretize{\tau}
-        \]
-    \end{itemize}
-
-    \textbf{Case 6:} $e = (\uniform(e_1, e_2) : \float[B;V])$
-
-    \begin{itemize}
-        \item If $B = \top$, then $\discretize{\float[B;V]} = \float$, and thus:
-        \[
-            \discretize{\uniform(e_1, e_2) : \float[B;V]} = \uniform(\discretize{e_1 : \tau_1}, \discretize{e_2 : \tau_2}) : \float
-        \]
-        and by the inductive hypothesis, both $e_1$ and $e_2$ with their respective types $\tau_1 = \float[B_1; V_1]$ and $\tau_2 = \float[B_2; V_2]$ are well-typed, so the result is well-typed under the float rule.
-
-        \item If $B \neq \top$ and $e_1, e_2 \in \mathbb{R}$, then $\discretize{\float[B;V]} = \fin{n+1}$, and thus:
-        \[
-            \discretize{\uniform(e_1, e_2) : \float[B;V]} = \discrete(p_0, \ldots, p_n) : \fin{n+1}
-        \]
-        and each $p_k = \text{CDF}(b_{k+1}) - \text{CDF}(b_k)$ satisfies $p_k \in [0,1]$ and $\sum p_k = 1$, so this is well-typed as a finite distribution.
-
-        \item If $B \neq \top$, and $e_1$ or $e_2$ is variable, then the algorithm generates conditionals to evaluate the possible values from $V_1$ and $V_2$ using fresh variables $v_1'$ and $v_2'$, and dispatches to an appropriate discretization of $\uniform$ with constant parameters in each branch. Each branch is well-typed by the inductive hypothesis, and the full expression is well-typed via the typing rules for conditionals and finite types.
-    \end{itemize}
-
-    % \textbf{Case 7:} Compound types (functions, pairs, lists, references)
-
-    % \begin{itemize}
-    %     \item These follow directly by applying $\discretize{\cdot}$ recursively on the subcomponents of the type and expression. By the inductive hypothesis on each subterm, the transformed expression is well-typed under the transformed type. For instance:
-    %     \begin{itemize}
-    %         \item If $\tau = A \to B$, then $\discretize{\tau} = \discretize{A} \to \discretize{B}$ and function abstraction preserves typing.
-    %         \item If $\tau = A \times B$, then $\discretize{e} = (\discretize{e_1}, \discretize{e_2})$ is typed under $\discretize{A} \times \discretize{B}$.
-    %         \item Likewise for lists $\listty{A}$ and references $\texttt{ref}(A)$.
-    %     \end{itemize}
-    % \end{itemize}
-
-    Hence, each case of the typing derivation is preserved under $\discretize{\cdot}$, which acts on expressions $e : \tau$, types $\tau$, and the context $\Gamma$. Therefore,
-    \[
-    \discretize{\Gamma} \vdash \discretize{e : \tau} : \discretize{\tau}.
-    \]
-
+  We proceed by induction on the structure of the typing derivation $\Gamma \vdash e : \tau$, matching each case of the discretization function $\discretize{\cdot}$ defined in Figure~\ref{fig:discretization-code}.
+  
+  \medskip
+  \textbf{Case} $e = x$.
+  Since $\Gamma(x) = \tau$, we have $\discretize{\Gamma}(x) = \discretize{\tau}$. Moreover, $\discretize{x : \tau} = x$, so $\discretize{\Gamma} \vdash x : \discretize{\tau}$.
+  
+  \medskip
+  \textbf{Case} $e = (c : \float[B;V])$.
+  The \textsc{Float-Const} rule was applied, so $\has{V}{c}$ holds.
+  \begin{itemize}
+      \item If $B = \top$: then $\discretize{c : \float[B;V]} = c$ and $\discretize{\float[B;V]} = \float$. Since $\has{V}{c}$ still holds, $c$ is well-typed at $\float$ by \textsc{Float-Const}.
+      \item If $B \neq \top$: then $\discretize{c : \float[B;V]} = \finconst{k}{|B|+1}$ for the unique $k$ such that $c \in \intervals{B}_k$, and $\discretize{\float[B;V]} = \fin{|B|+1}$. Since $0 \leq k < |B|+1$, the finite constant $\finconst{k}{|B|+1}$ is well-typed at $\fin{|B|+1}$ by \textsc{FinConst}.
+  \end{itemize}
+  
+  \medskip
+  \textbf{Case} $e = (\letkw\; x = e_1 : \tau_1 \;\inkw\; e_2 : \tau_2)$.
+  By the inductive hypothesis,
+  \[
+      \discretize{\Gamma} \vdash \discretize{e_1 : \tau_1} : \discretize{\tau_1}
+      \quad\text{and}\quad
+      \discretize{\Gamma, x : \tau_1} \vdash \discretize{e_2 : \tau_2} : \discretize{\tau_2}.
+  \]
+  Note that $\discretize{\Gamma, x : \tau_1} = \discretize{\Gamma}, x : \discretize{\tau_1}$. Applying \textsc{Let} gives
+  \[
+      \discretize{\Gamma} \vdash \letkw\; x = \discretize{e_1 : \tau_1} \;\inkw\; \discretize{e_2 : \tau_2} : \discretize{\tau_2}.
+  \]
+  
+  \medskip
+  \textbf{Case} $e = (\ifkw\; e_1 : \bool \;\thenkw\; e_2 : \tau \;\elsekw\; e_3 : \tau)$.
+  By the inductive hypothesis, $\discretize{\Gamma} \vdash \discretize{e_i : \tau_i} : \discretize{\tau_i}$ for $i = 1, 2, 3$, where $\tau_1 = \bool$ and $\tau_2 = \tau_3 = \tau$. Since $\discretize{\bool} = \bool$, applying \textsc{If} gives
+  \[
+      \discretize{\Gamma} \vdash \ifkw\; \discretize{e_1 : \bool} \;\thenkw\; \discretize{e_2 : \tau} \;\elsekw\; \discretize{e_3 : \tau} : \discretize{\tau}.
+  \]
+  
+  \medskip
+  \textbf{Case} $e = (e_1 : \float[B; V_1] < e_2 : \float[B; V_2])$.
+  The \textsc{Less} rule was applied, so both subexpressions share the same cut set $B$ and $\answerslt{B}{V_1}{V_2}$ holds. By the inductive hypothesis, $\discretize{\Gamma} \vdash \discretize{e_i : \float[B;V_i]} : \discretize{\float[B;V_i]}$ for $i = 1, 2$.
+  \begin{itemize}
+      \item If $B = \top$: then $\discretize{\float[B;V_i]} = \float$ for both $i$, and the standard float comparison gives type $\bool = \discretize{\bool}$.
+      \item If $B \neq \top$: then both subexpressions are discretized to type $\fin{|B|+1}$, and the finite comparison $<_{\#(|B|+1)}$ is well-typed at $\bool = \discretize{\bool}$ by \textsc{FinLess}.
+  \end{itemize}
+  
+  \medskip
+  \textbf{Case} $e = (e_1 : \float[B; V_1] \leq e_2 : \float[B; V_2])$.
+  Analogous to the $<$ case, using $\answersleq{B}{V_1}{V_2}$ and \textsc{FinLessEq}.
+  
+  \medskip
+  \textbf{Case} $e = (\uniform(e_1 : \float[B_1; V_1],\; e_2 : \float[B_2; V_2]) : \float[B; \top])$.
+  The \textsc{Continuous-2} rule was applied, so $\distinguishes{B_1}{V_1}$ and $\distinguishes{B_2}{V_2}$ hold. By the inductive hypothesis, $\discretize{\Gamma} \vdash \discretize{e_i : \float[B_i;V_i]} : \discretize{\float[B_i;V_i]}$ for $i = 1, 2$. We consider each sub-case of the discretization function:
+  \begin{itemize}
+      \item $e_1, e_2 \in \mathbb{R}$ and $e_1 > e_2$: then $\discretize{\uniform(\ldots) : \float[B;\top]} = \diverge$, which is well-typed at any type by \textsc{Diverge}.
+  
+      \item $B = \top$: then $\discretize{\float[B;\top]} = \float$, and
+      \[
+          \discretize{\uniform(e_1, e_2) : \float[B;\top]} = \uniform\!\bigl(\discretize{e_1 : \float[B_1;V_1]},\, \discretize{e_2 : \float[B_2;V_2]}\bigr).
+      \]
+      Since $\distinguishes{B_1}{V_1}$ and $\distinguishes{B_2}{V_2}$ are preserved under discretization, the result is well-typed at $\float$ by \textsc{Continuous-2}.
+  
+      \item $B \neq \top$ and $e_1, e_2 \in \mathbb{R}$: then $\discretize{\float[B;\top]} = \fin{|B|+1}$, and
+      \[
+          \discretize{\uniform(e_1, e_2) : \float[B;\top]} = \discrete(p_0, \ldots, p_{|B|})
+      \]
+      where $p_k = \mathrm{CDF}(b_{k+1}) - \mathrm{CDF}(b_k)$. Each $p_k \in [0,1]$ and $\sum_k p_k = 1$, so this is well-typed at $\fin{|B|+1}$ by \textsc{Discrete}.
+  
+      \item $B \neq \top$, $B_1 \neq \top$, $B_2 \neq \top$, and $e_1$ or $e_2$ is a variable: the algorithm generates conditionals over all pairs $(v_i, w_j)$, each branch dispatching to a constant parameter in $\uniform$. By the previous sub-case, each branch $\discretize{\uniform(v_i, w_j) : \float[B;\top]}$ is well-typed at $\fin{|B|+1} = \discretize{\float[B;\top]}$. The conditional structure is well-typed by \textsc{If} (as in the $\ifkw$ case above), so the full expression is well-typed at $\discretize{\float[B;\top]}$.
+  \end{itemize}
+  
+  \medskip
+  \textbf{Case} $e$ is any other language construct (functions, pairs, lists, \emph{etc.}).
+  By definition of $\discretize{\cdot}$, the discretization recurses structurally over $e$ and $\tau$. That is, $\discretize{e : \tau}$ is formed by applying $\discretize{\cdot}$ to each subexpression and subtype of $e : \tau$, and $\discretize{\tau}$ is formed by applying $\discretize{\cdot}$ to each component type of $\tau$. The result then follows immediately by applying the inductive hypothesis to each subterm, analogous to the above cases.
+  
+  \medskip
+  \noindent
+  In every case, the typing derivation is preserved under $\discretize{\cdot}$. Therefore,
+  \[
+      \discretize{\Gamma} \vdash \discretize{e : \tau} : \discretize{\tau}. \qedhere
+  \]
 \end{proof}
 
 %\input{sections/6_soundness.tex}

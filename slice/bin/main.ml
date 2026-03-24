@@ -126,27 +126,37 @@ let process_file ~print_all ~to_sppl ~backend ~time ~storm filename
       (* Original logic: pretty print, elab, discretize, compare *)
       if print_all then Printf.printf "Source:\n%s\n\n" content;
       
-      let start_time = Unix.gettimeofday () in
+      let slice_start_time = Unix.gettimeofday () in
       let texpr = Slice.Inference.infer expr in 
       let final_type = fst texpr in 
 
 
       (* Discretize FIRST to make sure return type is not discretized *)
       let discretized_expr = Slice.Discretization.discretize_top texpr in
-      let end_time = Unix.gettimeofday () in
-
-      if time then (
-        let elapsed = end_time -. start_time in
-        Printf.eprintf "%.3f\n" elapsed;
-      );
+      let slice_end_time = Unix.gettimeofday () in
+      let slice_elapsed = slice_end_time -. slice_start_time in
       
       (* Storm backend *)
-      if storm then (
-        let mc_result = Slice.To_mc.to_mc discretized_expr in
-        let mc_path = filename ^ ".tra" in
-        Slice.To_mc.write_tra_file mc_result mc_path;
-        let lab_path = filename ^ ".lab" in
-        Slice.To_mc.write_lab_file mc_result lab_path
+      let mc_elapsed =
+        if storm then (
+          let mc_start_time = Unix.gettimeofday () in
+          let mc_result = Slice.To_mc.to_mc discretized_expr in
+          let mc_path = filename ^ ".tra" in
+          Slice.To_mc.write_tra_file mc_result mc_path;
+          let lab_path = filename ^ ".lab" in
+          Slice.To_mc.write_lab_file mc_result lab_path;
+          let mc_end_time = Unix.gettimeofday () in
+          Some (mc_end_time -. mc_start_time)
+        ) else None
+      in
+
+      if time then (
+        match mc_elapsed with
+        | Some mc_t ->
+            Printf.eprintf "slice_time=%.3f\n" slice_elapsed;
+            Printf.eprintf "mc_time=%.3f\n" mc_t
+        | None ->
+            Printf.eprintf "%.3f\n" slice_elapsed
       );
 
       if print_all then (
