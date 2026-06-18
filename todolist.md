@@ -14,8 +14,8 @@
 
 ## Artifact TODO
 
-- [ ] Provide a VM where reviewers can try Slice programs, inspect their discretization, and run them with all supported backends.
-- [ ] Include a directory with every example program that occurs in the paper.
-- [ ] Include all benchmarked programs.
-- [ ] Add a script in the VM that reproduces the benchmark tables from the paper.
-- [ ] Write a reviewer-facing README that guides artifact reviewers through the expected review process.
+- [ ] [KW] Provide a VM where reviewers can try Slice programs, inspect their discretization, and run them with all supported backends.
+- [ ] [KW] Include a directory with every example program that occurs in the paper.
+- [ ] [KW] Include all benchmarked programs.
+- [ ] [KW] Add a script in the VM that reproduces the benchmark tables from the paper.
+- [ ] [KW] Write a reviewer-facing README that guides artifact reviewers through the expected review process.
