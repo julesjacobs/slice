@@ -4,7 +4,7 @@
 
 - [x] [JJ] Add PSI and Hakaru comparisons.
 - [x] [JJ] Clarify SPPL-modified vs. original PSI/Hakaru benchmarks.
-- [ ] [KW] Carefully check the evaluation section for wrong/misleading claims.
+- [ ] [KW] Carefully check the evaluation section and appendix for wrong/misleading claims.
 - [ ] [KW] Provide all example programs in full in the appendix.
 - [x] [JJ] Clarify measure-zero observations, positive-probability observations, and point observations. Relate this to open vs. closed interval cuts.
 - [ ] [KB] Explain non-termination vs. observation failure; define subprobability measures.
