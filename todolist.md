@@ -9,7 +9,7 @@
 - [ ] [KB] Explain non-termination vs. observation failure; define subprobability measures.
 - [x] [JJ] Strengthen the motivation for using a type system.
 - [x] [JJ] Fix the novelty claim: no exact inference system covers continuous sampling, higher-order functions, and unbounded recursion together.
-- [ ] [JJ] Clarify exact discretization vs. approximate discretization.
+- [x] [JJ] Clarify exact discretization vs. approximate discretization.
 - [ ] [JJ] Give [26] more credit as primary related work.
 
 ## Artifact TODO
