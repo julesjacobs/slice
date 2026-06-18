@@ -67,7 +67,7 @@ We formalize the types that \Slice{} supports.
 %\end{definition}
 %
 %These lattice structures are exemplified in \Cref{fig:lattice}.
-A \emph{value} set $V$ is a non-empty finite set of reals or $\top$.
+A \emph{value} set $V$ is a finite set of reals or $\top$.
 Elements of $\{ \clt{x} ~|~ x \in \R \}	\cup \{ \cleq{x} ~|~ x \in \R \}$ are called \emph{cuts}. Cut sets induce intervals partitioning the reals as follows:
  Given a non-empty cut set $B =\{ \sim_1\!\!x_1, \ldots, \sim_n\!\! x_n \}$ with $x_1 \leq \ldots \leq x_n$, we define the set $\intervals{B}$ of intervals it induces as expected, e.g., 
  $\intervals{\{\clt{0.1},\cleq{0.5}\}} = \{(-\infty,0.1), [0.1,0.5], (0.5,\infty)\}$.
