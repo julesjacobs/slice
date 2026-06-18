@@ -5,7 +5,7 @@ We have implemented the \Slice{} type inference and discretization procedures in
 This section is driven by two research questions:
 %
 \begin{enumerate}
-    \item Does \Slice{} enable exact inference on interesting continuous probabilistic programs that existing approaches do not support?
+    \item Does \Slice{} enable exact inference on programs combining continuous sampling, higher-order functions, and unbounded recursion?
     \item On programs that are within the scope of existing tools for exact inference, is the combination of \Slice{} and discrete inference back-ends competitive? 
 \end{enumerate}
 
@@ -15,7 +15,7 @@ For the second question, we evaluate \Slice{}+\Dice{} and \Slice{}+\Roulette{} o
 
 \subsection{\Slicebf+\Stormbf: Case Studies}\label{sec:case-studies}
 %
-With unbounded recursion and higher-order functions, no efficient exact inference engines exist. Instead, we use \emph{probabilistic model checking}: The small-step semantics of our language (cf.\ \Cref{tab:smallstep-1,tab:smallstep-2}) for discrete programs gives rise to a \emph{Markov chain} modeling the  stochastic process of program execution, inspired by~\cite{Jansen2022BoundedModelCheckingProbPrograms} on imperative programs. If that Markov chain is finite, we can use the probabilistic model checker \Storm \cite{storm} for exact inference. Let us start with an illustrative example.
+There is no exact inference system that, to our knowledge, can cover programs combining all three features: continuous sampling, higher-order functions, and unbounded recursion. As a consequence, there is no exact inference engine for the programs in \Cref{sec:examples:7,sec:casestudy:epsball,sec:casestudy:bloom}. Instead, we use \emph{probabilistic model checking}: The small-step semantics of our language (cf.\ \Cref{tab:smallstep-1,tab:smallstep-2}) for discrete programs gives rise to a \emph{Markov chain} modeling the  stochastic process of program execution, inspired by~\cite{Jansen2022BoundedModelCheckingProbPrograms} on imperative programs. If that Markov chain is finite, we can use the probabilistic model checker \Storm \cite{storm} for exact inference. Let us start with an illustrative example.
 %\kbin{old}
 
 
