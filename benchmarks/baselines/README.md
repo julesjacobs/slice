@@ -1,4 +1,4 @@
-Baseline benchmarks (from PSI):
+Baseline benchmarks (SPPL-compatible versions of PSI-style benchmarks):
 
 * clinical trial
 * true skill
