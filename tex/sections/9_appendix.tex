@@ -93,6 +93,59 @@ Under this partition, both continuous branches, \texttt{uniform(0,10)} and \text
 \noindent
 After discretization, the equality test $\texttt{gpa} = 10$ becomes the discrete test that the GPA index is exactly the one corresponding to the singleton region $\{10\}$. 
 
+\subsection{Point and Measure-Zero Observations}\label{ap:measure-zero-observations}
+
+\Slice{} can condition on an exact value when that event has strictly positive probability mass, as in the Indian GPA example in \Cref{ap:gpa}. In that case, conditioning is well-defined and \Slice{} returns the correct answer. The exact set of programs supported by \Slice{} is therefore somewhat larger than one would initially expect, while not covering full point observations on continuous samples.
+
+The mechanism is the same as in \Cref{ap:gpa}: the cuts $\clt{c}$ and $\cleq{c}$ induce the partition
+\[
+(-\infty,c), \qquad \{c\}, \qquad (c,\infty),
+\]
+so any probability mass assigned exactly to $c$ is tracked as its own discrete outcome.
+
+More precisely:
+
+\begin{enumerate}
+  \item \Slice{} cannot handle programs where every control-flow path conditions on an event of measure zero, and therefore programs with exact observations on continuous samples are in general out of scope, i.e. the programs one typically writes in e.g. Stan are out of scope unless one widens exact conditioning to a small but finite interval.
+
+  \item \Slice{} can handle programs where at least one control-flow path conditions only on strictly-positive-probability events, even if that is a point observation, and even if other paths condition only on measure-zero events.
+
+  \item It does not matter whether an event is measure-zero because it is point-conditioning on a continuous sample, or whether it is measure-zero for another reason, e.g. $\observekw(\uniform(0,1) > 3)$ or simply $\observekw(\false)$. The critical distinction for $\observekw(E)$ is whether $\Pr(E)=0$, not whether $E$ is of the form ``$x=3.2$''.
+
+  \item \Slice{} will never give the wrong answer, even when all paths condition on measure-zero events. It will give the empty subdistribution, indicating that under a rejection-sampling interpretation, all samples are rejected with probability~$1$. Thus the user is notified, and \Slice{} never silently gives a wrong answer.
+\end{enumerate}
+
+For instance, this program:
+\begin{lstlisting}[aboveskip=1em,belowskip=1em]
+  let x = uniform(0,1) in
+  if flip() then
+    let _ = observe(x >= 0.5 && x <= 0.5) in true
+  else
+    let _ = observe(x <= 0.3 && x >= 0.3) in false
+\end{lstlisting}
+results in:
+\[
+\Pr(\true) = 0
+\qquad
+\Pr(\false) = 0.
+\]
+
+Whereas this program:
+\begin{lstlisting}[aboveskip=1em,belowskip=1em]
+  let x = uniform(0,1) in
+  if flip() then
+    let _ = observe(x >= 0.5 && x <= 0.5) in true
+  else
+    let _ = observe(x <= 0.3001 && x >= 0.3) in false
+\end{lstlisting}
+results in:
+\[
+\Pr(\true) = 0
+\qquad
+\Pr(\false) = 1.
+\]
+This is the correct behavior: consider repeatedly running the program under a rejection-sampling interpretation until an observation succeeds. With probability~$1$, the first successful test will be $\observekw(x \leq 0.3001 \mathrel{\&\&} x \geq 0.3)$ and the program will therefore return $\false$ with probability~$1$.
+
 
 \subsection{Random Interval Covering Over $\boldmath{[0,1]}$}\label{ap:epsball}
 The discretized program for the case study from \Cref{sec:examples:7} is shown in \Cref{fig:app:epsball}. \Slice{} takes 0.000s, and we generate a Markov chain consisting of $192365$ states in $38.69$ seconds. \Storm takes $0.69$ seconds for model checking, and reports that the sought-after probability is $0.034474...$.

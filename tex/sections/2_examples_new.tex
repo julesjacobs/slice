@@ -312,7 +312,9 @@ The type annotations show how the variable $x$ determines the Gaussian's standar
 \noindent
 In the discretized program, the observation $x<2$ eliminates the discrete state corresponding to the original interval $[0.5,+\infty)$, thereby preserving the effect of conditioning on $x<0.5$.
 
-Exact equalities are encoded with $\observekw\; (x \leq c \mathrel{\&\&} x \geq c)$. See~\Cref{ap:gpa} for an example. Measure-zero observations remain delicate~\cite{Jacobs2021ParadoxesProbProg}; our semantics handles them by recording observation-failure mass instead of renormalizing (cf.\ \Cref{sec:soundness}). Scoring semantics for true measure-zero events are out of scope; users should instead approximate them with narrow intervals (see \cite{Jacobs2021ParadoxesProbProg} for details).
+Exact equalities are encoded with $\observekw\; (x \leq c \mathrel{\&\&} x \geq c)$. The two cuts $\clt{c}$ and $\cleq{c}$ induce the partition $(-\infty,c), \{c\}, (c,\infty)$, so \Slice{} can track probability mass assigned exactly to $c$ as its own discrete outcome. This supports point observations when the observed value has strictly positive probability mass; \Cref{ap:gpa} gives such an example.
+
+Measure-zero observations remain delicate~\cite{Jacobs2021ParadoxesProbProg}. What matters for $\observekw(e)$ is whether $e$ has positive probability, not whether it is written as an equality. When an observation has probability zero, \Slice{} records observation-failure mass instead of renormalizing (cf.\ \Cref{sec:soundness}); if all observation-satisfying executions have probability zero, the result is the empty subdistribution. Scoring semantics for true measure-zero observations are out of scope, so users should approximate them with narrow intervals when that is the intended model. \Cref{ap:measure-zero-observations} gives details and examples.
 
 
 

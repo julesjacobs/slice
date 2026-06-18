@@ -5,7 +5,7 @@
 - [ ] [KW] Add PSI and Hakaru comparisons.
 - [ ] [KW] Clarify SPPL-modified vs. original PSI/Hakaru benchmarks.
 - [ ] [KW] Provide all example programs in full in the appendix.
-- [ ] [JJ] Clarify measure-zero observations, positive-probability observations, and point observations. Relate this to open vs. closed interval cuts.
+- [x] [JJ] Clarify measure-zero observations, positive-probability observations, and point observations. Relate this to open vs. closed interval cuts.
 - [ ] [KB] Explain non-termination vs. observation failure; define subprobability measures.
 - [ ] [JJ] Strengthen the motivation for using a type system.
 - [ ] [JJ] Fix the novelty claim: no exact inference system covers continuous sampling, higher-order functions, and unbounded recursion together.
