@@ -1,0 +1,12 @@
+benchmark,size,slice_time_dice,slice_time_roulette,slice_dice_total,slice_roulette_total,sppl_time
+build_conditional_random_independent_slice_1,0,0.0,0.0,0.0,0.0,0.0
+build_conditional_random_independent_slice_1,5,0.0020,0.0020,0.0281,0.0261,0.2054
+build_conditional_random_independent_slice_1,10,0.0020,0.0020,0.0341,0.0324,0.6852
+build_conditional_random_independent_slice_1,15,0.0020,0.0020,0.0558,0.0338,1.5804
+build_conditional_random_independent_slice_1,20,0.0021,0.0021,0.0565,0.0381,8.8585
+build_conditional_random_independent_slice_1,25,0.0029,0.0026,0.0633,0.0377,13.1225
+build_conditional_random_independent_slice_1,30,0.0031,0.0030,0.0791,0.0474,42.1274
+build_conditional_random_independent_slice_1,35,0.0030,0.0031,0.0877,0.0621,
+build_conditional_random_independent_slice_1,40,0.0030,0.0031,0.0947,0.0730,
+build_conditional_random_independent_slice_1,45,0.0031,0.0033,0.1023,0.0689,
+build_conditional_random_independent_slice_1,50,0.0033,0.0033,0.1119,0.0919,

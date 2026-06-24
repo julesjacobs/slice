@@ -1,0 +1,105 @@
+def main() {
+    p_similar := beta(1, 1);
+    similar := array(5);
+    p_click_url_A := array(5);
+    p_click_url_B := array(5);
+    click_url_A := array(5);
+    click_url_B := array(5);
+
+    for i in [0..click_url_A.length) {
+        if p_similar <= 0.05 {
+            similar[i] = bernoulli(0.05);
+        } else if p_similar <= 0.1 {
+            similar[i] = bernoulli(0.1);
+        } else if p_similar <= 0.15 {
+            similar[i] = bernoulli(0.15);
+        } else if p_similar <= 0.2 {
+            similar[i] = bernoulli(0.2);
+        } else if p_similar <= 0.25 {
+            similar[i] = bernoulli(0.25);
+        } else if p_similar <= 0.3 {
+            similar[i] = bernoulli(0.3);
+        } else if p_similar <= 0.35 {
+            similar[i] = bernoulli(0.35);
+        } else if p_similar <= 0.4 {
+            similar[i] = bernoulli(0.4);
+        } else if p_similar <= 0.45 {
+            similar[i] = bernoulli(0.45);
+        } else if p_similar <= 0.5 {
+            similar[i] = bernoulli(0.5);
+        } else if p_similar <= 0.55 {
+            similar[i] = bernoulli(0.55);
+        } else if p_similar <= 0.6 {
+            similar[i] = bernoulli(0.6);
+        } else if p_similar <= 0.65 {
+            similar[i] = bernoulli(0.65);
+        } else if p_similar <= 0.7 {
+            similar[i] = bernoulli(0.7);
+        } else if p_similar <= 0.75 {
+            similar[i] = bernoulli(0.75);
+        } else if p_similar <= 0.8 {
+            similar[i] = bernoulli(0.8);
+        } else if p_similar <= 0.85 {
+            similar[i] = bernoulli(0.85);
+        } else if p_similar <= 0.9 {
+            similar[i] = bernoulli(0.9);
+        } else if p_similar <= 0.95 {
+            similar[i] = bernoulli(0.95);
+        } else {
+            similar[i] = bernoulli(1);
+        }
+
+        p_click_url_A[i] = uniform(0, 1);
+        if 1 == similar[i] {
+            p_click_url_B[i] = p_click_url_A[i];
+        } else {
+            p_click_url_B[i] = uniform(0, 1);
+        }
+
+        if p_click_url_A[i] <= 0.1 {
+            click_url_A[i] = bernoulli(0.1);
+        } else if p_click_url_A[i] <= 0.2 {
+            click_url_A[i] = bernoulli(0.2);
+        } else if p_click_url_A[i] <= 0.3 {
+            click_url_A[i] = bernoulli(0.3);
+        } else if p_click_url_A[i] <= 0.4 {
+            click_url_A[i] = bernoulli(0.4);
+        } else if p_click_url_A[i] <= 0.5 {
+            click_url_A[i] = bernoulli(0.5);
+        } else if p_click_url_A[i] <= 0.6 {
+            click_url_A[i] = bernoulli(0.6);
+        } else if p_click_url_A[i] <= 0.7 {
+            click_url_A[i] = bernoulli(0.7);
+        } else if p_click_url_A[i] <= 0.8 {
+            click_url_A[i] = bernoulli(0.8);
+        } else if p_click_url_A[i] <= 0.9 {
+            click_url_A[i] = bernoulli(0.9);
+        } else {
+            click_url_A[i] = bernoulli(1);
+        }
+
+        if p_click_url_B[i] <= 0.1 {
+            click_url_B[i] = bernoulli(0.1);
+        } else if p_click_url_B[i] <= 0.2 {
+            click_url_B[i] = bernoulli(0.2);
+        } else if p_click_url_B[i] <= 0.3 {
+            click_url_B[i] = bernoulli(0.3);
+        } else if p_click_url_B[i] <= 0.4 {
+            click_url_B[i] = bernoulli(0.4);
+        } else if p_click_url_B[i] <= 0.5 {
+            click_url_B[i] = bernoulli(0.5);
+        } else if p_click_url_B[i] <= 0.6 {
+            click_url_B[i] = bernoulli(0.6);
+        } else if p_click_url_B[i] <= 0.7 {
+            click_url_B[i] = bernoulli(0.7);
+        } else if p_click_url_B[i] <= 0.8 {
+            click_url_B[i] = bernoulli(0.8);
+        } else if p_click_url_B[i] <= 0.9 {
+            click_url_B[i] = bernoulli(0.9);
+        } else {
+            click_url_B[i] = bernoulli(1);
+        }
+    }
+
+    return click_url_B[0] < 1;
+}

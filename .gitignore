@@ -90,3 +90,5 @@ tex/semantics/semantics.log
 tex/semantics/semantics.out
 tex/semantics/semantics.synctex.gz
 tex/semantics/semantics.pdf
+/.lake
+/.vscode

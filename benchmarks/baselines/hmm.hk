@@ -1,0 +1,15 @@
+# Exact probability pair for the HMM query:
+#   query = Y3 < 0.5
+# Output order is (P(query = false), P(query = true)).
+
+p_z0 = 0.3948
+p_z1 = 0.2465
+p_z2 = 0.3587
+
+phi0 = 0.5
+phi1 = 0.3085375387259869
+phi2 = 0.06680720126885807
+
+p_true = p_z0 * phi0 + p_z1 * phi1 + p_z2 * phi2
+
+(real2prob(1 - prob2real(p_true)), p_true)

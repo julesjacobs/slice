@@ -1,4 +1,4 @@
-def generate_ind_program(n):
+def generate_ind_sppl(n):
     """
     Generate an independent variables program with n conditionals.
     
@@ -64,7 +64,7 @@ condition(age > 18)
     return program
 
 
-def generate_bn1_program(n):
+def generate_bn1_sppl(n):
     """
     Generate a Bayesian network program (BN1) with n conditionals.
     
@@ -131,7 +131,7 @@ condition(age > 18)
     return program
 
 
-def generate_bn2_program(n):
+def generate_bn2_sppl(n):
     """
     Generate a Bayesian network program with integrity constraint (BN2) with n conditionals.
     

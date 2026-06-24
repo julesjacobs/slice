@@ -1,0 +1,54 @@
+def main() {
+    bias_0 := beta(1, 1);
+    votes_0 := 0;
+
+    if bias_0 <= 0.1 {
+        votes_0 = binomial(1000, 0.1);
+    } else if bias_0 <= 0.2 {
+        votes_0 = binomial(1000, 0.2);
+    } else if bias_0 <= 0.3 {
+        votes_0 = binomial(1000, 0.3);
+    } else if bias_0 <= 0.4 {
+        votes_0 = binomial(1000, 0.4);
+    } else if bias_0 <= 0.5 {
+        votes_0 = binomial(1000, 0.5);
+    } else if bias_0 <= 0.6 {
+        votes_0 = binomial(1000, 0.6);
+    } else if bias_0 <= 0.7 {
+        votes_0 = binomial(1000, 0.7);
+    } else if bias_0 <= 0.8 {
+        votes_0 = binomial(1000, 0.8);
+    } else if bias_0 <= 0.9 {
+        votes_0 = binomial(1000, 0.9);
+    } else {
+        votes_0 = binomial(1000, 1);
+    }
+
+    ansBias_0 := bias_0;
+    answer_0 := 0;
+
+    if ansBias_0 <= 0.1 {
+        answer_0 = bernoulli(0.1);
+    } else if ansBias_0 <= 0.2 {
+        answer_0 = bernoulli(0.2);
+    } else if ansBias_0 <= 0.3 {
+        answer_0 = bernoulli(0.3);
+    } else if ansBias_0 <= 0.4 {
+        answer_0 = bernoulli(0.4);
+    } else if ansBias_0 <= 0.5 {
+        answer_0 = bernoulli(0.5);
+    } else if ansBias_0 <= 0.6 {
+        answer_0 = bernoulli(0.6);
+    } else if ansBias_0 <= 0.7 {
+        answer_0 = bernoulli(0.7);
+    } else if ansBias_0 <= 0.8 {
+        answer_0 = bernoulli(0.8);
+    } else if ansBias_0 <= 0.9 {
+        answer_0 = bernoulli(0.9);
+    } else {
+        answer_0 = bernoulli(1);
+    }
+
+    observe(answer_0 == 1);
+    return answer_0 < 0.5;
+}

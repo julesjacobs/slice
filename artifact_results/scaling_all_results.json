@@ -1,0 +1,4693 @@
+{
+  "timestamp": "2025-10-29T05:10:03.370034",
+  "num_runs": 5,
+  "results": [
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice",
+      "size": 1,
+      "mean_time": 0.001,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice-dice",
+      "size": 1,
+      "mean_time": 0.018000000000000002,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice-roulette",
+      "size": 1,
+      "mean_time": 0.016,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "sppl",
+      "size": 1,
+      "mean_time": 0.019236087799072266,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice",
+      "size": 2,
+      "mean_time": 0.002,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice-dice",
+      "size": 2,
+      "mean_time": 0.018000000000000002,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice-roulette",
+      "size": 2,
+      "mean_time": 0.020999999999999998,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "sppl",
+      "size": 2,
+      "mean_time": 0.04018664360046387,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice",
+      "size": 3,
+      "mean_time": 0.002,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice-dice",
+      "size": 3,
+      "mean_time": 0.019999999999999997,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice-roulette",
+      "size": 3,
+      "mean_time": 0.022,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "sppl",
+      "size": 3,
+      "mean_time": 0.08475351333618164,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice",
+      "size": 4,
+      "mean_time": 0.002,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice-dice",
+      "size": 4,
+      "mean_time": 0.020999999999999998,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice-roulette",
+      "size": 4,
+      "mean_time": 0.023,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "sppl",
+      "size": 4,
+      "mean_time": 0.1495668888092041,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice",
+      "size": 5,
+      "mean_time": 0.002,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice-dice",
+      "size": 5,
+      "mean_time": 0.027000000000000003,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice-roulette",
+      "size": 5,
+      "mean_time": 0.027999999999999997,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "sppl",
+      "size": 5,
+      "mean_time": 0.21873140335083008,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice",
+      "size": 6,
+      "mean_time": 0.002,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice-dice",
+      "size": 6,
+      "mean_time": 0.028999999999999998,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice-roulette",
+      "size": 6,
+      "mean_time": 0.026000000000000002,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "sppl",
+      "size": 6,
+      "mean_time": 0.21157503128051758,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice",
+      "size": 7,
+      "mean_time": 0.002,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice-dice",
+      "size": 7,
+      "mean_time": 0.027999999999999997,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice-roulette",
+      "size": 7,
+      "mean_time": 0.027999999999999997,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "sppl",
+      "size": 7,
+      "mean_time": 0.27237892150878906,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice",
+      "size": 8,
+      "mean_time": 0.002,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice-dice",
+      "size": 8,
+      "mean_time": 0.028999999999999998,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice-roulette",
+      "size": 8,
+      "mean_time": 0.027999999999999997,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "sppl",
+      "size": 8,
+      "mean_time": 0.30463433265686035,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice",
+      "size": 9,
+      "mean_time": 0.002,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice-dice",
+      "size": 9,
+      "mean_time": 0.028999999999999998,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice-roulette",
+      "size": 9,
+      "mean_time": 0.027999999999999997,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "sppl",
+      "size": 9,
+      "mean_time": 0.36410093307495117,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice",
+      "size": 10,
+      "mean_time": 0.002,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice-dice",
+      "size": 10,
+      "mean_time": 0.03,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice-roulette",
+      "size": 10,
+      "mean_time": 0.026000000000000002,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "sppl",
+      "size": 10,
+      "mean_time": 0.3404843807220459,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice",
+      "size": 11,
+      "mean_time": 0.002,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice-dice",
+      "size": 11,
+      "mean_time": 0.033,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice-roulette",
+      "size": 11,
+      "mean_time": 0.032,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "sppl",
+      "size": 11,
+      "mean_time": 0.5381059646606445,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice",
+      "size": 12,
+      "mean_time": 0.002,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice-dice",
+      "size": 12,
+      "mean_time": 0.04,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice-roulette",
+      "size": 12,
+      "mean_time": 0.126,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "sppl",
+      "size": 12,
+      "mean_time": 0.5265378952026367,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice",
+      "size": 13,
+      "mean_time": 0.002,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice-dice",
+      "size": 13,
+      "mean_time": 0.043000000000000003,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice-roulette",
+      "size": 13,
+      "mean_time": 0.033,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "sppl",
+      "size": 13,
+      "mean_time": 0.5600416660308838,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice",
+      "size": 14,
+      "mean_time": 0.002,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice-dice",
+      "size": 14,
+      "mean_time": 0.038,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice-roulette",
+      "size": 14,
+      "mean_time": 0.035,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "sppl",
+      "size": 14,
+      "mean_time": 0.6045739650726318,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice",
+      "size": 15,
+      "mean_time": 0.002,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice-dice",
+      "size": 15,
+      "mean_time": 0.04,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice-roulette",
+      "size": 15,
+      "mean_time": 0.036000000000000004,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "sppl",
+      "size": 15,
+      "mean_time": 0.7042582035064697,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice",
+      "size": 16,
+      "mean_time": 0.002,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice-dice",
+      "size": 16,
+      "mean_time": 0.054,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice-roulette",
+      "size": 16,
+      "mean_time": 0.038,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "sppl",
+      "size": 16,
+      "mean_time": 0.6903629302978516,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice",
+      "size": 17,
+      "mean_time": 0.002,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice-dice",
+      "size": 17,
+      "mean_time": 0.043000000000000003,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice-roulette",
+      "size": 17,
+      "mean_time": 0.048,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "sppl",
+      "size": 17,
+      "mean_time": 0.739429235458374,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice",
+      "size": 18,
+      "mean_time": 0.002,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice-dice",
+      "size": 18,
+      "mean_time": 0.044000000000000004,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice-roulette",
+      "size": 18,
+      "mean_time": 0.039,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "sppl",
+      "size": 18,
+      "mean_time": 0.8588378429412842,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice",
+      "size": 19,
+      "mean_time": 0.002,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice-dice",
+      "size": 19,
+      "mean_time": 0.05,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice-roulette",
+      "size": 19,
+      "mean_time": 0.043000000000000003,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "sppl",
+      "size": 19,
+      "mean_time": 0.8071303367614746,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice",
+      "size": 20,
+      "mean_time": 0.002,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice-dice",
+      "size": 20,
+      "mean_time": 0.048,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice-roulette",
+      "size": 20,
+      "mean_time": 0.043000000000000003,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "sppl",
+      "size": 20,
+      "mean_time": 0.8322651386260986,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice",
+      "size": 21,
+      "mean_time": 0.002,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice-dice",
+      "size": 21,
+      "mean_time": 0.048,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice-roulette",
+      "size": 21,
+      "mean_time": 0.092,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "sppl",
+      "size": 21,
+      "mean_time": 0.8732781410217285,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice",
+      "size": 22,
+      "mean_time": 0.002,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice-dice",
+      "size": 22,
+      "mean_time": 0.049,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice-roulette",
+      "size": 22,
+      "mean_time": 0.045,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "sppl",
+      "size": 22,
+      "mean_time": 1.0234417915344238,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice",
+      "size": 23,
+      "mean_time": 0.002,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice-dice",
+      "size": 23,
+      "mean_time": 0.052000000000000005,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice-roulette",
+      "size": 23,
+      "mean_time": 0.045,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "sppl",
+      "size": 23,
+      "mean_time": 1.185969591140747,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice",
+      "size": 24,
+      "mean_time": 0.002,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice-dice",
+      "size": 24,
+      "mean_time": 0.064,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice-roulette",
+      "size": 24,
+      "mean_time": 0.051000000000000004,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "sppl",
+      "size": 24,
+      "mean_time": 1.0775065422058105,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice",
+      "size": 25,
+      "mean_time": 0.002,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice-dice",
+      "size": 25,
+      "mean_time": 0.053,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice-roulette",
+      "size": 25,
+      "mean_time": 0.055,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "sppl",
+      "size": 25,
+      "mean_time": 1.0781598091125488,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice",
+      "size": 26,
+      "mean_time": 0.002,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice-dice",
+      "size": 26,
+      "mean_time": 0.055,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice-roulette",
+      "size": 26,
+      "mean_time": 0.058,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "sppl",
+      "size": 26,
+      "mean_time": 1.1476197242736816,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice",
+      "size": 27,
+      "mean_time": 0.002,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice-dice",
+      "size": 27,
+      "mean_time": 0.062,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice-roulette",
+      "size": 27,
+      "mean_time": 0.051000000000000004,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "sppl",
+      "size": 27,
+      "mean_time": 1.169356346130371,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice",
+      "size": 28,
+      "mean_time": 0.002,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice-dice",
+      "size": 28,
+      "mean_time": 0.063,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice-roulette",
+      "size": 28,
+      "mean_time": 0.052000000000000005,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "sppl",
+      "size": 28,
+      "mean_time": 1.1868267059326172,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice",
+      "size": 29,
+      "mean_time": 0.003,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice-dice",
+      "size": 29,
+      "mean_time": 0.060000000000000005,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice-roulette",
+      "size": 29,
+      "mean_time": 0.054,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "sppl",
+      "size": 29,
+      "mean_time": 1.2718064785003662,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice",
+      "size": 30,
+      "mean_time": 0.002,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice-dice",
+      "size": 30,
+      "mean_time": 0.063,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice-roulette",
+      "size": 30,
+      "mean_time": 0.084,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "sppl",
+      "size": 30,
+      "mean_time": 1.260411262512207,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice",
+      "size": 31,
+      "mean_time": 0.002,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice-dice",
+      "size": 31,
+      "mean_time": 0.061,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice-roulette",
+      "size": 31,
+      "mean_time": 0.085,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "sppl",
+      "size": 31,
+      "mean_time": 1.3480870723724365,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice",
+      "size": 32,
+      "mean_time": 0.002,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice-dice",
+      "size": 32,
+      "mean_time": 0.063,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice-roulette",
+      "size": 32,
+      "mean_time": 0.055,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "sppl",
+      "size": 32,
+      "mean_time": 1.2892482280731201,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice",
+      "size": 33,
+      "mean_time": 0.002,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice-dice",
+      "size": 33,
+      "mean_time": 0.064,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice-roulette",
+      "size": 33,
+      "mean_time": 0.058,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "sppl",
+      "size": 33,
+      "mean_time": 1.394075870513916,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice",
+      "size": 34,
+      "mean_time": 0.002,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice-dice",
+      "size": 34,
+      "mean_time": 0.065,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice-roulette",
+      "size": 34,
+      "mean_time": 0.064,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "sppl",
+      "size": 34,
+      "mean_time": 1.4154398441314697,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice",
+      "size": 35,
+      "mean_time": 0.002,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice-dice",
+      "size": 35,
+      "mean_time": 0.065,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice-roulette",
+      "size": 35,
+      "mean_time": 0.088,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "sppl",
+      "size": 35,
+      "mean_time": 1.4700136184692383,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice",
+      "size": 36,
+      "mean_time": 0.002,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice-dice",
+      "size": 36,
+      "mean_time": 0.067,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice-roulette",
+      "size": 36,
+      "mean_time": 0.064,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "sppl",
+      "size": 36,
+      "mean_time": 1.4706261157989502,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice",
+      "size": 37,
+      "mean_time": 0.002,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice-dice",
+      "size": 37,
+      "mean_time": 0.069,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice-roulette",
+      "size": 37,
+      "mean_time": 0.065,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "sppl",
+      "size": 37,
+      "mean_time": 1.573448896408081,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice",
+      "size": 38,
+      "mean_time": 0.003,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice-dice",
+      "size": 38,
+      "mean_time": 0.07100000000000001,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice-roulette",
+      "size": 38,
+      "mean_time": 0.07200000000000001,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "sppl",
+      "size": 38,
+      "mean_time": 1.6156189441680908,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice",
+      "size": 39,
+      "mean_time": 0.003,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice-dice",
+      "size": 39,
+      "mean_time": 0.07100000000000001,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice-roulette",
+      "size": 39,
+      "mean_time": 0.08700000000000001,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "sppl",
+      "size": 39,
+      "mean_time": 1.6437327861785889,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice",
+      "size": 40,
+      "mean_time": 0.003,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice-dice",
+      "size": 40,
+      "mean_time": 0.07100000000000001,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice-roulette",
+      "size": 40,
+      "mean_time": 0.05,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "sppl",
+      "size": 40,
+      "mean_time": 1.6701288223266602,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice",
+      "size": 41,
+      "mean_time": 0.003,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice-dice",
+      "size": 41,
+      "mean_time": 0.07300000000000001,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice-roulette",
+      "size": 41,
+      "mean_time": 0.075,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "sppl",
+      "size": 41,
+      "mean_time": 1.740802526473999,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice",
+      "size": 42,
+      "mean_time": 0.003,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice-dice",
+      "size": 42,
+      "mean_time": 0.076,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice-roulette",
+      "size": 42,
+      "mean_time": 0.07200000000000001,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "sppl",
+      "size": 42,
+      "mean_time": 1.7967250347137451,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice",
+      "size": 43,
+      "mean_time": 0.003,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice-dice",
+      "size": 43,
+      "mean_time": 0.077,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice-roulette",
+      "size": 43,
+      "mean_time": 0.08600000000000001,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "sppl",
+      "size": 43,
+      "mean_time": 1.9753849506378174,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice",
+      "size": 44,
+      "mean_time": 0.003,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice-dice",
+      "size": 44,
+      "mean_time": 0.079,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice-roulette",
+      "size": 44,
+      "mean_time": 0.081,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "sppl",
+      "size": 44,
+      "mean_time": 2.0154330730438232,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice",
+      "size": 45,
+      "mean_time": 0.003,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice-dice",
+      "size": 45,
+      "mean_time": 0.08,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice-roulette",
+      "size": 45,
+      "mean_time": 0.098,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "sppl",
+      "size": 45,
+      "mean_time": 2.099247694015503,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice",
+      "size": 46,
+      "mean_time": 0.003,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice-dice",
+      "size": 46,
+      "mean_time": 0.089,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice-roulette",
+      "size": 46,
+      "mean_time": 0.064,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "sppl",
+      "size": 46,
+      "mean_time": 2.004164695739746,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice",
+      "size": 47,
+      "mean_time": 0.003,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice-dice",
+      "size": 47,
+      "mean_time": 0.082,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice-roulette",
+      "size": 47,
+      "mean_time": 0.11,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "sppl",
+      "size": 47,
+      "mean_time": 2.057891845703125,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice",
+      "size": 48,
+      "mean_time": 0.003,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice-dice",
+      "size": 48,
+      "mean_time": 0.08800000000000001,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice-roulette",
+      "size": 48,
+      "mean_time": 0.114,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "sppl",
+      "size": 48,
+      "mean_time": 2.14559006690979,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice",
+      "size": 49,
+      "mean_time": 0.003,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice-dice",
+      "size": 49,
+      "mean_time": 0.08600000000000001,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice-roulette",
+      "size": 49,
+      "mean_time": 0.083,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "sppl",
+      "size": 49,
+      "mean_time": 2.058037519454956,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice",
+      "size": 50,
+      "mean_time": 0.003,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice-dice",
+      "size": 50,
+      "mean_time": 0.08600000000000001,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice-roulette",
+      "size": 50,
+      "mean_time": 0.084,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "sppl",
+      "size": 50,
+      "mean_time": 2.1473255157470703,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice",
+      "size": 51,
+      "mean_time": 0.003,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice-dice",
+      "size": 51,
+      "mean_time": 0.08800000000000001,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice-roulette",
+      "size": 51,
+      "mean_time": 0.092,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "sppl",
+      "size": 51,
+      "mean_time": 2.085965394973755,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice",
+      "size": 52,
+      "mean_time": 0.003,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice-dice",
+      "size": 52,
+      "mean_time": 0.089,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice-roulette",
+      "size": 52,
+      "mean_time": 0.092,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "sppl",
+      "size": 52,
+      "mean_time": 2.2178783416748047,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice",
+      "size": 53,
+      "mean_time": 0.003,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice-dice",
+      "size": 53,
+      "mean_time": 0.08700000000000001,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice-roulette",
+      "size": 53,
+      "mean_time": 0.076,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "sppl",
+      "size": 53,
+      "mean_time": 2.2673799991607666,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice",
+      "size": 54,
+      "mean_time": 0.003,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice-dice",
+      "size": 54,
+      "mean_time": 0.093,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice-roulette",
+      "size": 54,
+      "mean_time": 0.089,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "sppl",
+      "size": 54,
+      "mean_time": 2.2654285430908203,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice",
+      "size": 55,
+      "mean_time": 0.003,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice-dice",
+      "size": 55,
+      "mean_time": 0.093,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice-roulette",
+      "size": 55,
+      "mean_time": 0.097,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "sppl",
+      "size": 55,
+      "mean_time": 2.427617311477661,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice",
+      "size": 56,
+      "mean_time": 0.003,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice-dice",
+      "size": 56,
+      "mean_time": 0.095,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice-roulette",
+      "size": 56,
+      "mean_time": 0.101,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "sppl",
+      "size": 56,
+      "mean_time": 2.385902166366577,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice",
+      "size": 57,
+      "mean_time": 0.003,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice-dice",
+      "size": 57,
+      "mean_time": 0.097,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice-roulette",
+      "size": 57,
+      "mean_time": 0.1,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "sppl",
+      "size": 57,
+      "mean_time": 2.358567476272583,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice",
+      "size": 58,
+      "mean_time": 0.003,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice-dice",
+      "size": 58,
+      "mean_time": 0.096,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice-roulette",
+      "size": 58,
+      "mean_time": 0.097,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "sppl",
+      "size": 58,
+      "mean_time": 2.497788190841675,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice",
+      "size": 59,
+      "mean_time": 0.003,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice-dice",
+      "size": 59,
+      "mean_time": 0.096,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "slice-roulette",
+      "size": 59,
+      "mean_time": 0.10200000000000001,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "category": "scaling",
+      "tool": "sppl",
+      "size": 59,
+      "mean_time": 2.5030782222747803,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    }
+  ],
+  "speedups": [
+    {
+      "benchmark": "build_conditional_independent_slice",
+      "slice_time_dice": 0.096,
+      "slice_time_roulette": 0.10200000000000001,
+      "sppl_time": 2.5030782222747803,
+      "dice_speedup": 26.07373148202896,
+      "roulette_speedup": 24.539982571321374
+    }
+  ]
+}
+
+Testing asymptotic scaling for build_conditional_independent_slice...
+This will test programs of size 1 to 245 in increments of 5.
+
+---- PROGRAM SIZE: 0 ----
+---- PROGRAM SIZE: 5 ----
+  Run 1/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.026s (total: 0.028s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.021s (total: 0.023s)
+  Running SPPL... 0.172s
+  Run 2/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.021s (total: 0.023s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.020s (total: 0.022s)
+  Running SPPL... 0.156s
+  Run 3/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.023s (total: 0.025s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.022s (total: 0.024s)
+  Running SPPL... 0.157s
+  Run 4/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.021s (total: 0.023s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.021s (total: 0.023s)
+  Running SPPL... 0.154s
+  Run 5/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.021s (total: 0.023s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.022s (total: 0.024s)
+  Running SPPL... 0.153s
+  Run 6/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.022s (total: 0.024s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.022s (total: 0.024s)
+  Running SPPL... 0.158s
+  Run 7/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.017s (total: 0.019s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.016s (total: 0.018s)
+  Running SPPL... 0.127s
+  Run 8/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.022s (total: 0.024s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.022s (total: 0.024s)
+  Running SPPL... 0.156s
+  Run 9/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.021s (total: 0.023s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.022s (total: 0.024s)
+  Running SPPL... 0.156s
+  Run 10/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.022s (total: 0.024s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.023s (total: 0.025s)
+  Running SPPL... 0.163s
+  Averages after 10 runs:
+    Slice+Dice - Slice: 0.0020s, Total: 0.0236s
+    Slice+Roulette - Slice: 0.0020s, Total: 0.0231s
+    SPPL: 0.1552s
+
+---- PROGRAM SIZE: 10 ----
+  Run 1/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.028s (total: 0.030s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.026s (total: 0.028s)
+  Running SPPL... 0.360s
+  Run 2/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.028s (total: 0.030s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.027s (total: 0.029s)
+  Running SPPL... 0.366s
+  Run 3/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.028s (total: 0.030s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.027s (total: 0.029s)
+  Running SPPL... 0.360s
+  Run 4/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.028s (total: 0.030s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.028s (total: 0.030s)
+  Running SPPL... 0.358s
+  Run 5/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.028s (total: 0.030s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.027s (total: 0.029s)
+  Running SPPL... 0.359s
+  Run 6/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.029s (total: 0.031s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.026s (total: 0.028s)
+  Running SPPL... 0.418s
+  Run 7/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.027s (total: 0.029s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.026s (total: 0.028s)
+  Running SPPL... 0.337s
+  Run 8/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.028s (total: 0.030s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.028s (total: 0.030s)
+  Running SPPL... 0.371s
+  Run 9/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.029s (total: 0.031s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.028s (total: 0.030s)
+  Running SPPL... 0.384s
+  Run 10/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.030s (total: 0.032s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.028s (total: 0.030s)
+  Running SPPL... 0.365s
+  Averages after 10 runs:
+    Slice+Dice - Slice: 0.0020s, Total: 0.0303s
+    Slice+Roulette - Slice: 0.0020s, Total: 0.0291s
+    SPPL: 0.3678s
+
+---- PROGRAM SIZE: 15 ----
+  Run 1/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.036s (total: 0.038s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.034s (total: 0.036s)
+  Running SPPL... 0.604s
+  Run 2/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.035s (total: 0.037s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.024s (total: 0.026s)
+  Running SPPL... 0.549s
+  Run 3/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.037s (total: 0.039s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.032s (total: 0.034s)
+  Running SPPL... 0.591s
+  Run 4/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.038s (total: 0.040s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.033s (total: 0.035s)
+  Running SPPL... 0.575s
+  Run 5/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.037s (total: 0.039s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.033s (total: 0.035s)
+  Running SPPL... 0.593s
+  Run 6/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.040s (total: 0.042s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.032s (total: 0.034s)
+  Running SPPL... 0.561s
+  Run 7/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.034s (total: 0.036s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.030s (total: 0.032s)
+  Running SPPL... 0.563s
+  Run 8/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.036s (total: 0.038s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.033s (total: 0.035s)
+  Running SPPL... 0.573s
+  Run 9/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.039s (total: 0.041s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.033s (total: 0.035s)
+  Running SPPL... 0.623s
+  Run 10/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.037s (total: 0.039s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.033s (total: 0.035s)
+  Running SPPL... 0.586s
+  Averages after 10 runs:
+    Slice+Dice - Slice: 0.0020s, Total: 0.0389s
+    Slice+Roulette - Slice: 0.0020s, Total: 0.0337s
+    SPPL: 0.5818s
+
+---- PROGRAM SIZE: 20 ----
+  Run 1/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.042s (total: 0.044s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.041s (total: 0.043s)
+  Running SPPL... 0.768s
+  Run 2/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.042s (total: 0.044s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.030s (total: 0.032s)
+  Running SPPL... 0.735s
+  Run 3/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.043s (total: 0.045s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.041s (total: 0.043s)
+  Running SPPL... 0.780s
+  Run 4/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.044s (total: 0.046s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.039s (total: 0.041s)
+  Running SPPL... 0.788s
+  Run 5/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.042s (total: 0.044s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.039s (total: 0.041s)
+  Running SPPL... 0.799s
+  Run 6/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.042s (total: 0.044s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.038s (total: 0.040s)
+  Running SPPL... 0.802s
+  Run 7/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.040s (total: 0.042s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.034s (total: 0.036s)
+  Running SPPL... 0.752s
+  Run 8/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.041s (total: 0.043s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.039s (total: 0.041s)
+  Running SPPL... 0.759s
+  Run 9/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.042s (total: 0.044s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.038s (total: 0.040s)
+  Running SPPL... 0.778s
+  Run 10/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.042s (total: 0.044s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.039s (total: 0.041s)
+  Running SPPL... 0.760s
+  Averages after 10 runs:
+    Slice+Dice - Slice: 0.0020s, Total: 0.0440s
+    Slice+Roulette - Slice: 0.0020s, Total: 0.0398s
+    SPPL: 0.7719s
+
+---- PROGRAM SIZE: 25 ----
+  Run 1/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.048s (total: 0.050s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.050s (total: 0.052s)
+  Running SPPL... 0.996s
+  Run 2/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.046s (total: 0.048s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.034s (total: 0.036s)
+  Running SPPL... 0.991s
+  Run 3/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.048s (total: 0.050s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.052s (total: 0.054s)
+  Running SPPL... 1.009s
+  Run 4/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.048s (total: 0.050s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.050s (total: 0.052s)
+  Running SPPL... 0.959s
+  Run 5/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.048s (total: 0.050s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.052s (total: 0.054s)
+  Running SPPL... 0.969s
+  Run 6/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.052s (total: 0.054s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.051s (total: 0.053s)
+  Running SPPL... 0.962s
+  Run 7/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.047s (total: 0.049s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.047s (total: 0.049s)
+  Running SPPL... 0.964s
+  Run 8/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.049s (total: 0.051s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.052s (total: 0.054s)
+  Running SPPL... 0.958s
+  Run 9/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.048s (total: 0.050s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.051s (total: 0.053s)
+  Running SPPL... 0.958s
+  Run 10/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.048s (total: 0.050s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.050s (total: 0.052s)
+  Running SPPL... 0.956s
+  Averages after 10 runs:
+    Slice+Dice - Slice: 0.0020s, Total: 0.0502s
+    Slice+Roulette - Slice: 0.0020s, Total: 0.0509s
+    SPPL: 0.9720s
+
+---- PROGRAM SIZE: 30 ----
+  Run 1/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.054s (total: 0.056s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.079s (total: 0.081s)
+  Running SPPL... 1.226s
+  Run 2/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.053s (total: 0.055s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.069s (total: 0.071s)
+  Running SPPL... 1.209s
+  Run 3/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.056s (total: 0.058s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.078s (total: 0.080s)
+  Running SPPL... 1.231s
+  Run 4/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.056s (total: 0.058s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.080s (total: 0.082s)
+  Running SPPL... 1.171s
+  Run 5/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.054s (total: 0.056s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.077s (total: 0.079s)
+  Running SPPL... 1.221s
+  Run 6/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.053s (total: 0.055s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.032s (total: 0.034s)
+  Running SPPL... 1.119s
+  Run 7/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.052s (total: 0.054s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.075s (total: 0.077s)
+  Running SPPL... 1.169s
+  Run 8/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.055s (total: 0.057s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.078s (total: 0.080s)
+  Running SPPL... 1.159s
+  Run 9/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.054s (total: 0.056s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.078s (total: 0.080s)
+  Running SPPL... 1.229s
+  Run 10/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.057s (total: 0.059s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.077s (total: 0.079s)
+  Running SPPL... 1.160s
+  Averages after 10 runs:
+    Slice+Dice - Slice: 0.0020s, Total: 0.0564s
+    Slice+Roulette - Slice: 0.0020s, Total: 0.0743s
+    SPPL: 1.1895s
+
+---- PROGRAM SIZE: 35 ----
+  Run 1/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.060s (total: 0.062s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.062s (total: 0.064s)
+  Running SPPL... 1.378s
+  Run 2/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.059s (total: 0.061s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.052s (total: 0.054s)
+  Running SPPL... 1.485s
+  Run 3/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.060s (total: 0.062s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.062s (total: 0.064s)
+  Running SPPL... 1.401s
+  Run 4/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.060s (total: 0.062s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.063s (total: 0.065s)
+  Running SPPL... 1.387s
+  Run 5/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.061s (total: 0.063s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.065s (total: 0.067s)
+  Running SPPL... 1.435s
+  Run 6/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.061s (total: 0.063s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.047s (total: 0.049s)
+  Running SPPL... 1.391s
+  Run 7/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.059s (total: 0.061s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.058s (total: 0.060s)
+  Running SPPL... 1.387s
+  Run 8/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.061s (total: 0.063s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.063s (total: 0.065s)
+  Running SPPL... 1.431s
+  Run 9/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.061s (total: 0.063s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.063s (total: 0.065s)
+  Running SPPL... 1.372s
+  Run 10/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.062s (total: 0.064s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.062s (total: 0.064s)
+  Running SPPL... 1.398s
+  Averages after 10 runs:
+    Slice+Dice - Slice: 0.0020s, Total: 0.0624s
+    Slice+Roulette - Slice: 0.0020s, Total: 0.0617s
+    SPPL: 1.4065s
+
+---- PROGRAM SIZE: 40 ----
+  Run 1/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.069s (total: 0.071s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.070s (total: 0.072s)
+  Running SPPL... 1.618s
+  Run 2/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.065s (total: 0.067s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.059s (total: 0.061s)
+  Running SPPL... 1.616s
+  Run 3/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.066s (total: 0.068s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.071s (total: 0.073s)
+  Running SPPL... 1.566s
+  Run 4/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.067s (total: 0.069s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.072s (total: 0.074s)
+  Running SPPL... 1.652s
+  Run 5/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.067s (total: 0.069s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.073s (total: 0.075s)
+  Running SPPL... 1.659s
+  Run 6/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.064s (total: 0.066s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.054s (total: 0.056s)
+  Running SPPL... 1.545s
+  Run 7/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.065s (total: 0.067s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.060s (total: 0.062s)
+  Running SPPL... 1.687s
+  Run 8/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.066s (total: 0.068s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.064s (total: 0.066s)
+  Running SPPL... 1.660s
+  Run 9/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.067s (total: 0.069s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.071s (total: 0.073s)
+  Running SPPL... 1.642s
+  Run 10/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.067s (total: 0.069s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.073s (total: 0.075s)
+  Running SPPL... 1.633s
+  Averages after 10 runs:
+    Slice+Dice - Slice: 0.0020s, Total: 0.0683s
+    Slice+Roulette - Slice: 0.0020s, Total: 0.0687s
+    SPPL: 1.6279s
+
+---- PROGRAM SIZE: 45 ----
+  Run 1/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.003s / dice: 0.070s (total: 0.073s)
+  Running Slice...  Running Roulette...   slice: 0.003s / roulette: 0.041s (total: 0.044s)
+  Running SPPL... 1.743s
+  Run 2/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.003s / dice: 0.071s (total: 0.074s)
+  Running Slice...  Running Roulette...   slice: 0.003s / roulette: 0.060s (total: 0.063s)
+  Running SPPL... 1.794s
+  Run 3/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.003s / dice: 0.074s (total: 0.077s)
+  Running Slice...  Running Roulette...   slice: 0.003s / roulette: 0.072s (total: 0.075s)
+  Running SPPL... 1.769s
+  Run 4/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.003s / dice: 0.073s (total: 0.076s)
+  Running Slice...  Running Roulette...   slice: 0.003s / roulette: 0.070s (total: 0.073s)
+  Running SPPL... 1.807s
+  Run 5/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.003s / dice: 0.073s (total: 0.076s)
+  Running Slice...  Running Roulette...   slice: 0.003s / roulette: 0.069s (total: 0.072s)
+  Running SPPL... 1.868s
+  Run 6/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.003s / dice: 0.071s (total: 0.074s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.050s (total: 0.052s)
+  Running SPPL... 1.808s
+  Run 7/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.003s / dice: 0.071s (total: 0.074s)
+  Running Slice...  Running Roulette...   slice: 0.003s / roulette: 0.070s (total: 0.073s)
+  Running SPPL... 1.818s
+  Run 8/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.003s / dice: 0.073s (total: 0.076s)
+  Running Slice...  Running Roulette...   slice: 0.003s / roulette: 0.071s (total: 0.074s)
+  Running SPPL... 1.865s
+  Run 9/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.003s / dice: 0.073s (total: 0.076s)
+  Running Slice...  Running Roulette...   slice: 0.003s / roulette: 0.072s (total: 0.075s)
+  Running SPPL... 1.880s
+  Run 10/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.003s / dice: 0.077s (total: 0.080s)
+  Running Slice...  Running Roulette...   slice: 0.003s / roulette: 0.072s (total: 0.075s)
+  Running SPPL... 1.794s
+  Averages after 10 runs:
+    Slice+Dice - Slice: 0.0030s, Total: 0.0756s
+    Slice+Roulette - Slice: 0.0029s, Total: 0.0676s
+    SPPL: 1.8146s
+
+---- PROGRAM SIZE: 50 ----
+  Run 1/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.003s / dice: 0.077s (total: 0.080s)
+  Running Slice...  Running Roulette...   slice: 0.003s / roulette: 0.046s (total: 0.049s)
+  Running SPPL... 1.971s
+  Run 2/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.003s / dice: 0.078s (total: 0.081s)
+  Running Slice...  Running Roulette...   slice: 0.003s / roulette: 0.067s (total: 0.070s)
+  Running SPPL... 2.008s
+  Run 3/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.003s / dice: 0.079s (total: 0.082s)
+  Running Slice...  Running Roulette...   slice: 0.003s / roulette: 0.078s (total: 0.081s)
+  Running SPPL... 2.048s
+  Run 4/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.003s / dice: 0.079s (total: 0.082s)
+  Running Slice...  Running Roulette...   slice: 0.003s / roulette: 0.079s (total: 0.082s)
+  Running SPPL... 2.046s
+  Run 5/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.003s / dice: 0.079s (total: 0.082s)
+  Running Slice...  Running Roulette...   slice: 0.003s / roulette: 0.078s (total: 0.081s)
+  Running SPPL... 2.074s
+  Run 6/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.003s / dice: 0.073s (total: 0.076s)
+  Running Slice...  Running Roulette...   slice: 0.003s / roulette: 0.040s (total: 0.043s)
+  Running SPPL... 2.014s
+  Run 7/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.003s / dice: 0.076s (total: 0.079s)
+  Running Slice...  Running Roulette...   slice: 0.003s / roulette: 0.077s (total: 0.080s)
+  Running SPPL... 2.194s
+  Run 8/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.003s / dice: 0.080s (total: 0.083s)
+  Running Slice...  Running Roulette...   slice: 0.003s / roulette: 0.078s (total: 0.081s)
+  Running SPPL... 2.055s
+  Run 9/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.003s / dice: 0.079s (total: 0.082s)
+  Running Slice...  Running Roulette...   slice: 0.003s / roulette: 0.079s (total: 0.082s)
+  Running SPPL... 2.091s
+  Run 10/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.003s / dice: 0.080s (total: 0.083s)
+  Running Slice...  Running Roulette...   slice: 0.003s / roulette: 0.078s (total: 0.081s)
+  Running SPPL... 1.989s
+  Averages after 10 runs:
+    Slice+Dice - Slice: 0.0030s, Total: 0.0810s
+    Slice+Roulette - Slice: 0.0030s, Total: 0.0730s
+    SPPL: 2.0491s
+
+Saved scaling plot to /home/opam/slice/images/scaling/build_conditional_independent_slice.png
+
+
+Testing asymptotic scaling for build_conditional_independent_fork_slice...
+This will test programs of size 1 to 245 in increments of 5.
+
+---- PROGRAM SIZE: 0 ----
+---- PROGRAM SIZE: 5 ----
+  Run 1/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.029s (total: 0.031s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.020s (total: 0.022s)
+  Running SPPL... 0.176s
+  Run 2/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.022s (total: 0.024s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.020s (total: 0.022s)
+  Running SPPL... 0.164s
+  Run 3/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.022s (total: 0.024s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.020s (total: 0.022s)
+  Running SPPL... 0.158s
+  Run 4/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.023s (total: 0.025s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.020s (total: 0.022s)
+  Running SPPL... 0.157s
+  Run 5/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.022s (total: 0.024s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.020s (total: 0.022s)
+  Running SPPL... 0.165s
+  Run 6/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.023s (total: 0.025s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.021s (total: 0.023s)
+  Running SPPL... 0.156s
+  Run 7/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.022s (total: 0.024s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.019s (total: 0.021s)
+  Running SPPL... 0.139s
+  Run 8/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.023s (total: 0.025s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.020s (total: 0.022s)
+  Running SPPL... 0.158s
+  Run 9/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.023s (total: 0.025s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.021s (total: 0.023s)
+  Running SPPL... 0.165s
+  Run 10/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.023s (total: 0.025s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.021s (total: 0.023s)
+  Running SPPL... 0.164s
+  Averages after 10 runs:
+    Slice+Dice - Slice: 0.0020s, Total: 0.0252s
+    Slice+Roulette - Slice: 0.0020s, Total: 0.0222s
+    SPPL: 0.1602s
+
+---- PROGRAM SIZE: 10 ----
+  Run 1/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.031s (total: 0.033s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.032s (total: 0.034s)
+  Running SPPL... 0.556s
+  Run 2/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.031s (total: 0.033s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.031s (total: 0.033s)
+  Running SPPL... 0.555s
+  Run 3/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.032s (total: 0.034s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.032s (total: 0.034s)
+  Running SPPL... 0.558s
+  Run 4/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.031s (total: 0.033s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.034s (total: 0.036s)
+  Running SPPL... 0.561s
+  Run 5/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.032s (total: 0.034s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.036s (total: 0.038s)
+  Running SPPL... 0.550s
+  Run 6/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.032s (total: 0.034s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.034s (total: 0.036s)
+  Running SPPL... 0.555s
+  Run 7/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.031s (total: 0.033s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.032s (total: 0.034s)
+  Running SPPL... 0.496s
+  Run 8/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.032s (total: 0.034s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.033s (total: 0.035s)
+  Running SPPL... 0.563s
+  Run 9/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.027s (total: 0.029s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.023s (total: 0.025s)
+  Running SPPL... 0.501s
+  Run 10/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.031s (total: 0.033s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.031s (total: 0.033s)
+  Running SPPL... 0.533s
+  Averages after 10 runs:
+    Slice+Dice - Slice: 0.0020s, Total: 0.0330s
+    Slice+Roulette - Slice: 0.0020s, Total: 0.0338s
+    SPPL: 0.5428s
+
+---- PROGRAM SIZE: 15 ----
+  Run 1/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.003s / dice: 0.037s (total: 0.040s)
+  Running Slice...  Running Roulette...   slice: 0.003s / roulette: 0.030s (total: 0.033s)
+  Running SPPL... 1.128s
+  Run 2/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.003s / dice: 0.037s (total: 0.040s)
+  Running Slice...  Running Roulette...   slice: 0.003s / roulette: 0.031s (total: 0.034s)
+  Running SPPL... 1.153s
+  Run 3/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.003s / dice: 0.037s (total: 0.040s)
+  Running Slice...  Running Roulette...   slice: 0.003s / roulette: 0.030s (total: 0.033s)
+  Running SPPL... 1.092s
+  Run 4/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.003s / dice: 0.037s (total: 0.040s)
+  Running Slice...  Running Roulette...   slice: 0.003s / roulette: 0.031s (total: 0.034s)
+  Running SPPL... 1.090s
+  Run 5/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.003s / dice: 0.037s (total: 0.040s)
+  Running Slice...  Running Roulette...   slice: 0.003s / roulette: 0.030s (total: 0.033s)
+  Running SPPL... 1.054s
+  Run 6/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.003s / dice: 0.038s (total: 0.041s)
+  Running Slice...  Running Roulette...   slice: 0.003s / roulette: 0.030s (total: 0.033s)
+  Running SPPL... 1.118s
+  Run 7/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.003s / dice: 0.037s (total: 0.040s)
+  Running Slice...  Running Roulette...   slice: 0.003s / roulette: 0.030s (total: 0.033s)
+  Running SPPL... 1.071s
+  Run 8/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.003s / dice: 0.037s (total: 0.040s)
+  Running Slice...  Running Roulette...   slice: 0.003s / roulette: 0.029s (total: 0.032s)
+  Running SPPL... 1.114s
+  Run 9/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.003s / dice: 0.037s (total: 0.040s)
+  Running Slice...  Running Roulette...   slice: 0.003s / roulette: 0.028s (total: 0.031s)
+  Running SPPL... 1.042s
+  Run 10/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.003s / dice: 0.037s (total: 0.040s)
+  Running Slice...  Running Roulette...   slice: 0.003s / roulette: 0.029s (total: 0.032s)
+  Running SPPL... 1.125s
+  Averages after 10 runs:
+    Slice+Dice - Slice: 0.0030s, Total: 0.0401s
+    Slice+Roulette - Slice: 0.0030s, Total: 0.0328s
+    SPPL: 1.0986s
+
+---- PROGRAM SIZE: 20 ----
+  Run 1/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.004s / dice: 0.047s (total: 0.051s)
+  Running Slice...  Running Roulette...   slice: 0.004s / roulette: 0.032s (total: 0.036s)
+  Running SPPL... 1.720s
+  Run 2/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.006s / dice: 0.047s (total: 0.053s)
+  Running Slice...  Running Roulette...   slice: 0.006s / roulette: 0.034s (total: 0.040s)
+  Running SPPL... 1.848s
+  Run 3/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.006s / dice: 0.048s (total: 0.054s)
+  Running Slice...  Running Roulette...   slice: 0.006s / roulette: 0.037s (total: 0.043s)
+  Running SPPL... 1.903s
+  Run 4/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.006s / dice: 0.047s (total: 0.053s)
+  Running Slice...  Running Roulette...   slice: 0.006s / roulette: 0.034s (total: 0.040s)
+  Running SPPL... 1.811s
+  Run 5/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.006s / dice: 0.048s (total: 0.054s)
+  Running Slice...  Running Roulette...   slice: 0.006s / roulette: 0.035s (total: 0.041s)
+  Running SPPL... 1.792s
+  Run 6/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.004s / dice: 0.047s (total: 0.051s)
+  Running Slice...  Running Roulette...   slice: 0.004s / roulette: 0.031s (total: 0.035s)
+  Running SPPL... 1.819s
+  Run 7/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.004s / dice: 0.047s (total: 0.051s)
+  Running Slice...  Running Roulette...   slice: 0.004s / roulette: 0.031s (total: 0.035s)
+  Running SPPL... 1.685s
+  Run 8/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.004s / dice: 0.047s (total: 0.051s)
+  Running Slice...  Running Roulette...   slice: 0.004s / roulette: 0.032s (total: 0.036s)
+  Running SPPL... 1.740s
+  Run 9/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.006s / dice: 0.048s (total: 0.054s)
+  Running Slice...  Running Roulette...   slice: 0.006s / roulette: 0.033s (total: 0.039s)
+  Running SPPL... 1.668s
+  Run 10/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.006s / dice: 0.048s (total: 0.054s)
+  Running Slice...  Running Roulette...   slice: 0.006s / roulette: 0.033s (total: 0.039s)
+  Running SPPL... 1.812s
+  Averages after 10 runs:
+    Slice+Dice - Slice: 0.0052s, Total: 0.0526s
+    Slice+Roulette - Slice: 0.0052s, Total: 0.0384s
+    SPPL: 1.7800s
+
+---- PROGRAM SIZE: 25 ----
+  Run 1/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.008s / dice: 0.054s (total: 0.062s)
+  Running Slice...  Running Roulette...   slice: 0.008s / roulette: 0.039s (total: 0.047s)
+  Running SPPL... 2.619s
+  Run 2/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.009s / dice: 0.055s (total: 0.064s)
+  Running Slice...  Running Roulette...   slice: 0.009s / roulette: 0.043s (total: 0.052s)
+  Running SPPL... 2.795s
+  Run 3/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.009s / dice: 0.055s (total: 0.064s)
+  Running Slice...  Running Roulette...   slice: 0.009s / roulette: 0.042s (total: 0.051s)
+  Running SPPL... 3.155s
+  Run 4/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.007s / dice: 0.064s (total: 0.071s)
+  Running Slice...  Running Roulette...   slice: 0.008s / roulette: 0.039s (total: 0.047s)
+  Running SPPL... 2.776s
+  Run 5/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.009s / dice: 0.054s (total: 0.063s)
+  Running Slice...  Running Roulette...   slice: 0.009s / roulette: 0.040s (total: 0.049s)
+  Running SPPL... 2.666s
+  Run 6/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.007s / dice: 0.053s (total: 0.060s)
+  Running Slice...  Running Roulette...   slice: 0.007s / roulette: 0.036s (total: 0.043s)
+  Running SPPL... 2.586s
+  Run 7/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.008s / dice: 0.055s (total: 0.063s)
+  Running Slice...  Running Roulette...   slice: 0.008s / roulette: 0.038s (total: 0.046s)
+  Running SPPL... 2.649s
+  Run 8/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.007s / dice: 0.054s (total: 0.061s)
+  Running Slice...  Running Roulette...   slice: 0.007s / roulette: 0.038s (total: 0.045s)
+  Running SPPL... 2.915s
+  Run 9/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.007s / dice: 0.055s (total: 0.062s)
+  Running Slice...  Running Roulette...   slice: 0.007s / roulette: 0.037s (total: 0.044s)
+  Running SPPL... 2.444s
+  Run 10/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.007s / dice: 0.054s (total: 0.061s)
+  Running Slice...  Running Roulette...   slice: 0.007s / roulette: 0.037s (total: 0.044s)
+  Running SPPL... 2.597s
+  Averages after 10 runs:
+    Slice+Dice - Slice: 0.0078s, Total: 0.0631s
+    Slice+Roulette - Slice: 0.0079s, Total: 0.0468s
+    SPPL: 2.7201s
+
+---- PROGRAM SIZE: 30 ----
+  Run 1/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.011s / dice: 0.060s (total: 0.071s)
+  Running Slice...  Running Roulette...   slice: 0.011s / roulette: 0.045s (total: 0.056s)
+  Running SPPL... 3.736s
+  Run 2/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.011s / dice: 0.060s (total: 0.071s)
+  Running Slice...  Running Roulette...   slice: 0.011s / roulette: 0.046s (total: 0.057s)
+  Running SPPL... 3.889s
+  Run 3/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.010s / dice: 0.060s (total: 0.070s)
+  Running Slice...  Running Roulette...   slice: 0.010s / roulette: 0.049s (total: 0.059s)
+  Running SPPL... 3.737s
+  Run 4/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.011s / dice: 0.060s (total: 0.071s)
+  Running Slice...  Running Roulette...   slice: 0.011s / roulette: 0.050s (total: 0.061s)
+  Running SPPL... 3.672s
+  Run 5/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.012s / dice: 0.062s (total: 0.074s)
+  Running Slice...  Running Roulette...   slice: 0.012s / roulette: 0.046s (total: 0.058s)
+  Running SPPL... 3.926s
+  Run 6/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.012s / dice: 0.061s (total: 0.073s)
+  Running Slice...  Running Roulette...   slice: 0.012s / roulette: 0.044s (total: 0.056s)
+  Running SPPL... 3.583s
+  Run 7/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.011s / dice: 0.060s (total: 0.071s)
+  Running Slice...  Running Roulette...   slice: 0.011s / roulette: 0.044s (total: 0.055s)
+  Running SPPL... 3.694s
+  Run 8/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.011s / dice: 0.061s (total: 0.072s)
+  Running Slice...  Running Roulette...   slice: 0.011s / roulette: 0.051s (total: 0.062s)
+  Running SPPL... 3.575s
+  Run 9/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.010s / dice: 0.061s (total: 0.071s)
+  Running Slice...  Running Roulette...   slice: 0.010s / roulette: 0.049s (total: 0.059s)
+  Running SPPL... 3.563s
+  Run 10/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.009s / dice: 0.061s (total: 0.070s)
+  Running Slice...  Running Roulette...   slice: 0.010s / roulette: 0.050s (total: 0.060s)
+  Running SPPL... 3.699s
+  Averages after 10 runs:
+    Slice+Dice - Slice: 0.0108s, Total: 0.0714s
+    Slice+Roulette - Slice: 0.0109s, Total: 0.0583s
+    SPPL: 3.7074s
+
+---- PROGRAM SIZE: 35 ----
+  Run 1/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.015s / dice: 0.067s (total: 0.082s)
+  Running Slice...  Running Roulette...   slice: 0.015s / roulette: 0.057s (total: 0.072s)
+  Running SPPL... 5.022s
+  Run 2/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.015s / dice: 0.067s (total: 0.082s)
+  Running Slice...  Running Roulette...   slice: 0.014s / roulette: 0.058s (total: 0.072s)
+  Running SPPL... 5.204s
+  Run 3/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.014s / dice: 0.065s (total: 0.079s)
+  Running Slice...  Running Roulette...   slice: 0.014s / roulette: 0.055s (total: 0.069s)
+  Running SPPL... 4.880s
+  Run 4/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.015s / dice: 0.066s (total: 0.081s)
+  Running Slice...  Running Roulette...   slice: 0.016s / roulette: 0.056s (total: 0.072s)
+  Running SPPL... 4.941s
+  Run 5/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.016s / dice: 0.066s (total: 0.082s)
+  Running Slice...  Running Roulette...   slice: 0.015s / roulette: 0.056s (total: 0.071s)
+  Running SPPL... 5.090s
+  Run 6/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.016s / dice: 0.067s (total: 0.083s)
+  Running Slice...  Running Roulette...   slice: 0.016s / roulette: 0.054s (total: 0.070s)
+  Running SPPL... 4.723s
+  Run 7/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.016s / dice: 0.067s (total: 0.083s)
+  Running Slice...  Running Roulette...   slice: 0.016s / roulette: 0.055s (total: 0.071s)
+  Running SPPL... 4.814s
+  Run 8/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.014s / dice: 0.067s (total: 0.081s)
+  Running Slice...  Running Roulette...   slice: 0.014s / roulette: 0.054s (total: 0.068s)
+  Running SPPL... 4.952s
+  Run 9/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.015s / dice: 0.067s (total: 0.082s)
+  Running Slice...  Running Roulette...   slice: 0.015s / roulette: 0.056s (total: 0.071s)
+  Running SPPL... 4.643s
+  Run 10/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.012s / dice: 0.066s (total: 0.078s)
+  Running Slice...  Running Roulette...   slice: 0.012s / roulette: 0.045s (total: 0.057s)
+  Running SPPL... 4.702s
+  Averages after 10 runs:
+    Slice+Dice - Slice: 0.0148s, Total: 0.0813s
+    Slice+Roulette - Slice: 0.0147s, Total: 0.0693s
+    SPPL: 4.8971s
+
+---- PROGRAM SIZE: 40 ----
+  Run 1/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.020s / dice: 0.082s (total: 0.102s)
+  Running Slice...  Running Roulette...   slice: 0.021s / roulette: 0.088s (total: 0.109s)
+  Running SPPL... 6.481s
+  Run 2/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.018s / dice: 0.083s (total: 0.101s)
+  Running Slice...  Running Roulette...   slice: 0.018s / roulette: 0.085s (total: 0.103s)
+  Running SPPL... 6.411s
+  Run 3/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.022s / dice: 0.082s (total: 0.104s)
+  Running Slice...  Running Roulette...   slice: 0.022s / roulette: 0.085s (total: 0.107s)
+  Running SPPL... 6.277s
+  Run 4/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.020s / dice: 0.072s (total: 0.092s)
+  Running Slice...  Running Roulette...   slice: 0.020s / roulette: 0.083s (total: 0.103s)
+  Running SPPL... 6.059s
+  Run 5/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.021s / dice: 0.083s (total: 0.104s)
+  Running Slice...  Running Roulette...   slice: 0.021s / roulette: 0.084s (total: 0.105s)
+  Running SPPL... 6.342s
+  Run 6/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.023s / dice: 0.085s (total: 0.108s)
+  Running Slice...  Running Roulette...   slice: 0.023s / roulette: 0.087s (total: 0.110s)
+  Running SPPL... 6.127s
+  Run 7/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.022s / dice: 0.082s (total: 0.104s)
+  Running Slice...  Running Roulette...   slice: 0.022s / roulette: 0.088s (total: 0.110s)
+  Running SPPL... 6.201s
+  Run 8/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.020s / dice: 0.074s (total: 0.094s)
+  Running Slice...  Running Roulette...   slice: 0.020s / roulette: 0.083s (total: 0.103s)
+  Running SPPL... 5.998s
+  Run 9/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.019s / dice: 0.073s (total: 0.092s)
+  Running Slice...  Running Roulette...   slice: 0.019s / roulette: 0.084s (total: 0.103s)
+  Running SPPL... 5.827s
+  Run 10/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.017s / dice: 0.072s (total: 0.089s)
+  Running Slice...  Running Roulette...   slice: 0.017s / roulette: 0.050s (total: 0.067s)
+  Running SPPL... 5.961s
+  Averages after 10 runs:
+    Slice+Dice - Slice: 0.0202s, Total: 0.0990s
+    Slice+Roulette - Slice: 0.0203s, Total: 0.1020s
+    SPPL: 6.1684s
+
+---- PROGRAM SIZE: 45 ----
+  Run 1/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.029s / dice: 0.091s (total: 0.120s)
+  Running Slice...  Running Roulette...   slice: 0.029s / roulette: 0.077s (total: 0.106s)
+  Running SPPL... 8.065s
+  Run 2/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.022s / dice: 0.090s (total: 0.112s)
+  Running Slice...  Running Roulette...   slice: 0.022s / roulette: 0.061s (total: 0.083s)
+  Running SPPL... 8.098s
+  Run 3/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.030s / dice: 0.091s (total: 0.121s)
+  Running Slice...  Running Roulette...   slice: 0.030s / roulette: 0.074s (total: 0.104s)
+  Running SPPL... 7.992s
+  Run 4/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.026s / dice: 0.092s (total: 0.118s)
+  Running Slice...  Running Roulette...   slice: 0.027s / roulette: 0.073s (total: 0.100s)
+  Running SPPL... 7.616s
+  Run 5/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.026s / dice: 0.090s (total: 0.116s)
+  Running Slice...  Running Roulette...   slice: 0.026s / roulette: 0.071s (total: 0.097s)
+  Running SPPL... 7.681s
+  Run 6/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.031s / dice: 0.092s (total: 0.123s)
+  Running Slice...  Running Roulette...   slice: 0.031s / roulette: 0.073s (total: 0.104s)
+  Running SPPL... 7.715s
+  Run 7/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.028s / dice: 0.092s (total: 0.120s)
+  Running Slice...  Running Roulette...   slice: 0.028s / roulette: 0.074s (total: 0.102s)
+  Running SPPL... 7.586s
+  Run 8/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.026s / dice: 0.090s (total: 0.116s)
+  Running Slice...  Running Roulette...   slice: 0.027s / roulette: 0.071s (total: 0.098s)
+  Running SPPL... 7.676s
+  Run 9/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.028s / dice: 0.099s (total: 0.127s)
+  Running Slice...  Running Roulette...   slice: 0.028s / roulette: 0.071s (total: 0.099s)
+  Running SPPL... 7.577s
+  Run 10/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.022s / dice: 0.090s (total: 0.112s)
+  Running Slice...  Running Roulette...   slice: 0.022s / roulette: 0.056s (total: 0.078s)
+  Running SPPL... 7.273s
+  Averages after 10 runs:
+    Slice+Dice - Slice: 0.0268s, Total: 0.1185s
+    Slice+Roulette - Slice: 0.0270s, Total: 0.0971s
+    SPPL: 7.7279s
+
+---- PROGRAM SIZE: 50 ----
+  Run 1/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.034s / dice: 0.101s (total: 0.135s)
+  Running Slice...  Running Roulette...   slice: 0.034s / roulette: 0.080s (total: 0.114s)
+  Running SPPL... 9.623s
+  Run 2/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.026s / dice: 0.106s (total: 0.132s)
+  Running Slice...  Running Roulette...   slice: 0.027s / roulette: 0.075s (total: 0.102s)
+  Running SPPL... 9.318s
+  Run 3/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.036s / dice: 0.105s (total: 0.141s)
+  Running Slice...  Running Roulette...   slice: 0.036s / roulette: 0.078s (total: 0.114s)
+  Running SPPL... 9.716s
+  Run 4/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.033s / dice: 0.106s (total: 0.139s)
+  Running Slice...  Running Roulette...   slice: 0.033s / roulette: 0.070s (total: 0.103s)
+  Running SPPL... 9.431s
+  Run 5/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.037s / dice: 0.102s (total: 0.139s)
+  Running Slice...  Running Roulette...   slice: 0.037s / roulette: 0.090s (total: 0.127s)
+  Running SPPL... 10.280s
+  Run 6/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.038s / dice: 0.101s (total: 0.139s)
+  Running Slice...  Running Roulette...   slice: 0.037s / roulette: 0.084s (total: 0.121s)
+  Running SPPL... 10.371s
+  Run 7/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.039s / dice: 0.101s (total: 0.140s)
+  Running Slice...  Running Roulette...   slice: 0.038s / roulette: 0.079s (total: 0.117s)
+  Running SPPL... 9.362s
+  Run 8/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.033s / dice: 0.101s (total: 0.134s)
+  Running Slice...  Running Roulette...   slice: 0.033s / roulette: 0.072s (total: 0.105s)
+  Running SPPL... 9.290s
+  Run 9/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.038s / dice: 0.104s (total: 0.142s)
+  Running Slice...  Running Roulette...   slice: 0.037s / roulette: 0.079s (total: 0.116s)
+  Running SPPL... 9.282s
+  Run 10/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.028s / dice: 0.100s (total: 0.128s)
+  Running Slice...  Running Roulette...   slice: 0.028s / roulette: 0.070s (total: 0.098s)
+  Running SPPL... 8.704s
+  Averages after 10 runs:
+    Slice+Dice - Slice: 0.0342s, Total: 0.1369s
+    Slice+Roulette - Slice: 0.0340s, Total: 0.1117s
+    SPPL: 9.5375s
+
+Saved scaling plot to /home/opam/slice/images/scaling/build_conditional_independent_fork_slice.png
+
+Testing asymptotic scaling for build_conditional_random_independent_slice_1...
+This will test programs of size 1 to 245 in increments of 5.
+
+---- PROGRAM SIZE: 0 ----
+---- PROGRAM SIZE: 5 ----
+  Run 1/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.024s (total: 0.026s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.023s (total: 0.025s)
+  Running SPPL... 0.193s
+  Run 2/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.024s (total: 0.026s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.024s (total: 0.026s)
+  Running SPPL... 0.215s
+  Run 3/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.024s (total: 0.026s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.025s (total: 0.027s)
+  Running SPPL... 0.186s
+  Run 4/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.023s (total: 0.025s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.022s (total: 0.024s)
+  Running SPPL... 0.160s
+  Run 5/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.023s (total: 0.025s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.021s (total: 0.023s)
+  Running SPPL... 0.168s
+  Run 6/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.023s (total: 0.025s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.022s (total: 0.024s)
+  Running SPPL... 0.157s
+  Run 7/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.024s (total: 0.026s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.021s (total: 0.023s)
+  Running SPPL... 0.131s
+  Run 8/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.022s (total: 0.024s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.022s (total: 0.024s)
+  Running SPPL... 0.162s
+  Run 9/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.022s (total: 0.024s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.022s (total: 0.024s)
+  Running SPPL... 0.169s
+  Run 10/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.023s (total: 0.025s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.021s (total: 0.023s)
+  Running SPPL... 0.172s
+  Averages after 10 runs:
+    Slice+Dice - Slice: 0.0020s, Total: 0.0252s
+    Slice+Roulette - Slice: 0.0020s, Total: 0.0243s
+    SPPL: 0.1713s
+
+---- PROGRAM SIZE: 10 ----
+  Run 1/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.030s (total: 0.032s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.027s (total: 0.029s)
+  Running SPPL... 0.648s
+  Run 2/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.030s (total: 0.032s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.027s (total: 0.029s)
+  Running SPPL... 0.552s
+  Run 3/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.030s (total: 0.032s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.028s (total: 0.030s)
+  Running SPPL... 0.561s
+  Run 4/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.030s (total: 0.032s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.025s (total: 0.027s)
+  Running SPPL... 0.545s
+  Run 5/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.031s (total: 0.033s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.025s (total: 0.027s)
+  Running SPPL... 0.739s
+  Run 6/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.030s (total: 0.032s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.027s (total: 0.029s)
+  Running SPPL... 0.542s
+  Run 7/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.031s (total: 0.033s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.025s (total: 0.027s)
+  Running SPPL... 0.461s
+  Run 8/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.031s (total: 0.033s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.026s (total: 0.028s)
+  Running SPPL... 0.828s
+  Run 9/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.030s (total: 0.032s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.027s (total: 0.029s)
+  Running SPPL... 0.619s
+  Run 10/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.032s (total: 0.034s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.025s (total: 0.027s)
+  Running SPPL... 0.494s
+  Averages after 10 runs:
+    Slice+Dice - Slice: 0.0020s, Total: 0.0325s
+    Slice+Roulette - Slice: 0.0020s, Total: 0.0282s
+    SPPL: 0.5987s
+
+---- PROGRAM SIZE: 15 ----
+  Run 1/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.040s (total: 0.042s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.032s (total: 0.034s)
+  Running SPPL... 1.542s
+  Run 2/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.039s (total: 0.041s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.033s (total: 0.035s)
+  Running SPPL... 1.785s
+  Run 3/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.039s (total: 0.041s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.030s (total: 0.032s)
+  Running SPPL... 2.002s
+  Run 4/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.003s / dice: 0.038s (total: 0.041s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.030s (total: 0.032s)
+  Running SPPL... 2.040s
+  Run 5/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.038s (total: 0.040s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.029s (total: 0.031s)
+  Running SPPL... 2.049s
+  Run 6/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.038s (total: 0.040s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.027s (total: 0.029s)
+  Running SPPL... 2.154s
+  Run 7/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.038s (total: 0.040s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.028s (total: 0.030s)
+  Running SPPL... 1.393s
+  Run 8/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.038s (total: 0.040s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.026s (total: 0.028s)
+  Running SPPL... 2.681s
+  Run 9/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.040s (total: 0.042s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.031s (total: 0.033s)
+  Running SPPL... 1.323s
+  Run 10/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.038s (total: 0.040s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.028s (total: 0.030s)
+  Running SPPL... 1.245s
+  Averages after 10 runs:
+    Slice+Dice - Slice: 0.0021s, Total: 0.0407s
+    Slice+Roulette - Slice: 0.0020s, Total: 0.0314s
+    SPPL: 1.8213s
+
+---- PROGRAM SIZE: 20 ----
+  Run 1/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.049s (total: 0.051s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.037s (total: 0.039s)
+  Running SPPL... 2.878s
+  Run 2/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.045s (total: 0.047s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.034s (total: 0.036s)
+  Running SPPL... 5.990s
+  Run 3/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.047s (total: 0.049s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.030s (total: 0.032s)
+  Running SPPL... 7.844s
+  Run 4/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.047s (total: 0.049s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.032s (total: 0.034s)
+  Running SPPL... 3.071s
+  Run 5/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.045s (total: 0.047s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.030s (total: 0.032s)
+  Running SPPL... 6.038s
+  Run 6/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.045s (total: 0.047s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.034s (total: 0.036s)
+  Running SPPL... 8.034s
+  Run 7/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.048s (total: 0.050s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.033s (total: 0.035s)
+  Running SPPL... 3.878s
+  Run 8/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.046s (total: 0.048s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.033s (total: 0.035s)
+  Running SPPL... 5.016s
+  Run 9/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.047s (total: 0.049s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.030s (total: 0.032s)
+  Running SPPL... 4.267s
+  Run 10/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.052s (total: 0.054s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.030s (total: 0.032s)
+  Running SPPL... 4.444s
+  Averages after 10 runs:
+    Slice+Dice - Slice: 0.0020s, Total: 0.0491s
+    Slice+Roulette - Slice: 0.0020s, Total: 0.0343s
+    SPPL: 5.1459s
+
+---- PROGRAM SIZE: 25 ----
+  Run 1/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.053s (total: 0.055s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.039s (total: 0.041s)
+  Running SPPL... 7.000s
+  Run 2/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.053s (total: 0.055s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.035s (total: 0.037s)
+  Running SPPL... 22.420s
+  Run 3/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.060s (total: 0.062s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.037s (total: 0.039s)
+  Running SPPL... 13.805s
+  Run 4/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.055s (total: 0.057s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.032s (total: 0.034s)
+  Running SPPL... 8.441s
+  Run 5/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.054s (total: 0.056s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.036s (total: 0.038s)
+  Running SPPL... 14.206s
+  Run 6/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.051s (total: 0.053s)
+  Running Slice...  Running Roulette...   slice: 0.003s / roulette: 0.036s (total: 0.039s)
+  Running SPPL... 17.322s
+  Run 7/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.054s (total: 0.056s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.033s (total: 0.035s)
+  Running SPPL... 8.314s
+  Run 8/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.052s (total: 0.054s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.034s (total: 0.036s)
+  Running SPPL... 10.302s
+  Run 9/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.064s (total: 0.066s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.033s (total: 0.035s)
+  Running SPPL... 11.305s
+  Run 10/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.052s (total: 0.054s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.033s (total: 0.035s)
+  Running SPPL... 35.775s
+  Averages after 10 runs:
+    Slice+Dice - Slice: 0.0020s, Total: 0.0568s
+    Slice+Roulette - Slice: 0.0021s, Total: 0.0369s
+    SPPL: 14.8889s
+
+---- PROGRAM SIZE: 30 ----
+  Run 1/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.066s (total: 0.068s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.075s (total: 0.077s)
+  Running SPPL... 14.641s
+  Run 2/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.061s (total: 0.063s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.040s (total: 0.042s)
+  Running SPPL... 37.072s
+  Run 3/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.061s (total: 0.063s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.039s (total: 0.041s)
+  Running SPPL... 20.875s
+  Run 4/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.058s (total: 0.060s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.037s (total: 0.039s)
+  Running SPPL... 24.312s
+  Run 5/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.060s (total: 0.062s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.035s (total: 0.037s)
+  Running SPPL... 48.016s
+  Run 6/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.058s (total: 0.060s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.035s (total: 0.037s)
+  Running SPPL... 61.616s
+  Run 7/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.058s (total: 0.060s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.034s (total: 0.036s)
+  Running SPPL... 11.903s
+  Run 8/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.060s (total: 0.062s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.034s (total: 0.036s)
+  Running SPPL... 34.476s
+  Run 9/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.061s (total: 0.063s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.038s (total: 0.040s)
+  Running SPPL... 22.726s
+  Run 10/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.003s / dice: 0.058s (total: 0.061s)
+  Running Slice...  Running Roulette...   slice: 0.003s / roulette: 0.033s (total: 0.036s)
+  Running SPPL... TIMEOUT after 120s
+  Averages after 10 runs:
+    Slice+Dice - Slice: 0.0021s, Total: 0.0622s
+    Slice+Roulette - Slice: 0.0021s, Total: 0.0421s
+    SPPL: 30.6265s
+
+---- PROGRAM SIZE: 35 ----
+  Run 1/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.003s / dice: 0.078s (total: 0.081s)
+  Running Slice...  Running Roulette...   slice: 0.003s / roulette: 0.040s (total: 0.043s)
+    Skipping SPPL (previous timeout)
+  Run 2/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.003s / dice: 0.067s (total: 0.070s)
+  Running Slice...  Running Roulette...   slice: 0.003s / roulette: 0.037s (total: 0.040s)
+    Skipping SPPL (previous timeout)
+  Run 3/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.003s / dice: 0.068s (total: 0.071s)
+  Running Slice...  Running Roulette...   slice: 0.003s / roulette: 0.044s (total: 0.047s)
+    Skipping SPPL (previous timeout)
+  Run 4/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.003s / dice: 0.067s (total: 0.070s)
+  Running Slice...  Running Roulette...   slice: 0.003s / roulette: 0.039s (total: 0.042s)
+    Skipping SPPL (previous timeout)
+  Run 5/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.003s / dice: 0.064s (total: 0.067s)
+  Running Slice...  Running Roulette...   slice: 0.003s / roulette: 0.043s (total: 0.046s)
+    Skipping SPPL (previous timeout)
+  Run 6/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.003s / dice: 0.066s (total: 0.069s)
+  Running Slice...  Running Roulette...   slice: 0.003s / roulette: 0.037s (total: 0.040s)
+    Skipping SPPL (previous timeout)
+  Run 7/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.003s / dice: 0.069s (total: 0.072s)
+  Running Slice...  Running Roulette...   slice: 0.003s / roulette: 0.039s (total: 0.042s)
+    Skipping SPPL (previous timeout)
+  Run 8/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.003s / dice: 0.068s (total: 0.071s)
+  Running Slice...  Running Roulette...   slice: 0.003s / roulette: 0.038s (total: 0.041s)
+    Skipping SPPL (previous timeout)
+  Run 9/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.003s / dice: 0.069s (total: 0.072s)
+  Running Slice...  Running Roulette...   slice: 0.003s / roulette: 0.042s (total: 0.045s)
+    Skipping SPPL (previous timeout)
+  Run 10/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.003s / dice: 0.066s (total: 0.069s)
+  Running Slice...  Running Roulette...   slice: 0.003s / roulette: 0.042s (total: 0.045s)
+    Skipping SPPL (previous timeout)
+  Averages after 10 runs:
+    Slice+Dice - Slice: 0.0030s, Total: 0.0712s
+    Slice+Roulette - Slice: 0.0030s, Total: 0.0431s
+
+---- PROGRAM SIZE: 40 ----
+  Run 1/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.003s / dice: 0.075s (total: 0.078s)
+  Running Slice...  Running Roulette...   slice: 0.003s / roulette: 0.055s (total: 0.058s)
+    Skipping SPPL (previous timeout)
+  Run 2/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.003s / dice: 0.072s (total: 0.075s)
+  Running Slice...  Running Roulette...   slice: 0.003s / roulette: 0.049s (total: 0.052s)
+    Skipping SPPL (previous timeout)
+  Run 3/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.003s / dice: 0.073s (total: 0.076s)
+  Running Slice...  Running Roulette...   slice: 0.003s / roulette: 0.052s (total: 0.055s)
+    Skipping SPPL (previous timeout)
+  Run 4/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.003s / dice: 0.073s (total: 0.076s)
+  Running Slice...  Running Roulette...   slice: 0.003s / roulette: 0.041s (total: 0.044s)
+    Skipping SPPL (previous timeout)
+  Run 5/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.003s / dice: 0.069s (total: 0.072s)
+  Running Slice...  Running Roulette...   slice: 0.003s / roulette: 0.046s (total: 0.049s)
+    Skipping SPPL (previous timeout)
+  Run 6/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.003s / dice: 0.071s (total: 0.074s)
+  Running Slice...  Running Roulette...   slice: 0.003s / roulette: 0.040s (total: 0.043s)
+    Skipping SPPL (previous timeout)
+  Run 7/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.003s / dice: 0.071s (total: 0.074s)
+  Running Slice...  Running Roulette...   slice: 0.003s / roulette: 0.050s (total: 0.053s)
+    Skipping SPPL (previous timeout)
+  Run 8/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.003s / dice: 0.072s (total: 0.075s)
+  Running Slice...  Running Roulette...   slice: 0.003s / roulette: 0.046s (total: 0.049s)
+    Skipping SPPL (previous timeout)
+  Run 9/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.003s / dice: 0.074s (total: 0.077s)
+  Running Slice...  Running Roulette...   slice: 0.003s / roulette: 0.050s (total: 0.053s)
+    Skipping SPPL (previous timeout)
+  Run 10/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.003s / dice: 0.069s (total: 0.072s)
+  Running Slice...  Running Roulette...   slice: 0.003s / roulette: 0.051s (total: 0.054s)
+    Skipping SPPL (previous timeout)
+  Averages after 10 runs:
+    Slice+Dice - Slice: 0.0030s, Total: 0.0749s
+    Slice+Roulette - Slice: 0.0030s, Total: 0.0510s
+
+---- PROGRAM SIZE: 45 ----
+  Run 1/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.003s / dice: 0.080s (total: 0.083s)
+  Running Slice...  Running Roulette...   slice: 0.003s / roulette: 0.051s (total: 0.054s)
+    Skipping SPPL (previous timeout)
+  Run 2/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.003s / dice: 0.077s (total: 0.080s)
+  Running Slice...  Running Roulette...   slice: 0.003s / roulette: 0.047s (total: 0.050s)
+    Skipping SPPL (previous timeout)
+  Run 3/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.003s / dice: 0.078s (total: 0.081s)
+  Running Slice...  Running Roulette...   slice: 0.003s / roulette: 0.055s (total: 0.058s)
+    Skipping SPPL (previous timeout)
+  Run 4/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.003s / dice: 0.077s (total: 0.080s)
+  Running Slice...  Running Roulette...   slice: 0.003s / roulette: 0.051s (total: 0.054s)
+    Skipping SPPL (previous timeout)
+  Run 5/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.003s / dice: 0.077s (total: 0.080s)
+  Running Slice...  Running Roulette...   slice: 0.004s / roulette: 0.054s (total: 0.058s)
+    Skipping SPPL (previous timeout)
+  Run 6/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.003s / dice: 0.078s (total: 0.081s)
+  Running Slice...  Running Roulette...   slice: 0.003s / roulette: 0.051s (total: 0.054s)
+    Skipping SPPL (previous timeout)
+  Run 7/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.003s / dice: 0.077s (total: 0.080s)
+  Running Slice...  Running Roulette...   slice: 0.003s / roulette: 0.042s (total: 0.045s)
+    Skipping SPPL (previous timeout)
+  Run 8/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.003s / dice: 0.079s (total: 0.082s)
+  Running Slice...  Running Roulette...   slice: 0.003s / roulette: 0.052s (total: 0.055s)
+    Skipping SPPL (previous timeout)
+  Run 9/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.003s / dice: 0.078s (total: 0.081s)
+  Running Slice...  Running Roulette...   slice: 0.003s / roulette: 0.051s (total: 0.054s)
+    Skipping SPPL (previous timeout)
+  Run 10/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.003s / dice: 0.082s (total: 0.085s)
+  Running Slice...  Running Roulette...   slice: 0.003s / roulette: 0.055s (total: 0.058s)
+    Skipping SPPL (previous timeout)
+  Averages after 10 runs:
+    Slice+Dice - Slice: 0.0030s, Total: 0.0813s
+    Slice+Roulette - Slice: 0.0031s, Total: 0.0540s
+
+---- PROGRAM SIZE: 50 ----
+  Run 1/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.003s / dice: 0.087s (total: 0.090s)
+  Running Slice...  Running Roulette...   slice: 0.003s / roulette: 0.053s (total: 0.056s)
+    Skipping SPPL (previous timeout)
+  Run 2/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.003s / dice: 0.086s (total: 0.089s)
+  Running Slice...  Running Roulette...   slice: 0.003s / roulette: 0.082s (total: 0.085s)
+    Skipping SPPL (previous timeout)
+  Run 3/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.003s / dice: 0.085s (total: 0.088s)
+  Running Slice...  Running Roulette...   slice: 0.003s / roulette: 0.079s (total: 0.082s)
+    Skipping SPPL (previous timeout)
+  Run 4/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.003s / dice: 0.083s (total: 0.086s)
+  Running Slice...  Running Roulette...   slice: 0.003s / roulette: 0.078s (total: 0.081s)
+    Skipping SPPL (previous timeout)
+  Run 5/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.003s / dice: 0.083s (total: 0.086s)
+  Running Slice...  Running Roulette...   slice: 0.003s / roulette: 0.083s (total: 0.086s)
+    Skipping SPPL (previous timeout)
+  Run 6/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.003s / dice: 0.083s (total: 0.086s)
+  Running Slice...  Running Roulette...   slice: 0.003s / roulette: 0.076s (total: 0.079s)
+    Skipping SPPL (previous timeout)
+  Run 7/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.003s / dice: 0.084s (total: 0.087s)
+  Running Slice...  Running Roulette...   slice: 0.003s / roulette: 0.054s (total: 0.057s)
+    Skipping SPPL (previous timeout)
+  Run 8/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.003s / dice: 0.086s (total: 0.089s)
+  Running Slice...  Running Roulette...   slice: 0.003s / roulette: 0.078s (total: 0.081s)
+    Skipping SPPL (previous timeout)
+  Run 9/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.003s / dice: 0.087s (total: 0.090s)
+  Running Slice...  Running Roulette...   slice: 0.003s / roulette: 0.081s (total: 0.084s)
+    Skipping SPPL (previous timeout)
+  Run 10/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.003s / dice: 0.083s (total: 0.086s)
+  Running Slice...  Running Roulette...   slice: 0.003s / roulette: 0.077s (total: 0.080s)
+    Skipping SPPL (previous timeout)
+  Averages after 10 runs:
+    Slice+Dice - Slice: 0.0030s, Total: 0.0877s
+    Slice+Roulette - Slice: 0.0030s, Total: 0.0771s
+
+Saved scaling plot to /home/opam/slice/images/scaling/build_conditional_random_independent_slice_1.png
+
+Testing asymptotic scaling for build_conditional_random_independent_slice_2...
+This will test programs of size 1 to 245 in increments of 5.
+
+---- PROGRAM SIZE: 0 ----
+---- PROGRAM SIZE: 5 ----
+  Run 1/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.032s (total: 0.034s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.019s (total: 0.021s)
+  Running SPPL... 0.211s
+  Run 2/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.026s (total: 0.028s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.021s (total: 0.023s)
+  Running SPPL... 0.165s
+  Run 3/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.019s (total: 0.021s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.016s (total: 0.018s)
+  Running SPPL... 0.134s
+  Run 4/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.027s (total: 0.029s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.023s (total: 0.025s)
+  Running SPPL... 0.254s
+  Run 5/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.018s (total: 0.020s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.017s (total: 0.019s)
+  Running SPPL... 0.154s
+  Run 6/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.024s (total: 0.026s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.018s (total: 0.020s)
+  Running SPPL... 0.167s
+  Run 7/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.027s (total: 0.029s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.018s (total: 0.020s)
+  Running SPPL... 0.151s
+  Run 8/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.025s (total: 0.027s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.023s (total: 0.025s)
+  Running SPPL... 0.169s
+  Run 9/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.020s (total: 0.022s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.017s (total: 0.019s)
+  Running SPPL... 0.218s
+  Run 10/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.029s (total: 0.031s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.025s (total: 0.027s)
+  Running SPPL... 0.138s
+  Averages after 10 runs:
+    Slice+Dice - Slice: 0.0020s, Total: 0.0267s
+    Slice+Roulette - Slice: 0.0020s, Total: 0.0217s
+    SPPL: 0.1759s
+
+---- PROGRAM SIZE: 10 ----
+  Run 1/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.043s (total: 0.045s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.024s (total: 0.026s)
+  Running SPPL... 0.455s
+  Run 2/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.041s (total: 0.043s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.023s (total: 0.025s)
+  Running SPPL... 0.560s
+  Run 3/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.039s (total: 0.041s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.127s (total: 0.129s)
+  Running SPPL... 0.706s
+  Run 4/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.050s (total: 0.052s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.046s (total: 0.048s)
+  Running SPPL... 0.897s
+  Run 5/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.038s (total: 0.040s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.030s (total: 0.032s)
+  Running SPPL... 0.877s
+  Run 6/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.034s (total: 0.036s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.110s (total: 0.112s)
+  Running SPPL... 0.482s
+  Run 7/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.038s (total: 0.040s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.025s (total: 0.027s)
+  Running SPPL... 0.540s
+  Run 8/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.043s (total: 0.045s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.022s (total: 0.024s)
+  Running SPPL... 0.477s
+  Run 9/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.041s (total: 0.043s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.032s (total: 0.034s)
+  Running SPPL... 2.326s
+  Run 10/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.044s (total: 0.046s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.025s (total: 0.027s)
+  Running SPPL... 0.511s
+  Averages after 10 runs:
+    Slice+Dice - Slice: 0.0020s, Total: 0.0431s
+    Slice+Roulette - Slice: 0.0020s, Total: 0.0484s
+    SPPL: 0.7831s
+
+---- PROGRAM SIZE: 15 ----
+  Run 1/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.063s (total: 0.065s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.044s (total: 0.046s)
+  Running SPPL... 1.234s
+  Run 2/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.063s (total: 0.065s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.031s (total: 0.033s)
+  Running SPPL... 1.402s
+  Run 3/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.060s (total: 0.062s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.050s (total: 0.052s)
+  Running SPPL... 2.114s
+  Run 4/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.003s / dice: 0.087s (total: 0.090s)
+  Running Slice...  Running Roulette...   slice: 0.003s / roulette: 0.144s (total: 0.147s)
+  Running SPPL... 5.917s
+  Run 5/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.052s (total: 0.054s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.044s (total: 0.046s)
+  Running SPPL... 5.444s
+  Run 6/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.061s (total: 0.063s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.042s (total: 0.044s)
+  Running SPPL... 1.960s
+  Run 7/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.057s (total: 0.059s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.053s (total: 0.055s)
+  Running SPPL... 2.150s
+  Run 8/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.052s (total: 0.054s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.026s (total: 0.028s)
+  Running SPPL... 0.771s
+  Run 9/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.047s (total: 0.049s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.026s (total: 0.028s)
+  Running SPPL... 5.722s
+  Run 10/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.076s (total: 0.078s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.035s (total: 0.037s)
+  Running SPPL... 1.830s
+  Averages after 10 runs:
+    Slice+Dice - Slice: 0.0021s, Total: 0.0639s
+    Slice+Roulette - Slice: 0.0021s, Total: 0.0516s
+    SPPL: 2.8544s
+
+---- PROGRAM SIZE: 20 ----
+  Run 1/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.003s / dice: 0.094s (total: 0.097s)
+  Running Slice...  Running Roulette...   slice: 0.003s / roulette: 0.065s (total: 0.068s)
+  Running SPPL... 2.584s
+  Run 2/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.003s / dice: 0.096s (total: 0.099s)
+  Running Slice...  Running Roulette...   slice: 0.003s / roulette: 0.185s (total: 0.188s)
+  Running SPPL... 14.148s
+  Run 3/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.003s / dice: 0.067s (total: 0.070s)
+  Running Slice...  Running Roulette...   slice: 0.003s / roulette: 0.029s (total: 0.032s)
+  Running SPPL... 2.751s
+  Run 4/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.004s / dice: 0.116s (total: 0.120s)
+  Running Slice...  Running Roulette...   slice: 0.004s / roulette: 0.061s (total: 0.065s)
+  Running SPPL... 28.284s
+  Run 5/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.080s (total: 0.082s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.033s (total: 0.035s)
+  Running SPPL... 31.687s
+  Run 6/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.003s / dice: 0.136s (total: 0.139s)
+  Running Slice...  Running Roulette...   slice: 0.003s / roulette: 0.036s (total: 0.039s)
+  Running SPPL... 11.622s
+  Run 7/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.003s / dice: 0.096s (total: 0.099s)
+  Running Slice...  Running Roulette...   slice: 0.003s / roulette: 0.047s (total: 0.050s)
+  Running SPPL... 7.902s
+  Run 8/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.072s (total: 0.074s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.038s (total: 0.040s)
+  Running SPPL... 1.182s
+  Run 9/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.057s (total: 0.059s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.028s (total: 0.030s)
+  Running SPPL... 6.103s
+  Run 10/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.003s / dice: 0.088s (total: 0.091s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.049s (total: 0.051s)
+  Running SPPL... 2.524s
+  Averages after 10 runs:
+    Slice+Dice - Slice: 0.0028s, Total: 0.0930s
+    Slice+Roulette - Slice: 0.0027s, Total: 0.0598s
+    SPPL: 10.8787s
+
+---- PROGRAM SIZE: 25 ----
+  Run 1/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.003s / dice: 0.108s (total: 0.111s)
+  Running Slice...  Running Roulette...   slice: 0.003s / roulette: 0.054s (total: 0.057s)
+  Running SPPL... 6.238s
+  Run 2/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.003s / dice: 0.104s (total: 0.107s)
+  Running Slice...  Running Roulette...   slice: 0.003s / roulette: 0.054s (total: 0.057s)
+  Running SPPL... 27.886s
+  Run 3/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.003s / dice: 0.086s (total: 0.089s)
+  Running Slice...  Running Roulette...   slice: 0.003s / roulette: 0.164s (total: 0.167s)
+  Running SPPL... 4.644s
+  Run 4/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.006s / dice: 0.134s (total: 0.140s)
+  Running Slice...  Running Roulette...   slice: 0.006s / roulette: 0.074s (total: 0.080s)
+  Running SPPL... 33.563s
+  Run 5/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.003s / dice: 0.081s (total: 0.084s)
+  Running Slice...  Running Roulette...   slice: 0.003s / roulette: 0.091s (total: 0.094s)
+  Running SPPL... 29.675s
+  Run 6/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.004s / dice: 0.143s (total: 0.147s)
+  Running Slice...  Running Roulette...   slice: 0.003s / roulette: 0.304s (total: 0.307s)
+  Running SPPL... 49.865s
+  Run 7/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.004s / dice: 0.189s (total: 0.193s)
+  Running Slice...  Running Roulette...   slice: 0.004s / roulette: 0.532s (total: 0.536s)
+  Running SPPL... 30.932s
+  Run 8/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.089s (total: 0.091s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.043s (total: 0.045s)
+  Running SPPL... 1.583s
+  Run 9/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.070s (total: 0.072s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.032s (total: 0.034s)
+  Running SPPL... 8.223s
+  Run 10/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.003s / dice: 0.112s (total: 0.115s)
+  Running Slice...  Running Roulette...   slice: 0.003s / roulette: 0.053s (total: 0.056s)
+  Running SPPL... 17.890s
+  Averages after 10 runs:
+    Slice+Dice - Slice: 0.0033s, Total: 0.1149s
+    Slice+Roulette - Slice: 0.0032s, Total: 0.1433s
+    SPPL: 21.0499s
+
+---- PROGRAM SIZE: 30 ----
+  Run 1/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.003s / dice: 0.127s (total: 0.130s)
+  Running Slice...  Running Roulette...   slice: 0.003s / roulette: 0.058s (total: 0.061s)
+  Running SPPL... 8.813s
+  Run 2/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.004s / dice: 0.135s (total: 0.139s)
+  Running Slice...  Running Roulette...   slice: 0.004s / roulette: 0.067s (total: 0.071s)
+  Running SPPL... 45.330s
+  Run 3/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.003s / dice: 0.101s (total: 0.104s)
+  Running Slice...  Running Roulette...   slice: 0.003s / roulette: 0.039s (total: 0.042s)
+  Running SPPL... 7.614s
+  Run 4/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.006s / dice: 0.152s (total: 0.158s)
+  Running Slice...  Running Roulette...   slice: 0.006s / roulette: 0.073s (total: 0.079s)
+  Running SPPL... 33.566s
+  Run 5/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.003s / dice: 0.090s (total: 0.093s)
+  Running Slice...  Running Roulette...   slice: 0.003s / roulette: 0.140s (total: 0.143s)
+  Running SPPL... 31.806s
+  Run 6/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.006s / dice: 0.181s (total: 0.187s)
+  Running Slice...  Running Roulette...   slice: 0.006s / roulette: 0.545s (total: 0.551s)
+  Running SPPL... 102.813s
+  Run 7/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.006s / dice: 0.161s (total: 0.167s)
+  Running Slice...  Running Roulette...   slice: 0.006s / roulette: 0.103s (total: 0.109s)
+  Running SPPL... 107.730s
+  Run 8/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.003s / dice: 0.106s (total: 0.109s)
+  Running Slice...  Running Roulette...   slice: 0.003s / roulette: 0.041s (total: 0.044s)
+  Running SPPL... 4.892s
+  Run 9/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.003s / dice: 0.077s (total: 0.080s)
+  Running Slice...  Running Roulette...   slice: 0.003s / roulette: 0.038s (total: 0.041s)
+  Running SPPL... 10.115s
+  Run 10/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.004s / dice: 0.148s (total: 0.152s)
+  Running Slice...  Running Roulette...   slice: 0.004s / roulette: 0.101s (total: 0.105s)
+  Running SPPL... TIMEOUT after 120s
+  Averages after 10 runs:
+    Slice+Dice - Slice: 0.0041s, Total: 0.1319s
+    Slice+Roulette - Slice: 0.0041s, Total: 0.1246s
+    SPPL: 39.1867s
+
+---- PROGRAM SIZE: 35 ----
+  Run 1/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.004s / dice: 0.170s (total: 0.174s)
+  Running Slice...  Running Roulette...   slice: 0.003s / roulette: 0.067s (total: 0.070s)
+    Skipping SPPL (previous timeout)
+  Run 2/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.006s / dice: 0.145s (total: 0.151s)
+  Running Slice...  Running Roulette...   slice: 0.006s / roulette: 0.075s (total: 0.081s)
+    Skipping SPPL (previous timeout)
+  Run 3/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.003s / dice: 0.103s (total: 0.106s)
+  Running Slice...  Running Roulette...   slice: 0.003s / roulette: 0.048s (total: 0.051s)
+    Skipping SPPL (previous timeout)
+  Run 4/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.006s / dice: 0.153s (total: 0.159s)
+  Running Slice...  Running Roulette...   slice: 0.006s / roulette: 0.074s (total: 0.080s)
+    Skipping SPPL (previous timeout)
+  Run 5/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.003s / dice: 0.088s (total: 0.091s)
+  Running Slice...  Running Roulette...   slice: 0.003s / roulette: 0.048s (total: 0.051s)
+    Skipping SPPL (previous timeout)
+  Run 6/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.008s / dice: 0.198s (total: 0.206s)
+  Running Slice...  Running Roulette...   slice: 0.008s / roulette: 0.086s (total: 0.094s)
+    Skipping SPPL (previous timeout)
+  Run 7/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.006s / dice: 0.183s (total: 0.189s)
+  Running Slice...  Running Roulette...   slice: 0.006s / roulette: 1.157s (total: 1.163s)
+    Skipping SPPL (previous timeout)
+  Run 8/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.003s / dice: 0.106s (total: 0.109s)
+  Running Slice...  Running Roulette...   slice: 0.003s / roulette: 0.070s (total: 0.073s)
+    Skipping SPPL (previous timeout)
+  Run 9/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.003s / dice: 0.086s (total: 0.089s)
+  Running Slice...  Running Roulette...   slice: 0.003s / roulette: 0.049s (total: 0.052s)
+    Skipping SPPL (previous timeout)
+  Run 10/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.006s / dice: 0.165s (total: 0.171s)
+  Running Slice...  Running Roulette...   slice: 0.006s / roulette: 0.119s (total: 0.125s)
+    Skipping SPPL (previous timeout)
+  Averages after 10 runs:
+    Slice+Dice - Slice: 0.0048s, Total: 0.1445s
+    Slice+Roulette - Slice: 0.0047s, Total: 0.1840s
+
+---- PROGRAM SIZE: 40 ----
+  Run 1/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.004s / dice: 0.162s (total: 0.166s)
+  Running Slice...  Running Roulette...   slice: 0.003s / roulette: 0.185s (total: 0.188s)
+    Skipping SPPL (previous timeout)
+  Run 2/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.006s / dice: 0.147s (total: 0.153s)
+  Running Slice...  Running Roulette...   slice: 0.006s / roulette: 0.102s (total: 0.108s)
+    Skipping SPPL (previous timeout)
+  Run 3/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.003s / dice: 0.109s (total: 0.112s)
+  Running Slice...  Running Roulette...   slice: 0.003s / roulette: 0.044s (total: 0.047s)
+    Skipping SPPL (previous timeout)
+  Run 4/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.007s / dice: 0.187s (total: 0.194s)
+  Running Slice...  Running Roulette...   slice: 0.007s / roulette: 0.087s (total: 0.094s)
+    Skipping SPPL (previous timeout)
+  Run 5/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.003s / dice: 0.109s (total: 0.112s)
+  Running Slice...  Running Roulette...   slice: 0.003s / roulette: 0.160s (total: 0.163s)
+    Skipping SPPL (previous timeout)
+  Run 6/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.010s / dice: 0.240s (total: 0.250s)
+  Running Slice...  Running Roulette...   slice: 0.050s / roulette: 0.107s (total: 0.157s)
+    Skipping SPPL (previous timeout)
+  Run 7/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.006s / dice: 0.158s (total: 0.164s)
+  Running Slice...  Running Roulette...   slice: 0.006s / roulette: 0.079s (total: 0.085s)
+    Skipping SPPL (previous timeout)
+  Run 8/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.003s / dice: 0.131s (total: 0.134s)
+  Running Slice...  Running Roulette...   slice: 0.003s / roulette: 0.187s (total: 0.190s)
+    Skipping SPPL (previous timeout)
+  Run 9/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.003s / dice: 0.114s (total: 0.117s)
+  Running Slice...  Running Roulette...   slice: 0.003s / roulette: 0.206s (total: 0.209s)
+    Skipping SPPL (previous timeout)
+  Run 10/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.007s / dice: 0.172s (total: 0.179s)
+  Running Slice...  Running Roulette...   slice: 0.007s / roulette: 0.089s (total: 0.096s)
+    Skipping SPPL (previous timeout)
+  Averages after 10 runs:
+    Slice+Dice - Slice: 0.0052s, Total: 0.1581s
+    Slice+Roulette - Slice: 0.0091s, Total: 0.1337s
+
+---- PROGRAM SIZE: 45 ----
+  Run 1/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.004s / dice: 0.164s (total: 0.168s)
+  Running Slice...  Running Roulette...   slice: 0.004s / roulette: 0.074s (total: 0.078s)
+    Skipping SPPL (previous timeout)
+  Run 2/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.007s / dice: 0.151s (total: 0.158s)
+  Running Slice...  Running Roulette...   slice: 0.006s / roulette: 0.074s (total: 0.080s)
+    Skipping SPPL (previous timeout)
+  Run 3/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.004s / dice: 0.129s (total: 0.133s)
+  Running Slice...  Running Roulette...   slice: 0.003s / roulette: 0.050s (total: 0.053s)
+    Skipping SPPL (previous timeout)
+  Run 4/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.007s / dice: 0.197s (total: 0.204s)
+  Running Slice...  Running Roulette...   slice: 0.007s / roulette: 0.092s (total: 0.099s)
+    Skipping SPPL (previous timeout)
+  Run 5/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.004s / dice: 0.151s (total: 0.155s)
+  Running Slice...  Running Roulette...   slice: 0.004s / roulette: 0.241s (total: 0.245s)
+    Skipping SPPL (previous timeout)
+  Run 6/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.011s / dice: 0.261s (total: 0.272s)
+  Running Slice...  Running Roulette...   slice: 0.048s / roulette: 0.150s (total: 0.198s)
+    Skipping SPPL (previous timeout)
+  Run 7/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.007s / dice: 0.219s (total: 0.226s)
+  Running Slice...  Running Roulette...   slice: 0.007s / roulette: 2.458s (total: 2.465s)
+    Skipping SPPL (previous timeout)
+  Run 8/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.004s / dice: 0.144s (total: 0.148s)
+  Running Slice...  Running Roulette...   slice: 0.003s / roulette: 0.065s (total: 0.068s)
+    Skipping SPPL (previous timeout)
+  Run 9/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.003s / dice: 0.131s (total: 0.134s)
+  Running Slice...  Running Roulette...   slice: 0.003s / roulette: 0.085s (total: 0.088s)
+    Skipping SPPL (previous timeout)
+  Run 10/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.007s / dice: 0.180s (total: 0.187s)
+  Running Slice...  Running Roulette...   slice: 0.007s / roulette: 0.129s (total: 0.136s)
+    Skipping SPPL (previous timeout)
+  Averages after 10 runs:
+    Slice+Dice - Slice: 0.0058s, Total: 0.1785s
+    Slice+Roulette - Slice: 0.0092s, Total: 0.3510s
+
+---- PROGRAM SIZE: 50 ----
+  Run 1/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.004s / dice: 0.175s (total: 0.179s)
+  Running Slice...  Running Roulette...   slice: 0.004s / roulette: 0.083s (total: 0.087s)
+    Skipping SPPL (previous timeout)
+  Run 2/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.007s / dice: 0.154s (total: 0.161s)
+  Running Slice...  Running Roulette...   slice: 0.007s / roulette: 0.079s (total: 0.086s)
+    Skipping SPPL (previous timeout)
+  Run 3/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.004s / dice: 0.140s (total: 0.144s)
+  Running Slice...  Running Roulette...   slice: 0.004s / roulette: 0.086s (total: 0.090s)
+    Skipping SPPL (previous timeout)
+  Run 4/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.007s / dice: 0.211s (total: 0.218s)
+  Running Slice...  Running Roulette...   slice: 0.007s / roulette: 0.101s (total: 0.108s)
+    Skipping SPPL (previous timeout)
+  Run 5/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.006s / dice: 0.166s (total: 0.172s)
+  Running Slice...  Running Roulette...   slice: 0.006s / roulette: 0.076s (total: 0.082s)
+    Skipping SPPL (previous timeout)
+  Run 6/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.014s / dice: 0.305s (total: 0.319s)
+  Running Slice...  Running Roulette...   slice: 0.018s / roulette: 0.146s (total: 0.164s)
+    Skipping SPPL (previous timeout)
+  Run 7/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.007s / dice: 0.192s (total: 0.199s)
+  Running Slice...  Running Roulette...   slice: 0.007s / roulette: 0.095s (total: 0.102s)
+    Skipping SPPL (previous timeout)
+  Run 8/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.004s / dice: 0.148s (total: 0.152s)
+  Running Slice...  Running Roulette...   slice: 0.004s / roulette: 0.076s (total: 0.080s)
+    Skipping SPPL (previous timeout)
+  Run 9/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.004s / dice: 0.159s (total: 0.163s)
+  Running Slice...  Running Roulette...   slice: 0.004s / roulette: 0.071s (total: 0.075s)
+    Skipping SPPL (previous timeout)
+  Run 10/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.007s / dice: 0.185s (total: 0.192s)
+  Running Slice...  Running Roulette...   slice: 0.007s / roulette: 0.131s (total: 0.138s)
+    Skipping SPPL (previous timeout)
+  Averages after 10 runs:
+    Slice+Dice - Slice: 0.0064s, Total: 0.1899s
+    Slice+Roulette - Slice: 0.0068s, Total: 0.1012s
+
+Saved scaling plot to /home/opam/slice/images/scaling/build_conditional_random_independent_slice_2.png
+
+Testing asymptotic scaling for build_alternating_guard_slice_2...
+This will test programs of size 5 to 95 in increments of 5.
+
+---- PROGRAM SIZE: 0 ----
+---- PROGRAM SIZE: 5 ----
+  Run 1/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.036s (total: 0.038s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.034s (total: 0.036s)
+  Running SPPL... 0.166s
+  Run 2/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.032s (total: 0.034s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.031s (total: 0.033s)
+  Running SPPL... 0.163s
+  Run 3/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.037s (total: 0.039s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.034s (total: 0.036s)
+  Running SPPL... 0.153s
+  Run 4/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.035s (total: 0.037s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.033s (total: 0.035s)
+  Running SPPL... 0.149s
+  Run 5/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.032s (total: 0.034s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.032s (total: 0.034s)
+  Running SPPL... 0.148s
+  Run 6/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.031s (total: 0.033s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.030s (total: 0.032s)
+  Running SPPL... 0.131s
+  Run 7/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.031s (total: 0.033s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.029s (total: 0.031s)
+  Running SPPL... 0.135s
+  Run 8/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.032s (total: 0.034s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.032s (total: 0.034s)
+  Running SPPL... 0.161s
+  Run 9/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.033s (total: 0.035s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.033s (total: 0.035s)
+  Running SPPL... 0.147s
+  Run 10/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.032s (total: 0.034s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.033s (total: 0.035s)
+  Running SPPL... 0.142s
+  Averages after 10 runs:
+    Slice+Dice - Slice: 0.0020s, Total: 0.0351s
+    Slice+Roulette - Slice: 0.0020s, Total: 0.0341s
+    SPPL: 0.1495s
+
+---- PROGRAM SIZE: 10 ----
+  Run 1/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.067s (total: 0.069s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.109s (total: 0.111s)
+  Running SPPL... 0.655s
+  Run 2/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.065s (total: 0.067s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.120s (total: 0.122s)
+  Running SPPL... 0.596s
+  Run 3/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.067s (total: 0.069s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.122s (total: 0.124s)
+  Running SPPL... 0.622s
+  Run 4/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.067s (total: 0.069s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.109s (total: 0.111s)
+  Running SPPL... 0.499s
+  Run 5/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.065s (total: 0.067s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.119s (total: 0.121s)
+  Running SPPL... 0.520s
+  Run 6/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.063s (total: 0.065s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.111s (total: 0.113s)
+  Running SPPL... 0.540s
+  Run 7/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.003s / dice: 0.124s (total: 0.127s)
+  Running Slice...  Running Roulette...   slice: 0.003s / roulette: 0.098s (total: 0.101s)
+  Running SPPL... 0.531s
+  Run 8/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.068s (total: 0.070s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.106s (total: 0.108s)
+  Running SPPL... 0.580s
+  Run 9/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.067s (total: 0.069s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.103s (total: 0.105s)
+  Running SPPL... 0.620s
+  Run 10/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.002s / dice: 0.068s (total: 0.070s)
+  Running Slice...  Running Roulette...   slice: 0.002s / roulette: 0.170s (total: 0.172s)
+  Running SPPL... 0.583s
+  Averages after 10 runs:
+    Slice+Dice - Slice: 0.0021s, Total: 0.0742s
+    Slice+Roulette - Slice: 0.0021s, Total: 0.1188s
+    SPPL: 0.5746s
+
+---- PROGRAM SIZE: 15 ----
+  Run 1/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.003s / dice: 0.114s (total: 0.117s)
+  Running Slice...  Running Roulette...   slice: 0.003s / roulette: 0.317s (total: 0.320s)
+  Running SPPL... 1.934s
+  Run 2/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.003s / dice: 0.102s (total: 0.105s)
+  Running Slice...  Running Roulette...   slice: 0.003s / roulette: 0.246s (total: 0.249s)
+  Running SPPL... 2.420s
+  Run 3/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.004s / dice: 0.115s (total: 0.119s)
+  Running Slice...  Running Roulette...   slice: 0.004s / roulette: 0.373s (total: 0.377s)
+  Running SPPL... 1.931s
+  Run 4/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.004s / dice: 0.105s (total: 0.109s)
+  Running Slice...  Running Roulette...   slice: 0.004s / roulette: 0.363s (total: 0.367s)
+  Running SPPL... 1.293s
+  Run 5/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.004s / dice: 0.110s (total: 0.114s)
+  Running Slice...  Running Roulette...   slice: 0.004s / roulette: 0.358s (total: 0.362s)
+  Running SPPL... 1.574s
+  Run 6/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.003s / dice: 0.101s (total: 0.104s)
+  Running Slice...  Running Roulette...   slice: 0.003s / roulette: 0.274s (total: 0.277s)
+  Running SPPL... 1.493s
+  Run 7/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.004s / dice: 0.105s (total: 0.109s)
+  Running Slice...  Running Roulette...   slice: 0.004s / roulette: 0.338s (total: 0.342s)
+  Running SPPL... 1.546s
+  Run 8/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.004s / dice: 0.104s (total: 0.108s)
+  Running Slice...  Running Roulette...   slice: 0.004s / roulette: 0.367s (total: 0.371s)
+  Running SPPL... 1.682s
+  Run 9/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.004s / dice: 0.107s (total: 0.111s)
+  Running Slice...  Running Roulette...   slice: 0.004s / roulette: 0.354s (total: 0.358s)
+  Running SPPL... 2.083s
+  Run 10/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.004s / dice: 0.106s (total: 0.110s)
+  Running Slice...  Running Roulette...   slice: 0.004s / roulette: 0.366s (total: 0.370s)
+  Running SPPL... 2.214s
+  Averages after 10 runs:
+    Slice+Dice - Slice: 0.0037s, Total: 0.1106s
+    Slice+Roulette - Slice: 0.0037s, Total: 0.3393s
+    SPPL: 1.8169s
+
+---- PROGRAM SIZE: 20 ----
+  Run 1/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.007s / dice: 0.177s (total: 0.184s)
+  Running Slice...  Running Roulette...   slice: 0.007s / roulette: 0.781s (total: 0.788s)
+  Running SPPL... 3.677s
+  Run 2/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.006s / dice: 0.172s (total: 0.178s)
+  Running Slice...  Running Roulette...   slice: 0.006s / roulette: 0.640s (total: 0.646s)
+  Running SPPL... 4.313s
+  Run 3/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.007s / dice: 0.186s (total: 0.193s)
+  Running Slice...  Running Roulette...   slice: 0.007s / roulette: 0.975s (total: 0.982s)
+  Running SPPL... 4.682s
+  Run 4/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.007s / dice: 0.186s (total: 0.193s)
+  Running Slice...  Running Roulette...   slice: 0.007s / roulette: 0.943s (total: 0.950s)
+  Running SPPL... 6.025s
+  Run 5/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.007s / dice: 0.184s (total: 0.191s)
+  Running Slice...  Running Roulette...   slice: 0.007s / roulette: 0.962s (total: 0.969s)
+  Running SPPL... 2.853s
+  Run 6/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.007s / dice: 0.183s (total: 0.190s)
+  Running Slice...  Running Roulette...   slice: 0.007s / roulette: 0.773s (total: 0.780s)
+  Running SPPL... 7.783s
+  Run 7/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.008s / dice: 0.184s (total: 0.192s)
+  Running Slice...  Running Roulette...   slice: 0.008s / roulette: 0.982s (total: 0.990s)
+  Running SPPL... 6.037s
+  Run 8/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.008s / dice: 0.186s (total: 0.194s)
+  Running Slice...  Running Roulette...   slice: 0.008s / roulette: 1.072s (total: 1.080s)
+  Running SPPL... 3.483s
+  Run 9/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.008s / dice: 0.208s (total: 0.216s)
+  Running Slice...  Running Roulette...   slice: 0.008s / roulette: 1.045s (total: 1.053s)
+  Running SPPL... 7.329s
+  Run 10/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.008s / dice: 0.191s (total: 0.199s)
+  Running Slice...  Running Roulette...   slice: 0.008s / roulette: 1.062s (total: 1.070s)
+  Running SPPL... 3.744s
+  Averages after 10 runs:
+    Slice+Dice - Slice: 0.0073s, Total: 0.1930s
+    Slice+Roulette - Slice: 0.0073s, Total: 0.9308s
+    SPPL: 4.9927s
+
+---- PROGRAM SIZE: 25 ----
+  Run 1/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.010s / dice: 0.305s (total: 0.315s)
+  Running Slice...  Running Roulette...   slice: 0.010s / roulette: 2.029s (total: 2.039s)
+  Running SPPL... 8.858s
+  Run 2/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.009s / dice: 0.238s (total: 0.247s)
+  Running Slice...  Running Roulette...   slice: 0.009s / roulette: 1.825s (total: 1.834s)
+  Running SPPL... 9.300s
+  Run 3/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.012s / dice: 0.271s (total: 0.283s)
+  Running Slice...  Running Roulette...   slice: 0.012s / roulette: 2.596s (total: 2.608s)
+  Running SPPL... 11.969s
+  Run 4/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.012s / dice: 0.261s (total: 0.273s)
+  Running Slice...  Running Roulette...   slice: 0.012s / roulette: 2.364s (total: 2.376s)
+  Running SPPL... 11.788s
+  Run 5/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.012s / dice: 0.263s (total: 0.275s)
+  Running Slice...  Running Roulette...   slice: 0.012s / roulette: 2.365s (total: 2.377s)
+  Running SPPL... 6.370s
+  Run 6/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.010s / dice: 0.244s (total: 0.254s)
+  Running Slice...  Running Roulette...   slice: 0.010s / roulette: 5.425s (total: 5.435s)
+  Running SPPL... 26.661s
+  Run 7/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.012s / dice: 0.258s (total: 0.270s)
+  Running Slice...  Running Roulette...   slice: 0.012s / roulette: 2.226s (total: 2.238s)
+  Running SPPL... 7.150s
+  Run 8/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.013s / dice: 0.270s (total: 0.283s)
+  Running Slice...  Running Roulette...   slice: 0.013s / roulette: 2.610s (total: 2.623s)
+  Running SPPL... 21.211s
+  Run 9/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.013s / dice: 0.280s (total: 0.293s)
+  Running Slice...  Running Roulette...   slice: 0.013s / roulette: 2.512s (total: 2.525s)
+  Running SPPL... 13.529s
+  Run 10/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.012s / dice: 0.257s (total: 0.269s)
+  Running Slice...  Running Roulette...   slice: 0.012s / roulette: 2.414s (total: 2.426s)
+  Running SPPL... 16.721s
+  Averages after 10 runs:
+    Slice+Dice - Slice: 0.0115s, Total: 0.2762s
+    Slice+Roulette - Slice: 0.0115s, Total: 2.6481s
+    SPPL: 13.3557s
+
+---- PROGRAM SIZE: 30 ----
+  Run 1/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.015s / dice: 0.330s (total: 0.345s)
+  Running Slice...  Running Roulette...   slice: 0.015s / roulette: 7.546s (total: 7.561s)
+  Running SPPL... 16.293s
+  Run 2/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.012s / dice: 0.302s (total: 0.314s)
+  Running Slice...  Running Roulette...   slice: 0.012s / roulette: 5.496s (total: 5.508s)
+  Running SPPL... 66.462s
+  Run 3/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.018s / dice: 0.376s (total: 0.394s)
+  Running Slice...  Running Roulette...   slice: 0.018s / roulette: 22.436s (total: 22.454s)
+  Running SPPL... 58.608s
+  Run 4/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.017s / dice: 0.340s (total: 0.357s)
+  Running Slice...  Running Roulette...   slice: 0.016s / roulette: 5.761s (total: 5.777s)
+  Running SPPL... 19.601s
+  Run 5/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.019s / dice: 0.373s (total: 0.392s)
+  Running Slice...  Running Roulette...   slice: 0.019s / roulette: 6.940s (total: 6.959s)
+  Running SPPL... 21.158s
+  Run 6/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.014s / dice: 0.321s (total: 0.335s)
+  Running Slice...  Running Roulette...   slice: 0.015s / roulette: 15.292s (total: 15.307s)
+  Running SPPL... 94.458s
+  Run 7/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.014s / dice: 0.347s (total: 0.361s)
+  Running Slice...  Running Roulette...   slice: 0.023s / roulette: 4.954s (total: 4.977s)
+  Running SPPL... 23.266s
+  Run 8/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.018s / dice: 0.350s (total: 0.368s)
+  Running Slice...  Running Roulette...   slice: 0.017s / roulette: 6.730s (total: 6.747s)
+  Running SPPL... 38.050s
+  Run 9/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.018s / dice: 0.347s (total: 0.365s)
+  Running Slice...  Running Roulette...   slice: 0.018s / roulette: 15.517s (total: 15.535s)
+  Running SPPL... 65.651s
+  Run 10/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.017s / dice: 0.380s (total: 0.397s)
+  Running Slice...  Running Roulette...   slice: 0.018s / roulette: 10.601s (total: 10.619s)
+  Running SPPL... 59.723s
+  Averages after 10 runs:
+    Slice+Dice - Slice: 0.0162s, Total: 0.3628s
+    Slice+Roulette - Slice: 0.0171s, Total: 10.1444s
+    SPPL: 46.3270s
+
+---- PROGRAM SIZE: 35 ----
+  Run 1/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.026s / dice: 0.436s (total: 0.462s)
+  Running Slice...  Running Roulette...   slice: 0.020s / roulette: 15.999s (total: 16.019s)
+  Running SPPL... 54.074s
+  Run 2/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.015s / dice: 0.416s (total: 0.431s)
+  Running Slice...  Running Roulette... TIMEOUT after 120s
+  Running SPPL... TIMEOUT after 120s
+  Run 3/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.028s / dice: 0.694s (total: 0.722s)
+    Skipping Slice+Roulette (previous timeout)
+    Skipping SPPL (previous timeout)
+  Run 4/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.026s / dice: 0.440s (total: 0.466s)
+    Skipping Slice+Roulette (previous timeout)
+    Skipping SPPL (previous timeout)
+  Run 5/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.026s / dice: 0.448s (total: 0.474s)
+    Skipping Slice+Roulette (previous timeout)
+    Skipping SPPL (previous timeout)
+  Run 6/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.021s / dice: 0.399s (total: 0.420s)
+    Skipping Slice+Roulette (previous timeout)
+    Skipping SPPL (previous timeout)
+  Run 7/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.021s / dice: 0.431s (total: 0.452s)
+    Skipping Slice+Roulette (previous timeout)
+    Skipping SPPL (previous timeout)
+  Run 8/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.023s / dice: 0.444s (total: 0.467s)
+    Skipping Slice+Roulette (previous timeout)
+    Skipping SPPL (previous timeout)
+  Run 9/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.025s / dice: 0.447s (total: 0.472s)
+    Skipping Slice+Roulette (previous timeout)
+    Skipping SPPL (previous timeout)
+  Run 10/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.027s / dice: 0.597s (total: 0.624s)
+    Skipping Slice+Roulette (previous timeout)
+    Skipping SPPL (previous timeout)
+  Averages after 10 runs:
+    Slice+Dice - Slice: 0.0238s, Total: 0.4990s
+    Slice+Roulette - Slice: 0.0200s, Total: 16.0190s
+    SPPL: 54.0744s
+
+---- PROGRAM SIZE: 40 ----
+  Run 1/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.031s / dice: 0.563s (total: 0.594s)
+    Skipping Slice+Roulette (previous timeout)
+    Skipping SPPL (previous timeout)
+  Run 2/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.024s / dice: 0.532s (total: 0.556s)
+    Skipping Slice+Roulette (previous timeout)
+    Skipping SPPL (previous timeout)
+  Run 3/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.037s / dice: 0.676s (total: 0.713s)
+    Skipping Slice+Roulette (previous timeout)
+    Skipping SPPL (previous timeout)
+  Run 4/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.037s / dice: 0.667s (total: 0.704s)
+    Skipping Slice+Roulette (previous timeout)
+    Skipping SPPL (previous timeout)
+  Run 5/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.034s / dice: 0.659s (total: 0.693s)
+    Skipping Slice+Roulette (previous timeout)
+    Skipping SPPL (previous timeout)
+  Run 6/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.029s / dice: 0.504s (total: 0.533s)
+    Skipping Slice+Roulette (previous timeout)
+    Skipping SPPL (previous timeout)
+  Run 7/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.030s / dice: 0.615s (total: 0.645s)
+    Skipping Slice+Roulette (previous timeout)
+    Skipping SPPL (previous timeout)
+  Run 8/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.029s / dice: 0.690s (total: 0.719s)
+    Skipping Slice+Roulette (previous timeout)
+    Skipping SPPL (previous timeout)
+  Run 9/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.027s / dice: 0.674s (total: 0.701s)
+    Skipping Slice+Roulette (previous timeout)
+    Skipping SPPL (previous timeout)
+  Run 10/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.036s / dice: 0.719s (total: 0.755s)
+    Skipping Slice+Roulette (previous timeout)
+    Skipping SPPL (previous timeout)
+  Averages after 10 runs:
+    Slice+Dice - Slice: 0.0314s, Total: 0.6613s
+
+---- PROGRAM SIZE: 45 ----
+  Run 1/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.037s / dice: 0.817s (total: 0.854s)
+    Skipping Slice+Roulette (previous timeout)
+    Skipping SPPL (previous timeout)
+  Run 2/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.033s / dice: 0.732s (total: 0.765s)
+    Skipping Slice+Roulette (previous timeout)
+    Skipping SPPL (previous timeout)
+  Run 3/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.053s / dice: 0.799s (total: 0.852s)
+    Skipping Slice+Roulette (previous timeout)
+    Skipping SPPL (previous timeout)
+  Run 4/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.041s / dice: 0.864s (total: 0.905s)
+    Skipping Slice+Roulette (previous timeout)
+    Skipping SPPL (previous timeout)
+  Run 5/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.044s / dice: 0.807s (total: 0.851s)
+    Skipping Slice+Roulette (previous timeout)
+    Skipping SPPL (previous timeout)
+  Run 6/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.042s / dice: 0.781s (total: 0.823s)
+    Skipping Slice+Roulette (previous timeout)
+    Skipping SPPL (previous timeout)
+  Run 7/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.042s / dice: 0.792s (total: 0.834s)
+    Skipping Slice+Roulette (previous timeout)
+    Skipping SPPL (previous timeout)
+  Run 8/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.043s / dice: 0.785s (total: 0.828s)
+    Skipping Slice+Roulette (previous timeout)
+    Skipping SPPL (previous timeout)
+  Run 9/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.038s / dice: 0.819s (total: 0.857s)
+    Skipping Slice+Roulette (previous timeout)
+    Skipping SPPL (previous timeout)
+  Run 10/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.046s / dice: 0.852s (total: 0.898s)
+    Skipping Slice+Roulette (previous timeout)
+    Skipping SPPL (previous timeout)
+  Averages after 10 runs:
+    Slice+Dice - Slice: 0.0419s, Total: 0.8467s
+
+---- PROGRAM SIZE: 50 ----
+  Run 1/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.045s / dice: 1.815s (total: 1.860s)
+    Skipping Slice+Roulette (previous timeout)
+    Skipping SPPL (previous timeout)
+  Run 2/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.043s / dice: 0.896s (total: 0.939s)
+    Skipping Slice+Roulette (previous timeout)
+    Skipping SPPL (previous timeout)
+  Run 3/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.058s / dice: 1.014s (total: 1.072s)
+    Skipping Slice+Roulette (previous timeout)
+    Skipping SPPL (previous timeout)
+  Run 4/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.053s / dice: 1.553s (total: 1.606s)
+    Skipping Slice+Roulette (previous timeout)
+    Skipping SPPL (previous timeout)
+  Run 5/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.050s / dice: 1.014s (total: 1.064s)
+    Skipping Slice+Roulette (previous timeout)
+    Skipping SPPL (previous timeout)
+  Run 6/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.048s / dice: 0.983s (total: 1.031s)
+    Skipping Slice+Roulette (previous timeout)
+    Skipping SPPL (previous timeout)
+  Run 7/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.049s / dice: 0.982s (total: 1.031s)
+    Skipping Slice+Roulette (previous timeout)
+    Skipping SPPL (previous timeout)
+  Run 8/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.058s / dice: 0.983s (total: 1.041s)
+    Skipping Slice+Roulette (previous timeout)
+    Skipping SPPL (previous timeout)
+  Run 9/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.045s / dice: 0.934s (total: 0.979s)
+    Skipping Slice+Roulette (previous timeout)
+    Skipping SPPL (previous timeout)
+  Run 10/10...
+    Running Slice...  Running Slice...  Running Dice...   slice: 0.054s / dice: 1.006s (total: 1.060s)
+    Skipping Slice+Roulette (previous timeout)
+    Skipping SPPL (previous timeout)
+  Averages after 10 runs:
+    Slice+Dice - Slice: 0.0503s, Total: 1.1683s
+
+Saved scaling plot to /home/opam/slice/images/scaling/build_alternating_guard_slice_2.png

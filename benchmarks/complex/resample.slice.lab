@@ -1,0 +1,7 @@
+#DECLARATION
+init done accept fail has_observe
+#END
+0 init
+2 accept
+6 done
+7 fail

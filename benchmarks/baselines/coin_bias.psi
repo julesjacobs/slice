@@ -1,0 +1,35 @@
+def main() {
+    observedResults := [1, 1, 0, 1, 0];
+    tossResults := array(5);
+    bias := beta(2, 5);
+
+    for i in [0..tossResults.length) {
+        if bias <= 0.1 {
+            tossResults[i] = bernoulli(0.1);
+        } else if bias <= 0.2 {
+            tossResults[i] = bernoulli(0.2);
+        } else if bias <= 0.3 {
+            tossResults[i] = bernoulli(0.3);
+        } else if bias <= 0.4 {
+            tossResults[i] = bernoulli(0.4);
+        } else if bias <= 0.5 {
+            tossResults[i] = bernoulli(0.5);
+        } else if bias <= 0.6 {
+            tossResults[i] = bernoulli(0.6);
+        } else if bias <= 0.7 {
+            tossResults[i] = bernoulli(0.7);
+        } else if bias <= 0.8 {
+            tossResults[i] = bernoulli(0.8);
+        } else if bias <= 0.9 {
+            tossResults[i] = bernoulli(0.9);
+        } else {
+            tossResults[i] = bernoulli(1);
+        }
+    }
+
+    for i in [0..tossResults.length) {
+        observe(tossResults[i] == observedResults[i]);
+    }
+
+    return tossResults[0] < 1;
+}

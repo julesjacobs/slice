@@ -1,0 +1,93 @@
+def main() {
+    controlGroup := array(10);
+    treatedGroup := array(10);
+
+    isEffective := bernoulli(1/2);
+    probControl := categorical([1/10, 1/10, 1/10, 1/10, 1/10, 1/10, 1/10, 1/10, 1/10, 1/10]);
+    probTreated := categorical([1/10, 1/10, 1/10, 1/10, 1/10, 1/10, 1/10, 1/10, 1/10, 1/10]);
+    probAll := categorical([1/10, 1/10, 1/10, 1/10, 1/10, 1/10, 1/10, 1/10, 1/10, 1/10]);
+
+    if isEffective {
+        for i in [0..controlGroup.length) {
+            if probControl == 0 {
+                controlGroup[i] = bernoulli(0);
+            } else if probControl == 1 {
+                controlGroup[i] = bernoulli(1/10);
+            } else if probControl == 2 {
+                controlGroup[i] = bernoulli(2/10);
+            } else if probControl == 3 {
+                controlGroup[i] = bernoulli(3/10);
+            } else if probControl == 4 {
+                controlGroup[i] = bernoulli(4/10);
+            } else if probControl == 5 {
+                controlGroup[i] = bernoulli(5/10);
+            } else if probControl == 6 {
+                controlGroup[i] = bernoulli(6/10);
+            } else if probControl == 7 {
+                controlGroup[i] = bernoulli(7/10);
+            } else if probControl == 8 {
+                controlGroup[i] = bernoulli(8/10);
+            } else {
+                controlGroup[i] = bernoulli(9/10);
+            }
+
+            if probTreated == 0 {
+                treatedGroup[i] = bernoulli(0);
+            } else if probTreated == 1 {
+                treatedGroup[i] = bernoulli(1/10);
+            } else if probTreated == 2 {
+                treatedGroup[i] = bernoulli(2/10);
+            } else if probTreated == 3 {
+                treatedGroup[i] = bernoulli(3/10);
+            } else if probTreated == 4 {
+                treatedGroup[i] = bernoulli(4/10);
+            } else if probTreated == 5 {
+                treatedGroup[i] = bernoulli(5/10);
+            } else if probTreated == 6 {
+                treatedGroup[i] = bernoulli(6/10);
+            } else if probTreated == 7 {
+                treatedGroup[i] = bernoulli(7/10);
+            } else if probTreated == 8 {
+                treatedGroup[i] = bernoulli(8/10);
+            } else {
+                treatedGroup[i] = bernoulli(9/10);
+            }
+        }
+    } else {
+        for i in [0..controlGroup.length) {
+            if probAll == 0 {
+                controlGroup[i] = bernoulli(0);
+                treatedGroup[i] = bernoulli(0);
+            } else if probAll == 1 {
+                controlGroup[i] = bernoulli(1/10);
+                treatedGroup[i] = bernoulli(1/10);
+            } else if probAll == 2 {
+                controlGroup[i] = bernoulli(2/10);
+                treatedGroup[i] = bernoulli(2/10);
+            } else if probAll == 3 {
+                controlGroup[i] = bernoulli(3/10);
+                treatedGroup[i] = bernoulli(3/10);
+            } else if probAll == 4 {
+                controlGroup[i] = bernoulli(4/10);
+                treatedGroup[i] = bernoulli(4/10);
+            } else if probAll == 5 {
+                controlGroup[i] = bernoulli(5/10);
+                treatedGroup[i] = bernoulli(5/10);
+            } else if probAll == 6 {
+                controlGroup[i] = bernoulli(6/10);
+                treatedGroup[i] = bernoulli(6/10);
+            } else if probAll == 7 {
+                controlGroup[i] = bernoulli(7/10);
+                treatedGroup[i] = bernoulli(7/10);
+            } else if probAll == 8 {
+                controlGroup[i] = bernoulli(8/10);
+                treatedGroup[i] = bernoulli(8/10);
+            } else {
+                controlGroup[i] = bernoulli(9/10);
+                treatedGroup[i] = bernoulli(9/10);
+            }
+        }
+    }
+
+    return treatedGroup[0] < 1;
+}

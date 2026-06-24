@@ -1,0 +1,9 @@
+benchmark,slice-dice_last_line,slice-roulette_last_line,sppl_last_line,slice-dice_last_numeric,slice-roulette_last_numeric,sppl_last_numeric
+clickgraph,false	0.55,(pmf | #t ↦ 0.45 | #f ↦ 0.55),0.44444444444444464,0.55,0.55,0.44444444444444464
+clinical_trial,false	0.525,(pmf | #t ↦ 0.475 | #f ↦ 0.525),0.5249999999999995,0.525,0.525,0.5249999999999995
+coin_bias,false	1,(pmf | #t ↦ 0 | #f ↦ 1),0.0,1,1,0.0
+election,false	0.707681789,(pmf | #t ↦ 0.29232 | #f ↦ 0.70768),0.3318956304871102,0.707681789,0.70768,0.3318956304871102
+hmm,false	0.702581645,(pmf | #t ↦ 0.297418 | #f ↦ 0.702582),0.4183882278720831,0.702581645,0.702582,0.4183882278720831
+student_interviews,false	0.999985957,(pmf | #t ↦ 0.000014 | #f ↦ 0.999986),1.4043237482138219e-05,0.999985957,0.999986,1.4043237482138219e-05
+survey_unbias,false	1,(pmf | #t ↦ 0 | #f ↦ 1),0.0,1,1,0.0
+trueskill,false	0,#t,1.0,0,,1.0

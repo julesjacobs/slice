@@ -1,0 +1,58 @@
+(* Random interval-covering over [0,1] with conditioning.
+
+  The program keeps sampling points until it random decides to stop (hence an unbounded loop),
+  then checks whether if by stopping time has covered every part of the interval [0,1]. *)
+
+
+let within = fun lo -> fun hi -> fun y ->
+    (y >= lo) && (y < hi)
+in 
+
+let b = fun _ -> discrete(0.18: 0.05, 0.11: 0.24, 0.21: 0.37, 0.09: 0.58, 0.41: 0.89) in
+
+let init =
+  (false, within 0.00 (b ())) ::
+  (false, within (b ()) (b ())) ::
+  (false, within (b ()) (b ())) ::
+  (false, within (b ()) 1.00) ::
+  nil
+in 
+
+let update = fix update y := fun ys -> 
+    match ys with 
+    | nil -> nil
+    | h :: t -> ((fst h || ((snd h) y)), snd h) :: (update y t)
+    end
+in 
+
+let non_overlap = fix non_overlap y := fun seen -> fun ys ->
+  match ys with
+  | nil -> true
+  | h :: t ->
+      let hit = (snd h) y in
+      if hit && seen then false
+      else non_overlap y (seen || hit) t
+  end
+in
+
+let step = fun y -> fun ys -> update y ys
+in
+
+let cover = fix cover st :=
+  if uniform(0,1) < 0.1 then st 
+  else 
+    let y = gaussian(0,1) in
+    let _ = observe(non_overlap y false st) in
+    cover (step y st)
+in
+
+let is_covered = fix is_covered ys :=
+    match ys with 
+    | nil -> true 
+    | h :: t -> (fst h) && (is_covered t)
+    end
+in 
+
+(* Query if we covered the whole interval *)
+let final = cover init in
+is_covered final

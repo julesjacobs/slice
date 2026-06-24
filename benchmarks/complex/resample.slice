@@ -1,0 +1,7 @@
+(* Conditional resampling loop. Sampling methods can get stuck due to the self-loop (geom x). *)
+
+(fix resample x := 
+    let _ = observe(x >= 0.2) in
+    if x <= 0.5 then true
+    else if x <= 0.8 then resample x
+    else let y = uniform(0,1) in resample y) 1

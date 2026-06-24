@@ -1,0 +1,29 @@
+def main() {
+    mu := [0.5, 1.0, 2.0];
+    Z := array(4);
+    Y := array(4);
+
+    Z[0] = categorical([0.7, 0.2, 0.1]);
+
+    for i in [1..Z.length) {
+        if Z[i - 1] == 0 {
+            Z[i] = categorical([0.7, 0.2, 0.1]);
+        } else if Z[i - 1] == 1 {
+            Z[i] = categorical([0.2, 0.5, 0.3]);
+        } else {
+            Z[i] = categorical([0.1, 0.1, 0.8]);
+        }
+    }
+
+    for i in [0..Y.length) {
+        if Z[i] == 0 {
+            Y[i] = gauss(mu[0], 1);
+        } else if Z[i] == 1 {
+            Y[i] = gauss(mu[1], 1);
+        } else {
+            Y[i] = gauss(mu[2], 1);
+        }
+    }
+
+    return Y[3] < 0.5;
+}

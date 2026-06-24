@@ -1,0 +1,95 @@
+(* set bf[idx] := true, where idx is 0..3 and bf = (b0, (b1, (b2, b3))) *)
+let set_true = fun bf -> fun idx ->
+  let b0 = fst bf in
+  let tail1 = snd bf in
+  let b1 = fst tail1 in
+  let tail2 = snd tail1 in
+  let b2 = fst tail2 in
+  let b3 = snd tail2 in
+
+  if idx <= 0 then
+    (true, (b1, (b2, b3)))
+  else if idx <= 1 then
+    (b0, (true, (b2, b3)))
+  else if idx <= 2 then
+    (b0, (b1, (true, b3)))
+  else
+    (b0, (b1, (b2, true)))
+in
+
+(* get bf[idx], where idx is 0..3 *)
+let get = fun bf -> fun idx ->
+  let b0 = fst bf in
+  let tail1 = snd bf in
+  let b1 = fst tail1 in
+  let tail2 = snd tail1 in
+  let b2 = fst tail2 in
+  let b3 = snd tail2 in
+
+  if idx <= 0 then b0
+  else if idx <= 1 then b1
+  else if idx <= 2 then b2
+  else b3
+in
+
+(* Insertion: insert element q into the Bloom filter bf, given hash functions h1 and h2 *)
+let insert = fun q -> fun h1 -> fun h2 -> fun bf ->
+    let index1 = h1 q in
+    let index2 = h2 q in
+    let bf1 = set_true bf index1 in
+    let bf2 = set_true bf1 index2 in
+    bf2
+in
+
+(* Search: search for element q in the Bloom filter bf, given hash functions h1 and h2 *)
+let search = fun q -> fun h1 -> fun h2 -> fun bf ->
+    let index1 = h1 q in
+    let index2 = h2 q in
+    let b01 = get bf index1 in
+    let b02 = get bf index2 in
+    b01 && b02
+in
+
+(* Hash functions *)
+let h1 = fun q ->
+    if q <= -2 then 0
+    else if -2 < q && q <= 0 then 1
+    else if 0 < q && q <= 2 then 2 
+    else 3
+in
+
+let h2 = fun q ->
+    if q <= -2 then 3
+    else if -2 < q && q <= 0 then 2
+    else if 0 < q && q <= 2 then 1 
+    else 0
+in
+
+(* Tests whether bf is full *)
+let full = fun bf ->
+  let b0 = fst bf in
+  let t1 = snd bf in
+  let b1 = fst t1 in
+  let t2 = snd t1 in
+  let b2 = fst t2 in
+  let b3 = snd t2 in
+  b0 && b1 && b2 && b3
+in
+
+(* Initial, empty Bloom filter *)
+let init = (false, (false, (false, false))) in
+
+(* Query key *)
+let key = gaussian(0,1) in
+
+(* Insert gaussian samples until bf is full or the key is reported present *)
+let search_before_full = fix loop bf :=
+  if (full bf) then bf
+  else if (search key h1 h2 bf) then bf
+  else
+    let q = gaussian(0,1) in
+    loop (insert q h1 h2 bf)
+in
+
+(* Query whether search terminated before the filter became full *)
+let bf_final = (search_before_full init) in not (full bf_final)

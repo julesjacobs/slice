@@ -1,0 +1,8 @@
+# Exact probability pair for the ClinicalTrial query with n = 20, k = 20:
+#   query = not(treatedGroup[0])
+# Output order is (P(query = false), P(query = true)).
+
+p_treated = (summate i from 0 to 20:
+    nat2prob(i) / 20) / 20
+
+(p_treated, real2prob(1 - prob2real(p_treated)))

@@ -11,8 +11,8 @@ def main():
 
     start_time = time.time()
     compiler = SPPL_Compiler('''               
-n = 10
-k = 10
+n = 20
+k = 20
 controlGroup = array(n)
 treatedGroup = array(n)
                         

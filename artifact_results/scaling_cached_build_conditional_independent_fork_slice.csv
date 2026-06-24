@@ -1,0 +1,12 @@
+benchmark,size,slice_time_dice,slice_time_roulette,slice_dice_total,slice_roulette_total,sppl_time
+build_conditional_independent_fork_slice,0,0.0,0.0,0.0,0.0,0.0
+build_conditional_independent_fork_slice,5,0.0020,0.0020,0.0252,0.0222,0.1602
+build_conditional_independent_fork_slice,10,0.0020,0.0020,0.0330,0.0338,0.5428
+build_conditional_independent_fork_slice,15,0.0030,0.0030,0.0401,0.0328,1.0986
+build_conditional_independent_fork_slice,20,0.0052,0.0052,0.0526,0.0384,1.7800
+build_conditional_independent_fork_slice,25,0.0078,0.0079,0.0631,0.0468,2.7201
+build_conditional_independent_fork_slice,30,0.0108,0.0109,0.0714,0.0583,3.7074
+build_conditional_independent_fork_slice,35,0.0148,0.0147,0.0813,0.0693,4.8971
+build_conditional_independent_fork_slice,40,0.0202,0.0203,0.0990,0.1020,6.1684
+build_conditional_independent_fork_slice,45,0.0268,0.0270,0.1185,0.0971,7.7279
+build_conditional_independent_fork_slice,50,0.0342,0.0340,0.1369,0.1117,9.5375

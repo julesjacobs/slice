@@ -14,6 +14,7 @@ import csv
 import json
 import time
 import statistics
+import re
 from pathlib import Path
 from datetime import datetime
 from benchmarks.scaling.run import *
@@ -35,8 +36,26 @@ class BenchmarkRunner:
         self.output_dir = Path(output_dir)
         self.output_dir.mkdir(exist_ok=True)
         self.results = []
+        self.outputs = []
         self.num_runs = 5  # Number of times to run each benchmark
         self.timeout = timeout  # Timeout in seconds
+
+    def record_output(self, benchmark, category, tool, output, timed_out=False):
+        """Record program output for later correctness checks."""
+        output_text = "" if output is None else str(output).strip()
+        lines = [line.strip() for line in output_text.splitlines() if line.strip()]
+        numeric_values = re.findall(r'[-+]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][-+]?\d+)?', output_text)
+
+        self.outputs.append({
+            'benchmark': benchmark,
+            'category': category,
+            'tool': tool,
+            'timed_out': timed_out,
+            'first_line': lines[0] if lines else '',
+            'last_line': lines[-1] if lines else '',
+            'last_numeric': numeric_values[-1] if numeric_values else '',
+            'output': output_text,
+        })
 
         
     def run_command(self, cmd, cwd=None):
@@ -260,8 +279,15 @@ class BenchmarkRunner:
                 if len(parts) >= 3:
                     translate_time, condition_time, prob_time = parts[:3]
                     sppl_duration_total = translate_time + condition_time + prob_time
+                elif len(parts) == 1:
+                    # Most baseline SPPL files print a single end-to-end time
+                    # to stderr when run with --time.
+                    sppl_duration_total = parts[0]
+                    translate_time = parts[0]
+                    condition_time = 0.0
+                    prob_time = 0.0
                 else:
-                    raise ValueError("Could not parse three timing values")
+                    raise ValueError("Could not parse timing values")
 
             except Exception as e:
                 print(f"Warning: could not parse SPPL timings from stderr: '{stderr_data}' ({e})")
@@ -363,13 +389,14 @@ class BenchmarkRunner:
         
         baseline_dir = Path("benchmarks/baselines")
         
-        for benchmark in ["clickgraph", "clinical_trial", "coin_bias", "survey_unbias", "trueskill"]:
+        for benchmark in ["clickgraph", "clinical_trial", "coin_bias", "election", "hmm", "student_interviews", "survey_unbias", "trueskill"]:
             # Run Slice version
             slice_file = (baseline_dir / f"{benchmark}.slice").resolve()
             if slice_file.exists():
                 if USE_DICE_BACKEND:
                     print(f"  Running {benchmark} (Slice / dice)...", flush=True)
-                    slice_time, dice_time, total_duration_dice, _, _ = self.run_slice_to_dice(slice_file, 300)
+                    slice_time, dice_time, total_duration_dice, dice_output, dice_timed_out = self.run_slice_to_dice(slice_file, self.timeout)
+                    self.record_output(benchmark, 'baseline', 'slice-dice', dice_output, dice_timed_out)
                     if total_duration_dice:
                         self.results.append({
                             'benchmark': benchmark,
@@ -382,10 +409,12 @@ class BenchmarkRunner:
                         })
                         print(f"    Mean: {total_duration_dice:.3f}s ± {0:.3f}s")
                         print(f"    slice: {slice_time:.3f}s, dice: {dice_time:.3f}s")
+                        print(f"    output: {self.outputs[-1]['last_line']}")
 
                 if USE_ROULETTE_BACKEND:
                     print(f"  Running {benchmark} (Slice / roulette)...", flush=True)
-                    slice_time, roulette_time, total_duration_roulette, _, _ = self.run_slice_to_roulette(slice_file, 300)
+                    slice_time, roulette_time, total_duration_roulette, roulette_output, roulette_timed_out = self.run_slice_to_roulette(slice_file, self.timeout)
+                    self.record_output(benchmark, 'baseline', 'slice-roulette', roulette_output, roulette_timed_out)
                     
                     if total_duration_roulette:
                         self.results.append({
@@ -399,25 +428,28 @@ class BenchmarkRunner:
                         })
                         print(f"    Mean: {total_duration_roulette:.3f}s ± {0:.3f}s")
                         print(f"    slice: {slice_time:.3f}s, roulette: {roulette_time:.3f}s")
+                        print(f"    output: {self.outputs[-1]['last_line']}")
 
 
             # Run SPPL version
             py_file = (baseline_dir / f"{benchmark}.py").resolve()
             if py_file.exists():
                 print(f"  Running {benchmark} (SPPL)...", flush=True)
-                translate_time, condition_time, prob_time, sppl_output, _, _ = self.run_sppl(py_file, 300)
-                if sppl_output:
+                translate_time, condition_time, prob_time, sppl_duration_total, sppl_output, sppl_timed_out = self.run_sppl(py_file, self.timeout)
+                self.record_output(benchmark, 'baseline', 'sppl', sppl_output, sppl_timed_out)
+                if sppl_duration_total:
                     self.results.append({
                         'benchmark': benchmark,
                         'category': 'baseline',
                         'tool': 'sppl',
-                        'mean_time': sppl_output,
+                        'mean_time': sppl_duration_total,
                         'stdev': 0,
                         'min_time': 0,
                         'max_time': 0
                     })
-                    print(f"    Mean: {sppl_output:.3f}s ± {0:.3f}s")
+                    print(f"    Mean: {sppl_duration_total:.3f}s ± {0:.3f}s")
                     print(f"    translate: {translate_time:.3f}s, condition: {condition_time:.3f}s, prob: {prob_time:.3f}s")
+                    print(f"    output: {self.outputs[-1]['last_line']}")
     
     def run_scaling_benchmarks(self):
         """Run scaling benchmarks"""
@@ -542,11 +574,71 @@ class BenchmarkRunner:
         csv_file = self.output_dir / f"{type}_benchmark_results.csv"
         print(os.getcwd())
         if self.results:
+            fieldnames = sorted({key for row in self.results for key in row.keys()})
             with open(csv_file, 'w', newline='') as f:
-                writer = csv.DictWriter(f, fieldnames=self.results[0].keys())
+                writer = csv.DictWriter(f, fieldnames=fieldnames)
                 writer.writeheader()
                 writer.writerows(self.results)
             print(f"\nDetailed results saved to: {csv_file}")
+
+        category_for_type = {
+            'dt': 'decision_tree',
+            'baseline': 'baseline',
+            'scaling': 'scaling',
+        }.get(type, type)
+
+        matching_outputs = [
+            row for row in self.outputs
+            if row.get('category') == category_for_type
+        ]
+
+        if matching_outputs:
+            outputs_csv = self.output_dir / f"{type}_outputs.csv"
+            output_fieldnames = [
+                'benchmark',
+                'category',
+                'tool',
+                'timed_out',
+                'first_line',
+                'last_line',
+                'last_numeric',
+                'output',
+            ]
+            with open(outputs_csv, 'w', newline='') as f:
+                writer = csv.DictWriter(f, fieldnames=output_fieldnames)
+                writer.writeheader()
+                writer.writerows(matching_outputs)
+            print(f"Program outputs saved to: {outputs_csv}")
+
+            outputs_json = self.output_dir / f"{type}_outputs.json"
+            with open(outputs_json, 'w') as f:
+                json.dump(matching_outputs, f, indent=2)
+            print(f"Program outputs JSON saved to: {outputs_json}")
+
+            if type == 'baseline':
+                comparison_file = self.output_dir / "baseline_output_comparison.csv"
+                benchmarks = sorted({row['benchmark'] for row in matching_outputs})
+                tools = sorted({row['tool'] for row in matching_outputs})
+                by_key = {
+                    (row['benchmark'], row['tool']): row
+                    for row in matching_outputs
+                }
+                with open(comparison_file, 'w', newline='') as f:
+                    fieldnames = (
+                        ['benchmark'] +
+                        [f'{tool}_last_line' for tool in tools] +
+                        [f'{tool}_last_numeric' for tool in tools]
+                    )
+                    writer = csv.DictWriter(f, fieldnames=fieldnames)
+                    writer.writeheader()
+                    for benchmark in benchmarks:
+                        row = {'benchmark': benchmark}
+                        for tool in tools:
+                            output_row = by_key.get((benchmark, tool), {})
+                            row[f'{tool}_last_line'] = output_row.get('last_line', '')
+                            row[f'{tool}_last_numeric'] = output_row.get('last_numeric', '')
+                        writer.writerow(row)
+                print(f"Baseline output comparison saved to: {comparison_file}")
         
         # Save speedup summary
         speedups = self.calculate_speedups()
@@ -565,6 +657,7 @@ class BenchmarkRunner:
                 'timestamp': datetime.now().isoformat(),
                 'num_runs': self.num_runs,
                 'results': self.results,
+                'outputs': matching_outputs,
                 'speedups': speedups
             }, f, indent=2)
         print(f"All results saved to: {json_file}")

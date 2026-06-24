@@ -1,0 +1,7 @@
+#DECLARATION
+init done accept fail has_observe
+#END
+0 init
+268711 accept
+268876 done
+268877 fail

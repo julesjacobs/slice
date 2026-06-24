@@ -1,0 +1,42 @@
+# Exact probability pair for the StudentInterviews query:
+#   observed student_offers[0] = 1 and num_recruiters > 10
+#   query = student_gpa[0] < 0.125
+# Output order is (P(query = false), P(query = true)).
+
+def beta73_mass(lo real, hi real) prob:
+    integrate x from lo to hi:
+        nat2prob(252) * real2prob(x) ** 6 * real2prob(1 - x) ** 2
+
+def factorial(n nat) prob:
+    product i from 1 to n + 1: nat2prob(i)
+
+def poisson25(n nat) prob:
+    exp(-25) * nat2prob(25) ** nat2real(n) / factorial(n)
+
+def binom_pmf(n nat, k nat, p prob) prob:
+    nat2prob(choose(n, k)) * p ** nat2real(k) *
+        real2prob(1 - prob2real(p)) ** (nat2real(n) - nat2real(k))
+
+def offer_one(n nat, interview_p prob) prob:
+    summate k from 0 to n + 1:
+        if k == 0:
+            nat2prob(0)
+        else:
+            binom_pmf(n, k, interview_p) * binom_pmf(k, 1, 0.4)
+
+low_gpa = beta73_mass(0, 1/8)
+mid_gpa = beta73_mass(0, 7/8)
+high_gpa = beta73_mass(7/8, 1)
+
+true_mass = summate n from 11 to 21:
+    poisson25(n) * 0.8 * low_gpa * offer_one(n, 0.5)
+
+total_mass = summate n from 11 to 21:
+    poisson25(n) *
+        (0.2 * offer_one(n, 0.9) +
+         0.8 * (mid_gpa * offer_one(n, 0.5) +
+                high_gpa * offer_one(n, 0.6)))
+
+true_p = true_mass / total_mass
+
+(real2prob(1 - prob2real(true_p)), true_p)

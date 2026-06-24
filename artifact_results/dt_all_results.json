@@ -1,0 +1,679 @@
+{
+  "timestamp": "2025-11-06T22:07:54.942527",
+  "num_runs": 5,
+  "results": [
+    {
+      "benchmark": "DT50_ind",
+      "category": "decision_tree",
+      "size": "DT50",
+      "variant": "ind",
+      "tool": "slice-dice",
+      "mean_time": 0.1,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "DT50_ind",
+      "category": "decision_tree",
+      "size": "DT50",
+      "variant": "ind",
+      "tool": "slice-roulette",
+      "mean_time": 0.16,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "DT50_ind",
+      "category": "decision_tree",
+      "size": "DT50",
+      "variant": "ind",
+      "tool": "sppl",
+      "mean_time": 0.7932467460632324,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "DT50_bn1",
+      "category": "decision_tree",
+      "size": "DT50",
+      "variant": "bn1",
+      "tool": "slice-dice",
+      "mean_time": 0.08600000000000001,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "DT50_bn1",
+      "category": "decision_tree",
+      "size": "DT50",
+      "variant": "bn1",
+      "tool": "slice-roulette",
+      "mean_time": 0.457,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "DT50_bn1",
+      "category": "decision_tree",
+      "size": "DT50",
+      "variant": "bn1",
+      "tool": "sppl",
+      "mean_time": 1.7311639785766602,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "DT50_bn2",
+      "category": "decision_tree",
+      "size": "DT50",
+      "variant": "bn2",
+      "tool": "slice-dice",
+      "mean_time": 0.09000000000000001,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "DT50_bn2",
+      "category": "decision_tree",
+      "size": "DT50",
+      "variant": "bn2",
+      "tool": "slice-roulette",
+      "mean_time": 0.40900000000000003,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "DT50_bn2",
+      "category": "decision_tree",
+      "size": "DT50",
+      "variant": "bn2",
+      "tool": "sppl",
+      "mean_time": 1.6596295833587646,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "DT100_ind",
+      "category": "decision_tree",
+      "size": "DT100",
+      "variant": "ind",
+      "tool": "slice-dice",
+      "mean_time": 0.14900000000000002,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "DT100_ind",
+      "category": "decision_tree",
+      "size": "DT100",
+      "variant": "ind",
+      "tool": "slice-roulette",
+      "mean_time": 0.665,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "DT100_ind",
+      "category": "decision_tree",
+      "size": "DT100",
+      "variant": "ind",
+      "tool": "sppl",
+      "mean_time": 1.4904074668884277,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "DT100_bn1",
+      "category": "decision_tree",
+      "size": "DT100",
+      "variant": "bn1",
+      "tool": "slice-dice",
+      "mean_time": 0.16299999999999998,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "DT100_bn1",
+      "category": "decision_tree",
+      "size": "DT100",
+      "variant": "bn1",
+      "tool": "slice-roulette",
+      "mean_time": 1.791,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "DT100_bn1",
+      "category": "decision_tree",
+      "size": "DT100",
+      "variant": "bn1",
+      "tool": "sppl",
+      "mean_time": 3.017049551010132,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "DT100_bn2",
+      "category": "decision_tree",
+      "size": "DT100",
+      "variant": "bn2",
+      "tool": "slice-dice",
+      "mean_time": 0.16999999999999998,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "DT100_bn2",
+      "category": "decision_tree",
+      "size": "DT100",
+      "variant": "bn2",
+      "tool": "slice-roulette",
+      "mean_time": 1.791,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "DT100_bn2",
+      "category": "decision_tree",
+      "size": "DT100",
+      "variant": "bn2",
+      "tool": "sppl",
+      "mean_time": 3.0657551288604736,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "DT200_ind",
+      "category": "decision_tree",
+      "size": "DT200",
+      "variant": "ind",
+      "tool": "slice-dice",
+      "mean_time": 0.33399999999999996,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "DT200_ind",
+      "category": "decision_tree",
+      "size": "DT200",
+      "variant": "ind",
+      "tool": "slice-roulette",
+      "mean_time": 4.134,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "DT200_ind",
+      "category": "decision_tree",
+      "size": "DT200",
+      "variant": "ind",
+      "tool": "sppl",
+      "mean_time": 2.7698402404785156,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "DT200_bn1",
+      "category": "decision_tree",
+      "size": "DT200",
+      "variant": "bn1",
+      "tool": "slice-dice",
+      "mean_time": 0.386,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "DT200_bn1",
+      "category": "decision_tree",
+      "size": "DT200",
+      "variant": "bn1",
+      "tool": "slice-roulette",
+      "mean_time": 9.56,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "DT200_bn1",
+      "category": "decision_tree",
+      "size": "DT200",
+      "variant": "bn1",
+      "tool": "sppl",
+      "mean_time": 6.153733015060425,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "DT200_bn2",
+      "category": "decision_tree",
+      "size": "DT200",
+      "variant": "bn2",
+      "tool": "slice-dice",
+      "mean_time": 0.373,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "DT200_bn2",
+      "category": "decision_tree",
+      "size": "DT200",
+      "variant": "bn2",
+      "tool": "slice-roulette",
+      "mean_time": 9.623999999999999,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "DT200_bn2",
+      "category": "decision_tree",
+      "size": "DT200",
+      "variant": "bn2",
+      "tool": "sppl",
+      "mean_time": 6.098835468292236,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "DT500_ind",
+      "category": "decision_tree",
+      "size": "DT500",
+      "variant": "ind",
+      "tool": "slice-dice",
+      "mean_time": 1.358,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "DT500_ind",
+      "category": "decision_tree",
+      "size": "DT500",
+      "variant": "ind",
+      "tool": "slice-roulette",
+      "mean_time": 56.192,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "DT500_ind",
+      "category": "decision_tree",
+      "size": "DT500",
+      "variant": "ind",
+      "tool": "sppl",
+      "mean_time": 8.04897689819336,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "DT500_bn1",
+      "category": "decision_tree",
+      "size": "DT500",
+      "variant": "bn1",
+      "tool": "slice-dice",
+      "mean_time": 1.56,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "DT500_bn1",
+      "category": "decision_tree",
+      "size": "DT500",
+      "variant": "bn1",
+      "tool": "sppl",
+      "mean_time": 15.80414366722107,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "DT500_bn2",
+      "category": "decision_tree",
+      "size": "DT500",
+      "variant": "bn2",
+      "tool": "slice-dice",
+      "mean_time": 1.615,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "DT500_bn2",
+      "category": "decision_tree",
+      "size": "DT500",
+      "variant": "bn2",
+      "tool": "slice-roulette",
+      "mean_time": 113.586,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "DT500_bn2",
+      "category": "decision_tree",
+      "size": "DT500",
+      "variant": "bn2",
+      "tool": "sppl",
+      "mean_time": 16.218658685684204,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "DT800_ind",
+      "category": "decision_tree",
+      "size": "DT800",
+      "variant": "ind",
+      "tool": "slice-dice",
+      "mean_time": 3.33,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "DT800_ind",
+      "category": "decision_tree",
+      "size": "DT800",
+      "variant": "ind",
+      "tool": "sppl",
+      "mean_time": 14.93671178817749,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "DT800_bn1",
+      "category": "decision_tree",
+      "size": "DT800",
+      "variant": "bn1",
+      "tool": "slice-dice",
+      "mean_time": 3.874,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "DT800_bn1",
+      "category": "decision_tree",
+      "size": "DT800",
+      "variant": "bn1",
+      "tool": "sppl",
+      "mean_time": 27.561177015304565,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "DT800_bn2",
+      "category": "decision_tree",
+      "size": "DT800",
+      "variant": "bn2",
+      "tool": "slice-dice",
+      "mean_time": 3.8549999999999995,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "DT800_bn2",
+      "category": "decision_tree",
+      "size": "DT800",
+      "variant": "bn2",
+      "tool": "sppl",
+      "mean_time": 27.839709281921387,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "DT1000_ind",
+      "category": "decision_tree",
+      "size": "DT1000",
+      "variant": "ind",
+      "tool": "slice-dice",
+      "mean_time": 5.68,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "DT1000_ind",
+      "category": "decision_tree",
+      "size": "DT1000",
+      "variant": "ind",
+      "tool": "sppl",
+      "mean_time": 17.905,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "DT1000_bn1",
+      "category": "decision_tree",
+      "size": "DT1000",
+      "variant": "bn1",
+      "tool": "slice-dice",
+      "mean_time": 6.317,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "DT1000_bn1",
+      "category": "decision_tree",
+      "size": "DT1000",
+      "variant": "bn1",
+      "tool": "sppl",
+      "mean_time": 34.954,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "DT1000_bn2",
+      "category": "decision_tree",
+      "size": "DT1000",
+      "variant": "bn2",
+      "tool": "slice-dice",
+      "mean_time": 6.204,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "DT1000_bn2",
+      "category": "decision_tree",
+      "size": "DT1000",
+      "variant": "bn2",
+      "tool": "sppl",
+      "mean_time": 35.837,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "DT2000_ind",
+      "category": "decision_tree",
+      "size": "DT2000",
+      "variant": "ind",
+      "tool": "slice-dice",
+      "mean_time": 31.398,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "DT2000_ind",
+      "category": "decision_tree",
+      "size": "DT2000",
+      "variant": "ind",
+      "tool": "sppl",
+      "mean_time": 45.74209523200989,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "DT2000_bn1",
+      "category": "decision_tree",
+      "size": "DT2000",
+      "variant": "bn1",
+      "tool": "slice-dice",
+      "mean_time": 33.874,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "DT2000_bn1",
+      "category": "decision_tree",
+      "size": "DT2000",
+      "variant": "bn1",
+      "tool": "sppl",
+      "mean_time": 87.97170090675354,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "DT2000_bn2",
+      "category": "decision_tree",
+      "size": "DT2000",
+      "variant": "bn2",
+      "tool": "slice-dice",
+      "mean_time": 35.068,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    },
+    {
+      "benchmark": "DT2000_bn2",
+      "category": "decision_tree",
+      "size": "DT2000",
+      "variant": "bn2",
+      "tool": "sppl",
+      "mean_time": 79.55042839050293,
+      "stdev": 0,
+      "min_time": 0,
+      "max_time": 0
+    }
+  ],
+  "speedups": [
+    {
+      "benchmark": "DT100_bn1",
+      "slice_time_dice": 0.16299999999999998,
+      "slice_time_roulette": 1.791,
+      "sppl_time": 3.017049551010132,
+      "dice_speedup": 18.509506447914923,
+      "roulette_speedup": 1.6845614466834908
+    },
+    {
+      "benchmark": "DT100_bn2",
+      "slice_time_dice": 0.16999999999999998,
+      "slice_time_roulette": 1.791,
+      "sppl_time": 3.0657551288604736,
+      "dice_speedup": 18.033853699179257,
+      "roulette_speedup": 1.7117560741822857
+    },
+    {
+      "benchmark": "DT100_ind",
+      "slice_time_dice": 0.14900000000000002,
+      "slice_time_roulette": 0.665,
+      "sppl_time": 1.4904074668884277,
+      "dice_speedup": 10.00273467710354,
+      "roulette_speedup": 2.2412142359224476
+    },
+    {
+      "benchmark": "DT200_bn1",
+      "slice_time_dice": 0.386,
+      "slice_time_roulette": 9.56,
+      "sppl_time": 6.153733015060425,
+      "dice_speedup": 15.942313510519234,
+      "roulette_speedup": 0.6436959220774503
+    },
+    {
+      "benchmark": "DT200_bn2",
+      "slice_time_dice": 0.373,
+      "slice_time_roulette": 9.623999999999999,
+      "sppl_time": 6.098835468292236,
+      "dice_speedup": 16.35076533054219,
+      "roulette_speedup": 0.6337110835715126
+    },
+    {
+      "benchmark": "DT200_ind",
+      "slice_time_dice": 0.33399999999999996,
+      "slice_time_roulette": 4.134,
+      "sppl_time": 2.7698402404785156,
+      "dice_speedup": 8.292934851732083,
+      "roulette_speedup": 0.6700145719590023
+    },
+    {
+      "benchmark": "DT500_bn2",
+      "slice_time_dice": 1.615,
+      "slice_time_roulette": 113.586,
+      "sppl_time": 16.218658685684204,
+      "dice_speedup": 10.042513118070715,
+      "roulette_speedup": 0.14278747984508833
+    },
+    {
+      "benchmark": "DT500_ind",
+      "slice_time_dice": 1.358,
+      "slice_time_roulette": 56.192,
+      "sppl_time": 8.04897689819336,
+      "dice_speedup": 5.927081662881707,
+      "roulette_speedup": 0.14324061962901052
+    },
+    {
+      "benchmark": "DT50_bn1",
+      "slice_time_dice": 0.08600000000000001,
+      "slice_time_roulette": 0.457,
+      "sppl_time": 1.7311639785766602,
+      "dice_speedup": 20.129813704379767,
+      "roulette_speedup": 3.7881049859445515
+    },
+    {
+      "benchmark": "DT50_bn2",
+      "slice_time_dice": 0.09000000000000001,
+      "slice_time_roulette": 0.40900000000000003,
+      "sppl_time": 1.6596295833587646,
+      "dice_speedup": 18.44032870398627,
+      "roulette_speedup": 4.0577740424419675
+    },
+    {
+      "benchmark": "DT50_ind",
+      "slice_time_dice": 0.1,
+      "slice_time_roulette": 0.16,
+      "sppl_time": 0.7932467460632324,
+      "dice_speedup": 7.932467460632324,
+      "roulette_speedup": 4.957792162895203
+    }
+  ]
+}

@@ -1,0 +1,2 @@
+benchmark,slice_time_dice,slice_time_roulette,sppl_time,dice_speedup,roulette_speedup
+build_conditional_independent_slice,0.096,0.10200000000000001,2.5030782222747803,26.07373148202896,24.539982571321374

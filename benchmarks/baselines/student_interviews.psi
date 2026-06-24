@@ -1,0 +1,35 @@
+def main() {
+    num_students := 10;
+    student_perfect := array(num_students);
+    student_gpa := array(num_students);
+    student_interviews := array(num_students);
+    student_offers := array(num_students);
+
+    for s in [0..num_students) {
+        student_perfect[s] = bernoulli(0.2);
+        if student_perfect[s] == 0 {
+            student_gpa[s] = 4 * beta(7, 3);
+        } else {
+            student_gpa[s] = 4;
+        }
+    }
+
+    num_recruiters := poisson(25);
+    observe(10 <= num_recruiters && num_recruiters <= 20);
+
+    for j in [0..num_students) {
+        if student_gpa[j] == 4 {
+            student_interviews[j] = binomial(num_recruiters, 0.9);
+        } else if 3.5 < student_gpa[j] && student_gpa[j] < 4 {
+            student_interviews[j] = binomial(num_recruiters, 0.6);
+        } else {
+            student_interviews[j] = binomial(num_recruiters, 0.5);
+        }
+
+        student_offers[j] = binomial(student_interviews[j], 0.4);
+    }
+
+    observe(student_offers[0] == 1);
+    observe(num_recruiters > 10);
+    return student_gpa[0] < 0.5;
+}
