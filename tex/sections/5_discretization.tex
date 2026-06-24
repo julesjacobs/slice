@@ -108,7 +108,7 @@
         constructs, $\discretize{\cdot}$ recurses structurally over them.}
     \label{fig:discretization-code}
 \end{figure*}
-This section presents local transformation rules for our type-directed discretization algorithm, with examples. Our goal is to compute, from a typed expression $e : \bool$ and its type annotations, a \emph{discretized} expression $\discretize{e : \bool} : \bool$ such that $e$ and $\discretize{e : \bool}$ are \emph{semantically equivalent}, i.e., they induce the same distribution. We refer to this semantics-preserving transformation as \emph{exact discretization}, to distinguish it from \emph{quantization} approaches~\cite{Garg2024BitBlast,Huang2021AQUA} that approximate continuous programs via externally chosen precision parameters. Intuitively, when a program uses continuous quantities only through finitely many comparison outcomes, exact inference should reduce to a discrete problem, and exact discretization makes that reduction explicit.
+This section presents local transformation rules for our type-directed discretization algorithm, with examples. Our goal is to compute, from a typed expression $e : \bool$ and its type annotations, a \emph{discretized} expression $\discretize{e : \bool} : \bool$ such that $e$ and $\discretize{e : \bool}$ are \emph{semantically equivalent}, i.e., they induce the same distribution. We refer to this semantics-preserving transformation as \emph{exact discretization}, to distinguish it from \emph{quantization} approaches~\cite{Garg2024BitBlast,Huang2021AQUA} that approximate continuous programs via externally chosen precision parameters. Exactness here is the equality proved by \Cref{thm:maintext:sound}: the transformed program preserves the relevant probabilities of the source program, not merely an approximation with an error bound. Intuitively, when a program uses continuous quantities only through finitely many comparison outcomes, exact inference should reduce to a discrete problem, and exact discretization makes that reduction explicit.
 
 As shown in \Cref{fig:discretization-code}, $\discretize{e : \tau}$ is defined recursively on $e : \tau$ and its type annotations; we focus on continuous uniform distributions, with others handled analogously. The only sub-expressions replaced by $\discretize{\cdot}$ are float constants and sampling instructions. The rule schemata are local, but their selection and parameters come from globally inferred cut/value information; \Cref{sec:soundness} proves that this non-local, type-mediated construction preserves semantics. Before detailing the rules, we outline how type annotations guide discretization. The type system is designed so that every typed sub-expression of the form 
 $e = \uniform(e_1, e_2 )$ of type $\float[B;V]$ with $B=\{\sim_1\!\!b_1, \ldots, \sim_n\!\!b_n\} \neq \top$
@@ -158,7 +158,7 @@ $
 	\text{ToInts} \colon \{0.3, 0.5\} \to \intervals{B}
 $
 %
-such that $c$ is an (open) endpoint of $\text{ToInts}(c)$ for all $c \in\{0.3,0.5\}$. %Let us now consider the next example.
+that maps each constant $c \in\{0.3,0.5\}$ to the unique interval in $\intervals{B}$ containing $c$. This interval is determined by the cut convention: a cut $\clt{c}$ puts $c$ in the interval to the right of the boundary, while a cut $\cleq{c}$ puts $c$ in the interval to the left. %Let us now consider the next example.
 %
 \begin{example}
 	If the arguments to a uniform sampling are non-constant, the situation becomes more challenging. Consider the following typed expression $e : \bool$ (again only showing relevant types):
