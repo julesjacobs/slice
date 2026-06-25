@@ -1,12 +1,62 @@
-# Exact probability pair for the SurveyUnbias query:
-#   observed answer_0 = 1
-#   query = not(answer_0)
-# Output order is (P(query = false), P(query = true)).
+# Model-shaped Hakaru version of survey_unbias.py.
 
-def bucket_prob(i nat) prob:
-    nat2prob(i + 1) / 10
+def prob_not(p prob) prob:
+    real2prob(1 - prob2real(p))
 
-evidence = summate i from 0 to 10:
-    (1/10) * bucket_prob(i)
+def bern(p prob):
+    i <~ categorical([p, prob_not(p)])
+    return [true, false][i]
 
-(evidence / evidence, nat2prob(0))
+def observe_bool(b bool):
+    if b:
+        weight(1, return ())
+    else:
+        weight(0, return ())
+
+def binom_pmf(n nat, k nat, p prob) prob:
+    nat2prob(choose(n, k)) * p ** nat2real(k) *
+        prob_not(p) ** (nat2real(n) - nat2real(k))
+
+def binom(n nat, p prob):
+    k <~ categorical(array i of n + 1: binom_pmf(n, i, p))
+    return k
+
+def binspace10_right(p prob) prob:
+    if p <= 1/10:
+        1/10
+    else:
+        if p <= 2/10:
+            2/10
+        else:
+            if p <= 3/10:
+                3/10
+            else:
+                if p <= 4/10:
+                    4/10
+                else:
+                    if p <= 5/10:
+                        5/10
+                    else:
+                        if p <= 6/10:
+                            6/10
+                        else:
+                            if p <= 7/10:
+                                7/10
+                            else:
+                                if p <= 8/10:
+                                    8/10
+                                else:
+                                    if p <= 9/10:
+                                        9/10
+                                    else:
+                                        1
+
+bias_0 <~ beta(1, 1)
+votes_0 <~ binom(1000, binspace10_right(bias_0))
+
+ansBias_0 <~ return bias_0
+answer_0 <~ bern(binspace10_right(ansBias_0))
+
+_ <~ observe_bool(answer_0)
+
+return not(answer_0)

@@ -17,7 +17,7 @@ import statistics
 import re
 import shlex
 import shutil
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 from datetime import datetime
 from benchmarks.scaling.run import *
 
@@ -34,13 +34,15 @@ original_dir = Path(__file__).resolve().parent
 class BenchmarkRunner:
     """Integrated benchmark runner for Slice"""
     
-    def __init__(self, output_dir="artifact_results", timeout=300):
+    def __init__(self, output_dir="artifact_results", timeout=300, selected_tools=None):
         self.output_dir = Path(output_dir)
         self.output_dir.mkdir(exist_ok=True)
         self.results = []
         self.outputs = []
         self.num_runs = 5  # Number of times to run each benchmark
         self.timeout = timeout  # Timeout in seconds
+        self.selected_tools = set(selected_tools) if selected_tools else None
+        self._hakaru_docker_container = None
 
     def record_output(self, benchmark, category, tool, output, timed_out=False):
         """Record program output for later correctness checks."""
@@ -58,6 +60,10 @@ class BenchmarkRunner:
             'last_numeric': numeric_values[-1] if numeric_values else '',
             'output': output_text,
         })
+
+    def should_run(self, tool):
+        """Return whether a benchmark tool should run under the current filter."""
+        return self.selected_tools is None or tool in self.selected_tools
 
         
     def run_command(self, cmd, cwd=None):
@@ -363,11 +369,108 @@ class BenchmarkRunner:
 
     def run_hakaru(self, hk_file, timeout):
         """Run a Hakaru benchmark file, if a Hakaru command is available."""
-        command = self.command_from_env("HAKARU_CMD", "hakaru", hk_file)
+        command = self.hakaru_command(hk_file)
         if command is None:
-            return None, "ERROR: Hakaru executable not found. Set HAKARU_CMD to run .hk benchmarks.", False, False
+            command = self.default_hakaru_docker_command(hk_file)
+        if command is None:
+            return None, (
+                "ERROR: Hakaru executable not found. Set HAKARU_CMD to run .hk benchmarks, "
+                "set HAKARU_DIR to a Hakaru checkout, or start a Docker container with Hakaru under /tmp/hakaru."
+            ), False, False
 
         return self.run_external_file(command, timeout)
+
+    def hakaru_command(self, hk_file):
+        """Build a local Hakaru command, preferring exact normalization."""
+        template = os.environ.get("HAKARU_CMD")
+        path = str(hk_file)
+
+        if template:
+            if "{file}" in template:
+                return shlex.split(template.format(file=path))
+            return shlex.split(template) + [path]
+
+        for executable in ("normalize", "hakaru"):
+            if shutil.which(executable):
+                return [executable, path]
+
+        hakaru_dir = Path(os.environ.get("HAKARU_DIR", "/tmp/hakaru"))
+        hakaru_stack = hakaru_dir / "stack.yaml"
+        if hakaru_stack.is_file() and shutil.which("stack"):
+            return [
+                "stack",
+                "--stack-yaml",
+                str(hakaru_stack),
+                "exec",
+                "--",
+                "normalize",
+                path,
+            ]
+
+        return None
+
+    def default_hakaru_docker_command(self, hk_file):
+        """Build a Docker-based Hakaru command for the artifact container, if available."""
+        container = self.find_hakaru_docker_container()
+        if not container:
+            return None
+
+        hakaru_dir = os.environ.get("HAKARU_DOCKER_HAKARU_DIR", "/tmp/hakaru")
+        container_file = self.path_in_hakaru_container(hk_file)
+        return [
+            "docker", "exec",
+            "-w", hakaru_dir,
+            container,
+            "stack", "exec", "--", "normalize", container_file,
+        ]
+
+    def path_in_hakaru_container(self, path):
+        """Map a local repo path to the artifact container's mounted repo path."""
+        container_root = os.environ.get("HAKARU_DOCKER_SLICE_ROOT", "/home/opam/slice")
+        try:
+            rel = Path(path).resolve().relative_to(original_dir.resolve())
+            return str(PurePosixPath(container_root) / PurePosixPath(rel.as_posix()))
+        except ValueError:
+            return str(path)
+
+    def find_hakaru_docker_container(self):
+        """Find a running Docker container that contains a Hakaru checkout."""
+        if self._hakaru_docker_container is not None:
+            return self._hakaru_docker_container or None
+
+        candidates = []
+        explicit = os.environ.get("HAKARU_DOCKER_CONTAINER")
+        if explicit:
+            candidates = [explicit]
+        elif shutil.which("docker"):
+            try:
+                result = subprocess.run(
+                    ["docker", "ps", "--format", "{{.ID}}"],
+                    capture_output=True,
+                    text=True,
+                    timeout=5,
+                )
+                if result.returncode == 0:
+                    candidates = [line.strip() for line in result.stdout.splitlines() if line.strip()]
+            except (subprocess.TimeoutExpired, OSError):
+                candidates = []
+
+        hakaru_dir = os.environ.get("HAKARU_DOCKER_HAKARU_DIR", "/tmp/hakaru")
+        for container in candidates:
+            try:
+                result = subprocess.run(
+                    ["docker", "exec", container, "test", "-d", hakaru_dir],
+                    capture_output=True,
+                    timeout=5,
+                )
+            except (subprocess.TimeoutExpired, OSError):
+                continue
+            if result.returncode == 0:
+                self._hakaru_docker_container = container
+                return container
+
+        self._hakaru_docker_container = ""
+        return None
 
     
 
@@ -389,9 +492,9 @@ class BenchmarkRunner:
                 # Run Slice version
                 slice_file = (size_dir / f"{benchmark_name}.slice").resolve()
                 if slice_file.exists():
-                    if USE_DICE_BACKEND:
+                    if USE_DICE_BACKEND and self.should_run('slice-dice'):
                         print(f"  Running {benchmark_name} (Slice / dice)...", flush=True)
-                        slice_time, dice_time, total_duration_dice, _, _ = self.run_slice_to_dice(slice_file, 300)
+                        slice_time, dice_time, total_duration_dice, _, _ = self.run_slice_to_dice(slice_file, self.timeout)
 
                         # timing = self.run_slice_on_file(slice_file, 'dice')
                         if total_duration_dice:
@@ -408,9 +511,9 @@ class BenchmarkRunner:
                             })
                             print(f"    Mean: {total_duration_dice:.3f}s ± {0:.3f}s")
                             print(f"    slice: {slice_time:.3f}s, dice: {dice_time:.3f}s")
-                    if USE_ROULETTE_BACKEND:
+                    if USE_ROULETTE_BACKEND and self.should_run('slice-roulette'):
                         print(f"  Running {benchmark_name} (Slice / roulette)...", flush=True)
-                        slice_time, roulette_time, total_duration_roulette, _, _ = self.run_slice_to_roulette(slice_file, 300)
+                        slice_time, roulette_time, total_duration_roulette, _, _ = self.run_slice_to_roulette(slice_file, self.timeout)
                         if total_duration_roulette:
                             self.results.append({
                                 'benchmark': benchmark_name,
@@ -428,9 +531,9 @@ class BenchmarkRunner:
                 
                 # Run SPPL version
                 py_file = (size_dir / f"{benchmark_name}.py").resolve()
-                if py_file.exists():
+                if py_file.exists() and self.should_run('sppl'):
                     print(f"  Running {benchmark_name} (SPPL)...", flush=True)
-                    translate_time, condition_time, prob_time, sppl_output, _, _ = self.run_sppl(py_file, 300)
+                    translate_time, condition_time, prob_time, sppl_output, _, _ = self.run_sppl(py_file, self.timeout)
                     if sppl_output:
                         self.results.append({
                             'benchmark': benchmark_name,
@@ -445,8 +548,58 @@ class BenchmarkRunner:
                         })
                         print(f"    Mean: {sppl_output:.3f}s ± {0:.3f}s")
                         print(f"    translate: {translate_time:.3f}s, condition: {condition_time:.3f}s, prob: {prob_time:.3f}s")
-                else:
+                elif self.should_run('sppl'):
                     print(f"File not found: {py_file}")
+
+                # Run PSI version
+                psi_file = (size_dir / f"{benchmark_name}.psi").resolve()
+                if psi_file.exists() and self.should_run('psi'):
+                    print(f"  Running {benchmark_name} (PSI)...", flush=True)
+                    psi_duration, psi_output, psi_timed_out, psi_ok = self.run_psi(psi_file, self.timeout)
+                    self.record_output(benchmark_name, 'decision_tree', 'psi', psi_output, psi_timed_out)
+                    if psi_ok and psi_duration is not None:
+                        self.results.append({
+                            'benchmark': benchmark_name,
+                            'category': 'decision_tree',
+                            'size': size,
+                            'variant': variant,
+                            'tool': 'psi',
+                            'mean_time': psi_duration,
+                            'stdev': 0,
+                            'min_time': 0,
+                            'max_time': 0
+                        })
+                        print(f"    Mean: {psi_duration:.3f}s ± {0:.3f}s")
+                    elif psi_timed_out:
+                        print(f"    TIMEOUT after {self.timeout}s")
+                    else:
+                        print(f"    skipped/error: {self.outputs[-1]['last_line']}")
+                    print(f"    output: {self.outputs[-1]['last_line']}")
+
+                # Run Hakaru version
+                hk_file = (size_dir / f"{benchmark_name}.hk").resolve()
+                if hk_file.exists() and self.should_run('hakaru'):
+                    print(f"  Running {benchmark_name} (Hakaru)...", flush=True)
+                    hakaru_duration, hakaru_output, hakaru_timed_out, hakaru_ok = self.run_hakaru(hk_file, self.timeout)
+                    self.record_output(benchmark_name, 'decision_tree', 'hakaru', hakaru_output, hakaru_timed_out)
+                    if hakaru_ok and hakaru_duration is not None:
+                        self.results.append({
+                            'benchmark': benchmark_name,
+                            'category': 'decision_tree',
+                            'size': size,
+                            'variant': variant,
+                            'tool': 'hakaru',
+                            'mean_time': hakaru_duration,
+                            'stdev': 0,
+                            'min_time': 0,
+                            'max_time': 0
+                        })
+                        print(f"    Mean: {hakaru_duration:.3f}s ± {0:.3f}s")
+                    elif hakaru_timed_out:
+                        print(f"    TIMEOUT after {self.timeout}s")
+                    else:
+                        print(f"    skipped/error: {self.outputs[-1]['last_line']}")
+                    print(f"    output: {self.outputs[-1]['last_line']}")
     
     def run_baseline_benchmarks(self):
         """Run baseline benchmarks comparing Slice and SPPL"""
@@ -463,7 +616,7 @@ class BenchmarkRunner:
             # Run Slice version
             slice_file = (benchmark_dir / f"{benchmark}.slice").resolve()
             if slice_file.exists():
-                if USE_DICE_BACKEND:
+                if USE_DICE_BACKEND and self.should_run('slice-dice'):
                     print(f"  Running {benchmark} (Slice / dice)...", flush=True)
                     slice_time, dice_time, total_duration_dice, dice_output, dice_timed_out = self.run_slice_to_dice(slice_file, self.timeout)
                     self.record_output(benchmark, 'baseline', 'slice-dice', dice_output, dice_timed_out)
@@ -481,7 +634,7 @@ class BenchmarkRunner:
                         print(f"    slice: {slice_time:.3f}s, dice: {dice_time:.3f}s")
                         print(f"    output: {self.outputs[-1]['last_line']}")
 
-                if USE_ROULETTE_BACKEND:
+                if USE_ROULETTE_BACKEND and self.should_run('slice-roulette'):
                     print(f"  Running {benchmark} (Slice / roulette)...", flush=True)
                     slice_time, roulette_time, total_duration_roulette, roulette_output, roulette_timed_out = self.run_slice_to_roulette(slice_file, self.timeout)
                     self.record_output(benchmark, 'baseline', 'slice-roulette', roulette_output, roulette_timed_out)
@@ -503,7 +656,7 @@ class BenchmarkRunner:
 
             # Run SPPL version
             py_file = (benchmark_dir / f"{benchmark}.py").resolve()
-            if py_file.exists():
+            if py_file.exists() and self.should_run('sppl'):
                 print(f"  Running {benchmark} (SPPL)...", flush=True)
                 translate_time, condition_time, prob_time, sppl_duration_total, sppl_output, sppl_timed_out = self.run_sppl(py_file, self.timeout)
                 self.record_output(benchmark, 'baseline', 'sppl', sppl_output, sppl_timed_out)
@@ -523,7 +676,7 @@ class BenchmarkRunner:
 
             # Run PSI version
             psi_file = (benchmark_dir / f"{benchmark}.psi").resolve()
-            if psi_file.exists():
+            if psi_file.exists() and self.should_run('psi'):
                 print(f"  Running {benchmark} (PSI)...", flush=True)
                 psi_duration, psi_output, psi_timed_out, psi_ok = self.run_psi(psi_file, self.timeout)
                 self.record_output(benchmark, 'baseline', 'psi', psi_output, psi_timed_out)
@@ -546,7 +699,7 @@ class BenchmarkRunner:
 
             # Run Hakaru version
             hk_file = (benchmark_dir / f"{benchmark}.hk").resolve()
-            if hk_file.exists():
+            if hk_file.exists() and self.should_run('hakaru'):
                 print(f"  Running {benchmark} (Hakaru)...", flush=True)
                 hakaru_duration, hakaru_output, hakaru_timed_out, hakaru_ok = self.run_hakaru(hk_file, self.timeout)
                 self.record_output(benchmark, 'baseline', 'hakaru', hakaru_output, hakaru_timed_out)
@@ -1107,6 +1260,14 @@ class SliceCLI:
         """Run benchmarks"""
         output_dir = Path(args.output_dir)
         output_dir.mkdir(exist_ok=True)
+        selected_tools = self.selected_benchmark_tools(args)
+
+        if selected_tools is not None and args.hyperfine:
+            print("ERROR: benchmark system flags are not supported with --hyperfine. Remove --hyperfine to filter by system.")
+            sys.exit(2)
+        if selected_tools is not None and args.type == 'scaling':
+            print("ERROR: benchmark system flags are only supported for baseline and decision-tree benchmarks.")
+            sys.exit(2)
         
         if args.type in ['all', 'decision-trees', 'dt']:
             if not self.quiet:
@@ -1117,7 +1278,7 @@ class SliceCLI:
                 self.run_hyperfine_benchmarks(output_dir)
             else:
                 # Use integrated benchmark runner
-                runner = BenchmarkRunner(str(output_dir), timeout=args.timeout if args.timeout else 300)
+                runner = BenchmarkRunner(str(output_dir), timeout=args.timeout if args.timeout else 300, selected_tools=selected_tools)
                 runner.num_runs = args.runs
                 runner.run_decision_tree_benchmarks()
                 runner.save_results('dt')
@@ -1134,7 +1295,7 @@ class SliceCLI:
                 self.run_hyperfine_benchmarks(output_dir)
             else:
                 # Use integrated benchmark runner
-                runner = BenchmarkRunner(str(output_dir), timeout=args.timeout if args.timeout else 300)
+                runner = BenchmarkRunner(str(output_dir), timeout=args.timeout if args.timeout else 300, selected_tools=selected_tools)
                 runner.num_runs = args.runs
                 runner.run_baseline_benchmarks()
                 runner.save_results('baseline')
@@ -1142,7 +1303,7 @@ class SliceCLI:
                 if args.format == 'latex':
                     runner.generate_latex_table()
         
-        if args.type in ['all', 'scaling']:
+        if args.type in ['all', 'scaling'] and selected_tools is None:
             if not self.quiet:
                 print("\nRunning scaling benchmarks...", flush=True)
             
@@ -1158,6 +1319,23 @@ class SliceCLI:
                 
                 if args.format == 'latex':
                     runner.generate_latex_table()
+
+    def selected_benchmark_tools(self, args):
+        """Return selected benchmark tools from CLI flags, or None for all tools."""
+        selected = set()
+        if args.slice:
+            selected.update({'slice-dice', 'slice-roulette'})
+        if args.slice_dice:
+            selected.add('slice-dice')
+        if args.slice_roulette:
+            selected.add('slice-roulette')
+        if args.sppl:
+            selected.add('sppl')
+        if args.psi:
+            selected.add('psi')
+        if args.hakaru:
+            selected.add('hakaru')
+        return selected or None
 
     
     def run_hyperfine_benchmarks(self, output_dir):
@@ -1281,6 +1459,8 @@ Examples:
   python3 slice.py run examples/tutorial/coin.slice             # Run with both Dice and Roulette
   python3 slice.py test                                         # Test installation
   python3 slice.py benchmark                                    # Run all benchmarks
+  python3 slice.py benchmark baseline --psi                     # Run only PSI baseline benchmarks
+  python3 slice.py benchmark decision-trees --hakaru            # Run only Hakaru decision-tree benchmarks
   python3 slice.py examples --list                              # List examples
   python3 slice.py run file.slice --to-sppl                     # Convert to SPPL
 
@@ -1326,6 +1506,19 @@ Examples:
                             default='csv', help='Output format')
     bench_parser.add_argument('--hyperfine', action='store_true', help='Use hyperfine for benchmarks')
     bench_parser.add_argument('--timeout', type=int, default=300, help='Timeout per benchmark in seconds (default: 300)')
+    bench_systems = bench_parser.add_argument_group('benchmark system selection')
+    bench_systems.add_argument('--slice', action='store_true',
+                               help='Run only Slice systems (Slice+Dice and Slice+Roulette)')
+    bench_systems.add_argument('--slice-dice', action='store_true',
+                               help='Run only Slice+Dice benchmarks')
+    bench_systems.add_argument('--slice-roulette', action='store_true',
+                               help='Run only Slice+Roulette benchmarks')
+    bench_systems.add_argument('--sppl', action='store_true',
+                               help='Run only SPPL benchmarks')
+    bench_systems.add_argument('--psi', action='store_true',
+                               help='Run only PSI benchmarks')
+    bench_systems.add_argument('--hakaru', action='store_true',
+                               help='Run only Hakaru benchmarks')
     
     # Build command
     build_parser = subparsers.add_parser('build', help='Build components')

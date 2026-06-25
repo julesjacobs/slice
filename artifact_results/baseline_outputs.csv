@@ -1,49 +1,9 @@
 benchmark,category,tool,timed_out,first_line,last_line,last_numeric,output
-clickgraph,baseline,slice-dice,False,================[ Joint Distribution ]================,false	0.55,0.55,"================[ Joint Distribution ]================
-Value	Probability	
-true	0.45	
-false	0.55"
-clickgraph,baseline,slice-roulette,False,(pmf | #t ↦ 0.45 | #f ↦ 0.55),(pmf | #t ↦ 0.45 | #f ↦ 0.55),0.55,(pmf | #t ↦ 0.45 | #f ↦ 0.55)
-clickgraph,baseline,sppl,False,0.44444444444444464,0.44444444444444464,0.44444444444444464,0.44444444444444464
-clinical_trial,baseline,slice-dice,False,================[ Joint Distribution ]================,false	0.525,0.525,"================[ Joint Distribution ]================
-Value	Probability	
-true	0.475	
-false	0.525"
-clinical_trial,baseline,slice-roulette,False,(pmf | #t ↦ 0.475 | #f ↦ 0.525),(pmf | #t ↦ 0.475 | #f ↦ 0.525),0.525,(pmf | #t ↦ 0.475 | #f ↦ 0.525)
-clinical_trial,baseline,sppl,False,0.5249999999999995,0.5249999999999995,0.5249999999999995,0.5249999999999995
-coin_bias,baseline,slice-dice,False,================[ Joint Distribution ]================,false	1,1,"================[ Joint Distribution ]================
-Value	Probability	
-true	0	
-false	1"
-coin_bias,baseline,slice-roulette,False,(pmf | #t ↦ 0 | #f ↦ 1),(pmf | #t ↦ 0 | #f ↦ 1),1,(pmf | #t ↦ 0 | #f ↦ 1)
-coin_bias,baseline,sppl,False,0.0,0.0,0.0,0.0
-election,baseline,slice-dice,False,================[ Joint Distribution ]================,false	0.707681789,0.707681789,"================[ Joint Distribution ]================
-Value	Probability	
-true	0.292318211	
-false	0.707681789"
-election,baseline,slice-roulette,False,(pmf | #t ↦ 0.29232 | #f ↦ 0.70768),(pmf | #t ↦ 0.29232 | #f ↦ 0.70768),0.70768,(pmf | #t ↦ 0.29232 | #f ↦ 0.70768)
-election,baseline,sppl,False,0.3318956304871102,0.3318956304871102,0.3318956304871102,0.3318956304871102
-hmm,baseline,slice-dice,False,================[ Joint Distribution ]================,false	0.702581645,0.702581645,"================[ Joint Distribution ]================
-Value	Probability	
-true	0.297418355	
-false	0.702581645"
-hmm,baseline,slice-roulette,False,(pmf | #t ↦ 0.297418 | #f ↦ 0.702582),(pmf | #t ↦ 0.297418 | #f ↦ 0.702582),0.702582,(pmf | #t ↦ 0.297418 | #f ↦ 0.702582)
-hmm,baseline,sppl,False,0.4183882278720831,0.4183882278720831,0.4183882278720831,0.4183882278720831
-student_interviews,baseline,slice-dice,False,================[ Joint Distribution ]================,false	0.999985957,0.999985957,"================[ Joint Distribution ]================
-Value	Probability	
-true	0.000014043	
-false	0.999985957"
-student_interviews,baseline,slice-roulette,False,(pmf | #t ↦ 0.000014 | #f ↦ 0.999986),(pmf | #t ↦ 0.000014 | #f ↦ 0.999986),0.999986,(pmf | #t ↦ 0.000014 | #f ↦ 0.999986)
-student_interviews,baseline,sppl,False,1.4043237482138219e-05,1.4043237482138219e-05,1.4043237482138219e-05,1.4043237482138219e-05
-survey_unbias,baseline,slice-dice,False,================[ Joint Distribution ]================,false	1,1,"================[ Joint Distribution ]================
-Value	Probability	
-true	0	
-false	1"
-survey_unbias,baseline,slice-roulette,False,(pmf | #t ↦ 0 | #f ↦ 1),(pmf | #t ↦ 0 | #f ↦ 1),1,(pmf | #t ↦ 0 | #f ↦ 1)
-survey_unbias,baseline,sppl,False,0.0,0.0,0.0,0.0
-trueskill,baseline,slice-dice,False,================[ Joint Distribution ]================,false	0,0,"================[ Joint Distribution ]================
-Value	Probability	
-true	1	
-false	0"
-trueskill,baseline,slice-roulette,False,#t,#t,,#t
-trueskill,baseline,sppl,False,1.0,1.0,1.0,1.0
+clickgraph,baseline,hakaru,False,"ERROR: Hakaru executable not found. Set HAKARU_CMD to run .hk benchmarks, or start a Docker container with Hakaru under /tmp/hakaru.","ERROR: Hakaru executable not found. Set HAKARU_CMD to run .hk benchmarks, or start a Docker container with Hakaru under /tmp/hakaru.",,"ERROR: Hakaru executable not found. Set HAKARU_CMD to run .hk benchmarks, or start a Docker container with Hakaru under /tmp/hakaru."
+clinical_trial,baseline,hakaru,False,"ERROR: Hakaru executable not found. Set HAKARU_CMD to run .hk benchmarks, or start a Docker container with Hakaru under /tmp/hakaru.","ERROR: Hakaru executable not found. Set HAKARU_CMD to run .hk benchmarks, or start a Docker container with Hakaru under /tmp/hakaru.",,"ERROR: Hakaru executable not found. Set HAKARU_CMD to run .hk benchmarks, or start a Docker container with Hakaru under /tmp/hakaru."
+coin_bias,baseline,hakaru,False,"ERROR: Hakaru executable not found. Set HAKARU_CMD to run .hk benchmarks, or start a Docker container with Hakaru under /tmp/hakaru.","ERROR: Hakaru executable not found. Set HAKARU_CMD to run .hk benchmarks, or start a Docker container with Hakaru under /tmp/hakaru.",,"ERROR: Hakaru executable not found. Set HAKARU_CMD to run .hk benchmarks, or start a Docker container with Hakaru under /tmp/hakaru."
+election,baseline,hakaru,False,"ERROR: Hakaru executable not found. Set HAKARU_CMD to run .hk benchmarks, or start a Docker container with Hakaru under /tmp/hakaru.","ERROR: Hakaru executable not found. Set HAKARU_CMD to run .hk benchmarks, or start a Docker container with Hakaru under /tmp/hakaru.",,"ERROR: Hakaru executable not found. Set HAKARU_CMD to run .hk benchmarks, or start a Docker container with Hakaru under /tmp/hakaru."
+hmm,baseline,hakaru,False,"ERROR: Hakaru executable not found. Set HAKARU_CMD to run .hk benchmarks, or start a Docker container with Hakaru under /tmp/hakaru.","ERROR: Hakaru executable not found. Set HAKARU_CMD to run .hk benchmarks, or start a Docker container with Hakaru under /tmp/hakaru.",,"ERROR: Hakaru executable not found. Set HAKARU_CMD to run .hk benchmarks, or start a Docker container with Hakaru under /tmp/hakaru."
+student_interviews,baseline,hakaru,False,"ERROR: Hakaru executable not found. Set HAKARU_CMD to run .hk benchmarks, or start a Docker container with Hakaru under /tmp/hakaru.","ERROR: Hakaru executable not found. Set HAKARU_CMD to run .hk benchmarks, or start a Docker container with Hakaru under /tmp/hakaru.",,"ERROR: Hakaru executable not found. Set HAKARU_CMD to run .hk benchmarks, or start a Docker container with Hakaru under /tmp/hakaru."
+survey_unbias,baseline,hakaru,False,"ERROR: Hakaru executable not found. Set HAKARU_CMD to run .hk benchmarks, or start a Docker container with Hakaru under /tmp/hakaru.","ERROR: Hakaru executable not found. Set HAKARU_CMD to run .hk benchmarks, or start a Docker container with Hakaru under /tmp/hakaru.",,"ERROR: Hakaru executable not found. Set HAKARU_CMD to run .hk benchmarks, or start a Docker container with Hakaru under /tmp/hakaru."
+trueskill,baseline,hakaru,False,"ERROR: Hakaru executable not found. Set HAKARU_CMD to run .hk benchmarks, or start a Docker container with Hakaru under /tmp/hakaru.","ERROR: Hakaru executable not found. Set HAKARU_CMD to run .hk benchmarks, or start a Docker container with Hakaru under /tmp/hakaru.",,"ERROR: Hakaru executable not found. Set HAKARU_CMD to run .hk benchmarks, or start a Docker container with Hakaru under /tmp/hakaru."

@@ -1,36 +1,31 @@
-# Exact probability pair for the TrueSkill query:
-#   observed perfB1 >= 80 and 77 <= skillA < 125
-#   observed result = 0, where result = 1 iff perfA1 > perfB1
-#   query = perfA1 = 1
-# Output order is (P(query = false), P(query = true)).
+# Model-shaped Hakaru version of trueskill.py.
 
-def factorial(n nat) prob:
-    product i from 1 to n + 1: nat2prob(i)
+def prob_not(p prob) prob:
+    real2prob(1 - prob2real(p))
 
-def poisson100(n nat) prob:
-    exp(-100) * nat2prob(100) ** nat2real(n) / factorial(n)
+def observe_bool(b bool):
+    if b:
+        weight(1, return ())
+    else:
+        weight(0, return ())
 
 def binom_pmf(n nat, k nat, p prob) prob:
     nat2prob(choose(n, k)) * p ** nat2real(k) *
-        real2prob(1 - prob2real(p)) ** (nat2real(n) - nat2real(k))
+        prob_not(p) ** (nat2real(n) - nat2real(k))
 
-def binom_cdf(n nat, k nat, p prob) prob:
-    summate a from 0 to k + 1:
-        if a <= n:
-            binom_pmf(n, a, p)
-        else:
-            nat2prob(0)
+def binom(n nat, p prob):
+    k <~ categorical(array i of n + 1: binom_pmf(n, i, p))
+    return k
 
-true_mass = summate b from 80 to 101:
-    binom_pmf(100, b, 0.9) *
-    (summate s from 77 to 125:
-        poisson100(s) * binom_pmf(s, 1, 0.9))
+perfB1 <~ binom(100, 0.9)
+_ <~ observe_bool(80 <= perfB1)
 
-total_mass = summate b from 80 to 101:
-    binom_pmf(100, b, 0.9) *
-    (summate s from 77 to 125:
-        poisson100(s) * binom_cdf(s, b, 0.9))
+skillA <~ poisson(100)
+_ <~ observe_bool(77 <= skillA)
+_ <~ observe_bool(skillA < 125)
 
-true_p = true_mass / total_mass
+perfA1 <~ binom(skillA, 0.9)
+result <~ return perfA1 > perfB1
+_ <~ observe_bool(not(result))
 
-(real2prob(1 - prob2real(true_p)), true_p)
+return perfA1 == 1

@@ -1,42 +1,68 @@
-# Exact probability pair for the StudentInterviews query:
-#   observed student_offers[0] = 1 and num_recruiters > 10
-#   query = student_gpa[0] < 0.125
-# Output order is (P(query = false), P(query = true)).
+# Model-shaped Hakaru version of student_interviews.py.
 
-def beta73_mass(lo real, hi real) prob:
-    integrate x from lo to hi:
-        nat2prob(252) * real2prob(x) ** 6 * real2prob(1 - x) ** 2
+def prob_not(p prob) prob:
+    real2prob(1 - prob2real(p))
 
-def factorial(n nat) prob:
-    product i from 1 to n + 1: nat2prob(i)
+def bern(p prob):
+    i <~ categorical([p, prob_not(p)])
+    return [true, false][i]
 
-def poisson25(n nat) prob:
-    exp(-25) * nat2prob(25) ** nat2real(n) / factorial(n)
+def observe_bool(b bool):
+    if b:
+        weight(1, return ())
+    else:
+        weight(0, return ())
 
 def binom_pmf(n nat, k nat, p prob) prob:
     nat2prob(choose(n, k)) * p ** nat2real(k) *
-        real2prob(1 - prob2real(p)) ** (nat2real(n) - nat2real(k))
+        prob_not(p) ** (nat2real(n) - nat2real(k))
 
-def offer_one(n nat, interview_p prob) prob:
-    summate k from 0 to n + 1:
-        if k == 0:
-            nat2prob(0)
+def binom(n nat, p prob):
+    k <~ categorical(array i of n + 1: binom_pmf(n, i, p))
+    return k
+
+def sample_gpa_unit(student_perfect bool):
+    if student_perfect:
+        return nat2prob(1)
+    else:
+        beta(7, 3)
+
+def sample_interviews(num_recruiters nat, student_perfect bool, student_gpa_unit prob):
+    if student_perfect:
+        binom(num_recruiters, 0.9)
+    else:
+        if 7/8 < student_gpa_unit:
+            binom(num_recruiters, 0.6)
         else:
-            binom_pmf(n, k, interview_p) * binom_pmf(k, 1, 0.4)
+            binom(num_recruiters, 0.5)
 
-low_gpa = beta73_mass(0, 1/8)
-mid_gpa = beta73_mass(0, 7/8)
-high_gpa = beta73_mass(7/8, 1)
+def sample_student_ignored(num_recruiters nat):
+    student_perfect <~ bern(0.2)
+    student_gpa_unit <~ sample_gpa_unit(student_perfect)
+    student_interviews <~ sample_interviews(num_recruiters, student_perfect, student_gpa_unit)
+    student_offers <~ binom(student_interviews, 0.4)
+    return ()
 
-true_mass = summate n from 11 to 41:
-    poisson25(n) * 0.8 * low_gpa * offer_one(n, 0.5)
+num_recruiters <~ poisson(25)
+_ <~ observe_bool(10 <= num_recruiters)
+_ <~ observe_bool(num_recruiters <= 40)
 
-total_mass = summate n from 11 to 41:
-    poisson25(n) *
-        (0.2 * offer_one(n, 0.9) +
-         0.8 * (mid_gpa * offer_one(n, 0.5) +
-                high_gpa * offer_one(n, 0.6)))
+student_perfect_0 <~ bern(0.2)
+student_gpa_unit_0 <~ sample_gpa_unit(student_perfect_0)
+student_interviews_0 <~ sample_interviews(num_recruiters, student_perfect_0, student_gpa_unit_0)
+student_offers_0 <~ binom(student_interviews_0, 0.4)
 
-true_p = true_mass / total_mass
+_ <~ sample_student_ignored(num_recruiters)
+_ <~ sample_student_ignored(num_recruiters)
+_ <~ sample_student_ignored(num_recruiters)
+_ <~ sample_student_ignored(num_recruiters)
+_ <~ sample_student_ignored(num_recruiters)
+_ <~ sample_student_ignored(num_recruiters)
+_ <~ sample_student_ignored(num_recruiters)
+_ <~ sample_student_ignored(num_recruiters)
+_ <~ sample_student_ignored(num_recruiters)
 
-(real2prob(1 - prob2real(true_p)), true_p)
+_ <~ observe_bool(student_offers_0 == 1)
+_ <~ observe_bool(10 < num_recruiters)
+
+return student_gpa_unit_0 < 1/8

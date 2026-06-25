@@ -1,19 +1,65 @@
-# Exact probability pair for the CoinBias query:
-#   observed tosses = [1, 1, 0, 1, 0]
-#   query = not(tossResults[0])
-# Output order is (P(query = false), P(query = true)).
+# Model-shaped Hakaru version of coin_bias.py.
 
-def beta25_mass(i nat) prob:
-    lo = nat2real(i) / nat2real(10)
-    hi = nat2real(i + 1) / nat2real(10)
-    integrate x from lo to hi:
-        nat2prob(30) * real2prob(x) * real2prob(1 - x) ** 4
+def prob_not(p prob) prob:
+    real2prob(1 - prob2real(p))
 
-def bucket_prob(i nat) prob:
-    nat2prob(i + 1) / 10
+def bern(p prob):
+    i <~ categorical([p, prob_not(p)])
+    return [true, false][i]
 
-evidence = summate i from 0 to 10:
-    p = bucket_prob(i)
-    beta25_mass(i) * p ** 3 * real2prob(1 - prob2real(p)) ** 2
+def observe_bool(b bool):
+    if b:
+        weight(1, return ())
+    else:
+        weight(0, return ())
 
-(evidence / evidence, nat2prob(0))
+def observe_eq(actual bool, expected bool):
+    if expected:
+        observe_bool(actual)
+    else:
+        observe_bool(not(actual))
+
+def binspace10_right(p prob) prob:
+    if p <= 1/10:
+        1/10
+    else:
+        if p <= 2/10:
+            2/10
+        else:
+            if p <= 3/10:
+                3/10
+            else:
+                if p <= 4/10:
+                    4/10
+                else:
+                    if p <= 5/10:
+                        5/10
+                    else:
+                        if p <= 6/10:
+                            6/10
+                        else:
+                            if p <= 7/10:
+                                7/10
+                            else:
+                                if p <= 8/10:
+                                    8/10
+                                else:
+                                    if p <= 9/10:
+                                        9/10
+                                    else:
+                                        1
+
+def observed_toss(bias prob, observed bool):
+    tossResult <~ bern(binspace10_right(bias))
+    _ <~ observe_eq(tossResult, observed)
+    return tossResult
+
+bias <~ beta(2, 5)
+
+tossResults_0 <~ observed_toss(bias, true)
+_ <~ observed_toss(bias, true)
+_ <~ observed_toss(bias, false)
+_ <~ observed_toss(bias, true)
+_ <~ observed_toss(bias, false)
+
+return not(tossResults_0)

@@ -1,530 +1,88 @@
 {
-  "timestamp": "2026-05-23T08:32:57.424039",
+  "timestamp": "2026-06-25T07:21:39.530983",
   "num_runs": 5,
-  "results": [
-    {
-      "benchmark": "clickgraph",
-      "category": "baseline",
-      "tool": "slice-dice",
-      "mean_time": 1.139,
-      "stdev": 0,
-      "min_time": 0,
-      "max_time": 0
-    },
-    {
-      "benchmark": "clickgraph",
-      "category": "baseline",
-      "tool": "slice-roulette",
-      "mean_time": 1.1889999999999998,
-      "stdev": 0,
-      "min_time": 0,
-      "max_time": 0
-    },
-    {
-      "benchmark": "clickgraph",
-      "category": "baseline",
-      "tool": "sppl",
-      "mean_time": 112.439,
-      "stdev": 0,
-      "min_time": 0,
-      "max_time": 0
-    },
-    {
-      "benchmark": "clinical_trial",
-      "category": "baseline",
-      "tool": "slice-dice",
-      "mean_time": 3.274,
-      "stdev": 0,
-      "min_time": 0,
-      "max_time": 0
-    },
-    {
-      "benchmark": "clinical_trial",
-      "category": "baseline",
-      "tool": "slice-roulette",
-      "mean_time": 0.885,
-      "stdev": 0,
-      "min_time": 0,
-      "max_time": 0
-    },
-    {
-      "benchmark": "clinical_trial",
-      "category": "baseline",
-      "tool": "sppl",
-      "mean_time": 25.768,
-      "stdev": 0,
-      "min_time": 0,
-      "max_time": 0
-    },
-    {
-      "benchmark": "coin_bias",
-      "category": "baseline",
-      "tool": "slice-dice",
-      "mean_time": 0.279,
-      "stdev": 0,
-      "min_time": 0,
-      "max_time": 0
-    },
-    {
-      "benchmark": "coin_bias",
-      "category": "baseline",
-      "tool": "slice-roulette",
-      "mean_time": 0.145,
-      "stdev": 0,
-      "min_time": 0,
-      "max_time": 0
-    },
-    {
-      "benchmark": "coin_bias",
-      "category": "baseline",
-      "tool": "sppl",
-      "mean_time": 0.882,
-      "stdev": 0,
-      "min_time": 0,
-      "max_time": 0
-    },
-    {
-      "benchmark": "election",
-      "category": "baseline",
-      "tool": "slice-dice",
-      "mean_time": 1.268,
-      "stdev": 0,
-      "min_time": 0,
-      "max_time": 0
-    },
-    {
-      "benchmark": "election",
-      "category": "baseline",
-      "tool": "slice-roulette",
-      "mean_time": 179.56199999999998,
-      "stdev": 0,
-      "min_time": 0,
-      "max_time": 0
-    },
-    {
-      "benchmark": "election",
-      "category": "baseline",
-      "tool": "sppl",
-      "mean_time": 16.596,
-      "stdev": 0,
-      "min_time": 0,
-      "max_time": 0
-    },
-    {
-      "benchmark": "hmm",
-      "category": "baseline",
-      "tool": "slice-dice",
-      "mean_time": 0.054,
-      "stdev": 0,
-      "min_time": 0,
-      "max_time": 0
-    },
-    {
-      "benchmark": "hmm",
-      "category": "baseline",
-      "tool": "slice-roulette",
-      "mean_time": 0.047,
-      "stdev": 0,
-      "min_time": 0,
-      "max_time": 0
-    },
-    {
-      "benchmark": "hmm",
-      "category": "baseline",
-      "tool": "sppl",
-      "mean_time": 0.3,
-      "stdev": 0,
-      "min_time": 0,
-      "max_time": 0
-    },
-    {
-      "benchmark": "student_interviews",
-      "category": "baseline",
-      "tool": "slice-dice",
-      "mean_time": 0.341,
-      "stdev": 0,
-      "min_time": 0,
-      "max_time": 0
-    },
-    {
-      "benchmark": "student_interviews",
-      "category": "baseline",
-      "tool": "slice-roulette",
-      "mean_time": 6.621,
-      "stdev": 0,
-      "min_time": 0,
-      "max_time": 0
-    },
-    {
-      "benchmark": "student_interviews",
-      "category": "baseline",
-      "tool": "sppl",
-      "mean_time": 58.166,
-      "stdev": 0,
-      "min_time": 0,
-      "max_time": 0
-    },
-    {
-      "benchmark": "survey_unbias",
-      "category": "baseline",
-      "tool": "slice-dice",
-      "mean_time": 0.076,
-      "stdev": 0,
-      "min_time": 0,
-      "max_time": 0
-    },
-    {
-      "benchmark": "survey_unbias",
-      "category": "baseline",
-      "tool": "slice-roulette",
-      "mean_time": 0.063,
-      "stdev": 0,
-      "min_time": 0,
-      "max_time": 0
-    },
-    {
-      "benchmark": "survey_unbias",
-      "category": "baseline",
-      "tool": "sppl",
-      "mean_time": 0.336,
-      "stdev": 0,
-      "min_time": 0,
-      "max_time": 0
-    },
-    {
-      "benchmark": "trueskill",
-      "category": "baseline",
-      "tool": "slice-dice",
-      "mean_time": 0.046,
-      "stdev": 0,
-      "min_time": 0,
-      "max_time": 0
-    },
-    {
-      "benchmark": "trueskill",
-      "category": "baseline",
-      "tool": "slice-roulette",
-      "mean_time": 0.111,
-      "stdev": 0,
-      "min_time": 0,
-      "max_time": 0
-    },
-    {
-      "benchmark": "trueskill",
-      "category": "baseline",
-      "tool": "sppl",
-      "mean_time": 0.197,
-      "stdev": 0,
-      "min_time": 0,
-      "max_time": 0
-    }
-  ],
+  "results": [],
   "outputs": [
     {
       "benchmark": "clickgraph",
       "category": "baseline",
-      "tool": "slice-dice",
+      "tool": "hakaru",
       "timed_out": false,
-      "first_line": "================[ Joint Distribution ]================",
-      "last_line": "false\t0.55",
-      "last_numeric": "0.55",
-      "output": "================[ Joint Distribution ]================\nValue\tProbability\t\ntrue\t0.45\t\nfalse\t0.55"
-    },
-    {
-      "benchmark": "clickgraph",
-      "category": "baseline",
-      "tool": "slice-roulette",
-      "timed_out": false,
-      "first_line": "(pmf | #t \u21a6 0.45 | #f \u21a6 0.55)",
-      "last_line": "(pmf | #t \u21a6 0.45 | #f \u21a6 0.55)",
-      "last_numeric": "0.55",
-      "output": "(pmf | #t \u21a6 0.45 | #f \u21a6 0.55)"
-    },
-    {
-      "benchmark": "clickgraph",
-      "category": "baseline",
-      "tool": "sppl",
-      "timed_out": false,
-      "first_line": "0.44444444444444464",
-      "last_line": "0.44444444444444464",
-      "last_numeric": "0.44444444444444464",
-      "output": "0.44444444444444464"
-    },
-    {
-      "benchmark": "clinical_trial",
-      "category": "baseline",
-      "tool": "slice-dice",
-      "timed_out": false,
-      "first_line": "================[ Joint Distribution ]================",
-      "last_line": "false\t0.525",
-      "last_numeric": "0.525",
-      "output": "================[ Joint Distribution ]================\nValue\tProbability\t\ntrue\t0.475\t\nfalse\t0.525"
-    },
-    {
-      "benchmark": "clinical_trial",
-      "category": "baseline",
-      "tool": "slice-roulette",
-      "timed_out": false,
-      "first_line": "(pmf | #t \u21a6 0.475 | #f \u21a6 0.525)",
-      "last_line": "(pmf | #t \u21a6 0.475 | #f \u21a6 0.525)",
-      "last_numeric": "0.525",
-      "output": "(pmf | #t \u21a6 0.475 | #f \u21a6 0.525)"
-    },
-    {
-      "benchmark": "clinical_trial",
-      "category": "baseline",
-      "tool": "sppl",
-      "timed_out": false,
-      "first_line": "0.5249999999999995",
-      "last_line": "0.5249999999999995",
-      "last_numeric": "0.5249999999999995",
-      "output": "0.5249999999999995"
-    },
-    {
-      "benchmark": "coin_bias",
-      "category": "baseline",
-      "tool": "slice-dice",
-      "timed_out": false,
-      "first_line": "================[ Joint Distribution ]================",
-      "last_line": "false\t1",
-      "last_numeric": "1",
-      "output": "================[ Joint Distribution ]================\nValue\tProbability\t\ntrue\t0\t\nfalse\t1"
-    },
-    {
-      "benchmark": "coin_bias",
-      "category": "baseline",
-      "tool": "slice-roulette",
-      "timed_out": false,
-      "first_line": "(pmf | #t \u21a6 0 | #f \u21a6 1)",
-      "last_line": "(pmf | #t \u21a6 0 | #f \u21a6 1)",
-      "last_numeric": "1",
-      "output": "(pmf | #t \u21a6 0 | #f \u21a6 1)"
-    },
-    {
-      "benchmark": "coin_bias",
-      "category": "baseline",
-      "tool": "sppl",
-      "timed_out": false,
-      "first_line": "0.0",
-      "last_line": "0.0",
-      "last_numeric": "0.0",
-      "output": "0.0"
-    },
-    {
-      "benchmark": "election",
-      "category": "baseline",
-      "tool": "slice-dice",
-      "timed_out": false,
-      "first_line": "================[ Joint Distribution ]================",
-      "last_line": "false\t0.707681789",
-      "last_numeric": "0.707681789",
-      "output": "================[ Joint Distribution ]================\nValue\tProbability\t\ntrue\t0.292318211\t\nfalse\t0.707681789"
-    },
-    {
-      "benchmark": "election",
-      "category": "baseline",
-      "tool": "slice-roulette",
-      "timed_out": false,
-      "first_line": "(pmf | #t \u21a6 0.29232 | #f \u21a6 0.70768)",
-      "last_line": "(pmf | #t \u21a6 0.29232 | #f \u21a6 0.70768)",
-      "last_numeric": "0.70768",
-      "output": "(pmf | #t \u21a6 0.29232 | #f \u21a6 0.70768)"
-    },
-    {
-      "benchmark": "election",
-      "category": "baseline",
-      "tool": "sppl",
-      "timed_out": false,
-      "first_line": "0.3318956304871102",
-      "last_line": "0.3318956304871102",
-      "last_numeric": "0.3318956304871102",
-      "output": "0.3318956304871102"
-    },
-    {
-      "benchmark": "hmm",
-      "category": "baseline",
-      "tool": "slice-dice",
-      "timed_out": false,
-      "first_line": "================[ Joint Distribution ]================",
-      "last_line": "false\t0.702581645",
-      "last_numeric": "0.702581645",
-      "output": "================[ Joint Distribution ]================\nValue\tProbability\t\ntrue\t0.297418355\t\nfalse\t0.702581645"
-    },
-    {
-      "benchmark": "hmm",
-      "category": "baseline",
-      "tool": "slice-roulette",
-      "timed_out": false,
-      "first_line": "(pmf | #t \u21a6 0.297418 | #f \u21a6 0.702582)",
-      "last_line": "(pmf | #t \u21a6 0.297418 | #f \u21a6 0.702582)",
-      "last_numeric": "0.702582",
-      "output": "(pmf | #t \u21a6 0.297418 | #f \u21a6 0.702582)"
-    },
-    {
-      "benchmark": "hmm",
-      "category": "baseline",
-      "tool": "sppl",
-      "timed_out": false,
-      "first_line": "0.4183882278720831",
-      "last_line": "0.4183882278720831",
-      "last_numeric": "0.4183882278720831",
-      "output": "0.4183882278720831"
-    },
-    {
-      "benchmark": "student_interviews",
-      "category": "baseline",
-      "tool": "slice-dice",
-      "timed_out": false,
-      "first_line": "================[ Joint Distribution ]================",
-      "last_line": "false\t0.999985957",
-      "last_numeric": "0.999985957",
-      "output": "================[ Joint Distribution ]================\nValue\tProbability\t\ntrue\t0.000014043\t\nfalse\t0.999985957"
-    },
-    {
-      "benchmark": "student_interviews",
-      "category": "baseline",
-      "tool": "slice-roulette",
-      "timed_out": false,
-      "first_line": "(pmf | #t \u21a6 0.000014 | #f \u21a6 0.999986)",
-      "last_line": "(pmf | #t \u21a6 0.000014 | #f \u21a6 0.999986)",
-      "last_numeric": "0.999986",
-      "output": "(pmf | #t \u21a6 0.000014 | #f \u21a6 0.999986)"
-    },
-    {
-      "benchmark": "student_interviews",
-      "category": "baseline",
-      "tool": "sppl",
-      "timed_out": false,
-      "first_line": "1.4043237482138219e-05",
-      "last_line": "1.4043237482138219e-05",
-      "last_numeric": "1.4043237482138219e-05",
-      "output": "1.4043237482138219e-05"
-    },
-    {
-      "benchmark": "survey_unbias",
-      "category": "baseline",
-      "tool": "slice-dice",
-      "timed_out": false,
-      "first_line": "================[ Joint Distribution ]================",
-      "last_line": "false\t1",
-      "last_numeric": "1",
-      "output": "================[ Joint Distribution ]================\nValue\tProbability\t\ntrue\t0\t\nfalse\t1"
-    },
-    {
-      "benchmark": "survey_unbias",
-      "category": "baseline",
-      "tool": "slice-roulette",
-      "timed_out": false,
-      "first_line": "(pmf | #t \u21a6 0 | #f \u21a6 1)",
-      "last_line": "(pmf | #t \u21a6 0 | #f \u21a6 1)",
-      "last_numeric": "1",
-      "output": "(pmf | #t \u21a6 0 | #f \u21a6 1)"
-    },
-    {
-      "benchmark": "survey_unbias",
-      "category": "baseline",
-      "tool": "sppl",
-      "timed_out": false,
-      "first_line": "0.0",
-      "last_line": "0.0",
-      "last_numeric": "0.0",
-      "output": "0.0"
-    },
-    {
-      "benchmark": "trueskill",
-      "category": "baseline",
-      "tool": "slice-dice",
-      "timed_out": false,
-      "first_line": "================[ Joint Distribution ]================",
-      "last_line": "false\t0",
-      "last_numeric": "0",
-      "output": "================[ Joint Distribution ]================\nValue\tProbability\t\ntrue\t1\t\nfalse\t0"
-    },
-    {
-      "benchmark": "trueskill",
-      "category": "baseline",
-      "tool": "slice-roulette",
-      "timed_out": false,
-      "first_line": "#t",
-      "last_line": "#t",
+      "first_line": "ERROR: Hakaru executable not found. Set HAKARU_CMD to run .hk benchmarks, or start a Docker container with Hakaru under /tmp/hakaru.",
+      "last_line": "ERROR: Hakaru executable not found. Set HAKARU_CMD to run .hk benchmarks, or start a Docker container with Hakaru under /tmp/hakaru.",
       "last_numeric": "",
-      "output": "#t"
+      "output": "ERROR: Hakaru executable not found. Set HAKARU_CMD to run .hk benchmarks, or start a Docker container with Hakaru under /tmp/hakaru."
+    },
+    {
+      "benchmark": "clinical_trial",
+      "category": "baseline",
+      "tool": "hakaru",
+      "timed_out": false,
+      "first_line": "ERROR: Hakaru executable not found. Set HAKARU_CMD to run .hk benchmarks, or start a Docker container with Hakaru under /tmp/hakaru.",
+      "last_line": "ERROR: Hakaru executable not found. Set HAKARU_CMD to run .hk benchmarks, or start a Docker container with Hakaru under /tmp/hakaru.",
+      "last_numeric": "",
+      "output": "ERROR: Hakaru executable not found. Set HAKARU_CMD to run .hk benchmarks, or start a Docker container with Hakaru under /tmp/hakaru."
+    },
+    {
+      "benchmark": "coin_bias",
+      "category": "baseline",
+      "tool": "hakaru",
+      "timed_out": false,
+      "first_line": "ERROR: Hakaru executable not found. Set HAKARU_CMD to run .hk benchmarks, or start a Docker container with Hakaru under /tmp/hakaru.",
+      "last_line": "ERROR: Hakaru executable not found. Set HAKARU_CMD to run .hk benchmarks, or start a Docker container with Hakaru under /tmp/hakaru.",
+      "last_numeric": "",
+      "output": "ERROR: Hakaru executable not found. Set HAKARU_CMD to run .hk benchmarks, or start a Docker container with Hakaru under /tmp/hakaru."
+    },
+    {
+      "benchmark": "election",
+      "category": "baseline",
+      "tool": "hakaru",
+      "timed_out": false,
+      "first_line": "ERROR: Hakaru executable not found. Set HAKARU_CMD to run .hk benchmarks, or start a Docker container with Hakaru under /tmp/hakaru.",
+      "last_line": "ERROR: Hakaru executable not found. Set HAKARU_CMD to run .hk benchmarks, or start a Docker container with Hakaru under /tmp/hakaru.",
+      "last_numeric": "",
+      "output": "ERROR: Hakaru executable not found. Set HAKARU_CMD to run .hk benchmarks, or start a Docker container with Hakaru under /tmp/hakaru."
+    },
+    {
+      "benchmark": "hmm",
+      "category": "baseline",
+      "tool": "hakaru",
+      "timed_out": false,
+      "first_line": "ERROR: Hakaru executable not found. Set HAKARU_CMD to run .hk benchmarks, or start a Docker container with Hakaru under /tmp/hakaru.",
+      "last_line": "ERROR: Hakaru executable not found. Set HAKARU_CMD to run .hk benchmarks, or start a Docker container with Hakaru under /tmp/hakaru.",
+      "last_numeric": "",
+      "output": "ERROR: Hakaru executable not found. Set HAKARU_CMD to run .hk benchmarks, or start a Docker container with Hakaru under /tmp/hakaru."
+    },
+    {
+      "benchmark": "student_interviews",
+      "category": "baseline",
+      "tool": "hakaru",
+      "timed_out": false,
+      "first_line": "ERROR: Hakaru executable not found. Set HAKARU_CMD to run .hk benchmarks, or start a Docker container with Hakaru under /tmp/hakaru.",
+      "last_line": "ERROR: Hakaru executable not found. Set HAKARU_CMD to run .hk benchmarks, or start a Docker container with Hakaru under /tmp/hakaru.",
+      "last_numeric": "",
+      "output": "ERROR: Hakaru executable not found. Set HAKARU_CMD to run .hk benchmarks, or start a Docker container with Hakaru under /tmp/hakaru."
+    },
+    {
+      "benchmark": "survey_unbias",
+      "category": "baseline",
+      "tool": "hakaru",
+      "timed_out": false,
+      "first_line": "ERROR: Hakaru executable not found. Set HAKARU_CMD to run .hk benchmarks, or start a Docker container with Hakaru under /tmp/hakaru.",
+      "last_line": "ERROR: Hakaru executable not found. Set HAKARU_CMD to run .hk benchmarks, or start a Docker container with Hakaru under /tmp/hakaru.",
+      "last_numeric": "",
+      "output": "ERROR: Hakaru executable not found. Set HAKARU_CMD to run .hk benchmarks, or start a Docker container with Hakaru under /tmp/hakaru."
     },
     {
       "benchmark": "trueskill",
       "category": "baseline",
-      "tool": "sppl",
+      "tool": "hakaru",
       "timed_out": false,
-      "first_line": "1.0",
-      "last_line": "1.0",
-      "last_numeric": "1.0",
-      "output": "1.0"
+      "first_line": "ERROR: Hakaru executable not found. Set HAKARU_CMD to run .hk benchmarks, or start a Docker container with Hakaru under /tmp/hakaru.",
+      "last_line": "ERROR: Hakaru executable not found. Set HAKARU_CMD to run .hk benchmarks, or start a Docker container with Hakaru under /tmp/hakaru.",
+      "last_numeric": "",
+      "output": "ERROR: Hakaru executable not found. Set HAKARU_CMD to run .hk benchmarks, or start a Docker container with Hakaru under /tmp/hakaru."
     }
   ],
-  "speedups": [
-    {
-      "benchmark": "clickgraph",
-      "slice_time_dice": 1.139,
-      "slice_time_roulette": 1.1889999999999998,
-      "sppl_time": 112.439,
-      "dice_speedup": 98.7172958735733,
-      "roulette_speedup": 94.56602186711523
-    },
-    {
-      "benchmark": "clinical_trial",
-      "slice_time_dice": 3.274,
-      "slice_time_roulette": 0.885,
-      "sppl_time": 25.768,
-      "dice_speedup": 7.870494807574832,
-      "roulette_speedup": 29.116384180790963
-    },
-    {
-      "benchmark": "coin_bias",
-      "slice_time_dice": 0.279,
-      "slice_time_roulette": 0.145,
-      "sppl_time": 0.882,
-      "dice_speedup": 3.161290322580645,
-      "roulette_speedup": 6.082758620689655
-    },
-    {
-      "benchmark": "election",
-      "slice_time_dice": 1.268,
-      "slice_time_roulette": 179.56199999999998,
-      "sppl_time": 16.596,
-      "dice_speedup": 13.088328075709779,
-      "roulette_speedup": 0.09242490059143918
-    },
-    {
-      "benchmark": "hmm",
-      "slice_time_dice": 0.054,
-      "slice_time_roulette": 0.047,
-      "sppl_time": 0.3,
-      "dice_speedup": 5.555555555555555,
-      "roulette_speedup": 6.382978723404255
-    },
-    {
-      "benchmark": "student_interviews",
-      "slice_time_dice": 0.341,
-      "slice_time_roulette": 6.621,
-      "sppl_time": 58.166,
-      "dice_speedup": 170.57478005865102,
-      "roulette_speedup": 8.785077782812262
-    },
-    {
-      "benchmark": "survey_unbias",
-      "slice_time_dice": 0.076,
-      "slice_time_roulette": 0.063,
-      "sppl_time": 0.336,
-      "dice_speedup": 4.421052631578948,
-      "roulette_speedup": 5.333333333333334
-    },
-    {
-      "benchmark": "trueskill",
-      "slice_time_dice": 0.046,
-      "slice_time_roulette": 0.111,
-      "sppl_time": 0.197,
-      "dice_speedup": 4.282608695652174,
-      "roulette_speedup": 1.7747747747747749
-    }
-  ]
+  "speedups": []
 }

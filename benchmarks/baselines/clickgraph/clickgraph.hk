@@ -1,8 +1,56 @@
-# Exact probability pair for the ClickGraph query:
-#   query = not(click_url_B[0])
-# Output order is (P(query = false), P(query = true)).
+# Model-shaped Hakaru version of clickgraph.py.
+# The beta/uniform variables are used only through SPPL binspace switches, so
+# the bins are sampled explicitly here at their SPPL right endpoints.
 
-p_click = (summate i from 0 to 10:
-    nat2prob(i + 1) / 10) / 10
+def prob_not(p prob) prob:
+    real2prob(1 - prob2real(p))
 
-(p_click, real2prob(1 - prob2real(p_click)))
+def bern(p prob):
+    i <~ categorical([p, prob_not(p)])
+    return [true, false][i]
+
+def observe_bool(b bool):
+    if b:
+        weight(1, return ())
+    else:
+        weight(0, return ())
+
+def observe_eq(actual bool, expected bool):
+    if expected:
+        observe_bool(actual)
+    else:
+        observe_bool(not(actual))
+
+def p_similar_bucket_to_prob(i nat) prob:
+    nat2prob(i + 1) / 20
+
+def click_bucket_to_prob(i nat) prob:
+    nat2prob(i + 1) / 10
+
+def draw_click_prob(_ignored nat):
+    i <~ categorical([1/10, 1/10, 1/10, 1/10, 1/10, 1/10, 1/10, 1/10, 1/10, 1/10])
+    return click_bucket_to_prob(i)
+
+def click_pair(p_similar prob, observed_a bool, observed_b bool):
+    similar <~ bern(p_similar)
+    p_click_url_A <~ draw_click_prob(0)
+    p_click_url_B <~ if similar:
+                         return p_click_url_A
+                     else:
+                         draw_click_prob(0)
+    click_url_A <~ bern(p_click_url_A)
+    click_url_B <~ bern(p_click_url_B)
+    _ <~ observe_eq(click_url_A, observed_a)
+    _ <~ observe_eq(click_url_B, observed_b)
+    return ()
+
+p_similar_bucket <~ categorical([1/20, 1/20, 1/20, 1/20, 1/20, 1/20, 1/20, 1/20, 1/20, 1/20, 1/20, 1/20, 1/20, 1/20, 1/20, 1/20, 1/20, 1/20, 1/20, 1/20])
+p_similar <~ return p_similar_bucket_to_prob(p_similar_bucket)
+
+_ <~ click_pair(p_similar, true, true)
+_ <~ click_pair(p_similar, true, true)
+_ <~ click_pair(p_similar, false, false)
+_ <~ click_pair(p_similar, true, true)
+_ <~ click_pair(p_similar, false, false)
+
+return p_similar > 1/2

@@ -1,0 +1,34 @@
+// DT4_ind.psi: generated from the paired Slice query.
+def main() {
+    sex_f := categorical([0.3307, 0.6693]);
+    observe(sex_f < 1);
+    age_f := gauss(38.5816, 186.0614);
+    capital_gain_f := gauss(1077.6488, 54542539.1784);
+    observe(age_f > 18.0);
+    t_f := 0;
+    if capital_gain_f >= 7073.5 {
+        if age_f < 20.0 {
+            t_f = 1.0;
+        } else {
+            t_f = 0.0;
+        }
+    } else {
+        t_f = 1.0;
+    }
+    sex_m := categorical([0.3307, 0.6693]);
+    observe(sex_m >= 1);
+    age_m := gauss(38.5816, 186.0614);
+    capital_gain_m := gauss(1077.6488, 54542539.1784);
+    observe(age_m > 18.0);
+    t_m := 0;
+    if capital_gain_m >= 7073.5 {
+        if age_m < 20.0 {
+            t_m = 1.0;
+        } else {
+            t_m = 0.0;
+        }
+    } else {
+        t_m = 1.0;
+    }
+    return (t_f >= 1.0, t_m >= 1.0);
+}

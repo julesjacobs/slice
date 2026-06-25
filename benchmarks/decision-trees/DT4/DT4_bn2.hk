@@ -1,0 +1,61 @@
+# DT4_bn2.hk: generated from the paired Slice query.
+
+def observe_bool(b bool):
+    if b:
+        weight(1, return ())
+    else:
+        weight(0, return ())
+
+sex_f <~ categorical([0.3307, 0.6693])
+
+_ <~ observe_bool(sex_f < 1)
+
+capital_gain_f <~ normal(568.4105, 24248365.5428)
+
+age_f <~ if capital_gain_f < 7298.0:
+             normal(38.4208, 184.9151)
+         else:
+             normal(38.8125, 193.4918)
+
+education_num_f <~ if capital_gain_f < 7298.0:
+                       normal(10.0827, 6.5096)
+                   else:
+                       normal(10.1041, 6.1522)
+
+_ <~ observe_bool(age_f > 18.0)
+
+t_f <~ if capital_gain_f >= 7073.5:
+           if age_f < 20.0:
+               return 1.0
+           else:
+               return 0.0
+       else:
+           return 1.0
+
+sex_m <~ categorical([0.3307, 0.6693])
+
+_ <~ observe_bool(sex_m >= 1)
+
+capital_gain_m <~ normal(1329.3700, 69327473.1006)
+
+age_m <~ if capital_gain_m < 5178.0:
+             normal(38.6361, 187.2435)
+         else:
+             normal(38.2668, 187.2747)
+
+education_num_m <~ if capital_gain_m < 5178.0:
+                       normal(10.0817, 6.4841)
+                   else:
+                       normal(10.0974, 7.1793)
+
+_ <~ observe_bool(age_m > 18.0)
+
+t_m <~ if capital_gain_m >= 7073.5:
+           if age_m < 20.0:
+               return 1.0
+           else:
+               return 0.0
+       else:
+           return 1.0
+
+return (t_f >= 1.0, t_m >= 1.0)

@@ -1,8 +1,53 @@
-# Exact probability pair for the ClinicalTrial query with n = 20, k = 20:
-#   query = not(treatedGroup[0])
-# Output order is (P(query = false), P(query = true)).
+# Model-shaped Hakaru version of clinical_trial.py.
 
-p_treated = (summate i from 0 to 20:
-    nat2prob(i) / 20) / 20
+def prob_not(p prob) prob:
+    real2prob(1 - prob2real(p))
 
-(p_treated, real2prob(1 - prob2real(p_treated)))
+def bern(p prob):
+    i <~ categorical([p, prob_not(p)])
+    return [true, false][i]
+
+def randint20(_ignored nat):
+    i <~ categorical([1/20, 1/20, 1/20, 1/20, 1/20, 1/20, 1/20, 1/20, 1/20, 1/20, 1/20, 1/20, 1/20, 1/20, 1/20, 1/20, 1/20, 1/20, 1/20, 1/20])
+    return i
+
+def trial_subject(isEffective bool, probControl nat, probTreated nat, probAll nat):
+    control_p <~ if isEffective:
+                     return nat2prob(probControl) / 20
+                 else:
+                     return nat2prob(probAll) / 20
+    treated_p <~ if isEffective:
+                     return nat2prob(probTreated) / 20
+                 else:
+                     return nat2prob(probAll) / 20
+    controlGroup <~ bern(control_p)
+    treatedGroup <~ bern(treated_p)
+    return treatedGroup
+
+isEffective <~ bern(0.5)
+probControl <~ randint20(0)
+probTreated <~ randint20(0)
+probAll <~ randint20(0)
+
+treatedGroup_0 <~ trial_subject(isEffective, probControl, probTreated, probAll)
+_ <~ trial_subject(isEffective, probControl, probTreated, probAll)
+_ <~ trial_subject(isEffective, probControl, probTreated, probAll)
+_ <~ trial_subject(isEffective, probControl, probTreated, probAll)
+_ <~ trial_subject(isEffective, probControl, probTreated, probAll)
+_ <~ trial_subject(isEffective, probControl, probTreated, probAll)
+_ <~ trial_subject(isEffective, probControl, probTreated, probAll)
+_ <~ trial_subject(isEffective, probControl, probTreated, probAll)
+_ <~ trial_subject(isEffective, probControl, probTreated, probAll)
+_ <~ trial_subject(isEffective, probControl, probTreated, probAll)
+_ <~ trial_subject(isEffective, probControl, probTreated, probAll)
+_ <~ trial_subject(isEffective, probControl, probTreated, probAll)
+_ <~ trial_subject(isEffective, probControl, probTreated, probAll)
+_ <~ trial_subject(isEffective, probControl, probTreated, probAll)
+_ <~ trial_subject(isEffective, probControl, probTreated, probAll)
+_ <~ trial_subject(isEffective, probControl, probTreated, probAll)
+_ <~ trial_subject(isEffective, probControl, probTreated, probAll)
+_ <~ trial_subject(isEffective, probControl, probTreated, probAll)
+_ <~ trial_subject(isEffective, probControl, probTreated, probAll)
+_ <~ trial_subject(isEffective, probControl, probTreated, probAll)
+
+return not(treatedGroup_0)

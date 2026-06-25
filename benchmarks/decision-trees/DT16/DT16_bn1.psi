@@ -1,0 +1,120 @@
+// DT16_bn1.psi: generated from the paired Slice query.
+def main() {
+    sex_f := categorical([0.3307, 0.6693]);
+    observe(sex_f < 1);
+    capital_gain_f := gauss(568.4105, 24248365.5428);
+    age_f := 0;
+    if capital_gain_f < 7298.0 {
+        age_f = gauss(38.4208, 184.9151);
+    } else {
+        age_f = gauss(38.8125, 193.4918);
+    }
+    relationship_f := 0;
+    if capital_gain_f < 7298.0 {
+        relationship_f = categorical([0.0491, 0.1556, 0.4012, 0.2589, 0.0294, 0.1058]);
+    } else {
+        relationship_f = categorical([0.0416, 0.1667, 0.4583, 0.2292, 0.0166, 0.0876]);
+    }
+    observe(age_f > 18.0);
+    t_f := 0;
+    if relationship_f == 1 {
+        if capital_gain_f < 5095.5 {
+            t_f = 1.0;
+        } else {
+            t_f = 0.0;
+        }
+    } else {
+        if relationship_f == 2 {
+            if capital_gain_f < 4718.5 {
+                t_f = 1.0;
+            } else {
+                t_f = 0.0;
+            }
+        } else {
+            if relationship_f == 3 {
+                if capital_gain_f < 5095.5 {
+                    t_f = 1.0;
+                } else {
+                    t_f = 0.0;
+                }
+            } else {
+                if relationship_f == 4 {
+                    if capital_gain_f < 8296.0 {
+                        t_f = 1.0;
+                    } else {
+                        t_f = 0.0;
+                    }
+                } else {
+                    if relationship_f == 5 {
+                        t_f = 1.0;
+                    } else {
+                        if capital_gain_f < 4668.5 {
+                            t_f = 1.0;
+                        } else {
+                            t_f = 0.0;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    sex_m := categorical([0.3307, 0.6693]);
+    observe(sex_m >= 1);
+    capital_gain_m := gauss(1329.3700, 69327473.1006);
+    age_m := 0;
+    if capital_gain_m < 5178.0 {
+        age_m = gauss(38.6361, 187.2435);
+    } else {
+        age_m = gauss(38.2668, 187.2747);
+    }
+    relationship_m := 0;
+    if capital_gain_m < 5178.0 {
+        relationship_m = categorical([0.0497, 0.1545, 0.4021, 0.2590, 0.0294, 0.1053]);
+    } else {
+        relationship_m = categorical([0.0417, 0.1624, 0.3976, 0.2606, 0.0356, 0.1021]);
+    }
+    observe(age_m > 18.0);
+    t_m := 0;
+    if relationship_m == 1 {
+        if capital_gain_m < 5095.5 {
+            t_m = 1.0;
+        } else {
+            t_m = 0.0;
+        }
+    } else {
+        if relationship_m == 2 {
+            if capital_gain_m < 4718.5 {
+                t_m = 1.0;
+            } else {
+                t_m = 0.0;
+            }
+        } else {
+            if relationship_m == 3 {
+                if capital_gain_m < 5095.5 {
+                    t_m = 1.0;
+                } else {
+                    t_m = 0.0;
+                }
+            } else {
+                if relationship_m == 4 {
+                    if capital_gain_m < 8296.0 {
+                        t_m = 1.0;
+                    } else {
+                        t_m = 0.0;
+                    }
+                } else {
+                    if relationship_m == 5 {
+                        t_m = 1.0;
+                    } else {
+                        if capital_gain_m < 4668.5 {
+                            t_m = 1.0;
+                        } else {
+                            t_m = 0.0;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    return (t_f >= 1.0, t_m >= 1.0);
+}
