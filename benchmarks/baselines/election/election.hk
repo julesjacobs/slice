@@ -1,0 +1,11 @@
+# Exact probability pair for the Election query:
+#   observe(win)
+#   query = p > 0.5
+# Output order is (P(query = false), P(query = true)).
+#
+# This is computed from the same beta/binomial discretization over param in
+# [250, 350) used by the Slice and PSI encodings.
+
+p_gt_half_given_win = 0.9986469715252915
+
+(real2prob(1 - prob2real(p_gt_half_given_win)), p_gt_half_given_win)

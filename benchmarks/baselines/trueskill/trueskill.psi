@@ -1,0 +1,19 @@
+def main() {
+    perfB1 := binomial(100, 0.9);
+    observe(80 <= perfB1);
+
+    skillA := poisson(100);
+    observe(77 <= skillA && skillA < 125);
+
+    perfA1 := binomial(skillA, 0.9);
+
+    result := 0;
+    if perfA1 > perfB1 {
+        result = 1;
+    } else {
+        result = 0;
+    }
+
+    observe(result == 0);
+    return perfA1 == 1;
+}

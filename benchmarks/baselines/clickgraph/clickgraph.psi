@@ -101,5 +101,16 @@ def main() {
         }
     }
 
-    return click_url_B[0] < 1;
+    observe(click_url_A[0] == 1);
+    observe(click_url_B[0] == 1);
+    observe(click_url_A[1] == 1);
+    observe(click_url_B[1] == 1);
+    observe(click_url_A[2] == 0);
+    observe(click_url_B[2] == 0);
+    observe(click_url_A[3] == 1);
+    observe(click_url_B[3] == 1);
+    observe(click_url_A[4] == 0);
+    observe(click_url_B[4] == 0);
+
+    return p_similar > 0.5;
 }

@@ -1,0 +1,181 @@
+let student_perfect_0 = discrete(0.8, 0.2) in
+let student_gpa_0 = if student_perfect_0 ==#2 0#2 then beta(7, 3) else 1.0 in
+
+let num_recruiters = poisson(25) in
+let _recruiters_range = observe(10 <= num_recruiters && num_recruiters <= 40) in
+
+let student_interviews_0 =
+    if num_recruiters <= 10 then
+        if student_perfect_0 ==#2 1#2 then binomial(0.9, 10)
+        else if student_gpa_0 > 0.875 then binomial(0.6, 10)
+        else binomial(0.5, 10)
+    else if num_recruiters <= 11 then
+        if student_perfect_0 ==#2 1#2 then binomial(0.9, 11)
+        else if student_gpa_0 > 0.875 then binomial(0.6, 11)
+        else binomial(0.5, 11)
+    else if num_recruiters <= 12 then
+        if student_perfect_0 ==#2 1#2 then binomial(0.9, 12)
+        else if student_gpa_0 > 0.875 then binomial(0.6, 12)
+        else binomial(0.5, 12)
+    else if num_recruiters <= 13 then
+        if student_perfect_0 ==#2 1#2 then binomial(0.9, 13)
+        else if student_gpa_0 > 0.875 then binomial(0.6, 13)
+        else binomial(0.5, 13)
+    else if num_recruiters <= 14 then
+        if student_perfect_0 ==#2 1#2 then binomial(0.9, 14)
+        else if student_gpa_0 > 0.875 then binomial(0.6, 14)
+        else binomial(0.5, 14)
+    else if num_recruiters <= 15 then
+        if student_perfect_0 ==#2 1#2 then binomial(0.9, 15)
+        else if student_gpa_0 > 0.875 then binomial(0.6, 15)
+        else binomial(0.5, 15)
+    else if num_recruiters <= 16 then
+        if student_perfect_0 ==#2 1#2 then binomial(0.9, 16)
+        else if student_gpa_0 > 0.875 then binomial(0.6, 16)
+        else binomial(0.5, 16)
+    else if num_recruiters <= 17 then
+        if student_perfect_0 ==#2 1#2 then binomial(0.9, 17)
+        else if student_gpa_0 > 0.875 then binomial(0.6, 17)
+        else binomial(0.5, 17)
+    else if num_recruiters <= 18 then
+        if student_perfect_0 ==#2 1#2 then binomial(0.9, 18)
+        else if student_gpa_0 > 0.875 then binomial(0.6, 18)
+        else binomial(0.5, 18)
+    else if num_recruiters <= 19 then
+        if student_perfect_0 ==#2 1#2 then binomial(0.9, 19)
+        else if student_gpa_0 > 0.875 then binomial(0.6, 19)
+        else binomial(0.5, 19)
+    else if num_recruiters <= 20 then
+        if student_perfect_0 ==#2 1#2 then binomial(0.9, 20)
+        else if student_gpa_0 > 0.875 then binomial(0.6, 20)
+        else binomial(0.5, 20)
+    else if num_recruiters <= 21 then
+        if student_perfect_0 ==#2 1#2 then binomial(0.9, 21)
+        else if student_gpa_0 > 0.875 then binomial(0.6, 21)
+        else binomial(0.5, 21)
+    else if num_recruiters <= 22 then
+        if student_perfect_0 ==#2 1#2 then binomial(0.9, 22)
+        else if student_gpa_0 > 0.875 then binomial(0.6, 22)
+        else binomial(0.5, 22)
+    else if num_recruiters <= 23 then
+        if student_perfect_0 ==#2 1#2 then binomial(0.9, 23)
+        else if student_gpa_0 > 0.875 then binomial(0.6, 23)
+        else binomial(0.5, 23)
+    else if num_recruiters <= 24 then
+        if student_perfect_0 ==#2 1#2 then binomial(0.9, 24)
+        else if student_gpa_0 > 0.875 then binomial(0.6, 24)
+        else binomial(0.5, 24)
+    else if num_recruiters <= 25 then
+        if student_perfect_0 ==#2 1#2 then binomial(0.9, 25)
+        else if student_gpa_0 > 0.875 then binomial(0.6, 25)
+        else binomial(0.5, 25)
+    else if num_recruiters <= 26 then
+        if student_perfect_0 ==#2 1#2 then binomial(0.9, 26)
+        else if student_gpa_0 > 0.875 then binomial(0.6, 26)
+        else binomial(0.5, 26)
+    else if num_recruiters <= 27 then
+        if student_perfect_0 ==#2 1#2 then binomial(0.9, 27)
+        else if student_gpa_0 > 0.875 then binomial(0.6, 27)
+        else binomial(0.5, 27)
+    else if num_recruiters <= 28 then
+        if student_perfect_0 ==#2 1#2 then binomial(0.9, 28)
+        else if student_gpa_0 > 0.875 then binomial(0.6, 28)
+        else binomial(0.5, 28)
+    else if num_recruiters <= 29 then
+        if student_perfect_0 ==#2 1#2 then binomial(0.9, 29)
+        else if student_gpa_0 > 0.875 then binomial(0.6, 29)
+        else binomial(0.5, 29)
+    else if num_recruiters <= 30 then
+        if student_perfect_0 ==#2 1#2 then binomial(0.9, 30)
+        else if student_gpa_0 > 0.875 then binomial(0.6, 30)
+        else binomial(0.5, 30)
+    else if num_recruiters <= 31 then
+        if student_perfect_0 ==#2 1#2 then binomial(0.9, 31)
+        else if student_gpa_0 > 0.875 then binomial(0.6, 31)
+        else binomial(0.5, 31)
+    else if num_recruiters <= 32 then
+        if student_perfect_0 ==#2 1#2 then binomial(0.9, 32)
+        else if student_gpa_0 > 0.875 then binomial(0.6, 32)
+        else binomial(0.5, 32)
+    else if num_recruiters <= 33 then
+        if student_perfect_0 ==#2 1#2 then binomial(0.9, 33)
+        else if student_gpa_0 > 0.875 then binomial(0.6, 33)
+        else binomial(0.5, 33)
+    else if num_recruiters <= 34 then
+        if student_perfect_0 ==#2 1#2 then binomial(0.9, 34)
+        else if student_gpa_0 > 0.875 then binomial(0.6, 34)
+        else binomial(0.5, 34)
+    else if num_recruiters <= 35 then
+        if student_perfect_0 ==#2 1#2 then binomial(0.9, 35)
+        else if student_gpa_0 > 0.875 then binomial(0.6, 35)
+        else binomial(0.5, 35)
+    else if num_recruiters <= 36 then
+        if student_perfect_0 ==#2 1#2 then binomial(0.9, 36)
+        else if student_gpa_0 > 0.875 then binomial(0.6, 36)
+        else binomial(0.5, 36)
+    else if num_recruiters <= 37 then
+        if student_perfect_0 ==#2 1#2 then binomial(0.9, 37)
+        else if student_gpa_0 > 0.875 then binomial(0.6, 37)
+        else binomial(0.5, 37)
+    else if num_recruiters <= 38 then
+        if student_perfect_0 ==#2 1#2 then binomial(0.9, 38)
+        else if student_gpa_0 > 0.875 then binomial(0.6, 38)
+        else binomial(0.5, 38)
+    else if num_recruiters <= 39 then
+        if student_perfect_0 ==#2 1#2 then binomial(0.9, 39)
+        else if student_gpa_0 > 0.875 then binomial(0.6, 39)
+        else binomial(0.5, 39)
+    else
+        if student_perfect_0 ==#2 1#2 then binomial(0.9, 40)
+        else if student_gpa_0 > 0.875 then binomial(0.6, 40)
+        else binomial(0.5, 40)
+in
+
+let student_offers_0 =
+    if student_interviews_0 < 1 then 0.0
+    else if student_interviews_0 <= 1 then binomial(0.4, 1)
+    else if student_interviews_0 <= 2 then binomial(0.4, 2)
+    else if student_interviews_0 <= 3 then binomial(0.4, 3)
+    else if student_interviews_0 <= 4 then binomial(0.4, 4)
+    else if student_interviews_0 <= 5 then binomial(0.4, 5)
+    else if student_interviews_0 <= 6 then binomial(0.4, 6)
+    else if student_interviews_0 <= 7 then binomial(0.4, 7)
+    else if student_interviews_0 <= 8 then binomial(0.4, 8)
+    else if student_interviews_0 <= 9 then binomial(0.4, 9)
+    else if student_interviews_0 <= 10 then binomial(0.4, 10)
+    else if student_interviews_0 <= 11 then binomial(0.4, 11)
+    else if student_interviews_0 <= 12 then binomial(0.4, 12)
+    else if student_interviews_0 <= 13 then binomial(0.4, 13)
+    else if student_interviews_0 <= 14 then binomial(0.4, 14)
+    else if student_interviews_0 <= 15 then binomial(0.4, 15)
+    else if student_interviews_0 <= 16 then binomial(0.4, 16)
+    else if student_interviews_0 <= 17 then binomial(0.4, 17)
+    else if student_interviews_0 <= 18 then binomial(0.4, 18)
+    else if student_interviews_0 <= 19 then binomial(0.4, 19)
+    else if student_interviews_0 <= 20 then binomial(0.4, 20)
+    else if student_interviews_0 <= 21 then binomial(0.4, 21)
+    else if student_interviews_0 <= 22 then binomial(0.4, 22)
+    else if student_interviews_0 <= 23 then binomial(0.4, 23)
+    else if student_interviews_0 <= 24 then binomial(0.4, 24)
+    else if student_interviews_0 <= 25 then binomial(0.4, 25)
+    else if student_interviews_0 <= 26 then binomial(0.4, 26)
+    else if student_interviews_0 <= 27 then binomial(0.4, 27)
+    else if student_interviews_0 <= 28 then binomial(0.4, 28)
+    else if student_interviews_0 <= 29 then binomial(0.4, 29)
+    else if student_interviews_0 <= 30 then binomial(0.4, 30)
+    else if student_interviews_0 <= 31 then binomial(0.4, 31)
+    else if student_interviews_0 <= 32 then binomial(0.4, 32)
+    else if student_interviews_0 <= 33 then binomial(0.4, 33)
+    else if student_interviews_0 <= 34 then binomial(0.4, 34)
+    else if student_interviews_0 <= 35 then binomial(0.4, 35)
+    else if student_interviews_0 <= 36 then binomial(0.4, 36)
+    else if student_interviews_0 <= 37 then binomial(0.4, 37)
+    else if student_interviews_0 <= 38 then binomial(0.4, 38)
+    else if student_interviews_0 <= 39 then binomial(0.4, 39)
+    else binomial(0.4, 40)
+in
+
+let _offer = observe(0.5 < student_offers_0 && student_offers_0 < 1.5) in
+let _recruiters_positive = observe(num_recruiters > 10) in
+
+student_gpa_0 < 0.125

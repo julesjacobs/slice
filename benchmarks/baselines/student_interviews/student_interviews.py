@@ -31,10 +31,10 @@ for s in range(num_students):
         
 # Sample number of recruiters
 num_recruiters ~= poisson(mu=25)
-condition ((10 <= num_recruiters) <= 20)
+condition ((10 <= num_recruiters) <= 40)
 
 # Switch on number of recruiters.
-switch (num_recruiters) cases (n in range(10, 21)):
+switch (num_recruiters) cases (n in range(10, 41)):
 
     # For each student, sample interviews and offers.
     for j in range(num_students):

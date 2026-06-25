@@ -48,5 +48,5 @@ def main() {
 
     win := votes > 0.5 * n;
     observe(win);
-    return param < 1;
+    return p > 0.5;
 }

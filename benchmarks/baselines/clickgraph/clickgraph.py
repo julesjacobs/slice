@@ -38,12 +38,21 @@ for i in range(5):
 
     switch (p_click_url_B[i]) cases (p in binspace(0, 1, 10)):
         click_url_B[i] ~= bernoulli(p=p.right)
+
+condition(click_url_A[0] == 1)
+condition(click_url_B[0] == 1)
+condition(click_url_A[1] == 1)
+condition(click_url_B[1] == 1)
+condition(click_url_A[2] == 0)
+condition(click_url_B[2] == 0)
+condition(click_url_A[3] == 1)
+condition(click_url_B[3] == 1)
+condition(click_url_A[4] == 0)
+condition(click_url_B[4] == 0)
 ''')
     
     namespace = compiler.execute_module()
-    e = Id('click_url_B[0]')
-    event = (e < 1)
-    prob = namespace.model.prob(event)
+    prob = namespace.model.prob(namespace.p_similar > 0.5)
     elapsed = time.time() - start_time
 
     print(prob)

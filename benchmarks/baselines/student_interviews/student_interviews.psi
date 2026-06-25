@@ -15,7 +15,7 @@ def main() {
     }
 
     num_recruiters := poisson(25);
-    observe(10 <= num_recruiters && num_recruiters <= 20);
+    observe(10 <= num_recruiters && num_recruiters <= 40);
 
     for j in [0..num_students) {
         if student_gpa[j] == 4 {

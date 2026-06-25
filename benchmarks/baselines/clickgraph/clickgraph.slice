@@ -275,4 +275,15 @@ let click_url_B_4 =
     else discrete(0.0, 1.0)
 in
 
-click_url_B_0 <#2 1#2
+let _0 = observe(click_url_A_0 ==#2 1#2) in
+let _1 = observe(click_url_B_0 ==#2 1#2) in
+let _2 = observe(click_url_A_1 ==#2 1#2) in
+let _3 = observe(click_url_B_1 ==#2 1#2) in
+let _4 = observe(click_url_A_2 ==#2 0#2) in
+let _5 = observe(click_url_B_2 ==#2 0#2) in
+let _6 = observe(click_url_A_3 ==#2 1#2) in
+let _7 = observe(click_url_B_3 ==#2 1#2) in
+let _8 = observe(click_url_A_4 ==#2 0#2) in
+let _9 = observe(click_url_B_4 ==#2 0#2) in
+
+p_similar > 0.5

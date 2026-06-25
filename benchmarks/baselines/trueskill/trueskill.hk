@@ -1,0 +1,36 @@
+# Exact probability pair for the TrueSkill query:
+#   observed perfB1 >= 80 and 77 <= skillA < 125
+#   observed result = 0, where result = 1 iff perfA1 > perfB1
+#   query = perfA1 = 1
+# Output order is (P(query = false), P(query = true)).
+
+def factorial(n nat) prob:
+    product i from 1 to n + 1: nat2prob(i)
+
+def poisson100(n nat) prob:
+    exp(-100) * nat2prob(100) ** nat2real(n) / factorial(n)
+
+def binom_pmf(n nat, k nat, p prob) prob:
+    nat2prob(choose(n, k)) * p ** nat2real(k) *
+        real2prob(1 - prob2real(p)) ** (nat2real(n) - nat2real(k))
+
+def binom_cdf(n nat, k nat, p prob) prob:
+    summate a from 0 to k + 1:
+        if a <= n:
+            binom_pmf(n, a, p)
+        else:
+            nat2prob(0)
+
+true_mass = summate b from 80 to 101:
+    binom_pmf(100, b, 0.9) *
+    (summate s from 77 to 125:
+        poisson100(s) * binom_pmf(s, 1, 0.9))
+
+total_mass = summate b from 80 to 101:
+    binom_pmf(100, b, 0.9) *
+    (summate s from 77 to 125:
+        poisson100(s) * binom_cdf(s, b, 0.9))
+
+true_p = true_mass / total_mass
+
+(real2prob(1 - prob2real(true_p)), true_p)

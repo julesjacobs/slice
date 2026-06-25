@@ -229,4 +229,5 @@ let votes =
 in
 
 let win = votes > 2000 in
-win
+let _win = observe(win) in
+p > 0.5

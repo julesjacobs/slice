@@ -22,7 +22,9 @@ win ~= votes > 0.5*n
         ''')
     
     namespace = compiler.execute_module()
-    prob = namespace.model.prob(namespace.win << {1})
+    model_win = namespace.model.condition(namespace.win << {1})
+    
+    prob = model_win.prob(namespace.p > 0.5)
     elapsed = time.time() - start_time
 
     print(prob)

@@ -15,6 +15,8 @@ import json
 import time
 import statistics
 import re
+import shlex
+import shutil
 from pathlib import Path
 from datetime import datetime
 from benchmarks.scaling.run import *
@@ -303,6 +305,70 @@ class BenchmarkRunner:
             sppl_timed_out
         )
 
+    def run_external_file(self, command, timeout):
+        """Run an external benchmark command and capture wall time plus output."""
+        start = time.time()
+        try:
+            result = subprocess.run(
+                command,
+                shell=False,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                timeout=timeout
+            )
+        except subprocess.TimeoutExpired:
+            return None, None, True, False
+        except OSError as e:
+            return None, f"ERROR: failed to start command: {e}", False, False
+
+        duration = time.time() - start
+        stdout_data = result.stdout.decode("utf-8", errors="replace").strip()
+        stderr_data = result.stderr.decode("utf-8", errors="replace").strip()
+
+        if result.returncode == 0:
+            return duration, stdout_data, False, True
+
+        output = stdout_data
+        if stderr_data:
+            output = f"{output}\n[stderr]\n{stderr_data}".strip()
+        output = f"ERROR: command exited with status {result.returncode}\n{output}".strip()
+        return duration, output, False, False
+
+    def command_from_env(self, env_name, default_executable, path):
+        """Build a command for a benchmark file, supporting optional env overrides."""
+        template = os.environ.get(env_name)
+        path = str(path)
+
+        if template:
+            if "{file}" in template:
+                return shlex.split(template.format(file=path))
+            return shlex.split(template) + [path]
+
+        if shutil.which(default_executable):
+            return [default_executable, path]
+
+        return None
+
+    def run_psi(self, psi_file, timeout):
+        """Run a PSI benchmark file, if the psi executable is available."""
+        command = self.command_from_env("PSI_CMD", "psi", psi_file)
+        if command is None:
+            return None, "ERROR: psi executable not found. Set PSI_CMD to run PSI benchmarks.", False, False
+
+        extra_flags = os.environ.get("PSI_FLAGS")
+        if extra_flags and "{file}" not in os.environ.get("PSI_CMD", ""):
+            command = command[:-1] + shlex.split(extra_flags) + command[-1:]
+
+        return self.run_external_file(command, timeout)
+
+    def run_hakaru(self, hk_file, timeout):
+        """Run a Hakaru benchmark file, if a Hakaru command is available."""
+        command = self.command_from_env("HAKARU_CMD", "hakaru", hk_file)
+        if command is None:
+            return None, "ERROR: Hakaru executable not found. Set HAKARU_CMD to run .hk benchmarks.", False, False
+
+        return self.run_external_file(command, timeout)
+
     
 
     def run_decision_tree_benchmarks(self):
@@ -390,8 +456,12 @@ class BenchmarkRunner:
         baseline_dir = Path("benchmarks/baselines")
         
         for benchmark in ["clickgraph", "clinical_trial", "coin_bias", "election", "hmm", "student_interviews", "survey_unbias", "trueskill"]:
+            benchmark_dir = baseline_dir / benchmark
+            if not benchmark_dir.exists():
+                benchmark_dir = baseline_dir
+
             # Run Slice version
-            slice_file = (baseline_dir / f"{benchmark}.slice").resolve()
+            slice_file = (benchmark_dir / f"{benchmark}.slice").resolve()
             if slice_file.exists():
                 if USE_DICE_BACKEND:
                     print(f"  Running {benchmark} (Slice / dice)...", flush=True)
@@ -432,7 +502,7 @@ class BenchmarkRunner:
 
 
             # Run SPPL version
-            py_file = (baseline_dir / f"{benchmark}.py").resolve()
+            py_file = (benchmark_dir / f"{benchmark}.py").resolve()
             if py_file.exists():
                 print(f"  Running {benchmark} (SPPL)...", flush=True)
                 translate_time, condition_time, prob_time, sppl_duration_total, sppl_output, sppl_timed_out = self.run_sppl(py_file, self.timeout)
@@ -450,6 +520,52 @@ class BenchmarkRunner:
                     print(f"    Mean: {sppl_duration_total:.3f}s ± {0:.3f}s")
                     print(f"    translate: {translate_time:.3f}s, condition: {condition_time:.3f}s, prob: {prob_time:.3f}s")
                     print(f"    output: {self.outputs[-1]['last_line']}")
+
+            # Run PSI version
+            psi_file = (benchmark_dir / f"{benchmark}.psi").resolve()
+            if psi_file.exists():
+                print(f"  Running {benchmark} (PSI)...", flush=True)
+                psi_duration, psi_output, psi_timed_out, psi_ok = self.run_psi(psi_file, self.timeout)
+                self.record_output(benchmark, 'baseline', 'psi', psi_output, psi_timed_out)
+                if psi_ok and psi_duration is not None:
+                    self.results.append({
+                        'benchmark': benchmark,
+                        'category': 'baseline',
+                        'tool': 'psi',
+                        'mean_time': psi_duration,
+                        'stdev': 0,
+                        'min_time': 0,
+                        'max_time': 0
+                    })
+                    print(f"    Mean: {psi_duration:.3f}s ± {0:.3f}s")
+                elif psi_timed_out:
+                    print(f"    TIMEOUT after {self.timeout}s")
+                else:
+                    print(f"    skipped/error: {self.outputs[-1]['last_line']}")
+                print(f"    output: {self.outputs[-1]['last_line']}")
+
+            # Run Hakaru version
+            hk_file = (benchmark_dir / f"{benchmark}.hk").resolve()
+            if hk_file.exists():
+                print(f"  Running {benchmark} (Hakaru)...", flush=True)
+                hakaru_duration, hakaru_output, hakaru_timed_out, hakaru_ok = self.run_hakaru(hk_file, self.timeout)
+                self.record_output(benchmark, 'baseline', 'hakaru', hakaru_output, hakaru_timed_out)
+                if hakaru_ok and hakaru_duration is not None:
+                    self.results.append({
+                        'benchmark': benchmark,
+                        'category': 'baseline',
+                        'tool': 'hakaru',
+                        'mean_time': hakaru_duration,
+                        'stdev': 0,
+                        'min_time': 0,
+                        'max_time': 0
+                    })
+                    print(f"    Mean: {hakaru_duration:.3f}s ± {0:.3f}s")
+                elif hakaru_timed_out:
+                    print(f"    TIMEOUT after {self.timeout}s")
+                else:
+                    print(f"    skipped/error: {self.outputs[-1]['last_line']}")
+                print(f"    output: {self.outputs[-1]['last_line']}")
     
     def run_scaling_benchmarks(self):
         """Run scaling benchmarks"""

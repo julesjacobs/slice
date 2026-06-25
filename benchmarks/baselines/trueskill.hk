@@ -1,9 +1,0 @@
-# Exact probability pair for the TrueSkill query:
-#   observed perfB1 >= 98 and 77 <= skillA < 80
-#   query = not(perfA1 > perfB1)
-# Output order is (P(query = false), P(query = true)).
-#
-# Under the observations, perfA1 <= skillA < 80 and perfB1 >= 98, so
-# perfA1 > perfB1 is impossible.
-
-(nat2prob(0), nat2prob(1))
