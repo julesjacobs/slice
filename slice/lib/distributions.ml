@@ -176,5 +176,5 @@ let get_cdistr_from_two_arg_kind (kind: Ast.two_arg_dist_kind) (arg1: float) (ar
       if arg1 <= 0.0 || arg2 <= 0.0 then Error "Exppow a and b must be positive"
       else Ok (Exppow (arg1, arg2))
   | Ast.DBinomial -> 
-      if arg1 <= 0.0 || arg2 <= 0.0 then Error "Binomial a and b must be positive"
+      if arg1 <= 0.0 || arg2 < 0.0 then Error "Binomial p must be positive and n must be non-negative"
       else Ok (Binomial (arg1, int_of_float arg2))
