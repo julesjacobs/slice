@@ -1,33 +1,177 @@
 let bias_0 = beta(1, 1) in
+let bias_1 = beta(1, 1) in
 
 let votes_0 =
-    if bias_0 <= 0.1 then binomial(0.1, 1000)
+    if bias_0 <= 0.05 then binomial(0.05, 1000)
+    else if bias_0 <= 0.1 then binomial(0.1, 1000)
+    else if bias_0 <= 0.15 then binomial(0.15, 1000)
     else if bias_0 <= 0.2 then binomial(0.2, 1000)
+    else if bias_0 <= 0.25 then binomial(0.25, 1000)
     else if bias_0 <= 0.3 then binomial(0.3, 1000)
+    else if bias_0 <= 0.35 then binomial(0.35, 1000)
     else if bias_0 <= 0.4 then binomial(0.4, 1000)
+    else if bias_0 <= 0.45 then binomial(0.45, 1000)
     else if bias_0 <= 0.5 then binomial(0.5, 1000)
+    else if bias_0 <= 0.55 then binomial(0.55, 1000)
     else if bias_0 <= 0.6 then binomial(0.6, 1000)
+    else if bias_0 <= 0.65 then binomial(0.65, 1000)
     else if bias_0 <= 0.7 then binomial(0.7, 1000)
+    else if bias_0 <= 0.75 then binomial(0.75, 1000)
     else if bias_0 <= 0.8 then binomial(0.8, 1000)
+    else if bias_0 <= 0.85 then binomial(0.85, 1000)
     else if bias_0 <= 0.9 then binomial(0.9, 1000)
+    else if bias_0 <= 0.95 then binomial(0.95, 1000)
     else binomial(1.0, 1000)
 in
 
+let votes_1 =
+    if bias_1 <= 0.05 then binomial(0.05, 2000)
+    else if bias_1 <= 0.1 then binomial(0.1, 2000)
+    else if bias_1 <= 0.15 then binomial(0.15, 2000)
+    else if bias_1 <= 0.2 then binomial(0.2, 2000)
+    else if bias_1 <= 0.25 then binomial(0.25, 2000)
+    else if bias_1 <= 0.3 then binomial(0.3, 2000)
+    else if bias_1 <= 0.35 then binomial(0.35, 2000)
+    else if bias_1 <= 0.4 then binomial(0.4, 2000)
+    else if bias_1 <= 0.45 then binomial(0.45, 2000)
+    else if bias_1 <= 0.5 then binomial(0.5, 2000)
+    else if bias_1 <= 0.55 then binomial(0.55, 2000)
+    else if bias_1 <= 0.6 then binomial(0.6, 2000)
+    else if bias_1 <= 0.65 then binomial(0.65, 2000)
+    else if bias_1 <= 0.7 then binomial(0.7, 2000)
+    else if bias_1 <= 0.75 then binomial(0.75, 2000)
+    else if bias_1 <= 0.8 then binomial(0.8, 2000)
+    else if bias_1 <= 0.85 then binomial(0.85, 2000)
+    else if bias_1 <= 0.9 then binomial(0.9, 2000)
+    else if bias_1 <= 0.95 then binomial(0.95, 2000)
+    else binomial(1.0, 2000)
+in
+
 let ansBias_0 = bias_0 in
+let ansBias_1 = bias_1 in
+let ansBias_2 = bias_0 in
+let ansBias_3 = bias_1 in
+let ansBias_4 = bias_0 in
 
 let answer_0 =
-    if ansBias_0 <= 0.1 then discrete(0.9, 0.1)
+    if ansBias_0 <= 0.05 then discrete(0.95, 0.05)
+    else if ansBias_0 <= 0.1 then discrete(0.9, 0.1)
+    else if ansBias_0 <= 0.15 then discrete(0.85, 0.15)
     else if ansBias_0 <= 0.2 then discrete(0.8, 0.2)
+    else if ansBias_0 <= 0.25 then discrete(0.75, 0.25)
     else if ansBias_0 <= 0.3 then discrete(0.7, 0.3)
+    else if ansBias_0 <= 0.35 then discrete(0.65, 0.35)
     else if ansBias_0 <= 0.4 then discrete(0.6, 0.4)
+    else if ansBias_0 <= 0.45 then discrete(0.55, 0.45)
     else if ansBias_0 <= 0.5 then discrete(0.5, 0.5)
+    else if ansBias_0 <= 0.55 then discrete(0.45, 0.55)
     else if ansBias_0 <= 0.6 then discrete(0.4, 0.6)
+    else if ansBias_0 <= 0.65 then discrete(0.35, 0.65)
     else if ansBias_0 <= 0.7 then discrete(0.3, 0.7)
+    else if ansBias_0 <= 0.75 then discrete(0.25, 0.75)
     else if ansBias_0 <= 0.8 then discrete(0.2, 0.8)
+    else if ansBias_0 <= 0.85 then discrete(0.15, 0.85)
     else if ansBias_0 <= 0.9 then discrete(0.1, 0.9)
+    else if ansBias_0 <= 0.95 then discrete(0.05, 0.95)
+    else discrete(0.0, 1.0)
+in
+
+let answer_1 =
+    if ansBias_1 <= 0.05 then discrete(0.95, 0.05)
+    else if ansBias_1 <= 0.1 then discrete(0.9, 0.1)
+    else if ansBias_1 <= 0.15 then discrete(0.85, 0.15)
+    else if ansBias_1 <= 0.2 then discrete(0.8, 0.2)
+    else if ansBias_1 <= 0.25 then discrete(0.75, 0.25)
+    else if ansBias_1 <= 0.3 then discrete(0.7, 0.3)
+    else if ansBias_1 <= 0.35 then discrete(0.65, 0.35)
+    else if ansBias_1 <= 0.4 then discrete(0.6, 0.4)
+    else if ansBias_1 <= 0.45 then discrete(0.55, 0.45)
+    else if ansBias_1 <= 0.5 then discrete(0.5, 0.5)
+    else if ansBias_1 <= 0.55 then discrete(0.45, 0.55)
+    else if ansBias_1 <= 0.6 then discrete(0.4, 0.6)
+    else if ansBias_1 <= 0.65 then discrete(0.35, 0.65)
+    else if ansBias_1 <= 0.7 then discrete(0.3, 0.7)
+    else if ansBias_1 <= 0.75 then discrete(0.25, 0.75)
+    else if ansBias_1 <= 0.8 then discrete(0.2, 0.8)
+    else if ansBias_1 <= 0.85 then discrete(0.15, 0.85)
+    else if ansBias_1 <= 0.9 then discrete(0.1, 0.9)
+    else if ansBias_1 <= 0.95 then discrete(0.05, 0.95)
+    else discrete(0.0, 1.0)
+in
+
+let answer_2 =
+    if ansBias_2 <= 0.05 then discrete(0.95, 0.05)
+    else if ansBias_2 <= 0.1 then discrete(0.9, 0.1)
+    else if ansBias_2 <= 0.15 then discrete(0.85, 0.15)
+    else if ansBias_2 <= 0.2 then discrete(0.8, 0.2)
+    else if ansBias_2 <= 0.25 then discrete(0.75, 0.25)
+    else if ansBias_2 <= 0.3 then discrete(0.7, 0.3)
+    else if ansBias_2 <= 0.35 then discrete(0.65, 0.35)
+    else if ansBias_2 <= 0.4 then discrete(0.6, 0.4)
+    else if ansBias_2 <= 0.45 then discrete(0.55, 0.45)
+    else if ansBias_2 <= 0.5 then discrete(0.5, 0.5)
+    else if ansBias_2 <= 0.55 then discrete(0.45, 0.55)
+    else if ansBias_2 <= 0.6 then discrete(0.4, 0.6)
+    else if ansBias_2 <= 0.65 then discrete(0.35, 0.65)
+    else if ansBias_2 <= 0.7 then discrete(0.3, 0.7)
+    else if ansBias_2 <= 0.75 then discrete(0.25, 0.75)
+    else if ansBias_2 <= 0.8 then discrete(0.2, 0.8)
+    else if ansBias_2 <= 0.85 then discrete(0.15, 0.85)
+    else if ansBias_2 <= 0.9 then discrete(0.1, 0.9)
+    else if ansBias_2 <= 0.95 then discrete(0.05, 0.95)
+    else discrete(0.0, 1.0)
+in
+
+let answer_3 =
+    if ansBias_3 <= 0.05 then discrete(0.95, 0.05)
+    else if ansBias_3 <= 0.1 then discrete(0.9, 0.1)
+    else if ansBias_3 <= 0.15 then discrete(0.85, 0.15)
+    else if ansBias_3 <= 0.2 then discrete(0.8, 0.2)
+    else if ansBias_3 <= 0.25 then discrete(0.75, 0.25)
+    else if ansBias_3 <= 0.3 then discrete(0.7, 0.3)
+    else if ansBias_3 <= 0.35 then discrete(0.65, 0.35)
+    else if ansBias_3 <= 0.4 then discrete(0.6, 0.4)
+    else if ansBias_3 <= 0.45 then discrete(0.55, 0.45)
+    else if ansBias_3 <= 0.5 then discrete(0.5, 0.5)
+    else if ansBias_3 <= 0.55 then discrete(0.45, 0.55)
+    else if ansBias_3 <= 0.6 then discrete(0.4, 0.6)
+    else if ansBias_3 <= 0.65 then discrete(0.35, 0.65)
+    else if ansBias_3 <= 0.7 then discrete(0.3, 0.7)
+    else if ansBias_3 <= 0.75 then discrete(0.25, 0.75)
+    else if ansBias_3 <= 0.8 then discrete(0.2, 0.8)
+    else if ansBias_3 <= 0.85 then discrete(0.15, 0.85)
+    else if ansBias_3 <= 0.9 then discrete(0.1, 0.9)
+    else if ansBias_3 <= 0.95 then discrete(0.05, 0.95)
+    else discrete(0.0, 1.0)
+in
+
+let answer_4 =
+    if ansBias_4 <= 0.05 then discrete(0.95, 0.05)
+    else if ansBias_4 <= 0.1 then discrete(0.9, 0.1)
+    else if ansBias_4 <= 0.15 then discrete(0.85, 0.15)
+    else if ansBias_4 <= 0.2 then discrete(0.8, 0.2)
+    else if ansBias_4 <= 0.25 then discrete(0.75, 0.25)
+    else if ansBias_4 <= 0.3 then discrete(0.7, 0.3)
+    else if ansBias_4 <= 0.35 then discrete(0.65, 0.35)
+    else if ansBias_4 <= 0.4 then discrete(0.6, 0.4)
+    else if ansBias_4 <= 0.45 then discrete(0.55, 0.45)
+    else if ansBias_4 <= 0.5 then discrete(0.5, 0.5)
+    else if ansBias_4 <= 0.55 then discrete(0.45, 0.55)
+    else if ansBias_4 <= 0.6 then discrete(0.4, 0.6)
+    else if ansBias_4 <= 0.65 then discrete(0.35, 0.65)
+    else if ansBias_4 <= 0.7 then discrete(0.3, 0.7)
+    else if ansBias_4 <= 0.75 then discrete(0.25, 0.75)
+    else if ansBias_4 <= 0.8 then discrete(0.2, 0.8)
+    else if ansBias_4 <= 0.85 then discrete(0.15, 0.85)
+    else if ansBias_4 <= 0.9 then discrete(0.1, 0.9)
+    else if ansBias_4 <= 0.95 then discrete(0.05, 0.95)
     else discrete(0.0, 1.0)
 in
 
 let _0 = observe(answer_0 ==#2 1#2) in
+let _1 = observe(answer_1 ==#2 0#2) in
+let _2 = observe(answer_2 ==#2 1#2) in
+let _3 = observe(answer_3 ==#2 1#2) in
+let _4 = observe(answer_4 ==#2 0#2) in
 
-answer_0 <#2 1#2
+bias_0 < 0.5

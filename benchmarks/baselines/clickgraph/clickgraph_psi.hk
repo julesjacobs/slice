@@ -1,0 +1,62 @@
+def prob_not(p prob) prob:
+    real2prob(1 - prob2real(p))
+
+def bern(p prob):
+    i <~ categorical([p, prob_not(p)])
+    return [true, false][i]
+
+def observe_bool(b bool):
+    if b:
+        weight(1, return ())
+    else:
+        weight(0, return ())
+
+def observe_eq(actual bool, expected bool):
+    if expected:
+        observe_bool(actual)
+    else:
+        if actual:
+            weight(0, return ())
+        else:
+            weight(1, return ())
+
+def draw_click_pair(similarityAll prob):
+    sim <~ bern(similarityAll)
+    beta1 <~ beta(1, 1)
+    beta2 <~ if sim:
+                 return beta1
+             else:
+                 beta(1, 1)
+    click0 <~ bern(beta1)
+    click1 <~ bern(beta2)
+    return [click0, click1]
+
+clicks_0 = [true, true, true, false, false]
+clicks_1 = [true, true, true, false, false]
+
+similarityAll <~ beta(1, 1)
+
+# Loops (e.g. plates in Hakaru) are manually unrolled because Hakaru's normalize command (which is necessary when conditioning) does not support plate.
+clickPair_0 <~ draw_click_pair(similarityAll)
+clickPair_1 <~ draw_click_pair(similarityAll)
+clickPair_2 <~ draw_click_pair(similarityAll)
+clickPair_3 <~ draw_click_pair(similarityAll)
+clickPair_4 <~ draw_click_pair(similarityAll)
+
+sim_0 = [clickPair_0[0], clickPair_1[0], clickPair_2[0],
+         clickPair_3[0], clickPair_4[0]]
+sim_1 = [clickPair_0[1], clickPair_1[1], clickPair_2[1],
+         clickPair_3[1], clickPair_4[1]]
+
+_ <~ observe_eq(sim_0[0], clicks_0[0])
+_ <~ observe_eq(sim_1[0], clicks_1[0])
+_ <~ observe_eq(sim_0[1], clicks_0[1])
+_ <~ observe_eq(sim_1[1], clicks_1[1])
+_ <~ observe_eq(sim_0[2], clicks_0[2])
+_ <~ observe_eq(sim_1[2], clicks_1[2])
+_ <~ observe_eq(sim_0[3], clicks_0[3])
+_ <~ observe_eq(sim_1[3], clicks_1[3])
+_ <~ observe_eq(sim_0[4], clicks_0[4])
+_ <~ observe_eq(sim_1[4], clicks_1[4])
+
+return ((), similarityAll < 3/10)

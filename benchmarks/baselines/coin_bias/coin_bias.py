@@ -17,7 +17,7 @@ observedResults = [1,1,0,1,0]
 bias ~= beta(a=2, b=5)
 tossResults = array(5)
 for i in range(5):
-    switch (bias) cases (p in binspace(0, 1, 10)):
+    switch (bias) cases (p in binspace(0, 1, 21)):
         tossResults[i] ~= bernoulli(p=p.right)
 
 for i in range(5):
@@ -25,9 +25,7 @@ for i in range(5):
 ''')
     
     namespace = compiler.execute_module()
-    e = Id('tossResults[0]')
-    event = (e < 1)
-    prob = namespace.model.prob(event)
+    prob = namespace.model.prob(namespace.bias < 0.3)
     elapsed = time.time() - start_time
 
     print(prob)

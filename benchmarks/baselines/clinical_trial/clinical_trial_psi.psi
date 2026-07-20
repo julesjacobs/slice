@@ -2,9 +2,9 @@
 // TODO: the original r2 example uses huge arrays whose indices are seldomly used
 
 def main(){
-    dataControlGroup := readCSV("data/ClinicalTrial/dataControlGroup.csv");
-    dataTreatedGroup := readCSV("data/ClinicalTrial/dataTreatedGroup.csv");
-    n := 100;
+    dataControlGroup := [0, 0, 1, 1, 1, 0, 1, 1, 0, 0];
+    dataTreatedGroup := [0, 1, 0, 0, 1, 1, 1, 1, 1, 1];
+    n := 10;
     // n := dataControlGroup.length;
     
     isEffective := flip(1/2);
@@ -33,5 +33,5 @@ def main(){
         }
     }
 
-    return isEffective;
+    return isEffective == 1;
 }

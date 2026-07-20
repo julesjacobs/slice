@@ -41,5 +41,5 @@ def main(){
         observe(sim_1[i]==clicks_1[i]);
     }
     //similarityAll = Expectation(similarityAll);
-    return similarityAll;
+    return similarityAll < 0.3;
 }

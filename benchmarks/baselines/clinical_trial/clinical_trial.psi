@@ -2,92 +2,169 @@ def main() {
     controlGroup := array(10);
     treatedGroup := array(10);
 
+    dataControlGroup := [0, 0, 1, 1, 1, 0, 1, 1, 0, 0];
+    dataTreatedGroup := [0, 1, 0, 0, 1, 1, 1, 1, 1, 1];
+
     isEffective := bernoulli(1/2);
-    probControl := categorical([1/10, 1/10, 1/10, 1/10, 1/10, 1/10, 1/10, 1/10, 1/10, 1/10]);
-    probTreated := categorical([1/10, 1/10, 1/10, 1/10, 1/10, 1/10, 1/10, 1/10, 1/10, 1/10]);
-    probAll := categorical([1/10, 1/10, 1/10, 1/10, 1/10, 1/10, 1/10, 1/10, 1/10, 1/10]);
+    probControl := categorical([1/20, 1/20, 1/20, 1/20, 1/20, 1/20, 1/20, 1/20, 1/20, 1/20, 1/20, 1/20, 1/20, 1/20, 1/20, 1/20, 1/20, 1/20, 1/20, 1/20]);
+    probTreated := categorical([1/20, 1/20, 1/20, 1/20, 1/20, 1/20, 1/20, 1/20, 1/20, 1/20, 1/20, 1/20, 1/20, 1/20, 1/20, 1/20, 1/20, 1/20, 1/20, 1/20]);
+    probAll := categorical([1/20, 1/20, 1/20, 1/20, 1/20, 1/20, 1/20, 1/20, 1/20, 1/20, 1/20, 1/20, 1/20, 1/20, 1/20, 1/20, 1/20, 1/20, 1/20, 1/20]);
 
     if isEffective {
         for i in [0..controlGroup.length) {
             if probControl == 0 {
-                controlGroup[i] = bernoulli(0);
+                controlGroup[i] = bernoulli(0/20);
             } else if probControl == 1 {
-                controlGroup[i] = bernoulli(1/10);
+                controlGroup[i] = bernoulli(1/20);
             } else if probControl == 2 {
-                controlGroup[i] = bernoulli(2/10);
+                controlGroup[i] = bernoulli(2/20);
             } else if probControl == 3 {
-                controlGroup[i] = bernoulli(3/10);
+                controlGroup[i] = bernoulli(3/20);
             } else if probControl == 4 {
-                controlGroup[i] = bernoulli(4/10);
+                controlGroup[i] = bernoulli(4/20);
             } else if probControl == 5 {
-                controlGroup[i] = bernoulli(5/10);
+                controlGroup[i] = bernoulli(5/20);
             } else if probControl == 6 {
-                controlGroup[i] = bernoulli(6/10);
+                controlGroup[i] = bernoulli(6/20);
             } else if probControl == 7 {
-                controlGroup[i] = bernoulli(7/10);
+                controlGroup[i] = bernoulli(7/20);
             } else if probControl == 8 {
-                controlGroup[i] = bernoulli(8/10);
+                controlGroup[i] = bernoulli(8/20);
+            } else if probControl == 9 {
+                controlGroup[i] = bernoulli(9/20);
+            } else if probControl == 10 {
+                controlGroup[i] = bernoulli(10/20);
+            } else if probControl == 11 {
+                controlGroup[i] = bernoulli(11/20);
+            } else if probControl == 12 {
+                controlGroup[i] = bernoulli(12/20);
+            } else if probControl == 13 {
+                controlGroup[i] = bernoulli(13/20);
+            } else if probControl == 14 {
+                controlGroup[i] = bernoulli(14/20);
+            } else if probControl == 15 {
+                controlGroup[i] = bernoulli(15/20);
+            } else if probControl == 16 {
+                controlGroup[i] = bernoulli(16/20);
+            } else if probControl == 17 {
+                controlGroup[i] = bernoulli(17/20);
+            } else if probControl == 18 {
+                controlGroup[i] = bernoulli(18/20);
             } else {
-                controlGroup[i] = bernoulli(9/10);
+                controlGroup[i] = bernoulli(19/20);
             }
-
             if probTreated == 0 {
-                treatedGroup[i] = bernoulli(0);
+                treatedGroup[i] = bernoulli(0/20);
             } else if probTreated == 1 {
-                treatedGroup[i] = bernoulli(1/10);
+                treatedGroup[i] = bernoulli(1/20);
             } else if probTreated == 2 {
-                treatedGroup[i] = bernoulli(2/10);
+                treatedGroup[i] = bernoulli(2/20);
             } else if probTreated == 3 {
-                treatedGroup[i] = bernoulli(3/10);
+                treatedGroup[i] = bernoulli(3/20);
             } else if probTreated == 4 {
-                treatedGroup[i] = bernoulli(4/10);
+                treatedGroup[i] = bernoulli(4/20);
             } else if probTreated == 5 {
-                treatedGroup[i] = bernoulli(5/10);
+                treatedGroup[i] = bernoulli(5/20);
             } else if probTreated == 6 {
-                treatedGroup[i] = bernoulli(6/10);
+                treatedGroup[i] = bernoulli(6/20);
             } else if probTreated == 7 {
-                treatedGroup[i] = bernoulli(7/10);
+                treatedGroup[i] = bernoulli(7/20);
             } else if probTreated == 8 {
-                treatedGroup[i] = bernoulli(8/10);
+                treatedGroup[i] = bernoulli(8/20);
+            } else if probTreated == 9 {
+                treatedGroup[i] = bernoulli(9/20);
+            } else if probTreated == 10 {
+                treatedGroup[i] = bernoulli(10/20);
+            } else if probTreated == 11 {
+                treatedGroup[i] = bernoulli(11/20);
+            } else if probTreated == 12 {
+                treatedGroup[i] = bernoulli(12/20);
+            } else if probTreated == 13 {
+                treatedGroup[i] = bernoulli(13/20);
+            } else if probTreated == 14 {
+                treatedGroup[i] = bernoulli(14/20);
+            } else if probTreated == 15 {
+                treatedGroup[i] = bernoulli(15/20);
+            } else if probTreated == 16 {
+                treatedGroup[i] = bernoulli(16/20);
+            } else if probTreated == 17 {
+                treatedGroup[i] = bernoulli(17/20);
+            } else if probTreated == 18 {
+                treatedGroup[i] = bernoulli(18/20);
             } else {
-                treatedGroup[i] = bernoulli(9/10);
+                treatedGroup[i] = bernoulli(19/20);
             }
         }
     } else {
         for i in [0..controlGroup.length) {
             if probAll == 0 {
-                controlGroup[i] = bernoulli(0);
-                treatedGroup[i] = bernoulli(0);
+                controlGroup[i] = bernoulli(0/20);
+                treatedGroup[i] = bernoulli(0/20);
             } else if probAll == 1 {
-                controlGroup[i] = bernoulli(1/10);
-                treatedGroup[i] = bernoulli(1/10);
+                controlGroup[i] = bernoulli(1/20);
+                treatedGroup[i] = bernoulli(1/20);
             } else if probAll == 2 {
-                controlGroup[i] = bernoulli(2/10);
-                treatedGroup[i] = bernoulli(2/10);
+                controlGroup[i] = bernoulli(2/20);
+                treatedGroup[i] = bernoulli(2/20);
             } else if probAll == 3 {
-                controlGroup[i] = bernoulli(3/10);
-                treatedGroup[i] = bernoulli(3/10);
+                controlGroup[i] = bernoulli(3/20);
+                treatedGroup[i] = bernoulli(3/20);
             } else if probAll == 4 {
-                controlGroup[i] = bernoulli(4/10);
-                treatedGroup[i] = bernoulli(4/10);
+                controlGroup[i] = bernoulli(4/20);
+                treatedGroup[i] = bernoulli(4/20);
             } else if probAll == 5 {
-                controlGroup[i] = bernoulli(5/10);
-                treatedGroup[i] = bernoulli(5/10);
+                controlGroup[i] = bernoulli(5/20);
+                treatedGroup[i] = bernoulli(5/20);
             } else if probAll == 6 {
-                controlGroup[i] = bernoulli(6/10);
-                treatedGroup[i] = bernoulli(6/10);
+                controlGroup[i] = bernoulli(6/20);
+                treatedGroup[i] = bernoulli(6/20);
             } else if probAll == 7 {
-                controlGroup[i] = bernoulli(7/10);
-                treatedGroup[i] = bernoulli(7/10);
+                controlGroup[i] = bernoulli(7/20);
+                treatedGroup[i] = bernoulli(7/20);
             } else if probAll == 8 {
-                controlGroup[i] = bernoulli(8/10);
-                treatedGroup[i] = bernoulli(8/10);
+                controlGroup[i] = bernoulli(8/20);
+                treatedGroup[i] = bernoulli(8/20);
+            } else if probAll == 9 {
+                controlGroup[i] = bernoulli(9/20);
+                treatedGroup[i] = bernoulli(9/20);
+            } else if probAll == 10 {
+                controlGroup[i] = bernoulli(10/20);
+                treatedGroup[i] = bernoulli(10/20);
+            } else if probAll == 11 {
+                controlGroup[i] = bernoulli(11/20);
+                treatedGroup[i] = bernoulli(11/20);
+            } else if probAll == 12 {
+                controlGroup[i] = bernoulli(12/20);
+                treatedGroup[i] = bernoulli(12/20);
+            } else if probAll == 13 {
+                controlGroup[i] = bernoulli(13/20);
+                treatedGroup[i] = bernoulli(13/20);
+            } else if probAll == 14 {
+                controlGroup[i] = bernoulli(14/20);
+                treatedGroup[i] = bernoulli(14/20);
+            } else if probAll == 15 {
+                controlGroup[i] = bernoulli(15/20);
+                treatedGroup[i] = bernoulli(15/20);
+            } else if probAll == 16 {
+                controlGroup[i] = bernoulli(16/20);
+                treatedGroup[i] = bernoulli(16/20);
+            } else if probAll == 17 {
+                controlGroup[i] = bernoulli(17/20);
+                treatedGroup[i] = bernoulli(17/20);
+            } else if probAll == 18 {
+                controlGroup[i] = bernoulli(18/20);
+                treatedGroup[i] = bernoulli(18/20);
             } else {
-                controlGroup[i] = bernoulli(9/10);
-                treatedGroup[i] = bernoulli(9/10);
+                controlGroup[i] = bernoulli(19/20);
+                treatedGroup[i] = bernoulli(19/20);
             }
         }
     }
 
-    return treatedGroup[0] < 1;
+    for i in [0..controlGroup.length) {
+        observe(controlGroup[i] == dataControlGroup[i]);
+        observe(treatedGroup[i] == dataTreatedGroup[i]);
+    }
+
+    return isEffective == 1;
 }

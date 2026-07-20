@@ -7,45 +7,39 @@ from sppl.compilers.sppl_to_python import SPPL_Compiler
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--time", action="store_true", help="Print timing info to stderr")
-    parser.add_argument("--n", type=int, default=4, help="Number of HMM steps (sequence length)")
     args = parser.parse_args()
 
     start_time = time.time()
     compiler = SPPL_Compiler(f'''
-k = 3
-n = 4
-theta = [[0.7, 0.2, 0.1], [0.2, 0.5, 0.3], [0.1, 0.1, 0.8]]
-mu = [0.5, 1.0, 2.0]
-Z = array(n)
+n = 100
+p_transition = [.2, .8]
+mu_x = [[5, 7], [5, 15]]
+mu_y = [[5, 8], [3, 8]]
+
+X = array(n)
 Y = array(n)
-                             
-#for i in range(0,k):
-#    mu[i] ~= binom(n=3, p=0.5)
-                                         
-Z[0] ~= discrete({{
-            0: theta[0][0],
-            1: theta[0][1],
-            2: theta[0][2]
-}})
+Z = array(n)
 
-# Generate the hidden state sequence
-for i in range(1, n):
-    switch (Z[i-1]) cases (prev in [0,1,2]):
-        Z[i] ~= discrete({{
-            0: theta[prev][0],
-            1: theta[prev][1],
-            2: theta[prev][2]
-        }})
+seperated ~= bernoulli(p=.4)
+switch (seperated) cases (s in [0,1]):
 
-# Generate continuous emissions
-for i in range(0, n):
-    switch (Z[i]) cases (z in [0, 1, 2]):
-        Y[i] ~= norm(loc=mu[z], scale=1)                                     
+    # Sample initial point.
+    Z[0] ~= bernoulli(p=.5)
+    switch (Z[0]) cases (z in [0, 1]):
+        X[0] ~= norm(loc=mu_x[s][z])
+        Y[0] ~= poisson(mu=mu_y[s][z])
+
+    for i in range(1, n):
+        switch (Z[i-1]) cases (z in [0, 1]):
+            Z[i] ~= bernoulli(p=p_transition[z])
+            switch (Z[i]) cases (z in [0, 1]):
+                X[i] ~= norm(loc=mu_x[s][z])
+                Y[i] ~= poisson(mu=mu_y[s][z])
 
 ''')
 
     namespace = compiler.execute_module()
-    e = Id(f'Y[{args.n - 1}]')
+    e = Id(f'Z[0]')
     event = (e < 0.5)
     prob = namespace.model.prob(event)
     elapsed = time.time() - start_time

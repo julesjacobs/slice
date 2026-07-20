@@ -1,34 +1,59 @@
-# Model-shaped Hakaru version of hmm.py with n = 4.
+n = 100
+p_transition = [1/5, 4/5]
+mu_x = [[5, 7], [5, 15]]
+mu_y = [[5, 8], [3, 8]]
 
-def draw_initial_z(_ignored nat):
-    categorical([0.7, 0.2, 0.1])
+def prob_not(p prob) prob:
+    real2prob(1 - prob2real(p))
 
-def draw_next_z(prev nat):
-    if prev == 0:
-        categorical([0.7, 0.2, 0.1])
+def bern(p prob):
+    i <~ categorical([p, prob_not(p)])
+    return [true, false][i]
+
+def draw_next_Z(previous_Z bool):
+    if previous_Z:
+        bern(p_transition[1])
     else:
-        if prev == 1:
-            categorical([0.2, 0.5, 0.3])
-        else:
-            categorical([0.1, 0.1, 0.8])
+        bern(p_transition[0])
 
-def draw_emission(z nat):
-    if z == 0:
-        normal(0.5, 1)
+def draw_X(seperated bool, z bool):
+    if seperated:
+        if z:
+            normal(mu_x[1][1], 1)
+        else:
+            normal(mu_x[1][0], 1)
     else:
-        if z == 1:
-            normal(1.0, 1)
+        if z:
+            normal(mu_x[0][1], 1)
         else:
-            normal(2.0, 1)
+            normal(mu_x[0][0], 1)
 
-Z_0 <~ draw_initial_z(0)
-Z_1 <~ draw_next_z(Z_0)
-Z_2 <~ draw_next_z(Z_1)
-Z_3 <~ draw_next_z(Z_2)
+def draw_Y(seperated bool, z bool):
+    if seperated:
+        if z:
+            poisson(mu_y[1][1])
+        else:
+            poisson(mu_y[1][0])
+    else:
+        if z:
+            poisson(mu_y[0][1])
+        else:
+            poisson(mu_y[0][0])
 
-Y_0 <~ draw_emission(Z_0)
-Y_1 <~ draw_emission(Z_1)
-Y_2 <~ draw_emission(Z_2)
-Y_3 <~ draw_emission(Z_3)
+seperated <~ bern(2/5)
 
-return Y_3 < 0.5
+Z_0 <~ bern(1/2)
+X_0 <~ draw_X(seperated, Z_0)
+Y_0 <~ draw_Y(seperated, Z_0)
+
+# The initial state above plus these 99 transitions gives n = 100 steps.
+_ <~ chain previous_Z from Z_0 of 99:
+         next_Z <~ draw_next_Z(previous_Z)
+         next_X <~ draw_X(seperated, next_Z)
+         next_Y <~ draw_Y(seperated, next_Z)
+         return ((next_Z, (next_X, next_Y)), next_Z)
+
+if Z_0:
+    return ((), false)
+else:
+    return ((), true)

@@ -5,13 +5,232 @@ def main() {
     skillA := poisson(100);
     observe(77 <= skillA && skillA < 125);
 
-    perfA1 := binomial(skillA, 0.9);
+    perfA1 := 0;
+    if skillA <= 77 {
+        perfA1 = binomial(77, 0.9);
+    } else if skillA <= 78 {
+        perfA1 = binomial(78, 0.9);
+    } else if skillA <= 79 {
+        perfA1 = binomial(79, 0.9);
+    } else if skillA <= 80 {
+        perfA1 = binomial(80, 0.9);
+    } else if skillA <= 81 {
+        perfA1 = binomial(81, 0.9);
+    } else if skillA <= 82 {
+        perfA1 = binomial(82, 0.9);
+    } else if skillA <= 83 {
+        perfA1 = binomial(83, 0.9);
+    } else if skillA <= 84 {
+        perfA1 = binomial(84, 0.9);
+    } else if skillA <= 85 {
+        perfA1 = binomial(85, 0.9);
+    } else if skillA <= 86 {
+        perfA1 = binomial(86, 0.9);
+    } else if skillA <= 87 {
+        perfA1 = binomial(87, 0.9);
+    } else if skillA <= 88 {
+        perfA1 = binomial(88, 0.9);
+    } else if skillA <= 89 {
+        perfA1 = binomial(89, 0.9);
+    } else if skillA <= 90 {
+        perfA1 = binomial(90, 0.9);
+    } else if skillA <= 91 {
+        perfA1 = binomial(91, 0.9);
+    } else if skillA <= 92 {
+        perfA1 = binomial(92, 0.9);
+    } else if skillA <= 93 {
+        perfA1 = binomial(93, 0.9);
+    } else if skillA <= 94 {
+        perfA1 = binomial(94, 0.9);
+    } else if skillA <= 95 {
+        perfA1 = binomial(95, 0.9);
+    } else if skillA <= 96 {
+        perfA1 = binomial(96, 0.9);
+    } else if skillA <= 97 {
+        perfA1 = binomial(97, 0.9);
+    } else if skillA <= 98 {
+        perfA1 = binomial(98, 0.9);
+    } else if skillA <= 99 {
+        perfA1 = binomial(99, 0.9);
+    } else if skillA <= 100 {
+        perfA1 = binomial(100, 0.9);
+    } else if skillA <= 101 {
+        perfA1 = binomial(101, 0.9);
+    } else if skillA <= 102 {
+        perfA1 = binomial(102, 0.9);
+    } else if skillA <= 103 {
+        perfA1 = binomial(103, 0.9);
+    } else if skillA <= 104 {
+        perfA1 = binomial(104, 0.9);
+    } else if skillA <= 105 {
+        perfA1 = binomial(105, 0.9);
+    } else if skillA <= 106 {
+        perfA1 = binomial(106, 0.9);
+    } else if skillA <= 107 {
+        perfA1 = binomial(107, 0.9);
+    } else if skillA <= 108 {
+        perfA1 = binomial(108, 0.9);
+    } else if skillA <= 109 {
+        perfA1 = binomial(109, 0.9);
+    } else if skillA <= 110 {
+        perfA1 = binomial(110, 0.9);
+    } else if skillA <= 111 {
+        perfA1 = binomial(111, 0.9);
+    } else if skillA <= 112 {
+        perfA1 = binomial(112, 0.9);
+    } else if skillA <= 113 {
+        perfA1 = binomial(113, 0.9);
+    } else if skillA <= 114 {
+        perfA1 = binomial(114, 0.9);
+    } else if skillA <= 115 {
+        perfA1 = binomial(115, 0.9);
+    } else if skillA <= 116 {
+        perfA1 = binomial(116, 0.9);
+    } else if skillA <= 117 {
+        perfA1 = binomial(117, 0.9);
+    } else if skillA <= 118 {
+        perfA1 = binomial(118, 0.9);
+    } else if skillA <= 119 {
+        perfA1 = binomial(119, 0.9);
+    } else if skillA <= 120 {
+        perfA1 = binomial(120, 0.9);
+    } else if skillA <= 121 {
+        perfA1 = binomial(121, 0.9);
+    } else if skillA <= 122 {
+        perfA1 = binomial(122, 0.9);
+    } else if skillA <= 123 {
+        perfA1 = binomial(123, 0.9);
+    } else {
+        perfA1 = binomial(124, 0.9);
+    }
 
     result := 0;
-    if perfA1 > perfB1 {
-        result = 1;
+    if perfB1 <= 80 {
+        if perfA1 > 80 {
+            result = 1;
+        } else {
+            result = 0;
+        }
+    } else if perfB1 <= 81 {
+        if perfA1 > 81 {
+            result = 1;
+        } else {
+            result = 0;
+        }
+    } else if perfB1 <= 82 {
+        if perfA1 > 82 {
+            result = 1;
+        } else {
+            result = 0;
+        }
+    } else if perfB1 <= 83 {
+        if perfA1 > 83 {
+            result = 1;
+        } else {
+            result = 0;
+        }
+    } else if perfB1 <= 84 {
+        if perfA1 > 84 {
+            result = 1;
+        } else {
+            result = 0;
+        }
+    } else if perfB1 <= 85 {
+        if perfA1 > 85 {
+            result = 1;
+        } else {
+            result = 0;
+        }
+    } else if perfB1 <= 86 {
+        if perfA1 > 86 {
+            result = 1;
+        } else {
+            result = 0;
+        }
+    } else if perfB1 <= 87 {
+        if perfA1 > 87 {
+            result = 1;
+        } else {
+            result = 0;
+        }
+    } else if perfB1 <= 88 {
+        if perfA1 > 88 {
+            result = 1;
+        } else {
+            result = 0;
+        }
+    } else if perfB1 <= 89 {
+        if perfA1 > 89 {
+            result = 1;
+        } else {
+            result = 0;
+        }
+    } else if perfB1 <= 90 {
+        if perfA1 > 90 {
+            result = 1;
+        } else {
+            result = 0;
+        }
+    } else if perfB1 <= 91 {
+        if perfA1 > 91 {
+            result = 1;
+        } else {
+            result = 0;
+        }
+    } else if perfB1 <= 92 {
+        if perfA1 > 92 {
+            result = 1;
+        } else {
+            result = 0;
+        }
+    } else if perfB1 <= 93 {
+        if perfA1 > 93 {
+            result = 1;
+        } else {
+            result = 0;
+        }
+    } else if perfB1 <= 94 {
+        if perfA1 > 94 {
+            result = 1;
+        } else {
+            result = 0;
+        }
+    } else if perfB1 <= 95 {
+        if perfA1 > 95 {
+            result = 1;
+        } else {
+            result = 0;
+        }
+    } else if perfB1 <= 96 {
+        if perfA1 > 96 {
+            result = 1;
+        } else {
+            result = 0;
+        }
+    } else if perfB1 <= 97 {
+        if perfA1 > 97 {
+            result = 1;
+        } else {
+            result = 0;
+        }
+    } else if perfB1 <= 98 {
+        if perfA1 > 98 {
+            result = 1;
+        } else {
+            result = 0;
+        }
+    } else if perfB1 <= 99 {
+        if perfA1 > 99 {
+            result = 1;
+        } else {
+            result = 0;
+        }
     } else {
-        result = 0;
+        if perfA1 > 100 {
+            result = 1;
+        } else {
+            result = 0;
+        }
     }
 
     observe(result == 0);

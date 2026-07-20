@@ -16,7 +16,7 @@ n = 4000
 param ~= randint(low=250, high=350)
 switch (param) cases (b in range(250, 350)):
     p ~= beta(a=277, b=b)
-switch (p) cases (x in binspace(0, 1, 20)):
+switch (p) cases (x in binspace(0, 1, 21)):
     votes ~= binom(n=n, p=(x.left + x.right)/2)
 win ~= votes > 0.5*n
         ''')
@@ -24,7 +24,7 @@ win ~= votes > 0.5*n
     namespace = compiler.execute_module()
     model_win = namespace.model.condition(namespace.win << {1})
     
-    prob = model_win.prob(namespace.p > 0.5)
+    prob = model_win.prob(namespace.param << {250})
     elapsed = time.time() - start_time
 
     print(prob)

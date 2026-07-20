@@ -1,29 +1,62 @@
 def main() {
-    mu := [0.5, 1.0, 2.0];
-    Z := array(4);
-    Y := array(4);
+    n := 100;
+    X := array(n);
+    Y := array(n);
+    Z := array(n);
 
-    Z[0] = categorical([0.7, 0.2, 0.1]);
+    seperated := bernoulli(0.4);
 
-    for i in [1..Z.length) {
-        if Z[i - 1] == 0 {
-            Z[i] = categorical([0.7, 0.2, 0.1]);
-        } else if Z[i - 1] == 1 {
-            Z[i] = categorical([0.2, 0.5, 0.3]);
+    if seperated == 0 {
+        Z[0] = bernoulli(0.5);
+        if Z[0] == 0 {
+            X[0] = gauss(5, 1);
+            Y[0] = poisson(5);
         } else {
-            Z[i] = categorical([0.1, 0.1, 0.8]);
+            X[0] = gauss(7, 1);
+            Y[0] = poisson(8);
+        }
+
+        for i in [1..n) {
+            if Z[i - 1] == 0 {
+                Z[i] = bernoulli(0.2);
+            } else {
+                Z[i] = bernoulli(0.8);
+            }
+
+            if Z[i] == 0 {
+                X[i] = gauss(5, 1);
+                Y[i] = poisson(5);
+            } else {
+                X[i] = gauss(7, 1);
+                Y[i] = poisson(8);
+            }
+        }
+    } else {
+        Z[0] = bernoulli(0.5);
+        if Z[0] == 0 {
+            X[0] = gauss(5, 1);
+            Y[0] = poisson(3);
+        } else {
+            X[0] = gauss(15, 1);
+            Y[0] = poisson(8);
+        }
+
+        for i in [1..n) {
+            if Z[i - 1] == 0 {
+                Z[i] = bernoulli(0.2);
+            } else {
+                Z[i] = bernoulli(0.8);
+            }
+
+            if Z[i] == 0 {
+                X[i] = gauss(5, 1);
+                Y[i] = poisson(3);
+            } else {
+                X[i] = gauss(15, 1);
+                Y[i] = poisson(8);
+            }
         }
     }
 
-    for i in [0..Y.length) {
-        if Z[i] == 0 {
-            Y[i] = gauss(mu[0], 1);
-        } else if Z[i] == 1 {
-            Y[i] = gauss(mu[1], 1);
-        } else {
-            Y[i] = gauss(mu[2], 1);
-        }
-    }
-
-    return Y[3] < 0.5;
+    return Z[0] < 0.5;
 }

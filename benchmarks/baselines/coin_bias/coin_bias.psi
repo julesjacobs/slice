@@ -4,26 +4,46 @@ def main() {
     bias := beta(2, 5);
 
     for i in [0..tossResults.length) {
-        if bias <= 0.1 {
-            tossResults[i] = bernoulli(0.1);
+        if bias <= 0.05 {
+            tossResults[i] = bernoulli(1/20);
+        } else if bias <= 0.1 {
+            tossResults[i] = bernoulli(2/20);
+        } else if bias <= 0.15 {
+            tossResults[i] = bernoulli(3/20);
         } else if bias <= 0.2 {
-            tossResults[i] = bernoulli(0.2);
+            tossResults[i] = bernoulli(4/20);
+        } else if bias <= 0.25 {
+            tossResults[i] = bernoulli(5/20);
         } else if bias <= 0.3 {
-            tossResults[i] = bernoulli(0.3);
+            tossResults[i] = bernoulli(6/20);
+        } else if bias <= 0.35 {
+            tossResults[i] = bernoulli(7/20);
         } else if bias <= 0.4 {
-            tossResults[i] = bernoulli(0.4);
+            tossResults[i] = bernoulli(8/20);
+        } else if bias <= 0.45 {
+            tossResults[i] = bernoulli(9/20);
         } else if bias <= 0.5 {
-            tossResults[i] = bernoulli(0.5);
+            tossResults[i] = bernoulli(10/20);
+        } else if bias <= 0.55 {
+            tossResults[i] = bernoulli(11/20);
         } else if bias <= 0.6 {
-            tossResults[i] = bernoulli(0.6);
+            tossResults[i] = bernoulli(12/20);
+        } else if bias <= 0.65 {
+            tossResults[i] = bernoulli(13/20);
         } else if bias <= 0.7 {
-            tossResults[i] = bernoulli(0.7);
+            tossResults[i] = bernoulli(14/20);
+        } else if bias <= 0.75 {
+            tossResults[i] = bernoulli(15/20);
         } else if bias <= 0.8 {
-            tossResults[i] = bernoulli(0.8);
+            tossResults[i] = bernoulli(16/20);
+        } else if bias <= 0.85 {
+            tossResults[i] = bernoulli(17/20);
         } else if bias <= 0.9 {
-            tossResults[i] = bernoulli(0.9);
+            tossResults[i] = bernoulli(18/20);
+        } else if bias <= 0.95 {
+            tossResults[i] = bernoulli(19/20);
         } else {
-            tossResults[i] = bernoulli(1);
+            tossResults[i] = bernoulli(20/20);
         }
     }
 
@@ -31,5 +51,5 @@ def main() {
         observe(tossResults[i] == observedResults[i]);
     }
 
-    return tossResults[0] < 1;
+    return bias < 0.3;
 }

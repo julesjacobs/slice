@@ -24,7 +24,7 @@ switch (skillA) cases (s in range(77, 125)):
     
     namespace = compiler.execute_module()
     modelc = namespace.model.condition(namespace.result << {0})
-    prob = modelc.prob(namespace.perfA1 << {1})
+    prob = modelc.prob(namespace.perfA1 << {50})
     elapsed = time.time() - start_time
 
     print(prob)

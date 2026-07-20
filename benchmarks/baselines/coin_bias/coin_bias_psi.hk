@@ -1,0 +1,41 @@
+def prob_not(p prob) prob:
+    real2prob(1 - prob2real(p))
+
+def bern(p prob):
+    i <~ categorical([p, prob_not(p)])
+    return [true, false][i]
+
+def observe_bool(b bool):
+    if b:
+        weight(1, return ())
+    else:
+        weight(0, return ())
+
+def observe_eq(actual bool, expected bool):
+    if expected:
+        observe_bool(actual)
+    else:
+        if actual:
+            weight(0, return ())
+        else:
+            weight(1, return ())
+
+observedResults = [true, true, false, true, false]
+
+bias <~ beta(2, 5)
+
+tossResult_0 <~ bern(bias)
+tossResult_1 <~ bern(bias)
+tossResult_2 <~ bern(bias)
+tossResult_3 <~ bern(bias)
+tossResult_4 <~ bern(bias)
+tossResults = [tossResult_0, tossResult_1, tossResult_2,
+               tossResult_3, tossResult_4]
+
+_ <~ observe_eq(tossResults[0], observedResults[0])
+_ <~ observe_eq(tossResults[1], observedResults[1])
+_ <~ observe_eq(tossResults[2], observedResults[2])
+_ <~ observe_eq(tossResults[3], observedResults[3])
+_ <~ observe_eq(tossResults[4], observedResults[4])
+
+return ((), bias < 3/10)

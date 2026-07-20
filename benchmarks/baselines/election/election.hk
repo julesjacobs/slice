@@ -1,5 +1,3 @@
-# Model-shaped Hakaru version of election.py.
-
 def prob_not(p prob) prob:
     real2prob(1 - prob2real(p))
 
@@ -16,10 +14,6 @@ def binom_pmf(n nat, k nat, p prob) prob:
 def binom(n nat, p prob):
     k <~ categorical(array i of n + 1: binom_pmf(n, i, p))
     return k
-
-def draw_param(_ignored nat):
-    i <~ categorical(array j of 100: 1/100)
-    return i + 250
 
 def binspace20_mid(p prob) prob:
     if p <= 1/20:
@@ -81,10 +75,13 @@ def binspace20_mid(p prob) prob:
                                                                             else:
                                                                                 39/40
 
-param <~ draw_param(0)
+n = 4000
+
+param_index <~ categorical(array _ of 100: 1/100)
+param <~ return param_index + 250
 p <~ beta(nat2prob(277), nat2prob(param))
-votes <~ binom(4000, binspace20_mid(p))
-win <~ return votes > 2000
+votes <~ binom(n, binspace20_mid(p))
+win <~ return votes > n / 2
 _ <~ observe_bool(win)
 
-return p > 1/2
+return ((), param == 250)

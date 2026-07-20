@@ -1,5 +1,3 @@
-# Model-shaped Hakaru version of survey_unbias.py.
-
 def prob_not(p prob) prob:
     real2prob(1 - prob2real(p))
 
@@ -13,6 +11,15 @@ def observe_bool(b bool):
     else:
         weight(0, return ())
 
+def observe_eq(actual bool, expected bool):
+    if expected:
+        observe_bool(actual)
+    else:
+        if actual:
+            weight(0, return ())
+        else:
+            weight(1, return ())
+
 def binom_pmf(n nat, k nat, p prob) prob:
     nat2prob(choose(n, k)) * p ** nat2real(k) *
         prob_not(p) ** (nat2real(n) - nat2real(k))
@@ -21,42 +28,94 @@ def binom(n nat, p prob):
     k <~ categorical(array i of n + 1: binom_pmf(n, i, p))
     return k
 
-def binspace10_right(p prob) prob:
-    if p <= 1/10:
-        1/10
+def binspace20_right(p prob) prob:
+    if p <= 1/20:
+        1/20
     else:
-        if p <= 2/10:
-            2/10
+        if p <= 2/20:
+            2/20
         else:
-            if p <= 3/10:
-                3/10
+            if p <= 3/20:
+                3/20
             else:
-                if p <= 4/10:
-                    4/10
+                if p <= 4/20:
+                    4/20
                 else:
-                    if p <= 5/10:
-                        5/10
+                    if p <= 5/20:
+                        5/20
                     else:
-                        if p <= 6/10:
-                            6/10
+                        if p <= 6/20:
+                            6/20
                         else:
-                            if p <= 7/10:
-                                7/10
+                            if p <= 7/20:
+                                7/20
                             else:
-                                if p <= 8/10:
-                                    8/10
+                                if p <= 8/20:
+                                    8/20
                                 else:
-                                    if p <= 9/10:
-                                        9/10
+                                    if p <= 9/20:
+                                        9/20
                                     else:
-                                        1
+                                        if p <= 10/20:
+                                            10/20
+                                        else:
+                                            if p <= 11/20:
+                                                11/20
+                                            else:
+                                                if p <= 12/20:
+                                                    12/20
+                                                else:
+                                                    if p <= 13/20:
+                                                        13/20
+                                                    else:
+                                                        if p <= 14/20:
+                                                            14/20
+                                                        else:
+                                                            if p <= 15/20:
+                                                                15/20
+                                                            else:
+                                                                if p <= 16/20:
+                                                                    16/20
+                                                                else:
+                                                                    if p <= 17/20:
+                                                                        17/20
+                                                                    else:
+                                                                        if p <= 18/20:
+                                                                            18/20
+                                                                        else:
+                                                                            if p <= 19/20:
+                                                                                19/20
+                                                                            else:
+                                                                                1
+
+numPopulations = 2
+n = 5
+population = [1000, 2000]
+gender = [0, 1]
+personGender = [0, 1, 0, 1, 0]
+dataAnswer = [true, false, true, true, false]
 
 bias_0 <~ beta(1, 1)
-votes_0 <~ binom(1000, binspace10_right(bias_0))
+bias_1 <~ beta(1, 1)
+bias = [bias_0, bias_1]
 
-ansBias_0 <~ return bias_0
-answer_0 <~ bern(binspace10_right(ansBias_0))
+votes_0 <~ binom(population[0], binspace20_right(bias[0]))
+votes_1 <~ binom(population[1], binspace20_right(bias[1]))
+votes = [votes_0, votes_1]
 
-_ <~ observe_bool(answer_0)
+ansBias = array i of n: bias[personGender[i]]
 
-return not(answer_0)
+answer_0 <~ bern(binspace20_right(ansBias[0]))
+answer_1 <~ bern(binspace20_right(ansBias[1]))
+answer_2 <~ bern(binspace20_right(ansBias[2]))
+answer_3 <~ bern(binspace20_right(ansBias[3]))
+answer_4 <~ bern(binspace20_right(ansBias[4]))
+answer = [answer_0, answer_1, answer_2, answer_3, answer_4]
+
+_ <~ observe_eq(answer[0], dataAnswer[0])
+_ <~ observe_eq(answer[1], dataAnswer[1])
+_ <~ observe_eq(answer[2], dataAnswer[2])
+_ <~ observe_eq(answer[3], dataAnswer[3])
+_ <~ observe_eq(answer[4], dataAnswer[4])
+
+return ((), bias[0] < 1/2)

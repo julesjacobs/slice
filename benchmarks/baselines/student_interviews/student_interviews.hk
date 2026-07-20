@@ -1,5 +1,3 @@
-# Model-shaped Hakaru version of student_interviews.py.
-
 def prob_not(p prob) prob:
     real2prob(1 - prob2real(p))
 
@@ -21,48 +19,45 @@ def binom(n nat, p prob):
     k <~ categorical(array i of n + 1: binom_pmf(n, i, p))
     return k
 
-def sample_gpa_unit(student_perfect bool):
+def draw_student_gpa(student_perfect bool):
     if student_perfect:
-        return nat2prob(1)
+        return (4 . real)
     else:
-        beta(7, 3)
+        gpa <~ beta(7, 3)
+        return 4 * prob2real(gpa)
 
-def sample_interviews(num_recruiters nat, student_perfect bool, student_gpa_unit prob):
-    if student_perfect:
-        binom(num_recruiters, 0.9)
+def draw_student_interviews(num_recruiters nat, student_gpa real):
+    if student_gpa == 4:
+        binom(num_recruiters, 9/10)
     else:
-        if 7/8 < student_gpa_unit:
-            binom(num_recruiters, 0.6)
+        if 7/2 < student_gpa && student_gpa < 4:
+            binom(num_recruiters, 3/5)
         else:
-            binom(num_recruiters, 0.5)
+            binom(num_recruiters, 1/2)
 
-def sample_student_ignored(num_recruiters nat):
-    student_perfect <~ bern(0.2)
-    student_gpa_unit <~ sample_gpa_unit(student_perfect)
-    student_interviews <~ sample_interviews(num_recruiters, student_perfect, student_gpa_unit)
-    student_offers <~ binom(student_interviews, 0.4)
-    return ()
+num_students = 2
+
+student_perfect_0 <~ bern(1/5)
+student_perfect_1 <~ bern(1/5)
+student_perfect = [student_perfect_0, student_perfect_1]
+
+student_gpa_0 <~ draw_student_gpa(student_perfect[0])
+student_gpa_1 <~ draw_student_gpa(student_perfect[1])
+student_gpa = [student_gpa_0, student_gpa_1]
 
 num_recruiters <~ poisson(25)
 _ <~ observe_bool(10 <= num_recruiters)
 _ <~ observe_bool(num_recruiters <= 40)
 
-student_perfect_0 <~ bern(0.2)
-student_gpa_unit_0 <~ sample_gpa_unit(student_perfect_0)
-student_interviews_0 <~ sample_interviews(num_recruiters, student_perfect_0, student_gpa_unit_0)
-student_offers_0 <~ binom(student_interviews_0, 0.4)
+student_interviews_0 <~ draw_student_interviews(num_recruiters, student_gpa[0])
+student_interviews_1 <~ draw_student_interviews(num_recruiters, student_gpa[1])
+student_interviews = [student_interviews_0, student_interviews_1]
 
-_ <~ sample_student_ignored(num_recruiters)
-_ <~ sample_student_ignored(num_recruiters)
-_ <~ sample_student_ignored(num_recruiters)
-_ <~ sample_student_ignored(num_recruiters)
-_ <~ sample_student_ignored(num_recruiters)
-_ <~ sample_student_ignored(num_recruiters)
-_ <~ sample_student_ignored(num_recruiters)
-_ <~ sample_student_ignored(num_recruiters)
-_ <~ sample_student_ignored(num_recruiters)
+student_offers_0 <~ binom(student_interviews[0], 2/5)
+student_offers_1 <~ binom(student_interviews[1], 2/5)
+student_offers = [student_offers_0, student_offers_1]
 
-_ <~ observe_bool(student_offers_0 == 1)
+_ <~ observe_bool(student_offers[0] == 1)
 _ <~ observe_bool(10 < num_recruiters)
 
-return student_gpa_unit_0 < 1/8
+return ((), student_gpa[0] < 1/2)

@@ -1,5 +1,5 @@
 def main() {
-    num_students := 10;
+    num_students := 2;
     student_perfect := array(num_students);
     student_gpa := array(num_students);
     student_interviews := array(num_students);
@@ -18,18 +18,342 @@ def main() {
     observe(10 <= num_recruiters && num_recruiters <= 40);
 
     for j in [0..num_students) {
-        if student_gpa[j] == 4 {
-            student_interviews[j] = binomial(num_recruiters, 0.9);
-        } else if 3.5 < student_gpa[j] && student_gpa[j] < 4 {
-            student_interviews[j] = binomial(num_recruiters, 0.6);
+        if num_recruiters <= 10 {
+            if student_gpa[j] == 4 {
+                student_interviews[j] = binomial(10, 0.9);
+            } else if 3.5 < student_gpa[j] && student_gpa[j] < 4 {
+                student_interviews[j] = binomial(10, 0.6);
+            } else {
+                student_interviews[j] = binomial(10, 0.5);
+            }
+        } else if num_recruiters <= 11 {
+            if student_gpa[j] == 4 {
+                student_interviews[j] = binomial(11, 0.9);
+            } else if 3.5 < student_gpa[j] && student_gpa[j] < 4 {
+                student_interviews[j] = binomial(11, 0.6);
+            } else {
+                student_interviews[j] = binomial(11, 0.5);
+            }
+        } else if num_recruiters <= 12 {
+            if student_gpa[j] == 4 {
+                student_interviews[j] = binomial(12, 0.9);
+            } else if 3.5 < student_gpa[j] && student_gpa[j] < 4 {
+                student_interviews[j] = binomial(12, 0.6);
+            } else {
+                student_interviews[j] = binomial(12, 0.5);
+            }
+        } else if num_recruiters <= 13 {
+            if student_gpa[j] == 4 {
+                student_interviews[j] = binomial(13, 0.9);
+            } else if 3.5 < student_gpa[j] && student_gpa[j] < 4 {
+                student_interviews[j] = binomial(13, 0.6);
+            } else {
+                student_interviews[j] = binomial(13, 0.5);
+            }
+        } else if num_recruiters <= 14 {
+            if student_gpa[j] == 4 {
+                student_interviews[j] = binomial(14, 0.9);
+            } else if 3.5 < student_gpa[j] && student_gpa[j] < 4 {
+                student_interviews[j] = binomial(14, 0.6);
+            } else {
+                student_interviews[j] = binomial(14, 0.5);
+            }
+        } else if num_recruiters <= 15 {
+            if student_gpa[j] == 4 {
+                student_interviews[j] = binomial(15, 0.9);
+            } else if 3.5 < student_gpa[j] && student_gpa[j] < 4 {
+                student_interviews[j] = binomial(15, 0.6);
+            } else {
+                student_interviews[j] = binomial(15, 0.5);
+            }
+        } else if num_recruiters <= 16 {
+            if student_gpa[j] == 4 {
+                student_interviews[j] = binomial(16, 0.9);
+            } else if 3.5 < student_gpa[j] && student_gpa[j] < 4 {
+                student_interviews[j] = binomial(16, 0.6);
+            } else {
+                student_interviews[j] = binomial(16, 0.5);
+            }
+        } else if num_recruiters <= 17 {
+            if student_gpa[j] == 4 {
+                student_interviews[j] = binomial(17, 0.9);
+            } else if 3.5 < student_gpa[j] && student_gpa[j] < 4 {
+                student_interviews[j] = binomial(17, 0.6);
+            } else {
+                student_interviews[j] = binomial(17, 0.5);
+            }
+        } else if num_recruiters <= 18 {
+            if student_gpa[j] == 4 {
+                student_interviews[j] = binomial(18, 0.9);
+            } else if 3.5 < student_gpa[j] && student_gpa[j] < 4 {
+                student_interviews[j] = binomial(18, 0.6);
+            } else {
+                student_interviews[j] = binomial(18, 0.5);
+            }
+        } else if num_recruiters <= 19 {
+            if student_gpa[j] == 4 {
+                student_interviews[j] = binomial(19, 0.9);
+            } else if 3.5 < student_gpa[j] && student_gpa[j] < 4 {
+                student_interviews[j] = binomial(19, 0.6);
+            } else {
+                student_interviews[j] = binomial(19, 0.5);
+            }
+        } else if num_recruiters <= 20 {
+            if student_gpa[j] == 4 {
+                student_interviews[j] = binomial(20, 0.9);
+            } else if 3.5 < student_gpa[j] && student_gpa[j] < 4 {
+                student_interviews[j] = binomial(20, 0.6);
+            } else {
+                student_interviews[j] = binomial(20, 0.5);
+            }
+        } else if num_recruiters <= 21 {
+            if student_gpa[j] == 4 {
+                student_interviews[j] = binomial(21, 0.9);
+            } else if 3.5 < student_gpa[j] && student_gpa[j] < 4 {
+                student_interviews[j] = binomial(21, 0.6);
+            } else {
+                student_interviews[j] = binomial(21, 0.5);
+            }
+        } else if num_recruiters <= 22 {
+            if student_gpa[j] == 4 {
+                student_interviews[j] = binomial(22, 0.9);
+            } else if 3.5 < student_gpa[j] && student_gpa[j] < 4 {
+                student_interviews[j] = binomial(22, 0.6);
+            } else {
+                student_interviews[j] = binomial(22, 0.5);
+            }
+        } else if num_recruiters <= 23 {
+            if student_gpa[j] == 4 {
+                student_interviews[j] = binomial(23, 0.9);
+            } else if 3.5 < student_gpa[j] && student_gpa[j] < 4 {
+                student_interviews[j] = binomial(23, 0.6);
+            } else {
+                student_interviews[j] = binomial(23, 0.5);
+            }
+        } else if num_recruiters <= 24 {
+            if student_gpa[j] == 4 {
+                student_interviews[j] = binomial(24, 0.9);
+            } else if 3.5 < student_gpa[j] && student_gpa[j] < 4 {
+                student_interviews[j] = binomial(24, 0.6);
+            } else {
+                student_interviews[j] = binomial(24, 0.5);
+            }
+        } else if num_recruiters <= 25 {
+            if student_gpa[j] == 4 {
+                student_interviews[j] = binomial(25, 0.9);
+            } else if 3.5 < student_gpa[j] && student_gpa[j] < 4 {
+                student_interviews[j] = binomial(25, 0.6);
+            } else {
+                student_interviews[j] = binomial(25, 0.5);
+            }
+        } else if num_recruiters <= 26 {
+            if student_gpa[j] == 4 {
+                student_interviews[j] = binomial(26, 0.9);
+            } else if 3.5 < student_gpa[j] && student_gpa[j] < 4 {
+                student_interviews[j] = binomial(26, 0.6);
+            } else {
+                student_interviews[j] = binomial(26, 0.5);
+            }
+        } else if num_recruiters <= 27 {
+            if student_gpa[j] == 4 {
+                student_interviews[j] = binomial(27, 0.9);
+            } else if 3.5 < student_gpa[j] && student_gpa[j] < 4 {
+                student_interviews[j] = binomial(27, 0.6);
+            } else {
+                student_interviews[j] = binomial(27, 0.5);
+            }
+        } else if num_recruiters <= 28 {
+            if student_gpa[j] == 4 {
+                student_interviews[j] = binomial(28, 0.9);
+            } else if 3.5 < student_gpa[j] && student_gpa[j] < 4 {
+                student_interviews[j] = binomial(28, 0.6);
+            } else {
+                student_interviews[j] = binomial(28, 0.5);
+            }
+        } else if num_recruiters <= 29 {
+            if student_gpa[j] == 4 {
+                student_interviews[j] = binomial(29, 0.9);
+            } else if 3.5 < student_gpa[j] && student_gpa[j] < 4 {
+                student_interviews[j] = binomial(29, 0.6);
+            } else {
+                student_interviews[j] = binomial(29, 0.5);
+            }
+        } else if num_recruiters <= 30 {
+            if student_gpa[j] == 4 {
+                student_interviews[j] = binomial(30, 0.9);
+            } else if 3.5 < student_gpa[j] && student_gpa[j] < 4 {
+                student_interviews[j] = binomial(30, 0.6);
+            } else {
+                student_interviews[j] = binomial(30, 0.5);
+            }
+        } else if num_recruiters <= 31 {
+            if student_gpa[j] == 4 {
+                student_interviews[j] = binomial(31, 0.9);
+            } else if 3.5 < student_gpa[j] && student_gpa[j] < 4 {
+                student_interviews[j] = binomial(31, 0.6);
+            } else {
+                student_interviews[j] = binomial(31, 0.5);
+            }
+        } else if num_recruiters <= 32 {
+            if student_gpa[j] == 4 {
+                student_interviews[j] = binomial(32, 0.9);
+            } else if 3.5 < student_gpa[j] && student_gpa[j] < 4 {
+                student_interviews[j] = binomial(32, 0.6);
+            } else {
+                student_interviews[j] = binomial(32, 0.5);
+            }
+        } else if num_recruiters <= 33 {
+            if student_gpa[j] == 4 {
+                student_interviews[j] = binomial(33, 0.9);
+            } else if 3.5 < student_gpa[j] && student_gpa[j] < 4 {
+                student_interviews[j] = binomial(33, 0.6);
+            } else {
+                student_interviews[j] = binomial(33, 0.5);
+            }
+        } else if num_recruiters <= 34 {
+            if student_gpa[j] == 4 {
+                student_interviews[j] = binomial(34, 0.9);
+            } else if 3.5 < student_gpa[j] && student_gpa[j] < 4 {
+                student_interviews[j] = binomial(34, 0.6);
+            } else {
+                student_interviews[j] = binomial(34, 0.5);
+            }
+        } else if num_recruiters <= 35 {
+            if student_gpa[j] == 4 {
+                student_interviews[j] = binomial(35, 0.9);
+            } else if 3.5 < student_gpa[j] && student_gpa[j] < 4 {
+                student_interviews[j] = binomial(35, 0.6);
+            } else {
+                student_interviews[j] = binomial(35, 0.5);
+            }
+        } else if num_recruiters <= 36 {
+            if student_gpa[j] == 4 {
+                student_interviews[j] = binomial(36, 0.9);
+            } else if 3.5 < student_gpa[j] && student_gpa[j] < 4 {
+                student_interviews[j] = binomial(36, 0.6);
+            } else {
+                student_interviews[j] = binomial(36, 0.5);
+            }
+        } else if num_recruiters <= 37 {
+            if student_gpa[j] == 4 {
+                student_interviews[j] = binomial(37, 0.9);
+            } else if 3.5 < student_gpa[j] && student_gpa[j] < 4 {
+                student_interviews[j] = binomial(37, 0.6);
+            } else {
+                student_interviews[j] = binomial(37, 0.5);
+            }
+        } else if num_recruiters <= 38 {
+            if student_gpa[j] == 4 {
+                student_interviews[j] = binomial(38, 0.9);
+            } else if 3.5 < student_gpa[j] && student_gpa[j] < 4 {
+                student_interviews[j] = binomial(38, 0.6);
+            } else {
+                student_interviews[j] = binomial(38, 0.5);
+            }
+        } else if num_recruiters <= 39 {
+            if student_gpa[j] == 4 {
+                student_interviews[j] = binomial(39, 0.9);
+            } else if 3.5 < student_gpa[j] && student_gpa[j] < 4 {
+                student_interviews[j] = binomial(39, 0.6);
+            } else {
+                student_interviews[j] = binomial(39, 0.5);
+            }
         } else {
-            student_interviews[j] = binomial(num_recruiters, 0.5);
+            if student_gpa[j] == 4 {
+                student_interviews[j] = binomial(40, 0.9);
+            } else if 3.5 < student_gpa[j] && student_gpa[j] < 4 {
+                student_interviews[j] = binomial(40, 0.6);
+            } else {
+                student_interviews[j] = binomial(40, 0.5);
+            }
         }
 
-        student_offers[j] = binomial(student_interviews[j], 0.4);
+        if student_interviews[j] <= 0 {
+            student_offers[j] = 0;
+        } else if student_interviews[j] <= 1 {
+            student_offers[j] = binomial(1, 0.4);
+        } else if student_interviews[j] <= 2 {
+            student_offers[j] = binomial(2, 0.4);
+        } else if student_interviews[j] <= 3 {
+            student_offers[j] = binomial(3, 0.4);
+        } else if student_interviews[j] <= 4 {
+            student_offers[j] = binomial(4, 0.4);
+        } else if student_interviews[j] <= 5 {
+            student_offers[j] = binomial(5, 0.4);
+        } else if student_interviews[j] <= 6 {
+            student_offers[j] = binomial(6, 0.4);
+        } else if student_interviews[j] <= 7 {
+            student_offers[j] = binomial(7, 0.4);
+        } else if student_interviews[j] <= 8 {
+            student_offers[j] = binomial(8, 0.4);
+        } else if student_interviews[j] <= 9 {
+            student_offers[j] = binomial(9, 0.4);
+        } else if student_interviews[j] <= 10 {
+            student_offers[j] = binomial(10, 0.4);
+        } else if student_interviews[j] <= 11 {
+            student_offers[j] = binomial(11, 0.4);
+        } else if student_interviews[j] <= 12 {
+            student_offers[j] = binomial(12, 0.4);
+        } else if student_interviews[j] <= 13 {
+            student_offers[j] = binomial(13, 0.4);
+        } else if student_interviews[j] <= 14 {
+            student_offers[j] = binomial(14, 0.4);
+        } else if student_interviews[j] <= 15 {
+            student_offers[j] = binomial(15, 0.4);
+        } else if student_interviews[j] <= 16 {
+            student_offers[j] = binomial(16, 0.4);
+        } else if student_interviews[j] <= 17 {
+            student_offers[j] = binomial(17, 0.4);
+        } else if student_interviews[j] <= 18 {
+            student_offers[j] = binomial(18, 0.4);
+        } else if student_interviews[j] <= 19 {
+            student_offers[j] = binomial(19, 0.4);
+        } else if student_interviews[j] <= 20 {
+            student_offers[j] = binomial(20, 0.4);
+        } else if student_interviews[j] <= 21 {
+            student_offers[j] = binomial(21, 0.4);
+        } else if student_interviews[j] <= 22 {
+            student_offers[j] = binomial(22, 0.4);
+        } else if student_interviews[j] <= 23 {
+            student_offers[j] = binomial(23, 0.4);
+        } else if student_interviews[j] <= 24 {
+            student_offers[j] = binomial(24, 0.4);
+        } else if student_interviews[j] <= 25 {
+            student_offers[j] = binomial(25, 0.4);
+        } else if student_interviews[j] <= 26 {
+            student_offers[j] = binomial(26, 0.4);
+        } else if student_interviews[j] <= 27 {
+            student_offers[j] = binomial(27, 0.4);
+        } else if student_interviews[j] <= 28 {
+            student_offers[j] = binomial(28, 0.4);
+        } else if student_interviews[j] <= 29 {
+            student_offers[j] = binomial(29, 0.4);
+        } else if student_interviews[j] <= 30 {
+            student_offers[j] = binomial(30, 0.4);
+        } else if student_interviews[j] <= 31 {
+            student_offers[j] = binomial(31, 0.4);
+        } else if student_interviews[j] <= 32 {
+            student_offers[j] = binomial(32, 0.4);
+        } else if student_interviews[j] <= 33 {
+            student_offers[j] = binomial(33, 0.4);
+        } else if student_interviews[j] <= 34 {
+            student_offers[j] = binomial(34, 0.4);
+        } else if student_interviews[j] <= 35 {
+            student_offers[j] = binomial(35, 0.4);
+        } else if student_interviews[j] <= 36 {
+            student_offers[j] = binomial(36, 0.4);
+        } else if student_interviews[j] <= 37 {
+            student_offers[j] = binomial(37, 0.4);
+        } else if student_interviews[j] <= 38 {
+            student_offers[j] = binomial(38, 0.4);
+        } else if student_interviews[j] <= 39 {
+            student_offers[j] = binomial(39, 0.4);
+        } else {
+            student_offers[j] = binomial(40, 0.4);
+        }
     }
 
-    observe(student_offers[0] == 1);
+    observe(1 <= student_offers[0] && student_offers[0] >= 1);
     observe(num_recruiters > 10);
     return student_gpa[0] < 0.5;
 }

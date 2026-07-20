@@ -23,8 +23,8 @@ click_url_A     = array(5)    # Did user click url_A[i]? (binary)
 click_url_B     = array(5)    # Did user click url_B[i]? (binary)
 
 for i in range(5):
-    switch (p_similar) cases (p in binspace(0, 1, 20)):
-        similar[i] ~= bernoulli(p=p.right)
+    switch (p_similar) cases (p in binspace(0, 1, 21)):
+        similar[i] ~= bernoulli(p=p.right)          # Represents flip(p_similar)
 
     if similar[i] == 1:
         p_click_url_A[i] ~= uniform(loc=0, scale=1)
@@ -33,11 +33,11 @@ for i in range(5):
         p_click_url_A[i] ~= uniform(loc=0, scale=1)
         p_click_url_B[i] ~= uniform(loc=0, scale=1)
 
-    switch (p_click_url_A[i]) cases (p in binspace(0, 1, 10)):
-        click_url_A[i] ~= bernoulli(p=p.right)
+    switch (p_click_url_A[i]) cases (p in binspace(0, 1, 11)):
+        click_url_A[i] ~= bernoulli(p=p.right)      # Represents flip(p_click_url_A[i])
 
-    switch (p_click_url_B[i]) cases (p in binspace(0, 1, 10)):
-        click_url_B[i] ~= bernoulli(p=p.right)
+    switch (p_click_url_B[i]) cases (p in binspace(0, 1, 11)):
+        click_url_B[i] ~= bernoulli(p=p.right)      # Represents flip(p_click_url_B[i])
 
 condition(click_url_A[0] == 1)
 condition(click_url_B[0] == 1)
@@ -52,7 +52,7 @@ condition(click_url_B[4] == 0)
 ''')
     
     namespace = compiler.execute_module()
-    prob = namespace.model.prob(namespace.p_similar > 0.5)
+    prob = namespace.model.prob(namespace.p_similar < 0.3)
     elapsed = time.time() - start_time
 
     print(prob)

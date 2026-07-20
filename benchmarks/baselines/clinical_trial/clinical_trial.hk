@@ -1,5 +1,3 @@
-# Model-shaped Hakaru version of clinical_trial.py.
-
 def prob_not(p prob) prob:
     real2prob(1 - prob2real(p))
 
@@ -7,47 +5,93 @@ def bern(p prob):
     i <~ categorical([p, prob_not(p)])
     return [true, false][i]
 
-def randint20(_ignored nat):
-    i <~ categorical([1/20, 1/20, 1/20, 1/20, 1/20, 1/20, 1/20, 1/20, 1/20, 1/20, 1/20, 1/20, 1/20, 1/20, 1/20, 1/20, 1/20, 1/20, 1/20, 1/20])
-    return i
+def observe_bool(b bool):
+    if b:
+        weight(1, return ())
+    else:
+        weight(0, return ())
 
-def trial_subject(isEffective bool, probControl nat, probTreated nat, probAll nat):
-    control_p <~ if isEffective:
-                     return nat2prob(probControl) / 20
-                 else:
-                     return nat2prob(probAll) / 20
-    treated_p <~ if isEffective:
-                     return nat2prob(probTreated) / 20
-                 else:
-                     return nat2prob(probAll) / 20
-    controlGroup <~ bern(control_p)
-    treatedGroup <~ bern(treated_p)
-    return treatedGroup
+def observe_eq(actual bool, expected bool):
+    if expected:
+        observe_bool(actual)
+    else:
+        if actual:
+            weight(0, return ())
+        else:
+            weight(1, return ())
 
-isEffective <~ bern(0.5)
-probControl <~ randint20(0)
-probTreated <~ randint20(0)
-probAll <~ randint20(0)
+def draw_control(isEffective bool, probControl nat, probAll nat):
+    if isEffective:
+        bern(nat2prob(probControl) / 20)
+    else:
+        bern(nat2prob(probAll) / 20)
 
-treatedGroup_0 <~ trial_subject(isEffective, probControl, probTreated, probAll)
-_ <~ trial_subject(isEffective, probControl, probTreated, probAll)
-_ <~ trial_subject(isEffective, probControl, probTreated, probAll)
-_ <~ trial_subject(isEffective, probControl, probTreated, probAll)
-_ <~ trial_subject(isEffective, probControl, probTreated, probAll)
-_ <~ trial_subject(isEffective, probControl, probTreated, probAll)
-_ <~ trial_subject(isEffective, probControl, probTreated, probAll)
-_ <~ trial_subject(isEffective, probControl, probTreated, probAll)
-_ <~ trial_subject(isEffective, probControl, probTreated, probAll)
-_ <~ trial_subject(isEffective, probControl, probTreated, probAll)
-_ <~ trial_subject(isEffective, probControl, probTreated, probAll)
-_ <~ trial_subject(isEffective, probControl, probTreated, probAll)
-_ <~ trial_subject(isEffective, probControl, probTreated, probAll)
-_ <~ trial_subject(isEffective, probControl, probTreated, probAll)
-_ <~ trial_subject(isEffective, probControl, probTreated, probAll)
-_ <~ trial_subject(isEffective, probControl, probTreated, probAll)
-_ <~ trial_subject(isEffective, probControl, probTreated, probAll)
-_ <~ trial_subject(isEffective, probControl, probTreated, probAll)
-_ <~ trial_subject(isEffective, probControl, probTreated, probAll)
-_ <~ trial_subject(isEffective, probControl, probTreated, probAll)
+def draw_treated(isEffective bool, probTreated nat, probAll nat):
+    if isEffective:
+        bern(nat2prob(probTreated) / 20)
+    else:
+        bern(nat2prob(probAll) / 20)
 
-return not(treatedGroup_0)
+n = 10
+k = 20
+
+dataControlGroup = [false, false, true, true, true,
+                    false, true, true, false, false]
+dataTreatedGroup = [false, true, false, false, true,
+                    true, true, true, true, true]
+
+isEffective <~ bern(1/2)
+probControl <~ categorical(array _ of k: 1/20)
+probTreated <~ categorical(array _ of k: 1/20)
+probAll <~ categorical(array _ of k: 1/20)
+
+controlGroup_0 <~ draw_control(isEffective, probControl, probAll)
+controlGroup_1 <~ draw_control(isEffective, probControl, probAll)
+controlGroup_2 <~ draw_control(isEffective, probControl, probAll)
+controlGroup_3 <~ draw_control(isEffective, probControl, probAll)
+controlGroup_4 <~ draw_control(isEffective, probControl, probAll)
+controlGroup_5 <~ draw_control(isEffective, probControl, probAll)
+controlGroup_6 <~ draw_control(isEffective, probControl, probAll)
+controlGroup_7 <~ draw_control(isEffective, probControl, probAll)
+controlGroup_8 <~ draw_control(isEffective, probControl, probAll)
+controlGroup_9 <~ draw_control(isEffective, probControl, probAll)
+controlGroup = [controlGroup_0, controlGroup_1, controlGroup_2, controlGroup_3,
+                controlGroup_4, controlGroup_5, controlGroup_6, controlGroup_7,
+                controlGroup_8, controlGroup_9]
+
+treatedGroup_0 <~ draw_treated(isEffective, probTreated, probAll)
+treatedGroup_1 <~ draw_treated(isEffective, probTreated, probAll)
+treatedGroup_2 <~ draw_treated(isEffective, probTreated, probAll)
+treatedGroup_3 <~ draw_treated(isEffective, probTreated, probAll)
+treatedGroup_4 <~ draw_treated(isEffective, probTreated, probAll)
+treatedGroup_5 <~ draw_treated(isEffective, probTreated, probAll)
+treatedGroup_6 <~ draw_treated(isEffective, probTreated, probAll)
+treatedGroup_7 <~ draw_treated(isEffective, probTreated, probAll)
+treatedGroup_8 <~ draw_treated(isEffective, probTreated, probAll)
+treatedGroup_9 <~ draw_treated(isEffective, probTreated, probAll)
+treatedGroup = [treatedGroup_0, treatedGroup_1, treatedGroup_2, treatedGroup_3,
+                treatedGroup_4, treatedGroup_5, treatedGroup_6, treatedGroup_7,
+                treatedGroup_8, treatedGroup_9]
+
+_ <~ observe_eq(controlGroup[0], dataControlGroup[0])
+_ <~ observe_eq(treatedGroup[0], dataTreatedGroup[0])
+_ <~ observe_eq(controlGroup[1], dataControlGroup[1])
+_ <~ observe_eq(treatedGroup[1], dataTreatedGroup[1])
+_ <~ observe_eq(controlGroup[2], dataControlGroup[2])
+_ <~ observe_eq(treatedGroup[2], dataTreatedGroup[2])
+_ <~ observe_eq(controlGroup[3], dataControlGroup[3])
+_ <~ observe_eq(treatedGroup[3], dataTreatedGroup[3])
+_ <~ observe_eq(controlGroup[4], dataControlGroup[4])
+_ <~ observe_eq(treatedGroup[4], dataTreatedGroup[4])
+_ <~ observe_eq(controlGroup[5], dataControlGroup[5])
+_ <~ observe_eq(treatedGroup[5], dataTreatedGroup[5])
+_ <~ observe_eq(controlGroup[6], dataControlGroup[6])
+_ <~ observe_eq(treatedGroup[6], dataTreatedGroup[6])
+_ <~ observe_eq(controlGroup[7], dataControlGroup[7])
+_ <~ observe_eq(treatedGroup[7], dataTreatedGroup[7])
+_ <~ observe_eq(controlGroup[8], dataControlGroup[8])
+_ <~ observe_eq(treatedGroup[8], dataTreatedGroup[8])
+_ <~ observe_eq(controlGroup[9], dataControlGroup[9])
+_ <~ observe_eq(treatedGroup[9], dataTreatedGroup[9])
+
+return ((), isEffective)

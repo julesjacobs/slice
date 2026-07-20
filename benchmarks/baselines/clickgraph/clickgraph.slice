@@ -23,7 +23,9 @@ let similar_0 =
     else discrete(0.0, 1.0)
 in
 
-let p_click_url_A_0 = uniform(0, 1) in
+let p_click_url_A_0 = 
+    if similar_0 ==#2 1#2 then uniform(0,1) else uniform(0, 1) 
+in
 
 let p_click_url_B_0 =
     if similar_0 ==#2 1#2 then p_click_url_A_0 else uniform(0, 1)
@@ -78,7 +80,9 @@ let similar_1 =
     else discrete(0.0, 1.0)
 in
 
-let p_click_url_A_1 = uniform(0, 1) in
+let p_click_url_A_1 = 
+    if similar_1 ==#2 1#2 then uniform(0,1) else uniform(0, 1)
+in
 
 let p_click_url_B_1 =
     if similar_1 ==#2 1#2 then p_click_url_A_1 else uniform(0, 1)
@@ -133,7 +137,9 @@ let similar_2 =
     else discrete(0.0, 1.0)
 in
 
-let p_click_url_A_2 = uniform(0, 1) in
+let p_click_url_A_2 = 
+    if similar_2 ==#2 1#2 then uniform(0,1) else uniform(0, 1)
+in
 
 let p_click_url_B_2 =
     if similar_2 ==#2 1#2 then p_click_url_A_2 else uniform(0, 1)
@@ -188,7 +194,9 @@ let similar_3 =
     else discrete(0.0, 1.0)
 in
 
-let p_click_url_A_3 = uniform(0, 1) in
+let p_click_url_A_3 = 
+    if similar_3 ==#2 1#2 then uniform(0,1) else uniform(0, 1)
+in
 
 let p_click_url_B_3 =
     if similar_3 ==#2 1#2 then p_click_url_A_3 else uniform(0, 1)
@@ -243,7 +251,9 @@ let similar_4 =
     else discrete(0.0, 1.0)
 in
 
-let p_click_url_A_4 = uniform(0, 1) in
+let p_click_url_A_4 = 
+    if similar_4 ==#2 1#2 then uniform(0,1) else uniform(0, 1)
+in
 
 let p_click_url_B_4 =
     if similar_4 ==#2 1#2 then p_click_url_A_4 else uniform(0, 1)
@@ -286,4 +296,4 @@ let _7 = observe(click_url_B_3 ==#2 1#2) in
 let _8 = observe(click_url_A_4 ==#2 0#2) in
 let _9 = observe(click_url_B_4 ==#2 0#2) in
 
-p_similar > 0.5
+p_similar < 0.3

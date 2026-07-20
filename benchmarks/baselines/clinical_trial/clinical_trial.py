@@ -10,11 +10,14 @@ def main():
     args = parser.parse_args()
 
     start_time = time.time()
-    compiler = SPPL_Compiler('''               
-n = 20
+    compiler = SPPL_Compiler('''   
+n = 10
 k = 20
 controlGroup = array(n)
 treatedGroup = array(n)
+                             
+dataControlGroup = [0, 0, 1, 1, 1, 0, 1, 1, 0, 0]
+dataTreatedGroup = [0, 1, 0, 0, 1, 1, 1, 1, 1, 1]
                         
 isEffective ~= bernoulli(p=.5)
 probControl ~= randint(low=0, high=k)
@@ -24,20 +27,25 @@ probAll ~= randint(low=0, high=k)
 if (isEffective == 1):
     for i in range(n):
         switch (probControl) cases (p in range(k)):
-            controlGroup[i] ~= bernoulli(p=p/k)
+            controlGroup[i] ~= bernoulli(p=p/k)     # Represents flip(probControl)
+                             
         switch (probTreated) cases (p in range(k)):
-            treatedGroup[i] ~= bernoulli(p=p/k)
+            treatedGroup[i] ~= bernoulli(p=p/k)     # Represents flip(probTreated)
 else:
     for i in range(n):
         switch (probAll) cases (p in range(k)):
-            controlGroup[i] ~= bernoulli(p=p/k)
-            treatedGroup[i] ~= bernoulli(p=p/k)
+            controlGroup[i] ~= bernoulli(p=p/k)     # Represents flip(probAll)
+            treatedGroup[i] ~= bernoulli(p=p/k)     # Represents flip(probAll)
+                             
+for i in range(n):
+    condition(controlGroup[i] == dataControlGroup[i])
+    condition(treatedGroup[i] == dataTreatedGroup[i])             
         ''')
     
     namespace = compiler.execute_module()
-    e = Id('treatedGroup[0]')
-    event = (e < 1)
-    prob = namespace.model.prob(event)
+    e = Id('isEffective')
+    event = (e < 0.5)
+    prob = namespace.model.prob(namespace.isEffective << {1})
     elapsed = time.time() - start_time
 
     print(prob)

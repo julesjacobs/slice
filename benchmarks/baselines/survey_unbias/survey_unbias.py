@@ -13,19 +13,38 @@ def main():
     compiler = SPPL_Compiler('''
 from sppl.sym_util import binspace
 
-bias_0 = beta(a=1, b=1)
-switch (bias_0) cases (p in binspace(0, 1, 10)):
-    votes_0 ~= binom(p=p.right, n=1000)
+numPopulations = 2
+n = 5
+population = [1000, 2000]
+gender = [0, 1]
+personGender = [0, 1, 0, 1, 0]
+dataAnswer = [1, 0, 1, 1, 0]
 
-ansBias_0 = bias_0 
-switch (ansBias_0) cases (p in binspace(0, 1, 10)):
-    answer_0 ~= bernoulli(p=p.right)    
+bias = array(numPopulations)
+votes = array(numPopulations)
+ansBias = array(n)
+answer = array(n)
 
-condition(answer_0 == 1)   
+for i in range(numPopulations):
+    bias[i] ~= beta(a=1, b=1)
+
+for i in range(numPopulations):
+    switch (bias[i]) cases (p in binspace(0, 1, 21)):
+        votes[i] ~= binom(n=population[i], p=p.right)
+
+for i in range(n):
+    ansBias[i] = bias[personGender[i]]
+
+for i in range(n):
+    switch (ansBias[i]) cases (p in binspace(0, 1, 21)):
+        answer[i] ~= bernoulli(p=p.right)
+
+for i in range(n):
+    condition(answer[i] == dataAnswer[i])
 ''')
     
     namespace = compiler.execute_module()
-    e = Id('answer_0')
+    e = Id('bias[0]')
     event = (e < 0.5)
     prob = namespace.model.prob(event)
     elapsed = time.time() - start_time

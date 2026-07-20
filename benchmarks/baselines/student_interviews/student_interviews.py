@@ -15,7 +15,7 @@ from sppl.sym_util import binspace
 from scipy.stats import poisson as p
 
 # Students.
-num_students       = 10
+num_students       = 2
 student_perfect    = array(num_students)
 student_gpa        = array(num_students)
 student_interviews = array(num_students)
