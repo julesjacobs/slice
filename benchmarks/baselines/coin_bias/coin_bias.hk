@@ -1,101 +1,109 @@
-def prob_not(p prob) prob:
-    real2prob(1 - prob2real(p))
+posterior =
+  disint(
+    def prob_not(p prob) prob:
+        real2prob(1 - prob2real(p))
 
-def bern(p prob):
-    i <~ categorical([p, prob_not(p)])
-    return [true, false][i]
+    def bern(p prob):
+        i <~ categorical([p, prob_not(p)])
+        return [true, false][i]
 
-def observe_bool(b bool):
-    if b:
-        weight(1, return ())
-    else:
-        weight(0, return ())
-
-def observe_eq(actual bool, expected bool):
-    if expected:
-        observe_bool(actual)
-    else:
-        if actual:
-            weight(0, return ())
-        else:
+    def observe_bool(b bool):
+        if b:
             weight(1, return ())
-
-def binspace20_right(p prob) prob:
-    if p <= 1/20:
-        1/20
-    else:
-        if p <= 2/20:
-            2/20
         else:
-            if p <= 3/20:
-                3/20
+            weight(0, return ())
+
+    def observe_eq(actual bool, expected bool):
+        if expected:
+            observe_bool(actual)
+        else:
+            if actual:
+                weight(0, return ())
             else:
-                if p <= 4/20:
-                    4/20
+                weight(1, return ())
+
+    def binspace20_right(p prob) prob:
+        if p <= 1/20:
+            1/20
+        else:
+            if p <= 2/20:
+                2/20
+            else:
+                if p <= 3/20:
+                    3/20
                 else:
-                    if p <= 5/20:
-                        5/20
+                    if p <= 4/20:
+                        4/20
                     else:
-                        if p <= 6/20:
-                            6/20
+                        if p <= 5/20:
+                            5/20
                         else:
-                            if p <= 7/20:
-                                7/20
+                            if p <= 6/20:
+                                6/20
                             else:
-                                if p <= 8/20:
-                                    8/20
+                                if p <= 7/20:
+                                    7/20
                                 else:
-                                    if p <= 9/20:
-                                        9/20
+                                    if p <= 8/20:
+                                        8/20
                                     else:
-                                        if p <= 10/20:
-                                            10/20
+                                        if p <= 9/20:
+                                            9/20
                                         else:
-                                            if p <= 11/20:
-                                                11/20
+                                            if p <= 10/20:
+                                                10/20
                                             else:
-                                                if p <= 12/20:
-                                                    12/20
+                                                if p <= 11/20:
+                                                    11/20
                                                 else:
-                                                    if p <= 13/20:
-                                                        13/20
+                                                    if p <= 12/20:
+                                                        12/20
                                                     else:
-                                                        if p <= 14/20:
-                                                            14/20
+                                                        if p <= 13/20:
+                                                            13/20
                                                         else:
-                                                            if p <= 15/20:
-                                                                15/20
+                                                            if p <= 14/20:
+                                                                14/20
                                                             else:
-                                                                if p <= 16/20:
-                                                                    16/20
+                                                                if p <= 15/20:
+                                                                    15/20
                                                                 else:
-                                                                    if p <= 17/20:
-                                                                        17/20
+                                                                    if p <= 16/20:
+                                                                        16/20
                                                                     else:
-                                                                        if p <= 18/20:
-                                                                            18/20
+                                                                        if p <= 17/20:
+                                                                            17/20
                                                                         else:
-                                                                            if p <= 19/20:
-                                                                                19/20
+                                                                            if p <= 18/20:
+                                                                                18/20
                                                                             else:
-                                                                                1
+                                                                                if p <= 19/20:
+                                                                                    19/20
+                                                                                else:
+                                                                                    1
 
-observedResults = [true, true, false, true, false]
+    observedResults = [true, true, false, true, false]
 
-bias <~ beta(2, 5)
+    bias <~ beta(2, 5)
 
-tossResult_0 <~ bern(binspace20_right(bias))
-tossResult_1 <~ bern(binspace20_right(bias))
-tossResult_2 <~ bern(binspace20_right(bias))
-tossResult_3 <~ bern(binspace20_right(bias))
-tossResult_4 <~ bern(binspace20_right(bias))
-tossResults = [tossResult_0, tossResult_1, tossResult_2,
-               tossResult_3, tossResult_4]
+    tossResult_0 <~ bern(binspace20_right(bias))
+    tossResult_1 <~ bern(binspace20_right(bias))
+    tossResult_2 <~ bern(binspace20_right(bias))
+    tossResult_3 <~ bern(binspace20_right(bias))
+    tossResult_4 <~ bern(binspace20_right(bias))
+    tossResults = [tossResult_0, tossResult_1, tossResult_2,
+                   tossResult_3, tossResult_4]
 
-_ <~ observe_eq(tossResults[0], observedResults[0])
-_ <~ observe_eq(tossResults[1], observedResults[1])
-_ <~ observe_eq(tossResults[2], observedResults[2])
-_ <~ observe_eq(tossResults[3], observedResults[3])
-_ <~ observe_eq(tossResults[4], observedResults[4])
+    _ <~ observe_eq(tossResults[0], observedResults[0])
+    _ <~ observe_eq(tossResults[1], observedResults[1])
+    _ <~ observe_eq(tossResults[2], observedResults[2])
+    _ <~ observe_eq(tossResults[3], observedResults[3])
+    _ <~ observe_eq(tossResults[4], observedResults[4])
 
-return ((), bias < 3/10)
+    return (
+        (tossResult_0, (tossResult_1, (tossResult_2, (tossResult_3, tossResult_4)))),
+        bias < 3/10
+    )
+  )
+
+posterior((true, (true, (false, (true, false)))))

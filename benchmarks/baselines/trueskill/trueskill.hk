@@ -1,39 +1,44 @@
-def prob_not(p prob) prob:
-    real2prob(1 - prob2real(p))
+posterior =
+  disint(
+    def prob_not(p prob) prob:
+        real2prob(1 - prob2real(p))
 
-def observe_bool(b bool):
-    if b:
-        weight(1, return ())
-    else:
-        weight(0, return ())
-
-def observe_eq(actual bool, expected bool):
-    if expected:
-        observe_bool(actual)
-    else:
-        if actual:
-            weight(0, return ())
-        else:
+    def observe_bool(b bool):
+        if b:
             weight(1, return ())
+        else:
+            weight(0, return ())
 
-def binom_pmf(n nat, k nat, p prob) prob:
-    nat2prob(choose(n, k)) * p ** nat2real(k) *
-        prob_not(p) ** (nat2real(n) - nat2real(k))
+    def observe_eq(actual bool, expected bool):
+        if expected:
+            observe_bool(actual)
+        else:
+            if actual:
+                weight(0, return ())
+            else:
+                weight(1, return ())
 
-def binom(n nat, p prob):
-    k <~ categorical(array i of n + 1: binom_pmf(n, i, p))
-    return k
+    def binom_pmf(n nat, k nat, p prob) prob:
+        nat2prob(choose(n, k)) * p ** nat2real(k) *
+            prob_not(p) ** (nat2real(n) - nat2real(k))
 
-perfB1 <~ binom(100, 9/10)
-_ <~ observe_bool(80 <= perfB1)
+    def binom(n nat, p prob):
+        k <~ categorical(array i of n + 1: binom_pmf(n, i, p))
+        return k
 
-skillA <~ poisson(100)
-_ <~ observe_bool(77 <= skillA)
-_ <~ observe_bool(skillA < 125)
+    perfB1 <~ binom(100, 9/10)
+    _ <~ observe_bool(80 <= perfB1)
 
-perfA1 <~ binom(skillA, 9/10)
-result <~ return perfA1 > perfB1
+    skillA <~ poisson(100)
+    _ <~ observe_bool(77 <= skillA)
+    _ <~ observe_bool(skillA < 125)
 
-_ <~ observe_eq(result, false)
+    perfA1 <~ binom(skillA, 9/10)
+    result <~ return perfA1 > perfB1
 
-return ((), perfA1 == 50)
+    _ <~ observe_eq(result, false)
+
+    return ((), perfA1 == 50)
+  )
+
+posterior(())

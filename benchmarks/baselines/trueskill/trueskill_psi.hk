@@ -1,14 +1,19 @@
-def observe_bool(b bool):
-    if b:
-        weight(1, return ())
-    else:
-        weight(0, return ())
+posterior =
+  disint(
+    def observe_bool(b bool):
+        if b:
+            weight(1, return ())
+        else:
+            weight(0, return ())
 
-# PSI's gauss arguments are variances. Hakaru's normal distribution expects standard deviations.
-skill1 <~ normal(100, sqrt(10))
-skill2 <~ normal(100, sqrt(10))
-perf1 <~ normal(skill1, sqrt(15))
-perf2 <~ normal(skill2, sqrt(15))
-_ <~ observe_bool(perf1 > perf2)
+    # PSI's gauss arguments are variances. Hakaru's normal distribution expects standard deviations.
+    skill1 <~ normal(100, sqrt(10))
+    skill2 <~ normal(100, sqrt(10))
+    perf1 <~ normal(skill1, sqrt(15))
+    perf2 <~ normal(skill2, sqrt(15))
+    _ <~ observe_bool(perf1 > perf2)
 
-return ((), (skill1, skill2))
+    return ((), (skill1, skill2))
+  )
+
+posterior(())

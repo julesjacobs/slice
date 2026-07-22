@@ -234,5 +234,5 @@ def main() {
     }
 
     observe(result == 0);
-    return perfA1 == 1;
+    return perfA1 == 50;
 }

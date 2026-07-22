@@ -1,87 +1,92 @@
-def prob_not(p prob) prob:
-    real2prob(1 - prob2real(p))
+posterior =
+  disint(
+    def prob_not(p prob) prob:
+        real2prob(1 - prob2real(p))
 
-def observe_bool(b bool):
-    if b:
-        weight(1, return ())
-    else:
-        weight(0, return ())
-
-def binom_pmf(n nat, k nat, p prob) prob:
-    nat2prob(choose(n, k)) * p ** nat2real(k) *
-        prob_not(p) ** (nat2real(n) - nat2real(k))
-
-def binom(n nat, p prob):
-    k <~ categorical(array i of n + 1: binom_pmf(n, i, p))
-    return k
-
-def binspace20_mid(p prob) prob:
-    if p <= 1/20:
-        1/40
-    else:
-        if p <= 2/20:
-            3/40
+    def observe_bool(b bool):
+        if b:
+            weight(1, return ())
         else:
-            if p <= 3/20:
-                5/40
+            weight(0, return ())
+
+    def binom_pmf(n nat, k nat, p prob) prob:
+        nat2prob(choose(n, k)) * p ** nat2real(k) *
+            prob_not(p) ** (nat2real(n) - nat2real(k))
+
+    def binom(n nat, p prob):
+        k <~ categorical(array i of n + 1: binom_pmf(n, i, p))
+        return k
+
+    def binspace20_mid(p prob) prob:
+        if p <= 1/20:
+            1/40
+        else:
+            if p <= 2/20:
+                3/40
             else:
-                if p <= 4/20:
-                    7/40
+                if p <= 3/20:
+                    5/40
                 else:
-                    if p <= 5/20:
-                        9/40
+                    if p <= 4/20:
+                        7/40
                     else:
-                        if p <= 6/20:
-                            11/40
+                        if p <= 5/20:
+                            9/40
                         else:
-                            if p <= 7/20:
-                                13/40
+                            if p <= 6/20:
+                                11/40
                             else:
-                                if p <= 8/20:
-                                    15/40
+                                if p <= 7/20:
+                                    13/40
                                 else:
-                                    if p <= 9/20:
-                                        17/40
+                                    if p <= 8/20:
+                                        15/40
                                     else:
-                                        if p <= 10/20:
-                                            19/40
+                                        if p <= 9/20:
+                                            17/40
                                         else:
-                                            if p <= 11/20:
-                                                21/40
+                                            if p <= 10/20:
+                                                19/40
                                             else:
-                                                if p <= 12/20:
-                                                    23/40
+                                                if p <= 11/20:
+                                                    21/40
                                                 else:
-                                                    if p <= 13/20:
-                                                        25/40
+                                                    if p <= 12/20:
+                                                        23/40
                                                     else:
-                                                        if p <= 14/20:
-                                                            27/40
+                                                        if p <= 13/20:
+                                                            25/40
                                                         else:
-                                                            if p <= 15/20:
-                                                                29/40
+                                                            if p <= 14/20:
+                                                                27/40
                                                             else:
-                                                                if p <= 16/20:
-                                                                    31/40
+                                                                if p <= 15/20:
+                                                                    29/40
                                                                 else:
-                                                                    if p <= 17/20:
-                                                                        33/40
+                                                                    if p <= 16/20:
+                                                                        31/40
                                                                     else:
-                                                                        if p <= 18/20:
-                                                                            35/40
+                                                                        if p <= 17/20:
+                                                                            33/40
                                                                         else:
-                                                                            if p <= 19/20:
-                                                                                37/40
+                                                                            if p <= 18/20:
+                                                                                35/40
                                                                             else:
-                                                                                39/40
+                                                                                if p <= 19/20:
+                                                                                    37/40
+                                                                                else:
+                                                                                    39/40
 
-n = 4000
+    n = 4000
 
-param_index <~ categorical(array _ of 100: 1/100)
-param <~ return param_index + 250
-p <~ beta(nat2prob(277), nat2prob(param))
-votes <~ binom(n, binspace20_mid(p))
-win <~ return votes > n / 2
-_ <~ observe_bool(win)
+    param_index <~ categorical(array _ of 100: 1/100)
+    param <~ return param_index + 250
+    p <~ beta(nat2prob(277), nat2prob(param))
+    votes <~ binom(n, binspace20_mid(p))
+    win <~ return votes > n / 2
+    _ <~ observe_bool(win)
 
-return ((), param == 250)
+    return ((), param == 250)
+  )
+
+posterior(())

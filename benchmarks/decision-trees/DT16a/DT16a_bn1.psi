@@ -160,5 +160,5 @@ def main() {
     } else {
         t_m = t_initial_m;
     }
-    return (t_f < 0.5, t_m < 0.5);
+    return (t_f >= 1.0, t_m >= 1.0);
 }

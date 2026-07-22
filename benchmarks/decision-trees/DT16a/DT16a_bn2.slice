@@ -70,4 +70,4 @@ let t =
   else
     t_initial in
 
-t < 0.5
+t >= 1.0

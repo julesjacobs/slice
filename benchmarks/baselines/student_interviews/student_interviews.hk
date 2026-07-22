@@ -1,63 +1,70 @@
-def prob_not(p prob) prob:
-    real2prob(1 - prob2real(p))
+posterior =
+  disint(
+    def prob_not(p prob) prob:
+        real2prob(1 - prob2real(p))
 
-def bern(p prob):
-    i <~ categorical([p, prob_not(p)])
-    return [true, false][i]
+    def bern(p prob):
+        i <~ categorical([p, prob_not(p)])
+        return [true, false][i]
 
-def observe_bool(b bool):
-    if b:
-        weight(1, return ())
-    else:
-        weight(0, return ())
-
-def binom_pmf(n nat, k nat, p prob) prob:
-    nat2prob(choose(n, k)) * p ** nat2real(k) *
-        prob_not(p) ** (nat2real(n) - nat2real(k))
-
-def binom(n nat, p prob):
-    k <~ categorical(array i of n + 1: binom_pmf(n, i, p))
-    return k
-
-def draw_student_gpa(student_perfect bool):
-    if student_perfect:
-        return (4 . real)
-    else:
-        gpa <~ beta(7, 3)
-        return 4 * prob2real(gpa)
-
-def draw_student_interviews(num_recruiters nat, student_gpa real):
-    if student_gpa == 4:
-        binom(num_recruiters, 9/10)
-    else:
-        if 7/2 < student_gpa && student_gpa < 4:
-            binom(num_recruiters, 3/5)
+    def observe_bool(b bool):
+        if b:
+            weight(1, return ())
         else:
-            binom(num_recruiters, 1/2)
+            weight(0, return ())
 
-num_students = 2
+    def binom_pmf(n nat, k nat, p prob) prob:
+        nat2prob(choose(n, k)) * p ** nat2real(k) *
+            prob_not(p) ** (nat2real(n) - nat2real(k))
 
-student_perfect_0 <~ bern(1/5)
-student_perfect_1 <~ bern(1/5)
-student_perfect = [student_perfect_0, student_perfect_1]
+    def binom(n nat, p prob):
+        k <~ categorical(array i of n + 1: binom_pmf(n, i, p))
+        return k
 
-student_gpa_0 <~ draw_student_gpa(student_perfect[0])
-student_gpa_1 <~ draw_student_gpa(student_perfect[1])
-student_gpa = [student_gpa_0, student_gpa_1]
+    def draw_student_gpa(student_perfect bool):
+        if student_perfect:
+            return (4 . real)
+        else:
+            gpa <~ beta(7, 3)
+            return 4 * prob2real(gpa)
 
-num_recruiters <~ poisson(25)
-_ <~ observe_bool(10 <= num_recruiters)
-_ <~ observe_bool(num_recruiters <= 40)
+    def draw_student_interviews(num_recruiters nat, student_gpa real):
+        if student_gpa == 4:
+            binom(num_recruiters, 9/10)
+        else:
+            if 7/2 < student_gpa && student_gpa < 4:
+                binom(num_recruiters, 3/5)
+            else:
+                binom(num_recruiters, 1/2)
 
-student_interviews_0 <~ draw_student_interviews(num_recruiters, student_gpa[0])
-student_interviews_1 <~ draw_student_interviews(num_recruiters, student_gpa[1])
-student_interviews = [student_interviews_0, student_interviews_1]
+    num_students = 2
 
-student_offers_0 <~ binom(student_interviews[0], 2/5)
-student_offers_1 <~ binom(student_interviews[1], 2/5)
-student_offers = [student_offers_0, student_offers_1]
+    student_perfect_0 <~ bern(1/5)
+    student_perfect_1 <~ bern(1/5)
+    student_perfect = [student_perfect_0, student_perfect_1]
 
-_ <~ observe_bool(student_offers[0] == 1)
-_ <~ observe_bool(10 < num_recruiters)
+    student_gpa_0 <~ draw_student_gpa(student_perfect[0])
+    student_gpa_1 <~ draw_student_gpa(student_perfect[1])
+    student_gpa = [student_gpa_0, student_gpa_1]
 
-return ((), student_gpa[0] < 1/2)
+    num_recruiters <~ poisson(25)
+    _ <~ observe_bool(10 <= num_recruiters)
+    _ <~ observe_bool(num_recruiters <= 40)
+
+    student_interviews_0 <~ draw_student_interviews(num_recruiters, student_gpa[0])
+    student_interviews_1 <~ draw_student_interviews(num_recruiters, student_gpa[1])
+    student_interviews = [student_interviews_0, student_interviews_1]
+
+    student_offers_0 <~ binom(student_interviews[0], 2/5)
+    student_offers_1 <~ binom(student_interviews[1], 2/5)
+    student_offers = [student_offers_0, student_offers_1]
+
+    _ <~ observe_bool(10 < num_recruiters)
+
+    return (
+        student_offers_0,
+        student_gpa[0] < 1/2
+    )
+  )
+
+posterior(1)

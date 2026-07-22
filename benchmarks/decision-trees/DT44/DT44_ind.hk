@@ -1,269 +1,273 @@
-# DT44_ind.hk: generated from the paired Slice query.
+posterior =
+  disint(
+    # DT44_ind.hk: generated from the paired Slice query.
 
-def observe_bool(b bool):
-    if b:
-        weight(1, return ())
-    else:
-        weight(0, return ())
+    def observe_bool(b bool):
+        if b:
+            weight(1, return ())
+        else:
+            weight(0, return ())
 
-sex_f <~ categorical([0.3307, 0.6693])
+    sex_f <~ categorical([0.3307, 0.6693])
 
-_ <~ observe_bool(sex_f < 1)
 
-age_f <~ normal(38.5816, 186.0614)
+    age_f <~ normal(38.5816, 186.0614)
 
-education_f <~ categorical([0.1644, 0.2239, 0.0361, 0.3225, 0.0177, 0.0328, 0.0424, 0.0158, 0.0198, 0.0133, 0.0530, 0.0051, 0.0287, 0.0127, 0.0102, 0.0016])
+    education_f <~ categorical([0.1644, 0.2239, 0.0361, 0.3225, 0.0177, 0.0328, 0.0424, 0.0158, 0.0198, 0.0133, 0.0530, 0.0051, 0.0287, 0.0127, 0.0102, 0.0016])
 
-relationship_f <~ categorical([0.0481, 0.1557, 0.4051, 0.2551, 0.0301, 0.1059])
+    relationship_f <~ categorical([0.0481, 0.1557, 0.4051, 0.2551, 0.0301, 0.1059])
 
-capital_gain_f <~ normal(1077.6488, 54542539.1784)
+    capital_gain_f <~ normal(1077.6488, 54542539.1784)
 
-_ <~ observe_bool(age_f > 18.0)
 
-t_f <~ if relationship_f == 1:
-           if education_f == 1:
-               return 0.0
-           else:
-               if education_f == 2:
-                   return 1.0
+    t_f <~ if relationship_f == 1:
+               if education_f == 1:
+                   return 0.0
                else:
-                   if education_f == 3:
+                   if education_f == 2:
                        return 1.0
                    else:
-                       if education_f == 4:
+                       if education_f == 3:
                            return 1.0
                        else:
-                           if education_f == 5:
-                               return 0.0
+                           if education_f == 4:
+                               return 1.0
                            else:
-                               if education_f == 6:
+                               if education_f == 5:
                                    return 0.0
                                else:
-                                   if education_f == 7:
+                                   if education_f == 6:
                                        return 0.0
                                    else:
-                                       if education_f == 8:
-                                           return 1.0
+                                       if education_f == 7:
+                                           return 0.0
                                        else:
-                                           if education_f == 9:
+                                           if education_f == 8:
                                                return 1.0
                                            else:
-                                               if education_f == 10:
+                                               if education_f == 9:
                                                    return 1.0
                                                else:
-                                                   if education_f == 11:
-                                                       return 0.0
-                                                   else:
-                                                       if education_f == 12:
-                                                           return 1.0
-                                                       else:
-                                                           if education_f == 13:
-                                                               return 1.0
-                                                           else:
-                                                               if education_f == 14:
-                                                                   return 0.0
-                                                               else:
-                                                                   if education_f == 15:
-                                                                       return 1.0
-                                                                   else:
-                                                                       return 1.0
-       else:
-           if relationship_f == 2:
-               if capital_gain_f < 4718.5:
-                   return 1.0
-               else:
-                   return 0.0
-           else:
-               if relationship_f == 3:
-                   if education_f == 1:
-                       return 0.0
-                   else:
-                       if education_f == 2:
-                           return 1.0
-                       else:
-                           if education_f == 3:
-                               return 1.0
-                           else:
-                               if education_f == 4:
-                                   return 1.0
-                               else:
-                                   if education_f == 5:
-                                       return 0.0
-                                   else:
-                                       if education_f == 6:
-                                           return 1.0
-                                       else:
-                                           if education_f == 7:
-                                               return 1.0
-                                           else:
-                                               if education_f == 8:
-                                                   return 1.0
-                                               else:
-                                                   if education_f == 9:
+                                                   if education_f == 10:
                                                        return 1.0
                                                    else:
-                                                       if education_f == 10:
-                                                           return 1.0
+                                                       if education_f == 11:
+                                                           return 0.0
                                                        else:
-                                                           if education_f == 11:
-                                                               return 0.0
+                                                           if education_f == 12:
+                                                               return 1.0
                                                            else:
-                                                               if education_f == 12:
+                                                               if education_f == 13:
                                                                    return 1.0
                                                                else:
-                                                                   if education_f == 13:
-                                                                       return 1.0
+                                                                   if education_f == 14:
+                                                                       return 0.0
                                                                    else:
-                                                                       if education_f == 14:
-                                                                           return 0.0
+                                                                       if education_f == 15:
+                                                                           return 1.0
                                                                        else:
-                                                                           if education_f == 15:
-                                                                               return 1.0
-                                                                           else:
-                                                                               return 1.0
-               else:
-                   if relationship_f == 4:
-                       if capital_gain_f < 8296.0:
-                           return 1.0
-                       else:
-                           return 0.0
-                   else:
-                       if relationship_f == 5:
-                           return 1.0
-                       else:
-                           if capital_gain_f < 4668.5:
-                               return 1.0
-                           else:
-                               return 0.0
-
-sex_m <~ categorical([0.3307, 0.6693])
-
-_ <~ observe_bool(sex_m >= 1)
-
-age_m <~ normal(38.5816, 186.0614)
-
-education_m <~ categorical([0.1644, 0.2239, 0.0361, 0.3225, 0.0177, 0.0328, 0.0424, 0.0158, 0.0198, 0.0133, 0.0530, 0.0051, 0.0287, 0.0127, 0.0102, 0.0016])
-
-relationship_m <~ categorical([0.0481, 0.1557, 0.4051, 0.2551, 0.0301, 0.1059])
-
-capital_gain_m <~ normal(1077.6488, 54542539.1784)
-
-_ <~ observe_bool(age_m > 18.0)
-
-t_m <~ if relationship_m == 1:
-           if education_m == 1:
-               return 0.0
+                                                                           return 1.0
            else:
-               if education_m == 2:
-                   return 1.0
-               else:
-                   if education_m == 3:
+               if relationship_f == 2:
+                   if capital_gain_f < 4718.5:
                        return 1.0
                    else:
-                       if education_m == 4:
-                           return 1.0
-                       else:
-                           if education_m == 5:
-                               return 0.0
-                           else:
-                               if education_m == 6:
-                                   return 0.0
-                               else:
-                                   if education_m == 7:
-                                       return 0.0
-                                   else:
-                                       if education_m == 8:
-                                           return 1.0
-                                       else:
-                                           if education_m == 9:
-                                               return 1.0
-                                           else:
-                                               if education_m == 10:
-                                                   return 1.0
-                                               else:
-                                                   if education_m == 11:
-                                                       return 0.0
-                                                   else:
-                                                       if education_m == 12:
-                                                           return 1.0
-                                                       else:
-                                                           if education_m == 13:
-                                                               return 1.0
-                                                           else:
-                                                               if education_m == 14:
-                                                                   return 0.0
-                                                               else:
-                                                                   if education_m == 15:
-                                                                       return 1.0
-                                                                   else:
-                                                                       return 1.0
-       else:
-           if relationship_m == 2:
-               if capital_gain_m < 4718.5:
-                   return 1.0
-               else:
-                   return 0.0
-           else:
-               if relationship_m == 3:
-                   if education_m == 1:
                        return 0.0
-                   else:
-                       if education_m == 2:
-                           return 1.0
+               else:
+                   if relationship_f == 3:
+                       if education_f == 1:
+                           return 0.0
                        else:
-                           if education_m == 3:
+                           if education_f == 2:
                                return 1.0
                            else:
-                               if education_m == 4:
+                               if education_f == 3:
                                    return 1.0
                                else:
-                                   if education_m == 5:
-                                       return 0.0
+                                   if education_f == 4:
+                                       return 1.0
                                    else:
-                                       if education_m == 6:
-                                           return 1.0
+                                       if education_f == 5:
+                                           return 0.0
                                        else:
-                                           if education_m == 7:
+                                           if education_f == 6:
                                                return 1.0
                                            else:
-                                               if education_m == 8:
+                                               if education_f == 7:
                                                    return 1.0
                                                else:
-                                                   if education_m == 9:
+                                                   if education_f == 8:
                                                        return 1.0
                                                    else:
-                                                       if education_m == 10:
+                                                       if education_f == 9:
                                                            return 1.0
                                                        else:
-                                                           if education_m == 11:
-                                                               return 0.0
+                                                           if education_f == 10:
+                                                               return 1.0
                                                            else:
-                                                               if education_m == 12:
-                                                                   return 1.0
+                                                               if education_f == 11:
+                                                                   return 0.0
                                                                else:
-                                                                   if education_m == 13:
+                                                                   if education_f == 12:
                                                                        return 1.0
                                                                    else:
-                                                                       if education_m == 14:
-                                                                           return 0.0
+                                                                       if education_f == 13:
+                                                                           return 1.0
                                                                        else:
-                                                                           if education_m == 15:
-                                                                               return 1.0
+                                                                           if education_f == 14:
+                                                                               return 0.0
                                                                            else:
-                                                                               return 1.0
-               else:
-                   if relationship_m == 4:
-                       if capital_gain_m < 8296.0:
-                           return 1.0
-                       else:
-                           return 0.0
+                                                                               if education_f == 15:
+                                                                                   return 1.0
+                                                                               else:
+                                                                                   return 1.0
                    else:
-                       if relationship_m == 5:
-                           return 1.0
-                       else:
-                           if capital_gain_m < 4668.5:
+                       if relationship_f == 4:
+                           if capital_gain_f < 8296.0:
                                return 1.0
                            else:
                                return 0.0
+                       else:
+                           if relationship_f == 5:
+                               return 1.0
+                           else:
+                               if capital_gain_f < 4668.5:
+                                   return 1.0
+                               else:
+                                   return 0.0
 
-return (t_f >= 1.0, t_m >= 1.0)
+    sex_m <~ categorical([0.3307, 0.6693])
+
+
+    age_m <~ normal(38.5816, 186.0614)
+
+    education_m <~ categorical([0.1644, 0.2239, 0.0361, 0.3225, 0.0177, 0.0328, 0.0424, 0.0158, 0.0198, 0.0133, 0.0530, 0.0051, 0.0287, 0.0127, 0.0102, 0.0016])
+
+    relationship_m <~ categorical([0.0481, 0.1557, 0.4051, 0.2551, 0.0301, 0.1059])
+
+    capital_gain_m <~ normal(1077.6488, 54542539.1784)
+
+
+    t_m <~ if relationship_m == 1:
+               if education_m == 1:
+                   return 0.0
+               else:
+                   if education_m == 2:
+                       return 1.0
+                   else:
+                       if education_m == 3:
+                           return 1.0
+                       else:
+                           if education_m == 4:
+                               return 1.0
+                           else:
+                               if education_m == 5:
+                                   return 0.0
+                               else:
+                                   if education_m == 6:
+                                       return 0.0
+                                   else:
+                                       if education_m == 7:
+                                           return 0.0
+                                       else:
+                                           if education_m == 8:
+                                               return 1.0
+                                           else:
+                                               if education_m == 9:
+                                                   return 1.0
+                                               else:
+                                                   if education_m == 10:
+                                                       return 1.0
+                                                   else:
+                                                       if education_m == 11:
+                                                           return 0.0
+                                                       else:
+                                                           if education_m == 12:
+                                                               return 1.0
+                                                           else:
+                                                               if education_m == 13:
+                                                                   return 1.0
+                                                               else:
+                                                                   if education_m == 14:
+                                                                       return 0.0
+                                                                   else:
+                                                                       if education_m == 15:
+                                                                           return 1.0
+                                                                       else:
+                                                                           return 1.0
+           else:
+               if relationship_m == 2:
+                   if capital_gain_m < 4718.5:
+                       return 1.0
+                   else:
+                       return 0.0
+               else:
+                   if relationship_m == 3:
+                       if education_m == 1:
+                           return 0.0
+                       else:
+                           if education_m == 2:
+                               return 1.0
+                           else:
+                               if education_m == 3:
+                                   return 1.0
+                               else:
+                                   if education_m == 4:
+                                       return 1.0
+                                   else:
+                                       if education_m == 5:
+                                           return 0.0
+                                       else:
+                                           if education_m == 6:
+                                               return 1.0
+                                           else:
+                                               if education_m == 7:
+                                                   return 1.0
+                                               else:
+                                                   if education_m == 8:
+                                                       return 1.0
+                                                   else:
+                                                       if education_m == 9:
+                                                           return 1.0
+                                                       else:
+                                                           if education_m == 10:
+                                                               return 1.0
+                                                           else:
+                                                               if education_m == 11:
+                                                                   return 0.0
+                                                               else:
+                                                                   if education_m == 12:
+                                                                       return 1.0
+                                                                   else:
+                                                                       if education_m == 13:
+                                                                           return 1.0
+                                                                       else:
+                                                                           if education_m == 14:
+                                                                               return 0.0
+                                                                           else:
+                                                                               if education_m == 15:
+                                                                                   return 1.0
+                                                                               else:
+                                                                                   return 1.0
+                   else:
+                       if relationship_m == 4:
+                           if capital_gain_m < 8296.0:
+                               return 1.0
+                           else:
+                               return 0.0
+                       else:
+                           if relationship_m == 5:
+                               return 1.0
+                           else:
+                               if capital_gain_m < 4668.5:
+                                   return 1.0
+                               else:
+                                   return 0.0
+
+    _ <~ observe_bool(age_f > 18.0)
+    _ <~ observe_bool(age_m > 18.0)
+
+    return ((sex_f, sex_m), (t_f >= 1.0, t_m >= 1.0))
+  )
+
+posterior((0, 1))

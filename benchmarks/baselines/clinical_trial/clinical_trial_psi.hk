@@ -1,96 +1,85 @@
-def prob_not(p prob) prob:
-    real2prob(1 - prob2real(p))
+posterior =
+  disint(
+    def prob_not(p prob) prob:
+        real2prob(1 - prob2real(p))
 
-def bern(p prob):
-    i <~ categorical([p, prob_not(p)])
-    return [true, false][i]
+    def bern(p prob):
+        i <~ categorical([p, prob_not(p)])
+        return [true, false][i]
 
-def observe_bool(b bool):
-    if b:
-        weight(1, return ())
-    else:
-        weight(0, return ())
-
-def observe_eq(actual bool, expected bool):
-    if expected:
-        observe_bool(actual)
-    else:
-        if actual:
-            weight(0, return ())
-        else:
+    def observe_bool(b bool):
+        if b:
             weight(1, return ())
+        else:
+            weight(0, return ())
 
-def draw_control(isEffective bool, probControl prob, probAll prob):
-    if isEffective:
-        bern(probControl)
-    else:
-        bern(probAll)
+    def observe_eq(actual bool, expected bool):
+        if expected:
+            observe_bool(actual)
+        else:
+            if actual:
+                weight(0, return ())
+            else:
+                weight(1, return ())
 
-def draw_treated(isEffective bool, probTreated prob, probAll prob):
-    if isEffective:
-        bern(probTreated)
-    else:
-        bern(probAll)
+    def draw_control(isEffective bool, probControl prob, probAll prob):
+        if isEffective:
+            bern(probControl)
+        else:
+            bern(probAll)
 
-n = 10
+    def draw_treated(isEffective bool, probTreated prob, probAll prob):
+        if isEffective:
+            bern(probTreated)
+        else:
+            bern(probAll)
 
-dataControlGroup = [false, false, true, true, true,
-                    false, true, true, false, false]
-dataTreatedGroup = [false, true, false, false, true,
-                    true, true, true, true, true]
+    n = 10
 
-isEffective <~ bern(1/2)
-probControl <~ beta(1, 1)
-probTreated <~ beta(1, 1)
-probAll <~ beta(1, 1)
+    dataControlGroup = [false, false, true, true, true,
+                        false, true, true, false, false]
+    dataTreatedGroup = [false, true, false, false, true,
+                        true, true, true, true, true]
 
-controlGroup_0 <~ draw_control(isEffective, probControl, probAll)
-controlGroup_1 <~ draw_control(isEffective, probControl, probAll)
-controlGroup_2 <~ draw_control(isEffective, probControl, probAll)
-controlGroup_3 <~ draw_control(isEffective, probControl, probAll)
-controlGroup_4 <~ draw_control(isEffective, probControl, probAll)
-controlGroup_5 <~ draw_control(isEffective, probControl, probAll)
-controlGroup_6 <~ draw_control(isEffective, probControl, probAll)
-controlGroup_7 <~ draw_control(isEffective, probControl, probAll)
-controlGroup_8 <~ draw_control(isEffective, probControl, probAll)
-controlGroup_9 <~ draw_control(isEffective, probControl, probAll)
-controlGroup = [controlGroup_0, controlGroup_1, controlGroup_2, controlGroup_3,
-                controlGroup_4, controlGroup_5, controlGroup_6, controlGroup_7,
-                controlGroup_8, controlGroup_9]
+    isEffective <~ bern(1/2)
+    probControl <~ beta(1, 1)
+    probTreated <~ beta(1, 1)
+    probAll <~ beta(1, 1)
 
-treatedGroup_0 <~ draw_treated(isEffective, probTreated, probAll)
-treatedGroup_1 <~ draw_treated(isEffective, probTreated, probAll)
-treatedGroup_2 <~ draw_treated(isEffective, probTreated, probAll)
-treatedGroup_3 <~ draw_treated(isEffective, probTreated, probAll)
-treatedGroup_4 <~ draw_treated(isEffective, probTreated, probAll)
-treatedGroup_5 <~ draw_treated(isEffective, probTreated, probAll)
-treatedGroup_6 <~ draw_treated(isEffective, probTreated, probAll)
-treatedGroup_7 <~ draw_treated(isEffective, probTreated, probAll)
-treatedGroup_8 <~ draw_treated(isEffective, probTreated, probAll)
-treatedGroup_9 <~ draw_treated(isEffective, probTreated, probAll)
-treatedGroup = [treatedGroup_0, treatedGroup_1, treatedGroup_2, treatedGroup_3,
-                treatedGroup_4, treatedGroup_5, treatedGroup_6, treatedGroup_7,
-                treatedGroup_8, treatedGroup_9]
+    controlGroup_0 <~ draw_control(isEffective, probControl, probAll)
+    controlGroup_1 <~ draw_control(isEffective, probControl, probAll)
+    controlGroup_2 <~ draw_control(isEffective, probControl, probAll)
+    controlGroup_3 <~ draw_control(isEffective, probControl, probAll)
+    controlGroup_4 <~ draw_control(isEffective, probControl, probAll)
+    controlGroup_5 <~ draw_control(isEffective, probControl, probAll)
+    controlGroup_6 <~ draw_control(isEffective, probControl, probAll)
+    controlGroup_7 <~ draw_control(isEffective, probControl, probAll)
+    controlGroup_8 <~ draw_control(isEffective, probControl, probAll)
+    controlGroup_9 <~ draw_control(isEffective, probControl, probAll)
+    controlGroup = [controlGroup_0, controlGroup_1, controlGroup_2, controlGroup_3,
+                    controlGroup_4, controlGroup_5, controlGroup_6, controlGroup_7,
+                    controlGroup_8, controlGroup_9]
 
-_ <~ observe_eq(controlGroup[0], dataControlGroup[0])
-_ <~ observe_eq(treatedGroup[0], dataTreatedGroup[0])
-_ <~ observe_eq(controlGroup[1], dataControlGroup[1])
-_ <~ observe_eq(treatedGroup[1], dataTreatedGroup[1])
-_ <~ observe_eq(controlGroup[2], dataControlGroup[2])
-_ <~ observe_eq(treatedGroup[2], dataTreatedGroup[2])
-_ <~ observe_eq(controlGroup[3], dataControlGroup[3])
-_ <~ observe_eq(treatedGroup[3], dataTreatedGroup[3])
-_ <~ observe_eq(controlGroup[4], dataControlGroup[4])
-_ <~ observe_eq(treatedGroup[4], dataTreatedGroup[4])
-_ <~ observe_eq(controlGroup[5], dataControlGroup[5])
-_ <~ observe_eq(treatedGroup[5], dataTreatedGroup[5])
-_ <~ observe_eq(controlGroup[6], dataControlGroup[6])
-_ <~ observe_eq(treatedGroup[6], dataTreatedGroup[6])
-_ <~ observe_eq(controlGroup[7], dataControlGroup[7])
-_ <~ observe_eq(treatedGroup[7], dataTreatedGroup[7])
-_ <~ observe_eq(controlGroup[8], dataControlGroup[8])
-_ <~ observe_eq(treatedGroup[8], dataTreatedGroup[8])
-_ <~ observe_eq(controlGroup[9], dataControlGroup[9])
-_ <~ observe_eq(treatedGroup[9], dataTreatedGroup[9])
+    treatedGroup_0 <~ draw_treated(isEffective, probTreated, probAll)
+    treatedGroup_1 <~ draw_treated(isEffective, probTreated, probAll)
+    treatedGroup_2 <~ draw_treated(isEffective, probTreated, probAll)
+    treatedGroup_3 <~ draw_treated(isEffective, probTreated, probAll)
+    treatedGroup_4 <~ draw_treated(isEffective, probTreated, probAll)
+    treatedGroup_5 <~ draw_treated(isEffective, probTreated, probAll)
+    treatedGroup_6 <~ draw_treated(isEffective, probTreated, probAll)
+    treatedGroup_7 <~ draw_treated(isEffective, probTreated, probAll)
+    treatedGroup_8 <~ draw_treated(isEffective, probTreated, probAll)
+    treatedGroup_9 <~ draw_treated(isEffective, probTreated, probAll)
+    treatedGroup = [treatedGroup_0, treatedGroup_1, treatedGroup_2, treatedGroup_3,
+                    treatedGroup_4, treatedGroup_5, treatedGroup_6, treatedGroup_7,
+                    treatedGroup_8, treatedGroup_9]
 
-return ((), isEffective)
+    return (
+        ((controlGroup[0], (controlGroup[1], (controlGroup[2], (controlGroup[3], (controlGroup[4], (controlGroup[5], (controlGroup[6], (controlGroup[7], (controlGroup[8], controlGroup[9]))))))))),
+         (treatedGroup[0], (treatedGroup[1], (treatedGroup[2], (treatedGroup[3], (treatedGroup[4], (treatedGroup[5], (treatedGroup[6], (treatedGroup[7], (treatedGroup[8], treatedGroup[9])))))))))),
+        isEffective
+    )
+  )
+
+posterior(((false, (false, (true, (true, (true, (false, (true, (true, (false, false))))))))),
+           (false, (true, (false, (false, (true, (true, (true, (true, (true, true)))))))))))
