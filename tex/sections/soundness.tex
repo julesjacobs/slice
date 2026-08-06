@@ -13,6 +13,8 @@ this source fragment, those comparisons are finite strict comparison and finite
 equality.  The
 small-step tables are exhaustive for $Expr^{\mathsf U+}_\tau$; constructs in the
 full implementation outside this fragment are not covered by the theorem below.
+Write $Vals^{\mathsf U}_\tau$ and $Vals^{\mathsf U+}_\tau$ for the values in
+$Expr^{\mathsf U}_\tau$ and $Expr^{\mathsf U+}_\tau$, respectively.
 We establish the following claim: For every $e:\bool$ in
 $Expr^{\mathsf U}_\bool$,
 %
@@ -30,7 +32,7 @@ The first step is to make formal sense of semantic equivalence. For that, we wil
 The type-directedness of our discretization function $\discretize{\cdot}$ requires our soundness argument to depend on the types of the given (sub-)expressions as well. We thus start by defining a \emph{type-dependent semantic functional}, i.e., we define for every type $\tau$ a function 
 %
 $
-	\bigsem{\cdot}\colon Expr^{\mathsf U+}_\tau \to \mathcal{D}(Vals_\tau + \bot)~,
+	\bigsem{\cdot}\colon Expr^{\mathsf U+}_\tau \to \mathcal{D}(Vals^{\mathsf U+}_\tau + \bot)~,
 $
 %
 mapping each \emph{fully type-annotated} expression $e:\tau$ in the operational
@@ -74,7 +76,7 @@ gives rise to the skeleton
 	: \bool
 \]
 %
-and the type annotations tell us that the possible values these holes can be filled with are in $\Reals \times \{3.5,4.5 \}$. We can thus inherit a measurable space over all well-typed expressions arising from this particular skeleton $s$ from the standard Borel measurable space over $\Reals \times \{3.5,4.5 \}$. The measurable space over \emph{all} well-typed expressions of type $\bool$ (i.e., over $Expr_\bool$) is then obtained from the measurable spaces of \emph{all} skeletons that give rise to expressions of type $\bool$.
+and the type annotations tell us that the possible values these holes can be filled with are in $\Reals \times \{3.5,4.5 \}$. We can thus inherit a measurable space over all well-typed expressions arising from this particular skeleton $s$ from the standard Borel measurable space over $\Reals \times \{3.5,4.5 \}$. The measurable space over the well-typed operationally closed expressions of type $\bool$ (i.e., over $Expr^{\mathsf U+}_\bool$) is then obtained from the measurable spaces of the skeletons that give rise to expressions in $Expr^{\mathsf U+}_\bool$.
 
 Equipped with this family of measurable spaces, we define the small-step functional $\sem{\cdot}$ in the expected, type-preserving manner (cf.\ \Cref{tab:smallstep-1,tab:smallstep-2}). For instance, if $e_1$ is not a value, then\footnote{Put formally, $(\mu \gg\!= f)(A) = \int f(x)(A) \cdot \mu(dx)$, see \Cref{def:dist-monad} for details. $\dirac{e}$ denotes the Dirac distribution of $e$.}
 %
@@ -111,13 +113,13 @@ We now define $\bigsem{\cdot}$ via $\sem{\cdot}$. For that, we first lift the on
 		\end{cases} 
 \end{align*}
 %
-This construction is well-defined since the functional $\sem{\cdot}$ itself gives rise to a suitable Markov kernel (\Cref{lem:small-step-kernel}). We then define for every type $\tau$ the functional $\bigsem{\cdot}\colon Expr_\tau \to \mathcal{D}(Vals_\tau + \bot)$ as 
+This construction is well-defined since the functional $\sem{\cdot}$ itself gives rise to a suitable Markov kernel (\Cref{lem:small-step-kernel}). We then define for every type $\tau$ the functional $\bigsem{\cdot}\colon Expr^{\mathsf U+}_\tau \to \mathcal{D}(Vals^{\mathsf U+}_\tau + \bot)$ as
 %
 $
 	\bigsem{e:\tau} = \lambda A. \lim_{n\to\infty} \bigsemstep{e:\tau}{n}(A)~,
 $
 % 
-which is well-defined by the monotone convergence theorem: the sequence $(\bigsemstep{e : \tau}{n})_{n\in\Nats}$ is monotonically increasing for every measurable set $A$ over $Vals_\tau + \bot$ (cf.\ \Cref{lem:bigstepsem}) and upper-bounded by $1$: executing a program for more and more steps can only increase the probability of terminating in a given set of values or an observation failure.
+which is well-defined by the monotone convergence theorem: the sequence $(\bigsemstep{e : \tau}{n})_{n\in\Nats}$ is monotonically increasing for every measurable set $A$ over $Vals^{\mathsf U+}_\tau + \bot$ (cf.\ \Cref{lem:bigstepsem}) and upper-bounded by $1$: executing a program for more and more steps can only increase the probability of terminating in a given set of values or an observation failure.
 
 %
 %\kbin{old}
@@ -168,7 +170,7 @@ Given $\mu \in \mathcal{D}(P_\tau + \bot)$, we define the \emph{projection of $\
 With projections, we recover the semantics of $e$ and $\discretize{e:\tau}$ as follows:
 \begin{lemma}
 	\label{lem:maintext:small_step_coupling_props}
-	Let $e:\tau$. We have:
+	Let $e:\tau\in Expr^{\mathsf U}_\tau$. We have:
 	%
 	\begin{enumerate}
 		\item\label{lem:maintext:small_step_coupling_props1} 
@@ -183,7 +185,7 @@ With projections, we recover the semantics of $e$ and $\discretize{e:\tau}$ as f
 %	By induction on the typing derivation of $e:\tau$. See \Cref{lem:small_step_coupling_props}.
 %\end{proof}
 
-Now, using a limit construction analogous to \Cref{sec:smallsem_to_bigsem} for obtaining a coupled \emph{big-step} semantics $\bigsem{\cdot,\cdot} \colon P_\tau \to \mathcal{D}(V_\tau + \bot)$, where $V_\tau = \{ (v:\tau, \discretize{v} : \discretize{\tau}) ~|~ v:\tau~\text{is a value} \}$, we prove a suitable continuity property of projection (cf.\ \Cref{lem:proj_cont}) to conclude that \Cref{lem:maintext:small_step_coupling_props} transfers to $\bigsem{\cdot,\cdot}$. Finally, observing that $V_\bool + \bot = \{(\true,\true), (\false,\false), \bot\}$ yields the desired claim:
+Now, using a limit construction analogous to \Cref{sec:smallsem_to_bigsem} for obtaining a coupled \emph{big-step} semantics $\bigsem{\cdot,\cdot} \colon P_\tau \to \mathcal{D}(V_\tau + \bot)$, where $V_\tau = \{ (v:\tau, \discretize{v} : \discretize{\tau}) ~|~ v:\tau\in Vals^{\mathsf U}_\tau \}$, we prove a suitable continuity property of projection (cf.\ \Cref{lem:proj_cont}) to conclude that \Cref{lem:maintext:small_step_coupling_props} transfers to $\bigsem{\cdot,\cdot}$. Finally, observing that $V_\bool + \bot = \{(\true,\true), (\false,\false), \bot\}$ yields the desired claim:
 
 %\noindent
 \emph{Proof of \Cref{thm:maintext:sound}}. Let $v \in \{\true,\false,\bot\}$. We have

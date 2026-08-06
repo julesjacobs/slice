@@ -132,23 +132,21 @@
 			$\mathbf{e \boldsymbol{:} \boldsymbol{\tau}}$ & \textbf{constraints}  & $\boldsymbol{\sem{e : \tau}}$   \\
 			\hline 
 			% --- logical and ---
-			\multirow{4}{*}{\makecell{$e_1 : \tau_1 \logand e_2 : \tau_2 : \bool$ \\
+			\multirow{3}{*}{\makecell{$e_1 : \tau_1 \logand e_2 : \tau_2 : \bool$ \\
 			$\tau_1 = \bool, \tau_2 = \bool$}} 
 			
 			& $e_1 = \false$ & $\dirac{\false : \bool}$ \\
-			& $e_1 = \true, e_2=b_2$ & $\dirac{b_2 : \bool}$  \\
-			&$e_1 = \true, e_2$ no val. & $\sem{ e_2 : \tau_2 }$ \\
+			& $e_1 = \true$ & $\dirac{e_2 : \bool}$  \\
 			& o.w.\ & $\sem{ e_1 : \tau_1 } \gg\!= \lambda g. \dirac{ g \logand e_2 : \tau_2 : \bool}$  \\
 			%
 			\midrule
 			%
 			% --- logical or ---
-			\multirow{4}{*}{\makecell{$e_1 : \tau_1 \logor e_2 : \tau_2 : \bool$ \\
+			\multirow{3}{*}{\makecell{$e_1 : \tau_1 \logor e_2 : \tau_2 : \bool$ \\
 			$\tau_1 = \bool, \tau_2 = \bool$}} 
 			
 			& $e_1 = \true$ & $\dirac{\true : \bool}$ \\
-			& $e_1 = \false, e_2=b_2$ & $\dirac{b_2 : \bool}$  \\
-			&$e_1 = \false, e_2$ no val. & $\sem{ e_2 : \tau_2 }$ \\
+			& $e_1 = \false$ & $\dirac{e_2 : \bool}$  \\
 			& o.w.\ & $\sem{ e_1 : \tau_1 } \gg\!= \lambda g. \dirac{ g \logor e_2 : \tau_2 : \bool}$  \\
 			%
 			\midrule

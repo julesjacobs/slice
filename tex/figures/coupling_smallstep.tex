@@ -148,12 +148,11 @@
 			\hline
 			%
 			% --- logical and ---
-			\multirow{4}{*}{\makecell{$e_1 : \tau_1 \logand e_2 : \tau_2 : \bool$ \\
+			\multirow{3}{*}{\makecell{$e_1 : \tau_1 \logand e_2 : \tau_2 : \bool$ \\
 			$\tau_1 = \bool, \tau_2 = \bool$}}
 			& $e_1 = \false$ & $\dirac{(\false : \bool, \false : \bool)}$ \\
-			& $e_1 = \true,\, e_2=b_2$ & $\dirac{(b_2 : \bool,b_2 : \bool)}$ \\
-			& $e_1 = \true,\, e_2$ no val. &
-			$\sem{ e_2 : \bool, \discretize{e_2 : \bool} : \bool}$ \\
+			& $e_1 = \true$ &
+			$\dirac{(e_2 : \bool, \discretize{e_2 : \bool} : \bool)}$ \\
 			& o.w.\ &
 			\makecell[l]{$\sem{ e_1 : \tau_1, \discretize{e_1 : \tau_1} : \discretize{\tau_1}}$ \\
 			$\gg\!= \lambda (g,g'). \dirac{( g\logand e_2 : \tau_2 : \bool,\; g' \logand \discretize{e_2 : \tau_2} : \discretize{\tau_2} : \discretize{\bool})}$} \\
@@ -161,12 +160,11 @@
 			\midrule
 			%
 			% --- logical or ---
-			\multirow{4}{*}{\makecell{$e_1 : \tau_1 \logor e_2 : \tau_2 : \bool$ \\
+			\multirow{3}{*}{\makecell{$e_1 : \tau_1 \logor e_2 : \tau_2 : \bool$ \\
 			$\tau_1 = \bool, \tau_2 = \bool$}}
 			& $e_1 = \true$ & $\dirac{(\true : \bool, \true : \bool)}$ \\
-			& $e_1 = \false,\, e_2=b_2$ & $\dirac{(b_2 : \bool,b_2 : \bool)}$ \\
-			& $e_1 = \false,\, e_2$ no val. &
-			$\sem{ e_2 : \bool, \discretize{e_2 : \bool} : \bool}$ \\
+			& $e_1 = \false$ &
+			$\dirac{(e_2 : \bool, \discretize{e_2 : \bool} : \bool)}$ \\
 			& o.w.\ &
 			\makecell[l]{$\sem{ e_1 : \tau_1, \discretize{e_1 : \tau_1} : \discretize{\tau_1}}$ \\
 			$\gg\!= \lambda (g,g'). \dirac{( g\logor e_2 : \tau_2 : \bool,\; g' \logor \discretize{e_2 : \tau_2} : \discretize{\tau_2} : \discretize{\bool})}$} \\
