@@ -194,13 +194,13 @@ Rule \textsc{Float-Const} assigns a constant $c$ the type $\float[B; V]$ wheneve
 \paragraph{Continuous distributions.} Rule \textsc{Continuous-1} types a single-argument distribution when its argument $e$ has type $\float[B; V]$ and $\distinguishes{B}{V}$:
 \begin{definition}
 	\label{def:distinguishes}
-		Let $B\in \cutsets$ and $V\in\valsets$. We say that \emph{$\distinguishes{B}{V}$} if $B = \top$ or ($V \neq \top$ and every interval $I$ induced by $B$ contains at most one value in $V$, i.e., $
-	\forall I \in \intervals{B}\colon | V \cap I|  \leq 1
+		Let $B\in \cutsets$ and $V\in\valsets$. We say that \emph{$\distinguishes{B}{V}$} if $B = \top$ or ($V \notin \{\emptyset,\top\}$ and every interval $I$ induced by $B$ contains at most one value in $V$, i.e., $
+		\forall I \in \intervals{B}\colon | V \cap I|  \leq 1
 	$).
 	%$B$ distinguishes $V$ if every interval in $B$ contains at most one value in $V$, or $B = \top$.
 \end{definition}
 %
-Intuitively, $\distinguishes{B}{V}$ means that the discretization induced by $B$ is lossless on $V$: from the resulting interval index, the original value in $V$ can be uniquely recovered. For example, $\exponential(e)$ can be discretized only when $e$ takes finitely many recoverable values. Thus $V$ must be finite and $B$ must separate those values so the discretized program can determine which one occurred. \Cref{sec:discretization} revisits this invariant. The rule for two-argument distributions is analogous. 
+Intuitively, $\distinguishes{B}{V}$ means that the discretization induced by $B$ is lossless on $V$: from the resulting interval index, the original value in $V$ can be uniquely recovered. For example, $\exponential(e)$ can be discretized only when $e$ takes a nonempty finite set of recoverable values. Thus, when $B\neq\top$, $V$ must be finite and nonempty, and $B$ must separate those values so the discretized program can determine which one occurred. The nonemptiness condition ensures that the distribution-dispatch transformation has at least one case. \Cref{sec:discretization} revisits this invariant. The rule for two-argument distributions is analogous.
 %inte-cut
 % The following observations will be useful in the sequel:
 % \begin{theorem}\label{thm:distinguishes-singleton}

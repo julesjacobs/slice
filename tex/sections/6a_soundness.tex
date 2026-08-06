@@ -891,7 +891,7 @@ Let $X$ be a set equipped with a suitable measurable space so that $\mathcal{D}(
 \label{app:small-step}
 \input{figures/sem_smallstep}
 
-Throughout this section, we denote by $e :\tau$ a well-typed expression of type $\tau$ and implicitly assume that all sub-expressions are annotated with types, as well. Moreover, for the typed expression $ e: \tau = \uniform(e_1 : \float[B_1; V_1], e_2 :\float[B_2;V_2]) : \float[B,V]$ with $B,B_1,B_2 \neq \top$ and $V_1,V_2\neq\top$, we introduce an auxiliary statement $\dc$ and let 
+Throughout this section, we denote by $e :\tau$ a well-typed expression of type $\tau$ and implicitly assume that all sub-expressions are annotated with types, as well. Moreover, for the typed expression $ e: \tau = \uniform(e_1 : \float[B_1; V_1], e_2 :\float[B_2;V_2]) : \float[B,V]$ with $B,B_1,B_2 \neq \top$ and $V_1,V_2\notin\{\emptyset,\top\}$, we introduce an auxiliary statement $\dc$ and let
 %
 \[
 	\discretize{ e: \tau} = \dc(\discretize{e_1 : \float[B_1; V_1]}, \discretize{e_2 :\float[B_2;V_2]})~.

@@ -82,8 +82,8 @@
             B \neq \top, \\
             B_1 \neq \top, \\
             B_2 \neq \top, \\
-            V_1 = \{v_1, \ldots, v_n\}, \\
-            V_2 = \{w_1, \ldots, w_m\}
+            V_1 = \{v_1, \ldots, v_n\},\ n \geq 1, \\
+            V_2 = \{w_1, \ldots, w_m\},\ m \geq 1
           \end{array}$
         & $\begin{array}{@{}l@{}}
             \letkw \; v_1' = \discretize{e_1 : \float[B_1; V_1]} \; \inkw \\
@@ -104,7 +104,9 @@
     \end{adjustbox}
     \caption{Discretization function, where $\mathrm{CDF}(b_{0}) = 0$ and $\mathrm{CDF}(b_{n+1}) = 1$.
         For the $\uniform$ distribution, $V = \top$ is implicit, and all remaining cut-set and value-set
-        cases are ruled out by the constraints enforced during type inference. For all other language
+        cases are ruled out by the constraints enforced during type inference. In particular,
+        recoverability ensures that the finite value sets enumerated by the last case are nonempty.
+        For all other language
         constructs, $\discretize{\cdot}$ recurses structurally over them.}
     \label{fig:discretization-code}
 \end{figure*}
