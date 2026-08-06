@@ -179,13 +179,35 @@ for all $A \in \mathcal{F}_Y$.
 % 	Then, $\pi_1(\mu)$ is a measure on $(X, \Sigma_X)$ and $\pi_2(\mu)$ is a measure on $(Y, \Sigma_Y)$.
 % \end{definition}
 
-\begin{definition}[Projection with error]
-	Let $(X + \bot, \Sigma_{X + \bot})$ and $(Y + \bot, \Sigma_{Y + \bot})$ be measurable spaces, with $(X, \Sigma_X)$ and $(Y, \Sigma_Y)$ measurable spaces as well. Let $\mu \in \mathcal{D}((X \times Y) + \bot)$. We define the first and second projection measures as:
-	\begin{enumerate}
-	\item $\pi_1(\mu)(A) := \mu(A \times Y)$ for every measurable $A \in \Sigma_X$, and $\pi_1(\mu)({\bot}) := \mu({\bot})$
-	\item $\pi_2(\mu)(B) := \mu(X \times B)$ for every measurable $B \in \Sigma_Y$, and $\pi_2(\mu)({\bot}) := \mu({\bot})$
-	\end{enumerate}
-	Then, $\pi_1(\mu)$ is a measure on $(X + \bot, \Sigma_{X + \bot})$ and $\pi_2(\mu)$ is a measure on $(Y + \bot, \Sigma_{Y + \bot})$.
+\begin{definition}[Projection with error]\label{def:projection-with-error}
+	Let $(X,\Sigma_X)$ and $(Y,\Sigma_Y)$ be measurable spaces. Equip
+	a subset $C\subseteq X\times Y$ with the trace $\sigma$-algebra inherited
+	from the product, and equip $X+\bot$, $Y+\bot$, and $C+\bot$ with their
+	error-extension $\sigma$-algebras. Define
+	\[
+		p_1,p_2:C+\bot\longrightarrow (X+\bot),(Y+\bot)
+	\]
+	by
+	\[
+		p_i(\bot)=\bot,\qquad p_1(x,y)=x,\qquad p_2(x,y)=y.
+	\]
+	Both maps are measurable. For example, for $A\in\Sigma_X$,
+	\[
+		p_1^{-1}(A)=C\cap(A\times Y),
+		\qquad
+		p_1^{-1}(A\cup\{\bot\})=
+		  (C\cap(A\times Y))\cup\{\bot\},
+	\]
+	and similarly for $p_2$. For $\mu\in\mathcal D(C+\bot)$,
+	define its projections as the pushforwards
+	\[
+		\pi_i(\mu):=(p_i)_*\mu,
+		\qquad
+		\pi_i(\mu)(C)=\mu(p_i^{-1}(C)).
+	\]
+	Thus $\pi_1(\mu)\in\mathcal D(X+\bot)$ and
+	$\pi_2(\mu)\in\mathcal D(Y+\bot)$. In particular, projection preserves
+	the mass at $\bot$.
 \end{definition}
 
 
@@ -551,17 +573,19 @@ This union is disjoint because every typed expression $e : \tau$ has a unique sk
 
 
 \begin{definition}[Extension with error element]\label{def:meas-space-with-error}
-	Let $(Expr_\tau,\mathcal F_{Expr_\tau})$ be the measurable space of well-typed
-	expressions of type $\tau$. Define
+	For any measurable space $(X,\Sigma_X)$ and a fresh element
+	$\bot\notin X$, define
 	\[
-	Expr_\tau + \bot := Expr_\tau \cup \{\bot\},
+	X + \bot := X \cup \{\bot\},
 	\]
 	equipped with the $\sigma$-algebra
 	\[
-	\mathcal F_{Expr_\tau+\bot}
+	\Sigma_{X+\bot}
 	:=
-	\{A,\; A\cup\{\bot\} \mid A\in \mathcal F_{Expr_\tau}\}.
+	\{A,\; A\cup\{\bot\} \mid A\in \Sigma_X\}.
 	\]
+	In particular, taking $X=Expr_\tau$ gives
+	$(Expr_\tau+\bot,\mathcal F_{Expr_\tau+\bot})$.
 \end{definition}
 
 \begin{lemma}\label{lem:measurable-expr-t-error}
@@ -1345,12 +1369,37 @@ The missing probability mass in $\sem{e :\tau}$ is the probability of encounteri
 \subsection{Small-Step Coupling Semantics}
 \input{figures/coupling_smallstep}
 
-%\kevin{todo: measurable space} 
-%\begin{definition}
-%	Let $\tau$ be a type, and let $P_\tau = \{ (e:\tau, \discretize{e} : \discretize{\tau}) ~|~ e:\tau \}$. Given a suitable measurable space, we denote by $\mathcal{D}(P_\tau + \bot)$ 
-%	the set of sub-probability measures over $P_\tau$. 
-%\end{definition}
-Define $P_\tau = \{ (e:\tau, \discretize{e:\tau} : \discretize{\tau}) ~|~ e:\tau \}$. Exploiting that $e:\tau$ is a value iff $\discretize{e} : \discretize{\tau}$ is a value, we define:
+\begin{definition}[Coupled expression space]\label{def:coupled-expression-space}
+	For each type $\tau$, define the coupled carrier to be the graph
+	\[
+		P_\tau :=
+		\{(e:\tau,\discretize{e:\tau}:\discretize\tau)\mid e:\tau\}
+		\subseteq Expr_\tau\times Expr_{\discretize\tau}
+	\]
+	and equip it with the trace $\sigma$-algebra inherited from the product:
+	\[
+		\mathcal F_{P_\tau}
+		:=\{P_\tau\cap A\mid
+		A\in\mathcal F_{Expr_\tau}\times
+		\mathcal F_{Expr_{\discretize\tau}}\}.
+	\]
+	Equip $P_\tau+\bot$ with the error-extension $\sigma$-algebra from
+	\Cref{def:meas-space-with-error}. Hence
+	$\mathcal D(P_\tau+\bot)$ is well-defined, and the maps
+	\[
+		p_1:P_\tau+\bot\to Expr_\tau+\bot,
+		\qquad
+		p_2:P_\tau+\bot\to Expr_{\discretize{\tau}}+\bot
+	\]
+	from \Cref{def:projection-with-error} are measurable.
+\end{definition}
+
+This trace construction does not require $P_\tau$ to be a measurable event in
+the ambient product and therefore does not silently assume measurability of the
+type-directed transformation. Each operational rule must nevertheless be shown
+to return a measure supported on $P_\tau$; in particular, residual rules that
+perform substitution require discretization to commute with substitution.
+With that separate closure obligation made explicit, we define:
 %
 \begin{definition}
 	The small-step coupling  $\sem{e :\tau, \discretize{e}: \discretize{\tau}} \in \mathcal{D}(P_{\tau} + \bot)$ is defined recursively on the structure of $e:\tau$ by the rules in \Cref{tab:coupling_smallstep_1,tab:coupling_smallstep_2}. 
@@ -1361,7 +1410,11 @@ Define $P_\tau = \{ (e:\tau, \discretize{e:\tau} : \discretize{\tau}) ~|~ e:\tau
 %Define $P_\tau = \{ (e:\tau, \discretize{e} : \discretize{\tau}) ~|~ e:\tau \}$.
 
 \begin{lemma}[Monadic bind is a Markov kernel]\label{lem:bind-kernel-coupling}
-	For every occurrence of a monadic bind $\mu \monbind (f,f')$ given in the small-step operational coupling semantics in~\Cref{tab:coupling_smallstep_1,tab:coupling_smallstep_2}, $(f,f') \colon (P_{\tau_1} + \bot) \to \mathcal{D}(P_{\tau_2} + \bot)$ is a Markov kernel.
+	For every occurrence of a monadic bind $\mu\monbind K_\bot$ given in the
+	small-step operational coupling semantics
+	in~\Cref{tab:coupling_smallstep_1,tab:coupling_smallstep_2}, the displayed
+	continuation $K:P_{\tau_1}\to\mathcal D(P_{\tau_2}+\bot)$ and its
+	$\bot$-extension have the indicated measurable source and target spaces.
 \end{lemma}
 
 \begin{proof}
@@ -1377,15 +1430,11 @@ Define $P_\tau = \{ (e:\tau, \discretize{e:\tau} : \discretize{\tau}) ~|~ e:\tau
 \end{proof}
 
 
-We now define suitable projection functions on measures $\mu \in \mathcal{D}(P_{\tau} + \bot)$ by 
-%
-\begin{align}
-	 \pi_1(\mu) &{}={} \mu \gg\!= \lambda(e_1,e_2). \delta_{e_1} \\
-	 %
-	 \pi_2(\mu) &{}={} \mu \gg\!= \lambda(e_1,e_2). \delta_{e_2}~.
-\end{align}
-%
-%
+For measures on $P_\tau+\bot$, we use the measurable projections from
+\Cref{def:projection-with-error}. Equivalently,
+$\pi_i(\mu)=\mu\monbind (\lambda z.\delta_{p_i(z)})$; unlike a pair-pattern
+lambda, this kernel is defined at $\bot$ and sends it to $\delta_\bot$.
+
 We have the following key property:
 %
 \begin{lemma}[Small-step coupling projection]
@@ -1546,48 +1595,63 @@ We have the following key property:
 
 \begin{lemma}
 	\label{lem:bind_project}
-	Let $F\colon P_\tau \to \mathcal{D}(P_\tau + \bot)$, let $G\colon Expr_\tau \to \mathcal{D}(Expr_\tau + \bot)$, and let $G' \colon Expr_{\discretize{\tau}} \to \mathcal{D}(Expr_{\discretize{\tau}} + \bot)$. We have:
+	Let $(X_1,\Sigma_{X_1})$, $(X_2,\Sigma_{X_2})$,
+	$(Y_1,\Sigma_{Y_1})$, and $(Y_2,\Sigma_{Y_2})$ be measurable spaces.
+	Let $C_X\subseteq X_1\times X_2$ and
+	$C_Y\subseteq Y_1\times Y_2$ carry their trace $\sigma$-algebras.
+	Let
+	\[
+		F:C_X\to\mathcal D(C_Y+\bot),
+		\qquad
+		G_i:X_i\to\mathcal D(Y_i+\bot)
+	\]
+	be kernels, and use their $\bot$-extensions in every bind below. We have:
 	%
 	\begin{enumerate}
-		\item\label{lem:bind_project1} If  $\forall (f,f') \in P_\tau\colon F(f,f') = G(f)$, then for all $\mu \in \mathcal{D}(P_\tau + \bot)$,
+		\item\label{lem:bind_project1} If
+		$\pi_1(F(x_1,x_2))=G_1(x_1)$ for every
+		$(x_1,x_2)\in C_X$, then for all
+		$\mu\in\mathcal D(C_X+\bot)$,
 		%
 		\[
-		\pi_1(\mu) \gg\!= \lambda f. G(f)
-		~{}={}~
-		\mu \gg\!= \lambda (f,f'). F(f,f')~.
+		\pi_1(\mu\monbind F_\bot)
+		=
+		\pi_1(\mu)\monbind (G_1)_\bot.
 		\]
 		%
 		%
-		\item\label{lem:bind_project2} If  $\forall (f,f') \in P_\tau\colon F(f,f') = G'(f)$, then for all $\mu \in \mathcal{D}(P_\tau + \bot)$,
+		\item\label{lem:bind_project2} If
+		$\pi_2(F(x_1,x_2))=G_2(x_2)$ for every
+		$(x_1,x_2)\in C_X$, then for all
+		$\mu\in\mathcal D(C_X+\bot)$,
 		%
 		\[
-		\pi_2(\mu) \gg\!= \lambda f. G'(f)
-		~{}={}~
-		\mu \gg\!= \lambda (f,f'). F(f,f')~.
+		\pi_2(\mu\monbind F_\bot)
+		=
+		\pi_2(\mu)\monbind (G_2)_\bot.
 		\]
 	\end{enumerate}
 \end{lemma}
 %
 %
 \begin{proof}
-	We only prove \Cref{lem:bind_project}.\ref{lem:bind_project1} because the reasoning for \Cref{lem:bind_project}.\ref{lem:bind_project2} is completely analogous. We have
+	We prove \Cref{lem:bind_project}.\ref{lem:bind_project1}; the second part is
+	analogous. Write $p_1^X$ and $p_1^Y$ for the error-preserving first
+	coordinate maps on $C_X+\bot$ and $C_Y+\bot$. For every measurable
+	$A\in\Sigma_{Y_1+\bot}$, the left-hand side evaluated at $A$ is
 	%
 	\begin{align*}
-		& \pi_1(\mu) \gg\!= \lambda f. G(f) \\
-		%
-		{}={}~& (\mu \gg\!= \lambda (f,f'). \delta_f) \gg\!= \lambda f. G(f) 
-		\tag{definition} \\
-		%
-		{}={}~& \mu \gg\!= \lambda (f,f'). (\delta_f \gg\!= \lambda f. G(f))
-		\tag{monad assoc.} \\
-		%
-		{}={}~& \mu \gg\!= \lambda (f,f'). G(f)
-		\tag{monad neutral} \\
-		%
-		{}={}~& \mu \gg\!= \lambda (f,f'). F(f,f')~.
-		\tag{assumption} 
+		\pi_1(\mu\monbind F_\bot)(A)
+		&=(\mu\monbind F_\bot)((p_1^Y)^{-1}(A)) \\
+		&=\int F_\bot(z)((p_1^Y)^{-1}(A))\,\mu(dz) \\
+		&=\int (G_1)_\bot(p_1^X(z))(A)\,\mu(dz) \\
+		&=\int (G_1)_\bot(x_1)(A)\,\pi_1(\mu)(dx_1) \\
+		&=(\pi_1(\mu)\monbind (G_1)_\bot)(A).
 	\end{align*}
-	%
+	The third equality uses the componentwise premise when $z\ne\bot$ and
+	the fact that both $F_\bot$ and $(G_1)_\bot\circ p_1^X$ send $\bot$ to
+	$\delta_\bot$. The fourth equality is the defining integration identity
+	for pushforward measures. Since $A$ was arbitrary, the measures are equal.
 \end{proof}
 
 \subsection{Big-Step Semantics and Correctness of Discretization}
@@ -1647,7 +1711,16 @@ As a sanity check, we show that the $n$-step semantics defines a Markov kernel.
 \end{proof}
 
 
-For every type $\tau$, we denote by $\vals_\tau$ the set of values of type $\tau$ and equip it with a suitable measurable sub-space of the measurable space over $Expr_\tau + \bot$ (cf. \Cref{lem:measurable-subsets}.\ref{lem:measurable-vals}). Moreover, let $V_\tau = \{ (v:\tau, \discretize{v} : \discretize{\tau}) ~|~ v:\tau \}$.
+For every type $\tau$, we denote by $\vals_\tau$ the set of values of type
+$\tau$ and equip it with the trace $\sigma$-algebra inherited from
+$Expr_\tau$ (cf. \Cref{lem:measurable-subsets}.\ref{lem:measurable-vals}).
+Moreover, let
+\[
+	V_\tau:=P_\tau\cap
+	  (\vals_\tau\times\vals_{\discretize\tau})
+\]
+with the trace $\sigma$-algebra. This is a measurable subspace because both
+value sets are measurable.
 
 
 \begin{lemma}[Basic Properties of $\bigsemstep{\cdot}{n}$]
@@ -1815,7 +1888,7 @@ By~\Cref{lem:bigstepsem1,lem:bigstepsem2}, the sequence $\bigsemstep{e : \tau}{n
 
 \begin{lemma}[$n$-step coupling projection]
 	\label{lem:proj_cont}
-	For all $n \in \Nats$, 
+	Let $e:\tau$. For all $n \in \Nats$,
 	\begin{enumerate}
 		\item $\pi_1(\bigsemstep{e : \tau,\discretize{e} : \discretize{\tau}}{n}) = \bigsemstep{e : \tau}{n}$
 		\item $\pi_2(\bigsemstep{e : \tau,\discretize{e} : \discretize{\tau}}{n}) = \bigsemstep{\discretize{e} : \discretize{\tau}}{n}$
@@ -1824,40 +1897,26 @@ By~\Cref{lem:bigstepsem1,lem:bigstepsem2}, the sequence $\bigsemstep{e : \tau}{n
 
 
 \begin{proof}
-	By induction on $n$. We prove i), as the proof for ii) is analogous.
+	By induction on $n$. For $n=0$, the result follows because
+	$\pi_i(\delta_{(e,\discretize e)})$ is the Dirac measure at the
+	corresponding coordinate.
 
-	\underline{Base case:} $n=0$
+	For the inductive step, put
+	$K(f,g)=\sem{f:\tau,g:\discretize\tau}$,
+	$G_1(f)=\sem{f:\tau}$, and
+	$G_2(g)=\sem{g:\discretize\tau}$. By
+	\Cref{lem:small_step_coupling_props},
+	$\pi_i(K(f,g))=G_i(p_i(f,g))$. Therefore
+	\Cref{lem:bind_project} gives
 	\begin{align*}
-		&\pi_1\!\left(\bigsemstep{e:\tau,\,\discretize{e'}:\discretize{\tau'}}{0}\right) \\
-		= \quad&\pi_1(\delta_{(e:\tau,\,\discretize{e'}:\discretize{\tau'})}) \tag{definition of $n$-step coupling semantics}\\
-		= \quad&\delta_{e:\tau} \tag{projection of Dirac} \\
-		= \quad&\bigsemstep{e:\tau}{0}. \tag{definition of $n$-step semantics}\\
+		\pi_i\!\left(
+		  \bigsemstep{e,\discretize e}{n-1}\monbind K_\bot
+		\right)
+		&=\pi_i\!\left(\bigsemstep{e,\discretize e}{n-1}\right)
+		  \monbind (G_i)_\bot.
 	\end{align*}
-	
-	\underline{Inductive step:} $n > 0$
-	\begin{align*}
-		&\pi_1\!\left(\bigsemstep{e:\tau,\,\discretize{e'}:\discretize{\tau'}}{n}\right) \\
-		%
-		= \quad&\pi_1(\bigsemstep{e : \tau, \discretize{e} : \discretize{\tau}}{n-1} \monbind  \lambda (f, g). \sem{f : \tau, g : \discretize{\tau}}) \tag{definition of $n$-step coupling semantics}\\
-		%
-		= \quad&(\bigsemstep{e : \tau, \discretize{e} : \discretize{\tau}}{n-1} \monbind  \lambda (f, g). \sem{f : \tau, g : \discretize{\tau}}) \monbind \lambda (f,g).\dirac{f} \tag{by (2)} \\
-		%
-		= \quad&\bigsemstep{e : \tau, \discretize{e} : \discretize{\tau}}{n-1} \monbind  \lambda (f, g). (\sem{f : \tau, g : \discretize{\tau}} \monbind \lambda (f,g).\dirac{f}) \tag{monad assoc.}\\
-		%
-		= \quad&\bigsemstep{e : \tau, \discretize{e} : \discretize{\tau}}{n-1} \monbind  \lambda (f, g). \pi_1(\sem{f,g}) \tag{by (2)}\\
-		%
-		= \quad&\bigsemstep{e : \tau, \discretize{e} : \discretize{\tau}}{n-1} \monbind  \lambda (f, g). \sem{f} \tag{\Cref{lem:small_step_coupling_props}.\ref{lem:small_step_coupling_props1}}\\
-		%
-		= \quad&\bigsemstep{e : \tau, \discretize{e} : \discretize{\tau}}{n-1} \monbind  \lambda (f, g). (\dirac{f} \monbind \lambda f.\sem{f}) \tag{monad unit}\\
-		%
-		= \quad&(\bigsemstep{e : \tau, \discretize{e} : \discretize{\tau}}{n-1} \monbind  \lambda (f, g). \dirac{f}) \monbind \lambda f.\sem{f} \tag{monad assoc.}\\
-		%
-		= \quad&\pi_1(\bigsemstep{e : \tau, \discretize{e} : \discretize{\tau}}{n-1}) \monbind \lambda f.\sem{f} \tag{by (2)}\\
-		%
-		= \quad&\bigsemstep{e : \tau}{n-1} \monbind \lambda f.\sem{f} \tag{by I.H.}\\
-		%
-		= \quad&\bigsemstep{e : \tau}{n} \tag{definition of $n$-step semantics}
-	\end{align*}
+	Applying the induction hypothesis and the definition of the $n$-step
+	semantics proves the first result for $i=1$ and the second for $i=2$.
 \end{proof}
 
 % \begin{proof}
@@ -1896,18 +1955,20 @@ By~\Cref{lem:bigstepsem1,lem:bigstepsem2}, the sequence $\bigsemstep{e : \tau}{n
 The following will imply our desired equivalence claim:
 
 \begin{lemma}[Big-step coupling projection]\label{lem:big_step_coupling_props}
-	Let $\bigsem{e : \tau, \discretize{e'} : \discretize{\tau'}} \in \mathcal{D}(P_{\tau} + \bot)$. Then,
+	Let $e:\tau$ and let
+	$\bigsem{e : \tau, \discretize{e} : \discretize{\tau}}
+	\in \mathcal{D}(V_{\tau} + \bot)$. Then,
 	\begin{enumerate}
-		\item\label{lem:big_step_coupling_props1} $\pi_1(\bigsem{e : \tau, \discretize{e'} : \discretize{\tau'}}) = \bigsem{e : \tau}$
-		\item\label{lem:big_step_coupling_props2} $\pi_2(\bigsem{e : \tau, \discretize{e'} : \discretize{\tau'}}) = \bigsem{\discretize{e'} : \discretize{\tau'}}$
+		\item\label{lem:big_step_coupling_props1} $\pi_1(\bigsem{e : \tau, \discretize{e} : \discretize{\tau}}) = \bigsem{e : \tau}$
+		\item\label{lem:big_step_coupling_props2} $\pi_2(\bigsem{e : \tau, \discretize{e} : \discretize{\tau}}) = \bigsem{\discretize{e} : \discretize{\tau}}$
 	\end{enumerate}
 \end{lemma}
 
 \begin{proof}
 	\begin{align*}
-		&\pi_1(\bigsem{e : \tau, \discretize{e'} : \discretize{\tau'}}) \\
-		&= \pi_1(\lim_{n \to \infty} \bigsemstep{e : \tau, \discretize{e'} : \discretize{\tau'}}{n}) \tag{by defintion of big-step coupling semantics} \\
-		&= \lim_{n \to \infty} \pi_1(\bigsemstep{e : \tau, \discretize{e'} : \discretize{\tau'}}{n}) \tag{by communitivity lemma} \\
+		&\pi_1(\bigsem{e : \tau, \discretize{e} : \discretize{\tau}}) \\
+		&= \pi_1(\lim_{n \to \infty} \bigsemstep{e : \tau, \discretize{e} : \discretize{\tau}}{n}) \tag{by definition of big-step coupling semantics} \\
+		&= \lim_{n \to \infty} \pi_1(\bigsemstep{e : \tau, \discretize{e} : \discretize{\tau}}{n}) \tag{by continuity of projections} \\
 		&= \lim_{n \to \infty} \bigsemstep{e : \tau}{n} \tag{by definition of n-step projection lemma} \\
 		&= \bigsem{e : \tau} \tag{by definition of big-step semantics}
 	\end{align*}
