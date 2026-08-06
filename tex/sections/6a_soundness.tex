@@ -185,7 +185,9 @@ for all $A \in \mathcal{F}_Y$.
 	from the product, and equip $X+\bot$, $Y+\bot$, and $C+\bot$ with their
 	error-extension $\sigma$-algebras. Define
 	\[
-		p_1,p_2:C+\bot\longrightarrow (X+\bot),(Y+\bot)
+		p_1:C+\bot\longrightarrow X+\bot,
+		\qquad
+		p_2:C+\bot\longrightarrow Y+\bot
 	\]
 	by
 	\[
@@ -1378,7 +1380,7 @@ The missing probability mass in $\sem{e :\tau}$ is the probability of encounteri
 	\[
 		P_\tau :=
 		\{(e:\tau,\discretize{e:\tau}:\discretize\tau)
-		  \mid e\in Expr^{\mathsf U}_\tau\}
+		  \mid e\in Expr^{\mathsf U}_\tau\text{ is closed}\}
 		\subseteq Expr^{\mathsf U}_\tau\times
 		  Expr^{\mathsf U+}_{\discretize\tau}
 	\]
@@ -1411,7 +1413,8 @@ $\mathcal D(P_\tau+\bot)$.
 The appropriate replacement is a measurable weak-simulation relation
 $R_\tau\subseteq Expr^{\mathsf U}_\tau\times
 Expr^{\mathsf U+}_{\discretize\tau}$ containing every initial pair
-$(e,\discretize e)$. Such a relation must be closed under coupled successors
+$(e,\discretize e)$ for every closed source term $e$. Such a relation must be
+closed under coupled successors
 after finite target administrative reductions.
 
 \begin{definition}[Weak coupling interface (assumed)]\label{ass:weak-coupling-interface}
@@ -1640,7 +1643,9 @@ We have the following key property:
 		\qquad
 		G_i:X_i\to\mathcal D(Y_i+\bot)
 	\]
-	be sub-Markov kernels, and use their $\bot$-extensions in every bind below.
+	be ordinary sub-Markov kernels. Every bind below is the strict bind from the
+	kernel-category development, which performs the absorbing $\bot$-extension
+	internally.
 	We have:
 	%
 	\begin{enumerate}
@@ -1650,9 +1655,9 @@ We have the following key property:
 		$\mu\in\mathcal D(C_X+\bot)$,
 		%
 		\[
-		\pi_1(\mu\monbind F_\bot)
+		\pi_1(\mu\monbind F)
 		=
-		\pi_1(\mu)\monbind (G_1)_\bot.
+		\pi_1(\mu)\monbind G_1.
 		\]
 		%
 		%
@@ -1662,9 +1667,9 @@ We have the following key property:
 		$\mu\in\mathcal D(C_X+\bot)$,
 		%
 		\[
-		\pi_2(\mu\monbind F_\bot)
+		\pi_2(\mu\monbind F)
 		=
-		\pi_2(\mu)\monbind (G_2)_\bot.
+		\pi_2(\mu)\monbind G_2.
 		\]
 	\end{enumerate}
 \end{lemma}
@@ -1677,15 +1682,17 @@ We have the following key property:
 	$A\in\Sigma_{Y_1+\bot}$, the left-hand side evaluated at $A$ is
 	%
 	\begin{align*}
-		\pi_1(\mu\monbind F_\bot)(A)
-		&=(\mu\monbind F_\bot)((p_1^Y)^{-1}(A)) \\
+		\pi_1(\mu\monbind F)(A)
+		&=(\mu\monbind F)((p_1^Y)^{-1}(A)) \\
 		&=\int F_\bot(z)((p_1^Y)^{-1}(A))\,\mu(dz) \\
 		&=\int (G_1)_\bot(p_1^X(z))(A)\,\mu(dz) \\
 		&=\int (G_1)_\bot(x_1)(A)\,\pi_1(\mu)(dx_1) \\
-		&=(\pi_1(\mu)\monbind (G_1)_\bot)(A).
+		&=(\pi_1(\mu)\monbind G_1)(A).
 	\end{align*}
-	The third equality uses the componentwise premise when $z\ne\bot$ and
-	the fact that both $F_\bot$ and $(G_1)_\bot\circ p_1^X$ send $\bot$ to
+	Here $F_\bot$ and $(G_1)_\bot$ denote the internal error extensions made by
+	strict bind. The third equality uses the componentwise premise when
+	$z\ne\bot$ and the fact that both $F_\bot$ and
+	$(G_1)_\bot\circ p_1^X$ send $\bot$ to
 	$\delta_\bot$. The fourth equality is the defining integration identity
 	for pushforward measures. Since $A$ was arbitrary, the measures are equal.
 \end{proof}
@@ -1709,7 +1716,7 @@ line denotes iteration of $K_\tau$ from the initial related pair:%
 			\delta_{(e : \tau, \discretize{e} : \discretize{\tau})} & \text{if $n = 0$} \\
 			%
 			\bigsemstep{e : \tau, \discretize{e} : \discretize{\tau}}{n-1}
-			\monbind (K_\tau)_\bot & \text{if $n > 0$}~.
+			\monbind K_\tau & \text{if $n > 0$}~.
 		\end{cases}
 \end{align*}
 %
@@ -1892,23 +1899,29 @@ value sets are measurable.
 
 %
 \begin{definition}
-	Let $e:\tau$. The ordinary \emph{(big-step) semantics}
-	$\bigsem{e:\tau}\in\mathcal D(Vals_\tau+\bot)$ is defined as
+	Let $e:\tau$ be closed and well typed, let
+	$T_\tau=Vals_\tau+\bot$, and let $\nu_n^e$ be the restriction of
+	$\bigsemstep{e:\tau}{n}$ to the measurable terminal subspace $T_\tau$.
+	We use the ordinary terminal-limit semantics
+	$\bigsem{e:\tau}\in\mathcal D(T_\tau)$ defined by
 	\[
-		\bigsem{e:\tau}=\lambda A.\lim_{n\to\infty}
-		\bigsemstep{e:\tau}{n}(A).
+		\bigsem{e:\tau}(A)=\lim_{n\to\infty}\nu_n^e(A),
+		\qquad A\in\mathcal F_{T_\tau}.
 	\]
 \end{definition}
 %
 %
 % Well-definedness of these objects follows from the monotone convergence theorem: The probability of evaluating to some set of values or an error is montonically increasing in $n$ and upper-bounded by $1$. 
-By~\Cref{lem:bigstepsem1,lem:bigstepsem2}, the sequence $\bigsemstep{e : \tau}{n}$ is monotonically increasing for values and error. Moreover, $\bigsemstep{e : \tau}{n}$ defines a subprobability measure, and thus $\bigsemstep{e : \tau}{n} \leq 1$ for every $n \in \Nats$. Thus, by the monotone convergence theorem, the pointwise limit exists.
+The separate ordinary-semantics development proves that $(\nu_n^e)_n$ is
+increasing on every measurable terminal event and that the pointwise limit is
+a subprobability measure. The full measures on expression states are not
+claimed to be increasing.
 
 The weak coupling interface alone does not imply that restriction of its
 iterates to terminal related pairs is increasing. We isolate the additional
 fact needed for a coupled big-step conclusion.
 
-\begin{definition}[Terminal weak-coupling limit (assumed)]
+\begin{definition}[Assumption: terminal weak-coupling limit]
 \label{ass:terminal-weak-coupling-limit}
 	Under \Cref{ass:weak-coupling-interface}, suppose the restrictions of the
 	iterates of $K_\tau$ from $(e,\discretize e)$ to $V_\tau+\bot$ form an
@@ -1995,10 +2008,10 @@ fact needed for a coupled big-step conclusion.
 	\Cref{lem:bind_project} gives
 	\begin{align*}
 		\pi_i\!\left(
-		  \bigsemstep{e,\discretize e}{n-1}\monbind K_\bot
+		  \bigsemstep{e,\discretize e}{n-1}\monbind K
 		\right)
 		&=\pi_i\!\left(\bigsemstep{e,\discretize e}{n-1}\right)
-		  \monbind (G_i)_\bot.
+		  \monbind G_i.
 	\end{align*}
 	Applying the induction hypothesis and the definition of the $n$-step
 	semantics proves the first result for $i=1$ and the second for $i=2$.
@@ -2063,7 +2076,8 @@ The following will imply our desired equivalence claim:
 
 \begin{lemma}[Conditional big-step coupling projection]
 \label{lem:big_step_coupling_props}
-	Under \Cref{ass:weak-coupling-interface,ass:terminal-weak-coupling-limit},
+	For a closed, well-typed $e:\tau$, under
+	\Cref{ass:weak-coupling-interface,ass:terminal-weak-coupling-limit},
 	the terminal coupling limit $\rho_\infty$ has projections
 	\[
 		\pi_1(\rho_\infty)=\bigsem{e:\tau},
@@ -2080,10 +2094,10 @@ The following will imply our desired equivalence claim:
 	limits are the two ordinary big-step semantics.
 \end{proof}
 
-\begin{theorem}[Conditional contextual equivalence]
+\begin{theorem}[Conditional Boolean outcome preservation]
 \label{thm:contextual-equivalence}
 	Under \Cref{ass:weak-coupling-interface,ass:terminal-weak-coupling-limit},
-	if $e:\bool$, then
+	if $e:\bool$ is closed and well typed, then
 	$\bigsem{e:\bool}=\bigsem{\discretize e:\bool}$.
 \end{theorem}
 
