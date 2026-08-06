@@ -43,7 +43,7 @@
         & $B \neq \top$
         & $\discretize{e_1 : \float[B;V_1]} \finlt{(|B|+1)} \discretize{e_2 : \float[B;V_2]}$ \\
         \caserule
-        & $B = \top$
+        & $B = \top,\; \neg(e_1,e_2\in\mathbb R \land e_1\geq e_2)$
         & $\discretize{e_1 : \float[B;V_1]} < \discretize{e_2 : \float[B;V_2]}$ \\
         \midrule
 		%
@@ -69,8 +69,8 @@
         \caserule
 		%
         & $\begin{array}[t]{@{}l@{}}
-            e_1, e_2 \in \mathbb{R}, \\
-            B = \{\sim_1\!\!b_1, \ldots, \sim_n\!\!b_n\}
+            e_1, e_2 \in \mathbb{R},\; e_1<e_2, \\
+            B = \{\sim_1\!\!b_1, \ldots, \sim_n\!\!b_n\}\neq\top
           \end{array}$
         & $\begin{array}[t]{@{}l@{}}
             \discrete(p_0, \ldots, p_n) \\
@@ -79,7 +79,7 @@
         \caserule
 		%
         & $\begin{array}{@{}l@{}}
-            B \neq \top, \\
+            B \neq \top,\quad (e_1\notin\mathbb R\ \text{or}\ e_2\notin\mathbb R), \\
             B_1 \neq \top, \\
             B_2 \neq \top, \\
             V_1 = \{v_1, \ldots, v_n\}, \\
@@ -102,7 +102,7 @@
         \bottomrule
     \end{tabular}
     \end{adjustbox}
-    \caption{Discretization function. Uniform distributions require a strict parameter ordering $e_1<e_2$.
+    \caption{Discretization function. The displayed cases are pairwise disjoint. Uniform distributions require a strict parameter ordering $e_1<e_2$.
         Equivalently, because such distributions are atomless, the interval masses in the constant-parameter
         rule can be computed from the clamped CDF, with $\mathrm{CDF}(-\infty)=0$ and
         $\mathrm{CDF}(+\infty)=1$.

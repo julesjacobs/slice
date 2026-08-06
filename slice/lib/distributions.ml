@@ -55,7 +55,8 @@ let uniform_cdf_interior lo hi x =
     /. ((hi /. scale) -. (lo /. scale))
 
 let cdistr_cdf dist x =
-  match dist with
+  if classify_float x = FP_nan then invalid_arg "CDF is undefined at NaN"
+  else match dist with
   | Uniform (lo, hi) ->
       validate_uniform_bounds_exn lo hi;
       if x <= lo then 0.0
