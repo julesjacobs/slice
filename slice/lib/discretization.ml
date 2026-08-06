@@ -147,12 +147,6 @@ let discretize (e : texpr) : expr =
             ExprNode (DistrCase distr_cases)
           in
 
-          let default_branch_expr = 
-            match dist_exp with
-            | Distr1 (kind, texpr_arg) -> ExprNode (Sample (Distr1 (kind, aux texpr_arg)))
-            | Distr2 (kind, texpr_arg1, texpr_arg2) -> ExprNode (Sample (Distr2 (kind, aux texpr_arg1, aux texpr_arg2)))
-          in
-
           let get_possible_floats_from_param (param_texpr : texpr) : float list option =
             let param_ty, _ = param_texpr in
             match Ast.force param_ty with
@@ -178,14 +172,10 @@ let discretize (e : texpr) : expr =
             | _ -> None
           in
           
-          let rec build_nested_ifs (val_var_name: string) (param_modulus: int) (arms: (expr * expr) list) (default_expr_if_all_fail: expr) : expr =
+          let rec build_nested_ifs (val_var_name: string) (param_modulus: int) (arms: (expr * expr) list) : expr =
             match arms with 
-            | [] -> 
-                (* This case should ideally not be reached if `generate_runtime_match_for_param` 
-                   ensures `arms` (derived from `possible_floats`) is non-empty when calling this.
-                   If `possible_floats` is empty, `default_expr_if_all_fail` is returned directly by the caller.
-                   If it *is* reached, it means something unexpected happened or initial arms list was empty. *) 
-                failwith "build_nested_ifs: Reached empty arms list, this should be handled by caller or indicates an issue."
+            | [] ->
+                failwith "Internal error: distribution parameter dispatch has no arms"
             | [(_target_finconst_expr, body_expr)] -> 
                 (* This is the last arm. If all previous conditions were false, this one is effectively the 'else'.
                    The assumption is that val_var_name *must* match one of the targets if possible_floats was exhaustive.
@@ -197,37 +187,37 @@ let discretize (e : texpr) : expr =
               let condition =
                 ExprNode(FinEq(current_val_expr, target_finconst_expr, param_modulus))
               in
-              ExprNode (If (condition, body_expr, build_nested_ifs val_var_name param_modulus rest_arms default_expr_if_all_fail))
+              ExprNode (If (condition, body_expr, build_nested_ifs val_var_name param_modulus rest_arms))
           in
 
           let generate_runtime_match_for_param 
               ?(already_discretized_expr : expr option = None)
               (param_texpr : texpr) 
               (param_name_str : string) 
-              (build_body_fn : float -> expr) 
-              (default_expr_for_this_param : expr) : expr =
+              (build_body_fn : float -> expr) : expr =
 
             match get_possible_floats_from_param param_texpr, get_param_modulus_and_cuts param_texpr with
-            | Some possible_floats, Some (param_modulus, param_actual_cuts) ->
-                if List.length possible_floats = 0 then default_expr_for_this_param
-                else
-                  let actual_discretized_param_expr = 
-                    match already_discretized_expr with
-                    | Some ade -> ade
-                    | None -> aux param_texpr
-                  in
-                  let match_arms = List.map (fun f_val ->
-                    let param_consts_bag_for_f = Lats.FloatLat.create (Finite (FloatSet.singleton f_val)) in
-                    let param_cuts_bag_for_f = Lats.CutLat.create (Finite (Lats.CutSet.of_list param_actual_cuts)) in
-                    let texpr_const_f_val = (TFloat(param_cuts_bag_for_f, param_consts_bag_for_f), TAExprNode (Const f_val)) in
-                    let target_finconst_expr = aux texpr_const_f_val in
-                    let body = build_body_fn f_val in
-                    (target_finconst_expr, body)
-                  ) possible_floats in
-                  
-                  Util.gen_let ("_disc_" ^ param_name_str) actual_discretized_param_expr 
-                    (fun let_var_name -> build_nested_ifs let_var_name param_modulus match_arms default_expr_for_this_param)
-            | _ -> default_expr_for_this_param
+            | Some (_ :: _ as possible_floats), Some (param_modulus, param_actual_cuts) ->
+                let actual_discretized_param_expr =
+                  match already_discretized_expr with
+                  | Some ade -> ade
+                  | None -> aux param_texpr
+                in
+                let match_arms = List.map (fun f_val ->
+                  let param_consts_bag_for_f = Lats.FloatLat.create (Finite (FloatSet.singleton f_val)) in
+                  let param_cuts_bag_for_f = Lats.CutLat.create (Finite (Lats.CutSet.of_list param_actual_cuts)) in
+                  let texpr_const_f_val = (TFloat(param_cuts_bag_for_f, param_consts_bag_for_f), TAExprNode (Const f_val)) in
+                  let target_finconst_expr = aux texpr_const_f_val in
+                  let body = build_body_fn f_val in
+                  (target_finconst_expr, body)
+                ) possible_floats in
+
+                Util.gen_let ("_disc_" ^ param_name_str) actual_discretized_param_expr
+                  (fun let_var_name -> build_nested_ifs let_var_name param_modulus match_arms)
+            | _ ->
+                failwith (Printf.sprintf
+                  "Internal error: finite sample parameter %s has no nonempty finite dispatch domain"
+                  param_name_str)
           in
 
           (* Helper function for 1-parameter distributions *)
@@ -238,32 +228,30 @@ let discretize (e : texpr) : expr =
                 | Ok dist -> final_expr_producer dist
                 | Error msg -> ExprNode (RuntimeError msg)
               )
-              default_branch_expr
           in
 
           (* Helper function for 2-parameter distributions *)
-          let handle_two_param_distribution kind param1_texpr param1_name param2_texpr param2_name hoist_suffix =
+          let handle_two_param_distribution kind param1_texpr param1_name param2_texpr param2_name =
+            let discretized_param1_expr = aux param1_texpr in
             let discretized_param2_expr = aux param2_texpr in
-            let core_logic (eff_discretized_param2_expr : expr) =
-              generate_runtime_match_for_param param1_texpr param1_name
-                (fun param1_value ->
-                  generate_runtime_match_for_param ~already_discretized_expr:(Some eff_discretized_param2_expr) param2_texpr param2_name
-                    (fun param2_value ->
-                      match Distributions.get_cdistr_from_two_arg_kind kind param1_value param2_value with
-                      | Ok dist -> final_expr_producer dist
-                      | Error msg -> ExprNode (RuntimeError msg)
-                    )
-                    default_branch_expr
-                )
-                default_branch_expr
-            in
-            (match discretized_param2_expr with
-             | ExprNode (Var _) | ExprNode (Const _) | ExprNode (BoolConst _) | ExprNode (FinConst _) ->
-                 core_logic discretized_param2_expr
-             | _ ->
-                 Util.gen_let ("_h_" ^ hoist_suffix) discretized_param2_expr (fun hoisted_var ->
-                   core_logic (ExprNode (Var hoisted_var))
-                 ))
+            Util.gen_let ("_disc_" ^ param1_name) discretized_param1_expr
+              (fun param1_var ->
+                Util.gen_let ("_disc_" ^ param2_name) discretized_param2_expr
+                  (fun param2_var ->
+                    generate_runtime_match_for_param
+                      ~already_discretized_expr:(Some (ExprNode (Var param1_var)))
+                      param1_texpr param1_name
+                      (fun param1_value ->
+                        generate_runtime_match_for_param
+                          ~already_discretized_expr:(Some (ExprNode (Var param2_var)))
+                          param2_texpr param2_name
+                          (fun param2_value ->
+                            match Distributions.get_cdistr_from_two_arg_kind kind param1_value param2_value with
+                            | Ok dist -> final_expr_producer dist
+                            | Error msg -> ExprNode (RuntimeError msg)
+                          ))
+                  )
+              )
           in
 
           match dist_exp with
@@ -285,27 +273,27 @@ let discretize (e : texpr) : expr =
               handle_single_param_distribution DPoisson texpr_mu "mu"
           
           | Distr2 (DUniform, texpr_a, texpr_b) ->
-              handle_two_param_distribution DUniform texpr_a "a" texpr_b "b" "b"
+              handle_two_param_distribution DUniform texpr_a "a" texpr_b "b"
           | Distr2 (DGaussian, texpr_mu, texpr_sigma) ->
-              handle_two_param_distribution DGaussian texpr_mu "mu" texpr_sigma "sigma" "sigma"
+              handle_two_param_distribution DGaussian texpr_mu "mu" texpr_sigma "sigma"
           | Distr2 (DBeta, texpr_alpha, texpr_beta_param) ->
-              handle_two_param_distribution DBeta texpr_alpha "alpha" texpr_beta_param "beta_param" "beta_p"
+              handle_two_param_distribution DBeta texpr_alpha "alpha" texpr_beta_param "beta_param"
           | Distr2 (DLogNormal, texpr_mu, texpr_sigma) ->
-              handle_two_param_distribution DLogNormal texpr_mu "mu" texpr_sigma "sigma" "sigma_ln"
+              handle_two_param_distribution DLogNormal texpr_mu "mu" texpr_sigma "sigma"
           | Distr2 (DGamma, texpr_shape, texpr_scale) ->
-              handle_two_param_distribution DGamma texpr_shape "shape" texpr_scale "scale" "scale_g"
+              handle_two_param_distribution DGamma texpr_shape "shape" texpr_scale "scale"
           | Distr2 (DPareto, texpr_a, texpr_b) ->
-              handle_two_param_distribution DPareto texpr_a "a" texpr_b "b" "b_p"
+              handle_two_param_distribution DPareto texpr_a "a" texpr_b "b"
           | Distr2 (DWeibull, texpr_a, texpr_b) ->
-              handle_two_param_distribution DWeibull texpr_a "a" texpr_b "b" "b_w"
+              handle_two_param_distribution DWeibull texpr_a "a" texpr_b "b"
           | Distr2 (DGumbel1, texpr_a, texpr_b) ->
-              handle_two_param_distribution DGumbel1 texpr_a "a" texpr_b "b" "b_g1"
+              handle_two_param_distribution DGumbel1 texpr_a "a" texpr_b "b"
           | Distr2 (DGumbel2, texpr_a, texpr_b) ->
-              handle_two_param_distribution DGumbel2 texpr_a "a" texpr_b "b" "b_g2"
+              handle_two_param_distribution DGumbel2 texpr_a "a" texpr_b "b"
           | Distr2 (DExppow, texpr_a, texpr_b) ->
-              handle_two_param_distribution DExppow texpr_a "a" texpr_b "b" "b_ep"
+              handle_two_param_distribution DExppow texpr_a "a" texpr_b "b"
           | Distr2 (DBinomial, texpr_p, texpr_n) ->
-              handle_two_param_distribution DBinomial texpr_p "p" texpr_n "n" "b_bi"
+              handle_two_param_distribution DBinomial texpr_p "p" texpr_n "n"
           
         )
         

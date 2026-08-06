@@ -105,7 +105,7 @@
     \end{adjustbox}
     \caption{Discretization function, where $F_{a,b}(x)=\max(0,\min(1,(x-a)/(b-a)))$ for $a<b$, $F_{a,b}(b_{0}) = 0$, and $F_{a,b}(b_{n+1}) = 1$. The final row is the literal generated core-language term; in particular, $\fineq{n}$ is finite equality from \Cref{fig:grammar}, not proof-only notation.
         For the $\uniform$ distribution, $V = \top$ is implicit, and all remaining cut-set and value-set
-        cases are ruled out by the constraints enforced during type inference. The degenerate case $e_1=e_2$ needs the point-mass rule supplied separately in PR~\#9 and is outside the rule above. For all other language
+        cases are ruled out by the constraints enforced during type inference. The degenerate case $e_1=e_2$ requires a separate point-mass rule and is outside the rule above. For all other language
         constructs, $\discretize{\cdot}$ recurses structurally over them.}
     \label{fig:discretization-code}
 \end{figure*}
