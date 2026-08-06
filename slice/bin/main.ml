@@ -130,6 +130,10 @@ let process_file ~print_all ~to_sppl ~backend ~time ~storm filename
       let texpr = Slice.Inference.infer expr in 
       let final_type = fst texpr in 
 
+      (match storm, final_type with
+       | true, Slice.Ast.TBool -> ()
+       | true, _ -> failwith "The Storm posterior query requires a Boolean-returning program"
+       | false, _ -> ());
 
       (* Discretize FIRST to make sure return type is not discretized *)
       let discretized_expr = Slice.Discretization.discretize_top texpr in
