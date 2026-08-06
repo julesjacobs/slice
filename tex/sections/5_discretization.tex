@@ -60,7 +60,7 @@
 		\uniform(e_1 : \float[B_1;V_1], \\
 		\quad e_2 : \float[B_2;V_2]) : \float[B;V]
 		\end{array}$}}
-        & $e_1, e_2 \in \mathbb{R},\; e_1 > e_2$
+        & $e_1, e_2 \in \mathbb{R},\; e_1 \geq e_2$
         & $\diverge : \tau$ \\
         \caserule
 		%
@@ -74,7 +74,7 @@
           \end{array}$
         & $\begin{array}[t]{@{}l@{}}
             \discrete(p_0, \ldots, p_n) \\
-            \quad \text{where } p_k = \mathrm{CDF}(b_{k+1}) - \mathrm{CDF}(b_k)
+            \quad \text{where } p_k = \Pr[X \in \intervals{B}_k],\ X\sim\mathrm{Uniform}(e_1,e_2)
           \end{array}$ \\
         \caserule
 		%
@@ -102,7 +102,10 @@
         \bottomrule
     \end{tabular}
     \end{adjustbox}
-    \caption{Discretization function, where $\mathrm{CDF}(b_{0}) = 0$ and $\mathrm{CDF}(b_{n+1}) = 1$.
+    \caption{Discretization function. Uniform distributions require a strict parameter ordering $e_1<e_2$.
+        Equivalently, because such distributions are atomless, the interval masses in the constant-parameter
+        rule can be computed from the clamped CDF, with $\mathrm{CDF}(-\infty)=0$ and
+        $\mathrm{CDF}(+\infty)=1$.
         For the $\uniform$ distribution, $V = \top$ is implicit, and all remaining cut-set and value-set
         cases are ruled out by the constraints enforced during type inference. For all other language
         constructs, $\discretize{\cdot}$ recurses structurally over them.}

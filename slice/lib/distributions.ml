@@ -26,11 +26,17 @@ type cdistr =
 let rng = Gsl.Rng.make (Gsl.Rng.default ())
 
 let cdistr_cdf dist x =
-  if x = neg_infinity then 0.0
-  else if x = infinity then 1.0
-  else
+  match dist with
+  | Uniform (lo, hi) ->
+      if lo >= hi then invalid_arg "Uniform low must be less than high"
+      else if x <= lo then 0.0
+      else if x >= hi then 1.0
+      else (x -. lo) /. (hi -. lo)
+  | _ when x = neg_infinity -> 0.0
+  | _ when x = infinity -> 1.0
+  | dist ->
     match dist with
-  | Uniform (lo, hi)        -> Gsl.Cdf.flat_P ~x:x ~a:lo ~b:hi
+  | Uniform _ -> assert false
   | Gaussian (m, s)         -> Gsl.Cdf.gaussian_P ~x:(x -. m) ~sigma:s
   | Exponential lambda      -> Gsl.Cdf.exponential_P ~x:x ~mu:(1.0 /. lambda)
   | Beta (alpha, beta_param) -> Gsl.Cdf.beta_P ~x:x ~a:alpha ~b:beta_param
@@ -53,7 +59,8 @@ let cdistr_cdf dist x =
 let cdistr_sample dist =
   match dist with
   | Uniform (lo, hi) ->
-      if lo = hi then lo else Gsl.Randist.flat rng ~a:lo ~b:hi
+      if lo >= hi then invalid_arg "Uniform low must be less than high"
+      else Gsl.Randist.flat rng ~a:lo ~b:hi
   | Gaussian (mu, sigma) ->
       mu +. Gsl.Randist.gaussian rng ~sigma
   | Exponential lambda ->
@@ -146,7 +153,7 @@ let get_cdistr_from_single_arg_kind (kind: Ast.single_arg_dist_kind) (arg1: floa
 let get_cdistr_from_two_arg_kind (kind: Ast.two_arg_dist_kind) (arg1: float) (arg2: float) : (cdistr, string) result =
   match kind with
   | Ast.DUniform -> 
-      if arg1 > arg2 then Error "Uniform low > high"
+      if arg1 >= arg2 then Error "Uniform low must be less than high"
       else Ok (Uniform (arg1, arg2))
   | Ast.DGaussian -> 
       if arg2 <= 0.0 then Error "Gaussian sigma must be positive"
