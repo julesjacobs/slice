@@ -1,7 +1,9 @@
 \section{Operational Semantics and Soundness}
 \label{sec:soundness}%
 %
-We now establish the soundness of our approach in the following sense: For \emph{every} expression $e:\bool$, possibly including \emph{continuous sampling, higher-order functions, recursion, and conditioning},
+The intended soundness statement is that, for every expression $e:\bool$,
+possibly including \emph{continuous sampling, higher-order functions,
+recursion, and conditioning},
 %
 \begin{center}
 	\emph{$e: \bool$ and $\discretize{e : \bool}:\bool$ (obtained from \Cref{fig:discretization-code}) are semantically equivalent.}
@@ -9,7 +11,12 @@ We now establish the soundness of our approach in the following sense: For \emph
 %its discretized expression $\discretize{e : \bool} : \bool$ obtained from the rules in \Cref{fig:discretization-code}
 %
 % exact discretization as follows: every expression $e:\bool$ is semantically equivalent to $\discretize{e : \bool} : \bool$. 
-The first step is to make formal sense of semantic equivalence. For that, we will define a monadic operational semantics for our language in \Cref{sec:opsem}. We will then proceed by proving the above claim. This is non-trivial: discretization decisions are driven by non-local, type-propagated information, so we cannot proceed by a local rule-by-rule argument. To prove the claim rigorously, we relate the executions of $e$ and $\discretize{e}$ through a coupling-style logical relation in \Cref{sec:opsem}. %We provide the high-level proof idea in the main text; all details are in \Cref{sec:app:soundness_new}.
+The first step is to make formal sense of semantic equivalence. For that, we
+define a monadic operational semantics for our language in \Cref{sec:opsem}.
+The ordinary terminal-limit construction below is rigorous, but it does not
+by itself prove the displayed statement. A complete proof additionally
+requires the measurable weak-simulation obligations stated at the end of this
+section.
 %
 \subsection{Operational Semantics}
 \label{sec:opsem}
@@ -112,58 +119,18 @@ subprobability measure, not merely a pointwise limit of set functions.
 \subsection{Soundness via Probabilistic Couplings}
 \label{C}
 %
-We first state the central theorem, then outline our coupling-style correctness argument.
-%
-\begin{theorem}
-	\label{thm:maintext:sound}
-	Let $e:\bool$. Then $\bigsem{e:\bool} = \bigsem{\discretize{e:\bool} : \bool}$.
-\end{theorem}
-%
-Intuitively, we prove that the two programs can execute in a synchronized manner such that their probabilities of terminating in value $v$ coincide for each $v \in \{\true,\false,\bot\}$. %Because sub-expressions may have types other than $\bool$, this argument must (i) apply to expressions of \emph{arbitrary} type and (ii) be strong enough to imply \Cref{thm:maintext:sound}.
-%e, and which lets us conclude semantic equivalence for expressions of type $\bool$.
-%more general argument which enables us to conclude semantic equivalence.% The crucial point is when we encounter a continuous sampling instruction in $e$, in which case we have to prove that its discretized counterpart $\discretize{e:\tau}$
+The desired contextual-equivalence theorem is not established by the current
+synchronous tables. A proof requires a measurable weak simulation closed
+under generated-target administrative steps, an error-preserving projection
+defined at $\bot$, and a proof that the weak target iteration has the same
+terminal limit as the ordinary target semantics. The exact graph of the
+transformation does not establish these obligations, so this section claims
+neither a coupled finite-step projection nor contextual equivalence.
 
-Towards this end, define for every type $\tau$ the set $P_\tau = \{ (e:\tau, \discretize{e : \tau} : \discretize{\tau}) ~|~ e:\tau \}$. We define a \emph{coupled small-step semantics} $\sem{\cdot,\cdot} \colon P_\tau \to \mathcal{D}(P_\tau + \bot)$ (cf.\ \Cref{tab:coupling_smallstep_1,tab:coupling_smallstep_2}), which models the simultaneous execution of $e$ and $\discretize{e:\tau}$. The key property of this coupled semantics is that the semantics of both $e$ and $\discretize{e:\tau}$ can be recovered in a sense we formalize next.
-
-Given $\mu \in \mathcal{D}(P_\tau + \bot)$, we define the \emph{projection of $\mu$ onto the $i$-th component} for $i\in\{ 1,2 \}$ as
-%
-\[
-	\pi_i(\mu) = \lambda A. \int_{x \in P_\tau + \bot} 
-	\begin{cases}
-		 \delta_{e_i}(A) & x = (e_1,e_2)  \\
-		 %
-		 \delta_\bot(A)  & x = \bot
-	\end{cases}
-	%
-	\mu(dx)~,
-\]
-%
-%where $\delta_a$ denotes the Dirac distribution of $a$. 
-With projections, we recover the semantics of $e$ and $\discretize{e:\tau}$ as follows:
-\begin{lemma}
-	\label{lem:maintext:small_step_coupling_props}
-	Let $e:\tau$. We have:
-	%
-	\begin{enumerate}
-		\item\label{lem:maintext:small_step_coupling_props1} 
-		$\pi_1(\sem{e:\tau, \discretize{e : \tau} : \discretize{\tau}}) = \sem{e:\tau}$.
-		%
-		\item\label{lem:maintext:small_step_coupling_props2} 
-		$\pi_2(\sem{e:\tau, \discretize{e : \tau} : \discretize{\tau}}) = \sem{\discretize{e : \tau}:\discretize{\tau}}$.
-	\end{enumerate}
-\end{lemma}
-%
-%\begin{proof}
-%	By induction on the typing derivation of $e:\tau$. See \Cref{lem:small_step_coupling_props}.
-%\end{proof}
-
-The ordinary terminal-limit construction does not by itself transfer a
-coupling to big-step semantics. That transfer requires a measurable weak
-simulation closed under generated-target administrative steps, an
-error-preserving projection defined at $\bot$, and a proof that terminal
-restriction commutes with both component pushforwards. The exact synchronous
-carrier above does not establish these obligations, so no coupled finite-step
-or big-step transfer is claimed in this section.
+The sub-Markov kernel definition and its closure under error extension and
+composition are supplied by the separate kernel-category repair. This branch
+uses those results for the ordinary limit construction; it does not duplicate
+them here.
 
 %\noindent
 \iffalse
