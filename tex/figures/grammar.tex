@@ -6,6 +6,7 @@
 		| &\; \letkw \; x = e_1\; \inkw \; e_2  & \text{let binding} \\
 		| &\; \uniform(e_1, e_2) \mid \gaussian(e_1, e_2) \mid \exponential(e) \mid \ldots & \text{continuous distributions} \\
 		| &\; \discrete(p_0, \ldots, p_{n-1})      & \text{discrete distribution} \\
+		| &\; \discrete(p_0:e_0, \ldots, p_{n-1}:e_{n-1}) & \text{surface finite-support distribution} \\
 		| &\; e_1 < e_2 \mid e_1 \leq e_2 \mid e_1 \finlt{n} e_2 \mid e_1 \finleq{n} e_2 & \text{comparisons} \\
 		| &\; e_1 \logand e_2 \mid e_1 \logor e_2 \mid \text{not}\; e & \text{Boolean operations} \\
 		| &\; \ifkw \; e_1\; \thenkw \; e_2\; \elsekw \; e_3 & \text{conditional} \\
@@ -18,6 +19,6 @@
 	\end{align*}
 	\end{minipage}
 }
-\caption{Syntax of the \Slice{} language. \Slice{} supports a variety of continuous distributions with one and two parameters; for a full list of supported distributions, see Appendix~\ref{appen:supported-distributions}.}
+\caption{Core and derived surface syntax of the \Slice{} language. \Slice{} supports a variety of continuous distributions with one and two parameters; for a full list of supported distributions, see Appendix~\ref{appen:supported-distributions}.}
 \label{fig:grammar}
 \end{figure}

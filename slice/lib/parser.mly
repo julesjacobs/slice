@@ -1,5 +1,77 @@
 %{
 open Ast
+
+module StringSet = Set.Make (String)
+
+(* [discrete(p0: e0, ..., pn: en)] is surface syntax.  Keep the AST and
+   subsequent passes in the finite-index core by elaborating it to one index
+   sample followed by finite comparisons. *)
+let rec identifiers (ExprNode e) =
+  let union = StringSet.union in
+  match e with
+  | Var x -> StringSet.singleton x
+  | Const _ | BoolConst _ | FinConst _ | Unit | Nil | RuntimeError _ ->
+      StringSet.empty
+  | Let (x, e1, e2) ->
+      StringSet.add x (union (identifiers e1) (identifiers e2))
+  | Sample (Distr1 (_, e1)) -> identifiers e1
+  | Sample (Distr2 (_, e1, e2)) -> union (identifiers e1) (identifiers e2)
+  | DistrCase cases ->
+      List.fold_left
+        (fun acc (ei, _) -> union acc (identifiers ei))
+        StringSet.empty cases
+  | Cmp (_, e1, e2, _) | And (e1, e2) | Or (e1, e2) | Pair (e1, e2)
+  | FuncApp (e1, e2) | Cons (e1, e2) | Assign (e1, e2) | Seq (e1, e2)
+  | FinEq (e1, e2, _) | LoopApp (e1, e2, _) ->
+      union (identifiers e1) (identifiers e2)
+  | FinCmp (_, e1, e2, _, _) -> union (identifiers e1) (identifiers e2)
+  | Not e1 | First e1 | Second e1 | Observe e1 | Ref e1 | Deref e1 ->
+      identifiers e1
+  | If (e1, e2, e3) ->
+      union (identifiers e1) (union (identifiers e2) (identifiers e3))
+  | Fun (x, body) -> StringSet.add x (identifiers body)
+  | Fix (f, x, body) -> StringSet.add f (StringSet.add x (identifiers body))
+  | MatchList (e, e_nil, h, t, e_cons) ->
+      StringSet.add h
+        (StringSet.add t
+           (union (identifiers e)
+              (union (identifiers e_nil) (identifiers e_cons))))
+
+let fresh_choice_name cases =
+  let avoid =
+    List.fold_left
+      (fun acc (ei, _) -> StringSet.union acc (identifiers ei))
+      StringSet.empty cases
+  in
+  let rec choose i =
+    let candidate = "__slice_discrete_choice_" ^ string_of_int i in
+    if StringSet.mem candidate avoid then choose (i + 1) else candidate
+  in
+  choose 0
+
+let elaborate_finite_support cases =
+  match cases with
+  | [] -> failwith "A finite-support discrete distribution cannot be empty"
+  | _ ->
+      let n = List.length cases in
+      let choice_name = fresh_choice_name cases in
+      let index_cases =
+        List.mapi (fun i (_, p) -> (ExprNode (FinConst (i, n)), p)) cases
+      in
+      let rec select i = function
+        | [] -> assert false
+        | [ (ei, _) ] -> ei
+        | (ei, _) :: rest ->
+            let choice = ExprNode (Var choice_name) in
+            let threshold = ExprNode (FinConst (i + 1, n)) in
+            let test = ExprNode (FinCmp (Lt, choice, threshold, n, false)) in
+            ExprNode (If (test, ei, select (i + 1) rest))
+      in
+      ExprNode
+        (Let
+           ( choice_name,
+             distr_case ~policy:Rounded_input index_cases,
+             select 0 cases ))
 %}
 
 %token <string> IDENT
@@ -187,8 +259,8 @@ atomic_expr:
     }
   | DISCRETE LPAREN cases = distr_cases RPAREN
     { 
-      (* Old syntax: discrete(p1: e1, p2: e2, ...) - keeping for backward compatibility *)
-      distr_case ~policy:Rounded_input cases
+      (* Surface finite-support syntax, elaborated to the finite-index core. *)
+      elaborate_finite_support cases
     }
   | UNIFORM LPAREN lo = app_expr COMMA hi = app_expr RPAREN
     { ExprNode (Sample (Distr2 (DUniform, lo, hi))) }
@@ -248,7 +320,7 @@ opt_bar:
   | BAR         { () }
   ;
 
-/* Rule for parsing the (expr : number) pairs for DistrCase - keeping for backward compatibility */ 
+/* Surface finite-support cases [probability : expression]. */
 distr_cases:
   | /* empty */ { [] } 
   | cases = separated_nonempty_list(COMMA, distr_case) { cases }

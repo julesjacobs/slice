@@ -1,7 +1,7 @@
 \section{Operational Semantics and Soundness}
 \label{sec:soundness}%
 %
-We now establish the soundness of our approach in the following sense: For \emph{every} expression $e:\bool$, possibly including \emph{continuous sampling, higher-order functions, recursion, and conditioning},
+We now establish the soundness of our approach in the following sense: For \emph{every core} expression $e:\bool$, possibly including \emph{continuous sampling, higher-order functions, recursion, and conditioning},
 %
 \begin{center}
 	\emph{$e: \bool$ and $\discretize{e : \bool}:\bool$ (obtained from \Cref{fig:discretization-code}) are semantically equivalent.}
@@ -9,7 +9,10 @@ We now establish the soundness of our approach in the following sense: For \emph
 %its discretized expression $\discretize{e : \bool} : \bool$ obtained from the rules in \Cref{fig:discretization-code}
 %
 % exact discretization as follows: every expression $e:\bool$ is semantically equivalent to $\discretize{e : \bool} : \bool$. 
-The first step is to make formal sense of semantic equivalence. For that, we will define a monadic operational semantics for our language in \Cref{sec:opsem}. We will then proceed by proving the above claim. This is non-trivial: discretization decisions are driven by non-local, type-propagated information, so we cannot proceed by a local rule-by-rule argument. To prove the claim rigorously, we relate the executions of $e$ and $\discretize{e}$ through a coupling-style logical relation in \Cref{sec:opsem}. %We provide the high-level proof idea in the main text; all details are in \Cref{sec:app:soundness_new}.
+Surface programs are covered after applying their semantics-preserving
+elaboration to this core; in particular, the weighted finite-support notation
+used in \Cref{fig:epsball} elaborates by
+\Cref{eq:finite-support-elaboration}. The first step is to make formal sense of semantic equivalence. For that, we will define a monadic operational semantics for our language in \Cref{sec:opsem}. We will then proceed by proving the above claim. This is non-trivial: discretization decisions are driven by non-local, type-propagated information, so we cannot proceed by a local rule-by-rule argument. To prove the claim rigorously, we relate the executions of $e$ and $\discretize{e}$ through a coupling-style logical relation in \Cref{sec:opsem}. %We provide the high-level proof idea in the main text; all details are in \Cref{sec:app:soundness_new}.
 %
 \subsection{Operational Semantics}
 \label{sec:opsem}
@@ -105,7 +108,7 @@ We first state the central theorem, then outline our coupling-style correctness 
 %
 \begin{theorem}
 	\label{thm:maintext:sound}
-	Let $e:\bool$. Then $\bigsem{e:\bool} = \bigsem{\discretize{e:\bool} : \bool}$.
+	Let $e:\bool$ be a core expression. Then $\bigsem{e:\bool} = \bigsem{\discretize{e:\bool} : \bool}$.
 \end{theorem}
 %
 Intuitively, we prove that the two programs can execute in a synchronized manner such that their probabilities of terminating in value $v$ coincide for each $v \in \{\true,\false,\bot\}$. %Because sub-expressions may have types other than $\bool$, this argument must (i) apply to expressions of \emph{arbitrary} type and (ii) be strong enough to imply \Cref{thm:maintext:sound}.

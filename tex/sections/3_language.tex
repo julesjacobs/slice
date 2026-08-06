@@ -12,6 +12,28 @@ The expression $\discrete(p_0,\ldots,p_{n-1})$ requires a nonempty probability v
 
 These are ideal real-valued premises. The implementation separately validates finite binary64 weights. It normalizes compiler-generated weights only within a tight allowance for accumulated CDF arithmetic, and parses source vectors within a documented $10^{-4}$ rounded-input allowance. These engineering policies do not replace the exact premise above: binary64 evaluation and normalization do not by themselves establish exact preservation of ideal real-valued probabilities, which requires a separate numerical error analysis.
 
+Listings also use the derived surface
+form $\discrete(p_0:e_0,\ldots,p_{n-1}:e_{n-1})$, which samples expression
+$e_i$ with probability $p_i$. This form does not extend the formal core. For
+a fresh variable $z$, it elaborates before type inference as
+\begin{align*}
+ &\mathsf{elab}\bigl(\discrete(p_0:e_0,\ldots,p_{n-1}:e_{n-1})\bigr) \\
+ &\quad={}
+ \letkw\;z=\discrete(p_0,\ldots,p_{n-1})\;\inkw\;
+ \ifkw\;z\finlt{n}\finconst{1}{n}\;\thenkw\;\mathsf{elab}(e_0)\;\elsekw\;\cdots\\[-0.2em]
+ &\hspace{14.4em}
+ \ifkw\;z\finlt{n}\finconst{n-1}{n}\;\thenkw\;\mathsf{elab}(e_{n-2})\;\elsekw\;\mathsf{elab}(e_{n-1}).
+ \tag{Finite-support elaboration}\label{eq:finite-support-elaboration}
+\end{align*}
+For $n=1$, the body is just $\mathsf{elab}(e_0)$. Thus, whenever every
+$e_i$ has type $\tau$, the elaborated expression has type $\tau$ by
+\textsc{Discrete}, \textsc{FinLess}, \textsc{If}, and \textsc{Let}. Only the
+selected branch is evaluated. We define the semantics of the surface form to
+be the semantics of this elaboration, so the core operational semantics and
+soundness proof require no additional case. The implementation performs this
+capture-avoiding elaboration in the parser and sends the resulting core term
+through the same type inference and discretization passes.
+
 % \item \textbf{Discrete distributions}: The $\discrete(p_0, \ldots, p_{n-1})$ construct returns a finite type value $\finconst{k}{n}$ \kevin{let's maybe explain the types first?  $\finconst{k}{n}$ is not introduced} with probability $p_k$.
 
 
