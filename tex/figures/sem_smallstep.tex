@@ -55,14 +55,21 @@
 			%
 			% --- less than ---
 			\multirow{4}{*}{\makecell{$e_1 : \tau_1 < e_2 : \tau_2 : \bool$ \\
-			for $\tau_1 = \floattype{B}{V_1}, \tau_2 = \floattype{B}{V_2} $ \\
-			or \\
-			$\tau_1 = \tau_2 = \fin{n} $ }} 
+			for $\tau_1 = \floattype{B}{V_1}, \tau_2 = \floattype{B}{V_2}$}}
 			 
 			& $e_1 = v_1, e_2 = v_2, v_1 < v_2 $ & $\dirac{\true : \bool}$ \\
 			& $e_1 = v_1, e_2 = v_2, v_1 \geq v_2$ & $\dirac{\false : \bool}$  \\
 			&$e_1 = v_1, e_2 \neq v_2$ & $\sem{ e_2 : \tau_2 } \gg\!= \lambda g. \dirac{ v_1 : \tau_1 < g : \bool}$ \\
 			& o.w.\ & $\sem{ e_1 : \tau_1 } \gg\!= \lambda g. \dirac{ g < e_2 : \tau_2 : \bool}$  \\
+			%
+			\midrule
+			%
+			% --- finite less than (generated target construct) ---
+			\multirow{4}{*}{$e_1 : \fin{n} \finlt{n} e_2 : \fin{n} : \bool$}
+			& $e_1 = \finconst{i}{n}, e_2 = \finconst{j}{n}, i<j$ & $\dirac{\true : \bool}$ \\
+			& $e_1 = \finconst{i}{n}, e_2 = \finconst{j}{n}, i\geq j$ & $\dirac{\false : \bool}$ \\
+			& $e_1=v_1, e_2$ no val. & $\sem{e_2:\fin{n}} \gg\!= \lambda g.\dirac{v_1\finlt{n}g:\bool}$ \\
+			& o.w. & $\sem{e_1:\fin{n}} \gg\!= \lambda g.\dirac{g\finlt{n}e_2:\bool}$ \\
 			%
 			\midrule
 			%
@@ -204,10 +211,10 @@
 			\midrule
 			%
 			% --- cons ---
-			\multirow{2}{*}{\makecell{$(e_1 : \tau_1 :: e_2 : \listty{\tau}) : \listty{\tau}$ }} 
+			\multirow{3}{*}{\makecell{$(e_1 : \tau :: e_2 : \listty{\tau}) : \listty{\tau}$ }}
 			
 			& $e_1 = v_1, e_2 = v_2$ & $\dirac{v_1::v_2 : \listty{\tau}}$ \\
-			& $e_1 = v_1, e_2 \neq v_2$ & $\sem{e_2 : \listty{\tau}} \monbind \lambda g.\dirac{v_1 : \tau_1 ::g : \listty{\tau}}$ \\
+			& $e_1 = v_1, e_2 \neq v_2$ & $\sem{e_2 : \listty{\tau}} \monbind \lambda g.\dirac{v_1 : \tau ::g : \listty{\tau}}$ \\
 			& o.w. & $\sem{e_1 : \tau} \monbind \lambda g.\dirac{(g : \tau)::(e_2 : \listty{\tau}) : \listty{\tau}}$ \\
 			%
 			\midrule
