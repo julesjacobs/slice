@@ -126,6 +126,17 @@ let test_discrete_rejects_nonfinite _test_ctxt =
         (fun () -> ignore (Slice.Ast.normalize_probability_weights weights)))
     [[nan; 1.0]; [infinity; 0.0]; [neg_infinity; 1.0]]
 
+let test_discrete_rejects_unrepresentable_prefix _test_ctxt =
+  assert_raises
+    (Failure
+       "Discrete distribution contains a positive weight that cannot be represented cumulatively")
+    (fun () ->
+      ignore
+        (Slice.Ast.normalize_probability_weights [1.0; 1e-20; 0.0]))
+
+let test_generated_tolerance_is_capped _test_ctxt =
+  assert_equal 1e-6 (Slice.Ast.probability_sum_tolerance Slice.Ast.Generated 100_000)
+
 let test_discrete_final_boundary _test_ctxt =
   let expr = Slice.Parse.parse_expr seven_way_source in
   match expr with
@@ -243,6 +254,9 @@ let suite =
        test_inferred_coincident_cut_atomic_masses;
      "test_discrete_weights" >:: test_discrete_weights;
      "test_discrete_rejects_nonfinite" >:: test_discrete_rejects_nonfinite;
+     "test_discrete_rejects_unrepresentable_prefix" >::
+       test_discrete_rejects_unrepresentable_prefix;
+     "test_generated_tolerance_is_capped" >:: test_generated_tolerance_is_capped;
      "test_discrete_final_boundary" >:: test_discrete_final_boundary;
      "test_probability_export_precision" >:: test_probability_export_precision;
      "uniform_requires_strict_bounds" >:: test_uniform_requires_strict_bounds;

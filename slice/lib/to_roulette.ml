@@ -72,11 +72,14 @@ and string_of_expr_node ?(indent=0) (ExprNode expr_node) : string =
       | [] -> failwith "Empty probability list"
       | [(_, _)] -> string_of_int index
       | (_, p) :: rest ->
-          let prob_ratio = 
-            if remaining = 0.0 then 0.0
-            else p /. remaining 
-          in
-          let cond = flip_expr (max 0.0 (min 1.0 prob_ratio)) in
+          if remaining <= 0.0 || p > remaining then
+            failwith "Invalid remaining mass while exporting a discrete distribution";
+          let prob_ratio = p /. remaining in
+          if classify_float prob_ratio = FP_nan
+             || classify_float prob_ratio = FP_infinite
+             || prob_ratio < 0.0 || prob_ratio > 1.0
+          then failwith "Invalid conditional probability while exporting a discrete distribution";
+          let cond = flip_expr prob_ratio in
           let then_branch = string_of_int index in
           let else_branch = gen_flip_chain rest (remaining -. p) (index + 1) in
           Printf.sprintf "(if (%s) %s %s)" cond then_branch else_branch
