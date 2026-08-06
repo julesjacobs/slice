@@ -83,7 +83,7 @@ We now define $\bigsem{\cdot}$ via $\sem{\cdot}$. For that, we first lift the on
 \end{align*}
 %
 This construction is well-defined since the functional $\sem{\cdot}$ itself
-gives rise to a suitable Markov kernel (\Cref{lem:small-step-kernel}).  The
+gives rise to a suitable sub-Markov kernel (\Cref{lem:small-step-kernel}). The
 full measures $\bigsemstep{e:\tau}{n}$ on expressions are not monotone: a
 step moves mass away from the current nonterminal expression.  Instead, let
 $\nu^e_n$ be their restrictions to the measurable terminal subspace
@@ -157,19 +157,16 @@ With projections, we recover the semantics of $e$ and $\discretize{e:\tau}$ as f
 %	By induction on the typing derivation of $e:\tau$. See \Cref{lem:small_step_coupling_props}.
 %\end{proof}
 
-Now, using the same increasing-terminal-restriction construction, we obtain a
-coupled \emph{big-step} semantics
-$\bigsem{\cdot,\cdot} \colon P_\tau \to \mathcal{D}(V_\tau + \bot)$,
-where $V_\tau = \{ (v:\tau, \discretize{v} : \discretize{\tau}) ~|~
-v:\tau~\text{is a value} \}$. Projection commutes with this limit eventwise
-by taking the preimage of each measurable terminal event
-(\Cref{lem:proj_cont}); no monotonicity of the full transient-state measures
-is required. Therefore \Cref{lem:maintext:small_step_coupling_props}
-transfers to $\bigsem{\cdot,\cdot}$. Finally, observing that
-$V_\bool + \bot = \{(\true,\true), (\false,\false), \bot\}$ yields the
-desired claim:
+The ordinary terminal-limit construction does not by itself transfer a
+coupling to big-step semantics. That transfer requires a measurable weak
+simulation closed under generated-target administrative steps, an
+error-preserving projection defined at $\bot$, and a proof that terminal
+restriction commutes with both component pushforwards. The exact synchronous
+carrier above does not establish these obligations, so no coupled finite-step
+or big-step transfer is claimed in this section.
 
 %\noindent
+\iffalse
 \emph{Proof of \Cref{thm:maintext:sound}}. Let $v \in \{\true,\false,\bot\}$. We have
 %
 \begin{align*}
@@ -194,5 +191,6 @@ desired claim:
     {}={}~& \bigsem{\discretize{e : \bool}:{\bool}}(v)~.
     \tag{Lemma \ref{lem:maintext:small_step_coupling_props}.\ref{lem:maintext:small_step_coupling_props2} for $\bigsem{\cdot,\cdot}$}
 \end{align*}
+\fi
 
  

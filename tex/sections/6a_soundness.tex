@@ -1592,32 +1592,27 @@ We have the following key property:
 
 \subsection{Big-Step Semantics and Correctness of Discretization}
 %
-We extend both of the small-step semantics canonically to an $n$-step semantics by%
-\begin{align*}
-		\bigsemstep{e : \tau}{n} &{}= 
-		\begin{cases}
-			\delta_{e : \tau} & \text{if $n = 0$} \\
-			%
-			\bigsemstep{e : \tau}{n-1} \monbind  \lambda e'. \sem{e' : \tau} & \text{if $n > 0$}~.
-		\end{cases} \\
-		%
-		%
-		\bigsemstep{e : \tau, \discretize{e} : \discretize{\tau}}{n} &{}= 
-		\begin{cases}
-			\delta_{(e : \tau, \discretize{e} : \discretize{\tau})} & \text{if $n = 0$} \\
-			%
-			\bigsemstep{e : \tau, \discretize{e} : \discretize{\tau}}{n-1} \monbind  \lambda (e', e''). \sem{e' : \tau, e'' : \discretize{\tau}} & \text{if $n > 0$}~.
-		\end{cases}
-\end{align*}
+Let $K_\tau$ be the error-total extension of the ordinary one-step kernel:
+$K_\tau(\bot)=\delta_\bot$ and $K_\tau(e)=\sem{e:\tau}$. We define the
+ordinary $n$-step semantics by
+\[
+	\bigsemstep{e : \tau}{n} =
+	\begin{cases}
+		\delta_{e : \tau} & \text{if $n = 0$}, \\
+		\bigsemstep{e : \tau}{n-1} \monbind K_\tau
+			& \text{if $n > 0$}.
+	\end{cases}
+\]
 %
 %
 
 %
 %
-As a sanity check, we show that the $n$-step semantics defines a Markov kernel.
+As a sanity check, we show that the $n$-step semantics defines a sub-Markov
+kernel.
 
-\begin{lemma}[$n$-step semantics is a Markov kernel]\label{lem:big-step-n-kernel}
-	For all $n \in \Nats$, $\bigsemstep{\cdot}{n} : Expr_{\tau} \to \mathcal{D}(Expr_{\tau} + \bot)$ is a Markov kernel.
+\begin{lemma}[$n$-step semantics is a sub-Markov kernel]\label{lem:big-step-n-kernel}
+	For all $n \in \Nats$, $\bigsemstep{\cdot}{n} : Expr_{\tau} \to \mathcal{D}(Expr_{\tau} + \bot)$ is a sub-Markov kernel.
 \end{lemma}
 
 \begin{proof}
@@ -1632,12 +1627,17 @@ As a sanity check, we show that the $n$-step semantics defines a Markov kernel.
 
 	Inductive step: $n > 0$. By definition, 
 	\[
-		\bigsemstep{e : \tau}{n} = \bigsemstep{e : \tau}{n-1} \monbind  \lambda e'. \sem{e' : \tau}
+		\bigsemstep{e : \tau}{n} = \bigsemstep{e : \tau}{n-1} \monbind K_\tau
 	\]
 	
-	By the I.H., $\bigsemstep{\cdot}{n-1} \colon Expr_{\tau} \to \mathcal{D}(Expr_{\tau} + \bot)$ is a Markov kernel. By~\Cref{lem:small-step-kernel}, $\lambda e' .\sem{e' : \tau} : Expr_{\tau} \to \mathcal{D}(Expr_{\tau} + \bot)$ is a Markov kernel. By~\Cref{lem:bot-extension-kernel}, its $\bot$-extension from $(Expr_{\tau} + \bot)$ to $\mathcal{D}(Expr_{\tau} + \bot)$ is also a Markov kernel. By~\Cref{lem:kernel-composition}, $\bigsemstep{e : \tau}{n-1} \monbind  \lambda e'. \sem{e' : \tau}$ is a Markov kernel.
+	By the I.H., $\bigsemstep{\cdot}{n-1}$ is a sub-Markov kernel. The
+	$\bot$-extended one-step semantics is also sub-Markov, and sub-Markov
+	kernels are closed under composition. Hence
+	$\bigsemstep{e : \tau}{n-1} \monbind K_\tau$ is a
+	sub-Markov kernel.
 \end{proof}
 
+\iffalse
 \begin{lemma}[$n$-step coupling semantics is a Markov kernel]\label{lem:big-step-n-coupling-kernel}
 	For all $n \in \Nats$, $\bigsemstep{\cdot, \cdot}{n} : P_{\tau} \to \mathcal{D}(P_{\tau} + \bot)$ is a Markov kernel.
 \end{lemma}
@@ -1645,9 +1645,10 @@ As a sanity check, we show that the $n$-step semantics defines a Markov kernel.
 \begin{proof}
 	Analogous to proof of~\Cref{lem:big-step-n-kernel}.
 \end{proof}
+\fi
 
 
-For every type $\tau$, we denote by $\vals_\tau$ the set of values of type $\tau$ and equip it with a suitable measurable sub-space of the measurable space over $Expr_\tau + \bot$ (cf. \Cref{lem:measurable-subsets}.\ref{lem:measurable-vals}). Moreover, let $V_\tau = \{ (v:\tau, \discretize{v} : \discretize{\tau}) ~|~ v:\tau \}$.
+For every type $\tau$, we denote by $\vals_\tau$ the set of values of type $\tau$ and equip it with a suitable measurable sub-space of the measurable space over $Expr_\tau + \bot$ (cf. \Cref{lem:measurable-subsets}.\ref{lem:measurable-vals}).
 
 
 Let $T_\tau = \vals_\tau + \bot$ be the measurable subspace of
@@ -1657,22 +1658,18 @@ semantics to terminal outcomes by
 	\nu^e_n(A) = \bigsemstep{e:\tau}{n}(A)
 	\qquad(A \in \mathcal F_{T_\tau}).
 \]
-Similarly, let $T^P_\tau = V_\tau + \bot$ and write $\kappa^e_n$ for the
-restriction of
-$\bigsemstep{e:\tau,\discretize e:\discretize\tau}{n}$ to $T^P_\tau$.
-These are subprobability measures because they are restrictions of the
+Each $\nu^e_n$ is a subprobability measure because it is a restriction of an
 $n$-step subprobability measures.  Notice that the full $n$-step measures on
 expressions need not be increasing: a deterministic step removes mass from
 the singleton containing its source expression.
 
 \begin{lemma}[Increasing terminal restrictions]
 	\label{lem:bigstepsem}
-	For every $e:\tau$, $n\in\Nats$, and measurable terminal events
-	$A\in\mathcal F_{T_\tau}$ and $C\in\mathcal F_{T^P_\tau}$,
-	\begin{align*}
-		\nu^e_n(A) &\leq \nu^e_{n+1}(A), \\
-		\kappa^e_n(C) &\leq \kappa^e_{n+1}(C).
-	\end{align*}
+	For every $e:\tau$, $n\in\Nats$, and measurable terminal event
+	$A\in\mathcal F_{T_\tau}$,
+	\[
+		\nu^e_n(A) \leq \nu^e_{n+1}(A).
+	\]
 \end{lemma}
 
 \begin{proof}
@@ -1690,29 +1687,23 @@ the singleton containing its source expression.
 		&\geq \int \mathbf 1_A(x)\,\bigsemstep{e:\tau}{n}(dx)
 		 = \nu^e_n(A).
 	\end{align*}
-	The coupled one-step kernel also fixes every value pair and $\bot$.
-	Applying the same argument on $P_\tau+\bot$ proves the second inequality.
 \end{proof}
 
 \begin{definition}[Big-step semantics]
 	\label{def:big-step-semantics}
-	For $e:\tau$, define measures on terminal outcomes pointwise by
-	\begin{align*}
+	For $e:\tau$, define a measure on terminal outcomes pointwise by
+	\[
 		\bigsem{e:\tau}(A)
-			&= \lim_{n\to\infty}\nu^e_n(A),
-			&& A\in\mathcal F_{T_\tau}, \\
-		\bigsem{e:\tau,\discretize e:\discretize\tau}(C)
-			&= \lim_{n\to\infty}\kappa^e_n(C),
-			&& C\in\mathcal F_{T^P_\tau}.
-	\end{align*}
+			= \lim_{n\to\infty}\nu^e_n(A),
+			\qquad A\in\mathcal F_{T_\tau}.
+	\]
 \end{definition}
 
 \begin{lemma}[Big-step semantics is well-defined]
 	\label{lem:big-step-well-defined}
-	The two set functions in \Cref{def:big-step-semantics} are
-	subprobability measures.  Moreover, as functions of their initial
-	expression (or initial coupled pair), they are Markov kernels into the
-	corresponding terminal measurable spaces.
+	The set function in \Cref{def:big-step-semantics} is a subprobability
+	measure. Moreover, as a function of its initial expression, it is a
+	sub-Markov kernel into the terminal measurable space.
 \end{lemma}
 
 \begin{proof}
@@ -1729,14 +1720,14 @@ the singleton containing its source expression.
 	The second equality is monotone convergence on $\Nats$ with counting
 	measure.  Also $\bigsem{e:\tau}(T_\tau)\leq 1$, since every
 	$\nu^e_n$ is a subprobability measure.  Thus the limit is a
-	subprobability measure.  The same proof applies to the coupled terminal
-	restrictions $\kappa^e_n$.
+	subprobability measure.
 
 	For every fixed measurable terminal event, the $n$-step kernel lemmas
 	make its probability a measurable function of the initial state.  Its
-	pointwise limit is measurable, which proves the Markov-kernel claims.
+	pointwise limit is measurable, which proves the sub-Markov-kernel claim.
 \end{proof}
 
+\iffalse
 \begin{lemma}[$n$-step coupling projection]
 	\label{lem:n-step-coupling-projection}
 	For all $n \in \Nats$, 
@@ -1783,7 +1774,16 @@ the singleton containing its source expression.
 		= \quad&\bigsemstep{e : \tau}{n} \tag{definition of $n$-step semantics}
 	\end{align*}
 \end{proof}
+\fi
 
+No coupled finite-step or big-step transfer is claimed here. Such a result
+requires a measurable weak-simulation relation closed under generated-target
+administrative steps, an error-total coupling continuation, and a proved
+compatibility result between restriction to terminal outcomes and component
+pushforward. The exact-graph synchronous construction above does not supply
+these facts.
+
+\iffalse
 For $i\in\{1,2\}$, let $q_i$ be the component map on terminal coupled
 outcomes, extended by $q_i(\bot)=\bot$.  Thus
 $q_1(v,\discretize v)=v$ and
@@ -1972,3 +1972,4 @@ The following will imply our desired equivalence claim:
 %	\noindent
 %	\emph{The case $v=\false$.} Completely analogous to the previous case.
 \end{proof}
+\fi
