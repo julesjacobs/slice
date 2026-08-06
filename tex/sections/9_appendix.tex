@@ -787,7 +787,7 @@ The typing rules for general language constructs is given in \Cref{fig:typing-ge
 
 
 \section{Discretization Proofs}
-\subsection{Proof of Proposition~\ref{lem:type-transformations}}
+\subsection{Proof of Proposition~\ref{prop:continuous-distribution-representation-agreement}}
 
 \begin{proof}\label{proof:type-transformations}
 We give the two-argument case; the one-argument case is the same with one
@@ -814,9 +814,16 @@ prerequisites
   V_1=\{v_1,\ldots,v_n\},\qquad
   V_2=\{w_1,\ldots,w_m\},\qquad n,m\geq1.
 \]
-Representation agreement gives $B_1,B_2\neq\top$. For arbitrary parameter
-expressions $e_1$ and $e_2$---not only variables---the generated term has the
-following call-by-value shape:
+Representation agreement gives $B_1,B_2\neq\top$. If both parameters are real
+literals satisfying the distribution's validity condition, the direct clause
+emits a finite distribution over the $|B|+1$ result cells. Its explicit
+target-typing premise gives type $\fin{|B|+1}$. The formal malformed-literal
+clause emits divergence, which is polymorphically typed; an implementation
+runtime error is a distinct behavior and is not identified with formal
+divergence by this proposition.
+
+If at least one parameter is nonliteral, the generated term has the following
+call-by-value shape:
 \[
 \begin{array}{l}
   \letkw\;z_1=\discretize{e_1}\;\inkw\\
@@ -830,10 +837,7 @@ following call-by-value shape:
 \end{array}
 \]
 Here $\mathsf{dispatch}$ abbreviates the nested conditionals displayed in
-\Cref{fig:discretization-code}. The two let-bindings evaluate each arbitrary
-parameter expression exactly once and in source order. Distinguishability
-ensures that distinct members of each finite value set have distinct finite
-indices, so those indices select the corresponding constant-parameter arm.
+\Cref{fig:discretization-code}.
 
 Writing $\discretize{\Gamma}$ for the pointwise transformation of the types in
 $\Gamma$, assume the recursive premises
@@ -844,9 +848,9 @@ $\Gamma$, assume the recursive premises
 and the stated target typing rules for let-binding, finite equality, and
 conditionals. Each $\discretize{v_i}$ has type $\fin{|B_1|+1}$ and each
 $\discretize{w_j}$ has type $\fin{|B_2|+1}$, so every dispatch guard is
-Boolean. Assume also that the local constant-parameter rule produces each arm
-at type $\fin{|B|+1}$ (as a discrete interval distribution, or as the typed
-error/divergence term for an invalid parameter tuple).
+Boolean. Assume also that the local constant-parameter rule produces each
+valid arm at type $\fin{|B|+1}$ and that its formal invalid-parameter arm is
+typed as divergence.
 Consequently every conditional branch, and hence the complete generated
 dispatch term, has type $\fin{|B|+1}$.
 
@@ -855,7 +859,6 @@ case only. It does not establish the former universal ``Discretization Is
 Well-Typed'' statement. A universal type-preservation result still needs
 independent lemmas for \textsc{Sub-Type}, the nonempty-dispatch invariant, the
 literal generated target syntax, and the coupling obligations used later in
-the soundness argument.
 \end{proof}
 
 %\input{sections/6_soundness.tex}
