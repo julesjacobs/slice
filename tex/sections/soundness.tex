@@ -47,42 +47,42 @@ gives rise to the skeleton
 %
 and the type annotations tell us that the possible values these holes can be filled with are in $\Reals \times \{3.5,4.5 \}$. We can thus inherit a measurable space over all well-typed expressions arising from this particular skeleton $s$ from the standard Borel measurable space over $\Reals \times \{3.5,4.5 \}$. The measurable space over \emph{all} well-typed expressions of type $\bool$ (i.e., over $Expr_\bool$) is then obtained from the measurable spaces of \emph{all} skeletons that give rise to expressions of type $\bool$.
 
-Equipped with this family of measurable spaces, we define the small-step functional $\sem{\cdot}$ in the expected, type-preserving manner (cf.\ \Cref{tab:smallstep-1,tab:smallstep-2}). For instance, if $e_1$ is not a value, then\footnote{Put formally, $(\mu \gg\!= f)(A) = \int f(x)(A) \cdot \mu(dx)$, see \Cref{def:dist-monad} for details. $\dirac{e}$ denotes the Dirac distribution of $e$.}
+Equipped with this family of measurable spaces, we define the small-step functional $\sem{\cdot}$ in the expected, type-preserving manner (cf.\ \Cref{tab:smallstep-1,tab:smallstep-2}). For instance, if $e_1$ is not a value, then\footnote{Put formally, for a sub-Markov kernel $f:X\to\mathcal D(Y+\bot)$, $(\mu \gg\!= f)(A)=\int_{X+\bot}f_\bot(x)(A)\,\mu(dx)$, where $f_\bot(\bot)=\delta_\bot$; see \Cref{def:dist-monad}. $\dirac{e}$ denotes the Dirac distribution of $e$.}
 %
 \[
 	\sem{(\letkw \; x = e_1 : \tau_1 \; \inkw \; e_2 : \tau_2) : \tau_2}
 	\quad~{}={}~
-	\underbrace{\sem{ e_1 : \tau_1 } \gg\!=  \lambda g. 
-		\begin{cases}
-			\dirac{\bot} & \text{if $g=\bot$} \\
-		\dirac{(\letkw \; x = g \; \inkw \; e_2 : \tau_2) : \tau_2} & \text{otherwise}~.
-		\end{cases}
+	\underbrace{\sem{ e_1 : \tau_1 } \gg\!=
+		\lambda g\in Expr_{\tau_1}.
+		\dirac{(\letkw \; x = g \; \inkw \; e_2 : \tau_2) : \tau_2}
 	}_{\text{standard probabilistic monadic bind over suitable sub-Markov kernels}}~,
 \]
 %
 i.e., $\sem{ e_1 : \tau_1}$ yields the sub-distribution over expressions obtained from executing $e_1$ for \emph{one step}, and the monadic bind $\gg\!=$ \enquote{folds} this distribution into the surrounding $\letkw$-statement. The intuition for the remaining statements is analogous. Crucially, $\gg\!=$ propagates the probability of encountering $\bot$ --- an observation failure --- through executions. For instance, assume that $e_1$ from above is given by $\observekw\; (\false : \bool)  : \unit$. Since $e_1$ encounters an observation failure with probability $1$, i.e., $\sem{\observekw\; (\false : \bool)  : \unit}(\{\bot\}) = 1$, the same holds for the surrounding $\letkw$-statement, i.e., also $\sem{(\letkw \; x = e_1 : \tau_1 \; \inkw \; e_2 : \tau_2) : \tau_2}(\{\bot\})=1$.
 %
-All details --- including proofs that all monadic binds are well-behaved since they operate on suitable sub-Markov kernels --- are provided in \Cref{app:small-step}.
+The appendix proves the generic strict-bind results and records the remaining
+operational measurability obligations in \Cref{app:small-step}.
 
 \subsubsection{From Small-Step to Big-Step Semantics}
 \label{sec:smallsem_to_bigsem}
 %
-We now define $\bigsem{\cdot}$ via $\sem{\cdot}$. For that, we first lift the one-step semantics $\sem{\cdot}$ to an $n$-step semantics $\bigsemstep{\cdot}{n}$ in the expected way:
+We now define $\bigsem{\cdot}$ via $\sem{\cdot}$.  Put
+$S_\tau(e')=\sem{e':\tau}$ for ordinary expressions $e'\in Expr_\tau$.
+We first lift the one-step semantics $\sem{\cdot}$ to an $n$-step
+semantics $\bigsemstep{\cdot}{n}$ using the canonical extension
+$(S_\tau)_\bot$:
 %
 \begin{align*}
 	\bigsemstep{e : \tau}{0} =\delta_{e : \tau}  
 	\qquad\text{and}\qquad
-	\bigsemstep{e : \tau}{n+1} ~{}={}~ 
-		\bigsemstep{e : \tau}{n} \monbind 
-			\lambda e'. 
-		\begin{cases}
-			\delta_\bot & \text{if $e'=\bot$}\\
-			%
-		\sem{e' : \tau}  & \text{otherwise}
-		\end{cases} 
+	\bigsemstep{e : \tau}{n+1}(A) ~{}={}~
+		\int_{Expr_\tau+\bot}(S_\tau)_\bot(e')(A)\,
+		\bigsemstep{e:\tau}{n}(de').
 \end{align*}
 %
-This construction is well-defined since the functional $\sem{\cdot}$ itself gives rise to a suitable sub-Markov kernel (\Cref{lem:small-step-kernel}). We then define for every type $\tau$ the functional $\bigsem{\cdot}\colon Expr_\tau \to \mathcal{D}(Vals_\tau + \bot)$ as
+Conditional on the operational measurability obligations stated in the
+appendix, this construction is well defined because $\sem{\cdot}$ is a
+sub-Markov kernel (\Cref{lem:small-step-kernel}). We then define for every type $\tau$ the functional $\bigsem{\cdot}\colon Expr_\tau \to \mathcal{D}(Vals_\tau + \bot)$ as
 %
 $
 	\bigsem{e:\tau} = \lambda A. \lim_{n\to\infty} \bigsemstep{e:\tau}{n}(A)~,
@@ -105,7 +105,9 @@ We first state the central theorem, then outline our coupling-style correctness 
 %
 \begin{theorem}
 	\label{thm:maintext:sound}
-	Let $e:\bool$. Then $\bigsem{e:\bool} = \bigsem{\discretize{e:\bool} : \bool}$.
+	Assume the operational and coupling measurability obligations stated in
+	the appendix.  Let $e:\bool$. Then
+	$\bigsem{e:\bool} = \bigsem{\discretize{e:\bool} : \bool}$.
 \end{theorem}
 %
 Intuitively, we prove that the two programs can execute in a synchronized manner such that their probabilities of terminating in value $v$ coincide for each $v \in \{\true,\false,\bot\}$. %Because sub-expressions may have types other than $\bool$, this argument must (i) apply to expressions of \emph{arbitrary} type and (ii) be strong enough to imply \Cref{thm:maintext:sound}.
