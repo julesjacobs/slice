@@ -25,18 +25,44 @@ type cdistr =
 (* Initialize GSL random number generator *)
 let rng = Gsl.Rng.make (Gsl.Rng.default ())
 
+let is_finite x =
+  match classify_float x with
+  | FP_normal | FP_subnormal | FP_zero -> true
+  | FP_infinite | FP_nan -> false
+
+let validate_uniform_bounds lo hi =
+  if not (is_finite lo && is_finite hi) then
+    Error "Uniform bounds must be finite"
+  else if lo >= hi then
+    Error "Uniform low must be less than high"
+  else
+    Ok ()
+
+let validate_uniform_bounds_exn lo hi =
+  match validate_uniform_bounds lo hi with
+  | Ok () -> ()
+  | Error msg -> invalid_arg msg
+
+let uniform_cdf_interior lo hi x =
+  let width = hi -. lo in
+  if is_finite width then
+    (x -. lo) /. width
+  else
+    (* Scaling avoids overflow in [hi - lo] when finite bounds span most of
+       the floating-point range. *)
+    let scale = max (abs_float lo) (abs_float hi) in
+    ((x /. scale) -. (lo /. scale))
+    /. ((hi /. scale) -. (lo /. scale))
+
 let cdistr_cdf dist x =
   match dist with
   | Uniform (lo, hi) ->
-      if lo >= hi then invalid_arg "Uniform low must be less than high"
-      else if x <= lo then 0.0
+      validate_uniform_bounds_exn lo hi;
+      if x <= lo then 0.0
       else if x >= hi then 1.0
-      else (x -. lo) /. (hi -. lo)
+      else uniform_cdf_interior lo hi x
   | _ when x = neg_infinity -> 0.0
   | _ when x = infinity -> 1.0
-  | dist ->
-    match dist with
-  | Uniform _ -> assert false
   | Gaussian (m, s)         -> Gsl.Cdf.gaussian_P ~x:(x -. m) ~sigma:s
   | Exponential lambda      -> Gsl.Cdf.exponential_P ~x:x ~mu:(1.0 /. lambda)
   | Beta (alpha, beta_param) -> Gsl.Cdf.beta_P ~x:x ~a:alpha ~b:beta_param
@@ -59,8 +85,8 @@ let cdistr_cdf dist x =
 let cdistr_sample dist =
   match dist with
   | Uniform (lo, hi) ->
-      if lo >= hi then invalid_arg "Uniform low must be less than high"
-      else Gsl.Randist.flat rng ~a:lo ~b:hi
+      validate_uniform_bounds_exn lo hi;
+      Gsl.Randist.flat rng ~a:lo ~b:hi
   | Gaussian (mu, sigma) ->
       mu +. Gsl.Randist.gaussian rng ~sigma
   | Exponential lambda ->
@@ -152,9 +178,10 @@ let get_cdistr_from_single_arg_kind (kind: Ast.single_arg_dist_kind) (arg1: floa
 
 let get_cdistr_from_two_arg_kind (kind: Ast.two_arg_dist_kind) (arg1: float) (arg2: float) : (cdistr, string) result =
   match kind with
-  | Ast.DUniform -> 
-      if arg1 >= arg2 then Error "Uniform low must be less than high"
-      else Ok (Uniform (arg1, arg2))
+  | Ast.DUniform ->
+      (match validate_uniform_bounds arg1 arg2 with
+       | Ok () -> Ok (Uniform (arg1, arg2))
+       | Error _ as error -> error)
   | Ast.DGaussian -> 
       if arg2 <= 0.0 then Error "Gaussian sigma must be positive"
       else Ok (Gaussian (arg1, arg2))
