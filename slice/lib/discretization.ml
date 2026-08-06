@@ -210,8 +210,6 @@ let discretize (e : texpr) : expr =
             match get_possible_floats_from_param param_texpr, get_param_modulus_and_cuts param_texpr with
             | Some possible_floats, Some (param_modulus, param_actual_cuts) ->
                 if List.length possible_floats = 0 then default_expr_for_this_param
-                else if List.length possible_floats = 1 then 
-                  build_body_fn (List.hd possible_floats)
                 else
                   let actual_discretized_param_expr = 
                     match already_discretized_expr with
