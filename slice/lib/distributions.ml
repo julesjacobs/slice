@@ -55,10 +55,13 @@ let uniform_cdf_interior lo hi x =
 
 (* ocaml-gsl converts these arguments with [Unsigned_int_val], so values above
    UINT_MAX would silently wrap before reaching GSL. *)
-let gsl_unsigned_int_max = Int64.to_int 0xffff_ffffL
+let gsl_unsigned_int_max = 0xffff_ffffL
+
+let gsl_host_integer_max =
+  Int64.min gsl_unsigned_int_max (Int64.of_int max_int)
 
 let check_gsl_unsigned_int name value =
-  if value < 0 || value > gsl_unsigned_int_max then
+  if value < 0 || Int64.of_int value > gsl_host_integer_max then
     invalid_arg (name ^ " is outside the GSL unsigned-int range")
 
 let require_finite name x =
@@ -107,7 +110,7 @@ let integer_cdf ~strict ~upper_support cdf x =
         1.0
     | _ ->
         let k_float = if strict then ceil x -. 1.0 else floor x in
-        if k_float > float_of_int gsl_unsigned_int_max then
+        if k_float > Int64.to_float gsl_host_integer_max then
           invalid_arg "integer CDF boundary is outside the GSL unsigned-int range"
         else cdf (int_of_float k_float)
 
@@ -309,6 +312,6 @@ let get_cdistr_from_two_arg_kind (kind: Ast.two_arg_dist_kind) (arg1: float) (ar
       if classify_float arg1 = FP_nan || arg1 < 0.0 || arg1 > 1.0 then
         Error "Binomial p must be between zero and one"
       else if classify_float arg2 = FP_nan || arg2 < 0.0 || arg2 <> floor arg2
-              || arg2 > float_of_int gsl_unsigned_int_max then
+              || arg2 > Int64.to_float gsl_host_integer_max then
         Error "Binomial n must be an unsigned-int-range non-negative integer"
       else Ok (Binomial (arg1, int_of_float arg2))
