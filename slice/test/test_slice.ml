@@ -50,6 +50,32 @@ let test_raw_discretize_checks_distribution_parameters _test_ctxt =
          in
          contains 0)
 
+let remove_if_present path =
+  if Sys.file_exists path then Sys.remove path
+
+let compile_api_probe member =
+  let source = Filename.temp_file "slice-discretization-api" ".ml" in
+  let stem = Filename.chop_extension source in
+  let channel = open_out source in
+  output_string channel
+    (Printf.sprintf "let _ = Slice.Discretization.%s\n" member);
+  close_out channel;
+  let include_dir =
+    Filename.concat (Sys.getcwd ()) "../lib/.slice.objs/byte"
+  in
+  let command =
+    Printf.sprintf "ocamlc -I %s -c %s >/dev/null 2>&1"
+      (Filename.quote include_dir) (Filename.quote source)
+  in
+  let status = Sys.command command in
+  List.iter remove_if_present [source; stem ^ ".cmi"; stem ^ ".cmo"];
+  status
+
+let test_unchecked_discretizer_is_not_public _test_ctxt =
+  assert_equal 0 (compile_api_probe "discretize");
+  assert_bool "The unchecked transformation helper must not be public"
+    (compile_api_probe "discretize_unchecked" <> 0)
+
 let rec contains_sample (Slice.Ast.ExprNode node) =
   let open Slice.Ast in
   match node with
@@ -93,6 +119,8 @@ let suite =
      "test_recursive_distribution_parameter_rejected" >:: test_recursive_distribution_parameter_rejected;
      "test_raw_discretize_checks_distribution_parameters"
        >:: test_raw_discretize_checks_distribution_parameters;
+     "test_unchecked_discretizer_is_not_public"
+       >:: test_unchecked_discretizer_is_not_public;
      "test_nonempty_parameter_emits_no_sample_fallback" >:: test_nonempty_parameter_emits_no_sample_fallback;
      "test_top_level_function_propagates_top_before_validation"
        >:: test_top_level_function_propagates_top_before_validation;
