@@ -127,7 +127,7 @@
 			& $e_1 = v_1 > v_2 = e_2$ &
 		    $\sem{\diverge : \tau, \discretize{\uniform(v_1 : \tau_1,v_2 : \tau_2)} : \discretize{\tau}}$  \\
 			%
-			& $e_1=c_1$, $e_2$ no val.\ & \makecell[l]{$\sem{e_2:\tau_2, \discretize{e_2} : \discretize{\tau_2}}$ \\ $\gg\!= \lambda (g,g'). \dirac{(\uniform(v_1:\tau_1, g:\tau_2 ) : \tau, \discretize{\uniform(v_1:\tau_1,g:\tau_2):\tau} : \discretize{\tau})}$} \\
+			& $e_1=c_1$, $e_2$ no val.\ & \makecell[l]{$\sem{e_2:\tau_2, \discretize{e_2} : \discretize{\tau_2}}$ \\ $\gg\!= \lambda (g,g'). \dirac{(\uniform(c_1:\tau_1, g:\tau_2 ) : \tau, \discretize{\uniform(c_1:\tau_1,g:\tau_2):\tau} : \discretize{\tau})}$} \\
 			%
 			& $e_1$ no val.\ & \makecell[l]{$\sem{e_1:\tau_1, \discretize{e_1} : \discretize{\tau_1}}$ \\ $\gg\!= \lambda (g,g'). \dirac{(\uniform(g:\tau_1, e_2:\tau_2) : \tau, \discretize{\uniform(g:\tau_1,e_2:\tau_2):\tau} : \discretize{\tau})}$} \\
 %			 bla
@@ -138,7 +138,7 @@
 	\end{adjustbox}
 	\end{center}%=
 	%
-	\caption{Small-step coupling semantics. Notice that $\discretize{e} : \discretize{\tau}$ is uniquely determined by $e \boldsymbol{:} \boldsymbol{\tau}$ so that it suffices to indicate the latter in the left-hand column. Here, every function of the form $f(g,g') = \lambda (g,g').\dirac{\ldots}$ is extended to $f_{\bot}$ in the sense of \Cref{def:bot-extension}.}
+	\caption{Candidate coupling rules for the source and generated core language. These rules are not used as a synchronous one-step coupling: the generated let/conditional dispatch takes administrative steps before its probabilistic step.}
 	\label{tab:coupling_smallstep_1}%
 \end{table}%
 

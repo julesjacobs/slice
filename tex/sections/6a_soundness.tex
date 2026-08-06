@@ -893,18 +893,7 @@ Let $X$ be a set equipped with a suitable measurable space so that $\mathcal{D}(
 
 Throughout this section, we denote by $e :\tau$ a well-typed expression of type $\tau$ and implicitly assume that all sub-expressions are annotated with types, as well.  In particular, the last rule of \Cref{fig:discretization-code} denotes the displayed, capture-avoiding nest of core-language let-bindings, conditionals, Boolean conjunctions, and finite equalities.  It is not a new primitive.  Thus the transformation used in this appendix is exactly the source-to-source transformation in \Cref{fig:discretization-code}; all its output forms occur in \Cref{fig:grammar} and are typed by the rules in \Cref{fig:typing-general}.
 
-Substitution below is annotation preserving: a value substituted for a variable receives the type annotation of that variable occurrence.  The constant-parameter CDF rule in \Cref{fig:discretization-code} applies only when the corresponding annotated value sets are singletons.  Consequently, substitution cannot turn a dynamic-dispatch instance into a constant-parameter instance merely because its residual expression is syntactically a constant.
-
-\begin{lemma}[Discretization commutes with substitution]\label{lem:discretize-substitution}
-If $\Gamma,x:\tau_1\vdash e:\tau_2$ and $\Gamma\vdash v:\tau_1$ with $v$ a value, then capture-avoiding, annotation-preserving substitution satisfies
-\[
-  \discretize{e:\tau_2}[\discretize{v:\tau_1}/x]
-  = \discretize{e[v/x]:\tau_2}.
-\]
-\end{lemma}
-\begin{proof}
-By structural induction on the annotated expression $e$.  All structural cases follow from the induction hypotheses.  For a finite-cut distribution, the selected transformation clause and its finite value-set enumeration are determined by the annotations.  Annotation-preserving substitution leaves those annotations unchanged, so both sides select the same clause and differ only in recursively transformed arguments, where the induction hypotheses apply.
-\end{proof}
+The usual syntactic equation $\discretize{e}[\discretize v/x]=\discretize{e[v/x]}$ does \emph{not} hold for this transformation.  Substitution can change which distribution clause applies: it can turn a dynamic parameter into a literal constant, or expose the invalid-parameter shortcut.  What is needed is instead a semantic compiler-simulation lemma that permits the target to take finitely many deterministic administrative steps (let substitution, finite equality, Boolean conjunction, and conditional selection) while the source stutters.  Establishing that lemma for every transformation clause remains an explicit proof obligation below.
 
  
 %
@@ -1343,6 +1332,7 @@ The missing probability mass in $\sem{e :\tau}$ is the probability of encounteri
 
 
 \subsection{Small-Step Coupling Semantics}
+\iffalse
 \input{figures/coupling_smallstep}
 
 %\kevin{todo: measurable space} 
@@ -1517,24 +1507,24 @@ We have the following key property:
 		\tag{definition} \\
 		%
 		~{}={}~ & \big( \sem{e_2:\tau_2, \discretize{e_2} : \discretize{\tau_2}} \\
-		& \gg\!= \lambda (f,f'). \delta_{(\uniform(v_1:\tau_1, f:\tau_2 ) : \tau, \discretize{\uniform(v_1:\tau_1,f:\tau_2):\tau} : \discretize{\tau})} \big)
+		& \gg\!= \lambda (f,f'). \delta_{(\uniform(c_1:\tau_1, f:\tau_2 ) : \tau, \discretize{\uniform(c_1:\tau_1,f:\tau_2):\tau} : \discretize{\tau})} \big)
 		 \gg\!= \lambda(e_1,e_2). \delta_{e_1}   \\
 		 %
 		 ~{}={}~ &  \sem{e_2:\tau_2, \discretize{e_2} : \discretize{\tau_2}} \\
-		 & \gg\!= \lambda (f,f'). \big(\delta_{(\uniform(v_1:\tau_1, f:\tau_2 ) : \tau, \discretize{\uniform(v_1:\tau_1,f:\tau_2):\tau} : \discretize{\tau})}
+		 & \gg\!= \lambda (f,f'). \big(\delta_{(\uniform(c_1:\tau_1, f:\tau_2 ) : \tau, \discretize{\uniform(c_1:\tau_1,f:\tau_2):\tau} : \discretize{\tau})}
 		 \gg\!= \lambda(e_1,e_2). \delta_{e_1} \big)
 		 \tag{monad assoc.} \\
 		 %
 		 ~{}={}~ &  \sem{e_2:\tau_2, \discretize{e_2} : \discretize{\tau_2}} 
-		  \gg\!= \lambda (f,f'). \delta_{\uniform(v_1:\tau_1, f:\tau_2 ) : \tau} 
+		  \gg\!= \lambda (f,f'). \delta_{\uniform(c_1:\tau_1, f:\tau_2 ) : \tau}
 		 \tag{monad return} \\
 		 %
 		 ~{}={}~ &  \pi_1(\sem{e_2:\tau_2, \discretize{e_2} : \discretize{\tau_2}})
-		 \gg\!= \lambda f. \delta_{\uniform(v_1:\tau_1, f:\tau_2 ) : \tau} 
+		 \gg\!= \lambda f. \delta_{\uniform(c_1:\tau_1, f:\tau_2 ) : \tau}
 		 \tag{\Cref{lem:bind_project}.\ref{lem:bind_project1}} \\
 		 %
 		 ~{}={}~ &  \sem{e_2:\tau_2}
-		 \gg\!= \lambda f. \delta_{\uniform(v_1:\tau_1, f:\tau_2 ) : \tau} ~.
+		 \gg\!= \lambda f. \delta_{\uniform(c_1:\tau_1, f:\tau_2 ) : \tau} ~.
 		 \tag{$ \sem{e_2:\tau_2, \discretize{e_2} : \discretize{\tau_2}}  =  \sem{e_2:\tau_2}$ by I.H.} \\
 		 %
 		 ~{}={}~ &  \sem{e : \tau}
@@ -2003,3 +1993,18 @@ The following will imply our desired equivalence claim:
 %	\noindent
 %	\emph{The case $v=\false$.} Completely analogous to the previous case.
 \end{proof}
+\fi
+
+\subsection{Weak compiler-simulation obligation}
+
+Let $\longrightarrow_{\mathrm a}$ contain only deterministic administrative target reductions: let substitution, finite equality, Boolean conjunction, and conditional selection.  Write $\Longrightarrow_{\mathrm a}$ for its reflexive transitive closure.  A sound proof for the literal generated term must construct a measurable relation $R_\tau$ such that
+\[
+  (e,\discretize{e})\in R_\tau
+  \quad\text{and}\quad
+  (e,t)\in R_\tau,\ e\longrightarrow\mu
+  \implies
+  t\Longrightarrow_{\mathrm a}\,;\longrightarrow\,;\Longrightarrow_{\mathrm a}\nu
+\]
+with a coupling of $\mu$ and $\nu$ supported on $R_\tau$.  The symmetric clause permits target administrative steps while the source stutters.  Terminal related Boolean values must be equal, and both sides must assign the same mass to observation failure.  These conditions are sufficient, by the same monotone-limit argument used for the ordinary semantics, to obtain equality of the Boolean big-step distributions.
+
+The synchronous graph $\{(e,\discretize e)\}$ and its one-step projection lemma do not satisfy this obligation: the generated distribution dispatch takes several administrative steps, and clause selection is not stable under syntactic substitution.  The former synchronous proof and tables are retained in the source above only as disabled historical material.  This appendix therefore does not claim that the weak simulation has been proved.  It identifies the exact missing lemma rather than treating a proof-only $\dc$ operation as if it were emitted by the compiler.

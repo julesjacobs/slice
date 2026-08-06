@@ -88,7 +88,7 @@ $
 	\bigsem{e:\tau} = \lambda A. \lim_{n\to\infty} \bigsemstep{e:\tau}{n}(A)~,
 $
 % 
-which is well-defined by the monotone convergence theorem: the sequence $(\bigsemstep{e : \tau}{n})_{n\in\Nats}$ is monotonically increasing for every measurable set $A$ over $Vals_\tau + \bot$ (cf.\ \Cref{lem:bigstepsem}) and upper-bounded by $1$: executing a program for more and more steps can only increase the probability of terminating in a given set of values or an observation failure.
+which is well-defined by the monotone convergence theorem: the sequence $(\bigsemstep{e : \tau}{n})_{n\in\Nats}$ is monotonically increasing for every measurable set $A$ over $Vals_\tau + \bot$ and upper-bounded by $1$: executing a program for more and more steps can only increase the probability of terminating in a given set of values or an observation failure.
 
 %
 %\kbin{old}
@@ -101,8 +101,9 @@ which is well-defined by the monotone convergence theorem: the sequence $(\bigse
 \subsection{Soundness via Probabilistic Couplings}
 \label{C}
 %
-We first state the central theorem, then outline our coupling-style correctness argument.
+The generated target takes administrative steps that have no matching source step. The disabled text below records the earlier synchronous argument for comparison; the proposition after it states what currently follows.
 %
+\iffalse
 \begin{theorem}
 	\label{thm:maintext:sound}
 	Let $e:\bool$. Then $\bigsem{e:\bool} = \bigsem{\discretize{e:\bool} : \bool}$.
@@ -174,4 +175,15 @@ Now, using a limit construction analogous to \Cref{sec:smallsem_to_bigsem} for o
     \tag{Lemma \ref{lem:maintext:small_step_coupling_props}.\ref{lem:maintext:small_step_coupling_props2} for $\bigsem{\cdot,\cdot}$}
 \end{align*}
 
- 
+\fi
+
+\begin{proposition}[Conditional exactness]
+	\label{thm:maintext:sound}
+	Let $e:\bool$. If the literal generated core term satisfies the weak compiler-simulation obligation in \Cref{sec:app:soundness_new}, including equality of terminal Boolean and observation-failure mass, then $\bigsem{e:\bool}=\bigsem{\discretize{e:\bool}:\bool}$.
+\end{proposition}
+
+\begin{proof}
+The weak simulation supplies a coupling of the two increasing finite-step approximants whose terminal support is contained in $\{(\true,\true),(\false,\false),\bot\}$. Projection commutes with the monotone limit, so the two limiting measures agree on $\true$, $\false$, and $\bot$.
+\end{proof}
+
+The required weak simulation has not yet been established. The earlier synchronous one-step argument is invalid for the emitted let/conditional dispatch because the target must take administrative steps while the source stutters. Accordingly, this proposition records a conditional result, not a completed exactness proof.
