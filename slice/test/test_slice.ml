@@ -85,6 +85,42 @@ let test_inferred_coincident_cut_atomic_masses _test_ctxt =
       assert_float_list [0.25; 0.5; 0.25] (List.map snd cases)
   | _ -> assert_failure "expected the inferred Binomial sample to discretize"
 
+let test_atomic_interval_masses _test_ctxt =
+  let open Slice in
+  let poisson = Distributions.Poisson 1.0 in
+  let p0 = exp (-1.0) in
+  assert_float_list [0.0; p0; 1.0 -. p0]
+    (Discretization.prob_cdistr_intervals [Lats.Less 0.0; Lats.LessEq 0.0] poisson);
+  assert_float_list [p0; 1.0 -. p0]
+    (Discretization.prob_cdistr_intervals [Lats.Less 1.0] poisson);
+  let bernoulli = Distributions.Binomial (0.5, 1) in
+  assert_float_list [0.5; 0.5]
+    (Discretization.prob_cdistr_intervals [Lats.Less 1.0] bernoulli);
+  assert_float_list [0.0; 0.5; 0.5]
+    (Discretization.prob_cdistr_intervals [Lats.Less 0.0; Lats.LessEq 0.0] bernoulli)
+
+let test_atomic_cdf_between_integers _test_ctxt =
+  let open Slice.Distributions in
+  let poisson = Poisson 1.0 in
+  assert_equal 0.0 (cdistr_cdf poisson (-0.5));
+  assert_equal 0.0 (cdistr_cdf_left poisson 0.0);
+  assert_bool "right-continuous Poisson CDF includes the atom at zero"
+    (abs_float (cdistr_cdf poisson 0.0 -. exp (-1.0)) < 1e-12);
+  assert_equal 1.0 (cdistr_cdf (Poisson 0.0) 0.0);
+  assert_equal 0.0 (cdistr_cdf_left (Poisson 0.0) 0.0);
+  assert_equal 1.0 (cdistr_cdf (Binomial (0.0, 0)) 0.0);
+  assert_equal 0.0 (cdistr_cdf_left (Binomial (0.0, 0)) 0.0)
+
+let test_atomic_parameter_domains _test_ctxt =
+  let open Slice in
+  assert_equal (Ok (Distributions.Poisson 0.0))
+    (Distributions.get_cdistr_from_single_arg_kind Ast.DPoisson 0.0);
+  assert_equal (Ok (Distributions.Binomial (0.0, 0)))
+    (Distributions.get_cdistr_from_two_arg_kind Ast.DBinomial 0.0 0.0);
+  assert_bool "binomial rejects p > 1"
+    (Result.is_error (Distributions.get_cdistr_from_two_arg_kind Ast.DBinomial 1.1 2.0));
+  assert_bool "binomial rejects fractional n"
+    (Result.is_error (Distributions.get_cdistr_from_two_arg_kind Ast.DBinomial 0.5 2.5))
 (* Test suite *) 
 let suite = 
   "Slice Tests" >:::
@@ -99,6 +135,9 @@ let suite =
      "integer CDF threshold safety" >:: test_integer_cdf_threshold_safety;
      "inferred coincident-cut atomic masses" >::
        test_inferred_coincident_cut_atomic_masses;
+     "test_atomic_interval_masses" >:: test_atomic_interval_masses;
+     "test_atomic_cdf_between_integers" >:: test_atomic_cdf_between_integers;
+     "test_atomic_parameter_domains" >:: test_atomic_parameter_domains;
     ]
 
 (* Main test runner *) 

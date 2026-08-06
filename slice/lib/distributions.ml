@@ -36,6 +36,7 @@ let integer_cdf ~upper_support cdf x =
     | _ when x >= float_of_int max_int -> 1.0
     | _ -> cdf (int_of_float (floor x))
 
+(** [cdistr_cdf dist x] is the right-continuous CDF [P(X <= x)]. *)
 let cdistr_cdf dist x =
   if classify_float x = FP_nan then invalid_arg "CDF is undefined at NaN"
   else if x = neg_infinity then 0.0
@@ -60,27 +61,26 @@ let cdistr_cdf dist x =
   | Gumbel2 (a, b)          -> Gsl.Cdf.gumbel2_P ~x:x ~a ~b
   | Rayleigh sigma          -> Gsl.Cdf.rayleigh_P ~x:x ~sigma
   | Exppow (a, b)           -> Gsl.Cdf.exppow_P ~x:x ~a ~b
+  | Poisson 0.0             -> if x < 0.0 then 0.0 else 1.0
   | Poisson mu              ->
-      integer_cdf ~upper_support:None
-        (fun k -> Gsl.Cdf.poisson_P ~k ~mu) x
+      integer_cdf ~upper_support:None (fun k -> Gsl.Cdf.poisson_P ~k ~mu) x
+  | Binomial (_, 0) | Binomial (0.0, _) -> if x < 0.0 then 0.0 else 1.0
+  | Binomial (1.0, n)       -> if x < float_of_int n then 0.0 else 1.0
   | Binomial (p, n)         ->
-      integer_cdf ~upper_support:(Some n)
-        (fun k -> Gsl.Cdf.binomial_P ~k ~p ~n) x
+      integer_cdf ~upper_support:(Some n) (fun k -> Gsl.Cdf.binomial_P ~k ~p ~n) x
 
-(** [cdistr_cdf_below dist x] is the left limit of the CDF: [P(X < x)].
-    It differs from [cdistr_cdf] at atoms.  Degenerate uniforms and the
-    integer-valued distributions need explicit implementations so that an
-    endpoint's strictness is preserved. *)
-let cdistr_cdf_below dist x =
-  if classify_float x = FP_nan then invalid_arg "CDF is undefined at NaN"
-  else if x = neg_infinity then 0.0
-  else if x = infinity then 1.0
-  else
-    match dist with
-    | Uniform (lo, hi) when lo = hi -> if x <= lo then 0.0 else 1.0
-    | Poisson _ | Binomial _ ->
-        if x <= 0.0 then 0.0 else cdistr_cdf dist (ceil x -. 1.0)
-    | _ -> cdistr_cdf dist x
+(** [cdistr_cdf_left dist x] is the left limit [P(X < x)].  This differs
+    from [cdistr_cdf] at atoms. *)
+let cdistr_cdf_left dist x =
+  match dist with
+  | Poisson _ | Binomial _ ->
+      if x = neg_infinity then 0.0
+      else if x = infinity then 1.0
+      else if classify_float x = FP_nan then invalid_arg "CDF is undefined at NaN"
+      else cdistr_cdf dist (ceil x -. 1.0)
+  | _ -> cdistr_cdf dist x
+
+let cdistr_cdf_below = cdistr_cdf_left
 
 let cdistr_sample dist =
   match dist with
@@ -118,8 +118,11 @@ let cdistr_sample dist =
       Gsl.Randist.rayleigh rng ~sigma
   | Exppow (a, b) ->
       Gsl.Randist.exppow rng ~a ~b
+  | Poisson 0.0 -> 0.0
   | Poisson mu ->
       float_of_int (Gsl.Randist.poisson rng ~mu)
+  | Binomial (_, 0) | Binomial (0.0, _) -> 0.0
+  | Binomial (1.0, n) -> float_of_int n
   | Binomial (p,n) ->
       float_of_int (Gsl.Randist.binomial rng ~p ~n)
 
@@ -172,7 +175,8 @@ let get_cdistr_from_single_arg_kind (kind: Ast.single_arg_dist_kind) (arg1: floa
       if arg1 <= 0.0 then Error "Rayleigh sigma must be positive"
       else Ok (Rayleigh arg1)
   | Ast.DPoisson -> 
-      if arg1 <= 0.0 then Error "Poisson mu must be positive"
+      if classify_float arg1 = FP_nan || classify_float arg1 = FP_infinite || arg1 < 0.0 then
+        Error "Poisson mu must be finite and non-negative"
       else Ok (Poisson arg1)
 
 let get_cdistr_from_two_arg_kind (kind: Ast.two_arg_dist_kind) (arg1: float) (arg2: float) : (cdistr, string) result =
@@ -208,5 +212,8 @@ let get_cdistr_from_two_arg_kind (kind: Ast.two_arg_dist_kind) (arg1: float) (ar
       if arg1 <= 0.0 || arg2 <= 0.0 then Error "Exppow a and b must be positive"
       else Ok (Exppow (arg1, arg2))
   | Ast.DBinomial -> 
-      if arg1 <= 0.0 || arg2 < 0.0 then Error "Binomial p must be positive and n must be non-negative"
+      if classify_float arg1 = FP_nan || arg1 < 0.0 || arg1 > 1.0 then
+        Error "Binomial p must be between zero and one"
+      else if classify_float arg2 = FP_nan || arg2 < 0.0 || arg2 <> floor arg2 || arg2 >= float_of_int max_int then
+        Error "Binomial n must be a non-negative integer"
       else Ok (Binomial (arg1, int_of_float arg2))

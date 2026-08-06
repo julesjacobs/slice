@@ -724,7 +724,11 @@ let bf_final = search_before_full init in
 
 \section{List of Supported \Slicebf\xspace Distributions}\label{appen:supported-distributions}
 
-The list of distributions supported by \Slice{}, along with their probability density / mass functions, is given in the following table. \Slice{} supports discrete distributions by applying the same cut-set and value-set analysis used for continuous distributions, \emph{provided that the discrete distribution admits a well-defined CDF}. The extension to discrete distributions does not introduce any fundamental changes to the discretization algorithm.
+The list of scalar ordered distributions implemented by \Slice{}, along with their probability density / mass functions, is given in the following table. For a distribution with law $\mu$, discretization assigns the canonical cell $\intervals{B}_k$ the mass
+\[
+    p_k = \mu(\intervals{B}_k).
+\]
+Equivalently, for a right-continuous CDF $F(c)=\Pr[X\leq c]$, a strict cut $<c$ has cumulative boundary mass $F(c^-)=\Pr[X<c]$, whereas a non-strict cut $\leq c$ has cumulative boundary mass $F(c)$. This distinction preserves atoms, including singleton cells induced by the two cuts $<c$ and $\leq c$. The implementation currently provides this interface for Poisson and binomial distributions. Other scalar ordered distributions require the same CDF and CDF-left-limit interface. Vector-valued distributions such as multinomial require a different partition abstraction and are not supported by the real-line cut analysis.
 
 \begin{figure}[h]
 \begin{tabular}{l l @{\qquad} l l}
@@ -752,16 +756,7 @@ The list of distributions supported by \Slice{}, along with their probability de
     \multicolumn{4}{l}{\textbf{Discrete Distributions}} \\
     \midrule
     Poisson & $\frac{\lambda^k e^{-\lambda}}{k!}$ 
-        & Geometric & $(1 - p)^{k - 1} p$ \\
-
-    Binomial & $\binom{n}{k} p^k (1 - p)^{n - k}$ 
-        & Negative Binomial & $\binom{k + r - 1}{k} (1 - p)^r p^k$ \\
-
-    Hypergeometric & $\frac{\binom{K}{k} \binom{N - K}{n - k}}{\binom{N}{n}}$ 
-        & Bernoulli & $p^k (1 - p)^{1 - k}$ \\
-
-    Discrete Uniform & $\frac{1}{n}$ 
-        & Multinomial & $\frac{n!}{x_1! \cdots x_k!} p_1^{x_1} \cdots p_k^{x_k}$ \\
+        & Binomial & $\binom{n}{k} p^k (1 - p)^{n - k}$ \\
     \bottomrule
 \end{tabular}
 \end{figure}

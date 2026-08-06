@@ -40,6 +40,8 @@ let interval_probabilities (cuts : Lats.cut list) (dist : Distributions.cdistr) 
   in
   differences 0.0 cumulative
 
+let prob_cdistr_intervals = interval_probabilities
+
 (* 
 Discretizer from typed expressions to discrete expressions.
 
