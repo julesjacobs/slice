@@ -947,6 +947,8 @@ Equipped with these notions, we define the small-step semantics of our language:
 \begin{definition}
 	The small-step semantics $\sem{e :\tau} \in \mathcal{D}(Expr_{\tau} + \bot)$ is defined recursively on the structure of $e:\tau$ by the rules in \Cref{tab:smallstep-1} and \Cref{tab:smallstep-2}. 
 \end{definition}
+
+In the \textsc{Discrete} row, the typing premises ensure that the displayed weights form a nonempty probability vector. Hence $\text{Discrete}(p_0,\ldots,p_{n-1})=\sum_{i=0}^{n-1}p_i\,\dirac{\finconst{i}{n}}$ is a probability measure in $\mathcal{D}(Expr_{\fin{n}}+\bot)$.
 %
 The missing probability mass in $\sem{e :\tau}$ is the probability of encountering an error due to ill-formed parameters fed into distributions (e.g., $\uniform(0.8,0.1)$). $\sem{e :\tau}(\bot)$ is the probability of encountering an observation failure.
 
@@ -1408,7 +1410,7 @@ We have the following key property:
 	where
 	%
 	\begin{enumerate}
-		\item $c_1 \leq c_2$,
+		\item $c_1 < c_2$,
 		%
 		\item $B =  \{\sim_1\!\!b_1, \ldots, \sim_n\!\!b_n\}$,
 		%
@@ -1438,6 +1440,20 @@ We have the following key property:
 		 = \Pr[X\in\intervals{B}_k]
 		 = H(b_{k+1})-H(b_k),\quad X\sim\text{Uniform}(c_1,c_2)~.
 	\end{align*}
+	Here $c_1<c_2$, and the uniform CDF is the clamped function
+	\[
+	F_{c_1,c_2}(x)=
+	\begin{cases}
+	0 & x\leq c_1,\\
+	\dfrac{x-c_1}{c_2-c_1} & c_1<x<c_2,\\
+	1 & x\geq c_2.
+	\end{cases}
+	\]
+	Thus each $p_k$ is the difference of $F_{c_1,c_2}$ at consecutive
+	cut locations (with endpoints $-\infty$ and $+\infty$). Strict and
+	non-strict cuts assign a boundary point to different adjacent intervals,
+	but this does not change these masses because $c_1<c_2$ makes the uniform
+	distribution atomless.
 	%
 	
 	For \Cref{lem:small_step_coupling_props}.\ref{lem:small_step_coupling_props2}, consider the following:

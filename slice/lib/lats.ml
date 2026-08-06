@@ -13,10 +13,21 @@ type cut =
   | Less of float   (* < c *)
   | LessEq of float (* <= c *)
 
+let cut_boundary = function
+  | Less c | LessEq c -> c
+
+let validate_cut cut =
+  match classify_float (cut_boundary cut) with
+  | FP_nan | FP_infinite ->
+      invalid_arg "Cut boundaries must be finite"
+  | FP_normal | FP_subnormal | FP_zero -> ()
+
 let compare_cut b1 b2 = 
   (* Canonical tagged-cut order: compare thresholds first, with <c before <=c
      when both cuts share c.  This order makes cut satisfaction monotone and
      gives c its own interval when both tags occur. *)
+  validate_cut b1;
+  validate_cut b2;
   match b1, b2 with
   | Less c1, Less c2 -> compare c1 c2
   | LessEq c1, LessEq c2 -> compare c1 c2
@@ -28,6 +39,7 @@ let compare_cut b1 b2 =
       if cmp = 0 then 1 else cmp
 
 let satisfies_cut f cut =
+  validate_cut cut;
   match cut with
   | Less c -> f < c
   | LessEq c -> f <= c

@@ -2,6 +2,12 @@ open Ast
 open Lats (* Open Bags to get FloatSet and access Set modules and Bound type *)
 module Util = Util
 
+let format_probability p =
+  match p with
+  | 0. -> "0.0"
+  | 1. -> "1.0"
+  | _ -> Printf.sprintf "%.17g" p
+
 let extract_fin_modulus (ExprNode e) : int option =
   match e with
   | FinConst (_, k) -> Some k
@@ -55,12 +61,11 @@ and string_of_expr_node ?(indent=0) (ExprNode expr_node) : string =
       Printf.sprintf "(define %s %s)\n%s" x e1_str e2_str)
   | Sample dist_exp -> string_of_sample ~indent dist_exp
   | DistrCase cases ->
+    let cases = Ast.normalize_distr_case ~policy:Ast.Generated cases in
     (* Construct a chain of if-else statements containing flips to resemble the pmf *)
     (* Currently, roulette doesn't have a syntax for discrete(...) *)
     let flip_expr p =
-      if p = 0. then "flip 0.0"
-      else if p = 1. then "flip 1.0"
-      else Printf.sprintf "flip %g" p
+      Printf.sprintf "flip %s" (format_probability p)
     in
     let rec gen_flip_chain probs remaining index =
       match probs with
@@ -71,10 +76,7 @@ and string_of_expr_node ?(indent=0) (ExprNode expr_node) : string =
             if remaining = 0.0 then 0.0
             else p /. remaining 
           in
-          let cond = 
-            if prob_ratio < 0.0 || prob_ratio > 1.0 then "flip 0.0"  (* Invalid probabilities *)
-            else flip_expr prob_ratio 
-          in
+          let cond = flip_expr (max 0.0 (min 1.0 prob_ratio)) in
           let then_branch = string_of_int index in
           let else_branch = gen_flip_chain rest (remaining -. p) (index + 1) in
           Printf.sprintf "(if (%s) %s %s)" cond then_branch else_branch
@@ -195,12 +197,11 @@ and string_of_aexpr_node ?(indent=0) (TAExprNode ae_node) : string =
     Printf.sprintf "let %s = %s in\n%s%s" x e1_str indent_str e2_str
   | Sample dist_exp -> string_of_asample dist_exp 
   | DistrCase cases ->
-    let format_case (_, prob) =
-      match prob with
-      | 0. -> "0."
-      | 1. -> "1."
-      | _ -> Printf.sprintf "%g" prob
+    let weights =
+      Ast.normalize_probability_weights ~policy:Ast.Generated (List.map snd cases)
     in
+    let cases = List.map2 (fun (e, _) p -> (e, p)) cases weights in
+    let format_case (_, prob) = format_probability prob in
     Printf.sprintf "discrete(%s)" (String.concat ", " (List.map format_case cases))
   | Cmp (cmp_op, te1, te2, flipped) ->
       let op_str, left_expr, right_expr = 

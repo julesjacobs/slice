@@ -8,6 +8,10 @@ We now describe the language (\Cref{sec:sub_language}), its types (\Cref{sec:typ
 %
 The syntax in \Cref{fig:grammar} extends a standard higher-order functional core with probabilistic choices. Beyond constants, variables, comparisons, Boolean operators, conditionals, pairs, and lists, \Slice{} offers first-class functions, recursion, and observations. The construct $\observekw(e)$ conditions on $e$ holding. Finite-domain constants $\finconst{k}{n}$ range over $\{\finconst{0}{n},\ldots,\finconst{(n-1)}{n}\}$ as discussed below. For random sampling, we include scalar ordered discrete distributions and continuous distributions with tractable cumulative distribution functions (one- or two-argument variants such as exponential, laplace, uniform, gaussian, beta, gamma). An atomic distribution additionally requires access to CDF left limits. \Cref{appen:supported-distributions} lists the distributions implemented by \Slice{}.
 
+The expression $\discrete(p_0,\ldots,p_{n-1})$ requires a nonempty probability vector: $n\geq 1$, every $p_i\geq 0$, and $\sum_i p_i=1$. It returns $\finconst{k}{n}$ with probability $p_k$.
+
+These are ideal real-valued premises. The implementation separately validates finite binary64 weights. It normalizes compiler-generated weights only within a tight allowance for accumulated CDF arithmetic, and parses source vectors within a documented $10^{-4}$ rounded-input allowance. These engineering policies do not replace the exact premise above: binary64 evaluation and normalization do not by themselves establish exact preservation of ideal real-valued probabilities, which requires a separate numerical error analysis.
+
 % \item \textbf{Discrete distributions}: The $\discrete(p_0, \ldots, p_{n-1})$ construct returns a finite type value $\finconst{k}{n}$ \kevin{let's maybe explain the types first?  $\finconst{k}{n}$ is not introduced} with probability $p_k$.
 
 
@@ -275,10 +279,17 @@ Finally, for non-strict comparisons, the rule is analogous to \Cref{def:answers-
 
 The tagged-cut convention is essential here. If both $\clt c$ and $\cleq c$
 occur, their order isolates $\{c\}$ between them. More generally, membership
-in each predicate set $S_b$ is determined by the interval index. Therefore the
-cuts required by $\answerslt{B}{V_1}{V_2}$ and
-$\answersleq{B}{V_1}{V_2}$ make the corresponding strict and non-strict
-comparison constant on every pair of induced intervals.
+in each predicate set $S_b$ is determined by the interval index. This does not
+make a comparison constant on every arbitrary pair of induced intervals.
+Instead, the typing premises give the property needed on reachable values. For
+$\answerslt{B}{V_1}{V_2}$, either the right operand is known to lie in $V_2$
+and $\clt y\in B$ for every reachable $y\in V_2$, or the left operand is known
+to lie in $V_1$ and $\cleq x\in B$ for every reachable $x\in V_1$. In the
+first case the interval index decides $x<y$ for every reachable pair, and in
+the second case it decides the same predicate symmetrically. Replacing
+$\clt y$ and $\cleq x$ by the cuts in
+$\answersleq{B}{V_1}{V_2}$ gives the corresponding reachable-pair statement
+for $x\leq y$.
 
 \input{figures/typing-general-core}
 
