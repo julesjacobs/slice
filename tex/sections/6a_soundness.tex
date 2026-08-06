@@ -1592,14 +1592,17 @@ We have the following key property:
 
 \subsection{Big-Step Semantics and Correctness of Discretization}
 %
-Let $K_\tau$ be the error-total extension of the ordinary one-step kernel:
-$K_\tau(\bot)=\delta_\bot$ and $K_\tau(e)=\sem{e:\tau}$. We define the
-ordinary $n$-step semantics by
+This construction uses the strict sub-Markov bind defined in the
+kernel-category development: bind accepts an ordinary continuation and itself
+extends it by sending $\bot$ to $\delta_\bot$. Let
+$S_\tau:Expr_\tau\to\mathcal D(Expr_\tau+\bot)$ be the ordinary one-step
+kernel, $S_\tau(e)=\sem{e:\tau}$. Define the ordinary $n$-step semantics for
+every typed expression state by
 \[
 	\bigsemstep{e : \tau}{n} =
 	\begin{cases}
 		\delta_{e : \tau} & \text{if $n = 0$}, \\
-		\bigsemstep{e : \tau}{n-1} \monbind K_\tau
+		\bigsemstep{e : \tau}{n-1} \monbind S_\tau
 			& \text{if $n > 0$}.
 	\end{cases}
 \]
@@ -1627,13 +1630,13 @@ kernel.
 
 	Inductive step: $n > 0$. By definition, 
 	\[
-		\bigsemstep{e : \tau}{n} = \bigsemstep{e : \tau}{n-1} \monbind K_\tau
+		\bigsemstep{e : \tau}{n} = \bigsemstep{e : \tau}{n-1} \monbind S_\tau
 	\]
 	
 	By the I.H., $\bigsemstep{\cdot}{n-1}$ is a sub-Markov kernel. The
-	$\bot$-extended one-step semantics is also sub-Markov, and sub-Markov
-	kernels are closed under composition. Hence
-	$\bigsemstep{e : \tau}{n-1} \monbind K_\tau$ is a
+	ordinary one-step semantics is sub-Markov, and strict sub-Markov bind
+	extends it at $\bot$ and composes the kernels. Hence
+	$\bigsemstep{e : \tau}{n-1} \monbind S_\tau$ is a
 	sub-Markov kernel.
 \end{proof}
 
@@ -1659,7 +1662,7 @@ semantics to terminal outcomes by
 	\qquad(A \in \mathcal F_{T_\tau}).
 \]
 Each $\nu^e_n$ is a subprobability measure because it is a restriction of an
-$n$-step subprobability measures.  Notice that the full $n$-step measures on
+$n$-step subprobability measure.  Notice that the full $n$-step measures on
 expressions need not be increasing: a deterministic step removes mass from
 the singleton containing its source expression.
 
@@ -1673,17 +1676,18 @@ the singleton containing its source expression.
 \end{lemma}
 
 \begin{proof}
-	Let $K_\tau$ be the $\bot$-extended one-step kernel.  Terminal outcomes
-	are absorbing: $K_\tau(x)=\delta_x$ when $x\in T_\tau$.  Consequently,
+	Let $(S_\tau)_\bot$ be the error-total continuation used internally by
+	strict bind. Terminal outcomes are absorbing:
+	$(S_\tau)_\bot(x)=\delta_x$ when $x\in T_\tau$. Consequently,
 	for every $x\in Expr_\tau+\bot$ and measurable $A\subseteq T_\tau$,
 	\[
-		K_\tau(x)(A) \geq \mathbf 1_A(x).
+		(S_\tau)_\bot(x)(A) \geq \mathbf 1_A(x).
 	\]
 	For a nonterminal $x$ the right-hand side is zero; for a terminal $x$
 	the two sides are equal.  Hence
 	\begin{align*}
 		\nu^e_{n+1}(A)
-		&= \int K_\tau(x)(A)\,\bigsemstep{e:\tau}{n}(dx) \\
+		&= \int (S_\tau)_\bot(x)(A)\,\bigsemstep{e:\tau}{n}(dx) \\
 		&\geq \int \mathbf 1_A(x)\,\bigsemstep{e:\tau}{n}(dx)
 		 = \nu^e_n(A).
 	\end{align*}
@@ -1698,6 +1702,10 @@ the singleton containing its source expression.
 			\qquad A\in\mathcal F_{T_\tau}.
 	\]
 \end{definition}
+
+The semantic kernel is defined on all typed expression states so it can be
+iterated. Any program-level comparison with the transformed term is restricted
+to a closed, well-typed initial expression.
 
 \begin{lemma}[Big-step semantics is well-defined]
 	\label{lem:big-step-well-defined}
