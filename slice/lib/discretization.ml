@@ -3,6 +3,37 @@
 open Ast
 open Lats
 
+module StringSet = Set.Make (String)
+
+let identifiers_in_texpr expression =
+  let identifiers = ref StringSet.empty in
+  let add name = identifiers := StringSet.add name !identifiers in
+  let rec visit ((_, TAExprNode node) : texpr) =
+    match node with
+    | Var name -> add name
+    | Let (name, first, second) -> add name; visit first; visit second
+    | Fun (name, body) -> add name; visit body
+    | Fix (function_name, parameter_name, body) ->
+        add function_name; add parameter_name; visit body
+    | MatchList (value, nil_case, head_name, tail_name, cons_case) ->
+        add head_name; add tail_name; visit value; visit nil_case; visit cons_case
+    | Sample (Distr1 (_, parameter)) -> visit parameter
+    | Sample (Distr2 (_, first, second)) -> visit first; visit second
+    | DistrCase cases -> List.iter (fun (case, _) -> visit case) cases
+    | And (first, second) | Or (first, second) | Pair (first, second)
+    | FuncApp (first, second) | LoopApp (first, second, _)
+    | FinEq (first, second, _) | Cmp (_, first, second, _)
+    | FinCmp (_, first, second, _, _) | Cons (first, second)
+    | Assign (first, second) | Seq (first, second) -> visit first; visit second
+    | If (condition, then_branch, else_branch) ->
+        visit condition; visit then_branch; visit else_branch
+    | First child | Second child | Not child | Observe child | Ref child
+    | Deref child -> visit child
+    | Const _ | BoolConst _ | FinConst _ | Nil | Unit | RuntimeError _ -> ()
+  in
+  visit expression;
+  !identifiers
+
 let find_index pred lst =
   let rec loop i = function
     | [] -> None
@@ -40,6 +71,25 @@ When doing a comparison against a float, we convert that to a comparison
 against the discrete integer that represents the i-th float in the bag.
 *)
 let discretize (e : texpr) : expr =
+  let used_identifiers = ref (identifiers_in_texpr e) in
+  let fresh_generated prefix =
+    let rec choose () =
+      let candidate = Util.fresh_var prefix in
+      if StringSet.mem candidate !used_identifiers then choose ()
+      else begin
+        used_identifiers := StringSet.add candidate !used_identifiers;
+        candidate
+      end
+    in
+    choose ()
+  in
+  let gen_hygienic_let base_name_hint rhs_expr body_fn =
+    match rhs_expr with
+    | ExprNode (Var existing_var_name) -> body_fn existing_var_name
+    | _ ->
+        let new_var_name = fresh_generated base_name_hint in
+        ExprNode (Let (new_var_name, rhs_expr, body_fn new_var_name))
+  in
   (* Helper function for comparison operations *)
   let handle_comparison aux op_name te1 te2 cmp_op flipped =
     let t1 = fst te1 in
@@ -176,12 +226,16 @@ let discretize (e : texpr) : expr =
             match arms with 
             | [] ->
                 failwith "Internal error: distribution parameter dispatch has no arms"
-            | [(_target_finconst_expr, body_expr)] -> 
-                (* This is the last arm. If all previous conditions were false, this one is effectively the 'else'.
-                   The assumption is that val_var_name *must* match one of the targets if possible_floats was exhaustive.
-                   So, the condition FinEq(ExprNode (Var val_var_name), target_finconst_expr, param_modulus) is implicitly true here.
-                *)
-                body_expr
+            | [(target_finconst_expr, body_expr)] ->
+                let condition =
+                  ExprNode (FinEq (ExprNode (Var val_var_name), target_finconst_expr, param_modulus))
+                in
+                ExprNode
+                  (If
+                    (condition, body_expr,
+                     ExprNode
+                       (RuntimeError
+                         "Internal error: inferred distribution parameter domain was not exhaustive")))
             | (target_finconst_expr, body_expr) :: rest_arms ->
               let current_val_expr = ExprNode (Var val_var_name) in
               let condition =
@@ -212,7 +266,7 @@ let discretize (e : texpr) : expr =
                   (target_finconst_expr, body)
                 ) possible_floats in
 
-                Util.gen_let ("_disc_" ^ param_name_str) actual_discretized_param_expr
+                gen_hygienic_let ("_disc_" ^ param_name_str) actual_discretized_param_expr
                   (fun let_var_name -> build_nested_ifs let_var_name param_modulus match_arms)
             | _ ->
                 failwith (Printf.sprintf
@@ -234,9 +288,9 @@ let discretize (e : texpr) : expr =
           let handle_two_param_distribution kind param1_texpr param1_name param2_texpr param2_name =
             let discretized_param1_expr = aux param1_texpr in
             let discretized_param2_expr = aux param2_texpr in
-            Util.gen_let ("_disc_" ^ param1_name) discretized_param1_expr
+            gen_hygienic_let ("_disc_" ^ param1_name) discretized_param1_expr
               (fun param1_var ->
-                Util.gen_let ("_disc_" ^ param2_name) discretized_param2_expr
+                gen_hygienic_let ("_disc_" ^ param2_name) discretized_param2_expr
                   (fun param2_var ->
                     generate_runtime_match_for_param
                       ~already_discretized_expr:(Some (ExprNode (Var param1_var)))

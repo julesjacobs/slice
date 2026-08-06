@@ -106,6 +106,102 @@ let test_empty_dispatch_domain_is_an_invariant_failure _test_ctxt =
         "Internal error: finite sample parameter lambda has no nonempty finite dispatch domain"
         message
 
+let rec contains_runtime_error expected (Slice.Ast.ExprNode node) =
+  let open Slice.Ast in
+  match node with
+  | RuntimeError message -> message = expected
+  | Let (_, first, second) | And (first, second) | Or (first, second)
+  | Pair (first, second) | FuncApp (first, second) | Assign (first, second)
+  | Seq (first, second) | FinEq (first, second, _)
+  | Cmp (_, first, second, _) | FinCmp (_, first, second, _, _)
+  | Cons (first, second) ->
+      contains_runtime_error expected first || contains_runtime_error expected second
+  | LoopApp (first, second, _) ->
+      contains_runtime_error expected first || contains_runtime_error expected second
+  | If (condition, then_branch, else_branch) ->
+      contains_runtime_error expected condition
+      || contains_runtime_error expected then_branch
+      || contains_runtime_error expected else_branch
+  | DistrCase cases ->
+      List.exists (fun (case, _) -> contains_runtime_error expected case) cases
+  | Sample (Distr1 (_, parameter)) -> contains_runtime_error expected parameter
+  | Sample (Distr2 (_, first, second)) ->
+      contains_runtime_error expected first || contains_runtime_error expected second
+  | First child | Second child | Fun (_, child) | Not child | Observe child
+  | Ref child | Deref child | Fix (_, _, child) -> contains_runtime_error expected child
+  | MatchList (value, nil_case, _, _, cons_case) ->
+      contains_runtime_error expected value
+      || contains_runtime_error expected nil_case
+      || contains_runtime_error expected cons_case
+  | Var _ | Const _ | BoolConst _ | FinConst _ | Nil | Unit -> false
+
+let test_final_dispatch_arm_is_checked _test_ctxt =
+  let open Slice in
+  let parameter =
+    (singleton_float_type 1.0, Ast.TAExprNode (Ast.Const 1.0))
+  in
+  let transformed =
+    Discretization.discretize
+      (finite_sample_type (),
+       Ast.TAExprNode (Ast.Sample (Ast.Distr1 (Ast.DExponential, parameter))))
+  in
+  assert_bool "final dispatch arm must fail closed"
+    (contains_runtime_error
+       "Internal error: inferred distribution parameter domain was not exhaustive"
+       transformed)
+
+let test_generated_binders_are_hygienic _test_ctxt =
+  let open Slice in
+  Util.var_counter := 0;
+  let first_type =
+    Ast.TFloat
+      ( Lats.CutLat.create
+          (Lats.Finite (Lats.CutSet.singleton (Lats.Less 0.5))),
+        Lats.FloatLat.create
+          (Lats.Finite (Lats.FloatSet.of_list [0.0; 1.0])) )
+  in
+  let typed_bool = (Ast.TBool, Ast.TAExprNode (Ast.BoolConst true)) in
+  let typed_zero = (first_type, Ast.TAExprNode (Ast.Const 0.0)) in
+  let typed_one = (first_type, Ast.TAExprNode (Ast.Const 1.0)) in
+  let first =
+    (first_type, Ast.TAExprNode (Ast.If (typed_bool, typed_zero, typed_one)))
+  in
+  let second_type = singleton_float_type 2.0 in
+  let second =
+    (second_type, Ast.TAExprNode (Ast.Var "_disc_a1"))
+  in
+  let typed_two = (second_type, Ast.TAExprNode (Ast.Const 2.0)) in
+  let sample = two_parameter_sample first second in
+  let source =
+    (fst sample, Ast.TAExprNode (Ast.Let ("_disc_a1", typed_two, sample)))
+  in
+  let transformed = Discretization.discretize source in
+  let rec generated_binder_avoids_source (Ast.ExprNode node) =
+    match node with
+    | Ast.Let ("_disc_a1", _, body) -> generated_binder_avoids_source body
+    | Ast.Let (name, _, _) when String.length name >= 7
+                                && String.sub name 0 7 = "_disc_a" ->
+        name <> "_disc_a1"
+    | Ast.Let (_, first, second) ->
+        generated_binder_avoids_source first || generated_binder_avoids_source second
+    | Ast.If (first, second, third) ->
+        generated_binder_avoids_source first
+        || generated_binder_avoids_source second
+        || generated_binder_avoids_source third
+    | _ -> false
+  in
+  assert_bool "generated binder captured a source identifier"
+    (generated_binder_avoids_source transformed)
+
+let test_backends_reject_runtime_error _test_ctxt =
+  let error = Slice.Ast.ExprNode (Slice.Ast.RuntimeError "unsupported") in
+  assert_raises
+    (Failure "Dice backend cannot serialize RuntimeError: unsupported")
+    (fun () -> ignore (Slice.To_dice.string_of_expr error));
+  assert_raises
+    (Failure "Roulette backend cannot serialize RuntimeError: unsupported")
+    (fun () -> ignore (Slice.To_roulette.string_of_expr error))
+
 (* Test suite *) 
 let suite = 
   "Slice Tests" >:::
@@ -119,6 +215,9 @@ let suite =
        >:: test_first_parameter_observation_precedes_second_error;
      "test_empty_dispatch_domain_is_an_invariant_failure"
        >:: test_empty_dispatch_domain_is_an_invariant_failure;
+     "test_final_dispatch_arm_is_checked" >:: test_final_dispatch_arm_is_checked;
+     "test_generated_binders_are_hygienic" >:: test_generated_binders_are_hygienic;
+     "test_backends_reject_runtime_error" >:: test_backends_reject_runtime_error;
     ]
 
 (* Main test runner *) 

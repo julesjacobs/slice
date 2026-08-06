@@ -140,7 +140,8 @@ and string_of_expr_node ?(indent=0) (ExprNode expr_node) : string =
   | Assign (e1, e2) -> Printf.sprintf "(%s := %s)" (string_of_expr_indented ~indent e1) (string_of_expr_indented ~indent e2)
   | Seq (e1, e2) -> Printf.sprintf "%s; %s" (string_of_expr_indented ~indent e1) (string_of_expr_indented ~indent e2)
   | Unit -> "()"
-  | RuntimeError _ -> ""
+  | RuntimeError message ->
+      failwith ("Dice backend cannot serialize RuntimeError: " ^ message)
 and string_of_sample ?(indent=0) dist_exp = 
   match dist_exp with
   | Distr2 (DUniform, e1, e2) -> Printf.sprintf "uniform(%s, %s)" (string_of_expr_indented ~indent e1) (string_of_expr_indented ~indent e2)
@@ -243,7 +244,8 @@ and string_of_aexpr_node ?(indent=0) (TAExprNode ae_node) : string =
   | Assign (te1, te2) -> Printf.sprintf "(%s := %s)" (string_of_texpr_indented ~indent te1) (string_of_texpr_indented ~indent te2)
   | Seq (te1, te2) -> Printf.sprintf "%s; %s" (string_of_texpr_indented ~indent te1) (string_of_texpr_indented ~indent te2)
   | Unit -> "()"
-  | RuntimeError _ -> ""
+  | RuntimeError message ->
+      failwith ("Dice backend cannot serialize RuntimeError: " ^ message)
 
 and string_of_asample ?(indent=0) dist_exp =
   match dist_exp with
