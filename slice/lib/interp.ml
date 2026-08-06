@@ -34,13 +34,14 @@ let rec eval (env : env) (ExprNode e_node : expr) : value =
       end
 
   | DistrCase cases ->
+      let cases = Ast.normalize_distr_case cases in
       let r = Random.float 1.0 in
       let rec find_case cumulative_prob case_list =
         match case_list with
         | [] -> raise (RuntimeError "DistrCase: Random value exceeded total probability (should not happen)")
         | (e, p) :: rest -> 
             let next_cumulative_prob = cumulative_prob +. p in
-            if r <= next_cumulative_prob then eval env e
+            if r < next_cumulative_prob then eval env e
             else find_case next_cumulative_prob rest
       in
       find_case 0.0 cases
@@ -234,4 +235,4 @@ and eval_dist env dist_exp =
        | _ -> raise (RuntimeError "Type error: two-argument distribution expects floats for cdistr conversion"))
 
 (* Entry point for evaluation with an empty environment *)
-let run e = eval [] e 
+let run e = eval [] e

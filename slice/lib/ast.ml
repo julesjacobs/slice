@@ -50,6 +50,33 @@ and 'a sample =
 
 type expr = ExprNode of expr expr_generic
 
+let probability_sum_tolerance = 0.0001
+
+let normalize_probability_weights (weights : float list) : float list =
+  if weights = [] then
+    failwith "A discrete distribution must have at least one outcome";
+  List.iter
+    (fun p ->
+      match classify_float p with
+      | FP_nan | FP_infinite ->
+          failwith "Discrete distribution weights must be finite"
+      | FP_normal | FP_subnormal | FP_zero ->
+          if p < 0.0 then
+            failwith "Discrete distribution weights must be nonnegative")
+    weights;
+  let sum = List.fold_left (+.) 0.0 weights in
+  if classify_float sum = FP_infinite
+     || abs_float (sum -. 1.0) > probability_sum_tolerance
+  then
+    failwith
+      (Printf.sprintf
+         "Discrete distribution weights must sum to 1.0, got %.17g" sum);
+  List.map (fun p -> p /. sum) weights
+
+let normalize_distr_case (cases : (expr * float) list) : (expr * float) list =
+  let weights = normalize_probability_weights (List.map snd cases) in
+  List.map2 (fun (e, _) p -> (e, p)) cases weights
+
 open Lats
 
 type meta =
