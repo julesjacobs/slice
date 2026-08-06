@@ -70,6 +70,7 @@
 		%
         & $\begin{array}[t]{@{}l@{}}
             e_1, e_2 \in \mathbb{R}, \\
+            V_1=\{e_1\},\;V_2=\{e_2\}, \\
             B = \{\sim_1\!\!b_1, \ldots, \sim_n\!\!b_n\}
           \end{array}$
         & $\begin{array}[t]{@{}l@{}}
@@ -102,7 +103,7 @@
         \bottomrule
     \end{tabular}
     \end{adjustbox}
-    \caption{Discretization function, where $\mathrm{CDF}(b_{0}) = 0$ and $\mathrm{CDF}(b_{n+1}) = 1$.
+    \caption{Discretization function, where $\mathrm{CDF}(b_{0}) = 0$ and $\mathrm{CDF}(b_{n+1}) = 1$. The final row is the literal generated core-language term; in particular, $\fineq{n}$ is finite equality from \Cref{fig:grammar}, not proof-only notation.
         For the $\uniform$ distribution, $V = \top$ is implicit, and all remaining cut-set and value-set
         cases are ruled out by the constraints enforced during type inference. For all other language
         constructs, $\discretize{\cdot}$ recurses structurally over them.}
@@ -110,7 +111,7 @@
 \end{figure*}
 This section presents local transformation rules for our type-directed discretization algorithm, with examples. Our goal is to compute, from a typed expression $e : \bool$ and its type annotations, a \emph{discretized} expression $\discretize{e : \bool} : \bool$ such that $e$ and $\discretize{e : \bool}$ are \emph{semantically equivalent}, i.e., they induce the same distribution. We refer to this semantics-preserving transformation as \emph{exact discretization}, to distinguish it from approaches~\cite{Garg2024BitBlast,Huang2021AQUA} that approximate continuous programs via externally chosen precision parameters. Exactness here is the equality proved by \Cref{thm:maintext:sound}: the transformed program preserves the relevant probabilities of the source program, not merely an approximation with an error bound. Intuitively, when a program uses continuous quantities only through finitely many comparison outcomes, exact inference should reduce to a discrete problem, and exact discretization makes that reduction explicit.
 
-As shown in \Cref{fig:discretization-code}, $\discretize{e : \tau}$ is defined recursively on $e : \tau$ and its type annotations; we focus on continuous uniform distributions, with others handled analogously. The only sub-expressions replaced by $\discretize{\cdot}$ are float constants and sampling instructions. The rule schemata are local, but their selection and parameters come from globally inferred cut/value information; \Cref{sec:soundness} proves that this non-local, type-mediated construction preserves semantics. Before detailing the rules, we outline how type annotations guide discretization. The type system is designed so that every typed sub-expression of the form 
+As shown in \Cref{fig:discretization-code}, $\discretize{e : \tau}$ is defined recursively on $e : \tau$ and its type annotations; we focus on continuous uniform distributions, with others handled analogously. The only sub-expressions replaced by $\discretize{\cdot}$ are float constants and sampling instructions. The rule schemata are local, but their selection and parameters come from globally inferred cut/value information; \Cref{sec:soundness} proves that this non-local, type-mediated construction preserves semantics. The implementation represents the finite equality emitted by the final rule as the same $\fineq{n}$ expression shown here: its type checker requires two $\fin{n}$ operands and its evaluator compares their finite indices. Thus the transformation, the formal target language, and the implementation use the same dispatch term. Before detailing the rules, we outline how type annotations guide discretization. The type system is designed so that every typed sub-expression of the form
 $e = \uniform(e_1, e_2 )$ of type $\float[B;V]$ with $B=\{\sim_1\!\!b_1, \ldots, \sim_n\!\!b_n\} \neq \top$
 %
 can be \emph{discretized} to an expression $e' : \fin{n+1}$ such that 

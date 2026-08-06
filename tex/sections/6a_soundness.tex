@@ -199,7 +199,7 @@ To make the probabilistic semantics precise, we construct an appropriate measure
 		s ::= \; 
 		&\square \mid x \mid \true \mid \false \mid \finconst{k}{n} \mid \diverge \mid () \\
 		&\mid \letkw \; x = s_1 \; \inkw \; s_2 \mid \ifkw \; s_1 \; \thenkw \; s_2 \; \elsekw \; s_3 \\
-		&\mid s_1 < s_2 \mid s_1 \leq s_2 \mid s_1 \finlt{n} s_2 \mid s_1 \finleq{n} s_2 \\
+		&\mid s_1 < s_2 \mid s_1 \leq s_2 \mid s_1 \finlt{n} s_2 \mid s_1 \finleq{n} s_2 \mid s_1 \fineq{n} s_2 \\
 		&\mid \uniform(s_1, s_2) \mid \gaussian(s_1, s_2) \mid \exponential(s) \mid \betafn(s_1, s_2) \mid \discrete(p_0, \ldots, p_{n-1}) \\
 		&\mid s_1\; \logand\; s_2 \mid s_1\; \logor\; s_2 \mid \lognot\; s \mid \observekw(s) \mid s_1; s_2 \\
 		&\mid (s_1, s_2) \mid \fstkw \; s \mid \sndkw \; s \\
@@ -891,20 +891,20 @@ Let $X$ be a set equipped with a suitable measurable space so that $\mathcal{D}(
 \label{app:small-step}
 \input{figures/sem_smallstep}
 
-Throughout this section, we denote by $e :\tau$ a well-typed expression of type $\tau$ and implicitly assume that all sub-expressions are annotated with types, as well. Moreover, for the typed expression $ e: \tau = \uniform(e_1 : \float[B_1; V_1], e_2 :\float[B_2;V_2]) : \float[B,V]$ with $B,B_1,B_2 \neq \top$ and $V_1,V_2\neq\top$, we introduce an auxiliary statement $\dc$ and let 
-%
+Throughout this section, we denote by $e :\tau$ a well-typed expression of type $\tau$ and implicitly assume that all sub-expressions are annotated with types, as well.  In particular, the last rule of \Cref{fig:discretization-code} denotes the displayed, capture-avoiding nest of core-language let-bindings, conditionals, Boolean conjunctions, and finite equalities.  It is not a new primitive.  Thus the transformation used in this appendix is exactly the source-to-source transformation in \Cref{fig:discretization-code}; all its output forms occur in \Cref{fig:grammar} and are typed by the rules in \Cref{fig:typing-general}.
+
+Substitution below is annotation preserving: a value substituted for a variable receives the type annotation of that variable occurrence.  The constant-parameter CDF rule in \Cref{fig:discretization-code} applies only when the corresponding annotated value sets are singletons.  Consequently, substitution cannot turn a dynamic-dispatch instance into a constant-parameter instance merely because its residual expression is syntactically a constant.
+
+\begin{lemma}[Discretization commutes with substitution]\label{lem:discretize-substitution}
+If $\Gamma,x:\tau_1\vdash e:\tau_2$ and $\Gamma\vdash v:\tau_1$ with $v$ a value, then capture-avoiding, annotation-preserving substitution satisfies
 \[
-	\discretize{ e: \tau} = \dc(\discretize{e_1 : \float[B_1; V_1]}, \discretize{e_2 :\float[B_2;V_2]})~.
+  \discretize{e:\tau_2}[\discretize{v:\tau_1}/x]
+  = \discretize{e[v/x]:\tau_2}.
 \]
-%
-We define the semantics of $\dc$ in such a way that it behaves like the discretized program in the last case of \Cref{fig:discretization-code} but resolves the let-bindings and the conditional choices in a single step, which will simplify our proof. We equip this statement with the following typing rule :
-%
-\begin{align*}
-	\inferrule[\textsc{TDiscreteCase}]
-	{e_1 : \fin{|B_1| + 1} \\
-		e_2 : \fin{|B_2| + 1} \\ \distinguishes{B_1}{V_1} \\ \distinguishes{B_2}{V_2}}
-	{\dc(e_1, e_2) : \fin{|B|+1}}
-\end{align*}
+\end{lemma}
+\begin{proof}
+By structural induction on the annotated expression $e$.  All structural cases follow from the induction hypotheses.  For a finite-cut distribution, the selected transformation clause and its finite value-set enumeration are determined by the annotations.  Annotation-preserving substitution leaves those annotations unchanged, so both sides select the same clause and differ only in recursively transformed arguments, where the induction hypotheses apply.
+\end{proof}
 
  
 %
@@ -1350,7 +1350,7 @@ The missing probability mass in $\sem{e :\tau}$ is the probability of encounteri
 %	Let $\tau$ be a type, and let $P_\tau = \{ (e:\tau, \discretize{e} : \discretize{\tau}) ~|~ e:\tau \}$. Given a suitable measurable space, we denote by $\mathcal{D}(P_\tau + \bot)$ 
 %	the set of sub-probability measures over $P_\tau$. 
 %\end{definition}
-Define $P_\tau = \{ (e:\tau, \discretize{e:\tau} : \discretize{\tau}) ~|~ e:\tau \}$. Exploiting that $e:\tau$ is a value iff $\discretize{e} : \discretize{\tau}$ is a value, we define:
+Define $P_\tau = \{ (e:\tau, \discretize{e:\tau} : \discretize{\tau}) ~|~ e:\tau \}$. By \Cref{lem:discretize-substitution}, the beta, let, and list-substitution rules remain in this graph; the remaining structural rules do so directly. Exploiting that $e:\tau$ is a value iff $\discretize{e} : \discretize{\tau}$ is a value, we define:
 %
 \begin{definition}
 	The small-step coupling  $\sem{e :\tau, \discretize{e}: \discretize{\tau}} \in \mathcal{D}(P_{\tau} + \bot)$ is defined recursively on the structure of $e:\tau$ by the rules in \Cref{tab:coupling_smallstep_1,tab:coupling_smallstep_2}. 
@@ -1424,12 +1424,10 @@ We have the following key property:
 	\begin{align*}
 		&\discretize{ e:\tau} : \discretize{\tau} \\
 		%
-		{}={}& \dc(\discretize{c_1 : \floattype{B_1}{V_1}}, \discretize{c_2 :  \floattype{B_2}{V_2}}) : \fin{|B| + 1}\\
-		%
-		{}={}&\dc( k_1 : \fin{|B_1| + 1}, k_2:\fin{|B_2|+1} ) : \fin{|B|+1}~,
+		{}={}& \text{the final-row core term of \Cref{fig:discretization-code}, with }v_1'=\finconst{i}{|B_1|+1},\ v_2'=\finconst{j}{|B_2|+1},
 	\end{align*}
 	%
-	where $k_i$ is the unique number such that $c_i \in \intervals{B_i}_{k_i}$. By \Cref{tab:smallstep-1} and \Cref{fig:discretization-code}, this yields
+	where $i$ and $j$ are the unique numbers such that $c_1 \in \intervals{B_1}_{i}$ and $c_2 \in \intervals{B_2}_{j}$. By \Cref{tab:smallstep-1} and \Cref{fig:discretization-code}, this yields
 	%
 	\begin{align*}
 		 & \sem{\discretize{e:\tau}} \\
@@ -1519,11 +1517,11 @@ We have the following key property:
 		\tag{definition} \\
 		%
 		~{}={}~ & \big( \sem{e_2:\tau_2, \discretize{e_2} : \discretize{\tau_2}} \\
-		& \gg\!= \lambda (f,f'). \delta_{(\uniform(v_1:\tau_1, f:\tau_2 ) : \tau, \dc(\discretize{v_1}:\discretize{\tau_1}, f': \discretize{\tau_2} ) : \discretize{\tau})} \big)
+		& \gg\!= \lambda (f,f'). \delta_{(\uniform(v_1:\tau_1, f:\tau_2 ) : \tau, \discretize{\uniform(v_1:\tau_1,f:\tau_2):\tau} : \discretize{\tau})} \big)
 		 \gg\!= \lambda(e_1,e_2). \delta_{e_1}   \\
 		 %
 		 ~{}={}~ &  \sem{e_2:\tau_2, \discretize{e_2} : \discretize{\tau_2}} \\
-		 & \gg\!= \lambda (f,f'). \big(\delta_{(\uniform(v_1:\tau_1, f:\tau_2 ) : \tau, \dc(\discretize{v_1}:\discretize{\tau_1}, f': \discretize{\tau_2} ) : \discretize{\tau})} 
+		 & \gg\!= \lambda (f,f'). \big(\delta_{(\uniform(v_1:\tau_1, f:\tau_2 ) : \tau, \discretize{\uniform(v_1:\tau_1,f:\tau_2):\tau} : \discretize{\tau})}
 		 \gg\!= \lambda(e_1,e_2). \delta_{e_1} \big)
 		 \tag{monad assoc.} \\
 		 %

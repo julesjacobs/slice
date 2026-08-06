@@ -78,6 +78,17 @@
 			%
 			\midrule
 			%
+			% --- finite equality ---
+			\multirow{4}{*}{$e_1 : \fin{n} \fineq{n} e_2 : \fin{n} : \bool$}
+			& $e_1 = \finconst{i}{n}, e_2 = \finconst{j}{n}, i=j$ & $\dirac{(\true : \bool,\true : \bool)}$ \\
+			& $e_1 = \finconst{i}{n}, e_2 = \finconst{j}{n}, i\neq j$ & $\dirac{(\false : \bool,\false : \bool)}$ \\
+			& $e_1=v_1, e_2$ no val. & \makecell[l]{$\sem{e_2:\fin{n},\discretize{e_2}:\fin{n}}$ \\
+			$\gg\!=\lambda(g,g').\dirac{(v_1\fineq{n}g:\bool,\discretize{v_1}\fineq{n}g':\bool)}$} \\
+			& o.w.\ & \makecell[l]{$\sem{e_1:\fin{n},\discretize{e_1}:\fin{n}}$ \\
+			$\gg\!=\lambda(g,g').\dirac{(g\fineq{n}e_2:\bool,g'\fineq{n}\discretize{e_2}:\bool)}$} \\
+			%
+			\midrule
+			%
 			% --- uniform: B top ---
 			\multirow{5}{*}{\makecell{$\uniform(e_1 : \tau_1, e_2 : \tau_2) : \floattype{B}{V}$ \\
 			$B=\top$}} 
@@ -116,9 +127,9 @@
 			& $e_1 = v_1 > v_2 = e_2$ &
 		    $\sem{\diverge : \tau, \discretize{\uniform(v_1 : \tau_1,v_2 : \tau_2)} : \discretize{\tau}}$  \\
 			%
-			& $e_1=c_1$, $e_2$ no val.\ & \makecell[l]{$\sem{e_2:\tau_2, \discretize{e_2} : \discretize{\tau_2}}$ \\ $\gg\!= \lambda (g,g'). \dirac{(\uniform(v_1:\tau_1, g:\tau_2 ) : \tau, \dc(\discretize{v_1}:\discretize{\tau_1}, g': \discretize{\tau_2} ) : \discretize{\tau})}$} \\
+			& $e_1=c_1$, $e_2$ no val.\ & \makecell[l]{$\sem{e_2:\tau_2, \discretize{e_2} : \discretize{\tau_2}}$ \\ $\gg\!= \lambda (g,g'). \dirac{(\uniform(v_1:\tau_1, g:\tau_2 ) : \tau, \discretize{\uniform(v_1:\tau_1,g:\tau_2):\tau} : \discretize{\tau})}$} \\
 			%
-			& $e_1$ no val.\ & \makecell[l]{$\sem{e_1:\tau_1, \discretize{e_1} : \discretize{\tau_1}}$ \\ $\gg\!= \lambda (g,g'). \dirac{(\uniform(g:\tau_1, e_2:\tau_2) : \tau, \dc({g'}:\discretize{\tau_1}, \discretize{e_2} : \discretize{\tau_2} ) : \discretize{\tau})}$} \\
+			& $e_1$ no val.\ & \makecell[l]{$\sem{e_1:\tau_1, \discretize{e_1} : \discretize{\tau_1}}$ \\ $\gg\!= \lambda (g,g'). \dirac{(\uniform(g:\tau_1, e_2:\tau_2) : \tau, \discretize{\uniform(g:\tau_1,e_2:\tau_2):\tau} : \discretize{\tau})}$} \\
 %			 bla
 			\bottomrule
 			\bottomrule
