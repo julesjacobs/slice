@@ -118,7 +118,7 @@ We first state the central theorem, then outline our coupling-style correctness 
 	$\bigsem{e:\bool} = \bigsem{\discretize{e:\bool} : \bool}$.
 \end{theorem}
 %
-Intuitively, we prove that the two programs can execute in a synchronized manner such that their probabilities of terminating in value $v$ coincide for each $v \in \{\true,\false,\bot\}$. %Because sub-expressions may have types other than $\bool$, this argument must (i) apply to expressions of \emph{arbitrary} type and (ii) be strong enough to imply \Cref{thm:maintext:sound}.
+Under the weak-simulation assumption, the intended argument synchronizes the two programs so that their probabilities of terminating in value $v$ coincide for each $v \in \{\true,\false,\bot\}$. The currently proved strict finite comparison fragment supplies this synchronization directly.
 %e, and which lets us conclude semantic equivalence for expressions of type $\bool$.
 %more general argument which enables us to conclude semantic equivalence.% The crucial point is when we encounter a continuous sampling instruction in $e$, in which case we have to prove that its discretized counterpart $\discretize{e:\tau}$
 
@@ -138,8 +138,8 @@ Given $\mu \in \mathcal{D}(P_\tau + \bot)$, we define the \emph{projection of $\
 \]
 %
 %where $\delta_a$ denotes the Dirac distribution of $a$. 
-With projections, we recover the semantics of $e$ and $\discretize{e:\tau}$ as follows:
-\begin{lemma}
+Conditional on the weak-simulation obligation, projections recover the two semantics as follows:
+\begin{lemma}[Conditional projection recovery]
 	\label{lem:maintext:small_step_coupling_props}
 	Let $e:\tau$. We have:
 	%
@@ -156,10 +156,10 @@ With projections, we recover the semantics of $e$ and $\discretize{e:\tau}$ as f
 %	By induction on the typing derivation of $e:\tau$. See \Cref{lem:small_step_coupling_props}.
 %\end{proof}
 
-Now, using a limit construction analogous to \Cref{sec:smallsem_to_bigsem} for obtaining a coupled \emph{big-step} semantics $\bigsem{\cdot,\cdot} \colon P_\tau \to \mathcal{D}(V_\tau + \bot)$, where $V_\tau = \{ (v:\tau, \discretize{v} : \discretize{\tau}) ~|~ v:\tau~\text{is a value} \}$, we prove a suitable continuity property of projection (cf.\ \Cref{lem:proj_cont}) to conclude that \Cref{lem:maintext:small_step_coupling_props} transfers to $\bigsem{\cdot,\cdot}$. Finally, observing that $V_\bool + \bot = \{(\true,\true), (\false,\false), \bot\}$ yields the desired claim:
+Assuming the missing small-step recovery property, a limit construction analogous to \Cref{sec:smallsem_to_bigsem} yields a coupled big-step semantics. Continuity of projection then transfers the conditional recovery property to the limit. Observing that $V_\bool + \bot = \{(\true,\true), (\false,\false), \bot\}$ yields the conditional claim:
 
 %\noindent
-\emph{Proof of \Cref{thm:maintext:sound}}. Let $v \in \{\true,\false,\bot\}$. We have
+\emph{Conditional proof of \Cref{thm:maintext:sound}}. Assume the weak-simulation obligation and let $v \in \{\true,\false,\bot\}$. We have
 %
 \begin{align*}
 	& \bigsem{e : \bool}(v) \\
