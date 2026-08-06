@@ -53,6 +53,7 @@ let elaborate_finite_support cases =
   match cases with
   | [] -> failwith "A finite-support discrete distribution cannot be empty"
   | _ ->
+      Ast.validate_distr_probs (List.map snd cases);
       let n = List.length cases in
       let choice_name = fresh_choice_name cases in
       let index_cases =

@@ -25,14 +25,16 @@ a fresh variable $z$, it elaborates before type inference as
  \ifkw\;z\finlt{n}\finconst{n-1}{n}\;\thenkw\;\mathsf{elab}(e_{n-2})\;\elsekw\;\mathsf{elab}(e_{n-1}).
  \tag{Finite-support elaboration}\label{eq:finite-support-elaboration}
 \end{align*}
-For $n=1$, the body is just $\mathsf{elab}(e_0)$. Thus, whenever every
-$e_i$ has type $\tau$, the elaborated expression has type $\tau$ by
+For $n=1$, the body is just $\mathsf{elab}(e_0)$. This notation is defined
+only when each $p_i\in[0,1]$ and $\sum_i p_i=1$. Whenever every $e_i$ has
+type $\tau$, the elaborated expression has type $\tau$ by
 \textsc{Discrete}, \textsc{FinLess}, \textsc{If}, and \textsc{Let}. Only the
-selected branch is evaluated. We define the semantics of the surface form to
-be the semantics of this elaboration, so the core operational semantics and
-soundness proof require no additional case. The implementation performs this
-capture-avoiding elaboration in the parser and sends the resulting core term
-through the same type inference and discretization passes.
+selected branch is evaluated. We assign the surface form the semantics of this
+elaboration. Thus the theorem below applies to the resulting core expression;
+it is not a separate theorem about an additional operational-semantic case.
+The implementation validates the weights, performs this capture-avoiding
+elaboration in the parser, and sends the resulting core term through the same
+type inference and discretization passes.
 
 % \item \textbf{Discrete distributions}: The $\discrete(p_0, \ldots, p_{n-1})$ construct returns a finite type value $\finconst{k}{n}$ \kevin{let's maybe explain the types first?  $\finconst{k}{n}$ is not introduced} with probability $p_k$.
 

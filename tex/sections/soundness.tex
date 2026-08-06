@@ -9,10 +9,12 @@ We now establish the soundness of our approach in the following sense: For \emph
 %its discretized expression $\discretize{e : \bool} : \bool$ obtained from the rules in \Cref{fig:discretization-code}
 %
 % exact discretization as follows: every expression $e:\bool$ is semantically equivalent to $\discretize{e : \bool} : \bool$. 
-Surface programs are covered after applying their semantics-preserving
-elaboration to this core; in particular, the weighted finite-support notation
-used in \Cref{fig:epsball} elaborates by
-\Cref{eq:finite-support-elaboration}. The first step is to make formal sense of semantic equivalence. For that, we will define a monadic operational semantics for our language in \Cref{sec:opsem}. We will then proceed by proving the above claim. This is non-trivial: discretization decisions are driven by non-local, type-propagated information, so we cannot proceed by a local rule-by-rule argument. To prove the claim rigorously, we relate the executions of $e$ and $\discretize{e}$ through a coupling-style logical relation in \Cref{sec:opsem}. %We provide the high-level proof idea in the main text; all details are in \Cref{sec:app:soundness_new}.
+The weighted finite-support notation used in \Cref{fig:epsball} is assigned
+the semantics of its elaborated core expression from
+\Cref{eq:finite-support-elaboration}. The theorem therefore applies after
+elaboration; it does not add a surface-syntax case to the operational semantics
+or prove a separate correspondence with some independently defined surface
+semantics. The first step is to make formal sense of semantic equivalence. For that, we will define a monadic operational semantics for our language in \Cref{sec:opsem}. We will then proceed by proving the above claim. This is non-trivial: discretization decisions are driven by non-local, type-propagated information, so we cannot proceed by a local rule-by-rule argument. To prove the claim rigorously, we relate the executions of $e$ and $\discretize{e}$ through a coupling-style logical relation in \Cref{sec:opsem}. %We provide the high-level proof idea in the main text; all details are in \Cref{sec:app:soundness_new}.
 %
 \subsection{Operational Semantics}
 \label{sec:opsem}

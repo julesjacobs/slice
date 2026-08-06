@@ -131,6 +131,12 @@ let test_finite_support_elaboration_arities _test_ctxt =
   in
   check "discrete(1.0: 7)" 1;
   check "discrete(0.25: true, 0.75: false)" 2
+
+let test_finite_support_elaboration_validates_probabilities _test_ctxt =
+  List.iter assert_invalid_discrete
+    [ "discrete(0 - 0.1: true, 1.1: false)";
+      "discrete(0.2: true, 0.2: false)";
+      "discrete()" ]
 (* Test suite *) 
 let suite = 
   "Slice Tests" >:::
@@ -143,6 +149,7 @@ let suite =
      "test_finite_support_elaboration" >:: test_finite_support_elaboration;
      "test_finite_support_elaboration_is_hygienic" >:: test_finite_support_elaboration_is_hygienic;
      "test_finite_support_elaboration_arities" >:: test_finite_support_elaboration_arities;
+     "test_finite_support_elaboration_validates_probabilities" >:: test_finite_support_elaboration_validates_probabilities;
     ]
 
 (* Main test runner *) 
