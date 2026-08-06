@@ -859,7 +859,10 @@ The typing rules for general language constructs is given in \Cref{fig:typing-ge
       \[
           \discretize{\uniform(e_1, e_2) : \float[B;\top]} = \discrete(p_0, \ldots, p_{|B|})
       \]
-      where $p_k = \mathrm{CDF}(b_{k+1}) - \mathrm{CDF}(b_k)$. Each $p_k \in [0,1]$ and $\sum_k p_k = 1$, so this is well-typed at $\fin{|B|+1}$ by \textsc{Discrete}.
+      where $p_k = H(b_{k+1}) - H(b_k)$ for the tagged cumulative function
+      $H({\sim}\!c)=\Pr[X\sim c]$, with artificial outer values $0$ and $1$.
+      By the canonical tagged-cut order, $H$ is nondecreasing; hence each
+      $p_k \in [0,1]$ and the differences telescope to $1$, so this is well-typed at $\fin{|B|+1}$ by \textsc{Discrete}.
   
       \item $B \neq \top$, $B_1 \neq \top$, $B_2 \neq \top$, and $e_1$ or $e_2$ is a variable: the algorithm generates conditionals over all pairs $(v_i, w_j)$, each branch dispatching to a constant parameter in $\uniform$. By the previous sub-case, each branch $\discretize{\uniform(v_i, w_j) : \float[B;\top]}$ is well-typed at $\fin{|B|+1} = \discretize{\float[B;\top]}$. The conditional structure is well-typed by \textsc{If} (as in the $\ifkw$ case above), so the full expression is well-typed at $\discretize{\float[B;\top]}$.
   \end{itemize}

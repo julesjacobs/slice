@@ -47,8 +47,33 @@ let cdistr_cdf dist x =
   | Gumbel2 (a, b)          -> Gsl.Cdf.gumbel2_P ~x:x ~a ~b
   | Rayleigh sigma          -> Gsl.Cdf.rayleigh_P ~x:x ~sigma
   | Exppow (a, b)           -> Gsl.Cdf.exppow_P ~x:x ~a ~b
-  | Poisson mu              -> Gsl.Cdf.poisson_P ~k:(int_of_float x) ~mu
-  | Binomial (p, n)         -> Gsl.Cdf.binomial_P ~k:(int_of_float x) ~p ~n
+  | Poisson mu              ->
+      let greatest_at_most = int_of_float (floor x) in
+      if greatest_at_most < 0 then 0.0
+      else Gsl.Cdf.poisson_P ~k:greatest_at_most ~mu
+  | Binomial (p, n)         ->
+      let greatest_at_most = int_of_float (floor x) in
+      if greatest_at_most < 0 then 0.0
+      else Gsl.Cdf.binomial_P ~k:greatest_at_most ~p ~n
+
+(** [cdistr_cdf_below dist x] is the left limit of the CDF: [P(X < x)].
+    It differs from [cdistr_cdf] at atoms.  The integer-valued distributions
+    need an explicit implementation because converting [x] to an integer
+    would otherwise erase whether an endpoint is strict. *)
+let cdistr_cdf_below dist x =
+  if x = neg_infinity then 0.0
+  else if x = infinity then 1.0
+  else
+    match dist with
+    | Poisson mu ->
+        let greatest_below = int_of_float (ceil x) - 1 in
+        if greatest_below < 0 then 0.0
+        else Gsl.Cdf.poisson_P ~k:greatest_below ~mu
+    | Binomial (p, n) ->
+        let greatest_below = int_of_float (ceil x) - 1 in
+        if greatest_below < 0 then 0.0
+        else Gsl.Cdf.binomial_P ~k:greatest_below ~p ~n
+    | _ -> cdistr_cdf dist x
 
 let cdistr_sample dist =
   match dist with

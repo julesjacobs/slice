@@ -14,6 +14,9 @@ type cut =
   | LessEq of float (* <= c *)
 
 let compare_cut b1 b2 = 
+  (* Canonical tagged-cut order: compare thresholds first, with <c before <=c
+     when both cuts share c.  This order makes cut satisfaction monotone and
+     gives c its own interval when both tags occur. *)
   match b1, b2 with
   | Less c1, Less c2 -> compare c1 c2
   | LessEq c1, LessEq c2 -> compare c1 c2

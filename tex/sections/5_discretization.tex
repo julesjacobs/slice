@@ -74,7 +74,7 @@
           \end{array}$
         & $\begin{array}[t]{@{}l@{}}
             \discrete(p_0, \ldots, p_n) \\
-            \quad \text{where } p_k = \mathrm{CDF}(b_{k+1}) - \mathrm{CDF}(b_k)
+            \quad \text{where } p_k = H(b_{k+1}) - H(b_k)
           \end{array}$ \\
         \caserule
 		%
@@ -102,7 +102,10 @@
         \bottomrule
     \end{tabular}
     \end{adjustbox}
-    \caption{Discretization function, where $\mathrm{CDF}(b_{0}) = 0$ and $\mathrm{CDF}(b_{n+1}) = 1$.
+    \caption{Discretization function. For a tagged cut $b={\sim}\!c$, let
+        $H(b)=\Pr[X\sim c]$, and let $H(b_0)=0$ and $H(b_{n+1})=1$ at the two
+        artificial outer boundaries. Thus $H(\clt c)=\Pr[X<c]$ and
+        $H(\cleq c)=\Pr[X\leq c]$; the distinction matters for distributions with atoms.
         For the $\uniform$ distribution, $V = \top$ is implicit, and all remaining cut-set and value-set
         cases are ruled out by the constraints enforced during type inference. For all other language
         constructs, $\discretize{\cdot}$ recurses structurally over them.}

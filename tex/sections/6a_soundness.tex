@@ -1434,7 +1434,9 @@ We have the following key property:
 	\begin{align*}
 		 & \sem{\discretize{e:\tau}} \\
 		 %
-		 {}={}& \sem{\discrete(p_0,\ldots,p_n)}~\text{where}~p_k = \text{CDF}(b_{k+1}) - \text{CDF}(b_k) = \frac{b_{k+1} - c_1}{c_2-c_1} - \frac{b_{k} - c_1}{c_2-c_1}  =  \frac{b_{k+1} - b_k}{c_2-c_1}~. 
+		 {}={}& \sem{\discrete(p_0,\ldots,p_n)}~\text{where}~p_k
+		 = \Pr[X\in\intervals{B}_k]
+		 = H(b_{k+1})-H(b_k),\quad X\sim\text{Uniform}(c_1,c_2)~.
 	\end{align*}
 	%
 	
@@ -1481,8 +1483,9 @@ We have the following key property:
 		\tag{monad return, $v_i$ is unique number s.t. $v \in \intervals{B}_{v_i}$}
 		\\
 		%
-		~{}={}~ & \sem{\discrete(p_0,\ldots,p_n)}~\text{where}~p_k = \text{CDF}(b_{k+1}) - \text{CDF}(b_k) = \frac{b_{k+1} - c_1}{c_2-c_1} - \frac{b_{k} - c_1}{c_2-c_1}  =  \frac{b_{k+1} - b_k}{c_2-c_1} 
-		\tag{by construction} \\
+		~{}={}~ & \sem{\discrete(p_0,\ldots,p_n)}~\text{where}~p_k
+		=\Pr[X\in\intervals{B}_k]=H(b_{k+1})-H(b_k)
+		\tag{pushforward along the unique interval-index map} \\
 		%
 		~{}={}~ & \sem{\discretize{e}:\discretize{\tau}}~.
 		\tag{\Cref{tab:smallstep-1}}
