@@ -1,4 +1,4 @@
-\documentclass[acmsmall,screen,dvipsnames,x11names,nonacm,anonymous,review]{acmart}
+\documentclass[acmsmall,screen,dvipsnames,x11names]{acmart}
 
 \usepackage[most]{tcolorbox}
 \usepackage{listings}
@@ -63,11 +63,6 @@
 % \newcommand{\katherine}[1]{\textcolor{Purple}{\textbf{Katherine:} #1}}
 % \newcommand{\jules}[1]{\textcolor{blue}{\textbf{Jules:} #1}}
 
-\newcommand{\alexandra}[1]{}
-\newcommand{\kevin}[1]{}
-\newcommand{\katherine}[1]{}
-\newcommand{\jules}[1]{\textcolor{red}{\textbf{Jules:} #1}}
-
 % do not indent theorems, proofs, definitions, etc.
 \makeatletter
 \def\@acmplainindent{0pt}
@@ -96,6 +91,30 @@
   height=3.6cm,
   #1
 }
+
+\newtcblisting{programpanel}[2][]{%
+  #1,
+  listing only,
+  title={#2},
+  colback=black!2,
+  colframe=black!30,
+  colbacktitle=black!6,
+  coltitle=black,
+  fonttitle=\small\itshape,
+  boxrule=0.4pt,
+  titlerule=0.4pt,
+  arc=2pt,
+  left=4pt,
+  right=4pt,
+  top=5pt,
+  bottom=5pt,
+  valign=center,
+  listing options={
+    aboveskip=0pt,
+    belowskip=0pt,
+    escapechar=!,
+    basicstyle=\ttfamily\footnotesize}
+}
 \usepackage[scaled=0.84]{beramono}
 \usepackage{mathpartir}
 \usepackage{xspace}
@@ -109,8 +128,63 @@
 \hfuzz=999pt
 \vfuzz=999pt
 
-% \title{Type-Directed Discretization of Continuous Probabilistic Programs}
 \title{Type-Directed Discretization of Probabilistic Programs}
+
+% TODO(camera-ready): Replace these placeholders with the rights-management
+% values supplied by ACM after completing the eRights form. The conspicuous
+% DOI placeholder prevents acmart's built-in sample value from being mistaken
+% for real publication metadata.
+\setcopyright{none} % TODO: replace with the value supplied by ACM
+\copyrightyear{2026}
+\acmYear{2026}
+\acmDOI{XX.XXXX/XXXXXXX.XXXXXXX} % TODO: replace with the DOI supplied by ACM
+\acmISBN{} % TODO: add the ISBN if applicable
+%
+% TODO(camera-ready): Add the publication metadata supplied by the venue.
+% For a PACMPL article, this normally includes \acmJournal, \acmVolume,
+% \acmNumber, \acmArticle, and \acmMonth.
+% \acmJournal{PACMPL}
+% \acmVolume{XX}
+% \acmNumber{XXXX}
+% \acmArticle{XXX}
+% \acmMonth{X}
+
+\author{Katherine Wu}
+\email{kaw324@cornell.edu}
+\affiliation{%
+  \institution{Cornell University}
+  \city{Ithaca}
+  \state{New York}
+  \country{USA}}
+
+\author{Jules Jacobs}
+\email{julesjacobs@gmail.com}
+\affiliation{%
+  \institution{Jane Street}
+  \city{New York}
+  \state{New York}
+  \country{USA}}
+
+\author{Kevin Batz}
+\email{ksb239@cornell.edu}
+\affiliation{%
+  \institution{Cornell University}
+  \city{Ithaca}
+  \state{New York}
+  \country{USA}}
+
+\author{Alexandra Silva}
+\email{alexandra.silva@cornell.edu}
+\affiliation{%
+  \institution{Cornell University}
+  \city{Ithaca}
+  \state{New York}
+  \country{USA}}
+
+% TODO:
+\ccsdesc[500]{TODO}
+
+\keywords{probabilistic programming, exact inference, continuous distributions, discretization, type systems}
 
 \lstdefinelanguage{Dice}{
     morekeywords={let, in, if, then, else, fst, snd, fun, observe, match, with, end, ref, fix},
@@ -176,6 +250,12 @@
 \clearpage
 \section*{Data-Availability Statement}
 An anonymized artifact for this paper is available. It contains our OCaml implementation of \Slice{}, all case studies and benchmarks used in the evaluation, the scripts needed to run the experiments, and a Docker image for reproducing the results. The artifact also includes \Dice{}, \Roulette{}, and \Storm{} backends used in our evaluation, together with the translation procedures from discretized programs to each backend. All reported experiments were executed within this Docker environment on an Apple M3 machine with 16\,GB of RAM. We intend to submit the artifact for Artifact Evaluation. The current artifact is a research prototype, but it contains the code, benchmarks, and infrastructure needed to reproduce all experimental results reported in the paper.
+
+\begin{acks}
+% TODO(camera-ready): Add the approved acknowledgment text, including all
+% funding sources and grant numbers.
+TODO
+\end{acks}
 
 \bibliographystyle{ACM-Reference-Format}
 \bibliography{refs}

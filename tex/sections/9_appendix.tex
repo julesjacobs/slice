@@ -1275,122 +1275,221 @@ We report runtime (seconds) for (i) \SPPL{}, (ii) \Slice{} (discretization only)
 \begin{table}[!t]
     \centering
     \small
-    \setlength{\tabcolsep}{3.5pt}
-    \begin{tabular}{llccccccccc}
+    \setlength{\tabcolsep}{2.25pt}
+    \resizebox{\columnwidth}{!}{%
+    \begin{tabular}{llccccccccccccc}
     \toprule
     \makecell{\textbf{Decision}\\\textbf{Program}} &
     \makecell{\textbf{Population}\\\textbf{Model}} &
     \multicolumn{3}{c}{\textbf{Slice+Dice (s)}} &
     \multicolumn{3}{c}{\textbf{Slice+Roulette (s)}} &
-    \multicolumn{3}{c}{\textbf{\textsc{SPPL} (s)}} \\
-    \cmidrule(lr){3-5} \cmidrule(lr){6-8} \cmidrule(lr){9-11}
+    \multicolumn{3}{c}{\textbf{SPPL (s)}} &
+    \multirow{2}{*}{\textbf{PSI (s)}} &
+    \multicolumn{3}{c}{\textbf{Hakaru (s)}} \\
+    \cmidrule(lr){3-5} \cmidrule(lr){6-8} \cmidrule(lr){9-11} \cmidrule(lr){13-15}
      &  & \textbf{Slice} & \textbf{Dice} & \textbf{Total} &
           \textbf{Slice} & \textbf{Roulette} & \textbf{Total} &
-          \textbf{Trans.} & \textbf{Judg.} & \textbf{Total} \\
+          \textbf{Trans.} & \textbf{Judg.} & \textbf{Total} & &
+          \textbf{Disint.} & \textbf{Simplify} & \textbf{Total} \\
     \midrule
-    DT$_4$            & Ind  & 0.002 & 0.031 & 0.033 & 0.002 & 0.026 & \textbf{0.028} & 0.074 & 0.011 & 0.085 \\
-                      & BN1  & 0.002 & 0.033 & 0.035 & 0.002 & 0.031 & \textbf{0.033} & 0.245 & 0.028 & 0.273 \\
-                      & BN2  & 0.002 & 0.035 & \textbf{0.037} & 0.003 & 0.034 & \textbf{0.037} & 0.268 & 0.030 & 0.298 \\
+    DT$_4$            & Ind  & 0.002 & 0.031 & 0.033 & 0.002 & 0.026 & \textbf{0.028} & 0.074 & 0.011 & 0.085 & 3.477 & 0.104 & 1.806 & 1.910 \\
+                      & BN1  & 0.002 & 0.033 & 0.035 & 0.002 & 0.031 & \textbf{0.033} & 0.245 & 0.028 & 0.273 & 19.890 & 0.031 & 0.426 & 0.457 \\
+                      & BN2  & 0.002 & 0.035 & \textbf{0.037} & 0.003 & 0.034 & \textbf{0.037} & 0.268 & 0.030 & 0.298 & 51.107 & 0.030 & 0.528 & 0.558 \\
     \midrule
-    DT$_{14}$         & Ind  & 0.002 & 0.047 & \textbf{0.049} & 0.002 & 0.049 & 0.051 & 0.153 & 0.024 & 0.177 \\
-                      & BN1  & 0.002 & 0.056 & \textbf{0.058} & 0.002 & 0.074 & 0.076 & 0.597 & 0.076 & 0.673 \\
-                      & BN2  & 0.002 & 0.058 & \textbf{0.060} & 0.002 & 0.073 & 0.075 & 0.535 & 0.072 & 0.607 \\
+    DT$_{14}$         & Ind  & 0.002 & 0.047 & \textbf{0.049} & 0.002 & 0.049 & 0.051 & 0.153 & 0.024 & 0.177 & 26.150 & 0.038 & err. & err. \\
+                      & BN1  & 0.002 & 0.056 & \textbf{0.058} & 0.002 & 0.074 & 0.076 & 0.597 & 0.076 & 0.673 & t.o. & 0.029 & 1.067 & 1.096 \\
+                      & BN2  & 0.002 & 0.058 & \textbf{0.060} & 0.002 & 0.073 & 0.075 & 0.535 & 0.072 & 0.607 & t.o. & 0.028 & 2.619 & 2.647 \\
     \midrule
-    DT$_{16}$         & Ind  & 0.002 & 0.045 & \textbf{0.047} & 0.002 & 0.054 & 0.056 & 0.176 & 0.026 & 0.202 \\
-                      & BN1  & 0.002 & 0.053 & \textbf{0.055} & 0.002 & 0.079 & 0.081 & 0.535 & 0.088 & 0.623 \\
-                      & BN2  & 0.003 & 0.053 & \textbf{0.056} & 0.003 & 0.079 & 0.082 & 0.554 & 0.090 & 0.644 \\
+    DT$_{16}$         & Ind  & 0.002 & 0.045 & \textbf{0.047} & 0.002 & 0.054 & 0.056 & 0.176 & 0.026 & 0.202 & t.o. & 0.031 & err. & err. \\
+                      & BN1  & 0.002 & 0.053 & \textbf{0.055} & 0.002 & 0.079 & 0.081 & 0.535 & 0.088 & 0.623 & t.o. & 0.036 & 1.125 & 1.161 \\
+                      & BN2  & 0.003 & 0.053 & \textbf{0.056} & 0.003 & 0.079 & 0.082 & 0.554 & 0.090 & 0.644 & t.o. & 0.035 & 1.594 & 1.629 \\
     \midrule
-    DT$^{\alpha}_{16}$ & Ind & 0.002 & 0.034 & \textbf{0.036} & 0.002 & 0.052 & 0.054 & 0.201 & 0.029 & 0.230 \\
-                       & BN1 & 0.002 & 0.042 & \textbf{0.044} & 0.003 & 0.191 & 0.194 & 0.597 & 0.080 & 0.677 \\
-                       & BN2 & 0.003 & 0.049 & \textbf{0.052} & 0.003 & 0.224 & 0.227 & 0.642 & 0.075 & 0.717 \\
+    DT$^{\alpha}_{16}$ & Ind & 0.002 & 0.034 & \textbf{0.036} & 0.002 & 0.052 & 0.054 & 0.201 & 0.029 & 0.230 & t.o. & 0.031 & err. & err. \\
+                       & BN1 & 0.002 & 0.042 & \textbf{0.044} & 0.003 & 0.191 & 0.194 & 0.597 & 0.080 & 0.677 & t.o. & 0.036 & err. & err. \\
+                       & BN2 & 0.003 & 0.049 & \textbf{0.052} & 0.003 & 0.224 & 0.227 & 0.642 & 0.075 & 0.717 & t.o. & 0.040 & 2.142 & 2.182 \\
     \midrule
-    DT$_{44}$         & Ind  & 0.002 & 0.099 & \textbf{0.101} & 0.002 & 0.276 & 0.278 & 0.402 & 0.073 & 0.475 \\
-                      & BN1  & 0.003 & 0.120 & \textbf{0.123} & 0.003 & 0.550 & 0.553 & 1.043 & 0.309 & 1.352 \\
-                      & BN2  & 0.003 & 0.122 & \textbf{0.125} & 0.003 & 0.546 & 0.549 & 1.135 & 0.346 & 1.481 \\
+    DT$_{44}$         & Ind  & 0.002 & 0.099 & \textbf{0.101} & 0.002 & 0.276 & 0.278 & 0.402 & 0.073 & 0.475 & t.o. & 0.041 & t.o. & t.o. \\
+                      & BN1  & 0.003 & 0.120 & \textbf{0.123} & 0.003 & 0.550 & 0.553 & 1.043 & 0.309 & 1.352 & t.o. & 0.042 & 15.972 & 16.014 \\
+                      & BN2  & 0.003 & 0.122 & \textbf{0.125} & 0.003 & 0.546 & 0.549 & 1.135 & 0.346 & 1.481 & t.o. & 0.053 & 44.456 & 44.509 \\
     \bottomrule
     \end{tabular}
+    }
     \caption{Execution times (seconds) for the benchmarks from \cite{albarghouthi2017fairsquare}, with a timeout of 120s.}
         \label{tab:benchmarks_dt}
   \end{table}
 
-Tables~\ref{tab:benchmarks_dt} and~\ref{tab:benchmarks_dt_extra} show the decision tree benchmarks, of varying sizes of $n$. We observe that \Slice{}+\Dice{} achieves the lowest total runtime in practically all $DT$ programs. \Slice{}+\Roulette{} is competitive only on very small trees, and becomes substantially slower by $DT_{100}$--$DT_{500}$ and times out from $DT_{800}$ onward. Additionally, the discretization cost grows substantially by $DT_{1000}$--$DT_{5000}$.
+Tables~\ref{tab:benchmarks_dt} and~\ref{tab:benchmarks_dt_extra} show the decision tree benchmarks, of varying sizes of $n$. We observe that \Slice{}+\Dice{} achieves the lowest total runtime in practically all $DT$ programs. \Slice{}+\Roulette{} is competitive only on very small trees, and becomes substantially slower by $DT_{100}$--$DT_{500}$ and times out from $DT_{800}$ onward. Additionally, the discretization cost grows substantially by $DT_{1000}$--$DT_{5000}$. \PSI{} completes the three $DT_4$ variants and the independent $DT_{14}$ variant, but times out on the remaining programs. Hakaru's disintegration phase remains fast throughout the suite, whereas its subsequent simplification is less robust: it produces errors on several smaller independent variants, approaches the timeout at $DT_{500}$, and times out on all variants from $DT_{800}$ onward.
 
 \begin{table}[!t]
   \centering
   \small
-  \setlength{\tabcolsep}{3.5pt}
-  \begin{tabular}{llccccccccc}
+  \setlength{\tabcolsep}{2.25pt}
+  \resizebox{\columnwidth}{!}{%
+  \begin{tabular}{llccccccccccccc}
   \toprule
   \makecell{\textbf{Decision}\\\textbf{Program}} &
   \makecell{\textbf{Population}\\\textbf{Model}} &
   \multicolumn{3}{c}{\textbf{Slice+Dice (s)}} &
   \multicolumn{3}{c}{\textbf{Slice+Roulette (s)}} &
-  \multicolumn{3}{c}{\textbf{\textsc{SPPL} (s)}} \\
-  \cmidrule(lr){3-5} \cmidrule(lr){6-8} \cmidrule(lr){9-11}
+  \multicolumn{3}{c}{\textbf{SPPL (s)}} &
+  \multirow{2}{*}{\textbf{PSI (s)}} &
+  \multicolumn{3}{c}{\textbf{Hakaru (s)}} \\
+  \cmidrule(lr){3-5} \cmidrule(lr){6-8} \cmidrule(lr){9-11} \cmidrule(lr){13-15}
    &  & \textbf{Slice} & \textbf{Dice} & \textbf{Total} &
         \textbf{Slice} & \textbf{Roulette} & \textbf{Total} &
-        \textbf{Trans.} & \textbf{Judg.} & \textbf{Total} \\
+        \textbf{Trans.} & \textbf{Judg.} & \textbf{Total} & &
+        \textbf{Disint.} & \textbf{Simplify} & \textbf{Total} \\
   \midrule
-  DT$_{50}$         & Ind  & 0.006 & 0.094 & \textbf{0.100} & 0.004 & 0.156 & 0.160 & 0.765 & 0.029 & 0.793 \\
-                    & BN1  & 0.007 & 0.079 & \textbf{0.086} & 0.006 & 0.451 & 0.457 & 1.646 & 0.085 & 1.731 \\
-                    & BN2  & 0.007 & 0.083 & \textbf{0.090} & 0.006 & 0.403 & 0.409 & 1.580 & 0.080 & 1.660 \\
+  DT$_{50}$         & Ind  & 0.006 & 0.094 & \textbf{0.100} & 0.004 & 0.156 & 0.160 & 0.765 & 0.029 & 0.793 & t.o. & 0.045 & 3.712 & 3.757 \\
+                    & BN1  & 0.007 & 0.079 & \textbf{0.086} & 0.006 & 0.451 & 0.457 & 1.646 & 0.085 & 1.731 & t.o. & 0.039 & 3.548 & 3.587 \\
+                    & BN2  & 0.007 & 0.083 & \textbf{0.090} & 0.006 & 0.403 & 0.409 & 1.580 & 0.080 & 1.660 & t.o. & 0.037 & 3.635 & 3.672 \\
   \midrule
-  DT$_{100}$        & Ind  & 0.011 & 0.138 & \textbf{0.149} & 0.011 & 0.654 & 0.665 & 1.455 & 0.036 & 1.490 \\
-                    & BN1  & 0.015 & 0.148 & \textbf{0.163} & 0.016 & 1.775 & 1.791 & 2.867 & 0.150 & 3.017 \\
-                    & BN2  & 0.017 & 0.153 & \textbf{0.170} & 0.016 & 1.775 & 1.791 & 2.914 & 0.152 & 3.066 \\
+  DT$_{100}$        & Ind  & 0.011 & 0.138 & \textbf{0.149} & 0.011 & 0.654 & 0.665 & 1.455 & 0.036 & 1.490 & t.o. & 0.057 & 8.490 & 8.547 \\
+                    & BN1  & 0.015 & 0.148 & \textbf{0.163} & 0.016 & 1.775 & 1.791 & 2.867 & 0.150 & 3.017 & t.o. & 0.077 & 8.596 & 8.673 \\
+                    & BN2  & 0.017 & 0.153 & \textbf{0.170} & 0.016 & 1.775 & 1.791 & 2.914 & 0.152 & 3.066 & t.o. & 0.069 & 8.816 & 8.885 \\
   \midrule
-  DT$_{200}$        & Ind  & 0.045 & 0.289 & \textbf{0.334} & 0.045 & 4.089 & 4.134 & 2.710 & 0.059 & 2.770 \\
-                    & BN1  & 0.064 & 0.322 & \textbf{0.386} & 0.064 & 9.496 & 9.560 & 5.836 & 0.318 & 6.154 \\
-                    & BN2  & 0.068 & 0.305 & \textbf{0.373} & 0.068 & 9.556 & 9.624 & 5.797 & 0.302 & 6.099 \\
+  DT$_{200}$        & Ind  & 0.045 & 0.289 & \textbf{0.334} & 0.045 & 4.089 & 4.134 & 2.710 & 0.059 & 2.770 & t.o. & 0.099 & 24.551 & 24.650 \\
+                    & BN1  & 0.064 & 0.322 & \textbf{0.386} & 0.064 & 9.496 & 9.560 & 5.836 & 0.318 & 6.154 & t.o. & 0.111 & 23.741 & 23.852 \\
+                    & BN2  & 0.068 & 0.305 & \textbf{0.373} & 0.068 & 9.556 & 9.624 & 5.797 & 0.302 & 6.099 & t.o. & 0.115 & 23.988 & 24.103 \\
   \midrule
-  DT$_{500}$        & Ind  & 0.479 & 0.879 & \textbf{1.358} & 0.515 & 55.677 & 56.192 & 7.908 & 0.141 & 8.049 \\
-                    & BN1  & 0.599 & 0.961 & \textbf{1.560} & 0.636 & 113.426 & 114.062 & 15.017 & 0.787 & 15.804 \\
-                    & BN2  & 0.616 & 0.999 & \textbf{1.615} & 0.610 & 112.976 & 113.586 & 15.330 & 0.889 & 16.219 \\
+  DT$_{500}$        & Ind  & 0.479 & 0.879 & \textbf{1.358} & 0.515 & 55.677 & 56.192 & 7.908 & 0.141 & 8.049 & t.o. & 0.295 & 118.438 & 118.733 \\
+                    & BN1  & 0.599 & 0.961 & \textbf{1.560} & 0.636 & 113.426 & 114.062 & 15.017 & 0.787 & 15.804 & t.o. & 0.293 & 117.507 & 117.800 \\
+                    & BN2  & 0.616 & 0.999 & \textbf{1.615} & 0.610 & 112.976 & 113.586 & 15.330 & 0.889 & 16.219 & t.o. & 0.301 & 113.667 & 113.968 \\
   \midrule
-  DT$_{800}$        & Ind  & 1.738 & 1.592 & \textbf{3.330} & 1.738 & t.o. & t.o. & 14.698 & 0.238 & 14.937 \\
-                    & BN1  & 2.184 & 1.690 & \textbf{3.874} & 2.184 & t.o. & t.o. & 26.297 & 1.265 & 27.561 \\
-                    & BN2  & 2.151 & 1.704 & \textbf{3.855} & 2.151 & t.o. & t.o. & 26.542 & 1.298 & 27.840 \\
+  DT$_{800}$        & Ind  & 1.738 & 1.592 & \textbf{3.330} & 1.738 & t.o. & t.o. & 14.698 & 0.238 & 14.937 & t.o. & 0.488 & t.o. & t.o. \\
+                    & BN1  & 2.184 & 1.690 & \textbf{3.874} & 2.184 & t.o. & t.o. & 26.297 & 1.265 & 27.561 & t.o. & 0.597 & t.o. & t.o. \\
+                    & BN2  & 2.151 & 1.704 & \textbf{3.855} & 2.151 & t.o. & t.o. & 26.542 & 1.298 & 27.840 & t.o. & 0.512 & t.o. & t.o. \\
   \midrule
-  DT$_{1000}$       & Ind  & 3.584 & 2.096 & \textbf{5.680} & 3.584 & t.o. & t.o. & 17.626 & 0.279 & 17.905 \\
-                    & BN1  & 4.125 & 2.192 & \textbf{6.317} & 4.125 & t.o. & t.o. & 33.417 & 1.537 & 34.954 \\
-                    & BN2  & 4.052 & 2.152 & \textbf{6.204} & 4.052 & t.o. & t.o. & 34.225 & 1.612 & 35.837 \\
+  DT$_{1000}$       & Ind  & 3.584 & 2.096 & \textbf{5.680} & 3.584 & t.o. & t.o. & 17.626 & 0.279 & 17.905 & t.o. & 0.774 & t.o. & t.o. \\
+                    & BN1  & 4.125 & 2.192 & \textbf{6.317} & 4.125 & t.o. & t.o. & 33.417 & 1.537 & 34.954 & t.o. & 0.784 & t.o. & t.o. \\
+                    & BN2  & 4.052 & 2.152 & \textbf{6.204} & 4.052 & t.o. & t.o. & 34.225 & 1.612 & 35.837 & t.o. & 0.803 & t.o. & t.o. \\
   \midrule
-  DT$_{2000}$       & Ind  & 26.791 & 4.607 & \textbf{31.398} & 26.791 & t.o. & t.o. & 44.957 & 0.786 & 45.742 \\
-                    & BN1  & 29.148 & 4.726 & \textbf{33.874} & 29.148 & t.o. & t.o. & 84.744 & 3.227 & 87.972 \\
-                    & BN2  & 30.353 & 4.715 & \textbf{35.068} & 30.353 & t.o. & t.o. & 76.398 & 3.152 & 79.550 \\
+  DT$_{2000}$       & Ind  & 26.791 & 4.607 & \textbf{31.398} & 26.791 & t.o. & t.o. & 44.957 & 0.786 & 45.742 & t.o. & 2.868 & t.o. & t.o. \\
+                    & BN1  & 29.148 & 4.726 & \textbf{33.874} & 29.148 & t.o. & t.o. & 84.744 & 3.227 & 87.972 & t.o. & 2.775 & t.o. & t.o. \\
+                    & BN2  & 30.353 & 4.715 & \textbf{35.068} & 30.353 & t.o. & t.o. & 76.398 & 3.152 & 79.550 & t.o. & 2.944 & t.o. & t.o. \\
   \midrule
-  DT$_{5000}$       & Ind  & t.o. & t.o. & \textbf{t.o.} & t.o. & t.o. & \textbf{t.o.} & err. & err. & \textbf{err.} \\
-                  & BN1  & t.o. & t.o. & \textbf{t.o.} & t.o. & t.o. & \textbf{t.o.} & err. & err. & \textbf{err.} \\
-                  & BN2  & t.o. & t.o. & \textbf{t.o.} & t.o. & t.o. & \textbf{t.o.} & err. & err. & \textbf{err.} \\
+  DT$_{5000}$       & Ind  & t.o. & t.o. & \textbf{t.o.} & t.o. & t.o. & \textbf{t.o.} & err. & err. & \textbf{err.} & t.o. & 16.030 & t.o. & t.o. \\
+                  & BN1  & t.o. & t.o. & \textbf{t.o.} & t.o. & t.o. & \textbf{t.o.} & err. & err. & \textbf{err.} & t.o. & 14.422 & t.o. & t.o. \\
+                  & BN2  & t.o. & t.o. & \textbf{t.o.} & t.o. & t.o. & \textbf{t.o.} & err. & err. & \textbf{err.} & t.o. & 14.933 & t.o. & t.o. \\
   \bottomrule
   \end{tabular}
+  }
   \caption{Execution times (seconds) for the decision tree benchmarks, with a timeout of 120s. For $DT_{5000}$ under our setup, SPPL returned a maximum recursion depth exceeded error (reported as \texttt{err.}).}
   \label{tab:benchmarks_dt_extra}
 \end{table}
 
 \subsection{Baselines}
-We finally evaluate \Slice{} on SPPL-compatible versions of benchmarks from prior work~\cite{gehr2016psi,Saad2021SPPL}. Most of these programs were taken from the SPPL benchmark repository and translated into \Slice{}. Some of the SPPL versions differ from the original \PSI{} benchmark programs, for example by replacing continuous choices with finite choices so that \SPPL{} can handle them. CoinBias and SurveyUnbias were not in the SPPL repository; we adapted them in the same style. Thus the \Slice{} and \SPPL{} columns in \Cref{tab:benchmarks_psi} give an apples-to-apples comparison, but the corresponding rows should not be read as results for \Slice{} on the original unmodified \PSI{}/Hakaru benchmark programs when those programs use features outside \Slice{}. The first column in the table gives the benchmark name, the second column shows the number of datasets on which to condition the program, and the remaining columns display execution times in seconds. The \PSI{} and Hakaru columns provide additional exact-inference baseline timings for the corresponding benchmark programs; \texttt{t.o.} denotes the same 120s timeout used elsewhere.
+We finally evaluate \Slice{} on SPPL-compatible versions of benchmarks from prior work~\cite{gehr2016psi,Saad2021SPPL}. Most of these programs were taken from the SPPL benchmark repository and translated into \Slice{}. Some of the SPPL versions differ from the original \PSI{} benchmark programs, for example by replacing continuous choices with finite choices so that \SPPL{} can handle them. CoinBias and SurveyUnbias were not in the SPPL repository; we adapted them in the same style. Thus the \Slice{} and \SPPL{} columns in \Cref{tab:benchmarks_psi} give an apples-to-apples comparison. The first column in the table gives the benchmark name, the second shows the number of datasets on which to condition the program, and the remaining columns display execution times in seconds. For benchmarks with both modified and unmodified versions, the \PSI{} and Hakaru cells report the modified timing marked by $\bullet$ above the unmodified timing marked by $\circ$. For Hakaru, we report disintegration, subsequent simplification, and their total. \texttt{t.o.} denotes the same 120s timeout used elsewhere, and \texttt{err.} denotes a tool error.
 
 \begin{table}[!t]
 \centering \vspace{-.3cm}
+\small
+\setlength{\tabcolsep}{2pt}
 \resizebox{\columnwidth}{!}{%
-\begin{tabular}{lrrrrrr}
+\begin{tabular}{lcccccccc}
     \toprule
-    \textbf{Benchmark} & \textbf{Datasets} & \textbf{Slice+Dice (s)} & \textbf{Slice+Roulette (s)} & \textbf{SPPL (s)} & \textbf{\PSI{} (s)} & \textbf{Hakaru (s)} \\
+    \multirow{2}{*}{\textbf{Benchmark}} &
+    \multirow{2}{*}{\textbf{Datasets}} &
+    \multirow{2}{*}{\textbf{Slice+Dice (s)}} &
+    \multirow{2}{*}{\textbf{Slice+Roulette (s)}} &
+    \multirow{2}{*}{\textbf{SPPL (s)}} &
+    \multirow{2}{*}{\textbf{PSI (s)}} &
+    \multicolumn{3}{c}{\textbf{Hakaru (s)}} \\
+    \cmidrule(lr){7-9}
+    & & & & & & \textbf{Disintegrate} & \textbf{Simplify} & \textbf{Total} \\
     \midrule
-    ClickGraph~\cite{gehr2016psi} & 10 & \textbf{1.551 (81.4×)} & 1.841 (68.6×) & 126.263 & \texttt{t.o.} & 4.005 \\
-    ClinicalTrial~\cite{gehr2016psi} & 20 & \textbf{6.854 (4.5×)} & 8.692 (3.6×) & 31.102 & \texttt{t.o.} & 3.054 \\
-    CoinBias~\cite{gehr2016psi} & 5 & 0.294 (2.9×) & \textbf{0.234 (3.7×)} & 0.867 & 33.147 & 3.219 \\
-    Election~\cite{Saad2021SPPL} & 2 & 0.878 (17.9×) & \textbf{0.663 (23.7×)} & 15.739 & \texttt{t.o.} & 3.281 \\
-    MarkovSwitching~\cite{Saad2021SPPL} & 10 & \textbf{0.044 (14.2×)} & \textbf{0.044 (14.2×)} & 0.624 & 34.976 & 3.290 \\
-    StudentInterviews~\cite{Saad2021SPPL} & 10 & \textbf{1.287 (44.1×)} & 1.681 (33.8×) & 56.781 & \texttt{t.o.} & 2.984 \\
-    SurveyUnbias~\cite{gehr2016psi} & 10 & \textbf{0.044 (8.2×)} & 0.157 (2.3×) & 0.361 & \texttt{t.o.} & 2.999 \\
-    TrueSkill~\cite{gehr2016psi} & 2 & \textbf{0.042 (5.2×)} & 0.157 (1.4×) & 0.217 & 124.769 & 3.637 \\
+    ClickGraph~\cite{gehr2016psi} & 10 & \textbf{1.551 (81.4×)} & 1.841 (68.6×) & 126.263 &
+    \makecell{\texttt{t.o.}\,$\bullet$ \\ \texttt{t.o.}\,$\circ$} &
+    \makecell{0.112\,$\bullet$ \\ 0.033\,$\circ$} &
+    \makecell{\texttt{t.o.}\,$\bullet$ \\ \texttt{err.}\,$\circ$} &
+    \makecell{\texttt{t.o.}\,$\bullet$ \\ \texttt{err.}\,$\circ$} \\
+    \midrule
+    ClinicalTrial~\cite{gehr2016psi} & 20 & \textbf{6.854 (4.5×)} & 8.692 (3.6×) & 31.102 &
+    \makecell{\texttt{t.o.}\,$\bullet$ \\ 1.916\,$\circ$} &
+    \makecell{\texttt{err.}\,$\bullet$ \\ 0.022\,$\circ$} &
+    \makecell{\texttt{t.o.}\,$\bullet$ \\ \texttt{err.}\,$\circ$} &
+    \makecell{\texttt{err.}\,$\bullet$ \\ \texttt{err.}\,$\circ$} \\
+    \midrule
+    CoinBias~\cite{gehr2016psi} & 5 & 0.294 (2.9×) & \textbf{0.234 (3.7×)} & 0.867 &
+    \makecell{20.138\,$\bullet$ \\ 0.369\,$\circ$} &
+    \makecell{0.011\,$\bullet$ \\ 0.006\,$\circ$} &
+    \makecell{5.812\,$\bullet$ \\ \texttt{err.}\,$\circ$} &
+    \makecell{5.823\,$\bullet$ \\ \texttt{err.}\,$\circ$} \\
+    \midrule
+    Election~\cite{Saad2021SPPL} & 2 & 0.878 (17.9×) & \textbf{0.663 (23.7×)} & 15.739 &
+    \texttt{err.} & 0.071 & \texttt{t.o.} & \texttt{t.o.} \\
+    \midrule
+    MarkovSwitching~\cite{Saad2021SPPL} & 10 & \textbf{0.044 (14.2×)} & \textbf{0.044 (14.2×)} & 0.624 &
+    \texttt{t.o.} & 0.059 & \texttt{err.} & \texttt{err.} \\
+    \midrule
+    StudentInterviews~\cite{Saad2021SPPL} & 10 & \textbf{1.287 (44.1×)} & 1.681 (33.8×) & 56.781 &
+    \texttt{t.o.} & 0.019 & 0.606 & 0.625 \\
+    \midrule
+    SurveyUnbias~\cite{gehr2016psi} & 10 & \textbf{0.044 (8.2×)} & 0.157 (2.3×) & 0.361 &
+    \makecell{\texttt{t.o.}\,$\bullet$ \\ \texttt{t.o.}\,$\circ$} &
+    \makecell{0.021\,$\bullet$ \\ 0.025\,$\circ$} &
+    \makecell{\texttt{t.o.}\,$\bullet$ \\ \texttt{err.}\,$\circ$} &
+    \makecell{\texttt{t.o.}\,$\bullet$ \\ \texttt{err.}\,$\circ$} \\
+    \midrule
+    TrueSkill~\cite{gehr2016psi} & 2 & \textbf{0.042 (5.2×)} & 0.157 (1.4×) & 0.217 &
+    \makecell{\texttt{t.o.}\,$\bullet$ \\ 0.068\,$\circ$} &
+    \makecell{0.027\,$\bullet$ \\ 0.013\,$\circ$} &
+    \makecell{\texttt{err.}\,$\bullet$ \\ 0.390\,$\circ$} &
+    \makecell{\texttt{err.}\,$\bullet$ \\ 0.403\,$\circ$} \\
     \bottomrule
     \end{tabular}  
 }  
-\caption{Representative execution times (seconds) for SPPL-compatible versions of benchmarks from PSI~\cite{gehr2016psi} and SPPL~\cite{Saad2021SPPL}, with additional \PSI{} and Hakaru exact-inference baselines.}
+\caption{Representative execution times (seconds) for SPPL-compatible versions of benchmarks from PSI~\cite{gehr2016psi} and SPPL~\cite{Saad2021SPPL}, with modified and unmodified \PSI{} and Hakaru exact inference baselines. For benchmarks with two outputs for \PSI{} and Hakaru, $\bullet$ marks the modified program and $\circ$ marks the unmodified program.}
     \label{tab:benchmarks_psi}
 \end{table}
+
+\paragraph{Results.} On the modified baseline programs in \Cref{tab:benchmarks_psi}, \PSI{} completes only CoinBias, times out on six programs, and returns an error on Election; it completes three of the five reported unmodified programs. Hakaru's disintegration phase completes in at most 0.112 seconds on every modified program except ClinicalTrial, where it returns an error, and completes all five unmodified programs in at most 0.033 seconds. However, this does not translate into consistently successful end-to-end inference: the subsequent simplification phase frequently times out or returns an error.
+
+
+\subsubsection{Baseline Programs}
+The exact \Slice{} programs used for these baseline benchmarks are reproduced below.
+
+\lstdefinestyle{baselineprogram}{
+  language=Dice,
+  basicstyle=\ttfamily\scriptsize,
+  columns=fullflexible,
+  keepspaces=true,
+  breaklines=true,
+  breakatwhitespace=false,
+  showstringspaces=false,
+  numbers=left,
+  numberstyle=\tiny\color{gray},
+  numbersep=6pt,
+  frame=single,
+  rulecolor=\color{black!25},
+  xleftmargin=1.8em,
+  framexleftmargin=1.4em,
+  aboveskip=0.5em,
+  belowskip=1em
+}
+
+\paragraph{ClickGraph.}
+\lstinputlisting[style=baselineprogram]{../benchmarks/baselines/clickgraph/clickgraph.slice}
+
+\paragraph{ClinicalTrial.}
+\lstinputlisting[style=baselineprogram]{../benchmarks/baselines/clinical_trial/clinical_trial.slice}
+
+\paragraph{CoinBias.}
+\lstinputlisting[style=baselineprogram]{../benchmarks/baselines/coin_bias/coin_bias.slice}
+
+\paragraph{Election.}
+\lstinputlisting[style=baselineprogram]{../benchmarks/baselines/election/election.slice}
+
+\paragraph{MarkovSwitching (HMM).}
+\lstinputlisting[style=baselineprogram]{../benchmarks/baselines/hmm/hmm.slice}
+
+\paragraph{StudentInterviews.}
+\lstinputlisting[style=baselineprogram]{baseline_programs/student_interviews.slice}
+
+\paragraph{SurveyUnbias.}
+\lstinputlisting[style=baselineprogram]{../benchmarks/baselines/survey_unbias/survey_unbias.slice}
+
+\paragraph{TrueSkill.}
+\lstinputlisting[style=baselineprogram]{../benchmarks/baselines/trueskill/trueskill.slice}
 
     
