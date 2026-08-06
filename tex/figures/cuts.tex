@@ -105,6 +105,6 @@
 
   \end{tikzpicture}
   }
-  \caption{Discretization for example~\ref{sec:examples:1}. With exact interval masses, the mathematical target is semantically equivalent to the source. The displayed probabilities are rounded illustrations of the four masses for $(-\infty, 0.1)$, $[0.1, 0.8)$, $[0.8, 2.0)$, and $[2.0, +\infty)$; the artifact computes binary64 CDF approximations rather than these exact real masses.}
+  \caption{Discretization for example~\ref{sec:examples:1}. The intended exact-real target assigns the four interval masses for $(-\infty, 0.1)$, $[0.1, 0.8)$, $[0.8, 2.0)$, and $[2.0, +\infty)$. The displayed probabilities are rounded illustrations; the artifact computes validated binary64 CDF approximations. General semantic preservation remains conditional on the open weak-simulation obligation.}
   \label{fig:cuts-gaussian}
 \end{figure}

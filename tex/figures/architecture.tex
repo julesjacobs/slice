@@ -57,6 +57,6 @@
             node[operationleft, font=\footnotesize, align=center, yshift=-5mm, xshift=8mm] {Interpreter\\[-1mm]{\tiny \textcolor{gray}{interp.ml}}} (output.north);
         \draw[interp] (dast.south) .. controls +(0,-0.5) and +(0,1) .. (output.north);
     \end{tikzpicture}}
-    \caption{Pipeline for \Slice{} discretization. The mathematical transformation uses exact interval masses and produces a semantically equivalent discrete program. The artifact follows the same backend-agnostic architecture but supplies binary64 CDF approximations, so its backends analyze a numerical discrete model. \Dice{}, \Roulette{}, and \Storm{} are examples of target backends.}
+    \caption{Pipeline for \Slice{} discretization. The intended mathematical transformation uses exact interval masses; semantic preservation remains conditional on the open weak-simulation obligation. The artifact follows the same backend-agnostic architecture but supplies validated binary64 CDF approximations, so its backends analyze a numerical discrete model. \Dice{}, \Roulette{}, and \Storm{} are examples of target backends.}
     \label{fig:architecture}
 \end{figure}
