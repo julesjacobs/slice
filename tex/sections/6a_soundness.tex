@@ -199,14 +199,18 @@ To make the probabilistic semantics precise, we construct an appropriate measure
 		s ::= \; 
 		&\square \mid x \mid \true \mid \false \mid \finconst{k}{n} \mid \diverge \mid () \\
 		&\mid \letkw \; x = s_1 \; \inkw \; s_2 \mid \ifkw \; s_1 \; \thenkw \; s_2 \; \elsekw \; s_3 \\
-		&\mid s_1 < s_2 \mid s_1 \leq s_2 \mid s_1 \finlt{n} s_2 \mid s_1 \finleq{n} s_2 \\
-		&\mid \uniform(s_1, s_2) \mid \gaussian(s_1, s_2) \mid \exponential(s) \mid \betafn(s_1, s_2) \mid \discrete(p_0, \ldots, p_{n-1}) \\
+		&\mid s_1 < s_2 \mid s_1 \leq s_2 \mid s_1 \finlt{n} s_2 \mid s_1 \finleq{n} s_2 \mid s_1 \fineq{n} s_2 \\
+		&\mid \mathsf D(s_1,\ldots,s_k) \mid \discrete(p_0, \ldots, p_{n-1}) \mid \dc(s_1,s_2) \\
 		&\mid s_1\; \logand\; s_2 \mid s_1\; \logor\; s_2 \mid \lognot\; s \mid \observekw(s) \mid s_1; s_2 \\
 		&\mid (s_1, s_2) \mid \fstkw \; s \mid \sndkw \; s \\
 		&\mid \funkw \; x \to s \mid s_1 \; s_2 \mid \fixkw\; f\; x := s \\
 		&\mid \textnormal{\ttfamily nil} \mid s_1 :: s_2 \\
 		&\mid (\matchkw \; s \; \withkw \matchcase \textnormal{\ttfamily nil} \rightarrow s_{\textnormal{nil}} \matchcase h::t \rightarrow s_{\textnormal{cons}} \; {\textnormal{\ttfamily\bfseries end}})
 	\end{align*}
+	Here $\mathsf D$ ranges over every continuous distribution constructor in
+	the operational fragment, with its declared arity. The auxiliary $\dc$
+	form is included because it is retained by the appendix semantics; if it is
+	replaced by literal generated core syntax, this production is unnecessary.
 	We denote by $\skel$ the set of all expression skeletons. The holes of a
 	skeleton are its occurrences of $\square$, ordered from left to right in a
 	preorder traversal of the syntax tree; $\holes(s)$ is the number of these
@@ -265,6 +269,14 @@ skeletons by adding a distinguished typing rule for holes.
 \end{remark}
 
 \begin{definition}[Decomposing an expression]
+	In this subsection, $Expr_\tau$ denotes the typed operational fragment whose
+	constructors are listed in the skeleton grammar above and in
+	\Cref{fig:decompose-definition-1,fig:decompose-definition-2}. This is the
+	restricted semantic carrier used by the repaired semantics in PR~\#8, not a
+	claim about every constructor accepted by the Slice implementation. Extending
+	the operational semantics requires adding the corresponding skeleton and
+	structural decomposition clauses.
+
 	The decomposition function
 	\[
 		\decompose \colon Expr_{\tau}

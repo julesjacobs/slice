@@ -16,25 +16,19 @@
 				& \text{if } e = \diverge : \tau \\[8pt]
 			(() : \unit, ())
 				& \text{if } e = () : \unit \\[8pt]
-			((\square, \floattype{B}{V}) : \floattype{B}{V}, (c))
+			(\square : \floattype{B}{V}, (c))
 				& \text{if } e = c : \floattype{B}{V} \\[8pt]
 			(\discrete(p_0,\ldots,p_{n-1}) : \fin{n}, ())
 				& \text{if } e = \discrete(p_0,\ldots,p_{n-1}) : \fin{n} \\[8pt]
-			(\uniform(\decompose(e_1)_1, \decompose(e_2)_1) : \floattype{B}{V}, \\
-			\decompose(e_1)_2 \mathbin{\|} \decompose(e_2)_2)
-				& \text{if } e = \uniform(e_1, e_2) : \floattype{B}{V} \\[8pt]
-			(\gaussian(\decompose(e_1)_1, \decompose(e_2)_1) : \floattype{B}{V}, \\
-			\decompose(e_1)_2 \mathbin{\|} \decompose(e_2)_2)
-				& \text{if } e = \gaussian(e_1, e_2) : \floattype{B}{V} \\[8pt]
-			(\exponential(\decompose(e_1)_1) : \floattype{B}{V}, \\
-            \decompose(e_1)_2)
-				& \text{if } e = \exponential(e_1) : \floattype{B}{V} \\[8pt]
-			(\betafn(\decompose(e_1)_1, \decompose(e_2)_1) : \floattype{B}{V}, \\
-			\decompose(e_1)_2 \mathbin{\|} \decompose(e_2)_2)
-				& \text{if } e = \betafn(e_1, e_2) : \floattype{B}{V} \\[8pt]
+			(\mathsf D(\decompose(e_1)_1,\ldots,\decompose(e_k)_1) : \floattype{B}{V}, \\
+			\decompose(e_1)_2 \mathbin{\|} \cdots \mathbin{\|} \decompose(e_k)_2)
+				& \text{if } e = \mathsf D(e_1,\ldots,e_k) : \floattype{B}{V} \\[8pt]
 			(\decompose(e_1)_1 \sim \decompose(e_2)_1 : \bool, \\
 			\decompose(e_1)_2 \mathbin{\|} \decompose(e_2)_2)
-				& \text{if } e = e_1 \sim e_2 : \bool, \sim = <, \leq, \finlt{n}, \finleq{n} \\[8pt]
+				& \text{if } e = e_1 \sim e_2 : \bool, \sim = <, \leq, \finlt{n}, \finleq{n}, \fineq{n} \\[8pt]
+			(\dc(\decompose(e_1)_1,\decompose(e_2)_1) : \fin{n}, \\
+			\decompose(e_1)_2 \mathbin{\|} \decompose(e_2)_2)
+				& \text{if } e = \dc(e_1,e_2) : \fin{n} \\[8pt]
             (\ifkw\; \decompose(e_1)_1\; \thenkw\; \decompose(e_2)_1\; \elsekw\; \decompose(e_3)_1 : \tau, \\
             \decompose(e_1)_2 \mathbin{\|} \decompose(e_2)_2
 			\mathbin{\|} \decompose(e_3)_2)
@@ -46,7 +40,7 @@
                 & \text{if } e = \observekw(e_1 : \bool) : \unit \\[8pt]
 		\end{cases}
 	\end{align*}
-	\caption{Recursive definition of $\decompose$, a decomposition function, over typed expressions. $\decompose(\cdot)_1$ and $\decompose(\cdot)_2$ denote first and second projections of $\decompose$, respectively. The operator $\mathbin{\|}$ is coordinate-vector concatenation, so $\decompose(\cdot)_2$ is a flat vector in $\R^n$.}
+	\caption{Recursive definition of $\decompose$, a decomposition function, over typed expressions in the operational fragment. $\mathsf D$ ranges over every continuous distribution form retained in that fragment, with its declared arity. $\decompose(\cdot)_1$ and $\decompose(\cdot)_2$ denote first and second projections of $\decompose$, respectively. The operator $\mathbin{\|}$ is coordinate-vector concatenation, so $\decompose(\cdot)_2$ is a flat vector in $\R^n$.}
 	\label{fig:decompose-definition-1}
 \end{figure}
 
