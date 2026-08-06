@@ -168,6 +168,9 @@ for all $A \in \mathcal{F}_Y$.
 		
 		\item \emph{Measurable function:} For each event $A \in \Sigma_Y$ in the target space, the map $x \mapsto P(x,A)$ must be a measurable function.
 	\end{enumerate}
+	If additionally $P(x,Y)=1$ for every $x\in X$, then $P$ is a
+	\emph{Markov kernel}. Thus every Markov kernel is a sub-Markov kernel, but
+	the converse need not hold.
 \end{definition}
 
 % \begin{definition}[Projection]
@@ -692,6 +695,7 @@ Let $X$ be a set equipped with a suitable measurable space so that $\mathcal{D}(
 
 \begin{lemma}[$\bot$-extension is a sub-Markov kernel]\label{lem:bot-extension-kernel}
 	Given a sub-Markov kernel $f : X \to \mathcal{D}(Y + \bot)$, its $\bot$ extension $f_{\bot} : (X + \bot) \to \mathcal{D}(Y + \bot)$ is also a sub-Markov kernel.
+	If $f$ is a Markov kernel, then $f_\bot$ is a Markov kernel.
 \end{lemma}
 	
 \begin{proof}
@@ -755,29 +759,30 @@ Let $X$ be a set equipped with a suitable measurable space so that $\mathcal{D}(
 	
 	\medskip
 	
-	Since both conditions hold, $f_{\bot}$ is a sub-Markov kernel.
+	Since both conditions hold, $f_{\bot}$ is a sub-Markov kernel. If $f$ is
+	Markov, both cases above have total mass one, so $f_\bot$ is Markov.
 \end{proof}
 
-\begin{lemma}[Dirac return is a sub-Markov kernel]\label{lem:dirac-return-kernel}
+\begin{lemma}[Dirac return is a Markov kernel]\label{lem:dirac-return-kernel}
 	For any measurable space $(X,\mathcal{F}_X)$, the map
 	\[
 		\mathsf{return} : X \to \mathcal{D}(X+\bot),
 		\qquad x \mapsto \delta_x .
 	\]
-	is a sub-Markov kernel.
+	is a Markov kernel (and hence a sub-Markov kernel).
 \end{lemma}
 
 \begin{proof}
-	We verify the two conditions for $\mathsf{return}$ to be a sub-Markov kernel.
+	We verify the two kernel conditions and unit total mass.
 
-	\paragraph{(1) Subprobability measure:}
+	\paragraph{(1) Probability measure:}
 	We show for each $x \in X$, the map 
 	\[
 		A \mapsto \mathsf{return}(x)(A) = \delta_x(A)
 	\]
-	is a subprobability measure.
+	is a probability measure.
 
-	Fix $x \in X$. $\dirac{x}$ is the Dirac measure at $x$, hence a probability measure, and therefore also a subprobability measure, on $X+\bot$. Thus, for every $x\in X$, the map $A \mapsto \delta_x(A)$ is a subprobability measure.
+	Fix $x \in X$. $\dirac{x}$ is the Dirac measure at $x$, hence a probability measure on $X+\bot$, with $\delta_x(X+\bot)=1$.
 
 	\paragraph{(2) Measurable function:}
 	We show that for each $A \in \mathcal{F}_{X+\bot}$, the map
@@ -1147,15 +1152,15 @@ The missing probability mass in $\sem{e :\tau}$ is the probability of encounteri
 	\begin{itemize}
 		\item Consider $e = (\letkw\; y = x : \tau_1 \; \inkw\; e_2 : \tau_2) : \tau_2$. 
 		
-		This means proving that $\lambda x.\, \dirac{\letkw\; y = x\; \inkw\; e_2}$ is a sub-Markov kernel. Formally, define
+		This means proving that $\lambda x.\, \dirac{\letkw\; y = x\; \inkw\; e_2}$ is a Markov kernel (and hence a sub-Markov kernel). Formally, define
 		\[
 			f \colon Expr_{\tau_1} \to \mathcal{D}(Expr_{\tau_2} + \bot),
 			\qquad
 			f(x) = \dirac{\letkw\; y = x\; \inkw\; e_2}.
 		\]
-		We verify the two conditions for $f$ to be a sub-Markov kernel.
+		We verify the two conditions for $f$ to be a Markov kernel.
 	
-		\paragraph{(i) Subprobability measure:} We show for each $x \in Expr_{\tau_1}$, the map $A \mapsto f(x)(A)$ is a subprobability measure.
+		\paragraph{(i) Probability measure:} We show for each $x \in Expr_{\tau_1}$, the map $A \mapsto f(x)(A)$ is a probability measure.
 	
 		\medskip
 	
@@ -1167,7 +1172,7 @@ The missing probability mass in $\sem{e :\tau}$ is the probability of encounteri
 				0 & \text{otherwise.}
 			\end{cases}
 		\]
-		A Dirac measure is a probability measure, and hence a subprobability measure, so this condition holds.
+		A Dirac measure is a probability measure, so this condition holds.
 	
 		\paragraph{(ii) Measurable function:} 
 	
@@ -1286,7 +1291,7 @@ The missing probability mass in $\sem{e :\tau}$ is the probability of encounteri
 
 		\medskip
 
-		Thus, $f \colon Expr_{\tau_1} \to \mathcal{D}(Expr_{\tau_2} + \bot)$ is a sub-Markov kernel.
+		Thus, $f \colon Expr_{\tau_1} \to \mathcal{D}(Expr_{\tau_2} + \bot)$ is a Markov kernel, and hence a sub-Markov kernel.
 
 		\item All other cases analogous. \todo[inline]{Maybe show the comparison case}
 	\end{itemize}
@@ -1309,7 +1314,7 @@ The missing probability mass in $\sem{e :\tau}$ is the probability of encounteri
 			\end{cases}
 		\]
 		\begin{itemize}
-			\item If $e_1 = v$, By~\Cref{lem:dirac-return-kernel} and~\Cref{lem:subst-measurable}, $e \mapsto \dirac{e_2[v/y] : \tau_2}$ is a sub-Markov kernel. Hence, $\sem{\letkw \; x = e_1 \; \inkw \; e_2 : \tau_2} \colon Expr_{\tau_2} \to \mathcal{D}(Expr_{\tau_2} + \bot)$ is a sub-Markov kernel.
+			\item If $e_1 = v$, by~\Cref{lem:dirac-return-kernel} and~\Cref{lem:subst-measurable}, $e \mapsto \dirac{e_2[v/y] : \tau_2}$ is a Markov kernel, and hence a sub-Markov kernel. Therefore $\sem{\letkw \; x = e_1 \; \inkw \; e_2 : \tau_2} \colon Expr_{\tau_2} \to \mathcal{D}(Expr_{\tau_2} + \bot)$ is a sub-Markov kernel.
 			
 			\item By the induction hypothesis, 
 			\[
@@ -1640,7 +1645,7 @@ As a sanity check, we show that the $n$-step semantics defines a sub-Markov kern
 	\[
 		\bigsemstep{e : \tau}{n} = \dirac{e : \tau}
 	\]
-	i.e. the map $e \mapsto \dirac{e}$. By~\Cref{lem:dirac-return-kernel}, this is a sub-Markov kernel.
+	i.e. the map $e \mapsto \dirac{e}$. By~\Cref{lem:dirac-return-kernel}, this is a Markov kernel, and hence a sub-Markov kernel.
 
 	Inductive step: $n > 0$. By definition, 
 	\[
