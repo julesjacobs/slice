@@ -25,7 +25,8 @@ type cdistr =
 (* Initialize GSL random number generator *)
 let rng = Gsl.Rng.make (Gsl.Rng.default ())
 
-let cdistr_cdf dist x =
+(* Binary64 approximation returned by GSL, not a symbolic or certified CDF. *)
+let approx_cdistr_cdf dist x =
   if x = neg_infinity then 0.0
   else if x = infinity then 1.0
   else

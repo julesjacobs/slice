@@ -23,9 +23,11 @@ let get_const_idx_and_modulus (f : float) (cut_set_from_context : CutSet.t) : in
   in
   (idx, modulus)
 
-(* Calculate probability for a given distribution in an interval *)
-let prob_cdistr_interval (left : float) (right : float) (dist : Distributions.cdistr) : float =
-  let cdf = Distributions.cdistr_cdf dist in
+(* Numerically approximate a distribution's interval mass using binary64 GSL CDF
+   values.  This is not a symbolic or certified implementation of the exact-real
+   interval mass used by the semantics. *)
+let approx_prob_cdistr_interval (left : float) (right : float) (dist : Distributions.cdistr) : float =
+  let cdf = Distributions.approx_cdistr_cdf dist in
   cdf right -. cdf left
 
 (* 
@@ -134,7 +136,7 @@ let discretize (e : texpr) : expr =
               (* Ensure left <= right. If bounds imply same float val, interval is [v,v] -> prob should be 0 by CDF diff *)
               (min left_for_cdf right_for_cdf, max left_for_cdf right_for_cdf)
             ) in
-            let probs = List.map (fun (l,r) -> prob_cdistr_interval l r concrete_distr) intervals_for_probs in
+            let probs = List.map (fun (l,r) -> approx_prob_cdistr_interval l r concrete_distr) intervals_for_probs in
             if List.exists (fun p -> p < -0.0001 || p > 1.0001) probs then
                 failwith ("Internal error: generated probabilities are invalid: " ^ Pretty.string_of_float_list probs ^ " for distribution " ^ Pretty.string_of_cdistr concrete_distr ^ Printf.sprintf " with %d outer bounds." (List.length outer_cuts));
             let sum_probs = List.fold_left (+.) 0.0 probs in

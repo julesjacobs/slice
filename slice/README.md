@@ -1,6 +1,8 @@
 # Slice - A Language for Type-Directed Discretization
 
-Slice is a language for probabilistic programming with continuous distributions that uses type-directed discretization to enable exact inference.
+Slice is a language for probabilistic programming with continuous distributions that uses type-directed discretization to enable discrete inference.
+
+The formal Slice transformation is defined using exact real interval masses. This prototype computes interval masses with binary64 GSL CDF routines, so generated weights are numerical approximations. Exact inference by a backend is exact relative to those generated weights, not a certificate of equality with the ideal continuous source program. The prototype does not currently produce certified error bounds.
 
 ## Features
 

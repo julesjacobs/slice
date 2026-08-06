@@ -2,7 +2,7 @@
 opam-version: "2.0"
 synopsis: "Type-directed discretization of continuous probabilistic programs"
 description:
-  "Slice automatically transforms continuous probabilistic programs into discrete ones for exact inference"
+  "Slice automatically transforms continuous probabilistic programs into discrete ones for discrete inference"
 license: "MIT"
 tags: [
   "probabilistic-programming"
