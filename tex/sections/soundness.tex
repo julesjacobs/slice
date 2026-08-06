@@ -1,7 +1,9 @@
 \section{Operational Semantics and Soundness}
 \label{sec:soundness}%
 %
-We now establish the soundness of our approach in the following sense: For \emph{every} expression $e:\bool$, possibly including \emph{continuous sampling, higher-order functions, recursion, and conditioning},
+The intended soundness statement is that, for every expression $e:\bool$,
+possibly including \emph{continuous sampling, higher-order functions,
+recursion, and conditioning},
 %
 \begin{center}
 	\emph{$e: \bool$ and $\discretize{e : \bool}:\bool$ (obtained from \Cref{fig:discretization-code}) are semantically equivalent.}
@@ -9,7 +11,12 @@ We now establish the soundness of our approach in the following sense: For \emph
 %its discretized expression $\discretize{e : \bool} : \bool$ obtained from the rules in \Cref{fig:discretization-code}
 %
 % exact discretization as follows: every expression $e:\bool$ is semantically equivalent to $\discretize{e : \bool} : \bool$. 
-The first step is to make formal sense of semantic equivalence. For that, we will define a monadic operational semantics for our language in \Cref{sec:opsem}. We will then proceed by proving the above claim. This is non-trivial: discretization decisions are driven by non-local, type-propagated information, so we cannot proceed by a local rule-by-rule argument. To prove the claim rigorously, we relate the executions of $e$ and $\discretize{e}$ through a coupling-style logical relation in \Cref{sec:opsem}. %We provide the high-level proof idea in the main text; all details are in \Cref{sec:app:soundness_new}.
+The first step is to make formal sense of semantic equivalence. For that, we
+define a monadic operational semantics for our language in \Cref{sec:opsem}.
+A complete proof of the displayed claim additionally requires the measurable
+weak-coupling obligations stated below. Discretization decisions are driven by
+non-local, type-propagated information, and the literal generated target takes
+administrative steps that do not synchronize with source steps.
 %
 \subsection{Operational Semantics}
 \label{sec:opsem}
@@ -101,77 +108,45 @@ which is well-defined by the monotone convergence theorem: the sequence $(\bigse
 \subsection{Soundness via Probabilistic Couplings}
 \label{C}
 %
-We first state the central theorem, then outline our coupling-style correctness argument.
+We state the intended result conditionally on the weak-coupling obligations
+that remain to be proved.
 %
-\begin{theorem}
+\begin{theorem}[Conditional contextual equivalence]
 	\label{thm:maintext:sound}
-	Let $e:\bool$. Then $\bigsem{e:\bool} = \bigsem{\discretize{e:\bool} : \bool}$.
+	Under \Cref{ass:weak-coupling-interface,ass:terminal-weak-coupling-limit},
+	if $e:\bool$, then
+	$\bigsem{e:\bool}=\bigsem{\discretize{e:\bool}:\bool}$.
 \end{theorem}
 %
-Intuitively, we prove that the two programs can execute in a synchronized manner such that their probabilities of terminating in value $v$ coincide for each $v \in \{\true,\false,\bot\}$. %Because sub-expressions may have types other than $\bool$, this argument must (i) apply to expressions of \emph{arbitrary} type and (ii) be strong enough to imply \Cref{thm:maintext:sound}.
-%e, and which lets us conclude semantic equivalence for expressions of type $\bool$.
-%more general argument which enables us to conclude semantic equivalence.% The crucial point is when we encounter a continuous sampling instruction in $e$, in which case we have to prove that its discretized counterpart $\discretize{e:\tau}$
+The exact graph
+$P_\tau=\{(e,\discretize e)\mid e\in Expr^{\mathsf U}_\tau\}$ is a useful
+initial carrier, but it is not closed under the displayed synchronous rules.
+We instead assume a measurable weak relation $R_\tau$ and a sub-Markov
+coupling kernel whose error-preserving pushforwards are the source step and a
+target weak step, as specified in \Cref{ass:weak-coupling-interface}. The
+sub-Markov kernel machinery is supplied by the separate kernel-category
+repair.
 
-Towards this end, define for every type $\tau$ the set $P_\tau = \{ (e:\tau, \discretize{e : \tau} : \discretize{\tau}) ~|~ e:\tau \}$. We define a \emph{coupled small-step semantics} $\sem{\cdot,\cdot} \colon P_\tau \to \mathcal{D}(P_\tau + \bot)$ (cf.\ \Cref{tab:coupling_smallstep_1,tab:coupling_smallstep_2}), which models the simultaneous execution of $e$ and $\discretize{e:\tau}$. The key property of this coupled semantics is that the semantics of both $e$ and $\discretize{e:\tau}$ can be recovered in a sense we formalize next.
-
-Given $\mu \in \mathcal{D}(P_\tau + \bot)$, we define the \emph{projection of $\mu$ onto the $i$-th component} for $i\in\{ 1,2 \}$ as
-%
-\[
-	\pi_i(\mu) = \lambda A. \int_{x \in P_\tau + \bot} 
-	\begin{cases}
-		 \delta_{e_i}(A) & x = (e_1,e_2)  \\
-		 %
-		 \delta_\bot(A)  & x = \bot
-	\end{cases}
-	%
-	\mu(dx)~,
-\]
-%
-%where $\delta_a$ denotes the Dirac distribution of $a$. 
-With projections, we recover the semantics of $e$ and $\discretize{e:\tau}$ as follows:
-\begin{lemma}
+\begin{lemma}[Conditional small-step projections]
 	\label{lem:maintext:small_step_coupling_props}
-	Let $e:\tau$. We have:
+	Under \Cref{ass:weak-coupling-interface}, for every $(e,t)\in R_\tau$,
 	%
 	\begin{enumerate}
 		\item\label{lem:maintext:small_step_coupling_props1} 
-		$\pi_1(\sem{e:\tau, \discretize{e : \tau} : \discretize{\tau}}) = \sem{e:\tau}$.
+		$\pi_1(K_\tau(e,t))=\sem{e:\tau}$.
 		%
 		\item\label{lem:maintext:small_step_coupling_props2} 
-		$\pi_2(\sem{e:\tau, \discretize{e : \tau} : \discretize{\tau}}) = \sem{\discretize{e : \tau}:\discretize{\tau}}$.
+		$\pi_2(K_\tau(e,t))$ is the target weak-step distribution from $t$.
 	\end{enumerate}
 \end{lemma}
-%
-%\begin{proof}
-%	By induction on the typing derivation of $e:\tau$. See \Cref{lem:small_step_coupling_props}.
-%\end{proof}
 
-Now, using a limit construction analogous to \Cref{sec:smallsem_to_bigsem} for obtaining a coupled \emph{big-step} semantics $\bigsem{\cdot,\cdot} \colon P_\tau \to \mathcal{D}(V_\tau + \bot)$, where $V_\tau = \{ (v:\tau, \discretize{v} : \discretize{\tau}) ~|~ v:\tau~\text{is a value} \}$, we prove a suitable continuity property of projection (cf.\ \Cref{lem:proj_cont}) to conclude that \Cref{lem:maintext:small_step_coupling_props} transfers to $\bigsem{\cdot,\cdot}$. Finally, observing that $V_\bool + \bot = \{(\true,\true), (\false,\false), \bot\}$ yields the desired claim:
-
-%\noindent
-\emph{Proof of \Cref{thm:maintext:sound}}. Let $v \in \{\true,\false,\bot\}$. We have
-%
-\begin{align*}
-	& \bigsem{e : \bool}(v) \\
-	%
-	{}={}~& \pi_1(\bigsem{e:\bool, \discretize{e : \bool} : {\bool}})(v)
-	\tag{Lemma \ref{lem:maintext:small_step_coupling_props}.\ref{lem:maintext:small_step_coupling_props1} for $\bigsem{\cdot,\cdot}$} \\
-	%
-    {}={}~& \pi_1(\bigsem{e:\bool, \discretize{e : \bool} : {\bool}})(v)
-    \tag{$P_\bool$ is discrete} \\
-    %
-    {}={} & \bigsem{e : \bool, \discretize{e : \bool}:{\bool}}((\true,\true))\cdot \delta_{\true}(v) \\
-    &{}+ 
-    \bigsem{e : \bool, \discretize{e : \bool}:{\bool}}((\false,\false))\cdot \delta_{\false}(v) \\
-    &{}+ 
-    \bigsem{e : \bool, \discretize{e : \bool}:{\bool}}(\bot)\cdot \delta_{\bot}(v) 
-    \tag{definition of $\pi_1$, argument is discrete} \\
-    %
-    {}={}~& \pi_2(\bigsem{e:\bool, \discretize{e : \bool} : {\bool}})(v)
-    \tag{definition of $\pi_2$, argument is discrete} \\
-    %
-    {}={}~& \bigsem{\discretize{e : \bool}:{\bool}}(v)~.
-    \tag{Lemma \ref{lem:maintext:small_step_coupling_props}.\ref{lem:maintext:small_step_coupling_props2} for $\bigsem{\cdot,\cdot}$}
-\end{align*}
+The weak-step interface alone does not imply a coupled terminal limit. The
+additional premise \Cref{ass:terminal-weak-coupling-limit} requires increasing
+terminal restrictions whose component limits are the two ordinary big-step
+semantics. It also requires related Boolean values to have the same truth
+value. Under those premises, the two projections assign equal mass to
+$\true$, $\false$, and $\bot$, which proves
+\Cref{thm:maintext:sound}. Constructing the weak relation and proving the
+terminal-limit premise remain open obligations.
 
  

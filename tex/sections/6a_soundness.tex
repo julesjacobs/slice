@@ -1377,7 +1377,8 @@ The missing probability mass in $\sem{e :\tau}$ is the probability of encounteri
 	carriers have the measurable structures constructed above, define
 	\[
 		P_\tau :=
-		\{(e:\tau,\discretize{e:\tau}:\discretize\tau)\mid e:\tau\}
+		\{(e:\tau,\discretize{e:\tau}:\discretize\tau)
+		  \mid e\in Expr^{\mathsf U}_\tau\}
 		\subseteq Expr^{\mathsf U}_\tau\times
 		  Expr^{\mathsf U+}_{\discretize\tau}
 	\]
@@ -1912,9 +1913,12 @@ fact needed for a coupled big-step conclusion.
 	Under \Cref{ass:weak-coupling-interface}, suppose the restrictions of the
 	iterates of $K_\tau$ from $(e,\discretize e)$ to $V_\tau+\bot$ form an
 	increasing sequence $(\rho_n)_n$ with a subprobability setwise limit
-	$\rho_\infty$. Suppose also that their component pushforwards are the
-	ordinary source and target terminal restrictions, and that related Boolean
-	values have the same truth value.
+	$\rho_\infty$. Suppose its first component restrictions agree with the
+	ordinary source terminal restrictions, and suppose the limit of its second
+	component restrictions equals the ordinary target terminal limit. The latter
+	is a limit-compatibility premise, not a same-index finite-step identity: a
+	target weak step may contain several ordinary administrative steps. Finally,
+	suppose related Boolean values have the same truth value.
 \end{definition}
 
 \iffalse
@@ -2071,9 +2075,9 @@ The following will imply our desired equivalence claim:
 
 \begin{proof}
 	Apply \Cref{lem:projection-increasing-limit} to each component. The
-	finite terminal-restriction identities are premises of
-	\Cref{ass:terminal-weak-coupling-limit}; their limits are the two ordinary
-	big-step semantics.
+	source finite terminal-restriction identity and the target limit-compatibility
+	identity are premises of \Cref{ass:terminal-weak-coupling-limit}. Their
+	limits are the two ordinary big-step semantics.
 \end{proof}
 
 \begin{theorem}[Conditional contextual equivalence]
