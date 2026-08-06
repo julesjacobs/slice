@@ -115,7 +115,7 @@ probabilities of the interval between two floats.
 When doing a comparison against a float, we convert that to a comparison 
 against the discrete integer that represents the i-th float in the bag.
 *)
-let discretize (e : texpr) : expr =
+let discretize_unchecked (e : texpr) : expr =
   (* Helper function for comparison operations *)
   let handle_comparison aux op_name te1 te2 cmp_op flipped =
     let t1 = fst te1 in
@@ -471,6 +471,13 @@ let discretize (e : texpr) : expr =
   in
   aux e
 
+(* Keep validation on the public transformation entry point.  Callers that do
+   not need contextual interface propagation still must not be able to bypass
+   the finite-dispatch invariants. *)
+let discretize (e : texpr) : expr =
+  validate_distribution_parameters e;
+  discretize_unchecked e
+
 let discretize_top (e : texpr) : expr =
   (* First set the bound bags to top in the top-level return type *)
   let (return_type, _) = e in
@@ -479,4 +486,4 @@ let discretize_top (e : texpr) : expr =
      Validate only after those contextual constraints have saturated. *)
   validate_distribution_parameters e;
   (* Then discretize *)
-  discretize e
+  discretize_unchecked e

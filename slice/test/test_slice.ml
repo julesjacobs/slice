@@ -33,6 +33,23 @@ let test_recursive_distribution_parameter_rejected _test_ctxt =
   assert_discretization_fails_with "nonempty parameter value set"
     "let diverging = fix f x := f x in uniform(diverging 0, 1) < 0.5"
 
+let test_raw_discretize_checks_distribution_parameters _test_ctxt =
+  let expr = Slice.Parse.parse_expr
+      "let unused = fun x -> uniform(x, 1) in true"
+  in
+  match Slice.Discretization.discretize (Slice.Inference.infer expr) with
+  | _ -> assert_failure "Expected raw discretize to validate finite dispatch domains"
+  | exception Failure message ->
+      assert_bool "Expected dispatchability failure"
+        (let needle = "nonempty parameter value set" in
+         let needle_len = String.length needle in
+         let message_len = String.length message in
+         let rec contains offset =
+           offset + needle_len <= message_len
+           && (String.sub message offset needle_len = needle || contains (offset + 1))
+         in
+         contains 0)
+
 let rec contains_sample (Slice.Ast.ExprNode node) =
   let open Slice.Ast in
   match node with
@@ -74,6 +91,8 @@ let suite =
      "test_typing" >:: test_typing;
      "test_empty_distribution_parameter_rejected" >:: test_empty_distribution_parameter_rejected;
      "test_recursive_distribution_parameter_rejected" >:: test_recursive_distribution_parameter_rejected;
+     "test_raw_discretize_checks_distribution_parameters"
+       >:: test_raw_discretize_checks_distribution_parameters;
      "test_nonempty_parameter_emits_no_sample_fallback" >:: test_nonempty_parameter_emits_no_sample_fallback;
      "test_top_level_function_propagates_top_before_validation"
        >:: test_top_level_function_propagates_top_before_validation;
