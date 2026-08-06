@@ -103,8 +103,9 @@
     \end{tabular}
     \end{adjustbox}
     \caption{Discretization function, where $\mathrm{CDF}(b_{0}) = 0$ and $\mathrm{CDF}(b_{n+1}) = 1$.
-        For the $\uniform$ distribution, $V = \top$ is implicit, and all remaining cut-set and value-set
-        cases are ruled out by the constraints enforced during type inference. For all other language
+        For the $\uniform$ distribution, $V = \top$ is implicit. The representation-agreement premises
+        in \textsc{Continuous-2} rule out mixed finite and $\top$ cut sets; the remaining value-set cases
+        are ruled out by the constraints enforced during type inference. For all other language
         constructs, $\discretize{\cdot}$ recurses structurally over them.}
     \label{fig:discretization-code}
 \end{figure*}
