@@ -129,6 +129,14 @@ let test_zero_successful_return_mass _test_ctxt =
             transition.To_mc.dst = mc.sink && transition.src <> mc.sink)
           mc.transitions))
 
+let test_non_error_stuck_state_is_rejected _test_ctxt =
+  assert_raises
+    (Failure "to_mc: stuck on Var (did you forget to substitute?)")
+    (fun () ->
+      ignore
+        (Slice.To_mc.to_mc
+           (Slice.Ast.ExprNode (Slice.Ast.Var "unbound"))))
+
 (* Test suite *) 
 let suite = 
   "Slice Tests" >:::
@@ -138,6 +146,7 @@ let suite =
      "test_unevaluated_function_body_is_not_runtime_error" >:: test_unevaluated_function_body_is_not_runtime_error;
      "test_success_failure_error_and_divergence_are_disjoint" >:: test_success_failure_error_and_divergence_are_disjoint;
      "test_zero_successful_return_mass" >:: test_zero_successful_return_mass;
+     "test_non_error_stuck_state_is_rejected" >:: test_non_error_stuck_state_is_rejected;
     ]
 
 (* Main test runner *) 

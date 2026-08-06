@@ -618,24 +618,18 @@ let to_mc (e0 : A.expr) : mc =
   let error_srcs : int list ref = ref [] in
   let has_fail = ref false in (* if a program has_fail, then it will has_observe *)
 
-  let is_terminal_value (e : A.expr) : bool =
-    match simplify e with
-    | A.ExprNode (A.Const _) -> true
-    | A.ExprNode (A.BoolConst _) -> true
-    | A.ExprNode (A.FinConst _) -> true
-    | _ -> false
-  in
-
   while not (Queue.is_empty q) do
     let sid = Queue.take q in
     let e = Hashtbl.find expr_of sid in
-    if is_terminal_value e then
+    if is_value (simplify e) then
       terminal_ids := sid :: !terminal_ids
     else begin
       let succs = step e in
       if succs = [] then begin
         if contains_runtime_error e then error_srcs := sid :: !error_srcs
-        else terminal_ids := sid :: !terminal_ids
+        else
+          failwith
+            "to_mc: stuck state is neither a returned value nor a runtime error"
       end
       else
         List.iter
