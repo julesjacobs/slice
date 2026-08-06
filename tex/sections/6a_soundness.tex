@@ -200,16 +200,18 @@ To make the probabilistic semantics precise, we construct an appropriate measure
 		&\square \mid x \mid \true \mid \false \mid \finconst{k}{n} \mid \diverge \mid () \\
 		&\mid \letkw \; x = s_1 \; \inkw \; s_2 \mid \ifkw \; s_1 \; \thenkw \; s_2 \; \elsekw \; s_3 \\
 		&\mid s_1 < s_2 \mid s_1 \finlt{n} s_2 \mid s_1 \fineq{n} s_2 \\
-		&\mid \uniform(s_1,s_2) \mid \discrete(p_0, \ldots, p_{n-1}) \mid \dc(s_1,s_2) \\
+		&\mid \uniform(s_1,s_2) \mid \discrete(p_0, \ldots, p_{n-1}) \\
 		&\mid s_1\; \logand\; s_2 \mid s_1\; \logor\; s_2 \mid \lognot\; s \mid \observekw(s) \\
 		&\mid (s_1, s_2) \mid \fstkw \; s \mid \sndkw \; s \\
 		&\mid \funkw \; x \to s \mid s_1 \; s_2 \mid \fixkw\; f\; x := s \\
 		&\mid \textnormal{\ttfamily nil} \mid s_1 :: s_2 \\
 		&\mid (\matchkw \; s \; \withkw \matchcase \textnormal{\ttfamily nil} \rightarrow s_{\textnormal{nil}} \matchcase h::t \rightarrow s_{\textnormal{cons}} \; {\textnormal{\ttfamily\bfseries end}})
 	\end{align*}
-	The auxiliary $\dc$ form is included because it is retained by the appendix
-	semantics; if it is replaced by literal generated core syntax, this production
-	is unnecessary. We denote by $\skel$ the set of all expression skeletons. The
+	In the discrete form, $n>0$ and the probability literals $p_i$ are fixed parts
+	of the syntax, with $p_i\geq 0$ and $\sum_i p_i=1$. They are not float holes:
+	the measurable coordinates model program float constants, whereas a change to
+	a discrete probability literal selects a different skeleton. We denote by
+	$\skel$ the set of all expression skeletons. The
 	holes of a skeleton are its occurrences of $\square$, ordered from left to right in a
 	preorder traversal of the syntax tree; $\holes(s)$ is the number of these
 	occurrences. We write $\square_i$ for the $i$th occurrence when referring
@@ -233,7 +235,7 @@ skeletons by adding a distinguished typing rule for holes.
 	Define a typing judgment for skeletons, written $\Gamma \vdash s : \tau$, with the understanding that all typing rules from expressions are preserved for skeletons, and that holes are typed as $\floattype{B}{V}$ according to the rule below:
 
 	\[
-		\inferrule{ }{\square : \floattype{B}{V}}
+		\inferrule{ }{\Gamma\vdash\square : \floattype{B}{V}}
 	\]
 
 	We denote by $\skel_{\tau}$ the set of all well-typed expression skeletons, where:
@@ -270,9 +272,8 @@ skeletons by adding a distinguished typing rule for holes.
 	In this subsection, $Expr_\tau$ denotes the typed operational fragment whose
 	constructors are listed in the skeleton grammar above and in
 	\Cref{fig:decompose-definition-1,fig:decompose-definition-2}. This is the exact
-	$Expr^{\mathsf U+}$ semantic carrier used by the repaired semantics in
-	PR~\#8, not a
-	claim about every constructor accepted by the Slice implementation. Extending
+	typed operational carrier used in this appendix, not a claim about every
+	constructor accepted by the Slice implementation. Extending
 	the operational semantics requires adding the corresponding skeleton and
 	structural decomposition clauses.
 
@@ -283,19 +284,39 @@ skeletons by adding a distinguished typing rule for holes.
 		\bigsqcup_{s \in \skel_{\tau}} \left( \{s\} \times \mathbb{R}^{\holes(s)} \right)
 	\]
 	is defined structurally by replacing each float constant with a hole and
-	collecting the removed constants in the hole-occurrence order above. In
-	the recursive definition, $\vec r_1 \mathbin{\|} \vec r_2$ denotes
-	concatenation of coordinate vectors (and similarly for three vectors).
-	Consequently, for every expression $e : \tau$,
-	\[
-		\decompose(e) = (s, \vec{r})
-		\quad\Longleftrightarrow\quad
-		e = s[\vec{r}].
-	\]
+	collecting the removed constants in the hole-occurrence order above. Write
+	$\R^0=\{\langle\rangle\}$ for the singleton containing the empty coordinate
+	vector and $\R^1=\{\langle r\rangle\mid r\in\R\}$. In the recursive definition,
+	$\vec r_1 \mathbin{\|} \vec r_2$ is ordered vector concatenation, with
+	$\langle\rangle$ as its identity; concatenation of three vectors associates to
+	the left. A float constant contributes $\langle c\rangle$, while a constructor
+	with no float constants contributes $\langle\rangle$.
 	The explicit recursive definition of $\decompose$ is shown in Figures~\ref{fig:decompose-definition-1} and~\ref{fig:decompose-definition-2}.
 \end{definition}
 
 \input{figures/decompose.tex}
+
+\begin{lemma}[Decomposition inversion and uniqueness]\label{lem:decompose-inversion}
+	For every typed expression $e:\tau$ in the fragment above, if
+	$\decompose(e)=(s,\vec r)$, then $\vec r\in\R^{\holes(s)}$ and
+	$s[\vec r]=e$. Conversely, if $\vec r\in\R^{\holes(s)}$ and $s[\vec r]$
+	is well typed with the annotations displayed in $s$, then filling and
+	decomposing yields $(s,\vec r)$. Hence both $s$ and the ordered
+	coordinate vector are unique.
+\end{lemma}
+
+\begin{proof}
+	By structural induction on $e$ (and, for the converse, on $s$). The float
+	constant case follows from
+	$\decompose(c)=(\square,\langle c\rangle)$ and
+	$\square[\langle c\rangle]=c$. Constructors with no float constants use the
+	unique element $\langle\rangle\in\R^0$. In every recursive case, the induction
+	hypotheses reconstruct the immediate subexpressions, and the fixed left-to-right
+	hole order splits the concatenated vector into blocks of the uniquely determined
+	lengths $\holes(s_i)$. Reapplying the same constructor reconstructs $e$.
+	Discrete probability literals remain in the skeleton and therefore require no
+	coordinate. These cases cover exactly the grammar displayed above.
+\end{proof}
 
 \begin{definition}[Hole assignments of a skeleton]
 	For a given $s : \tau \in \skel_{\tau}$, define the set of hole assignments of $s$ as:

@@ -4,21 +4,21 @@
 	\begin{align*}
 		\decompose(e : \tau) =
 		\begin{cases}
-			(x : \tau, ())
+			(x : \tau, \langle\rangle)
 				& \text{if } e = x : \tau \\[8pt]
-			(\true : \bool, ())
+			(\true : \bool, \langle\rangle)
 				& \text{if } e = \true : \bool \\[8pt]
-			(\false : \bool, ())
+			(\false : \bool, \langle\rangle)
 				& \text{if } e = \false : \bool \\[8pt]
-			(\finconst{k}{n} : \fin{n}, ())
+			(\finconst{k}{n} : \fin{n}, \langle\rangle)
 				& \text{if } e = \finconst{k}{n} : \fin{n} \\[8pt]
-			(\diverge : \tau, ())
+			(\diverge : \tau, \langle\rangle)
 				& \text{if } e = \diverge : \tau \\[8pt]
-			(() : \unit, ())
+			(() : \unit, \langle\rangle)
 				& \text{if } e = () : \unit \\[8pt]
-			(\square : \floattype{B}{V}, (c))
+			(\square : \floattype{B}{V}, \langle c\rangle)
 				& \text{if } e = c : \floattype{B}{V} \\[8pt]
-			(\discrete(p_0,\ldots,p_{n-1}) : \fin{n}, ())
+			(\discrete(p_0,\ldots,p_{n-1}) : \fin{n}, \langle\rangle)
 				& \text{if } e = \discrete(p_0,\ldots,p_{n-1}) : \fin{n} \\[8pt]
 			(\uniform(\decompose(e_1)_1,\decompose(e_2)_1) : \floattype{B}{V}, \\
 			\decompose(e_1)_2 \mathbin{\|} \decompose(e_2)_2)
@@ -26,9 +26,6 @@
 			(\decompose(e_1)_1 \sim \decompose(e_2)_1 : \bool, \\
 			\decompose(e_1)_2 \mathbin{\|} \decompose(e_2)_2)
 				& \text{if } e = e_1 \sim e_2 : \bool, \sim = <, \finlt{n}, \fineq{n} \\[8pt]
-			(\dc(\decompose(e_1)_1,\decompose(e_2)_1) : \fin{n}, \\
-			\decompose(e_1)_2 \mathbin{\|} \decompose(e_2)_2)
-				& \text{if } e = \dc(e_1,e_2) : \fin{n} \\[8pt]
             (\ifkw\; \decompose(e_1)_1\; \thenkw\; \decompose(e_2)_1\; \elsekw\; \decompose(e_3)_1 : \tau, \\
             \decompose(e_1)_2 \mathbin{\|} \decompose(e_2)_2
 			\mathbin{\|} \decompose(e_3)_2)
@@ -40,7 +37,7 @@
                 & \text{if } e = \observekw(e_1 : \bool) : \unit \\[8pt]
 		\end{cases}
 	\end{align*}
-	\caption{Recursive definition of $\decompose$, a decomposition function, over typed expressions in $Expr^{\mathsf U+}$. $\decompose(\cdot)_1$ and $\decompose(\cdot)_2$ denote first and second projections of $\decompose$, respectively. The operator $\mathbin{\|}$ is coordinate-vector concatenation, so $\decompose(\cdot)_2$ is a flat vector in $\R^n$.}
+	\caption{Recursive definition of $\decompose$ over the typed operational fragment. $\decompose(\cdot)_1$ and $\decompose(\cdot)_2$ denote first and second projections of $\decompose$, respectively. The operator $\mathbin{\|}$ is coordinate-vector concatenation, so $\decompose(\cdot)_2$ is a flat vector in $\R^n$.}
 	\label{fig:decompose-definition-1}
 \end{figure}
 
@@ -72,7 +69,7 @@
 			(\decompose(e_1)_1\; \decompose(e_2)_1 : \tau_2, \\
 			\decompose(e_1)_2 \mathbin{\|} \decompose(e_2)_2)
 				& \text{if } e = (e_1 : \tau_1 \to \tau_2\;\; e_2 : \tau_1) : \tau_2 \\[8pt]
-			(\textnormal{\ttfamily nil} : \listty{\tau_1}, ())
+			(\textnormal{\ttfamily nil} : \listty{\tau_1}, \langle\rangle)
 				& \text{if } e = \textnormal{\ttfamily nil} : \listty{\tau_1} \\[8pt]
 			(\decompose(e_1)_1 :: \decompose(e_2)_1 : \listty{\tau_1}, \\
 			\decompose(e_1)_2 \mathbin{\|} \decompose(e_2)_2)
