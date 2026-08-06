@@ -43,7 +43,7 @@
 			% --- observe ---
 			\multirow{3}{*}{$\observekw\; (e : \bool)  : \unit$} 
 			
-			& $e = \true$ & $\dirac{(\unit, \unit)}$ \\[0.5ex]
+			& $e = \true$ & $\dirac{(() : \unit, () : \unit)}$ \\[0.5ex]
 			& $e=\false$ & $\dirac{\bot}$ \\
 			& o.w.\ & \makecell[l]{$\sem{e: \bool, \discretize{e}: \bool}$ \\
 			$\gg\!= \lambda (g,g'). \dirac{(\observekw\; (g: \bool)  : \unit, \observekw\; (g' : \bool)  : \unit)}$} \\
@@ -87,7 +87,7 @@
 		    $\text{Uniform}{(v_1, v_2)} \gg\!= \lambda v. \dirac{(v : \floattype{B}{V}, v : \floattype{B}{V})}$  \\
 			%
 			& $e_1 = v_1 > v_2 = e_2$ &
-		    $\sem{\diverge : \tau, \discretize{\uniform(v_1 : \tau_1,v_2 : \tau_2)} : \discretize{\tau}}$  \\
+		    $\lambda A.0$  \\
 			%
 			& $e_1=v_1$, $e_2$ no val.\ & \makecell[l]{$\sem{e_2:\tau_2, \discretize{e_2} : \discretize{\tau_2}}$ \\ $\gg\!= \lambda (g,g'). \dirac{(\uniform(v_1:\tau_1, g:\tau_2 ) : \tau, \uniform(\discretize{v_1}:\discretize{\tau_1}, g': \discretize{\tau_2} ) : \discretize{\tau})}$} \\
 			%
@@ -114,12 +114,19 @@
 			where $v_i$ is unique number s.t. $v \in \intervals{B}_{v_i}$} \\
 			%
 			& $e_1 = v_1 > v_2 = e_2$ &
-		    $\sem{\diverge : \tau, \discretize{\uniform(v_1 : \tau_1,v_2 : \tau_2)} : \discretize{\tau}}$  \\
+		    $\lambda A.0$  \\
 			%
 			& $e_1=c_1$, $e_2$ no val.\ & \makecell[l]{$\sem{e_2:\tau_2, \discretize{e_2} : \discretize{\tau_2}}$ \\ $\gg\!= \lambda (g,g'). \dirac{(\uniform(v_1:\tau_1, g:\tau_2 ) : \tau, \dc(\discretize{v_1}:\discretize{\tau_1}, g': \discretize{\tau_2} ) : \discretize{\tau})}$} \\
 			%
 			& $e_1$ no val.\ & \makecell[l]{$\sem{e_1:\tau_1, \discretize{e_1} : \discretize{\tau_1}}$ \\ $\gg\!= \lambda (g,g'). \dirac{(\uniform(g:\tau_1, e_2:\tau_2) : \tau, \dc({g'}:\discretize{\tau_1}, \discretize{e_2} : \discretize{\tau_2} ) : \discretize{\tau})}$} \\
-%			 bla
+			%
+			\midrule
+			%
+			% --- discrete distribution ---
+			$\discrete(p_0,\ldots,p_{n-1}):\fin{n}$
+			& $p_i\geq0,\ \sum_i p_i=1$ &
+			$\displaystyle\sum_{i=0}^{n-1}p_i\,\dirac{(\finconst{i}{n}:\fin{n},\finconst{i}{n}:\fin{n})}$ \\
+			& o.w. & $\lambda A.0$ \\
 			\bottomrule
 			\bottomrule
 		\end{tabular}
@@ -143,11 +150,10 @@
 			% --- logical and ---
 			\multirow{4}{*}{\makecell{$e_1 : \tau_1 \logand e_2 : \tau_2 : \bool$ \\
 			$\tau_1 = \bool, \tau_2 = \bool$}}
-			& $e_1 = b_1 = \true,\, e_2 = b_2 = \true$ & $\dirac{(\true : \bool, \true : \bool)}$ \\
-			& $e_1 = b_1,\, e_2 = b_2$ & $\dirac{(\false : \bool, \false : \bool)}$ \\
-			& $e_1 = b_1,\, e_2 \neq b_2$ &
-			\makecell[l]{$\sem{ e_2 : \tau_2, \discretize{e_2 : \tau_2} : \discretize{\tau_2}}$ \\
-			$\gg\!= \lambda (g,g'). \dirac{( b_1 : \tau_1 \logand g: \bool,\; b_1 : \discretize{\tau_1} \logand g' : \discretize{\bool})}$} \\
+			& $e_1 = \false$ & $\dirac{(\false : \bool, \false : \bool)}$ \\
+			& $e_1 = \true,\, e_2=b_2$ & $\dirac{(b_2 : \bool,b_2 : \bool)}$ \\
+			& $e_1 = \true,\, e_2$ no val. &
+			$\sem{ e_2 : \bool, \discretize{e_2 : \bool} : \bool}$ \\
 			& o.w.\ &
 			\makecell[l]{$\sem{ e_1 : \tau_1, \discretize{e_1 : \tau_1} : \discretize{\tau_1}}$ \\
 			$\gg\!= \lambda (g,g'). \dirac{( g\logand e_2 : \tau_2 : \bool,\; g' \logand \discretize{e_2 : \tau_2} : \discretize{\tau_2} : \discretize{\bool})}$} \\
@@ -157,11 +163,10 @@
 			% --- logical or ---
 			\multirow{4}{*}{\makecell{$e_1 : \tau_1 \logor e_2 : \tau_2 : \bool$ \\
 			$\tau_1 = \bool, \tau_2 = \bool$}}
-			& $e_1 = b_1 = \false,\, e_2 = b_2 = \false$ & $\dirac{(\false : \bool, \false : \bool)}$ \\
-			& $e_1 = b_1,\, e_2 = b_2$ & $\dirac{(\true : \bool, \true : \bool)}$ \\
-			& $e_1 = b_1,\, e_2 \neq b_2$ &
-			\makecell[l]{$\sem{ e_2 : \tau_2, \discretize{e_2 : \tau_2} : \discretize{\tau_2}}$ \\
-			$\gg\!= \lambda (g,g'). \dirac{( b_1 : \tau_1 \logor g: \bool,\; b_1 : \discretize{\tau_1} \logor g' : \discretize{\bool})}$} \\
+			& $e_1 = \true$ & $\dirac{(\true : \bool, \true : \bool)}$ \\
+			& $e_1 = \false,\, e_2=b_2$ & $\dirac{(b_2 : \bool,b_2 : \bool)}$ \\
+			& $e_1 = \false,\, e_2$ no val. &
+			$\sem{ e_2 : \bool, \discretize{e_2 : \bool} : \bool}$ \\
 			& o.w.\ &
 			\makecell[l]{$\sem{ e_1 : \tau_1, \discretize{e_1 : \tau_1} : \discretize{\tau_1}}$ \\
 			$\gg\!= \lambda (g,g'). \dirac{( g\logor e_2 : \tau_2 : \bool,\; g' \logor \discretize{e_2 : \tau_2} : \discretize{\tau_2} : \discretize{\bool})}$} \\
@@ -223,9 +228,12 @@
 			\midrule
 			%
 			% --- application ---
-			\multirow{3}{*}{\makecell{$(e_1 : \tau_1 \to \tau_2\;\; e_2 : \tau_1) : \tau_2$}}
-			& \makecell[l]{$e_1 = \funkw\; x \to e \text{ or } \fixkw\; f\; x := e,$\\ $e_2 = v_2$} &
+			\multirow{4}{*}{\makecell{$(e_1 : \tau_1 \to \tau_2\;\; e_2 : \tau_1) : \tau_2$}}
+			& $e_1 = \funkw\; x \to e,\; e_2 = v_2$ &
 			\makecell[l]{$\dirac{(e[v_2/x] : \tau_2,\; \discretize{e}[\discretize{v_2} / x] : \discretize{\tau_2})}$} \\
+			& $e_1 = \fixkw\; f\; x := e,\; e_2 = v_2$ &
+			$\dirac{\bigl(e[v_2/x,(\fixkw\;f\;x:=e)/f] : \tau_2,\;
+			\discretize{e}[\discretize{v_2}/x,(\fixkw\;f\;x:=\discretize{e})/f] : \discretize{\tau_2}\bigr)}$ \\
 			& \makecell[l]{$e_1 = \funkw\; x \to e \text{ or } \fixkw\; f\; x := e,$\\ $e_2 \neq v_2$} &
 			\makecell[l]{$\sem{ e_2 : \tau_1, \discretize{e_2 : \tau_1} : \discretize{\tau_1}}$ \\
 			$\monbind \lambda (g,g'). \dirac{( e_1 : \tau_1 \to \tau_2\;\; g : \tau_1 : \tau_2,\; \discretize{e_1} : \discretize{\tau_1} \to \discretize{\tau_2}\;\; g' : \discretize{\tau_1} : \discretize{\tau_2})}$} \\
