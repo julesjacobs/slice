@@ -25,8 +25,37 @@ type cdistr =
 (* Initialize GSL random number generator *)
 let rng = Gsl.Rng.make (Gsl.Rng.default ())
 
+let is_finite x =
+  match classify_float x with
+  | FP_normal | FP_subnormal | FP_zero -> true
+  | FP_infinite | FP_nan -> false
+
+let validate_uniform_bounds lo hi =
+  if not (is_finite lo && is_finite hi) then
+    Error "Uniform bounds must be finite"
+  else if lo >= hi then
+    Error "Uniform low must be less than high"
+  else
+    Ok ()
+
+let validate_uniform_bounds_exn lo hi =
+  match validate_uniform_bounds lo hi with
+  | Ok () -> ()
+  | Error msg -> invalid_arg msg
+
+let uniform_cdf_interior lo hi x =
+  let width = hi -. lo in
+  if is_finite width then
+    (x -. lo) /. width
+  else
+    (* Scaling avoids overflow in [hi - lo] when finite bounds span most of
+       the floating-point range. *)
+    let scale = max (abs_float lo) (abs_float hi) in
+    ((x /. scale) -. (lo /. scale))
+    /. ((hi /. scale) -. (lo /. scale))
+
 (* Keep integer-support CDF calls inside the range representable by OCaml
-   integers.  Out-of-range float-to-int conversion is implementation-defined. *)
+   integers.  PR #15 further restricts this to the GSL unsigned-int range. *)
 let integer_cdf ~upper_support cdf x =
   if classify_float x = FP_nan then invalid_arg "CDF is undefined at NaN"
   else if x < 0.0 then 0.0
@@ -38,12 +67,14 @@ let integer_cdf ~upper_support cdf x =
 
 let cdistr_cdf dist x =
   if classify_float x = FP_nan then invalid_arg "CDF is undefined at NaN"
-  else if x = neg_infinity then 0.0
-  else if x = infinity then 1.0
-  else
-    match dist with
-  | Uniform (lo, hi) when lo = hi -> if x < lo then 0.0 else 1.0
-  | Uniform (lo, hi)        -> Gsl.Cdf.flat_P ~x:x ~a:lo ~b:hi
+  else match dist with
+  | Uniform (lo, hi) ->
+      validate_uniform_bounds_exn lo hi;
+      if x <= lo then 0.0
+      else if x >= hi then 1.0
+      else uniform_cdf_interior lo hi x
+  | _ when x = neg_infinity -> 0.0
+  | _ when x = infinity -> 1.0
   | Gaussian (m, s)         -> Gsl.Cdf.gaussian_P ~x:(x -. m) ~sigma:s
   | Exponential lambda      -> Gsl.Cdf.exponential_P ~x:x ~mu:(1.0 /. lambda)
   | Beta (alpha, beta_param) -> Gsl.Cdf.beta_P ~x:x ~a:alpha ~b:beta_param
@@ -68,16 +99,14 @@ let cdistr_cdf dist x =
         (fun k -> Gsl.Cdf.binomial_P ~k ~p ~n) x
 
 (** [cdistr_cdf_below dist x] is the left limit of the CDF: [P(X < x)].
-    It differs from [cdistr_cdf] at atoms.  Degenerate uniforms and the
-    integer-valued distributions need explicit implementations so that an
-    endpoint's strictness is preserved. *)
+    It differs from [cdistr_cdf] at atoms. Integer-valued distributions need
+    an explicit implementation so that an endpoint's strictness is preserved. *)
 let cdistr_cdf_below dist x =
   if classify_float x = FP_nan then invalid_arg "CDF is undefined at NaN"
   else if x = neg_infinity then 0.0
   else if x = infinity then 1.0
   else
     match dist with
-    | Uniform (lo, hi) when lo = hi -> if x <= lo then 0.0 else 1.0
     | Poisson _ | Binomial _ ->
         if x <= 0.0 then 0.0 else cdistr_cdf dist (ceil x -. 1.0)
     | _ -> cdistr_cdf dist x
@@ -85,7 +114,8 @@ let cdistr_cdf_below dist x =
 let cdistr_sample dist =
   match dist with
   | Uniform (lo, hi) ->
-      if lo = hi then lo else Gsl.Randist.flat rng ~a:lo ~b:hi
+      validate_uniform_bounds_exn lo hi;
+      Gsl.Randist.flat rng ~a:lo ~b:hi
   | Gaussian (mu, sigma) ->
       mu +. Gsl.Randist.gaussian rng ~sigma
   | Exponential lambda ->
@@ -177,9 +207,10 @@ let get_cdistr_from_single_arg_kind (kind: Ast.single_arg_dist_kind) (arg1: floa
 
 let get_cdistr_from_two_arg_kind (kind: Ast.two_arg_dist_kind) (arg1: float) (arg2: float) : (cdistr, string) result =
   match kind with
-  | Ast.DUniform -> 
-      if arg1 > arg2 then Error "Uniform low > high"
-      else Ok (Uniform (arg1, arg2))
+  | Ast.DUniform ->
+      (match validate_uniform_bounds arg1 arg2 with
+       | Ok () -> Ok (Uniform (arg1, arg2))
+       | Error _ as error -> error)
   | Ast.DGaussian -> 
       if arg2 <= 0.0 then Error "Gaussian sigma must be positive"
       else Ok (Gaussian (arg1, arg2))
