@@ -5,6 +5,25 @@ open Lats
 
 module StringMap = Map.Make(String)
 
+(* Enforce recovers(B, V).  Finite value sets are separated by <= cuts; if
+   V grows to Top, the only satisfying cut set is Top. *)
+let enforce_recovers (cut_bag : CutLat.bag) (value_bag : FloatLat.bag) : unit =
+  FloatLat.listen value_bag (fun () ->
+    match FloatLat.get value_bag with
+    | Finite values -> CutLat.add_all values cut_bag
+    | Top -> CutLat.leq (CutLat.create Top) cut_bag)
+
+(* Enforce B1 = Top iff B2 = Top.  This is deliberately weaker than cut-set
+   equality: two finite cut sets need not contain the same cuts. *)
+let enforce_same_topness (b1 : CutLat.bag) (b2 : CutLat.bag) : unit =
+  let propagate_top source target () =
+    match CutLat.get source with
+    | Top -> CutLat.leq (CutLat.create Top) target
+    | Finite _ -> ()
+  in
+  CutLat.listen b1 (propagate_top b1 b2);
+  CutLat.listen b2 (propagate_top b2 b1)
+
 (* Enforce t_sub is a subtype of t_super *)
 let rec sub_type (t_sub : ty) (t_super : ty) : unit =
   match Ast.force t_sub, Ast.force t_super with
@@ -105,39 +124,6 @@ let infer (e : expr) : texpr =
       let cuts_bag_ref = Lats.CutLat.create (Finite CutSet.empty) in 
       let consts_bag_ref = Lats.FloatLat.create Top in 
 
-      (* Helper to propagate float constants from an argument to its own bound bag *)
-      let add_floats_to_cutbag (float_bag : FloatLat.bag) (cut_bag : CutLat.bag) =
-        let listener () =
-          let v = Lats.FloatLat.get float_bag in
-          (match v with
-          | Finite s -> Lats.CutLat.add_all s cut_bag
-            | Top -> Lats.CutLat.leq (Lats.CutLat.create Top) cut_bag)
-        in
-        Lats.FloatLat.listen float_bag listener
-      in
-
-      (* Helper to make the output distribution's bound bag Top if any input's bound bag becomes Top *)
-      let make_output_top_if_input_boundbag_is_top input_cut_bag =
-        let listener () =
-          let v = Lats.CutLat.get input_cut_bag in
-          (match v with
-          | Top -> Lats.CutLat.leq (Lats.CutLat.create Top) cuts_bag_ref (* cuts_bag_ref is from Sample scope *)
-          | _ -> ())
-        in
-        Lats.CutLat.listen input_cut_bag listener
-      in
-
-      (* Helper to make an input's bound bag Top if the output distribution's bound bag becomes Top *)
-      let make_input_top_if_output_boundbag_is_top input_cut_bag output_cut_bag =
-        let listener () =
-          let v = Lats.CutLat.get output_cut_bag in
-          (match v with
-          | Top -> Lats.CutLat.leq (Lats.CutLat.create Top) input_cut_bag
-          | _ -> ())
-        in
-        Lats.CutLat.listen output_cut_bag listener
-      in
-
       (match dist_exp with
       | Distr1 (dist_kind, arg_e) ->
           let t_arg, a_arg = aux env arg_e in
@@ -148,9 +134,8 @@ let infer (e : expr) : texpr =
             let kind_str = Pretty.string_of_expr_indented (ExprNode (Sample (Distr1 (dist_kind, arg_e)))) in 
             failwith (Printf.sprintf "Type error in Sample (%s) argument: %s" kind_str msg));
           
-          add_floats_to_cutbag t_arg_float_bag t_arg_cut_bag;
-          make_output_top_if_input_boundbag_is_top t_arg_cut_bag;
-          make_input_top_if_output_boundbag_is_top t_arg_cut_bag cuts_bag_ref;
+          enforce_recovers t_arg_cut_bag t_arg_float_bag;
+          enforce_same_topness t_arg_cut_bag cuts_bag_ref;
 
           let dist_exp' = Distr1 (dist_kind, (t_arg, a_arg)) in
           (TFloat (cuts_bag_ref, consts_bag_ref), TAExprNode (Sample dist_exp'))
@@ -172,14 +157,10 @@ let infer (e : expr) : texpr =
           let kind_str = Pretty.string_of_expr_indented (ExprNode (Sample (Distr2 (dist_kind, arg1_e, arg2_e)))) in
           failwith (Printf.sprintf "Type error in Sample (%s) second argument: %s" kind_str msg));
         
-        add_floats_to_cutbag t1_float_bag t1_cut_bag;
-        add_floats_to_cutbag t2_float_bag t2_cut_bag;
-
-        make_output_top_if_input_boundbag_is_top t1_cut_bag;
-        make_output_top_if_input_boundbag_is_top t2_cut_bag;
-
-        make_input_top_if_output_boundbag_is_top t1_cut_bag cuts_bag_ref;
-        make_input_top_if_output_boundbag_is_top t2_cut_bag cuts_bag_ref;
+        enforce_recovers t1_cut_bag t1_float_bag;
+        enforce_recovers t2_cut_bag t2_float_bag;
+        enforce_same_topness t1_cut_bag cuts_bag_ref;
+        enforce_same_topness t2_cut_bag cuts_bag_ref;
 
         let dist_exp' = Distr2 (dist_kind, (t1, a1), (t2, a2)) in
         (TFloat (cuts_bag_ref, consts_bag_ref), TAExprNode (Sample dist_exp'))
@@ -496,4 +477,4 @@ let infer (e : expr) : texpr =
 let infer_bool (e : expr) : texpr =
   let t, a = infer e in
   sub_type t Ast.TBool;
-  (t, a) 
+  (t, a)

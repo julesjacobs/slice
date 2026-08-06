@@ -250,7 +250,7 @@ Now, if $e_1 : \float[B; V_1]$ and $e_2 : \float[B; V_2]$, then $\answerslt{B}{V
 	\item If $B \neq \top$ and $V_1 \neq \top$, then the situation is similar to the previous case.
 \end{enumerate}
 
-Note that $B = \top$ iff $V = \top$ accounts for comparisons where a continuously ranging expression is compared against arbitrary real values not statically known, such as other continuous distributions, in which case no discretization can be performed.
+When both comparands have unrestricted value sets, answerability requires $B=\top$: the comparison must remain over reals because neither operand can supply a finite set of thresholds. This does not assert $B=\top$ iff $V=\top$ for arbitrary float types; for example, a sampler can have $V=\top$ and a finite cut set.
 Additionally, we insist that $B_1 = B_2$, which ensures that both comparands will be discretized to the same type, or not discretized at all.
 
 %This symmetry ensures that the comparison is always well-typed and meaningful, either as a comparison between two discretized values in the same finite domain, or as a comparison between two real-valued, undiscretized quantities. For example, it ensures that $e$ and $c$ are discretized to the same representation, and $<$ can be discretized to $\finleq{k}$. 

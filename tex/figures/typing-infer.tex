@@ -17,8 +17,8 @@
         {\Gamma, x: \tau \vdash x : \tau \mid \emptyset}
         
          \inferrule[\textsc{TLess}]
-        {\Gamma \vdash e_1 : \float[B; V_1] \mid C_1 \and \Gamma \vdash e_2 : \float[B; V_2] \mid C_2}
-        {\Gamma \vdash e_1 < e_2 : \bool \mid C_1, C_2, \answerslt{B}{V_1}{V_2}}
+        {\Gamma \vdash e_1 : \float[B_1; V_1] \mid C_1 \and \Gamma \vdash e_2 : \float[B_2; V_2] \mid C_2}
+        {\Gamma \vdash e_1 < e_2 : \bool \mid C_1, C_2, B_1=B, B_2=B, \answerslt{B}{V_1}{V_2}}
 
 
     
@@ -33,8 +33,8 @@
     
 
                \inferrule[\textsc{TLessEq}]
-        {\Gamma \vdash e_1 : \float[B; V_1] \mid C_1 \and \Gamma \vdash e_2 : \float[B; V_2] \mid C_2}
-        {\Gamma \vdash e_1 \leq e_2 : \bool \mid C_1, C_2, \answersleq{B}{V_1}{V_2}}
+        {\Gamma \vdash e_1 : \float[B_1; V_1] \mid C_1 \and \Gamma \vdash e_2 : \float[B_2; V_2] \mid C_2}
+        {\Gamma \vdash e_1 \leq e_2 : \bool \mid C_1, C_2, B_1=B, B_2=B, \answersleq{B}{V_1}{V_2}}
 
         \inferrule[\textsc{TLet}]
         {\Gamma \vdash e_1 : \tau_1 \mid C_1 \\
@@ -42,6 +42,6 @@
         {\Gamma \vdash \letkw \; x = e_1 \; \inkw \; e_2 : \tau_2 \mid C_1, C_2}
 
     \end{mathpar}
-\caption{Constraint generation rules for type inference for float-typed expressions.}
+\caption{Constraint generation rules for type inference for float-typed expressions. All variables appearing only in a conclusion are fresh.}
     \label{fig:type-inference}
 \end{figure}
