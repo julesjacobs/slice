@@ -82,13 +82,24 @@ We now define $\bigsem{\cdot}$ via $\sem{\cdot}$. For that, we first lift the on
 		\end{cases} 
 \end{align*}
 %
-This construction is well-defined since the functional $\sem{\cdot}$ itself gives rise to a suitable Markov kernel (\Cref{lem:small-step-kernel}). We then define for every type $\tau$ the functional $\bigsem{\cdot}\colon Expr_\tau \to \mathcal{D}(Vals_\tau + \bot)$ as 
-%
-$
-	\bigsem{e:\tau} = \lambda A. \lim_{n\to\infty} \bigsemstep{e:\tau}{n}(A)~,
-$
-% 
-which is well-defined by the monotone convergence theorem: the sequence $(\bigsemstep{e : \tau}{n})_{n\in\Nats}$ is monotonically increasing for every measurable set $A$ over $Vals_\tau + \bot$ (cf.\ \Cref{lem:bigstepsem}) and upper-bounded by $1$: executing a program for more and more steps can only increase the probability of terminating in a given set of values or an observation failure.
+This construction is well-defined since the functional $\sem{\cdot}$ itself
+gives rise to a suitable Markov kernel (\Cref{lem:small-step-kernel}).  The
+full measures $\bigsemstep{e:\tau}{n}$ on expressions are not monotone: a
+step moves mass away from the current nonterminal expression.  Instead, let
+$\nu^e_n$ be their restrictions to the measurable terminal subspace
+$Vals_\tau+\bot$.  Terminal outcomes are absorbing, so for every measurable
+$A\subseteq Vals_\tau+\bot$,
+\[
+	\nu^e_n(A) \leq \nu^e_{n+1}(A).
+\]
+We define
+\[
+	\bigsem{e:\tau}(A) = \lim_{n\to\infty}\nu^e_n(A).
+\]
+The appendix proves the displayed eventwise monotonicity and uses monotone
+convergence to establish countable additivity of the limit
+(\Cref{lem:bigstepsem,lem:big-step-well-defined}).  Thus the limit is a
+subprobability measure, not merely a pointwise limit of set functions.
 
 %
 %\kbin{old}
@@ -146,7 +157,17 @@ With projections, we recover the semantics of $e$ and $\discretize{e:\tau}$ as f
 %	By induction on the typing derivation of $e:\tau$. See \Cref{lem:small_step_coupling_props}.
 %\end{proof}
 
-Now, using a limit construction analogous to \Cref{sec:smallsem_to_bigsem} for obtaining a coupled \emph{big-step} semantics $\bigsem{\cdot,\cdot} \colon P_\tau \to \mathcal{D}(V_\tau + \bot)$, where $V_\tau = \{ (v:\tau, \discretize{v} : \discretize{\tau}) ~|~ v:\tau~\text{is a value} \}$, we prove a suitable continuity property of projection (cf.\ \Cref{lem:proj_cont}) to conclude that \Cref{lem:maintext:small_step_coupling_props} transfers to $\bigsem{\cdot,\cdot}$. Finally, observing that $V_\bool + \bot = \{(\true,\true), (\false,\false), \bot\}$ yields the desired claim:
+Now, using the same increasing-terminal-restriction construction, we obtain a
+coupled \emph{big-step} semantics
+$\bigsem{\cdot,\cdot} \colon P_\tau \to \mathcal{D}(V_\tau + \bot)$,
+where $V_\tau = \{ (v:\tau, \discretize{v} : \discretize{\tau}) ~|~
+v:\tau~\text{is a value} \}$. Projection commutes with this limit eventwise
+by taking the preimage of each measurable terminal event
+(\Cref{lem:proj_cont}); no monotonicity of the full transient-state measures
+is required. Therefore \Cref{lem:maintext:small_step_coupling_props}
+transfers to $\bigsem{\cdot,\cdot}$. Finally, observing that
+$V_\bool + \bot = \{(\true,\true), (\false,\false), \bot\}$ yields the
+desired claim:
 
 %\noindent
 \emph{Proof of \Cref{thm:maintext:sound}}. Let $v \in \{\true,\false,\bot\}$. We have

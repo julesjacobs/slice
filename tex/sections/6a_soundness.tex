@@ -1650,171 +1650,95 @@ As a sanity check, we show that the $n$-step semantics defines a Markov kernel.
 For every type $\tau$, we denote by $\vals_\tau$ the set of values of type $\tau$ and equip it with a suitable measurable sub-space of the measurable space over $Expr_\tau + \bot$ (cf. \Cref{lem:measurable-subsets}.\ref{lem:measurable-vals}). Moreover, let $V_\tau = \{ (v:\tau, \discretize{v} : \discretize{\tau}) ~|~ v:\tau \}$.
 
 
-\begin{lemma}[Basic Properties of $\bigsemstep{\cdot}{n}$]
+Let $T_\tau = \vals_\tau + \bot$ be the measurable subspace of
+terminal outcomes.  For $e:\tau$, define the restriction of its $n$-step
+semantics to terminal outcomes by
+\[
+	\nu^e_n(A) = \bigsemstep{e:\tau}{n}(A)
+	\qquad(A \in \mathcal F_{T_\tau}).
+\]
+Similarly, let $T^P_\tau = V_\tau + \bot$ and write $\kappa^e_n$ for the
+restriction of
+$\bigsemstep{e:\tau,\discretize e:\discretize\tau}{n}$ to $T^P_\tau$.
+These are subprobability measures because they are restrictions of the
+$n$-step subprobability measures.  Notice that the full $n$-step measures on
+expressions need not be increasing: a deterministic step removes mass from
+the singleton containing its source expression.
+
+\begin{lemma}[Increasing terminal restrictions]
 	\label{lem:bigstepsem}
-	Let $e : \tau \in Expr_{\tau}$ and $n \in \mathbb{N}$. Let $\vals_{\tau}$ be the measurable set of values. We have:
-	\begin{enumerate}
-		\item\label{lem:bigstepsem1} $\bigsemstep{e : \tau}{n}(\vals_{\tau}) \leq \bigsemstep{e : \tau}{n+1}(\vals_{\tau})$
-		\item\label{lem:bigstepsem2} $\bigsemstep{e : \tau}{n}(\bot) \leq \bigsemstep{e : \tau}{n+1}(\bot)$
-	\end{enumerate}
-\end{lemma}
-%
-\begin{proof}
-	By induction on $n$.
-
-	\underline{Base case}: $n=0$.
-
-	We must show $\bigsemstep{e : \tau}{0}(\vals_{\tau}) \leq \bigsemstep{e : \tau}{1}(\vals_{\tau})$.
-
-	By definition,
-	\[
-		\bigsemstep{e : \tau}{0} = \delta_{e : \tau}.
-	\]
-
-	Therefore,
-	\[
-		\bigsemstep{e : \tau}{0}(\vals_{\tau}) =
-		\begin{cases}
-			1 &\text{ if } e \in \vals_{\tau} \\
-			0 &\text{ if } e \notin \vals_{\tau}
-		\end{cases}
-	\]
-
-	Now, for $n=1$, by definition,
-	\[
-		\bigsemstep{e : \tau}{1} = \delta_{e : \tau} \gg\!= \lambda e'.\sem{e'} = \sem{e : \tau}.
-	\]
-
-	We analyze the two cases for $e$:
-
-	\textbf{Case 1:} $e$ is a value $v$. Then, $\bigsemstep{e : \tau}{0}(\vals_{\tau}) = 1$.
-
-	For $n=1$:
-	\[
-		\bigsemstep{e : \tau}{1} = \delta_{v : \tau} \gg\!= \lambda e'.\sem{e'} = \sem{v : \tau}.
-	\]
-	From the semantics, $\sem{v : \tau} = \delta_{v : \tau}$, which means $\bigsemstep{e : \tau}{1} = \delta_{v : \tau}$, and thus
-	\[
-		\bigsemstep{e : \tau}{1}(V) = 1,
-	\]
-	and thus $\bigsemstep{e : \tau}{0}(\vals_{\tau}) \leq \bigsemstep{e : \tau}{1}(\vals_{\tau})$.
-
-	\textbf{Case 2:} $e$ is an expression. Then, $\bigsemstep{e : \tau}{0}(\vals_{\tau}) = 0$.
-
-	For $n=1$:
-	\[
-		\bigsemstep{e : \tau}{1} = \delta_{e : \tau} \gg\!= \lambda e'.\sem{e'} = \sem{e : \tau}.
-	\]
-	From the semantics, $\sem{e : \tau}$ may step to either a value, which means $\sem{e : \tau}(\vals_{\tau}) \geq 0$, or an expression, which means $\sem{e : \tau}(\vals_{\tau}) = 0$. In either case, 
-	\[
-		\bigsemstep{e : \tau}{1}(\vals_{\tau}) \geq 0,
-	\]
-	and thus $\bigsemstep{e : \tau}{0}(\vals_{\tau}) \leq \bigsemstep{e : \tau}{1}(\vals_{\tau})$.
-
-	\underline{Inductive step}:
-	We want to show that for $n = k+1$:
+	For every $e:\tau$, $n\in\Nats$, and measurable terminal events
+	$A\in\mathcal F_{T_\tau}$ and $C\in\mathcal F_{T^P_\tau}$,
 	\begin{align*}
-		\bigsemstep{e : \tau}{k+1}(\vals_{\tau}) \leq \bigsemstep{e : \tau}{k+2}(\vals_{\tau}).
+		\nu^e_n(A) &\leq \nu^e_{n+1}(A), \\
+		\kappa^e_n(C) &\leq \kappa^e_{n+1}(C).
 	\end{align*}
-
-	By the recursive definition:
-	\begin{align*}
-		&\bigsemstep{e : \tau}{k}, \\
-		&\bigsemstep{e : \tau}{k+1} = \bigsemstep{e : \tau}{k} \gg\!= \lambda e'.\sem{e'}, \\
-		&\bigsemstep{e : \tau}{k+2} = \bigsemstep{e : \tau}{k+1} \gg\!= \lambda e''.\sem{e''} = (\bigsemstep{e : \tau}{k} \gg\!= \lambda e'.\sem{e'}) \gg\!= \lambda e''.\sem{e''}
-	\end{align*}
-
-	By the IH,
-	\begin{align*}
-		\bigsemstep{e : \tau}{k}(\vals_{\tau}) \leq \bigsemstep{e : \tau}{k+1}(\vals_{\tau}).
-	\end{align*}
-
-	We do a case analysis on $e'$ and $e''$, whether they are in $N_{\tau}$ or $\vals_{\tau}$.
-
-	\textbf{Case} $e' \in \vals_{\tau}$, $e'' \in \vals_{\tau}$.
-
-	Then, from the semantics, $\sem{e'}$ and $\sem{e''}$ are both Diracs over a value. Combined with the IH and the fact that $\sem{\cdot}$ does not change the probability mass of $\cdot$ if it is a value, 
-	\[
-		\bigsemstep{e : \tau}{k+1}(\vals_{\tau}) \leq \bigsemstep{e : \tau}{k+2}(\vals_{\tau}).
-	\]
-
-	\textbf{Case} $e' \in \vals_{\tau}$, $e'' \in N_{\tau}$.
-	
-	Then, from the semantics, $\sem{e'}$ is a Dirac over a value and $\sem{e''}$ is a distribution over a non-value expression. Combined with the IH and the fact that $\sem{\cdot}$ does not change the probability mass of $\cdot$ if it is a value and that $\sem{\cdot}$ does not add any probability mass to $\vals_{\tau}$ if $\cdot$ is a non-value expression,
-	\[
-		\bigsemstep{e : \tau}{k+1}(\vals_{\tau}) \leq \bigsemstep{e : \tau}{k+2}(\vals_{\tau}).
-	\]
-
-	\textbf{Case} $e' \in \vals_{\tau}$, $e'' \in N_{\tau}$.
-
-	Analogous to the previous case, but with $e'$ and $e''$ switched.
-
-	\textbf{Case} $e' \in N_{\tau}$, $e'' \in N_{\tau}$.
-
-	Then, from the semantics,  $\sem{e'}$ and $\sem{e''}$ are both distributions over a non-value expression. Combined with the IH and the fact that $\sem{\cdot}$ does not add any probability mass to $\vals_{\tau}$ if $\cdot$ is a non-value expression, 
-	\[
-		\bigsemstep{e : \tau}{k+1}(\vals_{\tau}) \leq \bigsemstep{e : \tau}{k+2}(\vals_{\tau}).
-	\]
-
-	In all cases, $\bigsemstep{e : \tau}{k+1}(\vals_{\tau}) \leq \bigsemstep{e : \tau}{k+2}(\vals_{\tau})$.
-\end{proof}
-
-
-\begin{lemma}[Basic properties of $\bigsemstep{\cdot, \cdot}{n}$]
-	Let $(e : \tau, \discretize{e} : \discretize{\tau}) \in P_{\tau}$ and $n \in \mathbb{N}$. Let $V_{\tau}$ be the measurable set of value pairs. We have:
-	\begin{enumerate}
-		\item\label{lem:bigstepsem1-pairing} $\bigsemstep{e : \tau, \discretize{e} : \discretize{\tau}}{n}(V_{\tau}) \leq \bigsemstep{e : \tau, \discretize{e} : \discretize{\tau}}{n+1}(V_{\tau})$
-		\item\label{lem:bigstepsem2-pairing} $\bigsemstep{e : \tau, \discretize{e} : \discretize{\tau}}{n}(\bot) \leq \bigsemstep{e : \tau, \discretize{e} : \discretize{\tau}}{n+1}(\bot)$
-	\end{enumerate}
 \end{lemma}
 
 \begin{proof}
-	By induction on $n$. Analogous to proof of~\Cref{lem:bigstepsem}.
+	Let $K_\tau$ be the $\bot$-extended one-step kernel.  Terminal outcomes
+	are absorbing: $K_\tau(x)=\delta_x$ when $x\in T_\tau$.  Consequently,
+	for every $x\in Expr_\tau+\bot$ and measurable $A\subseteq T_\tau$,
+	\[
+		K_\tau(x)(A) \geq \mathbf 1_A(x).
+	\]
+	For a nonterminal $x$ the right-hand side is zero; for a terminal $x$
+	the two sides are equal.  Hence
+	\begin{align*}
+		\nu^e_{n+1}(A)
+		&= \int K_\tau(x)(A)\,\bigsemstep{e:\tau}{n}(dx) \\
+		&\geq \int \mathbf 1_A(x)\,\bigsemstep{e:\tau}{n}(dx)
+		 = \nu^e_n(A).
+	\end{align*}
+	The coupled one-step kernel also fixes every value pair and $\bot$.
+	Applying the same argument on $P_\tau+\bot$ proves the second inequality.
 \end{proof}
 
-
-%
-\begin{definition}
-	Let $e:\tau$. The \emph{(big-step) semantics} $\bigsem{e:\tau} \in \mathcal{D}(Vals_\tau + \bot)$ and $\bigsem{e:\tau, \discretize{e : \tau} : \discretize{\tau}} \in \mathcal{D}(V_\tau + \bot)$ are respectively defined as 
-	%
+\begin{definition}[Big-step semantics]
+	\label{def:big-step-semantics}
+	For $e:\tau$, define measures on terminal outcomes pointwise by
 	\begin{align*}
-		\bigsem{e:\tau} ={}& \lambda A. \lim_{n\to\infty} \bigsemstep{e:\tau}{n}(A) \\
-		%
-		\bigsem{e:\tau,  \discretize{e} : \discretize{\tau}} ={}& \lambda A. \lim_{n\to\infty} \bigsemstep{e:\tau,  \discretize{e} : \discretize{\tau}}{n}(A)
+		\bigsem{e:\tau}(A)
+			&= \lim_{n\to\infty}\nu^e_n(A),
+			&& A\in\mathcal F_{T_\tau}, \\
+		\bigsem{e:\tau,\discretize e:\discretize\tau}(C)
+			&= \lim_{n\to\infty}\kappa^e_n(C),
+			&& C\in\mathcal F_{T^P_\tau}.
 	\end{align*}
-	%
 \end{definition}
-%
-%
-% Well-definedness of these objects follows from the monotone convergence theorem: The probability of evaluating to some set of values or an error is montonically increasing in $n$ and upper-bounded by $1$. 
-By~\Cref{lem:bigstepsem1,lem:bigstepsem2}, the sequence $\bigsemstep{e : \tau}{n}$ is monotonically increasing for values and error. Moreover, $\bigsemstep{e : \tau}{n}$ defines a subprobability measure, and thus $\bigsemstep{e : \tau}{n} \leq 1$ for every $n \in \Nats$. Thus, by the monotone convergence theorem, the pointwise limit exists.
 
-\begin{lemma}[Continunity of projections]
-	For all $n \in \Nats$,
-	\begin{enumerate}
-		\item $\pi_1(\lim_{n \to \infty} \bigsemstep{e,e'}{n}) = \lim_{n \to \infty} \pi_1(\bigsemstep{e,e'}{n})$
-		\item $\pi_2(\lim_{n \to \infty} \bigsemstep{e,e'}{n}) = \lim_{n \to \infty} \pi_2(\bigsemstep{e,e'}{n})$ 
-	\end{enumerate}
+\begin{lemma}[Big-step semantics is well-defined]
+	\label{lem:big-step-well-defined}
+	The two set functions in \Cref{def:big-step-semantics} are
+	subprobability measures.  Moreover, as functions of their initial
+	expression (or initial coupled pair), they are Markov kernels into the
+	corresponding terminal measurable spaces.
 \end{lemma}
 
 \begin{proof}
-	We prove part i) in detail; the proof of part ii) is analogous. Fix an arbitrary measurable $A \in \Sigma_1$:
+	By \Cref{lem:bigstepsem}, each limit exists and equals the corresponding
+	supremum.  We prove countable additivity rather than infer it merely from
+	pointwise convergence.  If $(A_j)_{j\in\Nats}$ are pairwise disjoint
+	measurable subsets of $T_\tau$, then
 	\begin{align*}
-		&\pi_1(\lim_{n \to \infty} \bigsemstep{e,e'}{n})(A) \\
-		&= \left(\lim_{n \to \infty} \bigsemstep{e,e'}{n}\right)(A \times X_2) \tag{by definition of $\pi_1$}\\
-		&= \sup_{n \in \Nats} \bigsemstep{e,e'}{n}(A \times X_2) \tag{since $\bigsemstep{e,e'}{n}$ is monotone}\\
-		&= \sup_{n \in \Nats} \pi_1(\bigsemstep{e,e'}{n})(A) \tag{by definition of $\pi_1$}\\
-		&= \lim_{n \to \infty} \pi_1(\bigsemstep{e,e'}{n})(A) \tag{since $\pi_1(\bigsemstep{e,e'}{n})$ is monotone}
+		\bigsem{e:\tau}\!\left(\bigcup_j A_j\right)
+		&= \lim_n \sum_j \nu^e_n(A_j) \\
+		&= \sum_j \lim_n \nu^e_n(A_j)
+		 = \sum_j \bigsem{e:\tau}(A_j).
 	\end{align*}
-	Since $A$ was arbitrary, this implies:
-	\[
-		\pi_1(\lim_{n \to \infty} \bigsemstep{e,e'}{n}) =  \lim_{n \to \infty} \pi_1(\bigsemstep{e,e'}{n}),
-	\]
-	as desired.
+	The second equality is monotone convergence on $\Nats$ with counting
+	measure.  Also $\bigsem{e:\tau}(T_\tau)\leq 1$, since every
+	$\nu^e_n$ is a subprobability measure.  Thus the limit is a
+	subprobability measure.  The same proof applies to the coupled terminal
+	restrictions $\kappa^e_n$.
+
+	For every fixed measurable terminal event, the $n$-step kernel lemmas
+	make its probability a measurable function of the initial state.  Its
+	pointwise limit is measurable, which proves the Markov-kernel claims.
 \end{proof}
 
 \begin{lemma}[$n$-step coupling projection]
-	\label{lem:proj_cont}
+	\label{lem:n-step-coupling-projection}
 	For all $n \in \Nats$, 
 	\begin{enumerate}
 		\item $\pi_1(\bigsemstep{e : \tau,\discretize{e} : \discretize{\tau}}{n}) = \bigsemstep{e : \tau}{n}$
@@ -1828,15 +1752,15 @@ By~\Cref{lem:bigstepsem1,lem:bigstepsem2}, the sequence $\bigsemstep{e : \tau}{n
 
 	\underline{Base case:} $n=0$
 	\begin{align*}
-		&\pi_1\!\left(\bigsemstep{e:\tau,\,\discretize{e'}:\discretize{\tau'}}{0}\right) \\
-		= \quad&\pi_1(\delta_{(e:\tau,\,\discretize{e'}:\discretize{\tau'})}) \tag{definition of $n$-step coupling semantics}\\
+		&\pi_1\!\left(\bigsemstep{e:\tau,\,\discretize e:\discretize\tau}{0}\right) \\
+		= \quad&\pi_1(\delta_{(e:\tau,\,\discretize e:\discretize\tau)}) \tag{definition of $n$-step coupling semantics}\\
 		= \quad&\delta_{e:\tau} \tag{projection of Dirac} \\
 		= \quad&\bigsemstep{e:\tau}{0}. \tag{definition of $n$-step semantics}\\
 	\end{align*}
 	
 	\underline{Inductive step:} $n > 0$
 	\begin{align*}
-		&\pi_1\!\left(\bigsemstep{e:\tau,\,\discretize{e'}:\discretize{\tau'}}{n}\right) \\
+		&\pi_1\!\left(\bigsemstep{e:\tau,\,\discretize e:\discretize\tau}{n}\right) \\
 		%
 		= \quad&\pi_1(\bigsemstep{e : \tau, \discretize{e} : \discretize{\tau}}{n-1} \monbind  \lambda (f, g). \sem{f : \tau, g : \discretize{\tau}}) \tag{definition of $n$-step coupling semantics}\\
 		%
@@ -1858,6 +1782,38 @@ By~\Cref{lem:bigstepsem1,lem:bigstepsem2}, the sequence $\bigsemstep{e : \tau}{n
 		%
 		= \quad&\bigsemstep{e : \tau}{n} \tag{definition of $n$-step semantics}
 	\end{align*}
+\end{proof}
+
+For $i\in\{1,2\}$, let $q_i$ be the component map on terminal coupled
+outcomes, extended by $q_i(\bot)=\bot$.  Thus
+$q_1(v,\discretize v)=v$ and
+$q_2(v,\discretize v)=\discretize v$.  The maps $q_i$ are measurable
+restrictions of the component maps used to define $\pi_i$, and on a measure
+over $T^P_\tau$ we write $\pi_i=(q_i)_*$ for their pushforwards.
+
+\begin{lemma}[Projection commutes with terminal limits]
+	\label{lem:proj_cont}
+	If $(\rho_n)_{n\in\Nats}$ is an increasing sequence of
+	subprobability measures on $T^P_\tau$ and
+	$\rho_\infty(C)=\lim_n\rho_n(C)$, then, for $i\in\{1,2\}$,
+	\[
+		\pi_i(\rho_\infty)(A)
+		= \lim_{n\to\infty}\pi_i(\rho_n)(A)
+	\]
+	for every measurable event $A$ in the corresponding terminal component.
+\end{lemma}
+
+\begin{proof}
+	The preimage $q_i^{-1}(A)$ is a measurable subset of $T^P_\tau$.
+	Therefore, directly from the definitions of pushforward and the increasing
+	limit,
+	\[
+		\pi_i(\rho_\infty)(A)
+		= \rho_\infty(q_i^{-1}(A))
+		= \lim_n\rho_n(q_i^{-1}(A))
+		= \lim_n\pi_i(\rho_n)(A).
+	\]
+	No monotonicity of the full measures on $P_\tau+\bot$ is used.
 \end{proof}
 
 % \begin{proof}
@@ -1896,20 +1852,31 @@ By~\Cref{lem:bigstepsem1,lem:bigstepsem2}, the sequence $\bigsemstep{e : \tau}{n
 The following will imply our desired equivalence claim:
 
 \begin{lemma}[Big-step coupling projection]\label{lem:big_step_coupling_props}
-	Let $\bigsem{e : \tau, \discretize{e'} : \discretize{\tau'}} \in \mathcal{D}(P_{\tau} + \bot)$. Then,
+	Let $e:\tau$. Then,
 	\begin{enumerate}
-		\item\label{lem:big_step_coupling_props1} $\pi_1(\bigsem{e : \tau, \discretize{e'} : \discretize{\tau'}}) = \bigsem{e : \tau}$
-		\item\label{lem:big_step_coupling_props2} $\pi_2(\bigsem{e : \tau, \discretize{e'} : \discretize{\tau'}}) = \bigsem{\discretize{e'} : \discretize{\tau'}}$
+		\item\label{lem:big_step_coupling_props1} $\pi_1(\bigsem{e : \tau, \discretize e : \discretize\tau}) = \bigsem{e : \tau}$;
+		\item\label{lem:big_step_coupling_props2} $\pi_2(\bigsem{e : \tau, \discretize e : \discretize\tau}) = \bigsem{\discretize e : \discretize\tau}$.
 	\end{enumerate}
 \end{lemma}
 
 \begin{proof}
+	We prove both identities eventwise.  Let $A$ be a measurable subset of
+	$T_\tau$.  By \Cref{lem:proj_cont}, the finite-step projection identity
+	from \Cref{lem:n-step-coupling-projection}, and the definitions of the
+	terminal restrictions,
 	\begin{align*}
-		&\pi_1(\bigsem{e : \tau, \discretize{e'} : \discretize{\tau'}}) \\
-		&= \pi_1(\lim_{n \to \infty} \bigsemstep{e : \tau, \discretize{e'} : \discretize{\tau'}}{n}) \tag{by defintion of big-step coupling semantics} \\
-		&= \lim_{n \to \infty} \pi_1(\bigsemstep{e : \tau, \discretize{e'} : \discretize{\tau'}}{n}) \tag{by communitivity lemma} \\
-		&= \lim_{n \to \infty} \bigsemstep{e : \tau}{n} \tag{by definition of n-step projection lemma} \\
-		&= \bigsem{e : \tau} \tag{by definition of big-step semantics}
+		\pi_1(\bigsem{e:\tau,\discretize e:\discretize\tau})(A)
+		&= \lim_n \pi_1(\kappa^e_n)(A) \\
+		&= \lim_n \nu^e_n(A)
+		 = \bigsem{e:\tau}(A).
+	\end{align*}
+	For a measurable $B\subseteq T_{\discretize\tau}$, the second part of
+	\Cref{lem:n-step-coupling-projection} gives, by the same argument,
+	\begin{align*}
+		\pi_2(\bigsem{e:\tau,\discretize e:\discretize\tau})(B)
+		&= \lim_n \pi_2(\kappa^e_n)(B) \\
+		&= \lim_n \nu^{\discretize e}_n(B)
+		 = \bigsem{\discretize e:\discretize\tau}(B).
 	\end{align*}
 \end{proof}
 
