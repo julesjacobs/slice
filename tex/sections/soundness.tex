@@ -1,15 +1,24 @@
 \section{Operational Semantics and Soundness}
 \label{sec:soundness}%
 %
-We now establish the soundness of our approach in the following sense: For \emph{every} expression $e:\bool$, possibly including \emph{continuous sampling, higher-order functions, recursion, and conditioning},
+We formulate exactness as a conditional result for \emph{every} expression
+$e:\bool$, possibly including continuous sampling, higher-order functions,
+recursion, and conditioning:
 %
 \begin{center}
-	\emph{$e: \bool$ and $\discretize{e : \bool}:\bool$ (obtained from \Cref{fig:discretization-code}) are semantically equivalent.}
+	\emph{If the emitted core term satisfies the weak compiler-simulation
+	obligation stated in the appendix, then $e:\bool$ and
+	$\discretize{e:\bool}:\bool$ are semantically equivalent.}
 \end{center}
 %its discretized expression $\discretize{e : \bool} : \bool$ obtained from the rules in \Cref{fig:discretization-code}
 %
 % exact discretization as follows: every expression $e:\bool$ is semantically equivalent to $\discretize{e : \bool} : \bool$. 
-The first step is to make formal sense of semantic equivalence. For that, we will define a monadic operational semantics for our language in \Cref{sec:opsem}. We will then proceed by proving the above claim. This is non-trivial: discretization decisions are driven by non-local, type-propagated information, so we cannot proceed by a local rule-by-rule argument. To prove the claim rigorously, we relate the executions of $e$ and $\discretize{e}$ through a coupling-style logical relation in \Cref{sec:opsem}. %We provide the high-level proof idea in the main text; all details are in \Cref{sec:app:soundness_new}.
+The first step is to make formal sense of semantic equivalence through a
+monadic operational semantics.  The remaining proof obligation is nontrivial:
+the emitted target takes deterministic administrative steps that have no
+matching source step, and substitution can change distribution dispatch.
+A proof therefore needs the weak compiler simulation described in
+\Cref{sec:app:soundness_new}; the earlier synchronous graph is insufficient.
 %
 \subsection{Operational Semantics}
 \label{sec:opsem}
@@ -82,13 +91,19 @@ $(S_\tau)_\bot$:
 %
 Conditional on the operational measurability obligations stated in the
 appendix, this construction is well defined because $\sem{\cdot}$ is a
-sub-Markov kernel (\Cref{lem:small-step-kernel}). We then define for every type $\tau$ the functional $\bigsem{\cdot}\colon Expr_\tau \to \mathcal{D}(Vals_\tau + \bot)$ as
-%
-$
-	\bigsem{e:\tau} = \lambda A. \lim_{n\to\infty} \bigsemstep{e:\tau}{n}(A)~,
-$
-% 
-which is well-defined by the monotone convergence theorem: the sequence $(\bigsemstep{e : \tau}{n})_{n\in\Nats}$ is monotonically increasing for every measurable set $A$ over $Vals_\tau + \bot$ (cf.\ \Cref{lem:bigstepsem}) and upper-bounded by $1$: executing a program for more and more steps can only increase the probability of terminating in a given set of values or an observation failure.
+sub-Markov kernel (\Cref{lem:small-step-kernel}).  The full finite-step
+measures on expressions are not increasing: a step moves mass away from its
+source expression.  Following the terminal-limit construction in the
+appendix,
+let $\nu^e_n$ be the restriction of $\bigsemstep{e:\tau}{n}$ to the
+measurable terminal subspace $Vals_\tau+\bot$.  Terminal outcomes are
+absorbing, so $\nu^e_n(A)\leq\nu^e_{n+1}(A)$ for every measurable terminal
+event~$A$.  We define
+\[
+	\bigsem{e:\tau}(A)=\lim_{n\to\infty}\nu^e_n(A).
+\]
+The appendix proves eventwise monotonicity and countable additivity of this
+limit.
 
 %
 %\kbin{old}
@@ -101,16 +116,28 @@ which is well-defined by the monotone convergence theorem: the sequence $(\bigse
 \subsection{Soundness via Probabilistic Couplings}
 \label{C}
 %
-We first state the central theorem, then outline our coupling-style correctness argument.
+We state the result supplied by a completed weak simulation.  The appendix
+records the exact missing obligation.
 %
-\begin{theorem}
+\begin{proposition}[Conditional exactness]
 	\label{thm:maintext:sound}
-	Assume the operational and coupling measurability obligations stated in
-	the appendix.  Let $e:\bool$. Then
+	Assume the operational measurability obligations and the weak
+	compiler-simulation obligation stated in the appendix, including equality
+	of terminal Boolean and observation-failure mass.  Let $e:\bool$. Then
 	$\bigsem{e:\bool} = \bigsem{\discretize{e:\bool} : \bool}$.
-\end{theorem}
+\end{proposition}
 %
-Intuitively, we prove that the two programs can execute in a synchronized manner such that their probabilities of terminating in value $v$ coincide for each $v \in \{\true,\false,\bot\}$. %Because sub-expressions may have types other than $\bool$, this argument must (i) apply to expressions of \emph{arbitrary} type and (ii) be strong enough to imply \Cref{thm:maintext:sound}.
+The weak simulation supplies a coupling of the increasing terminal
+restrictions whose terminal support is contained in
+$\{(\true,\true),(\false,\false),\bot\}$.  Component pushforward commutes
+eventwise with the terminal limit, so the two limiting measures agree on
+$\true$, $\false$, and~$\bot$.  The required weak simulation has not yet been
+established for the literal emitted core term.
+
+\iffalse
+The following is the earlier synchronous argument.  It is retained only as
+disabled historical material; its exact graph is not closed under generated
+target administrative steps.
 %e, and which lets us conclude semantic equivalence for expressions of type $\bool$.
 %more general argument which enables us to conclude semantic equivalence.% The crucial point is when we encounter a continuous sampling instruction in $e$, in which case we have to prove that its discretized counterpart $\discretize{e:\tau}$
 
@@ -175,5 +202,7 @@ Now, using a limit construction analogous to \Cref{sec:smallsem_to_bigsem} for o
     {}={}~& \bigsem{\discretize{e : \bool}:{\bool}}(v)~.
     \tag{Lemma \ref{lem:maintext:small_step_coupling_props}.\ref{lem:maintext:small_step_coupling_props2} for $\bigsem{\cdot,\cdot}$}
 \end{align*}
+
+\fi
 
  

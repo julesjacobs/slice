@@ -1416,6 +1416,10 @@ obligations for every rule.
 
 
 \subsection{Small-Step Coupling Semantics}
+\iffalse
+% Historical synchronous coupling.  The literal emitted target requires
+% administrative stuttering, so this exact-graph development
+% is not part of the claimed result.
 \input{figures/coupling_smallstep}
 
 %\kevin{todo: measurable space} 
@@ -1685,16 +1689,29 @@ We have the following key property:
 	%
 \end{proof}
 
-\subsection{Big-Step Semantics and Correctness of Discretization}
+\fi
+
+\paragraph{Weak compiler-simulation obligation (open).}
+Let $\longrightarrow_{\mathrm a}$ contain only deterministic administrative
+target reductions: let substitution, finite equality, Boolean conjunction,
+and conditional selection.  Write $\Longrightarrow_{\mathrm a}$ for its
+reflexive transitive closure.  A sound proof for the literal generated term
+must construct a measurable relation $R_\tau$ containing
+$(e,\discretize e)$ and closed under a source probabilistic step matched by
+finitely many target administrative steps, one target probabilistic step,
+and finitely many further administrative steps.  The symmetric clause must
+permit target administrative steps while the source stutters.  Related
+terminal Boolean values must be equal, and both sides must assign the same
+mass to observation failure.  Establishing this weak simulation remains open.
+
+\subsection{Big-Step Semantics}
 %
-Define the ordinary-input kernels
+Define the ordinary-input kernel
 \[
-	S_\tau(e')=\sem{e':\tau},
-	\qquad
-	C_\tau(e',e'')=\sem{e':\tau,e'':\discretize{\tau}}.
+	S_\tau(e')=\sem{e':\tau}.
 \]
-We extend both small-step semantics to an $n$-step semantics by explicitly
-integrating the canonical bottom-preserving extensions:
+We extend the ordinary small-step semantics to an $n$-step semantics by
+explicitly integrating the canonical bottom-preserving extension:
 \begin{align*}
 		\bigsemstep{e : \tau}{n} &{}= 
 		\begin{cases}
@@ -1704,18 +1721,6 @@ integrating the canonical bottom-preserving extensions:
 			\lambda A.\int_{Expr_\tau+\bot}
 			(S_\tau)_\bot(e')(A)\,
 			\bigsemstep{e:\tau}{n-1}(de')
-			& \text{if $n > 0$}~.
-		\end{cases} \\
-		%
-		%
-		\bigsemstep{e : \tau, \discretize{e} : \discretize{\tau}}{n} &{}= 
-		\begin{cases}
-			\delta_{(e : \tau, \discretize{e} : \discretize{\tau})} & \text{if $n = 0$} \\
-			%
-			\displaystyle
-			\lambda A.\int_{P_\tau+\bot}
-			(C_\tau)_\bot(p)(A)\,
-			\bigsemstep{e:\tau,\discretize{e}:\discretize{\tau}}{n-1}(dp)
 			& \text{if $n > 0$}~.
 		\end{cases}
 \end{align*}
@@ -1750,22 +1755,21 @@ As a sanity check, we show that the $n$-step semantics defines a sub-Markov kern
 	By the I.H., $\bigsemstep{\cdot}{n-1} \colon Expr_{\tau} \to \mathcal{D}(Expr_{\tau} + \bot)$ is a sub-Markov kernel. By~\Cref{lem:small-step-kernel}, $\lambda e' .\sem{e' : \tau} : Expr_{\tau} \to \mathcal{D}(Expr_{\tau} + \bot)$ is a sub-Markov kernel. By~\Cref{lem:bot-extension-kernel}, its $\bot$-extension from $(Expr_{\tau} + \bot)$ to $\mathcal{D}(Expr_{\tau} + \bot)$ is also a sub-Markov kernel. By~\Cref{lem:kernel-composition}, $\bigsemstep{e : \tau}{n-1} \monbind  \lambda e'. \sem{e' : \tau}$ is a sub-Markov kernel.
 \end{proof}
 
-\begin{lemma}[$n$-step coupling kernel, conditional]\label{lem:big-step-n-coupling-kernel}
-	Under the coupling measurability obligations, for all $n\in\Nats$,
-	$\bigsemstep{\cdot,\cdot}{n}:P_\tau\to
-	\mathcal{D}(P_\tau+\bot)$ is a sub-Markov kernel.
-\end{lemma}
-
-\begin{proof}
-	The same induction as \Cref{lem:big-step-n-kernel}, using
-	\Cref{lem:small-step-coupling-kernel} and the explicitly displayed
-	extension $(C_\tau)_\bot$.
-\end{proof}
-
-
-For every type $\tau$, we denote by $\vals_\tau$ the set of values of type $\tau$ and equip it with a suitable measurable sub-space of the measurable space over $Expr_\tau + \bot$ (cf. \Cref{lem:measurable-subsets}.\ref{lem:measurable-vals}). Moreover, let $V_\tau = \{ (v:\tau, \discretize{v} : \discretize{\tau}) ~|~ v:\tau \}$.
+For every type $\tau$, let $T_\tau=\vals_\tau+\bot$ be the measurable
+subspace of terminal outcomes (cf.
+\Cref{lem:measurable-subsets}.\ref{lem:measurable-vals}).  For $e:\tau$,
+define the restriction of its $n$-step semantics to terminal outcomes by
+\[
+	\nu^e_n(A)=\bigsemstep{e:\tau}{n}(A)
+	\qquad(A\in\mathcal F_{T_\tau}).
+\]
+Each $\nu^e_n$ is a subprobability measure.  The full $n$-step measures on
+expressions need not be increasing: a deterministic step removes mass from
+the singleton containing its source expression.
 
 
+\iffalse
+% Superseded whole-space and synchronous-coupling limit argument.
 \begin{lemma}[Basic Properties of $\bigsemstep{\cdot}{n}$]
 	\label{lem:bigstepsem}
 	Let $e : \tau \in Expr_{\tau}$ and $n \in \mathbb{N}$. Let $\vals_{\tau}$ be the measurable set of values. We have:
@@ -2051,11 +2055,78 @@ The following will imply our desired equivalence claim:
 % \end{proof}
 %
 %
-\begin{theorem}\label{thm:contextual-equivalence}
-	Let $e:\bool$. Then $\bigsem{e:\bool} = \bigsem{\discretize{e:\bool} : \bool}$.
-\end{theorem}
+\fi
+
+\begin{lemma}[Increasing terminal restrictions]
+	\label{lem:bigstepsem}
+	For every $e:\tau$, $n\in\Nats$, and measurable terminal event
+	$A\in\mathcal F_{T_\tau}$,
+	\[
+		\nu^e_n(A)\leq\nu^e_{n+1}(A).
+	\]
+\end{lemma}
+
+\begin{proof}
+	Let $K_\tau=(S_\tau)_\bot$ be the bottom-extended one-step kernel.
+	Terminal outcomes are absorbing: $K_\tau(x)=\delta_x$ for
+	$x\in T_\tau$.  Thus, for every $x\in Expr_\tau+\bot$ and measurable
+	$A\subseteq T_\tau$, $K_\tau(x)(A)\geq\mathbf 1_A(x)$.  Integrating this
+	inequality against $\bigsemstep{e:\tau}{n}$ gives
+	\[
+		\nu^e_{n+1}(A)
+		=\int K_\tau(x)(A)\,\bigsemstep{e:\tau}{n}(dx)
+		\geq\nu^e_n(A).
+	\]
+\end{proof}
+
+\begin{definition}[Big-step semantics]\label{def:big-step-semantics}
+	For $e:\tau$, define a set function on terminal outcomes by
+	\[
+		\bigsem{e:\tau}(A)=\lim_{n\to\infty}\nu^e_n(A),
+		\qquad A\in\mathcal F_{T_\tau}.
+	\]
+\end{definition}
+
+\begin{lemma}[Big-step semantics is well-defined]
+	\label{lem:big-step-well-defined}
+	Conditional on the operational measurability obligations, the set function
+	in \Cref{def:big-step-semantics} is a subprobability measure and, as a
+	function of its initial expression, a sub-Markov kernel into $T_\tau$.
+\end{lemma}
+
+\begin{proof}
+	By \Cref{lem:bigstepsem}, each limit exists and equals a supremum.  If
+	$(A_j)_{j\in\Nats}$ are pairwise disjoint measurable subsets of $T_\tau$,
+	then monotone convergence on $\Nats$ with counting measure gives
+	\begin{align*}
+		\bigsem{e:\tau}\!\left(\bigcup_j A_j\right)
+		&=\lim_n\sum_j\nu^e_n(A_j) \\
+		&=\sum_j\lim_n\nu^e_n(A_j)
+		 =\sum_j\bigsem{e:\tau}(A_j).
+	\end{align*}
+	Also $\bigsem{e:\tau}(T_\tau)\leq1$.  For a fixed measurable terminal
+	event, the finite-step kernel lemma makes its probability measurable in the
+	initial expression, and the pointwise limit of these measurable functions
+	is measurable.
+\end{proof}
+
+No coupled finite-step or big-step transfer is claimed here.  Such a transfer
+additionally requires the open weak compiler simulation and a proof that
+restriction to terminal outcomes commutes with component pushforward.
+
+\begin{proposition}[Conditional contextual equivalence]
+	\label{thm:contextual-equivalence}
+	If $e:\bool$ and its emitted target satisfy the weak compiler-simulation
+	obligation above, including equality of terminal Boolean and
+	observation-failure mass, then
+	$\bigsem{e:\bool}=\bigsem{\discretize{e:\bool}:\bool}$.
+\end{proposition}
 %
 \begin{proof}
+	The weak simulation supplies a terminal coupling supported on
+	$\{(\true,\true),(\false,\false),\bot\}$.  Its two component pushforwards
+	agree on every terminal Boolean and observation-failure event.
+\iffalse
 	Since $\mathcal{D}(Vals_\tau + \bot)$ contains only discrete distributions, we proceed by case distinction on the probability of the final outcome $v\in\{\true,\false,\bot\}$.\\
 	%
 	
@@ -2088,6 +2159,7 @@ The following will imply our desired equivalence claim:
 	\end{align*}
 	
 	The cases $v=\false$ and $v=\bot$ are completely analogous.
+	\fi
 	
 %	\noindent
 %	\emph{The case $v = \bot$.} Immediate by \Cref{lem:big_step_coupling_props}.\ref{lem:big_step_coupling_props1}. \\
