@@ -124,14 +124,24 @@ let test_degenerate_uniform_cuts _test_ctxt =
 
 let test_integer_cdf_large_boundary _test_ctxt =
   let open Slice.Distributions in
-  let boundary = 9007199254740992.0 in
+  let uint_max = 4294967295 in
+  let uint_max_float = float_of_int uint_max in
   let seen = ref None in
   ignore
+    (integer_cdf ~strict:false ~upper_support:None
+       (fun k -> seen := Some k; 0.0) uint_max_float);
+  assert_equal (Some uint_max) !seen;
+  ignore
     (integer_cdf ~strict:true ~upper_support:None
-       (fun k -> seen := Some k; 0.0) boundary);
-  assert_equal (Some 9007199254740991) !seen;
-  assert_raises (Invalid_argument "integer CDF boundary is outside the OCaml int range")
-    (fun () -> ignore (cdistr_cdf (Poisson 1.0) (float_of_int max_int)))
+       (fun k -> seen := Some k; 0.0) (uint_max_float +. 1.0));
+  assert_equal (Some uint_max) !seen;
+  let range_error =
+    Invalid_argument "integer CDF boundary is outside the GSL unsigned-int range"
+  in
+  assert_raises range_error
+    (fun () -> ignore (cdistr_cdf (Poisson 1.0) (uint_max_float +. 1.0)));
+  assert_raises range_error
+    (fun () -> ignore (cdistr_cdf_left (Poisson 1.0) (uint_max_float +. 2.0)))
 
 let test_atomic_parameter_domains _test_ctxt =
   let open Slice in
@@ -142,7 +152,15 @@ let test_atomic_parameter_domains _test_ctxt =
   assert_bool "binomial rejects p > 1"
     (Result.is_error (Distributions.get_cdistr_from_two_arg_kind Ast.DBinomial 1.1 2.0));
   assert_bool "binomial rejects fractional n"
-    (Result.is_error (Distributions.get_cdistr_from_two_arg_kind Ast.DBinomial 0.5 2.5))
+    (Result.is_error (Distributions.get_cdistr_from_two_arg_kind Ast.DBinomial 0.5 2.5));
+  assert_equal (Ok (Distributions.Binomial (0.5, 4294967295)))
+    (Distributions.get_cdistr_from_two_arg_kind Ast.DBinomial 0.5 4294967295.0);
+  assert_bool "binomial rejects n above the GSL unsigned-int range"
+    (Result.is_error
+       (Distributions.get_cdistr_from_two_arg_kind Ast.DBinomial 0.5 4294967296.0));
+  assert_raises (Invalid_argument "Binomial n is outside the GSL unsigned-int range")
+    (fun () ->
+      ignore (Distributions.cdistr_cdf (Distributions.Binomial (0.5, -1)) 0.0))
 (* Test suite *) 
 let suite = 
   "Slice Tests" >:::

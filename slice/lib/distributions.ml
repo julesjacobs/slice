@@ -27,6 +27,15 @@ let rng = Gsl.Rng.make (Gsl.Rng.default ())
 
 (* Keep integer-support CDF calls inside the representable host range and
    preserve strict versus non-strict integer boundaries. *)
+
+(* ocaml-gsl converts these arguments with [Unsigned_int_val], so values above
+   UINT_MAX would silently wrap before reaching GSL. *)
+let gsl_unsigned_int_max = Int64.to_int 0xffff_ffffL
+
+let check_gsl_unsigned_int name value =
+  if value < 0 || value > gsl_unsigned_int_max then
+    invalid_arg (name ^ " is outside the GSL unsigned-int range")
+
 let integer_cdf ~strict ~upper_support cdf x =
   if classify_float x = FP_nan then invalid_arg "CDF is undefined at NaN"
   else if x = neg_infinity then 0.0
@@ -38,14 +47,11 @@ let integer_cdf ~strict ~upper_support cdf x =
       when (strict && x > float_of_int upper)
            || ((not strict) && x >= float_of_int upper) ->
         1.0
-    | _ when x >= float_of_int max_int ->
-        invalid_arg "integer CDF boundary is outside the OCaml int range"
     | _ ->
-        let k =
-          if strict then int_of_float (ceil x) - 1
-          else int_of_float (floor x)
-        in
-        cdf k
+        let k_float = if strict then ceil x -. 1.0 else floor x in
+        if k_float > float_of_int gsl_unsigned_int_max then
+          invalid_arg "integer CDF boundary is outside the GSL unsigned-int range"
+        else cdf (int_of_float k_float)
 
 (** [cdistr_cdf dist x] is the right-continuous CDF [P(X <= x)]. *)
 let cdistr_cdf dist x =
@@ -79,6 +85,7 @@ let cdistr_cdf dist x =
   | Binomial (_, 0) | Binomial (0.0, _) -> if x < 0.0 then 0.0 else 1.0
   | Binomial (1.0, n)       -> if x < float_of_int n then 0.0 else 1.0
   | Binomial (p, n)         ->
+      check_gsl_unsigned_int "Binomial n" n;
       integer_cdf ~strict:false ~upper_support:(Some n)
         (fun k -> Gsl.Cdf.binomial_P ~k ~p ~n) x
 
@@ -102,6 +109,7 @@ let cdistr_cdf_left dist x =
       if classify_float x = FP_nan then invalid_arg "CDF is undefined at NaN"
       else if x <= float_of_int n then 0.0 else 1.0
   | Binomial (p, n) ->
+      check_gsl_unsigned_int "Binomial n" n;
       integer_cdf ~strict:true ~upper_support:(Some n)
         (fun k -> Gsl.Cdf.binomial_P ~k ~p ~n) x
   | _ -> cdistr_cdf dist x
@@ -150,6 +158,7 @@ let cdistr_sample dist =
   | Binomial (_, 0) | Binomial (0.0, _) -> 0.0
   | Binomial (1.0, n) -> float_of_int n
   | Binomial (p,n) ->
+      check_gsl_unsigned_int "Binomial n" n;
       float_of_int (Gsl.Randist.binomial rng ~p ~n)
 
 let string_of_single_arg_dist_kind (kind: Ast.single_arg_dist_kind) : string =
@@ -240,6 +249,7 @@ let get_cdistr_from_two_arg_kind (kind: Ast.two_arg_dist_kind) (arg1: float) (ar
   | Ast.DBinomial -> 
       if classify_float arg1 = FP_nan || arg1 < 0.0 || arg1 > 1.0 then
         Error "Binomial p must be between zero and one"
-      else if classify_float arg2 = FP_nan || arg2 < 0.0 || arg2 <> floor arg2 || arg2 >= float_of_int max_int then
-        Error "Binomial n must be a non-negative integer"
+      else if classify_float arg2 = FP_nan || arg2 < 0.0 || arg2 <> floor arg2
+              || arg2 > float_of_int gsl_unsigned_int_max then
+        Error "Binomial n must be an unsigned-int-range non-negative integer"
       else Ok (Binomial (arg1, int_of_float arg2))
