@@ -110,6 +110,16 @@ if [ "$RUN_STORM" = true ]; then
       }
     }'
 
+  if grep -q " error" "$LAB"; then
+    error_mass="$(run_storm_prop 'P=? [ F "error" ]')"
+    if [[ -z "$error_mass" ]]; then
+      echo "Error: could not parse Storm output for runtime-error mass." >&2
+      exit 1
+    fi
+    awk -v error_mass="$error_mass" '
+      BEGIN { printf "Runtime-error mass P(F \"error\") = %.17g\n", error_mass; }'
+  fi
+
   if grep -q "has_observe" "$LAB"; then
     no_fail_mass="$(run_storm_prop 'P=? [ G !"fail" ]')"
     if [[ -z "$no_fail_mass" ]]; then
