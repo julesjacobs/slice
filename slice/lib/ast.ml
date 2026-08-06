@@ -50,9 +50,17 @@ and 'a sample =
 
 type expr = ExprNode of expr expr_generic
 
-let probability_sum_tolerance = 0.0001
+type probability_policy =
+  | Generated
+  | Rounded_input
 
-let normalize_probability_weights (weights : float list) : float list =
+let probability_sum_tolerance policy count =
+  match policy with
+  | Generated -> 1e-10 *. float_of_int (max 1 count)
+  | Rounded_input -> 1e-4
+
+let normalize_probability_weights ?(policy = Generated)
+    (weights : float list) : float list =
   if weights = [] then
     failwith "A discrete distribution must have at least one outcome";
   List.iter
@@ -65,17 +73,36 @@ let normalize_probability_weights (weights : float list) : float list =
             failwith "Discrete distribution weights must be nonnegative")
     weights;
   let sum = List.fold_left (+.) 0.0 weights in
+  let tolerance = probability_sum_tolerance policy (List.length weights) in
   if classify_float sum = FP_infinite
-     || abs_float (sum -. 1.0) > probability_sum_tolerance
+     || abs_float (sum -. 1.0) > tolerance
   then
     failwith
       (Printf.sprintf
          "Discrete distribution weights must sum to 1.0, got %.17g" sum);
-  List.map (fun p -> p /. sum) weights
+  (* Generated probabilities differ from one only through floating-point CDF
+     arithmetic. Rounded source literals get the documented 1e-4 input policy.
+     In both cases, preserve all normalized prefixes and make the final weight
+     their binary64 complement so cumulative sampling has an exact endpoint. *)
+  let normalized = List.map (fun p -> p /. sum) weights in
+  let rec close_prefix prefix_sum = function
+    | [] -> assert false
+    | [_] ->
+        let final = 1.0 -. prefix_sum in
+        if final < 0.0 then
+          failwith "Discrete distribution normalization produced a negative final weight"
+        else [final]
+    | p :: rest -> p :: close_prefix (prefix_sum +. p) rest
+  in
+  close_prefix 0.0 normalized
 
-let normalize_distr_case (cases : (expr * float) list) : (expr * float) list =
-  let weights = normalize_probability_weights (List.map snd cases) in
+let normalize_distr_case ?(policy = Generated)
+    (cases : ('a * float) list) : ('a * float) list =
+  let weights = normalize_probability_weights ~policy (List.map snd cases) in
   List.map2 (fun (e, _) p -> (e, p)) cases weights
+
+let distr_case ?(policy = Generated) (cases : (expr * float) list) : expr =
+  ExprNode (DistrCase (normalize_distr_case ~policy cases))
 
 open Lats
 

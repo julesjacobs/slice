@@ -10,6 +10,8 @@ The syntax in \Cref{fig:grammar} extends a standard higher-order functional core
 
 The expression $\discrete(p_0,\ldots,p_{n-1})$ requires a nonempty probability vector: $n\geq 1$, every $p_i\geq 0$, and $\sum_i p_i=1$. It returns $\finconst{k}{n}$ with probability $p_k$.
 
+These are ideal real-valued premises. The implementation separately validates finite binary64 weights. It normalizes compiler-generated weights only within a tight allowance for accumulated CDF arithmetic, and parses source vectors within a documented $10^{-4}$ rounded-input allowance. These engineering policies do not replace the exact premise above; the broader numerical exactness limitation is tracked separately in PR~\#18.
+
 % \item \textbf{Discrete distributions}: The $\discrete(p_0, \ldots, p_{n-1})$ construct returns a finite type value $\finconst{k}{n}$ \kevin{let's maybe explain the types first?  $\finconst{k}{n}$ is not introduced} with probability $p_k$.
 
 

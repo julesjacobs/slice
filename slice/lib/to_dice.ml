@@ -2,6 +2,12 @@ open Ast
 open Lats (* Open Bags to get FloatSet and access Set modules and Bound type *)
 module Util = Util
 
+let format_probability p =
+  match p with
+  | 0. -> "0."
+  | 1. -> "1."
+  | _ -> Printf.sprintf "%.17g" p
+
 let extract_fin_modulus (ExprNode e) : int option =
   match e with
   | FinConst (_, k) -> Some k
@@ -56,12 +62,8 @@ and string_of_expr_node ?(indent=0) (ExprNode expr_node) : string =
         Printf.sprintf "let %s = %s in\n%s%s" x e1_str indent_str e2_str)
   | Sample dist_exp -> string_of_sample ~indent dist_exp
   | DistrCase cases ->
-    let format_case (_, prob) =
-      match prob with
-      | 0. -> "0."
-      | 1. -> "1."
-      | _ -> Printf.sprintf "%g" prob
-    in
+    let cases = Ast.normalize_distr_case ~policy:Ast.Generated cases in
+    let format_case (_, prob) = format_probability prob in
     Printf.sprintf "discrete(%s)" (String.concat ", " (List.map format_case cases))
   | Cmp (cmp_op, e1, e2, flipped) ->
       let op_str, left_expr, right_expr = 
@@ -163,12 +165,11 @@ and string_of_aexpr_node ?(indent=0) (TAExprNode ae_node) : string =
     Printf.sprintf "let %s = %s in\n%s%s" x e1_str indent_str e2_str
   | Sample dist_exp -> string_of_asample dist_exp 
   | DistrCase cases ->
-    let format_case (_, prob) =
-      match prob with
-      | 0. -> "0."
-      | 1. -> "1."
-      | _ -> Printf.sprintf "%g" prob
+    let weights =
+      Ast.normalize_probability_weights ~policy:Ast.Generated (List.map snd cases)
     in
+    let cases = List.map2 (fun (e, _) p -> (e, p)) cases weights in
+    let format_case (_, prob) = format_probability prob in
     Printf.sprintf "discrete(%s)" (String.concat ", " (List.map format_case cases))
   | Cmp (cmp_op, te1, te2, flipped) ->
       let op_str, left_expr, right_expr = 

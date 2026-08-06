@@ -135,16 +135,12 @@ let discretize (e : texpr) : expr =
               (min left_for_cdf right_for_cdf, max left_for_cdf right_for_cdf)
             ) in
             let probs = List.map (fun (l,r) -> prob_cdistr_interval l r concrete_distr) intervals_for_probs in
-            if List.exists (fun p -> p < -0.0001 || p > 1.0001) probs then
-                failwith ("Internal error: generated probabilities are invalid: " ^ Pretty.string_of_float_list probs ^ " for distribution " ^ Pretty.string_of_cdistr concrete_distr ^ Printf.sprintf " with %d outer bounds." (List.length outer_cuts));
-            let sum_probs = List.fold_left (+.) 0.0 probs in
-            (* Allow for small floating point inaccuracies in probability sum;
-               individual probabilities are clamped to [0,1] later. *)
-            if abs_float (sum_probs -. 1.0) > 0.001 then
-               (); 
-            
-            let distr_cases = List.mapi (fun i prob -> (ExprNode (FinConst (i, overall_modulus)), max 0.0 (min 1.0 prob) )) probs in
-            ExprNode (DistrCase distr_cases)
+            let distr_cases =
+              List.mapi
+                (fun i prob -> (ExprNode (FinConst (i, overall_modulus)), prob))
+                probs
+            in
+            Ast.distr_case ~policy:Ast.Generated distr_cases
           in
 
           let default_branch_expr = 

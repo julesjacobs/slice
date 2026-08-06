@@ -187,7 +187,7 @@ let infer (e : expr) : texpr =
       
     | DistrCase cases ->
       let normalized_probs =
-        Ast.normalize_probability_weights (List.map snd cases)
+        Ast.normalize_probability_weights ~policy:Ast.Generated (List.map snd cases)
       in
       
       (* Type-check all expressions and subtype them into a fresh result type *) 
