@@ -28,6 +28,82 @@ let prob_cdistr_interval (left : float) (right : float) (dist : Distributions.cd
   let cdf = Distributions.cdistr_cdf dist in
   cdf right -. cdf left
 
+let validate_recoverable_parameter context ((parameter_type, _) : texpr) =
+  match Ast.force parameter_type with
+  | TFloat (cut_bag, value_bag) ->
+      (match Lats.CutLat.get cut_bag, Lats.FloatLat.get value_bag with
+       | Top, _ -> ()
+       | Finite _, Top ->
+           failwith (Printf.sprintf
+             "Unsatisfied recoverability constraint for %s: a finite cut set requires a finite parameter value set"
+             context)
+       | Finite _, Finite values when Lats.FloatSet.is_empty values ->
+           failwith (Printf.sprintf
+             "Unsatisfied dispatchability constraint for %s: a finite cut set requires a nonempty parameter value set"
+             context)
+       | Finite cuts, Finite values ->
+           let interval_index value =
+             let rec find i = function
+               | [] -> i
+               | cut :: rest ->
+                   if Lats.satisfies_cut value cut then i else find (i + 1) rest
+             in
+             find 0 (Lats.CutSet.elements cuts)
+           in
+           let _, duplicate =
+             Lats.FloatSet.fold (fun value (seen, duplicate) ->
+               let index = interval_index value in
+               if List.mem index seen then (seen, true)
+               else (index :: seen, duplicate)
+             ) values ([], false)
+           in
+           if duplicate then
+             failwith (Printf.sprintf
+               "Unsatisfied recoverability constraint for %s: the cut set does not distinguish all parameter values"
+               context))
+  | _ ->
+      failwith (Printf.sprintf
+        "Internal error: distribution parameter %s is not a float"
+        context)
+
+let rec validate_distribution_parameters (((_, TAExprNode node) as texpr) : texpr) =
+  let validate_child = validate_distribution_parameters in
+  match node with
+  | Sample (Distr1 (_, parameter)) ->
+      validate_recoverable_parameter (Pretty.string_of_texpr texpr) parameter;
+      validate_child parameter
+  | Sample (Distr2 (_, first, second)) ->
+      let context = Pretty.string_of_texpr texpr in
+      validate_recoverable_parameter (context ^ " (first argument)") first;
+      validate_recoverable_parameter (context ^ " (second argument)") second;
+      validate_child first;
+      validate_child second
+  | Let (_, e1, e2) | And (e1, e2) | Or (e1, e2) | Pair (e1, e2)
+  | FuncApp (e1, e2) | Assign (e1, e2) | Seq (e1, e2)
+  | Cmp (_, e1, e2, _) | FinCmp (_, e1, e2, _, _) | FinEq (e1, e2, _) ->
+      validate_child e1;
+      validate_child e2
+  | If (condition, then_branch, else_branch) ->
+      validate_child condition;
+      validate_child then_branch;
+      validate_child else_branch
+  | DistrCase cases ->
+      List.iter (fun (case, _) -> validate_child case) cases
+  | First e | Second e | Fun (_, e) | Not e | Observe e | Ref e | Deref e
+  | Fix (_, _, e) ->
+      validate_child e
+  | LoopApp (e1, e2, _) ->
+      validate_child e1;
+      validate_child e2
+  | Cons (head, tail) ->
+      validate_child head;
+      validate_child tail
+  | MatchList (value, nil_case, _, _, cons_case) ->
+      validate_child value;
+      validate_child nil_case;
+      validate_child cons_case
+  | Var _ | Const _ | BoolConst _ | FinConst _ | Nil | Unit | RuntimeError _ -> ()
+
 (* 
 Discretizer from typed expressions to discrete expressions.
 
@@ -399,5 +475,8 @@ let discretize_top (e : texpr) : expr =
   (* First set the bound bags to top in the top-level return type *)
   let (return_type, _) = e in
   Ast.set_cut_bags_to_top return_type;
+  (* Setting the interface type may trigger listeners throughout the term.
+     Validate only after those contextual constraints have saturated. *)
+  validate_distribution_parameters e;
   (* Then discretize *)
   discretize e

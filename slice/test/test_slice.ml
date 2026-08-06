@@ -9,10 +9,10 @@ let test_typing _test_ctxt =
   with e -> 
     assert_failure ("Type check test failed: " ^ Printexc.to_string e)
 
-let assert_inference_fails_with expected source =
+let assert_discretization_fails_with expected source =
   let expr = Slice.Parse.parse_expr source in
-  match Slice.Inference.infer expr with
-  | _ -> assert_failure ("Expected inference to reject: " ^ source)
+  match Slice.Discretization.discretize_top (Slice.Inference.infer expr) with
+  | _ -> assert_failure ("Expected discretization to reject: " ^ source)
   | exception Failure message ->
       assert_bool
         (Printf.sprintf "Expected error containing %S, got %S" expected message)
@@ -26,11 +26,11 @@ let assert_inference_fails_with expected source =
             search 0)
 
 let test_empty_distribution_parameter_rejected _test_ctxt =
-  assert_inference_fails_with "nonempty parameter value set"
+  assert_discretization_fails_with "nonempty parameter value set"
     "let unused = fun x -> uniform(x, 1) in true"
 
 let test_recursive_distribution_parameter_rejected _test_ctxt =
-  assert_inference_fails_with "nonempty parameter value set"
+  assert_discretization_fails_with "nonempty parameter value set"
     "let diverging = fix f x := f x in uniform(diverging 0, 1) < 0.5"
 
 let rec contains_sample (Slice.Ast.ExprNode node) =
@@ -60,6 +60,13 @@ let test_nonempty_parameter_emits_no_sample_fallback _test_ctxt =
   let discretized = Slice.Discretization.discretize_top (Slice.Inference.infer expr) in
   assert_bool "A dispatchable parameter must not leave a sampler fallback" (not (contains_sample discretized))
 
+let test_top_level_function_propagates_top_before_validation _test_ctxt =
+  let expr = Slice.Parse.parse_expr "fun x -> uniform(x, 1)" in
+  let discretized = Slice.Discretization.discretize_top (Slice.Inference.infer expr) in
+  assert_bool
+    "A continuous sample in the top-level return interface must remain continuous"
+    (contains_sample discretized)
+
 (* Test suite *) 
 let suite = 
   "Slice Tests" >:::
@@ -68,6 +75,8 @@ let suite =
      "test_empty_distribution_parameter_rejected" >:: test_empty_distribution_parameter_rejected;
      "test_recursive_distribution_parameter_rejected" >:: test_recursive_distribution_parameter_rejected;
      "test_nonempty_parameter_emits_no_sample_fallback" >:: test_nonempty_parameter_emits_no_sample_fallback;
+     "test_top_level_function_propagates_top_before_validation"
+       >:: test_top_level_function_propagates_top_before_validation;
     ]
 
 (* Main test runner *) 

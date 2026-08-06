@@ -79,47 +79,6 @@ and unify (t1 : ty) (t2 : ty) : unit =
 
 (* Type inference and elaboration: expr -> texpr, generating bag constraints and performing type checking *)
 let infer (e : expr) : texpr =
-  (* Distribution parameters are discretized by dispatching on their inferred
-     finite value sets.  Listener propagation computes those sets eagerly, but
-     an empty set causes no update.  Keep the corresponding proof obligations
-     and check them only after inference has reached its fixed point. *)
-  let recoverability_obligations = ref [] in
-  let require_recoverable_parameter context cut_bag value_bag =
-    recoverability_obligations :=
-      (context, cut_bag, value_bag) :: !recoverability_obligations
-  in
-  let validate_recoverable_parameter (context, cut_bag, value_bag) =
-    match Lats.CutLat.get cut_bag, Lats.FloatLat.get value_bag with
-    | Top, _ -> ()
-    | Finite _, Top ->
-        failwith (Printf.sprintf
-          "Unsatisfied recoverability constraint for %s: a finite cut set requires a finite parameter value set"
-          context)
-    | Finite _, Finite values when Lats.FloatSet.is_empty values ->
-        failwith (Printf.sprintf
-          "Unsatisfied dispatchability constraint for %s: a finite cut set requires a nonempty parameter value set"
-          context)
-    | Finite cuts, Finite values ->
-        let interval_index value =
-          let rec find i = function
-            | [] -> i
-            | cut :: rest ->
-                if Lats.satisfies_cut value cut then i else find (i + 1) rest
-          in
-          find 0 (Lats.CutSet.elements cuts)
-        in
-        let _, duplicate =
-          Lats.FloatSet.fold (fun value (seen, duplicate) ->
-            let index = interval_index value in
-            if List.mem index seen then (seen, true)
-            else (index :: seen, duplicate)
-          ) values ([], false)
-        in
-        if duplicate then
-          failwith (Printf.sprintf
-            "Unsatisfied recoverability constraint for %s: the cut set does not distinguish all parameter values"
-            context)
-  in
   let rec aux (env : ty StringMap.t) (ExprNode e_node : expr) : texpr =
     match e_node with
     | Const f -> 
@@ -192,10 +151,6 @@ let infer (e : expr) : texpr =
           add_floats_to_cutbag t_arg_float_bag t_arg_cut_bag;
           make_output_top_if_input_boundbag_is_top t_arg_cut_bag;
           make_input_top_if_output_boundbag_is_top t_arg_cut_bag cuts_bag_ref;
-          require_recoverable_parameter
-            (Pretty.string_of_expr_indented (ExprNode (Sample (Distr1 (dist_kind, arg_e)))))
-            t_arg_cut_bag t_arg_float_bag;
-
           let dist_exp' = Distr1 (dist_kind, (t_arg, a_arg)) in
           (TFloat (cuts_bag_ref, consts_bag_ref), TAExprNode (Sample dist_exp'))
 
@@ -224,12 +179,6 @@ let infer (e : expr) : texpr =
 
         make_input_top_if_output_boundbag_is_top t1_cut_bag cuts_bag_ref;
         make_input_top_if_output_boundbag_is_top t2_cut_bag cuts_bag_ref;
-        let sample_context =
-          Pretty.string_of_expr_indented (ExprNode (Sample (Distr2 (dist_kind, arg1_e, arg2_e))))
-        in
-        require_recoverable_parameter (sample_context ^ " (first argument)") t1_cut_bag t1_float_bag;
-        require_recoverable_parameter (sample_context ^ " (second argument)") t2_cut_bag t2_float_bag;
-
         let dist_exp' = Distr2 (dist_kind, (t1, a1), (t2, a2)) in
         (TFloat (cuts_bag_ref, consts_bag_ref), TAExprNode (Sample dist_exp'))
       )
@@ -539,9 +488,7 @@ let infer (e : expr) : texpr =
     | RuntimeError s -> (Ast.fresh_meta (), TAExprNode (RuntimeError s))
 
   in
-  let result = aux StringMap.empty e in
-  List.iter validate_recoverable_parameter !recoverability_obligations;
-  result
+  aux StringMap.empty e
 
 (* Function that does infer but insists that the return type is TBool *)
 let infer_bool (e : expr) : texpr =
