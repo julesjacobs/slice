@@ -83,7 +83,8 @@
             B_1 \neq \top, \\
             B_2 \neq \top, \\
             V_1 = \{v_1, \ldots, v_n\}, \\
-            V_2 = \{w_1, \ldots, w_m\}
+            V_2 = \{w_1, \ldots, w_m\}, \\
+            n,m \geq 1
           \end{array}$
         & $\begin{array}{@{}l@{}}
             \letkw \; v_1' = \discretize{e_1 : \float[B_1; V_1]} \; \inkw \\
@@ -104,8 +105,9 @@
     \end{adjustbox}
     \caption{Discretization function, where $\mathrm{CDF}(b_{0}) = 0$ and $\mathrm{CDF}(b_{n+1}) = 1$.
         For the $\uniform$ distribution, $V = \top$ is implicit. The representation-agreement premises
-        in \textsc{Continuous-2} rule out mixed finite and $\top$ cut sets; the remaining value-set cases
-        are ruled out by the constraints enforced during type inference. For all other language
+        in \textsc{Continuous-2} rule out mixed finite and $\top$ cut sets. The finite-dispatch row has the
+        explicit prerequisite that both parameter value sets are finite and nonempty; distinguishability
+        separates their members but does not establish nonemptiness. For all other language
         constructs, $\discretize{\cdot}$ recurses structurally over them.}
     \label{fig:discretization-code}
 \end{figure*}
@@ -220,7 +222,7 @@ A similar intuition applies to discretizable comparisons $e_1 < e_2$, where \emp
 
 
 \subsubsection{Discretization of Types}
-We conclude by extending $\discretize{\cdot}$ to types. \Cref{fig:discretization-types} shows how type $\tau$ is discretized to type $\discretize{\tau}$. We then obtain the following natural result, proved in~\Cref{proof:type-transformations}:
+We conclude by extending $\discretize{\cdot}$ to types. \Cref{fig:discretization-types} shows how type $\tau$ is discretized to type $\discretize{\tau}$. The following proposition isolates the representation property established by the continuous-distribution premises; its proof is in~\Cref{proof:type-transformations}.
 %
 \begin{figure}[t]
 	\centering
@@ -244,13 +246,22 @@ $
 \end{figure}
 %
 %
-\begin{theorem}[Discretization Is Well-Typed]\label{lem:type-transformations}
-	Let $\Gamma \vdash e : \tau$. We have
-	$
-	\discretize{\Gamma} \vdash \discretize{e : \tau} : \discretize{\tau},
-	$
-	where $\discretize{\Gamma}$ transforms all types in $\Gamma$, i.e., $\discretize{\Gamma}(x) = \discretize{\Gamma(x)}$ for all $x \in \textnormal{dom}(\Gamma)$.
-\end{theorem}
+\begin{proposition}[Continuous-distribution representation agreement]\label{lem:type-transformations}
+	Let $d(e_1,\ldots,e_r):\float[B;\top]$ be typed by \textsc{Continuous-1} or
+	\textsc{Continuous-2}. If $B=\top$, representation agreement makes every
+	parameter cut set $\top$, so the retained sampler and its parameters remain
+	real-valued. If $B\neq\top$, representation agreement makes every parameter
+	cut set finite. When every parameter value set is also finite and nonempty,
+	the generated call-by-value dispatch term has result type $\fin{|B|+1}$,
+	provided the recursively transformed parameters and the emitted target
+	let-bindings, finite equalities, and conditionals have their stated typings.
+\end{proposition}
+
+This proposition closes the source/target representation mismatch for continuous
+distributions. It is not a proof of universal type preservation for
+$\discretize{\cdot}$. Such a theorem additionally requires separate results for
+subtyping, nonempty dispatch, the generated target syntax, and the semantic
+coupling used by the soundness argument.
 %
 %\begin{proof}
 %	See Appendix~\ref{proof:type-transformations}.
