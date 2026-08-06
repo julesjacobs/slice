@@ -186,12 +186,9 @@ let infer (e : expr) : texpr =
       )
       
     | DistrCase cases ->
-      if cases = [] then failwith "DistrCase cannot be empty";
-      (* Check probabilities sum to 1 *) 
-      let probs = List.map snd cases in
-      let sum = List.fold_left (+.) 0.0 probs in
-      if abs_float (sum -. 1.0) > 0.0001 then
-        failwith (Printf.sprintf "DistrCase probabilities must sum to 1.0, got %f" sum);
+      let normalized_probs =
+        Ast.normalize_probability_weights ~policy:Ast.Generated (List.map snd cases)
+      in
       
       (* Type-check all expressions and subtype them into a fresh result type *) 
       let typed_cases = List.map (fun (e, p) -> (aux env e, p)) cases in
@@ -201,7 +198,9 @@ let infer (e : expr) : texpr =
         with Failure msg -> failwith ("Type error in DistrCase branches: " ^ msg)
       ) typed_cases;
       
-      let annotated_cases = List.map (fun (texpr, prob) -> (texpr, prob)) typed_cases in
+      let annotated_cases =
+        List.map2 (fun (texpr, _) prob -> (texpr, prob)) typed_cases normalized_probs
+      in
       (result_ty, TAExprNode (DistrCase annotated_cases))
 
     | Cmp (cmp_op, e1, e2, flipped) ->
@@ -234,6 +233,7 @@ let infer (e : expr) : texpr =
                   | Ast.Lt -> Lats.Less f
                   | Ast.Le -> Lats.LessEq f
                 in
+                Lats.validate_cut cut;
                 cuts_to_add := Lats.CutSet.add cut !cuts_to_add
               ) s2;
 
@@ -260,6 +260,7 @@ let infer (e : expr) : texpr =
                        | Ast.Lt -> Lats.Less f
                        | Ast.Le -> Lats.LessEq f
                      in
+                     Lats.validate_cut cut;
                      cuts_to_add := Lats.CutSet.add cut !cuts_to_add
                    ) s2
                | Top -> ()
@@ -273,6 +274,7 @@ let infer (e : expr) : texpr =
                        | Ast.Lt -> Lats.LessEq f
                        | Ast.Le -> Lats.Less f
                      in
+                     Lats.validate_cut cut;
                      cuts_to_add := Lats.CutSet.add cut !cuts_to_add
                    ) s1
                | Top -> ()
@@ -496,4 +498,4 @@ let infer (e : expr) : texpr =
 let infer_bool (e : expr) : texpr =
   let t, a = infer e in
   sub_type t Ast.TBool;
-  (t, a) 
+  (t, a)

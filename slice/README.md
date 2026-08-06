@@ -5,7 +5,7 @@ Slice is a language for probabilistic programming with continuous distributions 
 ## Features
 
 - Uniform distribution: `uniform(lo, hi)`
-- Discrete distribution: `discrete(prob1: <expr1>, prob2: <expr2>, ..., probN: <exprN>)` where `prob1 + prob2 + ... + probN` should ideally be 1.0. The values returned are the results of evaluating the corresponding `<expr>`.
+- Discrete distribution: `discrete(prob1: <expr1>, prob2: <expr2>, ..., probN: <exprN>)`, with at least one finite, nonnegative weight and weights summing to 1. Source literals within `1e-4` of one are treated as rounded input and normalized; compiler-generated weights use a much tighter floating-point tolerance. The values returned are the results of evaluating the corresponding `<expr>`.
 - Conditionals: `if <condition> then <expr> else <expr>`
 - Variables: `let x = <expr> in <expr>`
 - Functions: `fun x -> <expr>`

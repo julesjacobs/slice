@@ -316,16 +316,6 @@ let rec simplify (A.ExprNode e : A.expr) : A.expr =
 
 (***** ---------- Small-step semantics: e -> { (p_i, successors_i) } ---------- *****)
 
-let check_prob (p : float) : unit =
-  if p < 0.0 || p > 1.0 || Float.is_nan p || Float.is_infinite p then
-    failwith (Format.asprintf "invalid probability %g" p)
-
-let check_sum_to_one (ps : float list) : unit =
-  let s = List.fold_left ( +. ) 0.0 ps in
-  let eps = 1e-12 in
-  if Float.abs (s -. 1.0) > eps then
-    failwith (Format.asprintf "probabilities must sum to 1, got %0.17g" s)
-
 type succ =
   | Next of A.expr
   | Fail  (* observe failure *)
@@ -485,12 +475,8 @@ let rec step (e : A.expr) : (float * succ) list =
                [ (1.0, Next e') ]
            | _ -> failwith "matchlist: expected [] or v::vs")
     | A.ExprNode (A.DistrCase cases) ->
-        if cases = [] then failwith "distrcase: empty"
-        else
-          let ps = List.map snd cases in
-          List.iter check_prob ps;
-          check_sum_to_one ps;
-          List.map (fun (ei, p) -> (p, Next ei)) cases
+        let cases = A.normalize_distr_case ~policy:A.Generated cases in
+        List.map (fun (ei, p) -> (p, Next ei)) cases
     | A.ExprNode (A.Sample _) ->
         failwith "to_mc: continuous distributions not supported"
     | A.ExprNode (A.Observe c) ->
