@@ -845,7 +845,7 @@ The typing rules for general language constructs is given in \Cref{fig:typing-ge
   
   \medskip
   \textbf{Case} $e = (\uniform(e_1 : \float[B_1; V_1],\; e_2 : \float[B_2; V_2]) : \float[B; \top])$.
-  The \textsc{Continuous-2} rule was applied, so $\distinguishes{B_1}{V_1}$ and $\distinguishes{B_2}{V_2}$ hold. Hence, whenever $B_i\neq\top$, Definition~\ref{def:distinguishes} gives $V_i\notin\{\emptyset,\top\}$. By the inductive hypothesis, $\discretize{\Gamma} \vdash \discretize{e_i : \float[B_i;V_i]} : \discretize{\float[B_i;V_i]}$ for $i = 1, 2$. We consider each sub-case of the discretization function:
+  The \textsc{Continuous-2} rule was applied, so $\distinguishes{B_i}{V_i}$ and $\dispatchable{B_i}{V_i}$ hold for $i\in\{1,2\}$. Hence, whenever $B_i\neq\top$, dispatchability gives $V_i\notin\{\emptyset,\top\}$. By the inductive hypothesis, $\discretize{\Gamma} \vdash \discretize{e_i : \float[B_i;V_i]} : \discretize{\float[B_i;V_i]}$ for $i = 1, 2$. We consider each sub-case of the discretization function:
   \begin{itemize}
       \item $e_1, e_2 \in \mathbb{R}$ and $e_1 > e_2$: then $\discretize{\uniform(\ldots) : \float[B;\top]} = \diverge$, which is well-typed at any type by \textsc{Diverge}.
   
@@ -861,7 +861,7 @@ The typing rules for general language constructs is given in \Cref{fig:typing-ge
       \]
       where $p_k = \mathrm{CDF}(b_{k+1}) - \mathrm{CDF}(b_k)$. Each $p_k \in [0,1]$ and $\sum_k p_k = 1$, so this is well-typed at $\fin{|B|+1}$ by \textsc{Discrete}.
   
-      \item $B \neq \top$, $B_1 \neq \top$, $B_2 \neq \top$, and $e_1$ or $e_2$ is a variable: the algorithm generates conditionals over all pairs $(v_i, w_j)$, each branch dispatching to a constant parameter in $\uniform$. The value sets $V_1$ and $V_2$ are nonempty by the preceding recoverability argument, so this enumeration has at least one pair and its final else-branch is defined. By the previous sub-case, each branch $\discretize{\uniform(v_i, w_j) : \float[B;\top]}$ is well-typed at $\fin{|B|+1} = \discretize{\float[B;\top]}$. The conditional structure is well-typed by \textsc{If} (as in the $\ifkw$ case above), so the full expression is well-typed at $\discretize{\float[B;\top]}$.
+      \item $B \neq \top$, $B_1 \neq \top$, $B_2 \neq \top$, and $e_1$ or $e_2$ is a variable: the algorithm generates conditionals over all pairs $(v_i, w_j)$, each branch dispatching to a constant parameter in $\uniform$. The value sets $V_1$ and $V_2$ are nonempty by the preceding dispatchability argument, so this enumeration has at least one pair and its final else-branch is defined. By the previous sub-case, each branch $\discretize{\uniform(v_i, w_j) : \float[B;\top]}$ is well-typed at $\fin{|B|+1} = \discretize{\float[B;\top]}$. The conditional structure is well-typed by \textsc{If} (as in the $\ifkw$ case above), so the full expression is well-typed at $\discretize{\float[B;\top]}$.
   \end{itemize}
   
   \medskip

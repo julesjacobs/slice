@@ -24,12 +24,16 @@
     
         \inferrule[\textsc{TContinuous-1}]
         {\Gamma \vdash e : \float[B_1; V_1] \mid C}
-        {\Gamma \vdash \exponential(e) : \float[B; V] \mid C, \distinguishes{B_1}{V_1}, B_1 \equiv_{\top} B, V = \top}
+        {\begin{gathered}\Gamma \vdash \exponential(e) : \float[B; V] \mid
+          C, \distinguishes{B_1}{V_1}, \dispatchable{B_1}{V_1}, \cr
+          B_1 \equiv_{\top} B, V = \top\end{gathered}}
 
         \inferrule[\textsc{TContinuous-2}]
         {\Gamma \vdash e_1 : \float[B_1; V_1] \mid C_1 \\
          \Gamma \vdash e_2 : \float[B_2; V_2] \mid C_2}
-        {\Gamma \vdash \uniform(e_1, e_2) : \float[B; V] \mid C_1, C_2, \distinguishes{B_1}{V_1}, B_1 \equiv_{\top} B, \distinguishes{B_2}{V_2}, B_2 \equiv_{\top} B, V = \top}
+        {\begin{gathered}\Gamma \vdash \uniform(e_1, e_2) : \float[B; V] \mid
+          C_1, C_2, \distinguishes{B_1}{V_1}, \dispatchable{B_1}{V_1}, B_1 \equiv_{\top} B, \cr
+          \distinguishes{B_2}{V_2}, \dispatchable{B_2}{V_2}, B_2 \equiv_{\top} B, V = \top\end{gathered}}
     
 
                \inferrule[\textsc{TLessEq}]
