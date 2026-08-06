@@ -25,11 +25,24 @@ type cdistr =
 (* Initialize GSL random number generator *)
 let rng = Gsl.Rng.make (Gsl.Rng.default ())
 
+(* Keep integer-support CDF calls inside the range representable by OCaml
+   integers.  Out-of-range float-to-int conversion is implementation-defined. *)
+let integer_cdf ~upper_support cdf x =
+  if classify_float x = FP_nan then invalid_arg "CDF is undefined at NaN"
+  else if x < 0.0 then 0.0
+  else
+    match upper_support with
+    | Some upper when x >= float_of_int upper -> 1.0
+    | _ when x >= float_of_int max_int -> 1.0
+    | _ -> cdf (int_of_float (floor x))
+
 let cdistr_cdf dist x =
-  if x = neg_infinity then 0.0
+  if classify_float x = FP_nan then invalid_arg "CDF is undefined at NaN"
+  else if x = neg_infinity then 0.0
   else if x = infinity then 1.0
   else
     match dist with
+  | Uniform (lo, hi) when lo = hi -> if x < lo then 0.0 else 1.0
   | Uniform (lo, hi)        -> Gsl.Cdf.flat_P ~x:x ~a:lo ~b:hi
   | Gaussian (m, s)         -> Gsl.Cdf.gaussian_P ~x:(x -. m) ~sigma:s
   | Exponential lambda      -> Gsl.Cdf.exponential_P ~x:x ~mu:(1.0 /. lambda)
@@ -48,31 +61,25 @@ let cdistr_cdf dist x =
   | Rayleigh sigma          -> Gsl.Cdf.rayleigh_P ~x:x ~sigma
   | Exppow (a, b)           -> Gsl.Cdf.exppow_P ~x:x ~a ~b
   | Poisson mu              ->
-      let greatest_at_most = int_of_float (floor x) in
-      if greatest_at_most < 0 then 0.0
-      else Gsl.Cdf.poisson_P ~k:greatest_at_most ~mu
+      integer_cdf ~upper_support:None
+        (fun k -> Gsl.Cdf.poisson_P ~k ~mu) x
   | Binomial (p, n)         ->
-      let greatest_at_most = int_of_float (floor x) in
-      if greatest_at_most < 0 then 0.0
-      else Gsl.Cdf.binomial_P ~k:greatest_at_most ~p ~n
+      integer_cdf ~upper_support:(Some n)
+        (fun k -> Gsl.Cdf.binomial_P ~k ~p ~n) x
 
 (** [cdistr_cdf_below dist x] is the left limit of the CDF: [P(X < x)].
-    It differs from [cdistr_cdf] at atoms.  The integer-valued distributions
-    need an explicit implementation because converting [x] to an integer
-    would otherwise erase whether an endpoint is strict. *)
+    It differs from [cdistr_cdf] at atoms.  Degenerate uniforms and the
+    integer-valued distributions need explicit implementations so that an
+    endpoint's strictness is preserved. *)
 let cdistr_cdf_below dist x =
-  if x = neg_infinity then 0.0
+  if classify_float x = FP_nan then invalid_arg "CDF is undefined at NaN"
+  else if x = neg_infinity then 0.0
   else if x = infinity then 1.0
   else
     match dist with
-    | Poisson mu ->
-        let greatest_below = int_of_float (ceil x) - 1 in
-        if greatest_below < 0 then 0.0
-        else Gsl.Cdf.poisson_P ~k:greatest_below ~mu
-    | Binomial (p, n) ->
-        let greatest_below = int_of_float (ceil x) - 1 in
-        if greatest_below < 0 then 0.0
-        else Gsl.Cdf.binomial_P ~k:greatest_below ~p ~n
+    | Uniform (lo, hi) when lo = hi -> if x <= lo then 0.0 else 1.0
+    | Poisson _ | Binomial _ ->
+        if x <= 0.0 then 0.0 else cdistr_cdf dist (ceil x -. 1.0)
     | _ -> cdistr_cdf dist x
 
 let cdistr_sample dist =

@@ -130,13 +130,18 @@ let discretize (e : texpr) : expr =
 
           let final_expr_producer (concrete_distr : Distributions.cdistr) : expr =
             let probs = interval_probabilities outer_cuts concrete_distr in
-            if List.exists (fun p -> p < -0.0001 || p > 1.0001) probs then
+            let is_finite p =
+              match classify_float p with
+              | FP_nan | FP_infinite -> false
+              | FP_normal | FP_subnormal | FP_zero -> true
+            in
+            if List.exists (fun p -> not (is_finite p) || p < -0.0001 || p > 1.0001) probs then
                 failwith ("Internal error: generated probabilities are invalid: " ^ Pretty.string_of_float_list probs ^ " for distribution " ^ Pretty.string_of_cdistr concrete_distr ^ Printf.sprintf " with %d outer bounds." (List.length outer_cuts));
             let sum_probs = List.fold_left (+.) 0.0 probs in
             (* Allow for small floating point inaccuracies in probability sum;
                individual probabilities are clamped to [0,1] later. *)
-            if abs_float (sum_probs -. 1.0) > 0.001 then
-               (); 
+            if not (is_finite sum_probs) || abs_float (sum_probs -. 1.0) > 0.001 then
+              failwith ("Internal error: generated probabilities do not sum to one: " ^ Pretty.string_of_float_list probs ^ " for distribution " ^ Pretty.string_of_cdistr concrete_distr);
             
             let distr_cases = List.mapi (fun i prob -> (ExprNode (FinConst (i, overall_modulus)), max 0.0 (min 1.0 prob) )) probs in
             ExprNode (DistrCase distr_cases)

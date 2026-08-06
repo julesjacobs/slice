@@ -51,6 +51,26 @@ let test_coincident_cut_continuous_masses _test_ctxt =
   in
   assert_float_list [0.5; 0.0; 0.5] probs
 
+let test_coincident_cut_degenerate_uniform_masses _test_ctxt =
+  let cuts = Slice.Lats.CutSet.elements coincident_cuts in
+  let probs =
+    Slice.Discretization.interval_probabilities cuts
+      (Slice.Distributions.Uniform (1.0, 1.0))
+  in
+  assert_float_list [0.0; 1.0; 0.0] probs
+
+let test_integer_cdf_threshold_safety _test_ctxt =
+  let open Slice.Distributions in
+  let nan = 0.0 /. 0.0 in
+  assert_raises (Invalid_argument "CDF is undefined at NaN")
+    (fun () -> ignore (cdistr_cdf (Poisson 1.0) nan));
+  assert_raises (Invalid_argument "CDF is undefined at NaN")
+    (fun () -> ignore (cdistr_cdf_below (Binomial (0.5, 2)) nan));
+  assert_equal 0.0 (cdistr_cdf (Poisson 1.0) (-.max_float));
+  assert_equal 1.0 (cdistr_cdf (Poisson 1.0) max_float);
+  assert_equal 0.0 (cdistr_cdf_below (Binomial (0.5, 2)) (-.max_float));
+  assert_equal 1.0 (cdistr_cdf_below (Binomial (0.5, 2)) max_float)
+
 let test_inferred_coincident_cut_atomic_masses _test_ctxt =
   let expr =
     Slice.Parse.parse_expr
@@ -74,6 +94,9 @@ let suite =
      "coincident-cut indices" >:: test_coincident_cut_indices;
      "coincident-cut atomic masses" >:: test_coincident_cut_atomic_masses;
      "coincident-cut continuous masses" >:: test_coincident_cut_continuous_masses;
+     "coincident-cut degenerate uniform masses" >::
+       test_coincident_cut_degenerate_uniform_masses;
+     "integer CDF threshold safety" >:: test_integer_cdf_threshold_safety;
      "inferred coincident-cut atomic masses" >::
        test_inferred_coincident_cut_atomic_masses;
     ]
