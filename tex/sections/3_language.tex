@@ -30,8 +30,9 @@ only when each $p_i\in[0,1]$ and $\sum_i p_i=1$. Whenever every $e_i$ has
 type $\tau$, the elaborated expression has type $\tau$ by
 \textsc{Discrete}, \textsc{FinLess}, \textsc{If}, and \textsc{Let}. Only the
 selected branch is evaluated. We assign the surface form the semantics of this
-elaboration. Thus the theorem below applies to the resulting core expression;
-it is not a separate theorem about an additional operational-semantic case.
+elaboration. Thus the conditional theorem below concerns the resulting core
+expression; it is not a separate theorem about an additional
+operational-semantic case.
 The implementation validates the weights, performs this capture-avoiding
 elaboration in the parser, and sends the resulting core term through the same
 type inference and discretization passes.

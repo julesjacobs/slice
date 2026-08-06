@@ -1,7 +1,9 @@
 \section{Operational Semantics and Soundness}
 \label{sec:soundness}%
 %
-We now establish the soundness of our approach in the following sense: For \emph{every core} expression $e:\bool$, possibly including \emph{continuous sampling, higher-order functions, recursion, and conditioning},
+The intended soundness property of our approach is that for every core
+expression $e:\bool$, possibly including continuous sampling, higher-order
+functions, recursion, and conditioning,
 %
 \begin{center}
 	\emph{$e: \bool$ and $\discretize{e : \bool}:\bool$ (obtained from \Cref{fig:discretization-code}) are semantically equivalent.}
@@ -14,7 +16,13 @@ the semantics of its elaborated core expression from
 \Cref{eq:finite-support-elaboration}. The theorem therefore applies after
 elaboration; it does not add a surface-syntax case to the operational semantics
 or prove a separate correspondence with some independently defined surface
-semantics. The first step is to make formal sense of semantic equivalence. For that, we will define a monadic operational semantics for our language in \Cref{sec:opsem}. We will then proceed by proving the above claim. This is non-trivial: discretization decisions are driven by non-local, type-propagated information, so we cannot proceed by a local rule-by-rule argument. To prove the claim rigorously, we relate the executions of $e$ and $\discretize{e}$ through a coupling-style logical relation in \Cref{sec:opsem}. %We provide the high-level proof idea in the main text; all details are in \Cref{sec:app:soundness_new}.
+semantics. The first step is to make formal sense of semantic equivalence. For
+that, we define a monadic operational semantics in \Cref{sec:opsem}. The
+currently discharged proof covers the stated strict finite comparison
+fragment. Extending it to every core expression requires a weak simulation
+obligation; that obligation remains open. Discretization decisions
+are driven by non-local, type-propagated information, so the missing argument
+cannot be replaced by a local rule-by-rule proof.
 %
 \subsection{Operational Semantics}
 \label{sec:opsem}
@@ -108,9 +116,11 @@ which is well-defined by the monotone convergence theorem: the sequence $(\bigse
 %
 We first state the central theorem, then outline our coupling-style correctness argument.
 %
-\begin{theorem}
+\begin{theorem}[Conditional soundness]
 	\label{thm:maintext:sound}
-	Let $e:\bool$ be a core expression. Then $\bigsem{e:\bool} = \bigsem{\discretize{e:\bool} : \bool}$.
+	Assume the weak simulation obligation for the source and discretized
+	operational semantics. For every core expression $e:\bool$ in its stated
+	fragment, $\bigsem{e:\bool} = \bigsem{\discretize{e:\bool} : \bool}$.
 \end{theorem}
 %
 Intuitively, we prove that the two programs can execute in a synchronized manner such that their probabilities of terminating in value $v$ coincide for each $v \in \{\true,\false,\bot\}$. %Because sub-expressions may have types other than $\bool$, this argument must (i) apply to expressions of \emph{arbitrary} type and (ii) be strong enough to imply \Cref{thm:maintext:sound}.
