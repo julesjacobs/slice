@@ -76,9 +76,9 @@ let rec contains_runtime_error (A.ExprNode e : A.expr) : bool =
   | A.FinEq (e1, e2, _) | A.LoopApp (e1, e2, _) ->
       either e1 e2
   | A.Sample (A.Distr1 (_, e1)) | A.Not e1 | A.First e1 | A.Second e1
-  | A.Observe e1 | A.Ref e1 | A.Deref e1 | A.Fun (_, e1)
-  | A.Fix (_, _, e1) ->
+  | A.Observe e1 | A.Ref e1 | A.Deref e1 ->
       contains_runtime_error e1
+  | A.Fun _ | A.Fix _ -> false
   | A.Sample (A.Distr2 (_, e1, e2)) | A.FinCmp (_, e1, e2, _, _) ->
       either e1 e2
   | A.DistrCase cases ->
