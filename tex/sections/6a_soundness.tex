@@ -212,7 +212,7 @@ To make the probabilistic semantics precise, we construct an appropriate measure
 		&\square \mid x \mid \true \mid \false \mid \finconst{k}{n} \mid \diverge \mid () \\
 		&\mid \letkw \; x = s_1 \; \inkw \; s_2 \mid \ifkw \; s_1 \; \thenkw \; s_2 \; \elsekw \; s_3 \\
 		&\mid s_1 < s_2 \mid s_1 \finlt{n} s_2 \mid s_1 \fineq{n} s_2 \\
-		&\mid \uniform(s_1, s_2) \mid \discrete(p_0, \ldots, p_{n-1}) \mid \dc(s_1,s_2) \\
+		&\mid \uniform(s_1, s_2) \mid \discrete(p_0, \ldots, p_{n-1}) \\
 		&\mid s_1\; \logand\; s_2 \mid s_1\; \logor\; s_2 \mid \lognot\; s \mid \observekw(s) \\
 		&\mid (s_1, s_2) \mid \fstkw \; s \mid \sndkw \; s \\
 		&\mid \funkw \; x \to s \mid s_1 \; s_2 \mid \fixkw\; f\; x := s \\
@@ -904,22 +904,13 @@ Let $X$ be a set equipped with a suitable measurable space so that $\mathcal{D}(
 \label{app:small-step}
 \input{figures/sem_smallstep}
 
-Throughout this section, we denote by $e :\tau$ a well-typed expression of type $\tau$ and implicitly assume that all sub-expressions are annotated with types, as well. Moreover, for the typed expression $ e: \tau = \uniform(e_1 : \float[B_1; V_1], e_2 :\float[B_2;V_2]) : \float[B,V]$ with $B,B_1,B_2 \neq \top$ and $V_1,V_2\neq\top$, we introduce an auxiliary statement $\dc$ and let 
-%
-\[
-	\discretize{ e: \tau} = \dc(\discretize{e_1 : \float[B_1; V_1]}, \discretize{e_2 :\float[B_2;V_2]})~.
-\]
-%
-We define the semantics of $\dc$ in such a way that it behaves like the discretized program in the last case of \Cref{fig:discretization-code} but resolves the let-bindings and the conditional choices in a single step, which will simplify our proof. We equip this statement with the following typing rule :
-%
-\begin{align*}
-	\inferrule[\textsc{TDiscreteCase}]
-	{e_1 : \fin{|B_1| + 1} \\
-		e_2 : \fin{|B_2| + 1} \\ \distinguishes{B_1}{V_1} \\ \distinguishes{B_2}{V_2}}
-	{\dc(e_1, e_2) : \fin{|B|+1}}
-\end{align*}
+Throughout this section, $e:\tau$ denotes a well-typed expression whose
+subexpressions are fully type-annotated.  The dynamic-parameter transformation
+in \Cref{fig:discretization-code} denotes the displayed nest of core-language
+let-bindings, conditionals, Boolean conjunctions, finite equalities, and a
+discrete choice.  No auxiliary one-step dispatch constructor is added to the
+language.
 
- 
 %
 % \kevin{measurable space todo} \\
 % %\kevin{get rid of discrete thing, is for my intuition}\\
@@ -1359,7 +1350,84 @@ The missing probability mass in $\sem{e :\tau}$ is the probability of encounteri
 
 
 
-\subsection{Small-Step Coupling Semantics}
+\subsection{Big-Step Semantics}
+
+The complete ordinary small-step tables above can be iterated without assuming
+a synchronous coupling.  Extend the one-step kernel strictly at $\bot$ and
+write $K_\tau$ for the resulting kernel on $Expr_\tau+\bot$.  Thus values and
+$\bot$ are absorbing.  Define
+\[
+	\mu^e_0=\delta_e
+	\qquad\text{and}\qquad
+	\mu^e_{n+1}=\mu^e_n\monbind K_\tau.
+\]
+Let $T_\tau=Vals_\tau+\bot$ and define the terminal restriction
+$\nu^e_n(A)=\mu^e_n(A\cap T_\tau)$.  Absorption implies
+$\nu^e_n(A)\leq\nu^e_{n+1}(A)$ for every measurable
+$A\subseteq T_\tau$.  Notice that this statement is only about terminal
+restrictions: the full measures $\mu^e_n$ need not be monotone on arbitrary
+measurable sets.
+
+\begin{definition}[Big-step semantics]
+	For $e:\tau\in Expr_\tau$, define
+	\[
+		\bigsem{e:\tau}(A)=\sup_{n\in\Nats}\nu^e_n(A)
+		\qquad(A\subseteq T_\tau\text{ measurable}).
+	\]
+\end{definition}
+
+Because $(\nu^e_n)_n$ is an increasing sequence of subprobability measures,
+its pointwise supremum is a subprobability measure.  Missing mass represents
+execution that has not reached a value or observation failure in any finite
+number of steps, including divergence and runtime parameter errors in this
+model.  This construction supplies the ordinary big-step semantics; it does
+not establish a relation between a source expression and its generated target.
+
+\subsection{Weak Compiler-Simulation Obligation}
+
+The transformation shown in \Cref{fig:discretization-code} emits core-language
+let-bindings, conditionals, Boolean conjunctions, finite equalities, and
+discrete choices.  It does not emit the auxiliary $\dc$ constructor used by the
+earlier synchronous proof.  Consequently, the graph
+$\{(e,\discretize e)\}$ is not closed under one ordinary step: target dispatch
+can take several deterministic steps while the source does not move.
+
+Let $\longrightarrow_{\mathrm a}$ contain the deterministic administrative
+target reductions for let substitution, finite equality, Boolean conjunction,
+and conditional selection, and let $\Longrightarrow_{\mathrm a}$ be its
+reflexive transitive closure.  To obtain exactness, it remains to construct, for
+each type $\tau$, a measurable relation $R_\tau$ such that:
+\begin{enumerate}
+	\item $(e,\discretize e)\in R_\tau$ for every source expression in the
+	uniform fragment;
+	\item related expressions remain related after either target administrative
+	reductions or matching source administrative reductions;
+	\item every probabilistic step from either side has a coupling with the
+	other side, after finitely many administrative steps, whose support is in
+	$R_\tau$;
+	\item related terminal Boolean values are equal, and both sides assign the
+	same mass to observation failure.
+\end{enumerate}
+
+\begin{proposition}[Conditional exactness]
+	\label{thm:contextual-equivalence}
+	If relations satisfying the obligations above exist for every
+	transformation clause, then for every
+	$e:\bool\in Expr^{\mathsf U}_\bool$,
+	\[
+		\bigsem{e:\bool}=
+		\bigsem{\discretize{e:\bool}:\bool}.
+	\]
+\end{proposition}
+
+The synchronous coupling tables and their projection argument are therefore
+not part of the current proof.  They relied on a proof-only $\dc$ step and did
+not account for stuttering in the literal generated target.  The proposition
+above records the exact missing lemma rather than presenting that argument as a
+completed proof.
+
+\endinput
+\subsection{Disabled Synchronous Coupling Argument}
 \input{figures/coupling_smallstep}
 
 %\kevin{todo: measurable space} 
