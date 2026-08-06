@@ -25,16 +25,27 @@ type cdistr =
 (* Initialize GSL random number generator *)
 let rng = Gsl.Rng.make (Gsl.Rng.default ())
 
-(* Keep integer-support CDF calls inside the range representable by OCaml
-   integers.  Out-of-range float-to-int conversion is implementation-defined. *)
-let integer_cdf ~upper_support cdf x =
+(* Keep integer-support CDF calls inside the representable host range and
+   preserve strict versus non-strict integer boundaries. *)
+let integer_cdf ~strict ~upper_support cdf x =
   if classify_float x = FP_nan then invalid_arg "CDF is undefined at NaN"
-  else if x < 0.0 then 0.0
+  else if x = neg_infinity then 0.0
+  else if x = infinity then 1.0
+  else if (strict && x <= 0.0) || ((not strict) && x < 0.0) then 0.0
   else
     match upper_support with
-    | Some upper when x >= float_of_int upper -> 1.0
-    | _ when x >= float_of_int max_int -> 1.0
-    | _ -> cdf (int_of_float (floor x))
+    | Some upper
+      when (strict && x > float_of_int upper)
+           || ((not strict) && x >= float_of_int upper) ->
+        1.0
+    | _ when x >= float_of_int max_int ->
+        invalid_arg "integer CDF boundary is outside the OCaml int range"
+    | _ ->
+        let k =
+          if strict then int_of_float (ceil x) - 1
+          else int_of_float (floor x)
+        in
+        cdf k
 
 (** [cdistr_cdf dist x] is the right-continuous CDF [P(X <= x)]. *)
 let cdistr_cdf dist x =
@@ -63,21 +74,36 @@ let cdistr_cdf dist x =
   | Exppow (a, b)           -> Gsl.Cdf.exppow_P ~x:x ~a ~b
   | Poisson 0.0             -> if x < 0.0 then 0.0 else 1.0
   | Poisson mu              ->
-      integer_cdf ~upper_support:None (fun k -> Gsl.Cdf.poisson_P ~k ~mu) x
+      integer_cdf ~strict:false ~upper_support:None
+        (fun k -> Gsl.Cdf.poisson_P ~k ~mu) x
   | Binomial (_, 0) | Binomial (0.0, _) -> if x < 0.0 then 0.0 else 1.0
   | Binomial (1.0, n)       -> if x < float_of_int n then 0.0 else 1.0
   | Binomial (p, n)         ->
-      integer_cdf ~upper_support:(Some n) (fun k -> Gsl.Cdf.binomial_P ~k ~p ~n) x
+      integer_cdf ~strict:false ~upper_support:(Some n)
+        (fun k -> Gsl.Cdf.binomial_P ~k ~p ~n) x
 
 (** [cdistr_cdf_left dist x] is the left limit [P(X < x)].  This differs
     from [cdistr_cdf] at atoms. *)
 let cdistr_cdf_left dist x =
   match dist with
-  | Poisson _ | Binomial _ ->
-      if x = neg_infinity then 0.0
-      else if x = infinity then 1.0
-      else if classify_float x = FP_nan then invalid_arg "CDF is undefined at NaN"
-      else cdistr_cdf dist (ceil x -. 1.0)
+  | Uniform (lo, hi) when lo = hi ->
+      if classify_float x = FP_nan then invalid_arg "CDF is undefined at NaN"
+      else if x <= lo then 0.0 else 1.0
+  | Poisson 0.0 ->
+      if classify_float x = FP_nan then invalid_arg "CDF is undefined at NaN"
+      else if x <= 0.0 then 0.0 else 1.0
+  | Poisson mu ->
+      integer_cdf ~strict:true ~upper_support:None
+        (fun k -> Gsl.Cdf.poisson_P ~k ~mu) x
+  | Binomial (_, 0) | Binomial (0.0, _) ->
+      if classify_float x = FP_nan then invalid_arg "CDF is undefined at NaN"
+      else if x <= 0.0 then 0.0 else 1.0
+  | Binomial (1.0, n) ->
+      if classify_float x = FP_nan then invalid_arg "CDF is undefined at NaN"
+      else if x <= float_of_int n then 0.0 else 1.0
+  | Binomial (p, n) ->
+      integer_cdf ~strict:true ~upper_support:(Some n)
+        (fun k -> Gsl.Cdf.binomial_P ~k ~p ~n) x
   | _ -> cdistr_cdf dist x
 
 let cdistr_cdf_below = cdistr_cdf_left

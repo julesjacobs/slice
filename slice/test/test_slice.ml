@@ -111,6 +111,28 @@ let test_atomic_cdf_between_integers _test_ctxt =
   assert_equal 1.0 (cdistr_cdf (Binomial (0.0, 0)) 0.0);
   assert_equal 0.0 (cdistr_cdf_left (Binomial (0.0, 0)) 0.0)
 
+let test_degenerate_uniform_cuts _test_ctxt =
+  let open Slice in
+  let point_mass = Distributions.Uniform (1.0, 1.0) in
+  assert_float_list [0.0; 1.0]
+    (Discretization.prob_cdistr_intervals [Lats.Less 1.0] point_mass);
+  assert_float_list [1.0; 0.0]
+    (Discretization.prob_cdistr_intervals [Lats.LessEq 1.0] point_mass);
+  assert_float_list [0.0; 1.0; 0.0]
+    (Discretization.prob_cdistr_intervals
+       [Lats.Less 1.0; Lats.LessEq 1.0] point_mass)
+
+let test_integer_cdf_large_boundary _test_ctxt =
+  let open Slice.Distributions in
+  let boundary = 9007199254740992.0 in
+  let seen = ref None in
+  ignore
+    (integer_cdf ~strict:true ~upper_support:None
+       (fun k -> seen := Some k; 0.0) boundary);
+  assert_equal (Some 9007199254740991) !seen;
+  assert_raises (Invalid_argument "integer CDF boundary is outside the OCaml int range")
+    (fun () -> ignore (cdistr_cdf (Poisson 1.0) (float_of_int max_int)))
+
 let test_atomic_parameter_domains _test_ctxt =
   let open Slice in
   assert_equal (Ok (Distributions.Poisson 0.0))
@@ -137,6 +159,8 @@ let suite =
        test_inferred_coincident_cut_atomic_masses;
      "test_atomic_interval_masses" >:: test_atomic_interval_masses;
      "test_atomic_cdf_between_integers" >:: test_atomic_cdf_between_integers;
+     "test_degenerate_uniform_cuts" >:: test_degenerate_uniform_cuts;
+     "test_integer_cdf_large_boundary" >:: test_integer_cdf_large_boundary;
      "test_atomic_parameter_domains" >:: test_atomic_parameter_domains;
     ]
 
