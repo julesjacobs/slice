@@ -138,10 +138,11 @@ let x =
  if flip() then
    discrete(0.15, 0.6, 0.15, 0.1)
  else
-   discrete(0.62, 0.32, 0.03, 0.04)
+   discrete(0.61791142, 0.31528138,
+            0.03087688, 0.03593032)
 in
 let y =
- if 1 > x then 2 else 0
+ if 2 > x then 2 else 0
 in
 x <= y
     \end{programpanel}
@@ -152,7 +153,7 @@ x <= y
 
 Whenever two expressions are compared, the type system equates their cut sets so they are discretized over the same intervals. These cut sets then propagate backward through the control flow to all contributing subexpressions. Figure~\ref{fig:control-flow-gaussian} illustrates this non-local propagation, which the soundness proof must relate through a semantic coupling relation.
 
-\noindent The discretized program is shown on the right. The cuts $\cleq{0.3}$, $\clt{1.5}$, $\cleq{1.8}$ induce the intervals $(-\infty, 0.3]$, $(0.3, 1.5)$, $[1.5, 1.8]$, $(1.8, +\infty)$. Each \discrete{} statement \mbox{lists the mass of these intervals.}
+\noindent The discretized program is shown on the right. The cuts $\cleq{0.3}$, $\clt{1.5}$, $\cleq{1.8}$ induce the intervals $(-\infty, 0.3]$, $(0.3, 1.5)$, $[1.5, 1.8]$, $(1.8, +\infty)$. Each \discrete{} statement \mbox{lists the mass of these intervals.} The Gaussian masses are rounded to eight decimal places; the displayed values sum to~$1$.
 
 \begin{figure}
 	\scalebox{0.9}{
