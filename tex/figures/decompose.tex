@@ -16,36 +16,37 @@
 				& \text{if } e = \diverge : \tau \\[8pt]
 			(() : \unit, ())
 				& \text{if } e = () : \unit \\[8pt]
-			((\square, \floattype{B}{V}) : \floattype{B}{V}, c)
+			((\square, \floattype{B}{V}) : \floattype{B}{V}, (c))
 				& \text{if } e = c : \floattype{B}{V} \\[8pt]
 			(\discrete(p_0,\ldots,p_{n-1}) : \fin{n}, ())
 				& \text{if } e = \discrete(p_0,\ldots,p_{n-1}) : \fin{n} \\[8pt]
 			(\uniform(\decompose(e_1)_1, \decompose(e_2)_1) : \floattype{B}{V}, \\
-			(\decompose(e_1)_2, \decompose(e_2)_2))
+			\decompose(e_1)_2 \mathbin{\|} \decompose(e_2)_2)
 				& \text{if } e = \uniform(e_1, e_2) : \floattype{B}{V} \\[8pt]
 			(\gaussian(\decompose(e_1)_1, \decompose(e_2)_1) : \floattype{B}{V}, \\
-			(\decompose(e_1)_2, \decompose(e_2)_2))
+			\decompose(e_1)_2 \mathbin{\|} \decompose(e_2)_2)
 				& \text{if } e = \gaussian(e_1, e_2) : \floattype{B}{V} \\[8pt]
 			(\exponential(\decompose(e_1)_1) : \floattype{B}{V}, \\
             \decompose(e_1)_2)
 				& \text{if } e = \exponential(e_1) : \floattype{B}{V} \\[8pt]
 			(\betafn(\decompose(e_1)_1, \decompose(e_2)_1) : \floattype{B}{V}, \\
-			(\decompose(e_1)_2, \decompose(e_2)_2))
+			\decompose(e_1)_2 \mathbin{\|} \decompose(e_2)_2)
 				& \text{if } e = \betafn(e_1, e_2) : \floattype{B}{V} \\[8pt]
 			(\decompose(e_1)_1 \sim \decompose(e_2)_1 : \bool, \\
-			(\decompose(e_1)_2, \decompose(e_2)_2))
+			\decompose(e_1)_2 \mathbin{\|} \decompose(e_2)_2)
 				& \text{if } e = e_1 \sim e_2 : \bool, \sim = <, \leq, \finlt{n}, \finleq{n} \\[8pt]
             (\ifkw\; \decompose(e_1)_1\; \thenkw\; \decompose(e_2)_1\; \elsekw\; \decompose(e_3)_1 : \tau, \\
-            (\decompose(e_1)_2, \decompose(e_2)_2, \decompose(e_3)_2))
+            \decompose(e_1)_2 \mathbin{\|} \decompose(e_2)_2
+			\mathbin{\|} \decompose(e_3)_2)
                 & \text{if } e = \ifkw\; e_1\; \thenkw\; e_2\; \elsekw\; e_3 : \tau \\[8pt]
             (\letkw\; x = \decompose(e_1)_1\; \inkw\; \decompose(e_2)_1 : \tau, \\
-            (\decompose(e_1)_2, \decompose(e_2)_2))
+            \decompose(e_1)_2 \mathbin{\|} \decompose(e_2)_2)
                 & \text{if } e = \letkw\; x = e_1\; \inkw\; e_2 : \tau \\[8pt]
             (\observekw(\decompose(e_1)_1 : \bool) : \unit, \decompose(e_1)_2)
                 & \text{if } e = \observekw(e_1 : \bool) : \unit \\[8pt]
 		\end{cases}
 	\end{align*}
-	\caption{Recursive definition of $\decompose$, a decomposition function, over typed expressions. $\decompose(\cdot)_1$ and $\decompose(\cdot)_2$ denote first and second projections of $\decompose$, respectively. $\decompose(\cdot)_2$ is canonically bijective to a flat vector in $\R^n$ via coordinate concatenation over holes.}
+	\caption{Recursive definition of $\decompose$, a decomposition function, over typed expressions. $\decompose(\cdot)_1$ and $\decompose(\cdot)_2$ denote first and second projections of $\decompose$, respectively. The operator $\mathbin{\|}$ is coordinate-vector concatenation, so $\decompose(\cdot)_2$ is a flat vector in $\R^n$.}
 	\label{fig:decompose-definition-1}
 \end{figure}
 
@@ -56,18 +57,18 @@
 		\decompose(e : \tau) =
 		\begin{cases}
             (\decompose(e_1)_1 \logand \decompose(e_2)_1 : \bool, \\
-			(\decompose(e_1)_2, \decompose(e_2)_2))
+			\decompose(e_1)_2 \mathbin{\|} \decompose(e_2)_2)
 				& \text{if } e = e_1 \logand e_2 : \bool \\[8pt]
 			(\decompose(e_1)_1 \logor \decompose(e_2)_1 : \bool, \\
-			(\decompose(e_1)_2, \decompose(e_2)_2))
+			\decompose(e_1)_2 \mathbin{\|} \decompose(e_2)_2)
 				& \text{if } e = e_1 \logor e_2 : \bool \\[8pt]
 			(\lognot\; \decompose(e_1)_1 : \bool, \decompose(e_1)_2)
 				& \text{if } e = \lognot\; e_1 : \bool \\[8pt]
 			(\decompose(e_1)_1; \decompose(e_2)_1 : \tau_2, \\
-			(\decompose(e_1)_2, \decompose(e_2)_2))
+			\decompose(e_1)_2 \mathbin{\|} \decompose(e_2)_2)
 				& \text{if } e = e_1; e_2 : \tau_2 \\[8pt]
 			((\decompose(e_1)_1, \decompose(e_2)_1) : \tau_1 * \tau_2, \\
-			(\decompose(e_1)_2, \decompose(e_2)_2))
+			\decompose(e_1)_2 \mathbin{\|} \decompose(e_2)_2)
 				& \text{if } e = (e_1, e_2) : \tau_1 * \tau_2 \\[8pt]
 			(\fstkw\; \decompose(e_1)_1 : \tau_1, \decompose(e_1)_2)
 				& \text{if } e = \fstkw\; e_1 : \tau_1 \\[8pt]
@@ -78,17 +79,18 @@
 			(\fixkw\; f\; x := \decompose(e_1)_1 : \tau_1 \to \tau_2, \decompose(e_1)_2)
 				& \text{if } e = \fixkw\; f\; x := e_1 : \tau_1 \to \tau_2 \\[8pt]
 			(\decompose(e_1)_1\; \decompose(e_2)_1 : \tau_2, \\
-			(\decompose(e_1)_2, \decompose(e_2)_2))
+			\decompose(e_1)_2 \mathbin{\|} \decompose(e_2)_2)
 				& \text{if } e = (e_1 : \tau_1 \to \tau_2\;\; e_2 : \tau_1) : \tau_2 \\[8pt]
 			(\textnormal{\ttfamily nil} : \listty{\tau_1}, ())
 				& \text{if } e = \textnormal{\ttfamily nil} : \listty{\tau_1} \\[8pt]
 			(\decompose(e_1)_1 :: \decompose(e_2)_1 : \listty{\tau_1}, \\
-			(\decompose(e_1)_2, \decompose(e_2)_2))
+			\decompose(e_1)_2 \mathbin{\|} \decompose(e_2)_2)
 				& \text{if } e = e_1 :: e_2 : \listty{\tau_1} \\[8pt]
-			(\matchkw\; \decompose(e_0)_1\; \withkw\; \matchcase \textnormal{\ttfamily nil} \rightarrow \decompose(e_{\textnormal{nil}})_1 \\
-			\matchcase h::t \rightarrow \decompose(e_{\textnormal{cons}})_1\; {\textnormal{\ttfamily\bfseries end}} : \tau_2, 
+			((\matchkw\; \decompose(e_0)_1\; \withkw\; \matchcase \textnormal{\ttfamily nil} \rightarrow \decompose(e_{\textnormal{nil}})_1 \\
+			\qquad \matchcase h::t \rightarrow \decompose(e_{\textnormal{cons}})_1\; {\textnormal{\ttfamily\bfseries end}}) : \tau_2, \\
+			\decompose(e_0)_2 \mathbin{\|} \decompose(e_{\textnormal{nil}})_2
+			\mathbin{\|} \decompose(e_{\textnormal{cons}})_2)
                 & \text{if } e = (\matchkw\; e_0 : \listty{\tau_1}\; \withkw\; \matchcase \textnormal{\ttfamily nil} \rightarrow e_{\textnormal{nil}} : \tau_2 \\
-			(\decompose(e_0)_2, \decompose(e_{\textnormal{nil}})_2, \decompose(e_{\textnormal{cons}})_2))
                 &\qquad\qquad\;\;\;\matchcase h::t \rightarrow e_{\textnormal{cons}} : \tau_2\; {\textnormal{\ttfamily\bfseries end}}) : \tau_2
 		\end{cases}
 	\end{align*}

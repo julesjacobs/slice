@@ -207,7 +207,12 @@ To make the probabilistic semantics precise, we construct an appropriate measure
 		&\mid \textnormal{\ttfamily nil} \mid s_1 :: s_2 \\
 		&\mid (\matchkw \; s \; \withkw \matchcase \textnormal{\ttfamily nil} \rightarrow s_{\textnormal{nil}} \matchcase h::t \rightarrow s_{\textnormal{cons}} \; {\textnormal{\ttfamily\bfseries end}})
 	\end{align*}
-	We denote by $\skel$ the set of all expression skeletons, and by $\holes(s)$ the number of distinct holes in skeleton $s$.
+	We denote by $\skel$ the set of all expression skeletons. The holes of a
+	skeleton are its occurrences of $\square$, ordered from left to right in a
+	preorder traversal of the syntax tree; $\holes(s)$ is the number of these
+	occurrences. We write $\square_i$ for the $i$th occurrence when referring
+	to a particular hole. Thus, the subscripts distinguish occurrences and
+	are not part of the skeleton syntax.
 \end{definition}
 
 
@@ -216,7 +221,7 @@ To make the probabilistic semantics precise, we construct an appropriate measure
 \end{example}
 
 \begin{definition}[Filling a skeleton]
-	Let $s \in \skel$ and let $\vec{r} = (r_1, \ldots, r_{\holes(s)}) \in \mathbb{R}^{\holes(s)}$. Define the expression $s[\vec{r}] \in Expr$ to be the result of replacing each hole $\square_i$ in $s$ with the corresponding real constant $r_i$, for $1 \le i \le \holes(s)$.
+	Let $s \in \skel$ and let $\vec{r} = (r_1, \ldots, r_{\holes(s)}) \in \mathbb{R}^{\holes(s)}$. Define the expression $s[\vec{r}] \in Expr$ to be the result of replacing the $i$th hole occurrence $\square_i$ in $s$ with the corresponding real constant $r_i$, for $1 \le i \le \holes(s)$.
 \end{definition}
 
 To recover a \emph{typed} notion of skeletons, we extend the typing judgment to
@@ -264,12 +269,16 @@ skeletons by adding a distinguished typing rule for holes.
 	\[
 		\decompose \colon Expr_{\tau}
 		\;\longrightarrow\;
-		\bigcup_{s \in Skel_{\tau}} \left( \{s\} \times \mathbb{R}^{\holes(s)} \right)
+		\bigsqcup_{s \in \skel_{\tau}} \left( \{s\} \times \mathbb{R}^{\holes(s)} \right)
 	\]
-	is defined as the inverse of filling a skeleton, i.e., for every expression $e : \tau$,
+	is defined structurally by replacing each float constant with a hole and
+	collecting the removed constants in the hole-occurrence order above. In
+	the recursive definition, $\vec r_1 \mathbin{\|} \vec r_2$ denotes
+	concatenation of coordinate vectors (and similarly for three vectors).
+	Consequently, for every expression $e : \tau$,
 	\[
 		\decompose(e) = (s, \vec{r})
-		\quad\text{such that}\quad
+		\quad\Longleftrightarrow\quad
 		e = s[\vec{r}].
 	\]
 	The explicit recursive definition of $\decompose$ is shown in Figures~\ref{fig:decompose-definition-1} and~\ref{fig:decompose-definition-2}.
@@ -280,8 +289,10 @@ skeletons by adding a distinguished typing rule for holes.
 \begin{definition}[Hole assignments of a skeleton]
 	For a given $s : \tau \in \skel_{\tau}$, define the set of hole assignments of $s$ as:
 	\[
-		A_{s : \tau} := 
-		\bigcup_{e : \tau \in Expr_{\tau}} \left\{ \decompose(e : \tau)_2 \mid \decompose(e : \tau)_1 = s : \tau \right\}
+		A_{s ; \tau} :=
+		\left\{\, \vec r \in \R^{\holes(s)} \mid
+			s[\vec r] : \tau \in Expr_\tau \text{ and }
+			\decompose(s[\vec r] : \tau) = (s : \tau,\vec r)\,\right\}
 		\subseteq \R^{\holes(s)}
 	\]
 
@@ -364,7 +375,9 @@ Now, we map this measurable space to the space of actual expressions that share 
 	\[
 		Expr_{s;\tau}
 		:= 
-		\left\{\, e : \tau \in Expr_{\tau} \mid \decompose(e : \tau)_2 \in A_{s;\tau} \,\right\}
+		\left\{\, e : \tau \in Expr_{\tau} \;\middle|\;
+			\decompose(e : \tau)_1 = s : \tau
+			\text{ and } \decompose(e : \tau)_2 \in A_{s;\tau} \,\right\}
 		\subseteq
 		Expr_\tau.
 	\]
@@ -434,7 +447,10 @@ Intuitively, $Expr_{s;\tau}$ consists exactly of those expressions whose syntact
 
 	\paragraph{(ii) Surjectivity:}
 
-	Let $\vec{r} \in A_{s;\tau}$. By definition of $A_{s;\tau}$, there exists some expression $e \in Expr_{\tau}$ such that $\decompose(e) = (s,\vec{r})$. Then $e \in Expr_{s;\tau}$ by construction of $Expr_{s;\tau}$, and $\decompose_{s;\tau}(e) = \vec{r}$.
+	Let $\vec{r} \in A_{s;\tau}$. By definition of $A_{s;\tau}$,
+	$e = s[\vec r]$ is in $Expr_\tau$ and
+	$\decompose(e)=(s,\vec r)$. Therefore $e \in Expr_{s;\tau}$ and
+	$\decompose_{s;\tau}(e) = \vec{r}$.
 
 	\medskip
 
