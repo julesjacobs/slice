@@ -67,7 +67,9 @@ let test_integer_cdf_threshold_safety _test_ctxt =
   assert_raises (Invalid_argument "CDF is undefined at NaN")
     (fun () -> ignore (cdistr_cdf_below (Binomial (0.5, 2)) nan));
   assert_equal 0.0 (cdistr_cdf (Poisson 1.0) (-.max_float));
-  assert_equal 1.0 (cdistr_cdf (Poisson 1.0) max_float);
+  assert_raises
+    (Invalid_argument "integer CDF boundary is outside the GSL unsigned-int range")
+    (fun () -> ignore (cdistr_cdf (Poisson 1.0) max_float));
   assert_equal 0.0 (cdistr_cdf_below (Binomial (0.5, 2)) (-.max_float));
   assert_equal 1.0 (cdistr_cdf_below (Binomial (0.5, 2)) max_float)
 

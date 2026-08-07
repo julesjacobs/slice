@@ -54,15 +54,20 @@ let uniform_cdf_interior lo hi x =
     ((x /. scale) -. (lo /. scale))
     /. ((hi /. scale) -. (lo /. scale))
 
-(* Keep integer-support CDF calls inside the range representable by OCaml
-   integers.  PR #15 further restricts this to the GSL unsigned-int range. *)
+(* ocaml-gsl converts integer CDF boundaries with [Unsigned_int_val].  Reject
+   boundaries outside both the host-int and GSL unsigned-int ranges instead of
+   pretending that an unbounded distribution has reached cumulative mass 1. *)
+let gsl_host_integer_max =
+  Int64.min 0xffff_ffffL (Int64.of_int max_int)
+
 let integer_cdf ~upper_support cdf x =
   if classify_float x = FP_nan then invalid_arg "CDF is undefined at NaN"
   else if x < 0.0 then 0.0
   else
     match upper_support with
     | Some upper when x >= float_of_int upper -> 1.0
-    | _ when x >= float_of_int max_int -> 1.0
+    | _ when x > Int64.to_float gsl_host_integer_max ->
+        invalid_arg "integer CDF boundary is outside the GSL unsigned-int range"
     | _ -> cdf (int_of_float (floor x))
 
 let cdistr_cdf dist x =
