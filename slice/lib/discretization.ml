@@ -43,7 +43,8 @@ let interval_probabilities (cut_set : Lats.CutSet.t)
   in
   differences 0.0 cumulative
 
-let prob_cdistr_intervals = interval_probabilities
+let prob_cdistr_intervals cuts dist =
+  interval_probabilities (Lats.CutSet.of_list cuts) dist
 
 (* 
 Discretizer from typed expressions to discrete expressions.
