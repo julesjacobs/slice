@@ -234,7 +234,11 @@ let test_final_dispatch_mismatch_has_zero_mass _test_ctxt =
           (Ast.Sample (Ast.Distr1 (Ast.DExponential, mismatched_parameter))) )
   in
   assert_bool "mismatched final dispatch must contain typed divergence"
-    (contains_recursive_divergence transformed)
+    (contains_recursive_divergence transformed);
+  let inferred_type, _ = Inference.infer transformed in
+  match Ast.force inferred_type with
+  | Ast.TFin n -> assert_equal 2 n
+  | _ -> assert_failure "divergent fallback did not retain the dispatch result type"
 
 let valid_dynamic_uniform () =
   let open Slice in
