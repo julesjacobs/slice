@@ -1,13 +1,19 @@
 \section{Operational Semantics and Soundness}
 \label{sec:soundness}%
 %
-We formulate exactness as a conditional result for \emph{every} expression
-$e:\bool$, possibly including continuous sampling, higher-order functions,
-recursion, and conditioning:
+We formulate exactness for the \emph{uniform fragment}: the syntax in
+\Cref{fig:grammar} without sequencing, non-strict comparisons, finite
+comparisons in source programs, or continuous samplers other than $\uniform$.
+Write $Expr^{\mathsf U}_\tau$ for its well-typed expressions and
+$Expr^{\mathsf U+}_\tau$ for its operational closure under the finite
+comparisons and dispatch syntax emitted by \Cref{fig:discretization-code}. The
+conditional claim is restricted to closed $e:\bool$ in
+$Expr^{\mathsf U}_\bool$:
 %
 \begin{center}
-	\emph{If the emitted core term satisfies the weak compiler-simulation
-	obligation stated in the appendix, then $e:\bool$ and
+	\emph{If the emitted core term satisfies the measurable weak
+	compiler-simulation, administrative-normalization, and terminal-limit
+	compatibility obligations stated in the appendix, then $e:\bool$ and
 	$\discretize{e:\bool}:\bool$ are semantically equivalent.}
 \end{center}
 %its discretized expression $\discretize{e : \bool} : \bool$ obtained from the rules in \Cref{fig:discretization-code}

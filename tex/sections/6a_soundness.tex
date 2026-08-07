@@ -1704,6 +1704,11 @@ permit target administrative steps while the source stutters.  Related
 terminal Boolean values must be equal, and both sides must assign the same
 mass to observation failure.  Establishing this weak simulation remains open.
 
+Even such a weak relation is not by itself a terminal theorem. The conditional
+result below separately assumes that generated administrative reduction is
+normalizing and that iteration of the measurable target weak-step kernel has
+the same terminal limit as iteration of the ordinary target small-step kernel.
+
 \subsection{Big-Step Semantics}
 %
 Define the ordinary-input kernel
@@ -2114,18 +2119,25 @@ No coupled finite-step or big-step transfer is claimed here.  Such a transfer
 additionally requires the open weak compiler simulation and a proof that
 restriction to terminal outcomes commutes with component pushforward.
 
-\begin{proposition}[Conditional contextual equivalence]
+\begin{proposition}[Conditional closed Boolean semantic preservation]
 	\label{thm:contextual-equivalence}
-	If $e:\bool$ and its emitted target satisfy the weak compiler-simulation
-	obligation above, including equality of terminal Boolean and
+	Let $e:\bool\in Expr^{\mathsf U}_\bool$ be closed. Assume a measurable
+	weak target kernel and a measurable weak coupling whose marginals are the
+	source step and target weak step, respectively. Assume also that generated
+	administrative reduction is normalizing, that the terminal restrictions of
+	the coupling iterates have an increasing limit, and that the target
+	projection of this limit is the ordinary target terminal semantics. If
+	related terminal Boolean values agree and the coupling preserves
 	observation-failure mass, then
 	$\bigsem{e:\bool}=\bigsem{\discretize{e:\bool}:\bool}$.
 \end{proposition}
 %
 \begin{proof}
-	The weak simulation supplies a terminal coupling supported on
-	$\{(\true,\true),(\false,\false),\bot\}$.  Its two component pushforwards
-	agree on every terminal Boolean and observation-failure event.
+	By the terminal-limit compatibility premises, the limiting coupling has the
+	two displayed ordinary terminal semantics as its component pushforwards.
+	Agreement of related terminal Booleans and preservation of
+	observation-failure mass make those pushforwards equal on $\true$, $\false$,
+	and $\bot$.
 \iffalse
 	Since $\mathcal{D}(Vals_\tau + \bot)$ contains only discrete distributions, we proceed by case distinction on the probability of the final outcome $v\in\{\true,\false,\bot\}$.\\
 	%
