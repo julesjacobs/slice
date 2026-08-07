@@ -158,23 +158,21 @@ equality, Boolean conjunction, and conditional selection---for which the source
 has no matching step.  A proof-only $\dc$ operation that performs the complete
 dispatch in one step does not describe the term emitted by the transformation.
 
-Let $\Longrightarrow_{\mathrm a}$ be the reflexive transitive closure of those
-administrative target steps.  The missing result is a measurable weak
-compiler-simulation relation $R_\tau$ between source expressions and generated
-target expressions.  It must relate $e$ to $\discretize e$, allow either side to
-take finitely many administrative steps while the other stutters, couple every
-probabilistic step with the transition measures as exact marginals and support
-in $R_\tau$, preserve terminal Boolean values, observation-failure mass, and
-missing mass, and rule out infinite administrative stuttering.  The appendix
-states this obligation more precisely.
+The appendix proves an abstract transfer theorem for any coherent measurable
+joint kernel.  Applying it here still requires a measurable normalizer for the
+generated administrative reductions, a measurable related-state carrier, one
+measurable joint sub-Markov kernel with the source and collapsed-target kernels
+as exact marginals, terminal synchrony, equality of related terminal Boolean
+values, compatibility with the distinguished observation-failure outcome, and
+terminal cofinality between collapsed and ordinary target iteration.  Equal
+failure and missing mass then follow from the transfer theorem; they are not
+premises smuggled into the simulation.
 
 \begin{conjecture}[Weak-simulation exactness]
 	\label{thm:maintext:sound}
-	Suppose such a weak compiler simulation exists for every transformation
-	clause in the uniform fragment, and suppose a terminal-limit compatibility
-	theorem shows that its coupled finite-step approximants have equal terminal
-	restrictions and that this equality is preserved by the suprema defining
-	$\bigsem{\cdot}$.  Then, for every
+	The literal Slice transformation satisfies the measurable
+		normalization, coherent-joint-kernel, terminal-compatibility, and
+		cofinality premises above.  Consequently, for every
 	$e:\bool\in Expr^{\mathsf U}_{\bool,\mathrm{cl}}$,
 	\[
 		\bigsem{e:\bool}=
