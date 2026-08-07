@@ -43,7 +43,7 @@
         & $B \neq \top$
         & $\discretize{e_1 : \float[B;V_1]} \finlt{(|B|+1)} \discretize{e_2 : \float[B;V_2]}$ \\
         \caserule
-        & $B = \top,\; \neg(e_1,e_2\in\mathbb R \land e_1\geq e_2)$
+        & $B = \top$
         & $\discretize{e_1 : \float[B;V_1]} < \discretize{e_2 : \float[B;V_2]}$ \\
         \midrule
 		%
@@ -64,7 +64,7 @@
         & $\diverge : \tau$ \\
         \caserule
 		%
-        & $B = \top$
+        & $B = \top,\; \neg(e_1,e_2\in\mathbb R \land e_1\geq e_2)$
         & $\uniform(\discretize{e_1 : \float[B_1;V_1]}, \discretize{e_2 : \float[B_2;V_2]})$ \\
         \caserule
 		%
