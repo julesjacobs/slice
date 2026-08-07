@@ -1,7 +1,14 @@
 \section{Operational Semantics and Soundness}
 \label{sec:soundness}%
 %
-We now establish the soundness of our approach in the following sense: For \emph{every} expression $e:\bool$, possibly including \emph{continuous sampling, higher-order functions, recursion, and conditioning},
+The claim in this section concerns the \emph{uniform fragment}: the syntax in
+\Cref{fig:grammar} without sequencing, non-strict comparisons, finite
+comparisons in source programs, or continuous samplers other than $\uniform$.
+Write $Expr^{\mathsf U}_\tau$ for its well-typed expressions and
+$Expr^{\mathsf U+}_\tau$ for its operational closure under the finite
+comparisons and dispatch syntax emitted by \Cref{fig:discretization-code}.
+The intended claim is restricted to closed $e:\bool$ in
+$Expr^{\mathsf U}_\bool$:
 %
 \begin{center}
 	\emph{$e: \bool$ and $\discretize{e : \bool}:\bool$ (obtained from \Cref{fig:discretization-code}) are semantically equivalent.}
@@ -9,7 +16,11 @@ We now establish the soundness of our approach in the following sense: For \emph
 %its discretized expression $\discretize{e : \bool} : \bool$ obtained from the rules in \Cref{fig:discretization-code}
 %
 % exact discretization as follows: every expression $e:\bool$ is semantically equivalent to $\discretize{e : \bool} : \bool$. 
-The first step is to make formal sense of semantic equivalence. For that, we will define a monadic operational semantics for our language in \Cref{sec:opsem}. We will then proceed by proving the above claim. This is non-trivial: discretization decisions are driven by non-local, type-propagated information, so we cannot proceed by a local rule-by-rule argument. To prove the claim rigorously, we relate the executions of $e$ and $\discretize{e}$ through a coupling-style logical relation in \Cref{sec:opsem}. %We provide the high-level proof idea in the main text; all details are in \Cref{sec:app:soundness_new}.
+The first step is to make formal sense of semantic equivalence through the
+monadic operational semantics in \Cref{sec:opsem}. Discretization decisions are
+driven by non-local, type-propagated information, so a local rule-by-rule
+argument is insufficient. The measurable weak compiler simulation needed to
+relate the two executions remains an open proof obligation.
 %
 \subsection{Operational Semantics}
 \label{sec:opsem}
@@ -177,13 +188,18 @@ Now, using a limit construction analogous to \Cref{sec:smallsem_to_bigsem} for o
 
 \fi
 
-\begin{proposition}[Conditional exactness]
+\begin{conjecture}[Weak-simulation closed Boolean semantic preservation]
 	\label{thm:maintext:sound}
-	Let $e:\bool$. If the literal generated core term satisfies the weak compiler-simulation obligation in \Cref{sec:app:soundness_new}, including equality of terminal Boolean and observation-failure mass, then $\bigsem{e:\bool}=\bigsem{\discretize{e:\bool}:\bool}$.
-\end{proposition}
+	Let $e:\bool\in Expr^{\mathsf U}_\bool$ be closed. A completed measurable
+	weak-simulation theorem for the literal generated core term, together with
+	administrative normalization and compatibility between weak-step iteration
+	and the ordinary target terminal limit, would imply
+	$\bigsem{e:\bool}=\bigsem{\discretize{e:\bool}:\bool}$.
+\end{conjecture}
 
-\begin{proof}
-The weak simulation supplies a coupling of the two increasing finite-step approximants whose terminal support is contained in $\{(\true,\true),(\false,\false),\bot\}$. Projection commutes with the monotone limit, so the two limiting measures agree on $\true$, $\false$, and $\bot$.
-\end{proof}
-
-The required weak simulation has not yet been established. The earlier synchronous one-step argument is invalid for the emitted let/conditional dispatch because the target must take administrative steps while the source stutters. Accordingly, this proposition records a conditional result, not a completed exactness proof.
+The required theorem has not yet been established. The earlier synchronous
+one-step argument is invalid for the emitted let/conditional dispatch because
+the target must take administrative steps while the source stutters. The
+conjecture records the desired consequence without treating the unspecified
+weak relation as already supplying finite-step couplings or a compatible
+terminal limit.
