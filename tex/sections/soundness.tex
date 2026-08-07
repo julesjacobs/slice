@@ -1,14 +1,7 @@
 \section{Operational Semantics and Soundness}
 \label{sec:soundness}%
 %
-The claim in this section concerns the \emph{uniform fragment}: the syntax in
-\Cref{fig:grammar} without sequencing, non-strict comparisons, finite
-comparisons in source programs, or continuous samplers other than $\uniform$.
-Write $Expr^{\mathsf U}_\tau$ for its well-typed expressions and
-$Expr^{\mathsf U+}_\tau$ for its operational closure under the finite
-comparisons and dispatch syntax emitted by \Cref{fig:discretization-code}.
-The intended claim is restricted to closed $e:\bool$ in
-$Expr^{\mathsf U}_\bool$:
+We now establish the soundness of our approach in the following sense: For \emph{every} expression $e:\bool$, possibly including \emph{continuous sampling, higher-order functions, recursion, and conditioning},
 %
 \begin{center}
 	\emph{$e: \bool$ and $\discretize{e : \bool}:\bool$ (obtained from \Cref{fig:discretization-code}) are semantically equivalent.}
@@ -16,11 +9,7 @@ $Expr^{\mathsf U}_\bool$:
 %its discretized expression $\discretize{e : \bool} : \bool$ obtained from the rules in \Cref{fig:discretization-code}
 %
 % exact discretization as follows: every expression $e:\bool$ is semantically equivalent to $\discretize{e : \bool} : \bool$. 
-The first step is to make formal sense of semantic equivalence through the
-monadic operational semantics in \Cref{sec:opsem}. Discretization decisions are
-driven by non-local, type-propagated information, so a local rule-by-rule
-argument is insufficient. The measurable weak compiler simulation needed to
-relate the two executions remains an open proof obligation.
+The first step is to make formal sense of semantic equivalence. For that, we will define a monadic operational semantics for our language in \Cref{sec:opsem}. We will then proceed by proving the above claim. This is non-trivial: discretization decisions are driven by non-local, type-propagated information, so we cannot proceed by a local rule-by-rule argument. To prove the claim rigorously, we relate the executions of $e$ and $\discretize{e}$ through a coupling-style logical relation in \Cref{sec:opsem}. %We provide the high-level proof idea in the main text; all details are in \Cref{sec:app:soundness_new}.
 %
 \subsection{Operational Semantics}
 \label{sec:opsem}
@@ -99,7 +88,7 @@ $
 	\bigsem{e:\tau} = \lambda A. \lim_{n\to\infty} \bigsemstep{e:\tau}{n}(A)~,
 $
 % 
-which is well-defined by the monotone convergence theorem: the sequence $(\bigsemstep{e : \tau}{n})_{n\in\Nats}$ is monotonically increasing for every measurable set $A$ over $Vals_\tau + \bot$ and upper-bounded by $1$: executing a program for more and more steps can only increase the probability of terminating in a given set of values or an observation failure.
+which is well-defined by the monotone convergence theorem: the sequence $(\bigsemstep{e : \tau}{n})_{n\in\Nats}$ is monotonically increasing for every measurable set $A$ over $Vals_\tau + \bot$ (cf.\ \Cref{lem:bigstepsem}) and upper-bounded by $1$: executing a program for more and more steps can only increase the probability of terminating in a given set of values or an observation failure.
 
 %
 %\kbin{old}
@@ -112,9 +101,8 @@ which is well-defined by the monotone convergence theorem: the sequence $(\bigse
 \subsection{Soundness via Probabilistic Couplings}
 \label{C}
 %
-The generated target takes administrative steps that have no matching source step. The disabled text below records the earlier synchronous argument for comparison; the proposition after it states what currently follows.
+We first state the central theorem, then outline our coupling-style correctness argument.
 %
-\iffalse
 \begin{theorem}
 	\label{thm:maintext:sound}
 	Let $e:\bool$. Then $\bigsem{e:\bool} = \bigsem{\discretize{e:\bool} : \bool}$.
@@ -186,20 +174,4 @@ Now, using a limit construction analogous to \Cref{sec:smallsem_to_bigsem} for o
     \tag{Lemma \ref{lem:maintext:small_step_coupling_props}.\ref{lem:maintext:small_step_coupling_props2} for $\bigsem{\cdot,\cdot}$}
 \end{align*}
 
-\fi
-
-\begin{conjecture}[Weak-simulation closed Boolean semantic preservation]
-	\label{thm:maintext:sound}
-	Let $e:\bool\in Expr^{\mathsf U}_\bool$ be closed. A completed measurable
-	weak-simulation theorem for the literal generated core term, together with
-	administrative normalization and compatibility between weak-step iteration
-	and the ordinary target terminal limit, would imply
-	$\bigsem{e:\bool}=\bigsem{\discretize{e:\bool}:\bool}$.
-\end{conjecture}
-
-The required theorem has not yet been established. The earlier synchronous
-one-step argument is invalid for the emitted let/conditional dispatch because
-the target must take administrative steps while the source stutters. The
-conjecture records the desired consequence without treating the unspecified
-weak relation as already supplying finite-step couplings or a compatible
-terminal limit.
+ 

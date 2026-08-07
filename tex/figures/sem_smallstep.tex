@@ -66,21 +66,12 @@
 			%
 			\midrule
 			%
-			% --- finite equality ---
-			\multirow{4}{*}{$e_1 : \fin{n} \fineq{n} e_2 : \fin{n} : \bool$}
-			& $e_1 = \finconst{i}{n}, e_2 = \finconst{j}{n}, i=j$ & $\dirac{\true : \bool}$ \\
-			& $e_1 = \finconst{i}{n}, e_2 = \finconst{j}{n}, i\neq j$ & $\dirac{\false : \bool}$ \\
-			& $e_1 = v_1, e_2$ no val. & $\sem{e_2 : \fin{n}} \gg\!= \lambda g.\dirac{v_1 \fineq{n} g : \bool}$ \\
-			& o.w.\ & $\sem{e_1 : \fin{n}} \gg\!= \lambda g.\dirac{g \fineq{n} e_2 : \bool}$ \\
-			%
-			\midrule
-			%
 			% --- uniform distribution ---
 			\multirow{3}{*}{$\uniform(e_1 : \tau_1, e_2 : \tau_2) : \floattype{B}{V}$} 
 			
 			& $e_1 = v_1, e_2 = v_2, v_1 < v_2$ & $\text{Uniform}(v_1, v_2) \gg\!= \lambda v. \dirac{(v : \floattype{B}{V})}$ \\
 			% 
-			& $e_1 = v_1, e_2 = v_2, v_1 \geq v_2$ & $\sem{\diverge : \floattype{B}{V}}$ \\
+			& $e_1 = v_1, e_2 = v_2, v_1 \geq v_2$ & $\sem{\diverge : \tau}$ \\
 			%
 			& $e_1 = v_1, e_2 \neq v_2$ & $\sem{ e_2 : \tau_2 } \gg\!= \lambda g. \dirac{ \uniform(v_1 : \tau_1, g) : \tau }$ \\
 			%
@@ -95,6 +86,22 @@
 			%
 			%& o.w.\ &$ \dirac{\bot}$ \\
 			%
+			\midrule 
+			%
+			% --- uniform DC ---
+			\multirow{4}{*}{\makecell{$\dc(e_1 : \tau_1, e_2 : \tau_2) : \fin{|B| + 1}$ \\
+			$\tau = \fin{|B| + 1}$, \\
+			$\tau_1 = \fin{|B_1| + 1}, \tau_2 = \fin{|B_2| + 1}$,\\
+			$V_1 = \{v_1,\ldots,v_n\}, V_2 = \{w_1,\ldots,w_m\}$}} 
+			
+			& \makecell[l]{$e_1 = \discretize{v_i : \floattype{B_1}{V_1}}$,\\ $e_2 = \discretize{w_j : \floattype{B_2}{V_2}}$} & $\sem{\discretize{\uniform(v_i, w_j) : \floattype{B}{\top}} : \tau}$ \\
+			%
+			& $ e_1 = v', e_2 \neq w'$ & $\sem{ e_2 : \tau_2 } \gg\!= \lambda g. \dirac{ \dc(v' : \tau_1, g) }$ \\
+			%
+			& o.w.\ & $\sem{ e_1 : \tau_1 } \gg\!= \lambda g. \dirac{ \dc(g, e_2 : \tau_2) }$ \\
+			%
+			& & \\
+			%
 %			 bla
 			\bottomrule
 			\bottomrule
@@ -103,7 +110,7 @@
 	\end{adjustbox}
 	\end{center}%=
 	%
-	\caption{Small-step operational semantics. Every function of the form $f(g) = \lambda g. \dirac{\ldots}$ is extended to $f_{\bot}$ in the sense of ~\Cref{def:bot-extension}.}
+	\caption{Small-step operational semantics. In the last case, the existence of suitable $v_i$ and $w_j$ is guaranteed since $\distinguishes{B_i}{V_i}$ and $e_i\in V_i$ for $i \in \{1,2\}$. Here, every function of the form $f(g) = \lambda g. \dirac{\ldots}$ is extended to $f_{\bot}$ in the sense of ~\Cref{def:bot-extension}.}
 	\label{tab:smallstep-1}%
 \end{table}%
 

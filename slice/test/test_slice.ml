@@ -212,7 +212,7 @@ let test_final_dispatch_arm_fails_closed _test_ctxt =
   assert_bool "final dispatch arm must fail closed"
     (contains_recursive_divergence transformed)
 
-let test_final_dispatch_mismatch_has_zero_mass _test_ctxt =
+let test_unmatched_dispatch_index_uses_typed_divergence _test_ctxt =
   let open Slice in
   let parameter_type =
     Ast.TFloat
@@ -335,8 +335,8 @@ let suite =
      "test_empty_dispatch_domain_is_an_invariant_failure"
        >:: test_empty_dispatch_domain_is_an_invariant_failure;
      "test_final_dispatch_arm_fails_closed" >:: test_final_dispatch_arm_fails_closed;
-     "test_final_dispatch_mismatch_has_zero_mass"
-       >:: test_final_dispatch_mismatch_has_zero_mass;
+     "test_unmatched_dispatch_index_uses_typed_divergence"
+       >:: test_unmatched_dispatch_index_uses_typed_divergence;
      "test_dynamic_sampler_exports_to_all_backends"
        >:: test_dynamic_sampler_exports_to_all_backends;
      "test_generated_binders_are_hygienic" >:: test_generated_binders_are_hygienic;

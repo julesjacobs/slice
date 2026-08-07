@@ -222,11 +222,12 @@ let discretize (e : texpr) : expr =
             | _ -> None
           in
 
-          (* Invalid source distribution parameters have zero subprobability
-             mass, rather than observation-failure mass.  Emit a hygienic,
-             well-typed divergent core term so the target has the same raw
-             subprobability marginal.  Sequencing is deliberately avoided:
-             it is not in the generated-core carrier used by the proof. *)
+          (* An unmatched finite dispatch index, or an enumerated parameter
+             tuple rejected by the distribution constructor, is encoded by
+             hygienic recursive core divergence.  This is distinct from
+             Observe false.  Correspondence with source semantics additionally
+             requires reachable value-set adequacy and the weak
+             divergence/cofinality obligations stated in the paper. *)
           let fail_closed_result () =
             let function_name = fresh_generated "_slice_diverge" in
             let parameter_name = fresh_generated "_slice_unit" in

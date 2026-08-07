@@ -109,25 +109,52 @@
     \caption{Discretization function. The displayed cases are pairwise disjoint. Uniform distributions require a strict parameter ordering $e_1<e_2$.
         Equivalently, because such distributions are atomless, the interval masses in the constant-parameter
         rule can be computed from the clamped CDF, with $\mathrm{CDF}(-\infty)=0$ and
-        $\mathrm{CDF}(+\infty)=1$. The final row is the literal generated core-language term; in particular,
-        $\fineq{n}$ is finite equality from \Cref{fig:grammar}, not proof-only notation.
+        $\mathrm{CDF}(+\infty)=1$. The final row is the ideal exact-real dispatch schema.
+        The OCaml emitter uses a nested hygienic core elaboration; correspondence between that
+        emitted term and this schema is an explicit compiler-correctness obligation.
         For the $\uniform$ distribution, $V = \top$ is implicit, and all remaining cut-set and value-set
-        cases are ruled out by the constraints enforced during type inference. Equal or reversed uniform bounds are malformed under the strict uniform contract. For all other language
+        cases are outside this rule. The theorem applies only under the displayed representation,
+        finite-domain, nonempty-domain, sampler-domain, and reachable-value adequacy premises.
+        Equal or reversed uniform bounds are malformed under the strict uniform contract. For all other language
         constructs, $\discretize{\cdot}$ recurses structurally over them.}
     \label{fig:discretization-code}
 \end{figure*}
-This section presents local transformation rules for our type-directed discretization algorithm, with examples. Our goal is to compute, from a typed expression $e : \bool$ and its type annotations, a \emph{discretized} expression $\discretize{e : \bool} : \bool$ such that $e$ and $\discretize{e : \bool}$ are \emph{semantically equivalent}, i.e., they induce the same distribution. We refer to this intended semantics-preserving transformation as \emph{exact discretization}, to distinguish it from approaches~\cite{Garg2024BitBlast,Huang2021AQUA} that approximate continuous programs via externally chosen precision parameters. \Cref{thm:maintext:sound} states the resulting equality conditionally on the weak compiler-simulation obligation identified in the appendix; that obligation is not discharged by the current synchronous proof. Intuitively, when a program uses continuous quantities only through finitely many comparison outcomes, exact inference should reduce to a discrete problem, and exact discretization aims to make that reduction explicit.
+This section presents local transformation rules for our type-directed discretization algorithm, with examples. Our goal is to compute, from a typed expression $e : \bool$ and its type annotations, a \emph{discretized} expression $\discretize{e : \bool} : \bool$ such that $e$ and $\discretize{e : \bool}$ are \emph{semantically equivalent}, i.e., they induce the same distribution. We refer to this intended semantics-preserving transformation as \emph{exact discretization}, to distinguish it from approaches~\cite{Garg2024BitBlast,Huang2021AQUA} that approximate continuous programs via externally chosen precision parameters. The abstract exact-real transfer theorem identifies sufficient semantic premises for equality. Whether the \Slice{} transformation satisfies those premises remains conjectural. The OCaml/GSL binary64 artifact is not identified with the ideal exact-real target and is not certified by this theorem. Intuitively, when a program uses continuous quantities only through finitely many comparison outcomes, exact inference should reduce to a discrete problem, and exact discretization aims to make that reduction explicit.
 
-An impossible dispatch index or an invalid dynamic distribution tuple fails closed as
-$\diverge : \fin{|B|+1}$. Thus it has zero subprobability mass, matching the malformed
-source distribution rule, rather than mass at $\bot$. The implementation emits the
-core-language encoding $(\fixkw\;f\;u:=f\;u)\;()$, with fresh identifiers; it is
-well-typed at the required result type and uses only constructors in the generated-target
-carrier. By contrast, $\observekw\;\false$ denotes explicit observation failure and places
-mass at $\bot$. Runtime errors raised by unsupported backend operations are a separate
-implementation outcome and are not identified with either formal outcome.
+The displayed rules define the ideal exact-real target transformation. For a
+finite dispatcher, an index not represented by the enumerated arms, or an
+enumerated parameter tuple outside the formal domain of the sampler, takes the
+primitive target term $\diverge$. This is distinct from
+$\observekw\;\false$: the former contributes missing mass, whereas the latter
+produces explicit observation-failure mass at $\bot$.
 
-As shown in \Cref{fig:discretization-code}, $\discretize{e : \tau}$ is defined recursively on $e : \tau$ and its type annotations; we focus on continuous uniform distributions, with others handled analogously. The only sub-expressions replaced by $\discretize{\cdot}$ are float constants and sampling instructions. The rule schemata are local, but their selection and parameters come from globally inferred cut/value information; \Cref{sec:soundness} isolates the weak-simulation condition needed to show that this non-local, type-mediated construction preserves semantics. The implementation represents the finite equality emitted by the final rule as the same $\fineq{n}$ expression shown here: its type checker requires two $\fin{n}$ operands and its evaluator compares their finite indices. Thus the transformation, the formal target language, and the implementation use the same dispatch term. Before detailing the rules, we outline how type annotations guide discretization. The type system is designed so that every typed sub-expression of the form
+Correct branch selection additionally requires the reachable-value adequacy
+premise that every runtime parameter value belongs to its inferred value set.
+The final finite-equality guard rejects unmatched indices, but does not prove
+this adequacy premise.
+
+The OCaml emitter uses hygienic left-to-right bindings, nested
+parameter-by-parameter dispatch, and represents primitive divergence by
+$(\fixkw\;f\;u:=f\;u)\;()$. This PR does not prove that the literal emitted AST
+implements the ideal rule, nor that the recursive encoding is weakly cofinal
+with primitive divergence.
+
+\begin{lemma}[Typing of generated recursive divergence]
+\label{lem:generated-recursive-divergence-typing}
+For fresh $f,u$ and every type $\tau$,
+\[
+  \Gamma\vdash(\fixkw\;f\;u:=f\,u)\;():\tau.
+\]
+\end{lemma}
+
+\begin{proof}
+Under $f:\unit\to\tau$ and $u:\unit$, application gives $f\,u:\tau$.
+Hence \textsc{Fix} gives
+$\fixkw\;f\;u:=f\,u:\unit\to\tau$. The result follows from
+\textsc{Unit} and \textsc{App}.
+\end{proof}
+
+As shown in \Cref{fig:discretization-code}, $\discretize{e : \tau}$ is defined recursively on $e : \tau$ and its type annotations; we focus on continuous uniform distributions, with others handled analogously. The only sub-expressions replaced by $\discretize{\cdot}$ are float constants and sampling instructions. The rule schemata are local, but their selection and parameters come from globally inferred cut/value information; the appendix lists the outstanding compiler-simulation conjectures for this non-local, type-mediated construction. The implementation represents finite equality with the same $\fineq{n}$ core expression used by the ideal schema: its type checker requires two $\fin{n}$ operands and its evaluator compares their finite indices. This shared primitive does not by itself prove correspondence between the flattened schema and the emitter's nested dispatch. Before detailing the rules, we outline how type annotations guide discretization. The type system is designed so that every typed sub-expression of the form
 $e = \uniform(e_1, e_2 )$ of type $\float[B;V]$ with $B=\{\sim_1\!\!b_1, \ldots, \sim_n\!\!b_n\} \neq \top$
 %
 can be \emph{discretized} to an expression $e' : \fin{n+1}$ such that 
