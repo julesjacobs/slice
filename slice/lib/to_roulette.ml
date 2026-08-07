@@ -52,7 +52,7 @@ and string_of_expr_node ?(indent=0) (ExprNode expr_node) : string =
     | _ ->
       let e1_str = string_of_expr_indented ~indent:(indent+2) e1 in
       let e2_str = string_of_expr_indented ~indent e2 in
-      Printf.sprintf "(define %s %s)\n%s" x e1_str e2_str)
+      Printf.sprintf "(let ([%s %s]) %s)" x e1_str e2_str)
   | Sample dist_exp -> string_of_sample ~indent dist_exp
   | DistrCase cases ->
     (* Construct a chain of if-else statements containing flips to resemble the pmf *)

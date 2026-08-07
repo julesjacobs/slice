@@ -278,6 +278,10 @@ let test_dynamic_sampler_exports_to_all_backends _test_ctxt =
     (contains_substring roulette "(letrec ([_slice_diverge");
   assert_bool "Roulette must not embed a define inside an application"
     (not (contains_substring roulette "((define"));
+  assert_bool "Roulette must serialize ordinary bindings as local lets"
+    (contains_substring roulette "(let ([_disc_");
+  assert_bool "Roulette must not nest a generated define in a definition RHS"
+    (not (contains_substring roulette "(define x (define"));
   ignore (Slice.To_mc.to_mc transformed)
 
 let test_generated_binders_are_hygienic _test_ctxt =
