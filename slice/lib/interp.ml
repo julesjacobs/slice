@@ -234,4 +234,4 @@ and eval_dist env dist_exp =
        | _ -> raise (RuntimeError "Type error: two-argument distribution expects floats for cdistr conversion"))
 
 (* Entry point for evaluation with an empty environment *)
-let run e = eval [] e 
+let run e = eval [] e

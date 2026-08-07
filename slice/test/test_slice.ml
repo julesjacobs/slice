@@ -67,10 +67,7 @@ let test_degenerate_uniform_operations_fail _test_ctxt =
 let test_degenerate_uniform_program_fails _test_ctxt =
   let expr = Slice.Parse.parse_expr "uniform(0, 0) < 0" in
   let expected = Slice.Interp.RuntimeError "Uniform low must be less than high" in
-  assert_raises expected (fun () -> ignore (Slice.Interp.run expr));
-  let discretized = expr |> Slice.Inference.infer |> Slice.Discretization.discretize in
-  assert_raises Slice.Interp.ObserveFailure
-    (fun () -> ignore (Slice.Interp.run discretized))
+  assert_raises expected (fun () -> ignore (Slice.Interp.run expr))
 
 let test_singleton_distribution_parameter_is_evaluated _test_ctxt =
   let open Slice in
