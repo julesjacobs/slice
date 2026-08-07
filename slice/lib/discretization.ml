@@ -222,18 +222,23 @@ let discretize (e : texpr) : expr =
             | _ -> None
           in
 
-          (* Generated dispatch failures denote missing probability mass.  The
-             observation fails before the fallback is evaluated, while the
-             fallback gives the sequence the result type expected by the
-             surrounding dispatch.  This form is supported by every backend. *)
-          let fail_closed_with fallback =
-            ExprNode
-              (Seq
-                 (ExprNode (Observe (ExprNode (BoolConst false))), fallback))
-          in
-
+          (* Invalid source distribution parameters have zero subprobability
+             mass, rather than observation-failure mass.  Emit a hygienic,
+             well-typed divergent core term so the target has the same raw
+             subprobability marginal.  Sequencing is deliberately avoided:
+             it is not in the generated-core carrier used by the proof. *)
           let fail_closed_result () =
-            fail_closed_with (ExprNode (FinConst (0, overall_modulus)))
+            let function_name = fresh_generated "_slice_diverge" in
+            let parameter_name = fresh_generated "_slice_unit" in
+            let recur =
+              ExprNode
+                (FuncApp
+                   (ExprNode (Var function_name), ExprNode (Var parameter_name)))
+            in
+            ExprNode
+              (FuncApp
+                 (ExprNode (Fix (function_name, parameter_name, recur)),
+                  ExprNode Unit))
           in
           
           let rec build_nested_ifs (val_var_name: string) (param_modulus: int) (arms: (expr * expr) list) : expr =
@@ -247,7 +252,7 @@ let discretize (e : texpr) : expr =
                 ExprNode
                   (If
                     (condition, body_expr,
-                     fail_closed_with body_expr))
+                     fail_closed_result ()))
             | (target_finconst_expr, body_expr) :: rest_arms ->
               let current_val_expr = ExprNode (Var val_var_name) in
               let condition =

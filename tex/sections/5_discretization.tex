@@ -100,7 +100,7 @@
             \elsekw\; \ifkw\; v_1' \fineq{(|B_1|+1)} \discretize{v_n : \floattype{B_1}{V_1}} \\
             \quad \logand\; v_2' \fineq{(|B_2|+1)} \discretize{w_m : \floattype{B_2}{V_2}}\; \thenkw \\
             \quad\quad \discretize{\uniform(v_n, w_m) : \float[B;V]} \\
-            \elsekw\; (\observekw\;\false);\;\finconst{0}{|B|+1}
+            \elsekw\; \diverge : \fin{|B|+1}
           \end{array}$ \\
         \bottomrule
         \bottomrule
@@ -119,11 +119,13 @@
 This section presents local transformation rules for our type-directed discretization algorithm, with examples. Our goal is to compute, from a typed expression $e : \bool$ and its type annotations, a \emph{discretized} expression $\discretize{e : \bool} : \bool$ such that $e$ and $\discretize{e : \bool}$ are \emph{semantically equivalent}, i.e., they induce the same distribution. We refer to this intended semantics-preserving transformation as \emph{exact discretization}, to distinguish it from approaches~\cite{Garg2024BitBlast,Huang2021AQUA} that approximate continuous programs via externally chosen precision parameters. \Cref{thm:maintext:sound} states the resulting equality conditionally on the weak compiler-simulation obligation identified in the appendix; that obligation is not discharged by the current synchronous proof. Intuitively, when a program uses continuous quantities only through finitely many comparison outcomes, exact inference should reduce to a discrete problem, and exact discretization aims to make that reduction explicit.
 
 An impossible dispatch index or an invalid dynamic distribution tuple fails closed as
-$(\observekw\;\false);\;\finconst{0}{|B|+1}$. Observation failure discards that execution
-before the arbitrary finite fallback can be evaluated. This core-language term has zero
-mass in the interpreter, Dice, Roulette, and Storm. Explicit source-level runtime errors
-remain outside the generated target fragment and are rejected by backends that do not
-model them.
+$\diverge : \fin{|B|+1}$. Thus it has zero subprobability mass, matching the malformed
+source distribution rule, rather than mass at $\bot$. The implementation emits the
+core-language encoding $(\fixkw\;f\;u:=f\;u)\;()$, with fresh identifiers; it is
+well-typed at the required result type and uses only constructors in the generated-target
+carrier. By contrast, $\observekw\;\false$ denotes explicit observation failure and places
+mass at $\bot$. Runtime errors raised by unsupported backend operations are a separate
+implementation outcome and are not identified with either formal outcome.
 
 As shown in \Cref{fig:discretization-code}, $\discretize{e : \tau}$ is defined recursively on $e : \tau$ and its type annotations; we focus on continuous uniform distributions, with others handled analogously. The only sub-expressions replaced by $\discretize{\cdot}$ are float constants and sampling instructions. The rule schemata are local, but their selection and parameters come from globally inferred cut/value information; \Cref{sec:soundness} isolates the weak-simulation condition needed to show that this non-local, type-mediated construction preserves semantics. The implementation represents the finite equality emitted by the final rule as the same $\fineq{n}$ expression shown here: its type checker requires two $\fin{n}$ operands and its evaluator compares their finite indices. Thus the transformation, the formal target language, and the implementation use the same dispatch term. Before detailing the rules, we outline how type annotations guide discretization. The type system is designed so that every typed sub-expression of the form
 $e = \uniform(e_1, e_2 )$ of type $\float[B;V]$ with $B=\{\sim_1\!\!b_1, \ldots, \sim_n\!\!b_n\} \neq \top$

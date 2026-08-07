@@ -169,33 +169,36 @@ let test_empty_dispatch_domain_is_an_invariant_failure _test_ctxt =
         "Internal error: finite sample parameter lambda has no nonempty finite dispatch domain"
         message
 
-let rec contains_observe_false (Slice.Ast.ExprNode node) =
+let rec contains_recursive_divergence (Slice.Ast.ExprNode node) =
   let open Slice.Ast in
   match node with
-  | Observe (ExprNode (BoolConst false)) -> true
+  | FuncApp
+      ( ExprNode (Fix (f, x, ExprNode (FuncApp (ExprNode (Var f'), ExprNode (Var x'))))),
+        ExprNode Unit ) ->
+      f = f' && x = x'
   | Let (_, first, second) | And (first, second) | Or (first, second)
   | Pair (first, second) | FuncApp (first, second) | Assign (first, second)
   | Seq (first, second) | FinEq (first, second, _)
   | Cmp (_, first, second, _) | FinCmp (_, first, second, _, _)
   | Cons (first, second) ->
-      contains_observe_false first || contains_observe_false second
+      contains_recursive_divergence first || contains_recursive_divergence second
   | LoopApp (first, second, _) ->
-      contains_observe_false first || contains_observe_false second
+      contains_recursive_divergence first || contains_recursive_divergence second
   | If (condition, then_branch, else_branch) ->
-      contains_observe_false condition
-      || contains_observe_false then_branch
-      || contains_observe_false else_branch
+      contains_recursive_divergence condition
+      || contains_recursive_divergence then_branch
+      || contains_recursive_divergence else_branch
   | DistrCase cases ->
-      List.exists (fun (case, _) -> contains_observe_false case) cases
-  | Sample (Distr1 (_, parameter)) -> contains_observe_false parameter
+      List.exists (fun (case, _) -> contains_recursive_divergence case) cases
+  | Sample (Distr1 (_, parameter)) -> contains_recursive_divergence parameter
   | Sample (Distr2 (_, first, second)) ->
-      contains_observe_false first || contains_observe_false second
+      contains_recursive_divergence first || contains_recursive_divergence second
   | First child | Second child | Fun (_, child) | Not child | Observe child
-  | Ref child | Deref child | Fix (_, _, child) -> contains_observe_false child
+  | Ref child | Deref child | Fix (_, _, child) -> contains_recursive_divergence child
   | MatchList (value, nil_case, _, _, cons_case) ->
-      contains_observe_false value
-      || contains_observe_false nil_case
-      || contains_observe_false cons_case
+      contains_recursive_divergence value
+      || contains_recursive_divergence nil_case
+      || contains_recursive_divergence cons_case
   | Var _ | Const _ | BoolConst _ | FinConst _ | Nil | Unit
   | RuntimeError _ -> false
 
@@ -210,7 +213,7 @@ let test_final_dispatch_arm_fails_closed _test_ctxt =
        Ast.TAExprNode (Ast.Sample (Ast.Distr1 (Ast.DExponential, parameter))))
   in
   assert_bool "final dispatch arm must fail closed"
-    (contains_observe_false transformed)
+    (contains_recursive_divergence transformed)
 
 let test_final_dispatch_mismatch_has_zero_mass _test_ctxt =
   let open Slice in
@@ -230,10 +233,8 @@ let test_final_dispatch_mismatch_has_zero_mass _test_ctxt =
         Ast.TAExprNode
           (Ast.Sample (Ast.Distr1 (Ast.DExponential, mismatched_parameter))) )
   in
-  assert_bool "mismatched final dispatch must contain observation failure"
-    (contains_observe_false transformed);
-  assert_raises Interp.ObserveFailure
-    (fun () -> ignore (Interp.run transformed))
+  assert_bool "mismatched final dispatch must contain typed divergence"
+    (contains_recursive_divergence transformed)
 
 let valid_dynamic_uniform () =
   let open Slice in
