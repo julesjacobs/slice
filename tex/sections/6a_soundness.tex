@@ -10,9 +10,9 @@ fragment.  An unqualified typing judgment $e:\tau$ in this appendix therefore
 ranges over $Expr_\tau$. Source-only domains are written explicitly as
 $Expr^{\mathsf U}_{\mathrm{cl}}$.  We assume that capture-avoiding substitution,
 the transformation, and the small-step rules preserve closedness and typing,
-and that the fixed-skeleton decomposition applies to this carrier.  The
-small-step kernel conjecture below records the remaining global measurability
-premise.
+and that all-real-hole reconstruction covers this carrier.  Borelness of every
+admissible filling domain, typed substitution, and the small-step kernel remain
+explicit conjectures below.
 
 \subsection{Measure Theory Preliminaries}
 
@@ -205,7 +205,104 @@ for all $A \in \mathcal{F}_Y$.
 
 \subsection{Measure Space on Expressions}
 \label{app:measure_space_expressions}
-To make the probabilistic semantics precise, we construct an appropriate measure space structure on the operationally closed fragment by factoring out real numbers using the notion of what we call \emph{expression skeletons}.
+The carrier construction must factor out every exact-real atom, not only
+term-level float constants.  Otherwise real-valued weights or subtype
+annotations remain in the skeleton tag and the proposed skeleton index need
+not be countable.
+
+\begin{definition}[All-real-hole typed skeletons]
+	Fix a full annotated result type $\tau$.  An all-real-hole typed skeleton
+	is obtained from a canonical finite elaborated derivation concluding
+	$\vdash e:\tau$ by replacing every occurrence of an exact-real atom by a
+	fresh occurrence-indexed hole.  This includes term-level real literals, probabilities in
+	finite discrete choices, real cut boundaries, real members of finite
+	value-set annotations, and real atoms in the context, result type, and
+	intermediate typing annotations.  Every required equality between
+	occurrences is recorded as a constraint on their separate coordinates.
+
+	Write $\skel_\tau$ for the resulting finite skeletons for this fixed full
+	type $\tau$.  Skeleton tags retain constructors, rule names, de Bruijn indices,
+	natural-number arities, and hole indices, but no real numbers.  If
+	$s\in\skel_\tau$ has $m_s$ holes, let
+	\[
+		A_{s;\tau}\subseteq\mathbb R^{m_s}
+	\]
+	be the fillings satisfying all actual typing, annotation, and
+	transformation-side conditions, including reconstruction of exactly the
+	fixed conclusion type $\tau$, and write $s[\vec r]$ for reconstruction.
+	The canonical derivation and fresh occurrence-indexed policy give every
+	expression a unique skeleton tag and filling.
+\end{definition}
+
+\begin{lemma}[Countability of all-real-hole skeletons]
+	\label{lem:countable-all-real-skeletons}
+	For every fixed full annotated result type $\tau$, $\skel_\tau$ is
+	countable.
+\end{lemma}
+
+\begin{proof}
+	Finite trees over the countable alphabet of constructors, typing-rule
+	names, de Bruijn indices, natural-number arities, and hole indices form a
+	countable set.  No exact-real atom remains in a skeleton tag.
+\end{proof}
+
+\begin{conjecture}[Borel filling domains]
+	\label{conj:borel-filling-domains}
+	For every $s\in\skel_\tau$, the set $A_{s;\tau}$ is a Borel subset of
+	$\mathbb R^{m_s}$.
+\end{conjecture}
+
+This is a separate measure-theoretic obligation.  It requires enumerating the
+actual typing, annotation, and transformation-side conditions and proving that
+each induces a Borel constraint; it is not implied merely by
+$A_{s;\tau}\subseteq\mathbb R^{m_s}$.
+
+\begin{definition}[Fixed-skeleton carrier]
+	\label{def:sigma-algebra-construction-holes}
+	Give $A_{s;\tau}$ the subspace Borel $\sigma$-algebra
+	$\mathcal F_{s;\tau}$.  Define
+	\[
+		Expr_{s;\tau}=\{s[\vec r]\mid\vec r\in A_{s;\tau}\}
+	\]
+	and transport $\mathcal F_{s;\tau}$ along the reconstruction bijection to
+	obtain $\mathcal F_{Expr_{s;\tau}}$.
+\end{definition}
+
+\begin{lemma}[Fixed-skeleton isomorphism]
+	\label{lem:isomorphism}
+	Reconstruction $A_{s;\tau}\to Expr_{s;\tau}$ and decomposition
+	$Expr_{s;\tau}\to A_{s;\tau}$ are inverse measurable maps by the transported
+	$\sigma$-algebra.
+\end{lemma}
+
+\begin{definition}[Expression carrier]
+	\label{def:sigma-algebra-construction-expressions}
+	Define
+	\[
+		Expr_\tau=\bigsqcup_{s\in\skel_\tau}Expr_{s;\tau},
+		\qquad
+		\mathcal F_{Expr_\tau}
+		=\{A\mid
+		A\cap Expr_{s;\tau}\in\mathcal F_{Expr_{s;\tau}}
+		\text{ for every }s\in\skel_\tau\}.
+	\]
+\end{definition}
+
+\begin{lemma}[Conditional standard-Borel expression carrier]
+	\label{lem:measurable-expr-t}
+	If \Cref{conj:borel-filling-domains} holds for every $s\in\skel_\tau$,
+	then $Expr_\tau$ is a standard Borel space.
+\end{lemma}
+
+\begin{proof}
+	Each $A_{s;\tau}$ is then a standard Borel subspace of a
+	finite-dimensional Euclidean space, hence so is its isomorphic
+	fixed-skeleton carrier.  By
+	\Cref{lem:countable-all-real-skeletons}, $Expr_\tau$ is a countable
+	disjoint union of standard Borel spaces, which is standard Borel.
+\end{proof}
+
+\iffalse
 
 \begin{definition}[Expression Skeleton]
 	An expression skeleton $s$ is a syntactic expression in the operationally
@@ -569,6 +666,8 @@ This union is disjoint because every typed expression $e : \tau$ has a unique sk
 \end{proof}
 
 
+\fi
+
 \begin{definition}[Extension with error element]\label{def:meas-space-with-error}
 	Let $(Expr_\tau,\mathcal F_{Expr_\tau})$ be the measurable space of well-typed
 	operationally closed expressions of type $\tau$. Define
@@ -629,7 +728,7 @@ Finally, we can equip this measurable space $(Expr_{\tau} + \bot, \mathcal{F}_{E
 We give some basic lemmas:
 
 \begin{lemma}\label{lem:measurable-subsets}
-	Let $(Expr_{\tau} + \bot, \mathcal{F}_{Expr_{\tau} + \bot})$ be the Borel measurable space of well-typed operationally closed expressions with error from Definition~\ref{def:meas-space-with-error}. Let $\vals_{\tau} \subset Expr_{\tau}$ be the set of value expressions in this fragment. Let $N_{\tau} \subset Expr_{\tau}$, defined as $N = Expr_{\tau} \setminus \vals_{\tau}$, be the set of non-value expressions in this fragment. Let $\{\bot\}$ be the singleton set containing the error element $\bot$. The following are true:
+	Let $(Expr_{\tau} + \bot, \mathcal{F}_{Expr_{\tau} + \bot})$ be the measurable space of well-typed operationally closed expressions with error from Definition~\ref{def:meas-space-with-error}; it is standard Borel conditional on \Cref{conj:borel-filling-domains}. Let $\vals_{\tau} \subset Expr_{\tau}$ be the set of value expressions in this fragment. Let $N_{\tau} \subset Expr_{\tau}$, defined as $N = Expr_{\tau} \setminus \vals_{\tau}$, be the set of non-value expressions in this fragment. Let $\{\bot\}$ be the singleton set containing the error element $\bot$. The following are true:
 	\begin{enumerate}
 		\item\label{lem:measurable-vals} The set $\vals_{\tau} \in \mathcal{F}_{Expr_{\tau} + \bot}$.
 		\item\label{lem:measurable-error} The set $\{\bot\} \in \mathcal{F}_{Expr_{\tau} + \bot}$.
@@ -1189,7 +1288,9 @@ The missing probability mass in $\sem{e :\tau}$ is the probability of encounteri
 	For every occurrence of a monadic bind $\mu \monbind f$ in the small-step
 	operational semantics in~\Cref{tab:smallstep-1,tab:smallstep-2},
 	$f : Expr_{\tau_1} \to
-	\mathcal{D}(Expr_{\tau_2} + \bot)$ is a sub-Markov kernel.
+	\mathcal{D}(Expr_{\tau_2} + \bot)$ is a sub-Markov kernel.  This is the
+	ordinary continuation on $Expr_{\tau_1}$; strict bind supplies its bottom
+	extension $f_\bot$.
 \end{conjecture}
 
 The skeleton construction reduces this claim to measurability of the
@@ -1546,6 +1647,10 @@ and conditional selection.  A noncircular application of
 \Cref{thm:coherent-terminal-transfer,cor:collapsed-terminal-transfer} requires,
 for each type $\tau$:
 \begin{enumerate}
+	\item Borelness of every all-real-hole filling domain
+	$A_{s;\tau}$, as required by
+	\Cref{conj:borel-filling-domains}, and the resulting standard-Borel
+	expression carrier;
 	\item a measurable administrative normalizer $N_\tau$ that terminates on
 	generated administrative terms, and a measurable collapsed target kernel
 	$\overline S_\tau$ obtained from the ordinary target semantics through
@@ -1563,7 +1668,9 @@ for each type $\tau$:
 
 Under these premises, equal explicit observation-failure mass and equal
 aggregate missing mass are conclusions of the coherent transfer theorem, not
-simulation assumptions.
+simulation assumptions.  The finite-step marginal equalities and their
+terminal-limit transfer are likewise conclusions of
+\Cref{thm:coherent-terminal-transfer}, not additional conjecture premises.
 
 \begin{conjecture}[Weak-simulation exactness]
 	\label{thm:contextual-equivalence}

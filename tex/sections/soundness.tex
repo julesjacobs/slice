@@ -67,26 +67,20 @@ over the set of type-annotated expressions of type $\tau$ and $\bot$. All detail
 on these measure-theoretic constructions are presented in
 \Cref{app:measure_space_expressions}. Let us consider the key idea here.
 
-Let $\tau=\bool$ for the sake of concreteness. Care must be taken since, e.g., sub-expressions of type $\floattype{B}{\{3.5,4.5\}}$ cannot evaluate to \emph{arbitrary} reals but are restricted to the values $\{3.5,4.5\}$. We tackle this by extracting from each type-annotated expression a suitable \emph{skeleton}, where float constants are replaced by \enquote{holes} (hence the term \enquote{skeleton}). For instance, the expression
-%
-\[
-	e \quad = \quad (x : \floattype{\{\clt{3.5}, \clt{4.5}\}}{\top}
-	\;<\;
-	y : \floattype{\{\clt{3.5}, \clt{4.5}\}}{\{3.5,4.5 \}})
-	: \bool
-\]
-%
-%
-gives rise to the skeleton
-%
-\[
-	s \quad = \quad (\square : \floattype{\{\clt{3.5}, \clt{4.5}\}}{\top}
-	\;<\;
-	\square : \floattype{\{\clt{3.5}, \clt{4.5}\}}{\{3.5,4.5 \}})
-	: \bool
-\]
-%
-and the type annotations tell us that the possible values these holes can be filled with are in $\Reals \times \{3.5,4.5 \}$. Subject to the carrier and skeleton-decomposition assumptions above, the measurable space over closed, well-typed operational expressions of type $\bool$ (i.e., over $Expr^{\mathsf U+}_{\bool,\mathrm{cl}}$) is obtained from the measurable spaces of the skeletons that give rise to expressions in $Expr^{\mathsf U+}_{\bool,\mathrm{cl}}$.
+For each fixed full result type $\tau$, the appendix uses canonical
+all-real-hole typed skeletons.  Every occurrence of an exact-real atom gets a
+fresh coordinate: not only term-level float literals, but also discrete
+weights, cut boundaries, finite value-set members, and real atoms in all typing
+annotations, including the conclusion type.  Required equality between
+coordinates and reconstruction of exactly $\tau$ are imposed in the filling
+domain.  The remaining skeleton tags are therefore countable finite syntax,
+and the occurrence-indexed policy gives a unique tag and filling.  For each skeleton $s$, its admissible filling set
+$A_{s;\tau}\subseteq\mathbb R^{m_s}$ records the actual typing, annotation, and
+transformation-side conditions.  Conditional on the explicit obligation that
+every such set is Borel, the countable disjoint union of the fixed-skeleton
+spaces is a standard Borel carrier for
+$Expr^{\mathsf U+}_{\tau,\mathrm{cl}}$.  The paper does not infer Borelness
+merely from containment in Euclidean space.
 
 Equipped with this family of measurable spaces, we define the small-step functional $\sem{\cdot}$ in the expected, type-preserving manner (cf.\ \Cref{tab:smallstep-1,tab:smallstep-2}). For instance, if $e_1$ is not a value, then\footnote{Put formally, $(\mu \gg\!= f)(A) = \int f(x)(A) \cdot \mu(dx)$, see \Cref{def:dist-monad} for details. $\dirac{e}$ denotes the Dirac distribution of $e$.}
 %
