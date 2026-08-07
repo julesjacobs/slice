@@ -1,9 +1,13 @@
 \section{Operational Semantics and Soundness}
 \label{sec:soundness}%
 %
-The intended soundness statement is that, for every expression $e:\bool$,
-possibly including \emph{continuous sampling, higher-order functions,
-recursion, and conditioning},
+The intended soundness statement concerns the \emph{uniform fragment}: the
+syntax in \Cref{fig:grammar} without sequencing, non-strict comparisons,
+finite comparisons in source programs, or continuous samplers other than
+$\uniform$. Write $Expr^{\mathsf U}_\tau$ for its well-typed expressions and
+$Expr^{\mathsf U+}_\tau$ for the generated-target operational closure. The
+program-level statement is restricted to closed
+$e:\bool\in Expr^{\mathsf U}_\bool$:
 %
 \begin{center}
 	\emph{$e: \bool$ and $\discretize{e : \bool}:\bool$ (obtained from \Cref{fig:discretization-code}) are semantically equivalent.}
@@ -111,10 +115,10 @@ which is well-defined by the monotone convergence theorem: the sequence $(\bigse
 We state the intended result conditionally on the weak-coupling obligations
 that remain to be proved.
 %
-\begin{theorem}[Conditional contextual equivalence]
+\begin{theorem}[Conditional closed Boolean outcome preservation]
 	\label{thm:maintext:sound}
 	Under \Cref{ass:weak-coupling-interface,ass:terminal-weak-coupling-limit},
-	if $e:\bool$, then
+	if $e:\bool\in Expr^{\mathsf U}_\bool$ is closed, then
 	$\bigsem{e:\bool}=\bigsem{\discretize{e:\bool}:\bool}$.
 \end{theorem}
 %
