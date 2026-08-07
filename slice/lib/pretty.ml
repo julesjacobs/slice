@@ -434,6 +434,8 @@ type sppl_state = {
   mutable next_var : int;
 }
 
+let sppl_float value = Printf.sprintf "%.17g" value
+
 let fresh_sppl_var state =
   state.next_var <- state.next_var + 1;
   Printf.sprintf "x%d" state.next_var
@@ -480,73 +482,85 @@ let rec translate_to_sppl (env : (string * string) list) ?(target_var:string opt
         | Distr2 (DUniform, a, b) ->
             let a = assert_float_const a in
             let b = assert_float_const b in
-            Printf.sprintf "%s ~= uniform(loc=%f, scale=%f)" assign_var a (b -. a)
+            Printf.sprintf "%s ~= uniform(loc=%s, scale=%s)"
+              assign_var (sppl_float a) (sppl_float (b -. a))
         | Distr2 (DGaussian, mu, sigma) ->
             let mu = assert_float_const mu in
             let sigma = assert_float_const sigma in
-            Printf.sprintf "%s ~= normal(loc=%f, scale=%f)" assign_var mu sigma
+            Printf.sprintf "%s ~= norm(loc=%s, scale=%s)"
+              assign_var (sppl_float mu) (sppl_float sigma)
         | Distr1 (DExponential, rate) -> 
             let rate = assert_float_const rate in
-            Printf.sprintf "%s ~= exponential(scale=%f)" assign_var (1.0 /. rate) (* SPPL scale = 1/rate *)
+            Printf.sprintf "%s ~= expon(scale=%s)"
+              assign_var (sppl_float (1.0 /. rate))
         | Distr2 (DBeta, alpha, beta_param) -> 
             let alpha = assert_float_const alpha in
             let beta_val = assert_float_const beta_param in
-            Printf.sprintf "%s ~= beta(a=%f, b=%f)" assign_var alpha beta_val
+            Printf.sprintf "%s ~= beta(a=%s, b=%s)"
+              assign_var (sppl_float alpha) (sppl_float beta_val)
         | Distr2 (DLogNormal, mu, sigma) -> 
             let mu = assert_float_const mu in
             let sigma = assert_float_const sigma in
-            Printf.sprintf "%s ~= lognormal(mu=%f, sigma=%f)" assign_var mu sigma
+            Printf.sprintf "%s ~= lognorm(s=%s, scale=%s)"
+              assign_var (sppl_float sigma) (sppl_float (Float.exp mu))
         | Distr2 (DGamma, shape, scale) ->
             let shape = assert_float_const shape in
             let scale = assert_float_const scale in
-            Printf.sprintf "%s ~= gamma(shape=%f, scale=%f)" assign_var shape scale
+            Printf.sprintf "%s ~= gamma(a=%s, scale=%s)"
+              assign_var (sppl_float shape) (sppl_float scale)
         | Distr1 (DLaplace, scale) ->
             let scale = assert_float_const scale in
-            Printf.sprintf "%s ~= laplace(loc=0, scale=%f)" assign_var scale (* Assuming loc=0 if not specified *)
+            Printf.sprintf "%s ~= laplace(loc=0, scale=%s)" assign_var (sppl_float scale)
         | Distr1 (DCauchy, scale) ->
             let scale = assert_float_const scale in
-            Printf.sprintf "%s ~= cauchy(loc=0, scale=%f)" assign_var scale (* Assuming loc=0 *)
+            Printf.sprintf "%s ~= cauchy(loc=0, scale=%s)" assign_var (sppl_float scale)
         | Distr1 (DTDist, nu) ->
             let nu = assert_float_const nu in
-            Printf.sprintf "%s ~= t(df=%f)" assign_var nu
+            Printf.sprintf "%s ~= t(df=%s)" assign_var (sppl_float nu)
         | Distr1 (DChi2, nu) ->
             let nu = assert_float_const nu in
-            Printf.sprintf "%s ~= chi2(df=%f)" assign_var nu
+            Printf.sprintf "%s ~= chi2(df=%s)" assign_var (sppl_float nu)
         | Distr1 (DLogistic, scale) ->
             let scale = assert_float_const scale in
-            Printf.sprintf "%s ~= logistic(loc=0, scale=%f)" assign_var scale (* Assuming loc=0 *)
+            Printf.sprintf "%s ~= logistic(loc=0, scale=%s)" assign_var (sppl_float scale)
         | Distr1 (DRayleigh, sigma) ->
             let sigma = assert_float_const sigma in
-            Printf.sprintf "%s ~= rayleigh(scale=%f)" assign_var sigma
+            Printf.sprintf "%s ~= rayleigh(scale=%s)" assign_var (sppl_float sigma)
         | Distr2 (DWeibull, a, b) ->
             let scale = assert_float_const a in
             let exponent = assert_float_const b in
-            Printf.sprintf "%s ~= weibull_min(c=%f, scale=%f)" assign_var exponent scale
+            Printf.sprintf "%s ~= weibull_min(c=%s, scale=%s)"
+              assign_var (sppl_float exponent) (sppl_float scale)
         | Distr2 (DPareto, a, b) ->
             let exponent = assert_float_const a in
             let scale = assert_float_const b in
-            Printf.sprintf "%s ~= pareto(b=%f, scale=%f)" assign_var exponent scale
+            Printf.sprintf "%s ~= pareto(b=%s, scale=%s)"
+              assign_var (sppl_float exponent) (sppl_float scale)
         | Distr2 (DGumbel1, a, b) ->
             let a_val = assert_float_const a in
             let b_val = assert_float_const b in
-            Printf.sprintf "%s ~= gumbel_r(loc=%f, scale=%f)"
-              assign_var (Float.log b_val /. a_val) (1.0 /. a_val)
+            Printf.sprintf "%s ~= gumbel_r(loc=%s, scale=%s)"
+              assign_var (sppl_float (Float.log b_val /. a_val))
+                (sppl_float (1.0 /. a_val))
         | Distr2 (DGumbel2, a, b) ->
             let exponent = assert_float_const a in
             let coefficient = assert_float_const b in
-            Printf.sprintf "%s ~= invweibull(c=%f, scale=%f)"
-              assign_var exponent (coefficient ** (1.0 /. exponent))
+            Printf.sprintf "%s ~= invweibull(c=%s, scale=%s)"
+              assign_var (sppl_float exponent)
+                (sppl_float (coefficient ** (1.0 /. exponent)))
         | Distr2 (DExppow, a, b) ->
             let scale = assert_float_const a in
             let exponent = assert_float_const b in
-            Printf.sprintf "%s ~= gennorm(beta=%f, scale=%f)" assign_var exponent scale
+            Printf.sprintf "%s ~= gennorm(beta=%s, scale=%s)"
+              assign_var (sppl_float exponent) (sppl_float scale)
         | Distr1 (DPoisson, mu) ->
             let mu = assert_float_const mu in
-            Printf.sprintf "%s ~= poisson(mu=%f)" assign_var mu
+            Printf.sprintf "%s ~= poisson(mu=%s)" assign_var (sppl_float mu)
         | Distr2 (DBinomial, p, n) ->
             let p_val = assert_float_const p in
             let n_val = assert_float_const n in
-            Printf.sprintf "%s ~= binom(n=%f, p=%f)" assign_var n_val p_val
+            Printf.sprintf "%s ~= binom(n=%s, p=%s)"
+              assign_var (sppl_float n_val) (sppl_float p_val)
       in
       ([stmt], assign_var)
   | Ast.ExprNode(DistrCase cases) ->
@@ -561,7 +575,7 @@ let rec translate_to_sppl (env : (string * string) list) ?(target_var:string opt
             | Ast.ExprNode(BoolConst _) -> sub_res_expr 
             | _ -> failwith "DistrCase expects constant expressions for SPPL choice keys (in pretty.ml)"
           in
-          (acc @ sub_stmts, Printf.sprintf "%s: %f" key_str prob)
+          (acc @ sub_stmts, Printf.sprintf "%s: %s" key_str (sppl_float prob))
         ) [] cases
       in
       let choice_dict = "{" ^ (String.concat ", " dict_items) ^ "}" in

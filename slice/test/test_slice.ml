@@ -16,27 +16,37 @@ let assert_sppl source expected =
 
 let test_sppl_weibull _test_ctxt =
   assert_sppl "weibull(2, 3)"
-    "model ~= weibull_min(c=3.000000, scale=2.000000)"
+    "model ~= weibull_min(c=3, scale=2)"
 
 let test_sppl_pareto _test_ctxt =
   assert_sppl "pareto(2, 3)"
-    "model ~= pareto(b=2.000000, scale=3.000000)"
+    "model ~= pareto(b=2, scale=3)"
 
 let test_sppl_gumbel1 _test_ctxt =
   assert_sppl "gumbel1(2, 4)"
-    "model ~= gumbel_r(loc=0.693147, scale=0.500000)"
+    "model ~= gumbel_r(loc=0.69314718055994529, scale=0.5)"
 
 let test_sppl_gumbel2 _test_ctxt =
   assert_sppl "gumbel2(2, 4)"
-    "model ~= invweibull(c=2.000000, scale=2.000000)"
+    "model ~= invweibull(c=2, scale=2)"
 
 let test_sppl_exppow _test_ctxt =
   assert_sppl "exppow(2, 3)"
-    "model ~= gennorm(beta=3.000000, scale=2.000000)"
+    "model ~= gennorm(beta=3, scale=2)"
 
 let test_sppl_binomial _test_ctxt =
   assert_sppl "binomial(0.25, 8)"
-    "model ~= binom(n=8.000000, p=0.250000)"
+    "model ~= binom(n=8, p=0.25)"
+
+let test_sppl_scipy_names_and_parameters _test_ctxt =
+  assert_sppl "gaussian(0.12345678901234566, 1.2345678901234567)"
+    "model ~= norm(loc=0.12345678901234566, scale=1.2345678901234567)";
+  assert_sppl "exponential(3)"
+    "model ~= expon(scale=0.33333333333333331)";
+  assert_sppl "lognormal(0.6931471805599453, 0.12345678901234566)"
+    "model ~= lognorm(s=0.12345678901234566, scale=2)";
+  assert_sppl "gamma(1.2345678901234567, 2.3456789012345678)"
+    "model ~= gamma(a=1.2345678901234567, scale=2.3456789012345678)"
 
 (* Test suite *) 
 let suite = 
@@ -49,6 +59,7 @@ let suite =
      "test_sppl_gumbel2" >:: test_sppl_gumbel2;
      "test_sppl_exppow" >:: test_sppl_exppow;
      "test_sppl_binomial" >:: test_sppl_binomial;
+     "test_sppl_scipy_names_and_parameters" >:: test_sppl_scipy_names_and_parameters;
     ]
 
 (* Main test runner *) 
