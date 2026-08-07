@@ -36,27 +36,24 @@ let test_coincident_cut_indices _test_ctxt =
   assert_equal 2 (index 1.5)
 
 let test_coincident_cut_atomic_masses _test_ctxt =
-  let cuts = Slice.Lats.CutSet.elements coincident_cuts in
   let probs =
-    Slice.Discretization.interval_probabilities cuts
+    Slice.Discretization.interval_probabilities coincident_cuts
       (Slice.Distributions.Binomial (0.5, 2))
   in
   assert_float_list [0.25; 0.5; 0.25] probs
 
 let test_coincident_cut_continuous_masses _test_ctxt =
-  let cuts = Slice.Lats.CutSet.elements coincident_cuts in
   let probs =
-    Slice.Discretization.interval_probabilities cuts
+    Slice.Discretization.interval_probabilities coincident_cuts
       (Slice.Distributions.Uniform (0.0, 2.0))
   in
   assert_float_list [0.5; 0.0; 0.5] probs
 
 let test_coincident_cut_degenerate_uniform_masses _test_ctxt =
-  let cuts = Slice.Lats.CutSet.elements coincident_cuts in
   assert_raises (Invalid_argument "Uniform low must be less than high")
     (fun () ->
       ignore
-        (Slice.Discretization.interval_probabilities cuts
+        (Slice.Discretization.interval_probabilities coincident_cuts
            (Slice.Distributions.Uniform (1.0, 1.0))))
 
 let test_integer_cdf_threshold_safety _test_ctxt =
@@ -80,7 +77,7 @@ let test_nonfinite_cuts_are_rejected _test_ctxt =
       assert_raises (Invalid_argument "Cut boundaries must be finite")
         (fun () ->
           ignore
-            (Discretization.interval_probabilities [cut]
+            (Discretization.interval_probabilities (Lats.CutSet.singleton cut)
                (Distributions.Uniform (0.0, 1.0)))))
     [Lats.Less infinity; Lats.LessEq neg_infinity; Lats.Less nan]
 
@@ -209,12 +206,13 @@ let test_discrete_rejects_nonfinite _test_ctxt =
     [[nan; 1.0]; [infinity; 0.0]; [neg_infinity; 1.0]]
 
 let test_discrete_rejects_unrepresentable_prefix _test_ctxt =
-  assert_raises
-    (Failure
-       "Discrete distribution contains a positive weight that cannot be represented cumulatively")
-    (fun () ->
-      ignore
-        (Slice.Ast.normalize_probability_weights [1.0; 1e-20; 0.0]))
+  List.iter
+    (fun weights ->
+      assert_raises
+        (Failure
+           "Discrete distribution contains a positive weight that cannot be represented cumulatively")
+        (fun () -> ignore (Slice.Ast.normalize_probability_weights weights)))
+    [[1.0; 1e-20; 0.0]; [1.0; 1e-20]]
 
 let test_generated_tolerance_is_capped _test_ctxt =
   assert_equal 1e-6 (Slice.Ast.probability_sum_tolerance Slice.Ast.Generated 100_000)

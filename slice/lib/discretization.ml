@@ -32,7 +32,9 @@ let cumulative_probability_at_cut (dist : Distributions.cdistr) = function
 (* CutSet.elements uses the canonical tagged-cut order from Lats.compare_cut.
    Taking differences of these cumulative probabilities therefore gives the
    mass of each interval, including singleton intervals between <c and <=c. *)
-let interval_probabilities (cuts : Lats.cut list) (dist : Distributions.cdistr) : float list =
+let interval_probabilities (cut_set : Lats.CutSet.t)
+    (dist : Distributions.cdistr) : float list =
+  let cuts = Lats.CutSet.elements cut_set in
   List.iter Lats.validate_cut cuts;
   let cumulative = List.map (cumulative_probability_at_cut dist) cuts in
   let rec differences previous = function
@@ -132,7 +134,7 @@ let discretize (e : texpr) : expr =
           if overall_modulus <= 0 then failwith "Internal error: Sample modulus must be positive";
 
           let final_expr_producer (concrete_distr : Distributions.cdistr) : expr =
-            let probs = interval_probabilities outer_cuts concrete_distr in
+            let probs = interval_probabilities outer_cut_set concrete_distr in
             let distr_cases =
               List.mapi
                 (fun i prob -> (ExprNode (FinConst (i, overall_modulus)), prob))
