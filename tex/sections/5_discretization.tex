@@ -110,7 +110,7 @@
 \end{figure*}
 This section presents local transformation rules for our type-directed discretization algorithm, with examples. Our goal is to compute, from a typed expression $e : \bool$ and its type annotations, a discretized expression $\discretize{e : \bool} : \bool$ that induces the same distribution. We call this intended equality \emph{exact discretization}, to distinguish it from externally parameterized approximations~\cite{Garg2024BitBlast,Huang2021AQUA}. The general equality is conditional on the open weak-simulation obligation in \Cref{sec:soundness}; the local rules alone do not establish it. The artifact additionally realizes interval masses numerically rather than as exact reals.
 
-As shown in \Cref{fig:discretization-code}, $\discretize{e : \tau}$ is defined recursively on $e : \tau$ and its type annotations; we focus on continuous uniform distributions, with others handled analogously. The only sub-expressions replaced by $\discretize{\cdot}$ are float constants and sampling instructions. The rule schemata are local, but their selection and parameters come from globally inferred cut/value information. \Cref{sec:soundness} proves preservation for a strict finite comparison fragment and states the open weak-simulation obligation needed for the general result. Before detailing the rules, we outline how type annotations guide discretization. The type system is designed so that every typed sub-expression of the form
+As shown in \Cref{fig:discretization-code}, $\discretize{e : \tau}$ is defined recursively on $e : \tau$ and its type annotations. The formal rule and proof here cover the strict uniform family; the implementation exposes additional distribution-specific CDF paths that are not covered by this theorem. The only sub-expressions replaced by $\discretize{\cdot}$ are float constants and sampling instructions. The rule schemata are local, but their selection and parameters come from globally inferred cut/value information. \Cref{sec:soundness} proves preservation for a strict finite comparison fragment and states the open weak-simulation obligation needed for the general result. Before detailing the rules, we outline how type annotations guide discretization. The type system is designed so that every typed sub-expression of the form
 $e = \uniform(e_1, e_2 )$ of type $\float[B;V]$ with $B=\{\sim_1\!\!b_1, \ldots, \sim_n\!\!b_n\} \neq \top$
 %
 can be \emph{discretized} to an expression $e' : \fin{n+1}$ such that 
@@ -212,7 +212,7 @@ A similar intuition applies to discretizable comparisons $e_1 < e_2$, where \emp
         (if discrete(0.5, 0.5) <#2 1#2 then 0#3 else 1#3)
     \end{lstlisting}
 	%
-		Notice that the probability of $e_1$ evaluating to some value in $(-\infty, 2.5]$ indeed \emph{coincides} with the probability of the discretization of $e_1$ evaluating to $\finconst{0}{3}$. For $e_2$, on the other hand, the probability of it evaluating to $2.5$ (resp.\ $3.5$) \emph{coincides} with the probability of its discretization evaluating to $\finconst{0}{3}$ (resp.\ $\finconst{1}{3}$). For this reason, we obtain a semantically equivalent discretization of $e_1 \leq e_2$.
+		The displayed interval masses explain why the corresponding outcomes are paired: $e_1$ assigns the stated mass to $(-\infty,2.5]$, while $e_2$ assigns its point masses to $2.5$ and $3.5$. The claim that the complete non-strict mixed comparison is semantically equivalent to the displayed target remains conditional on the open weak-simulation obligation.
 \end{example}
 
 
