@@ -17,10 +17,9 @@ the semantics of its elaborated core expression from
 elaboration; it does not add a surface-syntax case to the operational semantics
 or prove a separate correspondence with some independently defined surface
 semantics. The first step is to make formal sense of semantic equivalence. For
-that, we define a monadic operational semantics in \Cref{sec:opsem}. The
-currently discharged proof covers the stated strict finite comparison
-fragment. Extending it to every core expression requires a weak simulation
-obligation; that obligation remains open. Discretization decisions
+that, we define a monadic operational semantics in \Cref{sec:opsem}. The full
+compiler theorem requires a weak simulation obligation; that obligation
+remains open. Discretization decisions
 are driven by non-local, type-propagated information, so the missing argument
 cannot be replaced by a local rule-by-rule proof.
 %
