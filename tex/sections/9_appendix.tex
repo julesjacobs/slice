@@ -732,6 +732,11 @@ topological support, including boundary points that may themselves have zero
 mass.  Parameters are required to be finite in addition to satisfying the
 displayed domain.  A source-level call outside its domain raises a runtime
 error; the typing rules alone do not establish these dynamic premises.
+The implementation's Poisson sampler returns a C \texttt{unsigned int}.
+Because a nondegenerate Poisson law has unbounded support, this binary64/GSL
+sampling path has no end-to-end range or overflow guarantee, even for a finite
+mean.  This is an uncertified implementation limitation; it is not part of the
+exact-real semantics or the strict-uniform soundness theorem.
 
 For a distribution with law $\mu$, discretization assigns the canonical cell $\intervals{B}_k$ the mass
 \[
@@ -754,6 +759,7 @@ location--scale constructors.  For comparison, GSL's Gumbel-I parameters
 correspond to location $\mu=\log(b)/a$ and scale $1/a$, and its Gumbel-II law
 is a Fr\'echet law with shape $a$ and scale $b^{1/a}$.
 
+\clearpage
 \begin{figure*}[t]
 \small
 \setlength{\tabcolsep}{4pt}
@@ -781,7 +787,7 @@ is a Fr\'echet law with shape $a$ and scale $b^{1/a}$.
     \texttt{exppow($a,b$)} & $\frac{1}{2a\Gamma(1+1/b)}e^{-(|x|/a)^b}$ & $\mathbb R$ & Scale $a>0$; exponent $b>0$ \\
     \midrule
     \texttt{poisson($\mu$)} & $e^{-\mu}\mu^k/k!$ & $\mathbb N_0$ if $\mu>0$; $\{0\}$ if $\mu=0$ & Mean $\mu\geq0$ \\
-    \texttt{binomial($p,n$)} & $\binom nk p^k(1-p)^{n-k}$ & $\{0,\ldots,n\}$, with endpoint degeneracies & $0\leq p\leq1$; integer $0\leq n\leq2^{32}-1$ \\
+    \texttt{binomial($p,n$)} & $\binom nk p^k(1-p)^{n-k}$ & $\{0,\ldots,n\}$, with endpoint degeneracies & $0\leq p\leq1$; integer $0\leq n\leq\min(2^{32}-1,\texttt{max\_int})$ \\
     \bottomrule
 \end{tabularx}
 \caption{Implemented scalar distribution laws and dynamic parameter domains.
