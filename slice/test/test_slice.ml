@@ -201,6 +201,11 @@ let test_uniform_cdf_handles_extreme_finite_bounds _test_ctxt =
   assert_equal 0.5 (cdf 0.0);
   assert_equal 1.0 (cdf max_float)
 
+let test_uniform_cdf_rejects_nan_query _test_ctxt =
+  let dist = Slice.Distributions.Uniform (0.0, 1.0) in
+  assert_raises (Invalid_argument "CDF is undefined at NaN")
+    (fun () -> ignore (Slice.Distributions.cdistr_cdf dist nan))
+
 let test_uniform_requires_finite_bounds _test_ctxt =
   let non_finite_bounds =
     [ (nan, 1.0); (0.0, nan);
@@ -262,6 +267,7 @@ let suite =
      "uniform_requires_strict_bounds" >:: test_uniform_requires_strict_bounds;
      "uniform_cdf_is_clamped" >:: test_uniform_cdf_is_clamped;
      "uniform_cdf_handles_extreme_finite_bounds" >:: test_uniform_cdf_handles_extreme_finite_bounds;
+     "uniform_cdf_rejects_nan_query" >:: test_uniform_cdf_rejects_nan_query;
      "uniform_requires_finite_bounds" >:: test_uniform_requires_finite_bounds;
      "degenerate_uniform_operations_fail" >:: test_degenerate_uniform_operations_fail;
      "degenerate_uniform_program_fails" >:: test_degenerate_uniform_program_fails;
