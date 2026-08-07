@@ -127,18 +127,24 @@ records the exact missing obligation.
 %
 \begin{proposition}[Conditional exactness]
 	\label{thm:maintext:sound}
-	Assume the operational measurability obligations and the weak
-	compiler-simulation obligation stated in the appendix, including equality
-	of terminal Boolean and observation-failure mass.  Let $e:\bool$. Then
+	Let $e:\bool\in Expr^{\mathsf U}_\bool$ be closed. Assume the operational
+	measurability obligations, a measurable weak target kernel, and a measurable
+	weak coupling whose marginals are the source step and target weak step.
+	Assume generated administrative reduction is normalizing, the restrictions
+	of the coupling iterates to terminal related outcomes have an increasing
+	limit, and the target projection of that limit is the ordinary target
+	terminal semantics. If related terminal Boolean values agree and the
+	coupling preserves observation-failure mass, then
 	$\bigsem{e:\bool} = \bigsem{\discretize{e:\bool} : \bool}$.
 \end{proposition}
 %
-The weak simulation supplies a coupling of the increasing terminal
-restrictions whose terminal support is contained in
-$\{(\true,\true),(\false,\false),\bot\}$.  Component pushforward commutes
-eventwise with the terminal limit, so the two limiting measures agree on
-$\true$, $\false$, and~$\bot$.  The required weak simulation has not yet been
-established for the literal emitted core term.
+Under these terminal-limit compatibility premises, the limiting coupling has
+the two ordinary terminal semantics as its component pushforwards. Agreement
+of related terminal Booleans and preservation of observation-failure mass make
+the pushforwards agree on $\true$, $\false$, and~$\bot$. The required weak
+simulation, administrative-normalization proof, and terminal-limit
+compatibility theorem have not yet been established for the literal emitted
+core term.
 
 \iffalse
 The following is the earlier synchronous argument.  It is retained only as

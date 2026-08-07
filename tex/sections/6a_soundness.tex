@@ -975,20 +975,13 @@ on this measurable space.
 \label{app:small-step}
 \input{figures/sem_smallstep}
 
-Throughout this section, we denote by $e :\tau$ a well-typed expression of type $\tau$ and implicitly assume that all sub-expressions are annotated with types, as well. Moreover, for the typed expression $ e: \tau = \uniform(e_1 : \float[B_1; V_1], e_2 :\float[B_2;V_2]) : \float[B,V]$ with $B,B_1,B_2 \neq \top$ and $V_1,V_2\neq\top$, we introduce an auxiliary statement $\dc$ and let 
-%
-\[
-	\discretize{ e: \tau} = \dc(\discretize{e_1 : \float[B_1; V_1]}, \discretize{e_2 :\float[B_2;V_2]})~.
-\]
-%
-We define the semantics of $\dc$ in such a way that it behaves like the discretized program in the last case of \Cref{fig:discretization-code} but resolves the let-bindings and the conditional choices in a single step, which will simplify our proof. We equip this statement with the following typing rule :
-%
-\begin{align*}
-	\inferrule[\textsc{TDiscreteCase}]
-	{e_1 : \fin{|B_1| + 1} \\
-		e_2 : \fin{|B_2| + 1} \\ \distinguishes{B_1}{V_1} \\ \distinguishes{B_2}{V_2}}
-	{\dc(e_1, e_2) : \fin{|B|+1}}
-\end{align*}
+Throughout this section, $e:\tau$ denotes a well-typed expression whose
+subexpressions are fully type annotated. The dynamic-parameter transformation
+in \Cref{fig:discretization-code} denotes the displayed nest of core-language
+let-bindings, conditionals, Boolean conjunctions, finite equalities, and a
+discrete choice. No auxiliary one-step dispatch constructor is added to the
+language. The historical synchronous coupling below is disabled because its
+proof-only $\dc$ constructor does not describe the literal emitted target.
 
  
 %
