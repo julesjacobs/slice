@@ -85,8 +85,8 @@ let validate_cdistr = function
   | TDist x -> require_positive "TDist nu" x
   | Chi2 x -> require_positive "Chi2 nu" x
   | Logistic x -> require_positive "Logistic scale" x
-  | Gumbel1 (a, b) -> require_finite "Gumbel1 a" a; require_positive "Gumbel1 b" b
-  | Gumbel2 (a, b) -> require_finite "Gumbel2 a" a; require_positive "Gumbel2 b" b
+  | Gumbel1 (a, b) -> require_positive "Gumbel1 a" a; require_positive "Gumbel1 b" b
+  | Gumbel2 (a, b) -> require_positive "Gumbel2 a" a; require_positive "Gumbel2 b" b
   | Rayleigh x -> require_positive "Rayleigh sigma" x
   | Exppow (a, b) -> require_positive "Exppow a" a; require_positive "Exppow b" b
   | Poisson mu ->
@@ -248,32 +248,20 @@ let string_of_two_arg_dist_kind (kind: Ast.two_arg_dist_kind) : string =
   | Ast.DBinomial    -> "binomial"
 
 let get_cdistr_from_single_arg_kind (kind: Ast.single_arg_dist_kind) (arg1: float) : (cdistr, string) result =
-  match kind with
-  | Ast.DExponential -> 
-      if arg1 <= 0.0 then Error "Exponential lambda must be positive"
-      else Ok (Exponential arg1)
-  | Ast.DLaplace -> 
-      if arg1 <= 0.0 then Error "Laplace scale must be positive"
-      else Ok (Laplace arg1)
-  | Ast.DCauchy -> 
-      if arg1 <= 0.0 then Error "Cauchy scale must be positive"
-      else Ok (Cauchy arg1)
-  | Ast.DTDist -> 
-      if arg1 <= 0.0 then Error "TDist nu must be positive"
-      else Ok (TDist arg1)
-  | Ast.DChi2 -> 
-      if arg1 <= 0.0 then Error "Chi2 nu must be positive"
-      else Ok (Chi2 arg1)
-  | Ast.DLogistic -> 
-      if arg1 <= 0.0 then Error "Logistic scale must be positive"
-      else Ok (Logistic arg1)
-  | Ast.DRayleigh -> 
-      if arg1 <= 0.0 then Error "Rayleigh sigma must be positive"
-      else Ok (Rayleigh arg1)
-  | Ast.DPoisson -> 
-      if classify_float arg1 = FP_nan || classify_float arg1 = FP_infinite || arg1 < 0.0 then
-        Error "Poisson mu must be finite and non-negative"
-      else Ok (Poisson arg1)
+  let dist =
+    match kind with
+    | Ast.DExponential -> Exponential arg1
+    | Ast.DLaplace -> Laplace arg1
+    | Ast.DCauchy -> Cauchy arg1
+    | Ast.DTDist -> TDist arg1
+    | Ast.DChi2 -> Chi2 arg1
+    | Ast.DLogistic -> Logistic arg1
+    | Ast.DRayleigh -> Rayleigh arg1
+    | Ast.DPoisson -> Poisson arg1
+  in
+  match validate_cdistr dist with
+  | () -> Ok dist
+  | exception Invalid_argument msg -> Error msg
 
 let get_cdistr_from_two_arg_kind (kind: Ast.two_arg_dist_kind) (arg1: float) (arg2: float) : (cdistr, string) result =
   match kind with
@@ -281,33 +269,24 @@ let get_cdistr_from_two_arg_kind (kind: Ast.two_arg_dist_kind) (arg1: float) (ar
       (match validate_uniform_bounds arg1 arg2 with
        | Ok () -> Ok (Uniform (arg1, arg2))
        | Error _ as error -> error)
-  | Ast.DGaussian -> 
-      if arg2 <= 0.0 then Error "Gaussian sigma must be positive"
-      else Ok (Gaussian (arg1, arg2))
-  | Ast.DBeta -> 
-      if arg1 <= 0.0 || arg2 <= 0.0 then Error "Beta alpha and beta_param must be positive"
-      else Ok (Beta (arg1, arg2))
-  | Ast.DLogNormal -> 
-      if arg2 <= 0.0 then Error "LogNormal sigma must be positive"
-      else Ok (LogNormal (arg1, arg2))
-  | Ast.DGamma -> 
-      if arg1 <= 0.0 || arg2 <= 0.0 then Error "Gamma shape and scale must be positive"
-      else Ok (Gamma (arg1, arg2))
-  | Ast.DPareto -> 
-      if arg1 <= 0.0 || arg2 <= 0.0 then Error "Pareto a and b must be positive"
-      else Ok (Pareto (arg1, arg2))
-  | Ast.DWeibull -> 
-      if arg1 <= 0.0 || arg2 <= 0.0 then Error "Weibull a and b must be positive"
-      else Ok (Weibull (arg1, arg2))
-  | Ast.DGumbel1 -> 
-      if arg2 <= 0.0 then Error "Gumbel1 b must be positive"
-      else Ok (Gumbel1 (arg1, arg2))
-  | Ast.DGumbel2 -> 
-      if arg2 <= 0.0 then Error "Gumbel2 b must be positive"
-      else Ok (Gumbel2 (arg1, arg2))
-  | Ast.DExppow -> 
-      if arg1 <= 0.0 || arg2 <= 0.0 then Error "Exppow a and b must be positive"
-      else Ok (Exppow (arg1, arg2))
+  | (Ast.DGaussian | Ast.DBeta | Ast.DLogNormal | Ast.DGamma | Ast.DPareto
+    | Ast.DWeibull | Ast.DGumbel1 | Ast.DGumbel2 | Ast.DExppow) as kind ->
+      let dist =
+        match kind with
+        | Ast.DGaussian -> Gaussian (arg1, arg2)
+        | Ast.DBeta -> Beta (arg1, arg2)
+        | Ast.DLogNormal -> LogNormal (arg1, arg2)
+        | Ast.DGamma -> Gamma (arg1, arg2)
+        | Ast.DPareto -> Pareto (arg1, arg2)
+        | Ast.DWeibull -> Weibull (arg1, arg2)
+        | Ast.DGumbel1 -> Gumbel1 (arg1, arg2)
+        | Ast.DGumbel2 -> Gumbel2 (arg1, arg2)
+        | Ast.DExppow -> Exppow (arg1, arg2)
+        | Ast.DUniform | Ast.DBinomial -> assert false
+      in
+      (match validate_cdistr dist with
+       | () -> Ok dist
+       | exception Invalid_argument msg -> Error msg)
   | Ast.DBinomial -> 
       if classify_float arg1 = FP_nan || arg1 < 0.0 || arg1 > 1.0 then
         Error "Binomial p must be between zero and one"

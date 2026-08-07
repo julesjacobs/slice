@@ -724,7 +724,16 @@ let bf_final = search_before_full init in
 
 \section{List of Supported \Slicebf\xspace Distributions}\label{appen:supported-distributions}
 
-The list of scalar ordered distributions implemented by \Slice{}, along with their probability density / mass functions, is given in the following table. For a distribution with law $\mu$, discretization assigns the canonical cell $\intervals{B}_k$ the mass
+The scalar ordered distributions implemented by \Slice{} are specified below.
+Continuous rows give densities with respect to Lebesgue measure; discrete rows
+give probability mass functions with respect to counting measure.  A displayed
+density is zero outside the stated region.  The support column gives the
+topological support, including boundary points that may themselves have zero
+mass.  Parameters are required to be finite in addition to satisfying the
+displayed domain.  A source-level call outside its domain raises a runtime
+error; the typing rules alone do not establish these dynamic premises.
+
+For a distribution with law $\mu$, discretization assigns the canonical cell $\intervals{B}_k$ the mass
 \[
     p_k = \mu(\intervals{B}_k).
 \]
@@ -736,36 +745,50 @@ uniform family; they do not by themselves prove semantic preservation for the
 Poisson or binomial implementation paths. Extending the theorem requires an
 additional sampling case based on the tagged cumulative masses above.
 
-\begin{figure}[h]
-\begin{tabular}{l l @{\qquad} l l}
+The one-argument Laplace, Cauchy, Student-$t$, and logistic constructors are
+centered at zero.  The exponential argument is a rate, while the gamma second
+argument is a scale.  The names $a,b$ in the Pareto, Weibull, and Gumbel rows
+follow the GSL routines called by the implementation.  In particular,
+\texttt{gumbel1} and \texttt{gumbel2} are GSL parameterizations rather than
+location--scale constructors.  For comparison, GSL's Gumbel-I parameters
+correspond to location $\mu=\log(b)/a$ and scale $1/a$, and its Gumbel-II law
+is a Fr\'echet law with shape $a$ and scale $b^{1/a}$.
+
+\begin{figure*}[t]
+\small
+\setlength{\tabcolsep}{4pt}
+\renewcommand{\arraystretch}{1.05}
+\begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{.18\textwidth} >{\raggedright\arraybackslash}p{.35\textwidth} >{\raggedright\arraybackslash}p{.14\textwidth} >{\raggedright\arraybackslash}p{.27\textwidth}@{}}
     \toprule
-    \textbf{Distribution} & \textbf{Density} & \textbf{Distribution} & \textbf{Density} \\
+    \textbf{Source constructor} & \textbf{Density or PMF} & \textbf{Support} & \textbf{Parameter domain and convention} \\
     \midrule
-    Exponential & $\lambda e^{-\lambda x}$ 
-        & Uniform & $\frac{1}{b-a}\mathbf{1}_{[a,b]}(x)$, $a<b$ \\
-    Laplace & $\frac{1}{2b} e^{-\frac{|x - \mu|}{b}}$ 
-        & Gaussian & $\frac{1}{\sqrt{2\pi}\sigma} e^{-\frac{(x - \mu)^2}{2\sigma^2}}$ \\
-    Cauchy & $\frac{1}{\pi \gamma \left[1 + \left(\frac{x - x_0}{\gamma}\right)^2\right]}$ 
-        & Beta & $\frac{x^{\alpha - 1}(1 - x)^{\beta - 1}}{B(\alpha, \beta)}$ \\
-    Student-T & $c \left(1 + \frac{x^2}{\nu} \right)^{-\frac{\nu + 1}{2}}$ 
-        & LogNormal & $\frac{1}{x\sigma \sqrt{2\pi}} e^{-\frac{(\ln x - \mu)^2}{2\sigma^2}}$ \\
-    Chi-squared & $\frac{1}{2^{k/2} \Gamma(k/2)} x^{k/2 - 1} e^{-x/2}$ 
-        & Gamma & $\frac{\beta^\alpha}{\Gamma(\alpha)} x^{\alpha - 1} e^{-\beta x}$ \\
-    Logistic & $\frac{e^{-(x - \mu)/s}}{s(1 + e^{-(x - \mu)/s})^2}$ 
-        & Pareto & $\frac{\alpha x_m^\alpha}{x^{\alpha + 1}}$ \\
-    Rayleigh & $\frac{x}{\sigma^2} e^{-x^2 / (2\sigma^2)}$ 
-        & Weibull & $\frac{k}{\lambda} \left( \frac{x}{\lambda} \right)^{k-1} e^{-(x/\lambda)^k}$ \\
-    & & Gumbel-1 & $\frac{1}{\beta} e^{-(z + e^{-z})}$,\quad $z = \frac{x - \mu}{\beta}$ \\
-    & & Gumbel-2 & $\frac{\alpha \beta x^{-\alpha - 1} e^{-(x/\beta)^{-\alpha}}}{\beta}$ \\
-    & & Exponentiated Power & $\frac{1}{2a\,\Gamma(1+1/b)} e^{-(|x|/a)^b}$ \\
+    \texttt{exponential($\lambda$)} & $\lambda e^{-\lambda x}$ & $[0,\infty)$ & Rate $\lambda>0$ \\
+    \texttt{uniform($a,b$)} & $\frac{1}{b-a}\mathbf{1}_{[a,b)}(x)$ & $[a,b]$ & Endpoints $a<b$ \\
+    \texttt{laplace($b$)} & $\frac{1}{2b}e^{-|x|/b}$ & $\mathbb R$ & Centered; scale $b>0$ \\
+    \texttt{gaussian($\mu,\sigma$)} & $\frac{1}{\sqrt{2\pi}\sigma}e^{-(x-\mu)^2/(2\sigma^2)}$ & $\mathbb R$ & Location $\mu\in\mathbb R$; standard deviation $\sigma>0$ \\
+    \texttt{cauchy($\gamma$)} & $\frac{\gamma}{\pi(x^2+\gamma^2)}$ & $\mathbb R$ & Centered; scale $\gamma>0$ \\
+    \texttt{beta($\alpha,\beta$)} & $\frac{x^{\alpha-1}(1-x)^{\beta-1}}{B(\alpha,\beta)}$ & $[0,1]$ & Shapes $\alpha,\beta>0$ \\
+    \texttt{tdist($\nu$)} & $\frac{\Gamma((\nu+1)/2)}{\sqrt{\nu\pi}\,\Gamma(\nu/2)}(1+x^2/\nu)^{-(\nu+1)/2}$ & $\mathbb R$ & Centered; degrees of freedom $\nu>0$ \\
+    \texttt{lognormal($\mu,\sigma$)} & $\frac{1}{x\sigma\sqrt{2\pi}}e^{-(\log x-\mu)^2/(2\sigma^2)}$ & $[0,\infty)$ & Log-location $\mu\in\mathbb R$; log-scale $\sigma>0$ \\
+    \texttt{chi2($\nu$)} & $\frac{x^{\nu/2-1}e^{-x/2}}{2^{\nu/2}\Gamma(\nu/2)}$ & $[0,\infty)$ & Real degrees of freedom $\nu>0$ \\
+    \texttt{gamma($\alpha,\theta$)} & $\frac{x^{\alpha-1}e^{-x/\theta}}{\Gamma(\alpha)\theta^\alpha}$ & $[0,\infty)$ & Shape $\alpha>0$; scale $\theta>0$ \\
+    \texttt{logistic($s$)} & $\frac{e^{-x/s}}{s(1+e^{-x/s})^2}$ & $\mathbb R$ & Centered; scale $s>0$ \\
+    \texttt{pareto($a,b$)} & $a b^a x^{-a-1}$ & $[b,\infty)$ & GSL shape $a>0$; threshold/scale $b>0$ \\
+    \texttt{rayleigh($\sigma$)} & $\frac{x}{\sigma^2}e^{-x^2/(2\sigma^2)}$ & $[0,\infty)$ & Scale $\sigma>0$ \\
+    \texttt{weibull($a,b$)} & $\frac{b}{a}(x/a)^{b-1}e^{-(x/a)^b}$ & $[0,\infty)$ & GSL scale $a>0$; exponent $b>0$ \\
+    \texttt{gumbel1($a,b$)} & $a b\,e^{-(b e^{-a x}+a x)}$ & $\mathbb R$ & GSL parameters $a,b>0$ \\
+    \texttt{gumbel2($a,b$)} & $a b\,x^{-a-1}e^{-b x^{-a}}$ & $[0,\infty)$ & GSL shape $a>0$; coefficient $b>0$ \\
+    \texttt{exppow($a,b$)} & $\frac{1}{2a\Gamma(1+1/b)}e^{-(|x|/a)^b}$ & $\mathbb R$ & Scale $a>0$; exponent $b>0$ \\
     \midrule
-    \multicolumn{4}{l}{\textbf{Discrete Distributions}} \\
-    \midrule
-    Poisson & $\frac{\lambda^k e^{-\lambda}}{k!}$ 
-        & Binomial & $\binom{n}{k} p^k (1 - p)^{n - k}$ \\
+    \texttt{poisson($\mu$)} & $e^{-\mu}\mu^k/k!$ & $\mathbb N_0$ if $\mu>0$; $\{0\}$ if $\mu=0$ & Mean $\mu\geq0$ \\
+    \texttt{binomial($p,n$)} & $\binom nk p^k(1-p)^{n-k}$ & $\{0,\ldots,n\}$, with endpoint degeneracies & $0\leq p\leq1$; integer $0\leq n\leq2^{32}-1$ \\
     \bottomrule
-\end{tabular}
-\end{figure}
+\end{tabularx}
+\caption{Implemented scalar distribution laws and dynamic parameter domains.
+The binomial support is $\{0\}$ when $n=0$ or $p=0$, and $\{n\}$ when
+$p=1$; otherwise it is $\{0,\ldots,n\}$.}
+\label{fig:implemented-distribution-laws}
+\end{figure*}
 
     
     

@@ -175,6 +175,56 @@ let test_direct_atomic_constructors_are_validated_everywhere _test_ctxt =
     (Invalid_argument "Binomial p must be between zero and one");
   check (Binomial (0.5, -1))
     (Invalid_argument "Binomial n is outside the GSL unsigned-int range")
+
+let test_distribution_parameter_domains _test_ctxt =
+  let open Slice in
+  let invalid1 kind x =
+    assert_bool "single-argument constructor must reject its parameter"
+      (Result.is_error (Distributions.get_cdistr_from_single_arg_kind kind x))
+  in
+  let invalid2 kind x y =
+    assert_bool "two-argument constructor must reject its parameters"
+      (Result.is_error (Distributions.get_cdistr_from_two_arg_kind kind x y))
+  in
+  List.iter (invalid1 Ast.DExponential) [0.0; -1.0; nan; infinity];
+  List.iter (invalid1 Ast.DLaplace) [0.0; nan; infinity];
+  List.iter (invalid1 Ast.DCauchy) [0.0; nan; infinity];
+  List.iter (invalid1 Ast.DTDist) [0.0; nan; infinity];
+  List.iter (invalid1 Ast.DChi2) [0.0; nan; infinity];
+  List.iter (invalid1 Ast.DLogistic) [0.0; nan; infinity];
+  List.iter (invalid1 Ast.DRayleigh) [0.0; nan; infinity];
+  invalid2 Ast.DGaussian nan 1.0;
+  invalid2 Ast.DGaussian 0.0 nan;
+  invalid2 Ast.DBeta nan 1.0;
+  invalid2 Ast.DLogNormal infinity 1.0;
+  invalid2 Ast.DGamma 1.0 infinity;
+  invalid2 Ast.DPareto 1.0 nan;
+  invalid2 Ast.DWeibull infinity 1.0;
+  List.iter
+    (fun (a, b) -> invalid2 Ast.DGumbel1 a b)
+    [(0.0, 1.0); (-1.0, 1.0); (nan, 1.0); (1.0, infinity)];
+  List.iter
+    (fun (a, b) -> invalid2 Ast.DGumbel2 a b)
+    [(0.0, 1.0); (-1.0, 1.0); (nan, 1.0); (1.0, infinity)];
+  invalid2 Ast.DExppow 1.0 nan;
+  assert_equal (Ok (Distributions.Gumbel2 (2.0, 9.0)))
+    (Distributions.get_cdistr_from_two_arg_kind Ast.DGumbel2 2.0 9.0);
+  assert_bool "Gumbel-II uses the GSL coefficient parameterization"
+    (abs_float
+       (Distributions.cdistr_cdf (Distributions.Gumbel2 (2.0, 9.0)) 3.0
+        -. exp (-1.0))
+     < 1e-12);
+  assert_bool "Gumbel-I uses the GSL parameterization"
+    (abs_float
+       (Distributions.cdistr_cdf
+          (Distributions.Gumbel1 (2.0, 9.0)) (log 9.0 /. 2.0)
+        -. exp (-1.0))
+     < 1e-12);
+  let expected = Invalid_argument "Gumbel2 a must be positive" in
+  let malformed = Distributions.Gumbel2 (0.0, 1.0) in
+  assert_raises expected (fun () -> ignore (Distributions.cdistr_cdf malformed 1.0));
+  assert_raises expected (fun () -> ignore (Distributions.cdistr_sample malformed))
+
 let assert_invalid_discrete source =
   match Slice.Parse.parse_expr source with
   | _ -> assert_failure ("Expected invalid discrete weights: " ^ source)
@@ -343,6 +393,7 @@ let suite =
      "test_atomic_parameter_domains" >:: test_atomic_parameter_domains;
      "direct atomic constructors are validated everywhere" >::
        test_direct_atomic_constructors_are_validated_everywhere;
+     "distribution parameter domains" >:: test_distribution_parameter_domains;
      "test_discrete_weights" >:: test_discrete_weights;
      "test_discrete_rejects_nonfinite" >:: test_discrete_rejects_nonfinite;
      "test_discrete_rejects_unrepresentable_prefix" >::
