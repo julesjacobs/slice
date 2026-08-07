@@ -58,22 +58,21 @@ gives rise to the skeleton
 %
 and the type annotations tell us that the possible values these holes can be filled with are in $\Reals \times \{3.5,4.5 \}$. We can thus inherit a measurable space over all well-typed expressions arising from this particular skeleton $s$ from the standard Borel measurable space over $\Reals \times \{3.5,4.5 \}$. The measurable space over \emph{all} well-typed expressions of type $\bool$ (i.e., over $Expr_\bool$) is then obtained from the measurable spaces of \emph{all} skeletons that give rise to expressions of type $\bool$.
 
-Equipped with this family of measurable spaces, we define the small-step functional $\sem{\cdot}$ in the expected, type-preserving manner (cf.\ \Cref{tab:smallstep-1,tab:smallstep-2}). For instance, if $e_1$ is not a value, then\footnote{Put formally, $(\mu \gg\!= f)(A) = \int f(x)(A) \cdot \mu(dx)$, see \Cref{def:dist-monad} for details. $\dirac{e}$ denotes the Dirac distribution of $e$.}
+Equipped with this family of measurable spaces, we define the small-step functional $\sem{\cdot}$ in the expected, type-preserving manner (cf.\ \Cref{tab:smallstep-1,tab:smallstep-2}). For instance, if $e_1$ is not a value, then\footnote{Put formally, for a sub-Markov kernel $f:X\to\mathcal D(Y+\bot)$, $(\mu \gg\!= f)(A)=\int_{X+\bot}f_\bot(x)(A)\,\mu(dx)$, where $f_\bot(\bot)=\delta_\bot$; see \Cref{def:dist-monad}. $\dirac{e}$ denotes the Dirac distribution of $e$.}
 %
 \[
 	\sem{(\letkw \; x = e_1 : \tau_1 \; \inkw \; e_2 : \tau_2) : \tau_2}
 	\quad~{}={}~
-	\underbrace{\sem{ e_1 : \tau_1 } \gg\!=  \lambda g. 
-		\begin{cases}
-			\dirac{\bot} & \text{if $g=\bot$} \\
-		\dirac{(\letkw \; x = g \; \inkw \; e_2 : \tau_2) : \tau_2} & \text{otherwise}~.
-		\end{cases}
-	}_{\text{standard probabilistic monadic bind over suitable Markov kernels}}~,
+	\underbrace{\sem{ e_1 : \tau_1 } \gg\!=  \lambda g.
+		\dirac{(\letkw \; x = g \; \inkw \; e_2 : \tau_2) : \tau_2}
+	}_{\text{strict sub-Markov bind with an ordinary-input continuation}}~,
 \]
 %
 i.e., $\sem{ e_1 : \tau_1}$ yields the sub-distribution over expressions obtained from executing $e_1$ for \emph{one step}, and the monadic bind $\gg\!=$ \enquote{folds} this distribution into the surrounding $\letkw$-statement. The intuition for the remaining statements is analogous. Crucially, $\gg\!=$ propagates the probability of encountering $\bot$ --- an observation failure --- through executions. For instance, assume that $e_1$ from above is given by $\observekw\; (\false : \bool)  : \unit$. Since $e_1$ encounters an observation failure with probability $1$, i.e., $\sem{\observekw\; (\false : \bool)  : \unit}(\{\bot\}) = 1$, the same holds for the surrounding $\letkw$-statement, i.e., also $\sem{(\letkw \; x = e_1 : \tau_1 \; \inkw \; e_2 : \tau_2) : \tau_2}(\{\bot\})=1$.
 %
-All details --- including proofs that all monadic binds are well-behaved since they operate on suitable Markov kernels --- are provided in \Cref{app:small-step}.
+The appendix defines this strict bind by extending its ordinary-input
+continuation canonically at $\bot$. The remaining measurability obligations
+for the small-step kernel are stated explicitly there.
 
 \subsubsection{From Small-Step to Big-Step Semantics}
 \label{sec:smallsem_to_bigsem}
@@ -93,13 +92,20 @@ We now define $\bigsem{\cdot}$ via $\sem{\cdot}$. For that, we first lift the on
 		\end{cases} 
 \end{align*}
 %
-This construction is well-defined since the functional $\sem{\cdot}$ itself gives rise to a suitable Markov kernel (\Cref{lem:small-step-kernel}). We then define for every type $\tau$ the functional $\bigsem{\cdot}\colon Expr_\tau \to \mathcal{D}(Vals_\tau + \bot)$ as 
+Conditional on \Cref{lem:small-step-kernel}, this construction uses a suitable
+sub-Markov kernel. The ordinary terminal-limit construction and its
+countable-additivity proof are supplied by the separate terminal-limit repair.
+It defines for every type $\tau$ the functional
+$\bigsem{\cdot}\colon Expr_\tau \to \mathcal{D}(Vals_\tau + \bot)$ by
 %
 $
 	\bigsem{e:\tau} = \lambda A. \lim_{n\to\infty} \bigsemstep{e:\tau}{n}(A)~,
 $
 % 
-which is well-defined by the monotone convergence theorem: the sequence $(\bigsemstep{e : \tau}{n})_{n\in\Nats}$ is monotonically increasing for every measurable set $A$ over $Vals_\tau + \bot$ (cf.\ \Cref{lem:bigstepsem}) and upper-bounded by $1$: executing a program for more and more steps can only increase the probability of terminating in a given set of values or an observation failure.
+where $A$ ranges over the terminal subspace $Vals_\tau+\bot$. The terminal
+restrictions, rather than the full expression-space measures, increase
+eventwise. This branch relies on that separate proof and does not claim that
+the full finite-step measures are monotone.
 
 %
 %\kbin{old}
