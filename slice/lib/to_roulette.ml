@@ -130,6 +130,15 @@ and string_of_expr_node ?(indent=0) (ExprNode expr_node) : string =
     let e2_str = string_of_expr_indented ~indent e2 in
     Printf.sprintf "(%s %s)" e1_str e2_str *)
 
+  | FuncApp
+      ( ExprNode
+          (Fix
+             ( f,
+               x,
+               ExprNode (FuncApp (ExprNode (Var f'), ExprNode (Var x'))) )),
+        ExprNode Unit )
+    when f = f' && x = x' ->
+      Printf.sprintf "(letrec ([%s (lambda () (%s))]) (%s))" f f f
   | FuncApp (e1, e2) ->
     (* Flatten a left-nested application: ((f a) b) -> (f a b) *)
     let rec collect_args acc = function

@@ -256,10 +256,28 @@ let valid_dynamic_uniform () =
   let second = (second_type, Ast.TAExprNode (Ast.Const 2.0)) in
   Discretization.discretize (two_parameter_sample first second)
 
+let contains_substring haystack needle =
+  let haystack_length = String.length haystack in
+  let needle_length = String.length needle in
+  let rec search offset =
+    offset + needle_length <= haystack_length
+    && (String.sub haystack offset needle_length = needle || search (offset + 1))
+  in
+  needle_length = 0 || search 0
+
 let test_dynamic_sampler_exports_to_all_backends _test_ctxt =
+  Slice.Util.var_counter := 0;
   let transformed = valid_dynamic_uniform () in
-  ignore (Slice.To_dice.string_of_expr transformed);
-  ignore (Slice.To_roulette.string_of_expr transformed);
+  let dice = Slice.To_dice.string_of_expr transformed in
+  let roulette = Slice.To_roulette.string_of_expr transformed in
+  assert_bool "Dice must hoist generated recursive divergence"
+    (contains_substring dice "fun _slice_diverge");
+  assert_bool "Dice must not emit unsupported fix-expression syntax"
+    (not (contains_substring dice "fix "));
+  assert_bool "Roulette must bind generated recursive divergence as an expression"
+    (contains_substring roulette "(letrec ([_slice_diverge");
+  assert_bool "Roulette must not embed a define inside an application"
+    (not (contains_substring roulette "((define"));
   ignore (Slice.To_mc.to_mc transformed)
 
 let test_generated_binders_are_hygienic _test_ctxt =

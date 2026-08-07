@@ -2,6 +2,8 @@ open Ast
 open Lats (* Open Bags to get FloatSet and access Set modules and Bound type *)
 module Util = Util
 
+let generated_divergence_functions = ref []
+
 let extract_fin_modulus (ExprNode e) : int option =
   match e with
   | FinConst (_, k) -> Some k
@@ -110,6 +112,16 @@ and string_of_expr_node ?(indent=0) (ExprNode expr_node) : string =
   | Fun (x, e) ->
       let e_str = string_of_expr_indented ~indent:(indent+2) e in
       Printf.sprintf "fun %s -> %s" x e_str
+  | FuncApp
+      ( ExprNode
+          (Fix
+             ( f,
+               x,
+               ExprNode (FuncApp (ExprNode (Var f'), ExprNode (Var x'))) )),
+        ExprNode Unit )
+    when f = f' && x = x' ->
+      generated_divergence_functions := f :: !generated_divergence_functions;
+      Printf.sprintf "%s()" f
   | FuncApp (e1, e2) -> Printf.sprintf "%s(%s)" (string_of_expr_indented ~indent e1) (string_of_expr_indented ~indent e2)
   | LoopApp (e1, e2, n) -> Printf.sprintf "iterate(%s,%s,%d)" (string_of_expr_indented ~indent e1) (string_of_expr_indented ~indent e2) n
   | FinConst (k, n) -> 
@@ -295,6 +307,16 @@ and string_of_ty = function
   | TRef t -> Printf.sprintf "%s ref" (string_of_ty t)
   | TMeta r -> (match !r with Known t -> string_of_ty t | Unknown _ -> "?")
 
-let string_of_expr expr = string_of_expr_indented expr 
+let string_of_expr expr =
+  generated_divergence_functions := [];
+  let body = string_of_expr_indented expr in
+  let definitions =
+    !generated_divergence_functions
+    |> List.sort_uniq String.compare
+    |> List.map (fun f -> Printf.sprintf "fun %s() { %s() }" f f)
+  in
+  match definitions with
+  | [] -> body
+  | _ -> String.concat "\n" definitions ^ "\n" ^ body
 let string_of_texpr texpr = string_of_texpr_indented texpr
 let string_of_aexpr aexpr = string_of_aexpr_indented aexpr
