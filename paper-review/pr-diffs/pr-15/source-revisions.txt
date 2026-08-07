@@ -1,0 +1,3 @@
+base branch: jujacobs/a12-canonical-cut-intervals
+base: 1e25f0772affe0d3807e7e30008bf033ceb47832
+head: aad350ee30978486030eed7071c0684609126a60
