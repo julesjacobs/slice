@@ -1127,9 +1127,17 @@ The missing probability mass in $\sem{e :\tau}$ is the probability of encounteri
     Hence $\mathrm{Sub}_{e,x}$ is measurable.
 \end{proof}
 
-\begin{lemma}[Monadic bind is a Markov kernel]\label{lem:bind-kernel}
-	For every occurrence of a monadic bind $\mu \monbind f$ given in the small-step operational semantics in~\Cref{tab:smallstep-1,tab:smallstep-2}, $f : (Expr_{\tau_1} + \bot) \to \mathcal{D}(Expr_{\tau_2} + \bot)$ is a Markov kernel.
-\end{lemma}
+\begin{conjecture}[Measurability of operational contexts]\label{lem:bind-kernel}
+	For every occurrence of a monadic bind $\mu \monbind f$ in the small-step
+	operational semantics in~\Cref{tab:smallstep-1,tab:smallstep-2},
+	$f : Expr_{\tau_1}\to\mathcal{D}(Expr_{\tau_2}+\bot)$ is a sub-Markov
+	kernel; its strict extension supplies the required behavior at $\bot$.
+\end{conjecture}
+
+The omitted proof requires a complete measurable case analysis over the
+operational contexts.
+
+\iffalse
 
 \begin{proof}
 	We first prove that $f : Expr_{\tau_1} \to \mathcal{D}(Expr_{\tau_2} + \bot)$ is a Markov kernel. Let $e$ be an expression whose evaluation rule contains a monadic bind $\mu \monbind f$. We proceed by case analysis on $e$:
@@ -1282,10 +1290,16 @@ The missing probability mass in $\sem{e :\tau}$ is the probability of encounteri
 	\end{itemize}
 	By~\Cref{lem:bot-extension-kernel}, the $\bot$-extension $f_\bot \colon (Expr_{\tau_1} + \bot) \to \mathcal{D}(Expr_{\tau_2} + \bot)$ is also a Markov kernel, as required.
 \end{proof}
+\fi
 
-\begin{lemma}[Small-step semantics is a Markov kernel]\label{lem:small-step-kernel}
-    For each type $\tau$, the small-step operational semantics $\sem{\cdot} \colon Expr_{\tau} \to \mathcal{D}(Expr_{\tau} + \bot)$ defines a Markov kernel.
-\end{lemma}
+\begin{conjecture}[Small-step measurability]\label{lem:small-step-kernel}
+    For each type $\tau$, the small-step operational semantics $\sem{\cdot} \colon Expr_{\tau} \to \mathcal{D}(Expr_{\tau} + \bot)$ defines a sub-Markov kernel.
+\end{conjecture}
+
+This additionally requires measurability of parameterized sampler kernels and
+of the case partition used by the small-step tables.
+
+\iffalse
 \begin{proof}
     By induction on the typing derivation of $e : \tau$. We show in each case that the map $e \mapsto \sem{e : \tau}$ is a Markov kernel.
 
@@ -1338,11 +1352,17 @@ The missing probability mass in $\sem{e :\tau}$ is the probability of encounteri
 		\item All other cases are analogous.
 	\end{itemize}
 \end{proof}
+\fi
 
 
 
 
 
+
+\subsection{Compiler-simulation status}
+The preceding operational semantics supports the intended exact-real theorem only after a measurable weak simulation is supplied. For the literal generated target this requires a terminating measurable administrative normalizer, a measurable relation containing the initial pair, one coherent joint sub-Markov kernel with exact source and collapsed-target marginals, terminal synchrony, equality of related Boolean terminal outcomes, compatibility with explicit $\bot$ failure, and cofinality between collapsed and ordinary target terminal approximants. These obligations remain open. The synchronous graph construction below is therefore not used as a proof of compiler correctness.
+
+\endinput
 
 \subsection{Small-Step Coupling Semantics}
 \input{figures/coupling_smallstep}

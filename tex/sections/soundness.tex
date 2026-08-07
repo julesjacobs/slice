@@ -12,9 +12,8 @@ sampling, higher-order functions, recursion, and conditioning,
 %
 % exact discretization as follows: every expression $e:\bool$ is semantically equivalent to $\discretize{e : \bool} : \bool$. 
 The first step is to make formal sense of semantic equivalence. For that, we
-define a monadic operational semantics in \Cref{sec:opsem}. The current proof
-discharges a strict finite comparison fragment. Extending the equality to the
-full stated language requires a weak-simulation argument; that obligation
+define a monadic operational semantics in \Cref{sec:opsem}. Establishing the
+equality for the full stated language requires a weak-simulation argument; that obligation
 remains open. Discretization decisions are driven by non-local,
 type-propagated information, so this missing argument cannot be replaced by a
 local rule-by-rule proof.
@@ -28,7 +27,7 @@ $
 	\bigsem{\cdot}\colon Expr_\tau \to \mathcal{D}(Vals_\tau + \bot)~,
 $
 %
-mapping each \emph{fully type-annotated} expression $e:\tau$ to a  \emph{sub}-probability measure $\bigsem{e : \tau}$ over values of type $\tau$ or $\bot$. In the presence of possibly unbounded recursion \emph{and} conditioning, our semantics has to distinguish between non-termination and observation failure, which we realize as follows: The \enquote{missing} probability mass in $\bigsem{e : \tau}$ is the probability that $e$ diverges. The probability of $\bot$ is the probability of encountering an observation failure. With this model, semantic equivalence indeed captures our sought-after correctness claim: If $\bigsem{e:\bool} = \bigsem{\discretize{e:\bool}:\bool}$, then both expressions have the same probability of producing $\true$, $\false$, or an observation failure.
+mapping each \emph{fully type-annotated} expression $e:\tau$ to a  \emph{sub}-probability measure $\bigsem{e : \tau}$ over values of type $\tau$ or $\bot$. In the presence of possibly unbounded recursion \emph{and} conditioning, our semantics distinguishes explicit observation failure from missing mass: the probability of $\bot$ is the probability of encountering an observation failure, while missing mass records executions that do not reach either a value or $\bot$, including divergence and any runtime-error path represented by zero mass. These quantities must not be conflated. If $\bigsem{e:\bool} = \bigsem{\discretize{e:\bool}:\bool}$, then both expressions have the same probability of producing $\true$, $\false$, or an observation failure, and the same missing mass.
 
 \subsubsection{Small Step Semantics}
 %
@@ -55,7 +54,7 @@ gives rise to the skeleton
 %
 and the type annotations tell us that the possible values these holes can be filled with are in $\Reals \times \{3.5,4.5 \}$. We can thus inherit a measurable space over all well-typed expressions arising from this particular skeleton $s$ from the standard Borel measurable space over $\Reals \times \{3.5,4.5 \}$. The measurable space over \emph{all} well-typed expressions of type $\bool$ (i.e., over $Expr_\bool$) is then obtained from the measurable spaces of \emph{all} skeletons that give rise to expressions of type $\bool$.
 
-Equipped with this family of measurable spaces, we define the small-step functional $\sem{\cdot}$ in the expected, type-preserving manner (cf.\ \Cref{tab:smallstep-1,tab:smallstep-2}). For instance, if $e_1$ is not a value, then\footnote{Put formally, $(\mu \gg\!= f)(A) = \int f(x)(A) \cdot \mu(dx)$, see \Cref{def:dist-monad} for details. $\dirac{e}$ denotes the Dirac distribution of $e$.}
+Equipped with this family of measurable spaces, we specify the small-step functional $\sem{\cdot}$ in the expected, type-preserving manner (cf.\ \Cref{tab:smallstep-1,tab:smallstep-2}). A complete proof that every operational context and sampler clause is measurable remains open. For instance, if $e_1$ is not a value, then\footnote{Put formally, $(\mu \gg\!= f)(A) = \int f(x)(A) \cdot \mu(dx)$, see \Cref{def:dist-monad} for details. $\dirac{e}$ denotes the Dirac distribution of $e$.}
 %
 \[
 	\sem{(\letkw \; x = e_1 : \tau_1 \; \inkw \; e_2 : \tau_2) : \tau_2}
@@ -70,7 +69,8 @@ Equipped with this family of measurable spaces, we define the small-step functio
 %
 i.e., $\sem{ e_1 : \tau_1}$ yields the sub-distribution over expressions obtained from executing $e_1$ for \emph{one step}, and the monadic bind $\gg\!=$ \enquote{folds} this distribution into the surrounding $\letkw$-statement. The intuition for the remaining statements is analogous. Crucially, $\gg\!=$ propagates the probability of encountering $\bot$ --- an observation failure --- through executions. For instance, assume that $e_1$ from above is given by $\observekw\; (\false : \bool)  : \unit$. Since $e_1$ encounters an observation failure with probability $1$, i.e., $\sem{\observekw\; (\false : \bool)  : \unit}(\{\bot\}) = 1$, the same holds for the surrounding $\letkw$-statement, i.e., also $\sem{(\letkw \; x = e_1 : \tau_1 \; \inkw \; e_2 : \tau_2) : \tau_2}(\{\bot\})=1$.
 %
-All details --- including proofs that all monadic binds are well-behaved since they operate on suitable Markov kernels --- are provided in \Cref{app:small-step}.
+The appendix gives the underlying measurable-space construction and records
+operational-context and full small-step measurability as conjectures.
 
 \subsubsection{From Small-Step to Big-Step Semantics}
 \label{sec:smallsem_to_bigsem}
@@ -90,13 +90,13 @@ We now define $\bigsem{\cdot}$ via $\sem{\cdot}$. For that, we first lift the on
 		\end{cases} 
 \end{align*}
 %
-This construction is well-defined since the functional $\sem{\cdot}$ itself gives rise to a suitable Markov kernel (\Cref{lem:small-step-kernel}). We then define for every type $\tau$ the functional $\bigsem{\cdot}\colon Expr_\tau \to \mathcal{D}(Vals_\tau + \bot)$ as 
+Conditional on the open small-step measurability conjecture, this iteration is well-defined. We then define for every type $\tau$ the functional $\bigsem{\cdot}\colon Expr_\tau \to \mathcal{D}(Vals_\tau + \bot)$ as
 %
 $
 	\bigsem{e:\tau} = \lambda A. \lim_{n\to\infty} \bigsemstep{e:\tau}{n}(A)~,
 $
 % 
-which is well-defined by the monotone convergence theorem: the sequence $(\bigsemstep{e : \tau}{n})_{n\in\Nats}$ is monotonically increasing for every measurable set $A$ over $Vals_\tau + \bot$ (cf.\ \Cref{lem:bigstepsem}) and upper-bounded by $1$: executing a program for more and more steps can only increase the probability of terminating in a given set of values or an observation failure.
+which is well-defined by the monotone convergence theorem: on terminal measurable sets the sequence $(\bigsemstep{e : \tau}{n})_{n\in\Nats}$ is monotonically increasing and upper-bounded by $1$, since executing a program for more steps can only increase the probability of terminating in a given set of values or an observation failure.
 
 %
 %\kbin{old}
@@ -111,14 +111,26 @@ which is well-defined by the monotone convergence theorem: the sequence $(\bigse
 %
 We first state the central theorem, then outline our coupling-style correctness argument.
 %
-\begin{theorem}[Conditional soundness]
+\begin{theorem}[Conditional ideal-real soundness]
 	\label{thm:maintext:sound}
-	Assume the weak-simulation obligation for the source and discretized
-	operational semantics. For every $e:\bool$ in the stated fragment,
-	$\bigsem{e:\bool} = \bigsem{\discretize{e:\bool} : \bool}$.
+	Fix $e:\bool$ and its ideal exact-real discretization. Assume a measurable
+	terminating administrative normalizer for the target and its induced
+	collapsed target kernel; a measurable related state space containing the
+	initial pair; and one measurable joint sub-Markov kernel on related pairs
+	whose two marginals are exactly the source and collapsed-target kernels.
+	Assume moreover that related terminal states are synchronized, that related
+	Boolean terminals are equal, that $x=\bot$ iff $y=\bot$ for related
+	terminal pairs, and that the collapsed and ordinary target terminal
+	approximants are cofinal. Then
+	$\bigsem{e:\bool} = \bigsem{\discretize{e:\bool} : \bool}$ as terminal
+	subprobability measures.
 \end{theorem}
 %
-Under the weak-simulation assumption, the intended argument synchronizes the two programs so that their probabilities of terminating in value $v$ coincide for each $v \in \{\true,\false,\bot\}$. The currently proved strict finite comparison fragment supplies this synchronization directly.
+These premises imply equality of the raw terminal subprobability measures, not merely equality after conditioning. Thus they preserve the probabilities of $\true$, $\false$, and explicit observation failure $\bot$, as well as missing mass. The premises have not been established for the literal \Slice{} transformation, so the theorem is conditional and does not claim exactness of the implementation's binary64 CDF weights.
+
+The required measurable relation, coherent joint kernel, administrative normalization, terminal synchrony, and cofinality constitute the open weak-simulation obligation. In particular, a graph of the transformation is not by itself such a coupling, because one source step need not match one literal target step.
+
+\endinput
 %e, and which lets us conclude semantic equivalence for expressions of type $\bool$.
 %more general argument which enables us to conclude semantic equivalence.% The crucial point is when we encounter a continuous sampling instruction in $e$, in which case we have to prove that its discretized counterpart $\discretize{e:\tau}$
 
