@@ -59,8 +59,8 @@
 			 
 			& $e_1 = v_1, e_2 = v_2, v_1 < v_2 $ & $\dirac{\true : \bool}$ \\
 			& $e_1 = v_1, e_2 = v_2, v_1 \geq v_2$ & $\dirac{\false : \bool}$  \\
-			&$e_1 = v_1, e_2 \neq v_2$ & $\sem{ e_2 : \tau_2 } \gg\!= \lambda g. \dirac{ v_1 : \tau_1 < g : \bool}$ \\
-			& o.w.\ & $\sem{ e_1 : \tau_1 } \gg\!= \lambda g. \dirac{ g < e_2 : \tau_2 : \bool}$  \\
+			&$e_1\in Vals_{\tau_1}, e_2\notin Vals_{\tau_2}$ & $\sem{ e_2 : \tau_2 } \gg\!= \lambda g. \dirac{ e_1 : \tau_1 < g : \bool}$ \\
+			& $e_1\notin Vals_{\tau_1}$ & $\sem{ e_1 : \tau_1 } \gg\!= \lambda g. \dirac{ g < e_2 : \tau_2 : \bool}$  \\
 			%
 			\midrule
 			%
@@ -68,8 +68,8 @@
 			\multirow{4}{*}{$e_1 : \fin{n} \finlt{n} e_2 : \fin{n} : \bool$}
 			& $e_1 = \finconst{i}{n}, e_2 = \finconst{j}{n}, i<j$ & $\dirac{\true : \bool}$ \\
 			& $e_1 = \finconst{i}{n}, e_2 = \finconst{j}{n}, i\geq j$ & $\dirac{\false : \bool}$ \\
-			& $e_1=v_1, e_2$ no val. & $\sem{e_2:\fin{n}} \gg\!= \lambda g.\dirac{v_1\finlt{n}g:\bool}$ \\
-			& o.w. & $\sem{e_1:\fin{n}} \gg\!= \lambda g.\dirac{g\finlt{n}e_2:\bool}$ \\
+			& $e_1\in Vals_{\fin{n}}, e_2\notin Vals_{\fin{n}}$ & $\sem{e_2:\fin{n}} \gg\!= \lambda g.\dirac{e_1\finlt{n}g:\bool}$ \\
+			& $e_1\notin Vals_{\fin{n}}$ & $\sem{e_1:\fin{n}} \gg\!= \lambda g.\dirac{g\finlt{n}e_2:\bool}$ \\
 			%
 			\midrule
 			%
@@ -77,21 +77,21 @@
 			\multirow{4}{*}{$e_1 : \fin{n} \fineq{n} e_2 : \fin{n} : \bool$}
 			& $e_1 = \finconst{i}{n}, e_2 = \finconst{j}{n}, i=j$ & $\dirac{\true : \bool}$ \\
 			& $e_1 = \finconst{i}{n}, e_2 = \finconst{j}{n}, i\neq j$ & $\dirac{\false : \bool}$ \\
-			& $e_1=v_1, e_2$ no val. & $\sem{e_2:\fin{n}} \gg\!= \lambda g.\dirac{v_1\fineq{n}g:\bool}$ \\
-			& o.w. & $\sem{e_1:\fin{n}} \gg\!= \lambda g.\dirac{g\fineq{n}e_2:\bool}$ \\
+			& $e_1\in Vals_{\fin{n}}, e_2\notin Vals_{\fin{n}}$ & $\sem{e_2:\fin{n}} \gg\!= \lambda g.\dirac{e_1\fineq{n}g:\bool}$ \\
+			& $e_1\notin Vals_{\fin{n}}$ & $\sem{e_1:\fin{n}} \gg\!= \lambda g.\dirac{g\fineq{n}e_2:\bool}$ \\
 			%
 			\midrule
 			%
 			% --- uniform distribution ---
-			\multirow{3}{*}{$\uniform(e_1 : \tau_1, e_2 : \tau_2) : \floattype{B}{V}$} 
+			\multirow{4}{*}{$\uniform(e_1 : \tau_1, e_2 : \tau_2) : \floattype{B}{V}$}
 			
-			& $e_1 = v_1, e_2 = v_2, v_1 \leq v_2$ & $\text{Uniform}(v_1, v_2) \gg\!= \lambda v. \dirac{(v : \floattype{B}{V})}$ \\
+			& $e_1 = v_1, e_2 = v_2, v_1 < v_2$ & $\text{Uniform}(v_1, v_2) \gg\!= \lambda v. \dirac{(v : \floattype{B}{V})}$ \\
 			% 
-			& $e_1 = v_1, e_2 = v_2, v_1 > v_2$ & $\lambda A.0$ \\
+			& $e_1 = v_1, e_2 = v_2, v_1 \geq v_2$ & $\lambda A.0$ \\
 			%
-			& $e_1 = v_1, e_2 \neq v_2$ & $\sem{ e_2 : \tau_2 } \gg\!= \lambda g. \dirac{ \uniform(v_1 : \tau_1, g) : \tau }$ \\
+			& $e_1\in Vals_{\tau_1}, e_2\notin Vals_{\tau_2}$ & $\sem{ e_2 : \tau_2 } \gg\!= \lambda g. \dirac{ \uniform(e_1 : \tau_1, g) : \floattype{B}{V} }$ \\
 			%
-			& o.w.\ & $\sem{ e_1 : \tau_1 } \gg\!= \lambda g. \dirac{ \uniform(g, e_2 : \tau_2) : \tau } $ \\
+			& $e_1\notin Vals_{\tau_1}$ & $\sem{ e_1 : \tau_1 } \gg\!= \lambda g. \dirac{ \uniform(g, e_2 : \tau_2) : \floattype{B}{V} } $ \\
 			%
 			\midrule
 			%
@@ -155,8 +155,8 @@
 			\multirow{3}{*}{\makecell{$(e_1 : \tau_1, e_2 : \tau_2) : \tau_1 * \tau_2$}} 
 			
 			& $e_1 = v_1, e_2 = v_2 $ & $\dirac{(v_1,v_2) : \tau_1 * \tau_2}$ \\
-			&$e_1 = v_1, e_2 \neq v_2$ & $\sem{ e_2 : \tau_2 } \gg\!= \lambda g. \dirac{ (v_1 : \tau_1, g : \tau_2) : \tau_1 * \tau_2}$ \\
-			& o.w.\ & $\sem{ e_1 : \tau_1 } \gg\!= \lambda g. \dirac{ (g : \tau_1, e_2 : \tau_2) : \tau_1 * \tau_2}$  \\
+			&$e_1\in Vals_{\tau_1}, e_2\notin Vals_{\tau_2}$ & $\sem{ e_2 : \tau_2 } \gg\!= \lambda g. \dirac{ (e_1 : \tau_1, g : \tau_2) : \tau_1 * \tau_2}$ \\
+			& $e_1\notin Vals_{\tau_1}$ & $\sem{ e_1 : \tau_1 } \gg\!= \lambda g. \dirac{ (g : \tau_1, e_2 : \tau_2) : \tau_1 * \tau_2}$  \\
 			%
 			\midrule
 			%
@@ -181,8 +181,8 @@
 			
 			& $e_1 = \funkw\; x \to e, e_2 = v_2$ & $\dirac{e[v_2/x] : \tau_2}$ \\
 			& $e_1 = \fixkw\; f \; x := e, e_2 = v_2$ & $\dirac{e[v_2/x,(\fixkw\; f\;x:=e)/f] : \tau_2}$ \\
-			& $e_1 \text{ is a function value}, e_2 \neq v_2$ & $\sem{e_2 : \tau_1} \monbind \lambda g. \dirac{(e_1 : \tau_1 \to \tau_2)\; (g : \tau_1) : \tau_2}$ \\
-			& o.w. & $\sem{e_1 : \tau_1 \to \tau_2} \monbind \lambda g. \dirac{(g : \tau_1 \to \tau_2)\; (e_2 : \tau_1) : \tau_2}$ \\
+			& $e_1\in Vals_{\tau_1\to\tau_2}, e_2\notin Vals_{\tau_1}$ & $\sem{e_2 : \tau_1} \monbind \lambda g. \dirac{(e_1 : \tau_1 \to \tau_2)\; (g : \tau_1) : \tau_2}$ \\
+			& $e_1\notin Vals_{\tau_1\to\tau_2}$ & $\sem{e_1 : \tau_1 \to \tau_2} \monbind \lambda g. \dirac{(g : \tau_1 \to \tau_2)\; (e_2 : \tau_1) : \tau_2}$ \\
 			%
 			\midrule
 			%
@@ -197,8 +197,8 @@
 			\multirow{3}{*}{\makecell{$(e_1 : \tau :: e_2 : \listty{\tau}) : \listty{\tau}$ }}
 			
 			& $e_1 = v_1, e_2 = v_2$ & $\dirac{v_1::v_2 : \listty{\tau}}$ \\
-			& $e_1 = v_1, e_2 \neq v_2$ & $\sem{e_2 : \listty{\tau}} \monbind \lambda g.\dirac{v_1 : \tau ::g : \listty{\tau}}$ \\
-			& o.w. & $\sem{e_1 : \tau} \monbind \lambda g.\dirac{(g : \tau)::(e_2 : \listty{\tau}) : \listty{\tau}}$ \\
+			& $e_1\in Vals_{\tau}, e_2\notin Vals_{\listty{\tau}}$ & $\sem{e_2 : \listty{\tau}} \monbind \lambda g.\dirac{e_1 : \tau ::g : \listty{\tau}}$ \\
+			& $e_1\notin Vals_{\tau}$ & $\sem{e_1 : \tau} \monbind \lambda g.\dirac{(g : \tau)::(e_2 : \listty{\tau}) : \listty{\tau}}$ \\
 			%
 			\midrule
 			%
