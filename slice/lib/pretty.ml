@@ -519,32 +519,34 @@ let rec translate_to_sppl (env : (string * string) list) ?(target_var:string opt
             let sigma = assert_float_const sigma in
             Printf.sprintf "%s ~= rayleigh(scale=%f)" assign_var sigma
         | Distr2 (DWeibull, a, b) ->
+            let scale = assert_float_const a in
+            let exponent = assert_float_const b in
+            Printf.sprintf "%s ~= weibull_min(c=%f, scale=%f)" assign_var exponent scale
+        | Distr2 (DPareto, a, b) ->
+            let exponent = assert_float_const a in
+            let scale = assert_float_const b in
+            Printf.sprintf "%s ~= pareto(b=%f, scale=%f)" assign_var exponent scale
+        | Distr2 (DGumbel1, a, b) ->
             let a_val = assert_float_const a in
             let b_val = assert_float_const b in
-            Printf.sprintf "%s ~= weibull(c=%f, scale=%f)" assign_var a_val b_val (* Assuming a is shape c, b is scale *)
-        | Distr2 (DPareto, xm, alpha) ->
-            let xm_val = assert_float_const xm in
-            let alpha_val = assert_float_const alpha in
-            Printf.sprintf "%s ~= pareto(b=%f, scale=%f)" assign_var alpha_val xm_val (* SPPL uses b for shape *)
-        | Distr2 (DGumbel1, mu, beta_param) ->
-            let mu_val = assert_float_const mu in
-            let beta_val = assert_float_const beta_param in
-            Printf.sprintf "%s ~= gumbel_r(loc=%f, scale=%f)" assign_var mu_val beta_val (* gumbel_r for Type I max *)
-        | Distr2 (DGumbel2, mu, beta_param) ->
-            let mu_val = assert_float_const mu in
-            let beta_val = assert_float_const beta_param in
-            Printf.sprintf "%s ~= gumbel_l(loc=%f, scale=%f)" assign_var mu_val beta_val (* gumbel_l for Type I min *)
-        | Distr2 (DExppow, arg1, arg2) -> 
-            let val1 = assert_float_const arg1 in
-            let val2 = assert_float_const arg2 in
-            Printf.sprintf "%s ~= exponpow(b=%f, scale=%f)" assign_var val1 val2 (* Assuming arg1=shape_b, arg2=scale *)
+            Printf.sprintf "%s ~= gumbel_r(loc=%f, scale=%f)"
+              assign_var (Float.log b_val /. a_val) (1.0 /. a_val)
+        | Distr2 (DGumbel2, a, b) ->
+            let exponent = assert_float_const a in
+            let coefficient = assert_float_const b in
+            Printf.sprintf "%s ~= invweibull(c=%f, scale=%f)"
+              assign_var exponent (coefficient ** (1.0 /. exponent))
+        | Distr2 (DExppow, a, b) ->
+            let scale = assert_float_const a in
+            let exponent = assert_float_const b in
+            Printf.sprintf "%s ~= gennorm(beta=%f, scale=%f)" assign_var exponent scale
         | Distr1 (DPoisson, mu) ->
             let mu = assert_float_const mu in
             Printf.sprintf "%s ~= poisson(mu=%f)" assign_var mu
-        | Distr2 (DBinomial, arg1, arg2) -> 
-            let val1 = assert_float_const arg1 in
-            let val2 = assert_float_const arg2 in
-            Printf.sprintf "%s ~= binomial(n=%f, p=%f)" assign_var val1 val2 
+        | Distr2 (DBinomial, p, n) ->
+            let p_val = assert_float_const p in
+            let n_val = assert_float_const n in
+            Printf.sprintf "%s ~= binom(n=%f, p=%f)" assign_var n_val p_val
       in
       ([stmt], assign_var)
   | Ast.ExprNode(DistrCase cases) ->
@@ -715,4 +717,4 @@ let slice_expr_to_sppl_prog (expr : Ast.expr) : string =
   (* Pass target_var = Some "model" to the top-level call *) 
   let (stmts, _final_res_name) = translate_to_sppl [] ~target_var:(Some "model") expr state in
   (* No need for the extra assignment at the end now *) 
-  String.concat "\n" stmts 
+  String.concat "\n" stmts
