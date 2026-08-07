@@ -83,8 +83,7 @@
             B_1 \neq \top, \\
             B_2 \neq \top, \\
             V_1 = \{v_1, \ldots, v_n\}, \\
-            V_2 = \{w_1, \ldots, w_m\}, \\
-            n,m \geq 1
+            V_2 = \{w_1, \ldots, w_m\}
           \end{array}$
         & $\begin{array}{@{}l@{}}
             \letkw \; v_1' = \discretize{e_1 : \float[B_1; V_1]} \; \inkw \\
@@ -104,10 +103,8 @@
     \end{tabular}
     \end{adjustbox}
     \caption{Discretization function, where $\mathrm{CDF}(b_{0}) = 0$ and $\mathrm{CDF}(b_{n+1}) = 1$.
-        For the $\uniform$ distribution, $V = \top$ is implicit. The representation-agreement premises
-        in \textsc{Continuous-2} rule out mixed finite and $\top$ cut sets. The finite-dispatch row has the
-        explicit prerequisite that both parameter value sets are finite and nonempty; distinguishability
-        separates their members but does not establish nonemptiness. For all other language
+        For the $\uniform$ distribution, $V = \top$ is implicit, and all remaining cut-set and value-set
+        cases are ruled out by the constraints enforced during type inference. For all other language
         constructs, $\discretize{\cdot}$ recurses structurally over them.}
     \label{fig:discretization-code}
 \end{figure*}
@@ -246,22 +243,31 @@ $
 \end{figure}
 %
 %
-\begin{proposition}[Continuous-distribution representation agreement]\label{prop:continuous-distribution-representation-agreement}
-	Let $d(e_1,\ldots,e_r):\float[B;\top]$ be typed by \textsc{Continuous-1} or
-	\textsc{Continuous-2}. If $B=\top$, representation agreement makes every
-	parameter cut set $\top$, so the retained sampler and its parameters remain
-	real-valued. If $B\neq\top$, representation agreement makes every parameter
-	cut set finite. When every parameter value set is also finite and nonempty,
-	the generated call-by-value dispatch term has result type $\fin{|B|+1}$,
-	provided the recursively transformed parameters and the emitted target
-	let-bindings, finite equalities, and conditionals have their stated typings.
+\begin{proposition}[Continuous-sampler representation agreement]
+\label{prop:continuous-distribution-representation-agreement}
+Suppose
+\[
+  d(e_1,\ldots,e_r):\float[B;\top]
+\]
+is typed by \textsc{Continuous-$r$}, whose premises include
+\[
+  B_i=\top \Longleftrightarrow B=\top
+  \qquad (1\leq i\leq r).
+\]
+Then
+\[
+  B=\top \Longleftrightarrow \forall i.\;B_i=\top,
+  \qquad
+  B\neq\top \Longleftrightarrow \forall i.\;B_i\neq\top.
+\]
+Consequently type translation never retains a real-valued sampler while
+translating one of its parameters to a finite type, and never translates the
+sampler to a finite type while retaining a real-valued parameter.
 \end{proposition}
 
-This proposition closes the source/target representation mismatch for continuous
-distributions. It is not a proof of universal type preservation for
-$\discretize{\cdot}$. Such a theorem additionally requires separate results for
-subtyping, nonempty dispatch, the generated target syntax, and the semantic
-coupling used by the soundness argument.
+This proposition rules out mixed real/finite representations at a sampler
+boundary. It does not prove universal target typing, dispatch totality,
+value-set adequacy, or semantic preservation.
 %
 %\begin{proof}
 %	See Appendix~\ref{proof:type-transformations}.

@@ -790,76 +790,10 @@ The typing rules for general language constructs is given in \Cref{fig:typing-ge
 \subsection{Proof of Proposition~\ref{prop:continuous-distribution-representation-agreement}}
 
 \begin{proof}\label{proof:type-transformations}
-We give the two-argument case; the one-argument case is the same with one
-parameter and one dispatch dimension. Let
-\[
-  e=\uniform(e_1:\float[B_1;V_1],e_2:\float[B_2;V_2])
-    :\float[B;\top]
-\]
-be typed by \textsc{Continuous-2}. Its premises include
-$B_i=\top\Longleftrightarrow B=\top$ for $i\in\{1,2\}$.
-
-If $B=\top$, then $B_1=B_2=\top$. Assuming the recursive transformations of
-$e_1$ and $e_2$ have their transformed types, both remain float-typed. Hence
-the retained term
-\[
-  \uniform(\discretize{e_1},\discretize{e_2})
-\]
-uses the same real-valued representation for its parameters and result. This
-is precisely the mixed-representation case excluded by the new premises.
-
-Now suppose $B\neq\top$, and assume the explicit finite-dispatch
-prerequisites
-\[
-  V_1=\{v_1,\ldots,v_n\},\qquad
-  V_2=\{w_1,\ldots,w_m\},\qquad n,m\geq1.
-\]
-Representation agreement gives $B_1,B_2\neq\top$. If both parameters are real
-literals satisfying the distribution's validity condition, the direct clause
-emits a finite distribution over the $|B|+1$ result cells. Its explicit
-target-typing premise gives type $\fin{|B|+1}$. The formal malformed-literal
-clause emits divergence, which is polymorphically typed; an implementation
-runtime error is a distinct behavior and is not identified with formal
-divergence by this proposition.
-
-If at least one parameter is nonliteral, the generated term has the following
-call-by-value shape:
-\[
-\begin{array}{l}
-  \letkw\;z_1=\discretize{e_1}\;\inkw\\
-  \letkw\;z_2=\discretize{e_2}\;\inkw\\
-  \mathsf{dispatch}_{i=1,\ldots,n;\,j=1,\ldots,m}
-  \left(
-    z_1\fineq{(|B_1|+1)}\discretize{v_i},
-    z_2\fineq{(|B_2|+1)}\discretize{w_j}
-  \right)
-  \left[\discretize{\uniform(v_i,w_j):\float[B;\top]}\right].
-\end{array}
-\]
-Here $\mathsf{dispatch}$ abbreviates the nested conditionals displayed in
-\Cref{fig:discretization-code}.
-
-Writing $\discretize{\Gamma}$ for the pointwise transformation of the types in
-$\Gamma$, assume the recursive premises
-\[
-  \discretize{\Gamma}\vdash\discretize{e_i}:
-  \fin{|B_i|+1}\quad(i\in\{1,2\})
-\]
-and the stated target typing rules for let-binding, finite equality, and
-conditionals. Each $\discretize{v_i}$ has type $\fin{|B_1|+1}$ and each
-$\discretize{w_j}$ has type $\fin{|B_2|+1}$, so every dispatch guard is
-Boolean. Assume also that the local constant-parameter rule produces each
-valid arm at type $\fin{|B|+1}$ and that its formal invalid-parameter arm is
-typed as divergence.
-Consequently every conditional branch, and hence the complete generated
-dispatch term, has type $\fin{|B|+1}$.
-
-This establishes representation agreement for the continuous-distribution
-case only. It does not establish the former universal ``Discretization Is
-Well-Typed'' statement. A universal type-preservation result still needs
-independent lemmas for \textsc{Sub-Type}, the nonempty-dispatch invariant, the
-literal generated target syntax, and the coupling obligations used later in
-the soundness argument.
+Both equivalences follow immediately from the representation-agreement
+premises of \textsc{Continuous-$r$}. The final statement follows from the
+definition of type translation: a float type is retained exactly when its cut
+set is $\top$, and is translated to a finite type otherwise.
 \end{proof}
 
 %\input{sections/6_soundness.tex}
