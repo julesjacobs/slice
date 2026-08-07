@@ -129,12 +129,13 @@ let test_discrete_rejects_nonfinite _test_ctxt =
     [[nan; 1.0]; [infinity; 0.0]; [neg_infinity; 1.0]]
 
 let test_discrete_rejects_unrepresentable_prefix _test_ctxt =
-  assert_raises
-    (Failure
-       "Discrete distribution contains a positive weight that cannot be represented cumulatively")
-    (fun () ->
-      ignore
-        (Slice.Ast.normalize_probability_weights [1.0; 1e-20; 0.0]))
+  List.iter
+    (fun weights ->
+      assert_raises
+        (Failure
+           "Discrete distribution contains a positive weight that cannot be represented cumulatively")
+        (fun () -> ignore (Slice.Ast.normalize_probability_weights weights)))
+    [[1.0; 1e-20; 0.0]; [1.0; 1e-20]]
 
 let test_generated_tolerance_is_capped _test_ctxt =
   assert_equal 1e-6 (Slice.Ast.probability_sum_tolerance Slice.Ast.Generated 100_000)

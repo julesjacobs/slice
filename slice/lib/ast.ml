@@ -87,10 +87,13 @@ let normalize_probability_weights ?(policy = Generated)
   let normalized = List.map (fun p -> p /. sum) weights in
   let rec close_prefix prefix_sum = function
     | [] -> assert false
-    | [_] ->
+    | [original_final] ->
         let final = 1.0 -. prefix_sum in
         if final < 0.0 then
           failwith "Discrete distribution normalization produced a negative final weight"
+        else if original_final > 0.0 && final = 0.0 then
+          failwith
+            "Discrete distribution contains a positive weight that cannot be represented cumulatively"
         else [final]
     | p :: rest ->
         let next_prefix = prefix_sum +. p in
