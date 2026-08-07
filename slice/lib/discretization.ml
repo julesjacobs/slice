@@ -221,6 +221,20 @@ let discretize (e : texpr) : expr =
                  if modulus <= 0 then None else Some (modulus, cuts))
             | _ -> None
           in
+
+          (* Generated dispatch failures denote missing probability mass.  The
+             observation fails before the fallback is evaluated, while the
+             fallback gives the sequence the result type expected by the
+             surrounding dispatch.  This form is supported by every backend. *)
+          let fail_closed_with fallback =
+            ExprNode
+              (Seq
+                 (ExprNode (Observe (ExprNode (BoolConst false))), fallback))
+          in
+
+          let fail_closed_result () =
+            fail_closed_with (ExprNode (FinConst (0, overall_modulus)))
+          in
           
           let rec build_nested_ifs (val_var_name: string) (param_modulus: int) (arms: (expr * expr) list) : expr =
             match arms with 
@@ -233,9 +247,7 @@ let discretize (e : texpr) : expr =
                 ExprNode
                   (If
                     (condition, body_expr,
-                     ExprNode
-                       (RuntimeError
-                         "Internal error: inferred distribution parameter domain was not exhaustive")))
+                     fail_closed_with body_expr))
             | (target_finconst_expr, body_expr) :: rest_arms ->
               let current_val_expr = ExprNode (Var val_var_name) in
               let condition =
@@ -280,7 +292,7 @@ let discretize (e : texpr) : expr =
               (fun param_value ->
                 match Distributions.get_cdistr_from_single_arg_kind kind param_value with
                 | Ok dist -> final_expr_producer dist
-                | Error msg -> ExprNode (RuntimeError msg)
+                | Error _ -> fail_closed_result ()
               )
           in
 
@@ -302,7 +314,7 @@ let discretize (e : texpr) : expr =
                           (fun param2_value ->
                             match Distributions.get_cdistr_from_two_arg_kind kind param1_value param2_value with
                             | Ok dist -> final_expr_producer dist
-                            | Error msg -> ExprNode (RuntimeError msg)
+                            | Error _ -> fail_closed_result ()
                           ))
                   )
               )

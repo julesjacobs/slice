@@ -69,7 +69,8 @@ let test_degenerate_uniform_program_fails _test_ctxt =
   let expected = Slice.Interp.RuntimeError "Uniform low must be less than high" in
   assert_raises expected (fun () -> ignore (Slice.Interp.run expr));
   let discretized = expr |> Slice.Inference.infer |> Slice.Discretization.discretize in
-  assert_raises expected (fun () -> ignore (Slice.Interp.run discretized))
+  assert_raises Slice.Interp.ObserveFailure
+    (fun () -> ignore (Slice.Interp.run discretized))
 
 let test_singleton_distribution_parameter_is_evaluated _test_ctxt =
   let open Slice in
@@ -168,36 +169,37 @@ let test_empty_dispatch_domain_is_an_invariant_failure _test_ctxt =
         "Internal error: finite sample parameter lambda has no nonempty finite dispatch domain"
         message
 
-let rec contains_runtime_error expected (Slice.Ast.ExprNode node) =
+let rec contains_observe_false (Slice.Ast.ExprNode node) =
   let open Slice.Ast in
   match node with
-  | RuntimeError message -> message = expected
+  | Observe (ExprNode (BoolConst false)) -> true
   | Let (_, first, second) | And (first, second) | Or (first, second)
   | Pair (first, second) | FuncApp (first, second) | Assign (first, second)
   | Seq (first, second) | FinEq (first, second, _)
   | Cmp (_, first, second, _) | FinCmp (_, first, second, _, _)
   | Cons (first, second) ->
-      contains_runtime_error expected first || contains_runtime_error expected second
+      contains_observe_false first || contains_observe_false second
   | LoopApp (first, second, _) ->
-      contains_runtime_error expected first || contains_runtime_error expected second
+      contains_observe_false first || contains_observe_false second
   | If (condition, then_branch, else_branch) ->
-      contains_runtime_error expected condition
-      || contains_runtime_error expected then_branch
-      || contains_runtime_error expected else_branch
+      contains_observe_false condition
+      || contains_observe_false then_branch
+      || contains_observe_false else_branch
   | DistrCase cases ->
-      List.exists (fun (case, _) -> contains_runtime_error expected case) cases
-  | Sample (Distr1 (_, parameter)) -> contains_runtime_error expected parameter
+      List.exists (fun (case, _) -> contains_observe_false case) cases
+  | Sample (Distr1 (_, parameter)) -> contains_observe_false parameter
   | Sample (Distr2 (_, first, second)) ->
-      contains_runtime_error expected first || contains_runtime_error expected second
+      contains_observe_false first || contains_observe_false second
   | First child | Second child | Fun (_, child) | Not child | Observe child
-  | Ref child | Deref child | Fix (_, _, child) -> contains_runtime_error expected child
+  | Ref child | Deref child | Fix (_, _, child) -> contains_observe_false child
   | MatchList (value, nil_case, _, _, cons_case) ->
-      contains_runtime_error expected value
-      || contains_runtime_error expected nil_case
-      || contains_runtime_error expected cons_case
-  | Var _ | Const _ | BoolConst _ | FinConst _ | Nil | Unit -> false
+      contains_observe_false value
+      || contains_observe_false nil_case
+      || contains_observe_false cons_case
+  | Var _ | Const _ | BoolConst _ | FinConst _ | Nil | Unit
+  | RuntimeError _ -> false
 
-let test_final_dispatch_arm_is_checked _test_ctxt =
+let test_final_dispatch_arm_fails_closed _test_ctxt =
   let open Slice in
   let parameter =
     (singleton_float_type 1.0, Ast.TAExprNode (Ast.Const 1.0))
@@ -208,9 +210,55 @@ let test_final_dispatch_arm_is_checked _test_ctxt =
        Ast.TAExprNode (Ast.Sample (Ast.Distr1 (Ast.DExponential, parameter))))
   in
   assert_bool "final dispatch arm must fail closed"
-    (contains_runtime_error
-       "Internal error: inferred distribution parameter domain was not exhaustive"
-       transformed)
+    (contains_observe_false transformed)
+
+let test_final_dispatch_mismatch_has_zero_mass _test_ctxt =
+  let open Slice in
+  let parameter_type =
+    Ast.TFloat
+      ( Lats.CutLat.create
+          (Lats.Finite (Lats.CutSet.singleton (Lats.Less 0.5))),
+        Lats.FloatLat.create
+          (Lats.Finite (Lats.FloatSet.singleton 1.0)) )
+  in
+  let mismatched_parameter =
+    (parameter_type, Ast.TAExprNode (Ast.Const 0.0))
+  in
+  let transformed =
+    Discretization.discretize
+      ( finite_sample_type (),
+        Ast.TAExprNode
+          (Ast.Sample (Ast.Distr1 (Ast.DExponential, mismatched_parameter))) )
+  in
+  assert_bool "mismatched final dispatch must contain observation failure"
+    (contains_observe_false transformed);
+  assert_raises Interp.ObserveFailure
+    (fun () -> ignore (Interp.run transformed))
+
+let valid_dynamic_uniform () =
+  let open Slice in
+  let dynamic_type =
+    Ast.TFloat
+      ( Lats.CutLat.create
+          (Lats.Finite (Lats.CutSet.singleton (Lats.Less 0.5))),
+        Lats.FloatLat.create
+          (Lats.Finite (Lats.FloatSet.of_list [0.0; 1.0])) )
+  in
+  let typed_true = (Ast.TBool, Ast.TAExprNode (Ast.BoolConst true)) in
+  let typed_zero = (dynamic_type, Ast.TAExprNode (Ast.Const 0.0)) in
+  let typed_one = (dynamic_type, Ast.TAExprNode (Ast.Const 1.0)) in
+  let first =
+    (dynamic_type, Ast.TAExprNode (Ast.If (typed_true, typed_zero, typed_one)))
+  in
+  let second_type = singleton_float_type 2.0 in
+  let second = (second_type, Ast.TAExprNode (Ast.Const 2.0)) in
+  Discretization.discretize (two_parameter_sample first second)
+
+let test_dynamic_sampler_exports_to_all_backends _test_ctxt =
+  let transformed = valid_dynamic_uniform () in
+  ignore (Slice.To_dice.string_of_expr transformed);
+  ignore (Slice.To_roulette.string_of_expr transformed);
+  ignore (Slice.To_mc.to_mc transformed)
 
 let test_generated_binders_are_hygienic _test_ctxt =
   let open Slice in
@@ -284,7 +332,11 @@ let suite =
        >:: test_first_parameter_observation_precedes_second_error;
      "test_empty_dispatch_domain_is_an_invariant_failure"
        >:: test_empty_dispatch_domain_is_an_invariant_failure;
-     "test_final_dispatch_arm_is_checked" >:: test_final_dispatch_arm_is_checked;
+     "test_final_dispatch_arm_fails_closed" >:: test_final_dispatch_arm_fails_closed;
+     "test_final_dispatch_mismatch_has_zero_mass"
+       >:: test_final_dispatch_mismatch_has_zero_mass;
+     "test_dynamic_sampler_exports_to_all_backends"
+       >:: test_dynamic_sampler_exports_to_all_backends;
      "test_generated_binders_are_hygienic" >:: test_generated_binders_are_hygienic;
      "test_backends_reject_runtime_error" >:: test_backends_reject_runtime_error;
     ]
