@@ -56,7 +56,7 @@ type probability_policy =
 
 let probability_sum_tolerance policy count =
   match policy with
-  | Generated -> 1e-10 *. float_of_int (max 1 count)
+  | Generated -> min 1e-6 (1e-10 *. float_of_int (max 1 count))
   | Rounded_input -> 1e-4
 
 let normalize_probability_weights ?(policy = Generated)
@@ -87,12 +87,20 @@ let normalize_probability_weights ?(policy = Generated)
   let normalized = List.map (fun p -> p /. sum) weights in
   let rec close_prefix prefix_sum = function
     | [] -> assert false
-    | [_] ->
+    | [original_final] ->
         let final = 1.0 -. prefix_sum in
         if final < 0.0 then
           failwith "Discrete distribution normalization produced a negative final weight"
+        else if original_final > 0.0 && final = 0.0 then
+          failwith
+            "Discrete distribution contains a positive weight that cannot be represented cumulatively"
         else [final]
-    | p :: rest -> p :: close_prefix (prefix_sum +. p) rest
+    | p :: rest ->
+        let next_prefix = prefix_sum +. p in
+        if p > 0.0 && next_prefix = prefix_sum then
+          failwith
+            "Discrete distribution contains a positive weight that cannot be represented cumulatively"
+        else p :: close_prefix next_prefix rest
   in
   close_prefix 0.0 normalized
 
