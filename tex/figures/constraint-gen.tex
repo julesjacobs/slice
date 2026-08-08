@@ -1,7 +1,7 @@
 \begin{figure}[t]
     \centering
     \small
-    
+
     % ---- Listing style ----
     \lstdefinestyle{mystyle}{
         basicstyle=\ttfamily\small,
@@ -10,7 +10,7 @@
         escapechar=!,
         mathescape=true
     }
-    
+
     % ---- Two-column aligned table ----
     \scalebox{0.9}{
     \begin{tabular}{p{0.35\linewidth} p{0.7\linewidth}}
@@ -27,7 +27,10 @@
      & $+\; \textcolor{blue}{\has{V_2}{2}}$ \\
 
     \lstinline[style=mystyle]|$\hspace{3em}$ : $\textcolor{violet}{\floattype{B_3}{V_3}}$| 
-     & $+\; \textcolor{violet}{\distinguishes{B_1}{V_1}, B_1 \equiv_{\top} B_3, \distinguishes{B_2}{V_2}, B_2 \equiv_{\top} B_3, V_3 = \top}$ \\
+     & $\begin{aligned}
+       +\;&\textcolor{violet}{\distinguishes{B_1}{V_1}, \dispatchable{B_1}{V_1}, B_1 \equiv_{\top} B_3,}\\
+       &\textcolor{violet}{\distinguishes{B_2}{V_2}, \dispatchable{B_2}{V_2}, B_2 \equiv_{\top} B_3, V_3 = \top}
+       \end{aligned}$ \\
     
     \lstinline[style=mystyle]| else gaussian(0 : $\textcolor{blue}{\floattype{B_4}{V_4}}$, | 
       & $+\; \textcolor{blue}{\has{V_4}{0}}$ \\
@@ -36,7 +39,10 @@
       & $+\; \textcolor{blue}{\has{V_5}{1}}$ \\
 
     \lstinline[style=mystyle]|$\hspace{3em}$ : $\textcolor{violet}{\floattype{B_6}{V_6}}$ | 
-      & $+\; \textcolor{violet}{\distinguishes{B_4}{V_4}, B_4 \equiv_{\top} B_6, \distinguishes{B_5}{V_5}, B_5 \equiv_{\top} B_6, V_6 = \top}$  \\
+      & $\begin{aligned}
+        +\;&\textcolor{violet}{\distinguishes{B_4}{V_4}, \dispatchable{B_4}{V_4}, B_4 \equiv_{\top} B_6,}\\
+        &\textcolor{violet}{\distinguishes{B_5}{V_5}, \dispatchable{B_5}{V_5}, B_5 \equiv_{\top} B_6, V_6 = \top}
+        \end{aligned}$  \\
 
     \lstinline[style=mystyle]| : $\textcolor{teal}{\floattype{B_7}{V_7}}$ | 
       & $+\; \textcolor{teal}{\subtype{\floattype{B_3}{V_3}}{\floattype{B_7}{V_7}}, \subtype{\floattype{B_6}{V_6}}{\floattype{B_7}{V_7}}}$ \\
@@ -86,4 +92,3 @@
     \caption{Program from~\Cref{sec:examples:4} (left) and its emitted constraints from each line (right) from \textcolor{blue}{\textsc{TFloat-Const}}, \textcolor{violet}{\textsc{TContinuous-2}}, \textcolor{teal}{\textsc{TIf}}, \textcolor{olive}{\textsc{TVar}}, and \textcolor{brown}{\textsc{TLess} and \textsc{TLessEq}} following the constraint generation rules in~\Cref{fig:type-inference}. Lines annotated with $\emptyset$ emit no constraints.}
     \label{fig:constraint-generation}
 \end{figure}
-    

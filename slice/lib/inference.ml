@@ -151,7 +151,6 @@ let infer (e : expr) : texpr =
           add_floats_to_cutbag t_arg_float_bag t_arg_cut_bag;
           make_output_top_if_input_boundbag_is_top t_arg_cut_bag;
           make_input_top_if_output_boundbag_is_top t_arg_cut_bag cuts_bag_ref;
-
           let dist_exp' = Distr1 (dist_kind, (t_arg, a_arg)) in
           (TFloat (cuts_bag_ref, consts_bag_ref), TAExprNode (Sample dist_exp'))
 
@@ -180,7 +179,6 @@ let infer (e : expr) : texpr =
 
         make_input_top_if_output_boundbag_is_top t1_cut_bag cuts_bag_ref;
         make_input_top_if_output_boundbag_is_top t2_cut_bag cuts_bag_ref;
-
         let dist_exp' = Distr2 (dist_kind, (t1, a1), (t2, a2)) in
         (TFloat (cuts_bag_ref, consts_bag_ref), TAExprNode (Sample dist_exp'))
       )
@@ -496,4 +494,4 @@ let infer (e : expr) : texpr =
 let infer_bool (e : expr) : texpr =
   let t, a = infer e in
   sub_type t Ast.TBool;
-  (t, a) 
+  (t, a)
