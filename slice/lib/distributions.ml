@@ -54,6 +54,22 @@ let uniform_cdf_interior lo hi x =
     ((x /. scale) -. (lo /. scale))
     /. ((hi /. scale) -. (lo /. scale))
 
+(* ocaml-gsl converts integer CDF boundaries with [Unsigned_int_val].  Reject
+   boundaries outside both the host-int and GSL unsigned-int ranges instead of
+   pretending that an unbounded distribution has reached cumulative mass 1. *)
+let gsl_host_integer_max =
+  Int64.min 0xffff_ffffL (Int64.of_int max_int)
+
+let integer_cdf ~upper_support cdf x =
+  if classify_float x = FP_nan then invalid_arg "CDF is undefined at NaN"
+  else if x < 0.0 then 0.0
+  else
+    match upper_support with
+    | Some upper when x >= float_of_int upper -> 1.0
+    | _ when x > Int64.to_float gsl_host_integer_max ->
+        invalid_arg "integer CDF boundary is outside the GSL unsigned-int range"
+    | _ -> cdf (int_of_float (floor x))
+
 let cdistr_cdf dist x =
   if classify_float x = FP_nan then invalid_arg "CDF is undefined at NaN"
   else match dist with
@@ -80,8 +96,25 @@ let cdistr_cdf dist x =
   | Gumbel2 (a, b)          -> Gsl.Cdf.gumbel2_P ~x:x ~a ~b
   | Rayleigh sigma          -> Gsl.Cdf.rayleigh_P ~x:x ~sigma
   | Exppow (a, b)           -> Gsl.Cdf.exppow_P ~x:x ~a ~b
-  | Poisson mu              -> Gsl.Cdf.poisson_P ~k:(int_of_float x) ~mu
-  | Binomial (p, n)         -> Gsl.Cdf.binomial_P ~k:(int_of_float x) ~p ~n
+  | Poisson mu              ->
+      integer_cdf ~upper_support:None
+        (fun k -> Gsl.Cdf.poisson_P ~k ~mu) x
+  | Binomial (p, n)         ->
+      integer_cdf ~upper_support:(Some n)
+        (fun k -> Gsl.Cdf.binomial_P ~k ~p ~n) x
+
+(** [cdistr_cdf_below dist x] is the left limit of the CDF: [P(X < x)].
+    It differs from [cdistr_cdf] at atoms. Integer-valued distributions need
+    an explicit implementation so that an endpoint's strictness is preserved. *)
+let cdistr_cdf_below dist x =
+  if classify_float x = FP_nan then invalid_arg "CDF is undefined at NaN"
+  else if x = neg_infinity then 0.0
+  else if x = infinity then 1.0
+  else
+    match dist with
+    | Poisson _ | Binomial _ ->
+        if x <= 0.0 then 0.0 else cdistr_cdf dist (ceil x -. 1.0)
+    | _ -> cdistr_cdf dist x
 
 let cdistr_sample dist =
   match dist with

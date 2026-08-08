@@ -2524,7 +2524,8 @@ We have the following key property:
 		 & \sem{\discretize{e:\tau}} \\
 		 %
 		 {}={}& \sem{\discrete(p_0,\ldots,p_n)}~\text{where}~p_k
-		 = \text{Uniform}(c_1,c_2)(\intervals{B}_k)~.
+		 = \Pr[X\in\intervals{B}_k]
+		 = H(b_{k+1})-H(b_k),\quad X\sim\text{Uniform}(c_1,c_2)~.
 	\end{align*}
 	Here $c_1<c_2$, and the uniform CDF is the clamped function
 	\[
@@ -2586,8 +2587,8 @@ We have the following key property:
 		\\
 		%
 		~{}={}~ & \sem{\discrete(p_0,\ldots,p_n)}~\text{where}~p_k
-		= \text{Uniform}(c_1,c_2)(\intervals{B}_k)
-		\tag{by construction} \\
+		=\Pr[X\in\intervals{B}_k]=H(b_{k+1})-H(b_k)
+		\tag{pushforward along the unique interval-index map} \\
 		%
 		~{}={}~ & \sem{\discretize{e}:\discretize{\tau}}~.
 		\tag{\Cref{tab:smallstep-1}}

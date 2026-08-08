@@ -112,6 +112,10 @@
         $\mathrm{CDF}(+\infty)=1$. The final row is the ideal exact-real dispatch schema.
         The OCaml emitter uses a nested hygienic core elaboration; correspondence between that
         emitted term and this schema is an explicit compiler-correctness obligation.
+        The constant-parameter rule assigns each canonical tagged-cut interval its probability mass.
+        For a general law and tagged cut $b={\sim}\!c$, the corresponding cumulative boundary is
+        $H(b)=\Pr[X\sim c]$, so $H(\clt c)=\Pr[X<c]$ and $H(\cleq c)=\Pr[X\leq c]$.
+        For the strict uniform family these agree at each finite boundary because the law is atomless.
         For the $\uniform$ distribution, $V = \top$ is implicit, and all remaining cut-set and value-set
         cases are outside this rule. The theorem applies only under the displayed representation,
         finite-domain, nonempty-domain, sampler-domain, and reachable-value adequacy premises.

@@ -20,6 +20,92 @@ let test_typing _test_ctxt =
   with e -> 
     assert_failure ("Type check test failed: " ^ Printexc.to_string e)
 
+let assert_float_list expected actual =
+  assert_equal (List.length expected) (List.length actual);
+  List.iter2
+    (fun expected actual ->
+      assert_bool
+        (Printf.sprintf "expected %.12g, got %.12g" expected actual)
+        (abs_float (expected -. actual) < 1e-10))
+    expected actual
+
+let coincident_cuts =
+  Slice.Lats.CutSet.of_list
+    [Slice.Lats.LessEq 1.0; Slice.Lats.Less 1.0]
+
+let test_canonical_coincident_cut_order _test_ctxt =
+  assert_equal
+    [Slice.Lats.Less 1.0; Slice.Lats.LessEq 1.0]
+    (Slice.Lats.CutSet.elements coincident_cuts)
+
+let test_coincident_cut_indices _test_ctxt =
+  let index value =
+    fst (Slice.Discretization.get_const_idx_and_modulus value coincident_cuts)
+  in
+  assert_equal 0 (index 0.5);
+  assert_equal 1 (index 1.0);
+  assert_equal 2 (index 1.5)
+
+let test_coincident_cut_atomic_masses _test_ctxt =
+  let probs =
+    Slice.Discretization.interval_probabilities coincident_cuts
+      (Slice.Distributions.Binomial (0.5, 2))
+  in
+  assert_float_list [0.25; 0.5; 0.25] probs
+
+let test_coincident_cut_continuous_masses _test_ctxt =
+  let probs =
+    Slice.Discretization.interval_probabilities coincident_cuts
+      (Slice.Distributions.Uniform (0.0, 2.0))
+  in
+  assert_float_list [0.5; 0.0; 0.5] probs
+
+let test_coincident_cut_degenerate_uniform_masses _test_ctxt =
+  assert_raises (Invalid_argument "Uniform low must be less than high")
+    (fun () ->
+      ignore
+        (Slice.Discretization.interval_probabilities coincident_cuts
+           (Slice.Distributions.Uniform (1.0, 1.0))))
+
+let test_integer_cdf_threshold_safety _test_ctxt =
+  let open Slice.Distributions in
+  let nan = 0.0 /. 0.0 in
+  assert_raises (Invalid_argument "CDF is undefined at NaN")
+    (fun () -> ignore (cdistr_cdf (Poisson 1.0) nan));
+  assert_raises (Invalid_argument "CDF is undefined at NaN")
+    (fun () -> ignore (cdistr_cdf_below (Binomial (0.5, 2)) nan));
+  assert_equal 0.0 (cdistr_cdf (Poisson 1.0) (-.max_float));
+  assert_raises
+    (Invalid_argument "integer CDF boundary is outside the GSL unsigned-int range")
+    (fun () -> ignore (cdistr_cdf (Poisson 1.0) max_float));
+  assert_equal 0.0 (cdistr_cdf_below (Binomial (0.5, 2)) (-.max_float));
+  assert_equal 1.0 (cdistr_cdf_below (Binomial (0.5, 2)) max_float)
+
+let test_nonfinite_cuts_are_rejected _test_ctxt =
+  let open Slice in
+  List.iter
+    (fun cut ->
+      assert_raises (Invalid_argument "Cut boundaries must be finite")
+        (fun () ->
+          ignore
+            (Discretization.interval_probabilities (Lats.CutSet.singleton cut)
+               (Distributions.Uniform (0.0, 1.0)))))
+    [Lats.Less infinity; Lats.LessEq neg_infinity; Lats.Less nan]
+
+let test_inferred_coincident_cut_atomic_masses _test_ctxt =
+  let expr =
+    Slice.Parse.parse_expr
+      "let x = binomial(0.5, 2) in x <= 1 && x >= 1"
+  in
+  let discretized =
+    expr |> Slice.Inference.infer |> Slice.Discretization.discretize_top
+  in
+  match discretized with
+  | Slice.Ast.ExprNode
+      (Slice.Ast.Let (_, Slice.Ast.ExprNode (Slice.Ast.DistrCase cases), _)) ->
+      assert_float_list [0.25; 0.5; 0.25] (List.map snd cases)
+  | _ -> assert_failure "expected the inferred Binomial sample to discretize"
+
 let assert_discretization_fails_with expected source =
   let expr = Slice.Parse.parse_expr source in
   match Slice.Discretization.discretize_top (Slice.Inference.infer expr) with
@@ -654,6 +740,16 @@ let suite =
   "Slice Tests" >:::
     [(* Removed test_parse and test_pretty_print *)
      "test_typing" >:: test_typing;
+     "canonical coincident-cut order" >:: test_canonical_coincident_cut_order;
+     "coincident-cut indices" >:: test_coincident_cut_indices;
+     "coincident-cut atomic masses" >:: test_coincident_cut_atomic_masses;
+     "coincident-cut continuous masses" >:: test_coincident_cut_continuous_masses;
+     "coincident-cut degenerate uniform masses" >::
+       test_coincident_cut_degenerate_uniform_masses;
+     "integer CDF threshold safety" >:: test_integer_cdf_threshold_safety;
+     "nonfinite cuts are rejected" >:: test_nonfinite_cuts_are_rejected;
+     "inferred coincident-cut atomic masses" >::
+       test_inferred_coincident_cut_atomic_masses;
      "test_empty_distribution_parameter_rejected" >:: test_empty_distribution_parameter_rejected;
      "test_recursive_distribution_parameter_rejected" >:: test_recursive_distribution_parameter_rejected;
      "test_raw_discretize_checks_distribution_parameters"

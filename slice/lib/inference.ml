@@ -214,6 +214,7 @@ let infer (e : expr) : texpr =
                   | Ast.Lt -> Lats.Less f
                   | Ast.Le -> Lats.LessEq f
                 in
+                Lats.validate_cut cut;
                 cuts_to_add := Lats.CutSet.add cut !cuts_to_add
               ) s2;
 
@@ -240,6 +241,7 @@ let infer (e : expr) : texpr =
                        | Ast.Lt -> Lats.Less f
                        | Ast.Le -> Lats.LessEq f
                      in
+                     Lats.validate_cut cut;
                      cuts_to_add := Lats.CutSet.add cut !cuts_to_add
                    ) s2
                | Top -> ()
@@ -253,6 +255,7 @@ let infer (e : expr) : texpr =
                        | Ast.Lt -> Lats.LessEq f
                        | Ast.Le -> Lats.Less f
                      in
+                     Lats.validate_cut cut;
                      cuts_to_add := Lats.CutSet.add cut !cuts_to_add
                    ) s1
                | Top -> ()
