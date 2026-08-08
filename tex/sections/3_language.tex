@@ -12,6 +12,99 @@ The expression $\discrete(p_0,\ldots,p_{n-1})$ requires a nonempty probability v
 
 These are ideal real-valued premises. The implementation separately validates finite binary64 weights. It normalizes compiler-generated weights only within a tight allowance for accumulated CDF arithmetic, and parses source vectors within a documented $10^{-4}$ rounded-input allowance. These engineering policies do not replace the exact premise above: binary64 evaluation and normalization do not by themselves establish exact preservation of ideal real-valued probabilities, which requires a separate numerical error analysis.
 
+Listings also use the derived surface
+form $\discrete(p_0:e_0,\ldots,p_{n-1}:e_{n-1})$, which samples expression
+$e_i$ with probability $p_i$. This form does not extend the formal core. For
+a fresh variable $z$, it elaborates before type inference as
+\begin{align*}
+ &\mathsf{elab}\bigl(\discrete(p_0:e_0,\ldots,p_{n-1}:e_{n-1})\bigr) \\
+ &\quad={}
+ \letkw\;z=\discrete(p_0,\ldots,p_{n-1})\;\inkw\;
+ \ifkw\;z\finlt{n}\finconst{1}{n}\;\thenkw\;\mathsf{elab}(e_0)\;\elsekw\;\cdots\\[-0.2em]
+ &\hspace{14.4em}
+ \ifkw\;z\finlt{n}\finconst{n-1}{n}\;\thenkw\;\mathsf{elab}(e_{n-2})\;\elsekw\;\mathsf{elab}(e_{n-1}).
+ \tag{Finite-support elaboration}\label{eq:finite-support-elaboration}
+\end{align*}
+For $n=1$, the body is just $\mathsf{elab}(e_0)$. This notation is defined
+only when each $p_i\in[0,1]$ and $\sum_i p_i=1$. Whenever every $e_i$ has
+an elaboration $E_i=\mathsf{elab}(e_i)$ of type $\tau$, the elaborated
+expression has type $\tau$ by
+\textsc{Discrete}, \textsc{FinLess}, \textsc{If}, and \textsc{Let}. Only the
+selected branch is evaluated. We assign the surface form the semantics of this
+elaboration. Thus the conditional theorem below concerns the resulting core
+expression; it is not a separate theorem about an additional
+operational-semantic case.
+The implementation validates the weights, performs this capture-avoiding
+elaboration in the parser, and sends the resulting core term through the same
+type inference and discretization passes.
+
+Write $\mathsf{Sel}_n(z;E_0,\ldots,E_{n-1})$ for the conditional selector in
+\Cref{eq:finite-support-elaboration}.
+
+\begin{lemma}[Finite-selector correctness, typing, and laziness]
+	\label{lem:finite-support-selector}
+	Let $0\leq k<n$, let $z$ be fresh for every $E_i$, and suppose
+	$E_i:\tau$ for all $i$.  Then
+	$\mathsf{Sel}_n(\finconst{k}{n};E_0,\ldots,E_{n-1})$ reduces by a finite
+	deterministic sequence to $E_k$.  No $E_j$ with $j\neq k$ is evaluated.
+		Moreover,
+		$z:\fin{n}\vdash\mathsf{Sel}_n(z;E_0,\ldots,E_{n-1}):\tau$, and
+	\[
+		\letkw z=\discrete(p_0,\ldots,p_{n-1})\inkw
+		\mathsf{Sel}_n(z;E_0,\ldots,E_{n-1})
+		:\tau
+	\]
+	whenever $(p_i)_{i<n}$ is a nonempty exact probability vector.
+\end{lemma}
+
+\begin{proof}
+	For $k<n-1$, the guards with thresholds $1,\ldots,k$ are false and the
+	guard with threshold $k+1$ is true; for $k=n-1$, every guard is false and
+	the final branch is selected.  Call-by-value conditional evaluation only
+	evaluates those guards and then the selected branch.  The typing statement
+	follows by induction over the selector using \textsc{FinLess} and
+	\textsc{If}, followed by \textsc{Discrete} and \textsc{Let}.  Freshness of
+	$z$ makes the construction capture-avoiding.
+\end{proof}
+
+\begin{lemma}[Exact finite-support terminal mixture]
+	\label{lem:finite-support-mixture}
+		Let $n\geq1$, let each $E_i$ be a closed well-typed core term of type
+		$\tau$, and let $E$ be the closed elaborated core term above.  Let
+	$T_\tau=Vals_\tau+\bot$, and assume the ideal weights satisfy
+	$p_i\geq0$ and $\sum_{i<n}p_i=1$.  For every measurable terminal event
+	$A\subseteq T_\tau$,
+	\[
+		\bigsem{E:\tau}(A)=\sum_{i<n}p_i\,\bigsem{E_i:\tau}(A).
+	\]
+	Consequently,
+	\begin{align*}
+		\bigsem{E:\tau}(\{\bot\})
+		&=\sum_{i<n}p_i\,\bigsem{E_i:\tau}(\{\bot\}),\\
+		1-\bigsem{E:\tau}(T_\tau)
+		&=\sum_{i<n}p_i\bigl(1-\bigsem{E_i:\tau}(T_\tau)\bigr).
+	\end{align*}
+	Thus explicit observation failure and aggregate missing mass are mixed
+	separately; neither is identified with the other.
+\end{lemma}
+
+\begin{proof}
+	Condition on the single exact core choice
+	$\discrete(p_0,\ldots,p_{n-1})$.  By
+	\Cref{lem:finite-support-selector}, outcome $i$ reaches $E_i$ through only
+	a finite deterministic prefix, which does not change terminal semantics.
+		Linearity of strict bind (integration) after the initial discrete choice
+		gives the event equation.  Evaluating it at $\{\bot\}$
+	gives the failure equation.  Evaluating it at $T_\tau$, subtracting from
+	$1$, and using $\sum_i p_i=1$ gives the missing-mass equation.
+\end{proof}
+
+These lemmas concern the exact probability vector embedded in the ideal core
+term.  The parser's \texttt{Rounded\_input} policy accepts and normalizes
+binary64 source text before constructing that core term.  It does not prove
+that the resulting binary64 vector equals a mathematical vector intended by
+the author, and it lies outside the ideal theorem above.
+
 % \item \textbf{Discrete distributions}: The $\discrete(p_0, \ldots, p_{n-1})$ construct returns a finite type value $\finconst{k}{n}$ \kevin{let's maybe explain the types first?  $\finconst{k}{n}$ is not introduced} with probability $p_k$.
 
 

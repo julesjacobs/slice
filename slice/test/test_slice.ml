@@ -870,6 +870,61 @@ let test_unit_reflexivity_in_if _test_ctxt =
        | TUnit -> ()
        | _ -> assert_failure "unit branches did not infer unit")
 
+let test_finite_support_elaboration _test_ctxt =
+  let expr =
+    Slice.Parse.parse_expr
+      "discrete(0.18: 0.05, 0.11: 0.24, 0.21: 0.37, 0.09: 0.58, 0.41: 0.89)"
+  in
+  let open Slice.Ast in
+  (match expr with
+   | ExprNode
+       (Let
+         ( choice,
+           ExprNode (DistrCase index_cases),
+           ExprNode (If (ExprNode (FinCmp (_, ExprNode (Var used), _, 5, _)), _, _)) )) ->
+       assert_equal choice used;
+       assert_equal 5 (List.length index_cases);
+       List.iteri
+         (fun i (case, _) -> assert_equal (ExprNode (FinConst (i, 5))) case)
+         index_cases
+   | _ ->
+       assert_failure
+         "weighted discrete syntax was not elaborated to a finite-index choice");
+  ignore (Slice.Inference.infer expr)
+
+let test_finite_support_elaboration_is_hygienic _test_ctxt =
+  let expr =
+    Slice.Parse.parse_expr
+      "let __slice_discrete_choice_0 = 7 in discrete(0.5: __slice_discrete_choice_0, 0.5: 9)"
+  in
+  let open Slice.Ast in
+  match expr with
+  | ExprNode
+      (Let
+        ( "__slice_discrete_choice_0",
+          _,
+          ExprNode (Let (generated, _, _)) )) ->
+      assert_equal "__slice_discrete_choice_1" generated
+  | _ -> assert_failure "finite-support elaboration did not avoid variable capture"
+
+let test_finite_support_elaboration_arities _test_ctxt =
+  let open Slice.Ast in
+  let check source expected_arity =
+    match Slice.Parse.parse_expr source with
+    | ExprNode (Let (_, ExprNode (DistrCase cases), _)) ->
+        assert_equal expected_arity (List.length cases);
+        let sum = List.fold_left (fun acc (_, p) -> acc +. p) 0.0 cases in
+        assert_equal ~cmp:(fun x y -> abs_float (x -. y) < 1e-12) 1.0 sum
+    | _ -> assert_failure "finite-support syntax was not elaborated"
+  in
+  check "discrete(1.0: 7)" 1;
+  check "discrete(0.25: true, 0.75: false)" 2
+
+let test_finite_support_elaboration_validates_probabilities _test_ctxt =
+  List.iter assert_invalid_discrete
+    [ "discrete(0 - 0.1: true, 1.1: false)";
+      "discrete(0.2: true, 0.2: false)";
+      "discrete()" ]
 (* Test suite *) 
 let suite = 
   "Slice Tests" >:::
@@ -939,7 +994,11 @@ let suite =
      "finite_comparison_uses_right_operand_cuts" >:: test_finite_comparison_uses_right_operand_cuts;
      "sampled_distribution_parameter_forces_top" >:: test_sampled_distribution_parameter_forces_top;
      "unit_reflexivity_in_if" >:: test_unit_reflexivity_in_if;
-     ]
+     "test_finite_support_elaboration" >:: test_finite_support_elaboration;
+     "test_finite_support_elaboration_is_hygienic" >:: test_finite_support_elaboration_is_hygienic;
+     "test_finite_support_elaboration_arities" >:: test_finite_support_elaboration_arities;
+     "test_finite_support_elaboration_validates_probabilities" >:: test_finite_support_elaboration_validates_probabilities;
+    ]
 
 (* Main test runner *) 
 let () = 
