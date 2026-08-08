@@ -95,7 +95,7 @@ After discretization, the equality test $\texttt{gpa} = 10$ becomes the discrete
 
 \subsection{Point and Measure-Zero Observations}\label{ap:measure-zero-observations}
 
-\Slice{} can condition on an exact value when that event has strictly positive probability mass, as in the Indian GPA example in \Cref{ap:gpa}. In that case, conditioning is well-defined and \Slice{} returns the correct answer. The exact set of programs supported by \Slice{} is therefore somewhat larger than one would initially expect, while not covering full point observations on continuous samples.
+\Slice{} can condition on an exact value when that event has strictly positive probability mass, as in the Indian GPA example in \Cref{ap:gpa}. In that case, returned-value normalization is well-defined and \Slice{} preserves the raw extended semantics from which the posterior is computed. The exact set of programs supported by \Slice{} is therefore somewhat larger than one would initially expect, while not covering full point observations on continuous samples.
 
 The mechanism is the same as in \Cref{ap:gpa}: the cuts $\clt{c}$ and $\cleq{c}$ induce the partition
 \[
@@ -112,7 +112,7 @@ More precisely:
 
   \item It does not matter whether an event is measure-zero because it is point-conditioning on a continuous sample, or whether it is measure-zero for another reason, e.g. $\observekw(\uniform(0,1) > 3)$ or simply $\observekw(\false)$. The critical distinction for $\observekw(E)$ is whether $\Pr(E)=0$, not whether $E$ is of the form ``$x=3.2$''.
 
-  \item \Slice{} will never give the wrong answer, even when all paths condition on measure-zero events. It will give the empty subdistribution, indicating that under a rejection-sampling interpretation, all samples are rejected with probability~$1$. Thus the user is notified, and \Slice{} never silently gives a wrong answer.
+  \item \Slice{} will never give the wrong answer, even when all paths condition on measure-zero events. It will give the empty subdistribution, indicating that under a rejection-sampling interpretation, all samples are rejected with probability~$1$. The normalized posterior is then undefined because the successful-return mass is zero. Thus the user is notified, and \Slice{} never silently gives a wrong answer.
 \end{enumerate}
 
 For instance, this program:
@@ -123,12 +123,14 @@ For instance, this program:
   else
     let _ = observe(x <= 0.3 && x >= 0.3) in false
 \end{lstlisting}
-results in:
+has raw extended-semantic masses:
 \[
-\Pr(\true) = 0
+\mu(\true) = 0
 \qquad
-\Pr(\false) = 0.
+\mu(\false) = 0.
 \]
+Consequently, the returned-value posterior is undefined, rather than a
+distribution assigning probability zero to both values.
 
 Whereas this program:
 \begin{lstlisting}[aboveskip=1em,belowskip=1em]
@@ -138,13 +140,20 @@ Whereas this program:
   else
     let _ = observe(x <= 0.3001 && x >= 0.3) in false
 \end{lstlisting}
-results in:
+has raw extended-semantic masses
 \[
-\Pr(\true) = 0
+\mu(\true) = 0,
 \qquad
-\Pr(\false) = 1.
+\mu(\false) = 0.5\cdot 0.0001=0.00005,
+\qquad
+\mu(\bot)=0.99995.
 \]
-This is the correct behavior: consider repeatedly running the program under a rejection-sampling interpretation until an observation succeeds. With probability~$1$, the first successful test will be $\observekw(x \leq 0.3001 \mathrel{\&\&} x \geq 0.3)$ and the program will therefore return $\false$ with probability~$1$.
+Only after normalizing over successful returns do we obtain
+$\Pr_{\mathrm{post}}(\false)=1$.  This agrees with rejection sampling:
+consider repeatedly running the program until an observation succeeds. With
+probability~$1$, the first successful test will be
+$\observekw(x \leq 0.3001 \mathrel{\&\&} x \geq 0.3)$ and the program will
+therefore return $\false$ with probability~$1$.
 
 
 \subsection{Random Interval Covering Over $\boldmath{[0,1]}$}\label{ap:epsball}

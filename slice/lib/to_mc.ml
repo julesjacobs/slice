@@ -15,6 +15,7 @@ type mc = {
   expr_of : (int, A.expr) Hashtbl.t; (* map: state id -> expression *)
   has_observe : bool;
   fail : int option;
+  error : int option;
 }
 
 (* ---------- Utilities: sets of identifiers ---------- *)
@@ -63,6 +64,31 @@ let rec free_vars (A.ExprNode e : A.expr) : StringSet.t =
       StringSet.union (free_vars e)
         (StringSet.union (free_vars nil_br)
            (free_vars cons_br |> StringSet.remove x |> StringSet.remove xs))
+
+let rec contains_runtime_error (A.ExprNode e : A.expr) : bool =
+  let either e1 e2 = contains_runtime_error e1 || contains_runtime_error e2 in
+  match e with
+  | A.RuntimeError _ -> true
+  | A.Var _ | A.Const _ | A.BoolConst _ | A.FinConst _ | A.Unit | A.Nil -> false
+  | A.Let (_, e1, e2) | A.Cmp (_, e1, e2, _) | A.And (e1, e2)
+  | A.Or (e1, e2) | A.Pair (e1, e2) | A.FuncApp (e1, e2)
+  | A.Cons (e1, e2) | A.Assign (e1, e2) | A.Seq (e1, e2)
+  | A.FinEq (e1, e2, _) | A.LoopApp (e1, e2, _) ->
+      either e1 e2
+  | A.Sample (A.Distr1 (_, e1)) | A.Not e1 | A.First e1 | A.Second e1
+  | A.Observe e1 | A.Ref e1 | A.Deref e1 ->
+      contains_runtime_error e1
+  | A.Fun _ | A.Fix _ -> false
+  | A.Sample (A.Distr2 (_, e1, e2)) | A.FinCmp (_, e1, e2, _, _) ->
+      either e1 e2
+  | A.DistrCase cases ->
+      List.exists (fun (case, _) -> contains_runtime_error case) cases
+  | A.If (e1, e2, e3) ->
+      contains_runtime_error e1 || contains_runtime_error e2
+      || contains_runtime_error e3
+  | A.MatchList (e1, e2, _, _, e3) ->
+      contains_runtime_error e1 || contains_runtime_error e2
+      || contains_runtime_error e3
 
 let fresh_name (avoid : StringSet.t) (base : string) : string =
   if not (StringSet.mem base avoid) then base
@@ -575,25 +601,22 @@ let to_mc (e0 : A.expr) : mc =
   let transitions_rev : transition list ref = ref [] in
   let terminal_ids : int list ref = ref [] in
   let fail_srcs : (int * float) list ref = ref [] in
+  let error_srcs : int list ref = ref [] in
   let has_fail = ref false in (* if a program has_fail, then it will has_observe *)
-
-  let is_terminal_value (e : A.expr) : bool =
-    match simplify e with
-    | A.ExprNode (A.Const _) -> true
-    | A.ExprNode (A.BoolConst _) -> true
-    | A.ExprNode (A.FinConst _) -> true
-    | _ -> false
-  in
 
   while not (Queue.is_empty q) do
     let sid = Queue.take q in
     let e = Hashtbl.find expr_of sid in
-    if is_terminal_value e then
+    if is_value (simplify e) then
       terminal_ids := sid :: !terminal_ids
     else begin
       let succs = step e in
-      if succs = [] then
-        terminal_ids := sid :: !terminal_ids
+      if succs = [] then begin
+        if contains_runtime_error e then error_srcs := sid :: !error_srcs
+        else
+          failwith
+            "to_mc: stuck state is neither a returned value nor a runtime error"
+      end
       else
         List.iter
           (fun (p, s) ->
@@ -610,15 +633,20 @@ let to_mc (e0 : A.expr) : mc =
     end
   done;
 
-  (* Allocate done and observe fail states *)
+  (* Allocate successful-return, observation-failure, and runtime-error sinks. *)
   let done_id = !next_id in
   let fail_id =
     if !has_fail then Some (done_id + 1) else None
   in
+  let error_id =
+    if !error_srcs = [] then None
+    else Some (done_id + 1 + if !has_fail then 1 else 0)
+  in
   let num_states =
-    match fail_id with
-    | None -> done_id + 1
-    | Some fid -> fid + 1
+    match error_id, fail_id with
+    | Some eid, _ -> eid + 1
+    | None, Some fid -> fid + 1
+    | None, None -> done_id + 1
   in
   let base = !transitions_rev in
   let from_terminals =
@@ -632,8 +660,19 @@ let to_mc (e0 : A.expr) : mc =
         ( List.map (fun (sid, p) -> { src = sid; dst = fid; prob = p }) !fail_srcs
         , [ { src = fid; dst = fid; prob = 1.0 } ] )
   in
+  let error_edges, error_self =
+    match error_id with
+    | None -> ([], [])
+    | Some eid ->
+        ( List.map (fun sid -> { src = sid; dst = eid; prob = 1.0 }) !error_srcs,
+          [ { src = eid; dst = eid; prob = 1.0 } ] )
+  in
   (* Sort transitions for nicer output *)
-  let merged = merge_transitions (done_self :: (fail_self @ fail_edges @ from_terminals @ base)) in
+  let merged =
+    merge_transitions
+      (done_self
+       :: (error_self @ error_edges @ fail_self @ fail_edges @ from_terminals @ base))
+  in
   let transitions =
     List.sort
       (fun a b ->
@@ -642,7 +681,8 @@ let to_mc (e0 : A.expr) : mc =
         | c -> c)
       merged
   in
-  { num_states; sink = done_id; transitions; expr_of; has_observe = !has_fail; fail = fail_id }
+  { num_states; sink = done_id; transitions; expr_of; has_observe = !has_fail;
+    fail = fail_id; error = error_id }
 
 (* Transition file (.tra) for STORM backend *)
 let write_tra_file (m : mc) (path : string) : unit =
@@ -660,10 +700,10 @@ let write_lab_file (m : mc) (path : string) : unit =
   let oc = open_out path in
   let fmt = Format.formatter_of_out_channel oc in
   Format.fprintf fmt "#DECLARATION@.";
-  if m.has_observe then
-    Format.fprintf fmt "init done accept fail has_observe@."
-  else
-    Format.fprintf fmt "init done accept@.";
+  Format.fprintf fmt "init done accept";
+  if m.has_observe then Format.fprintf fmt " fail has_observe";
+  if Option.is_some m.error then Format.fprintf fmt " error";
+  Format.fprintf fmt "@.";
   Format.fprintf fmt "#END@.";
   Format.fprintf fmt "0 init@.";
   for sid = 0 to (m.num_states - 1) do
@@ -676,4 +716,7 @@ let write_lab_file (m : mc) (path : string) : unit =
   (match m.fail with
    | None -> ()
    | Some fid -> Format.fprintf fmt "%d fail@." fid);
+  (match m.error with
+   | None -> ()
+   | Some eid -> Format.fprintf fmt "%d error@." eid);
   close_out oc

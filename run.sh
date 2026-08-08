@@ -79,37 +79,62 @@ if [ "$RUN_STORM" = true ]; then
     exit 1
   fi
 
-  if grep -q "has_observe" "$LAB"; then
-    run_storm_prop() {
-      local prop="$1"
-      local out
-      out="$(storm --explicit "$TRA" "$LAB" --prop "$prop")"
-      printf '%s\n' "$out" >&2
-      printf '%s\n' "$out" | awk '/Result/ {print $NF}' | tail -n 1
-    }
+  run_storm_prop() {
+    local prop="$1"
+    local out
+    out="$(storm --explicit "$TRA" "$LAB" --prop "$prop")"
+    printf '%s\n' "$out" >&2
+    printf '%s\n' "$out" | awk '/Result/ {print $NF}' | tail -n 1
+  }
 
-    num="$(run_storm_prop 'P=? [ (F "accept") & (G !"fail") ]')"
-    den="$(run_storm_prop 'P=? [ (G !"fail") ]')"
-    if [[ -z "$num" || -z "$den" ]]; then
-      echo "Error: could not parse Storm output for normalization." >&2
+  # "accept" labels true terminal states; "done" is reached from every
+  # successfully returned value.  Normalizing by P(F done), rather than by
+  # the probability of avoiding observation failure, excludes divergence.
+  true_mass="$(run_storm_prop 'P=? [ F "accept" ]')"
+  return_mass="$(run_storm_prop 'P=? [ F "done" ]')"
+  if [[ -z "$true_mass" || -z "$return_mass" ]]; then
+    echo "Error: could not parse Storm output for returned-value normalization." >&2
+    exit 1
+  fi
+  echo "--------------------------------------------------------------"
+  echo ""
+
+  awk -v true_mass="$true_mass" -v return_mass="$return_mass" '
+    BEGIN {
+      printf "Raw true-return mass P(F \"accept\") = %.17g\n", true_mass;
+      printf "Successful-return mass P(F \"done\") = %.17g\n", return_mass;
+      if (return_mass == 0) {
+        print "Returned-value posterior is undefined (P(F \"done\") = 0).";
+      } else {
+        printf "Returned-value posterior P(true | successful return) = %.17g\n", true_mass / return_mass;
+      }
+    }'
+
+  if grep -q " error" "$LAB"; then
+    error_mass="$(run_storm_prop 'P=? [ F "error" ]')"
+    if [[ -z "$error_mass" ]]; then
+      echo "Error: could not parse Storm output for runtime-error mass." >&2
       exit 1
     fi
-    echo "--------------------------------------------------------------"
-    echo ""
+    awk -v error_mass="$error_mass" '
+      BEGIN { printf "Runtime-error mass P(F \"error\") = %.17g\n", error_mass; }'
+  fi
 
-    awk -v num="$num" -v den="$den" '
+  if grep -q "has_observe" "$LAB"; then
+    no_fail_mass="$(run_storm_prop 'P=? [ G !"fail" ]')"
+    if [[ -z "$no_fail_mass" ]]; then
+      echo "Error: could not parse Storm output for observation-success conditioning." >&2
+      exit 1
+    fi
+    awk -v true_mass="$true_mass" -v no_fail_mass="$no_fail_mass" '
       BEGIN {
-        if (den == 0) {
-          print "Conditional probability undefined (P(G \"!fail\") = 0).";
-          exit 1;
+        printf "Observation-success mass P(G !\"fail\") = %.17g\n", no_fail_mass;
+        if (no_fail_mass == 0) {
+          print "Observation-success-conditioned probability is undefined (P(G !\"fail\") = 0).";
+        } else {
+          printf "P(F \"accept\" | G !\"fail\") = %.17g\n", true_mass / no_fail_mass;
         }
-        printf "Storm P(F \"accept\" & G \"!fail\") = %.17g\n", num;
-        printf "Storm P(G \"!fail\") = %.17g\n", den;
-        printf "Conditional probability P(F \"accept\" | G \"!fail\") = %.17g\n", num / den;
       }'
-  else
-    storm --explicit "$TRA" "$LAB" \
-      --prop 'P=? [ (F "accept") ]'
   fi
   cd ..
   exit 0
