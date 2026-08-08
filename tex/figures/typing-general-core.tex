@@ -19,6 +19,19 @@
         \inferrule[\textsc{Observe}]
         {\Gamma \vdash e : \bool}
         {\Gamma \vdash \observekw\; e : \unit}
+
+        \inferrule[\textsc{Unit}]
+        { }
+        {\Gamma\vdash():\unit}
+
+        \inferrule[\textsc{App}]
+        {\Gamma\vdash e_1:\tau_1\to\tau_2 \\
+         \Gamma\vdash e_2:\tau_1}
+        {\Gamma\vdash e_1\,e_2:\tau_2}
+
+        \inferrule[\textsc{Fix}]
+        {\Gamma,f:\tau_1\to\tau_2,x:\tau_1\vdash e:\tau_2}
+        {\Gamma\vdash\fixkw\;f\;x:=e:\tau_1\to\tau_2}
     
     \inferrule[\textsc{Discrete}]
         {n \geq 1 \\
@@ -35,10 +48,15 @@
          \Gamma \vdash e_2 : \fin{n}}
         {\Gamma \vdash e_1 \finlt{n} e_2 : \bool}
     
-        \inferrule[\textsc{FinLessEq}]
+    \inferrule[\textsc{FinLessEq}]
         {\Gamma \vdash e_1 : \fin{n} \\
          \Gamma \vdash e_2 : \fin{n}}
-        {\Gamma \vdash e_1 \finleq{n} e_2 : \bool}
+    {\Gamma \vdash e_1 \finleq{n} e_2 : \bool}
+
+    \inferrule[\textsc{FinEq}]
+    {\Gamma \vdash e_1 : \fin{n} \\
+     \Gamma \vdash e_2 : \fin{n}}
+    {\Gamma \vdash e_1 \fineq{n} e_2 : \bool}
 
         \inferrule[\textsc{FinEq}]
         {\Gamma \vdash e_1 : \fin{n} \\

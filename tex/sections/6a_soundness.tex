@@ -1526,6 +1526,7 @@ These measure-theoretic obligations remain open.
 
 
 
+\iffalse
 \subsection{Big-Step Semantics}
 
 Conditional on \Cref{lem:small-step-kernel}, the complete ordinary small-step
@@ -2381,3 +2382,718 @@ The following will imply our desired equivalence claim:
 %	\noindent
 %	\emph{The case $v=\false$.} Completely analogous to the previous case.
 \end{proof}
+% Legacy base proof variant follows.
+\subsection{Small-Step Coupling Semantics}
+\input{figures/coupling_smallstep}
+
+%\kevin{todo: measurable space} 
+%\begin{definition}
+%	Let $\tau$ be a type, and let $P_\tau = \{ (e:\tau, \discretize{e} : \discretize{\tau}) ~|~ e:\tau \}$. Given a suitable measurable space, we denote by $\mathcal{D}(P_\tau + \bot)$ 
+%	the set of sub-probability measures over $P_\tau$. 
+%\end{definition}
+Define $P_\tau = \{ (e:\tau, \discretize{e:\tau} : \discretize{\tau}) ~|~ e:\tau \}$. Exploiting that $e:\tau$ is a value iff $\discretize{e} : \discretize{\tau}$ is a value, we define:
+%
+\begin{definition}
+	The small-step coupling  $\sem{e :\tau, \discretize{e}: \discretize{\tau}} \in \mathcal{D}(P_{\tau} + \bot)$ is defined recursively on the structure of $e:\tau$ by the rules in \Cref{tab:coupling_smallstep_1,tab:coupling_smallstep_2}. 
+\end{definition}
+%
+%
+%\kevin{todo: the following must be measurable} \\
+%Define $P_\tau = \{ (e:\tau, \discretize{e} : \discretize{\tau}) ~|~ e:\tau \}$.
+
+\begin{lemma}[Monadic bind is a Markov kernel]\label{lem:bind-kernel-coupling}
+	For every occurrence of a monadic bind $\mu \monbind (f,f')$ given in the small-step operational coupling semantics in~\Cref{tab:coupling_smallstep_1,tab:coupling_smallstep_2}, $(f,f') \colon (P_{\tau_1} + \bot) \to \mathcal{D}(P_{\tau_2} + \bot)$ is a Markov kernel.
+\end{lemma}
+
+\begin{proof}
+	Analogous to proof of~\Cref{lem:bind-kernel}.
+\end{proof}
+
+\begin{lemma}[Small-step coupling semantics is a Markov kernel]\label{lem:small-step-coupling-kernel}
+	For each type $\tau$, the small-step operational coupling semantics $\sem{\cdot, \cdot} \colon P_{\tau} \to \mathcal{D}(P_\tau + \bot)$ defines a Markov kernel.
+\end{lemma}
+
+\begin{proof}
+	Analogous to proof of~\Cref{lem:small-step-kernel}.
+\end{proof}
+
+
+We now define suitable projection functions on measures $\mu \in \mathcal{D}(P_{\tau} + \bot)$ by 
+%
+\begin{align}
+	 \pi_1(\mu) &{}={} \mu \gg\!= \lambda(e_1,e_2). \delta_{e_1} \\
+	 %
+	 \pi_2(\mu) &{}={} \mu \gg\!= \lambda(e_1,e_2). \delta_{e_2}~.
+\end{align}
+%
+%
+We have the following key property:
+%
+\begin{lemma}[Small-step coupling projection]
+	\label{lem:small_step_coupling_props}
+	Let $e:\tau$. We have:
+	%
+	\begin{enumerate}
+		\item\label{lem:small_step_coupling_props1} $\pi_1(\sem{e:\tau, \discretize{e} : \discretize{\tau}}) = \sem{e:\tau}$.
+		%
+		\item\label{lem:small_step_coupling_props2} $\pi_2(\sem{e:\tau, \discretize{e} : \discretize{\tau}}) = \sem{\discretize{e}:\discretize{\tau}}$.
+	\end{enumerate}
+\end{lemma}
+%
+\begin{proof}
+	By induction on the type derivation of $e:\tau$. The most interesting case is 
+	\[
+	    e:\tau = \uniform(c_1 : \floattype{B_1}{V_1}, c_2 : \floattype{B_2}{V_2}) : \floattype{B}{V}~,
+	\]
+	%
+	where
+	%
+	\begin{enumerate}
+		\item $c_1 < c_2$,
+		%
+		\item $B =  \{\sim_1\!\!b_1, \ldots, \sim_n\!\!b_n\}$,
+		%
+		\item $V=\top$, 
+		%
+		\item $V_1 = \{v_1,\ldots, v_{n_1}\}$ with $\distinguishes{B_1}{V_1}$ and $c_1 \in V_1$ due to $\has{V_1}{c_1}$ by I.H. 
+		%
+		\item $V_2 = \{w_1,\ldots, w_{n_2}\}$ with $\distinguishes{B_2}{V_2}$ and  $c_2 \in V_2$ due to $\has{V_2}{c_2}$ by I.H. 
+	\end{enumerate}
+	%
+	First observe that we have 
+	%
+	\begin{align*}
+		&\discretize{ e:\tau} : \discretize{\tau} \\
+		%
+		{}={}& \dc(\discretize{c_1 : \floattype{B_1}{V_1}}, \discretize{c_2 :  \floattype{B_2}{V_2}}) : \fin{|B| + 1}\\
+		%
+		{}={}&\dc( k_1 : \fin{|B_1| + 1}, k_2:\fin{|B_2|+1} ) : \fin{|B|+1}~,
+	\end{align*}
+	%
+	where $k_i$ is the unique number such that $c_i \in \intervals{B_i}_{k_i}$. By \Cref{tab:smallstep-1} and \Cref{fig:discretization-code}, this yields
+	%
+	\begin{align*}
+		 & \sem{\discretize{e:\tau}} \\
+		 %
+		 {}={}& \sem{\discrete(p_0,\ldots,p_n)}~\text{where}~p_k
+		 = \text{Uniform}(c_1,c_2)(\intervals{B}_k)~.
+	\end{align*}
+	Here $c_1<c_2$, and the uniform CDF is the clamped function
+	\[
+	F_{c_1,c_2}(x)=
+	\begin{cases}
+	0 & x\leq c_1,\\
+	\dfrac{x-c_1}{c_2-c_1} & c_1<x<c_2,\\
+	1 & x\geq c_2.
+	\end{cases}
+	\]
+	Thus each $p_k$ is the difference of $F_{c_1,c_2}$ at consecutive
+	cut locations (with endpoints $-\infty$ and $+\infty$). Strict and
+	non-strict cuts assign a boundary point to different adjacent intervals,
+	but this does not change these masses because $c_1<c_2$ makes the uniform
+	distribution atomless.
+	%
+	
+	For \Cref{lem:small_step_coupling_props}.\ref{lem:small_step_coupling_props2}, consider the following:
+	%
+	\begin{align*}
+		 & \pi_1(\sem{e:\tau, \discretize{e} : \discretize{\tau}}) \\
+		 %
+		 ~{}={}~ &  \sem{e:\tau, \discretize{e} : \discretize{\tau}} \gg\!= \lambda(e_1,e_2). \delta_{e_1}  
+		 \tag{definition} \\
+		 %
+		 ~{}={}~ & (\text{Uniform}(c_1, c_2) \gg\!= \lambda v.\delta_{(v : \floattype{B}{V}, v_i : \fin{|B| + 1})})\gg\!= \lambda(e_1,e_2). \delta_{e_1}  
+		 \tag{\Cref{tab:coupling_smallstep_1}, $v_i$ is unique number s.t. $v \in \intervals{B}_{v_i}$} \\
+		 %
+		 ~{}={}~ & \text{Uniform}(c_1, c_2) \gg\!= \lambda v.(\delta_{(v : \floattype{B}{V}, v_i : \fin{|B| + 1})} \gg\!= \lambda(e_1,e_2). \delta_{e_1}  )
+		 \tag{monad assoc., $v_i$ is unique number s.t. $v \in \intervals{B}_{v_i}$} \\
+		 %
+		 ~{}={}~ & \text{Uniform}(c_1, c_2) \gg\!= \lambda v. \delta_{v : \floattype{B}{V}}  
+		 \\
+		 %
+		 ~{}={}~ & \text{Uniform}(c_1, c_2) \\
+		 %
+		 ~{}={}~ & \sem{e:\tau}~.
+		 \tag{\Cref{tab:smallstep-1}}
+		 %
+		 %
+	\end{align*}
+	
+	For \Cref{lem:small_step_coupling_props}.\ref{lem:small_step_coupling_props2}, consider the following:
+	%
+	\begin{align*}
+		& \pi_2(\sem{e:\tau, \discretize{e} : \discretize{\tau}}) \\
+		%
+		~{}={}~ &  \sem{e:\tau, \discretize{e} : \discretize{\tau}} \gg\!= \lambda(e_1,e_2). \delta_{e_2}  
+		\tag{definition} \\
+		%
+		~{}={}~ & (\text{Uniform}(c_1, c_2) \gg\!= \lambda v.\delta_{(v : \floattype{B}{V}, v_i : \fin{|B| + 1})})\gg\!= \lambda(e_1,e_2). \delta_{e_2}  
+		\tag{\Cref{tab:coupling_smallstep_1}, $v_i$ is unique number s.t. $v \in \intervals{B}_{v_i}$} \\
+		%
+		~{}={}~ & \text{Uniform}(c_1, c_2) \gg\!= \lambda v.(\delta_{(v : \floattype{B}{V}, v_i : \fin{|B| + 1})} \gg\!= \lambda(e_1,e_2). \delta_{e_2}  )
+		\tag{monad assoc., $v_i$ is unique number s.t. $v \in \intervals{B}_{v_i}$} \\
+		%
+		~{}={}~ & \text{Uniform}(c_1, c_2) \gg\!= \lambda v. \delta_{v_i : \fin{|B| + 1}}  
+		\tag{monad return, $v_i$ is unique number s.t. $v \in \intervals{B}_{v_i}$}
+		\\
+		%
+		~{}={}~ & \sem{\discrete(p_0,\ldots,p_n)}~\text{where}~p_k
+		= \text{Uniform}(c_1,c_2)(\intervals{B}_k)
+		\tag{by construction} \\
+		%
+		~{}={}~ & \sem{\discretize{e}:\discretize{\tau}}~.
+		\tag{\Cref{tab:smallstep-1}}
+		%
+		%
+	\end{align*}
+	
+	Now, the remaining cases are either (i) trivial base cases or (ii) immediately follow from the I.H.\ and \Cref{lem:bind_project} further below. We demonstrate this for the case 
+	%
+	\[
+	e:\tau = \uniform(e_1 : \floattype{B_1}{V_1}, e_2 : \floattype{B_2}{V_2}) : \floattype{B}{V}~,
+	\]
+	%
+	where
+	%
+	\begin{enumerate}
+		\item $e_1 = c_1$ is a value but $e_2$ is no value,
+		%
+		\item $B =  \{\sim_1\!\!b_1, \ldots, \sim_n\!\!b_n\}$,
+		%
+		\item $V=\top$, 
+		%
+		\item $V_1 = \{v_1,\ldots, v_{n_1}\}$ with $\distinguishes{B_1}{V_1}$ and $c_1 \in V_1$ due to $\has{V_1}{c_1}$ by I.H. 
+		%
+		\item $V_2 = \{w_1,\ldots, w_{n_2}\}$ with $\distinguishes{B_2}{V_2}$ and  $c_2 \in V_2$ due to $\has{V_2}{c_2}$ by I.H. 
+	\end{enumerate}
+	%
+	For \Cref{lem:small_step_coupling_props}.\ref{lem:small_step_coupling_props2}, consider the following:
+	%
+	\begin{align*}
+		& \pi_1(\sem{e:\tau, \discretize{e} : \discretize{\tau}}) \\
+		%
+		~{}={}~ &  \sem{e:\tau, \discretize{e} : \discretize{\tau}} \gg\!= \lambda(e_1,e_2). \delta_{e_1}  
+		\tag{definition} \\
+		%
+		~{}={}~ & \big( \sem{e_2:\tau_2, \discretize{e_2} : \discretize{\tau_2}} \\
+		& \gg\!= \lambda (f,f'). \delta_{(\uniform(v_1:\tau_1, f:\tau_2 ) : \tau, \dc(\discretize{v_1}:\discretize{\tau_1}, f': \discretize{\tau_2} ) : \discretize{\tau})} \big)
+		 \gg\!= \lambda(e_1,e_2). \delta_{e_1}   \\
+		 %
+		 ~{}={}~ &  \sem{e_2:\tau_2, \discretize{e_2} : \discretize{\tau_2}} \\
+		 & \gg\!= \lambda (f,f'). \big(\delta_{(\uniform(v_1:\tau_1, f:\tau_2 ) : \tau, \dc(\discretize{v_1}:\discretize{\tau_1}, f': \discretize{\tau_2} ) : \discretize{\tau})} 
+		 \gg\!= \lambda(e_1,e_2). \delta_{e_1} \big)
+		 \tag{monad assoc.} \\
+		 %
+		 ~{}={}~ &  \sem{e_2:\tau_2, \discretize{e_2} : \discretize{\tau_2}} 
+		  \gg\!= \lambda (f,f'). \delta_{\uniform(v_1:\tau_1, f:\tau_2 ) : \tau} 
+		 \tag{monad return} \\
+		 %
+		 ~{}={}~ &  \pi_1(\sem{e_2:\tau_2, \discretize{e_2} : \discretize{\tau_2}})
+		 \gg\!= \lambda f. \delta_{\uniform(v_1:\tau_1, f:\tau_2 ) : \tau} 
+		 \tag{\Cref{lem:bind_project}.\ref{lem:bind_project1}} \\
+		 %
+		 ~{}={}~ &  \sem{e_2:\tau_2}
+		 \gg\!= \lambda f. \delta_{\uniform(v_1:\tau_1, f:\tau_2 ) : \tau} ~.
+		 \tag{$ \sem{e_2:\tau_2, \discretize{e_2} : \discretize{\tau_2}}  =  \sem{e_2:\tau_2}$ by I.H.} \\
+		 %
+		 ~{}={}~ &  \sem{e : \tau}
+		 \tag{\Cref{tab:smallstep-1}} 
+	\end{align*}
+\end{proof}
+
+\begin{lemma}
+	\label{lem:bind_project}
+	Let $F\colon P_\tau \to \mathcal{D}(P_\tau + \bot)$, let $G\colon Expr_\tau \to \mathcal{D}(Expr_\tau + \bot)$, and let $G' \colon Expr_{\discretize{\tau}} \to \mathcal{D}(Expr_{\discretize{\tau}} + \bot)$. We have:
+	%
+	\begin{enumerate}
+		\item\label{lem:bind_project1} If  $\forall (f,f') \in P_\tau\colon F(f,f') = G(f)$, then for all $\mu \in \mathcal{D}(P_\tau + \bot)$,
+		%
+		\[
+		\pi_1(\mu) \gg\!= \lambda f. G(f)
+		~{}={}~
+		\mu \gg\!= \lambda (f,f'). F(f,f')~.
+		\]
+		%
+		%
+		\item\label{lem:bind_project2} If  $\forall (f,f') \in P_\tau\colon F(f,f') = G'(f)$, then for all $\mu \in \mathcal{D}(P_\tau + \bot)$,
+		%
+		\[
+		\pi_2(\mu) \gg\!= \lambda f. G'(f)
+		~{}={}~
+		\mu \gg\!= \lambda (f,f'). F(f,f')~.
+		\]
+	\end{enumerate}
+\end{lemma}
+%
+%
+\begin{proof}
+	We only prove \Cref{lem:bind_project}.\ref{lem:bind_project1} because the reasoning for \Cref{lem:bind_project}.\ref{lem:bind_project2} is completely analogous. We have
+	%
+	\begin{align*}
+		& \pi_1(\mu) \gg\!= \lambda f. G(f) \\
+		%
+		{}={}~& (\mu \gg\!= \lambda (f,f'). \delta_f) \gg\!= \lambda f. G(f) 
+		\tag{definition} \\
+		%
+		{}={}~& \mu \gg\!= \lambda (f,f'). (\delta_f \gg\!= \lambda f. G(f))
+		\tag{monad assoc.} \\
+		%
+		{}={}~& \mu \gg\!= \lambda (f,f'). G(f)
+		\tag{monad neutral} \\
+		%
+		{}={}~& \mu \gg\!= \lambda (f,f'). F(f,f')~.
+		\tag{assumption} 
+	\end{align*}
+	%
+\end{proof}
+
+\subsection{Big-Step Semantics and Correctness of Discretization}
+%
+We extend both of the small-step semantics canonically to an $n$-step semantics by%
+\begin{align*}
+		\bigsemstep{e : \tau}{n} &{}= 
+		\begin{cases}
+			\delta_{e : \tau} & \text{if $n = 0$} \\
+			%
+			\bigsemstep{e : \tau}{n-1} \monbind  \lambda e'. \sem{e' : \tau} & \text{if $n > 0$}~.
+		\end{cases} \\
+		%
+		%
+		\bigsemstep{e : \tau, \discretize{e} : \discretize{\tau}}{n} &{}= 
+		\begin{cases}
+			\delta_{(e : \tau, \discretize{e} : \discretize{\tau})} & \text{if $n = 0$} \\
+			%
+			\bigsemstep{e : \tau, \discretize{e} : \discretize{\tau}}{n-1} \monbind  \lambda (e', e''). \sem{e' : \tau, e'' : \discretize{\tau}} & \text{if $n > 0$}~.
+		\end{cases}
+\end{align*}
+%
+%
+
+%
+%
+As a sanity check, we show that the $n$-step semantics defines a Markov kernel.
+
+\begin{lemma}[$n$-step semantics is a Markov kernel]\label{lem:big-step-n-kernel}
+	For all $n \in \Nats$, $\bigsemstep{\cdot}{n} : Expr_{\tau} \to \mathcal{D}(Expr_{\tau} + \bot)$ is a Markov kernel.
+\end{lemma}
+
+\begin{proof}
+	By induction on $n$. 
+
+	Base case: $n = 0$. By definition, 
+	
+	\[
+		\bigsemstep{e : \tau}{n} = \dirac{e : \tau}
+	\]
+	i.e. the map $e \mapsto \dirac{e}$. By~\Cref{lem:dirac-return-kernel}, this is a Markov kernel.
+
+	Inductive step: $n > 0$. By definition, 
+	\[
+		\bigsemstep{e : \tau}{n} = \bigsemstep{e : \tau}{n-1} \monbind  \lambda e'. \sem{e' : \tau}
+	\]
+	
+	By the I.H., $\bigsemstep{\cdot}{n-1} \colon Expr_{\tau} \to \mathcal{D}(Expr_{\tau} + \bot)$ is a Markov kernel. By~\Cref{lem:small-step-kernel}, $\lambda e' .\sem{e' : \tau} : Expr_{\tau} \to \mathcal{D}(Expr_{\tau} + \bot)$ is a Markov kernel. By~\Cref{lem:bot-extension-kernel}, its $\bot$-extension from $(Expr_{\tau} + \bot)$ to $\mathcal{D}(Expr_{\tau} + \bot)$ is also a Markov kernel. By~\Cref{lem:kernel-composition}, $\bigsemstep{e : \tau}{n-1} \monbind  \lambda e'. \sem{e' : \tau}$ is a Markov kernel.
+\end{proof}
+
+\begin{lemma}[$n$-step coupling semantics is a Markov kernel]\label{lem:big-step-n-coupling-kernel}
+	For all $n \in \Nats$, $\bigsemstep{\cdot, \cdot}{n} : P_{\tau} \to \mathcal{D}(P_{\tau} + \bot)$ is a Markov kernel.
+\end{lemma}
+
+\begin{proof}
+	Analogous to proof of~\Cref{lem:big-step-n-kernel}.
+\end{proof}
+
+
+For every type $\tau$, we denote by $\vals_\tau$ the set of values of type $\tau$ and equip it with a suitable measurable sub-space of the measurable space over $Expr_\tau + \bot$ (cf. \Cref{lem:measurable-subsets}.\ref{lem:measurable-vals}). Moreover, let $V_\tau = \{ (v:\tau, \discretize{v} : \discretize{\tau}) ~|~ v:\tau \}$.
+
+
+\begin{lemma}[Basic Properties of $\bigsemstep{\cdot}{n}$]
+	\label{lem:bigstepsem}
+	Let $e : \tau \in Expr_{\tau}$ and $n \in \mathbb{N}$. Let $\vals_{\tau}$ be the measurable set of values. We have:
+	\begin{enumerate}
+		\item\label{lem:bigstepsem1} $\bigsemstep{e : \tau}{n}(\vals_{\tau}) \leq \bigsemstep{e : \tau}{n+1}(\vals_{\tau})$
+		\item\label{lem:bigstepsem2} $\bigsemstep{e : \tau}{n}(\bot) \leq \bigsemstep{e : \tau}{n+1}(\bot)$
+	\end{enumerate}
+\end{lemma}
+%
+\begin{proof}
+	By induction on $n$.
+
+	\underline{Base case}: $n=0$.
+
+	We must show $\bigsemstep{e : \tau}{0}(\vals_{\tau}) \leq \bigsemstep{e : \tau}{1}(\vals_{\tau})$.
+
+	By definition,
+	\[
+		\bigsemstep{e : \tau}{0} = \delta_{e : \tau}.
+	\]
+
+	Therefore,
+	\[
+		\bigsemstep{e : \tau}{0}(\vals_{\tau}) =
+		\begin{cases}
+			1 &\text{ if } e \in \vals_{\tau} \\
+			0 &\text{ if } e \notin \vals_{\tau}
+		\end{cases}
+	\]
+
+	Now, for $n=1$, by definition,
+	\[
+		\bigsemstep{e : \tau}{1} = \delta_{e : \tau} \gg\!= \lambda e'.\sem{e'} = \sem{e : \tau}.
+	\]
+
+	We analyze the two cases for $e$:
+
+	\textbf{Case 1:} $e$ is a value $v$. Then, $\bigsemstep{e : \tau}{0}(\vals_{\tau}) = 1$.
+
+	For $n=1$:
+	\[
+		\bigsemstep{e : \tau}{1} = \delta_{v : \tau} \gg\!= \lambda e'.\sem{e'} = \sem{v : \tau}.
+	\]
+	From the semantics, $\sem{v : \tau} = \delta_{v : \tau}$, which means $\bigsemstep{e : \tau}{1} = \delta_{v : \tau}$, and thus
+	\[
+		\bigsemstep{e : \tau}{1}(V) = 1,
+	\]
+	and thus $\bigsemstep{e : \tau}{0}(\vals_{\tau}) \leq \bigsemstep{e : \tau}{1}(\vals_{\tau})$.
+
+	\textbf{Case 2:} $e$ is an expression. Then, $\bigsemstep{e : \tau}{0}(\vals_{\tau}) = 0$.
+
+	For $n=1$:
+	\[
+		\bigsemstep{e : \tau}{1} = \delta_{e : \tau} \gg\!= \lambda e'.\sem{e'} = \sem{e : \tau}.
+	\]
+	From the semantics, $\sem{e : \tau}$ may step to either a value, which means $\sem{e : \tau}(\vals_{\tau}) \geq 0$, or an expression, which means $\sem{e : \tau}(\vals_{\tau}) = 0$. In either case, 
+	\[
+		\bigsemstep{e : \tau}{1}(\vals_{\tau}) \geq 0,
+	\]
+	and thus $\bigsemstep{e : \tau}{0}(\vals_{\tau}) \leq \bigsemstep{e : \tau}{1}(\vals_{\tau})$.
+
+	\underline{Inductive step}:
+	We want to show that for $n = k+1$:
+	\begin{align*}
+		\bigsemstep{e : \tau}{k+1}(\vals_{\tau}) \leq \bigsemstep{e : \tau}{k+2}(\vals_{\tau}).
+	\end{align*}
+
+	By the recursive definition:
+	\begin{align*}
+		&\bigsemstep{e : \tau}{k}, \\
+		&\bigsemstep{e : \tau}{k+1} = \bigsemstep{e : \tau}{k} \gg\!= \lambda e'.\sem{e'}, \\
+		&\bigsemstep{e : \tau}{k+2} = \bigsemstep{e : \tau}{k+1} \gg\!= \lambda e''.\sem{e''} = (\bigsemstep{e : \tau}{k} \gg\!= \lambda e'.\sem{e'}) \gg\!= \lambda e''.\sem{e''}
+	\end{align*}
+
+	By the IH,
+	\begin{align*}
+		\bigsemstep{e : \tau}{k}(\vals_{\tau}) \leq \bigsemstep{e : \tau}{k+1}(\vals_{\tau}).
+	\end{align*}
+
+	We do a case analysis on $e'$ and $e''$, whether they are in $N_{\tau}$ or $\vals_{\tau}$.
+
+	\textbf{Case} $e' \in \vals_{\tau}$, $e'' \in \vals_{\tau}$.
+
+	Then, from the semantics, $\sem{e'}$ and $\sem{e''}$ are both Diracs over a value. Combined with the IH and the fact that $\sem{\cdot}$ does not change the probability mass of $\cdot$ if it is a value, 
+	\[
+		\bigsemstep{e : \tau}{k+1}(\vals_{\tau}) \leq \bigsemstep{e : \tau}{k+2}(\vals_{\tau}).
+	\]
+
+	\textbf{Case} $e' \in \vals_{\tau}$, $e'' \in N_{\tau}$.
+	
+	Then, from the semantics, $\sem{e'}$ is a Dirac over a value and $\sem{e''}$ is a distribution over a non-value expression. Combined with the IH and the fact that $\sem{\cdot}$ does not change the probability mass of $\cdot$ if it is a value and that $\sem{\cdot}$ does not add any probability mass to $\vals_{\tau}$ if $\cdot$ is a non-value expression,
+	\[
+		\bigsemstep{e : \tau}{k+1}(\vals_{\tau}) \leq \bigsemstep{e : \tau}{k+2}(\vals_{\tau}).
+	\]
+
+	\textbf{Case} $e' \in \vals_{\tau}$, $e'' \in N_{\tau}$.
+
+	Analogous to the previous case, but with $e'$ and $e''$ switched.
+
+	\textbf{Case} $e' \in N_{\tau}$, $e'' \in N_{\tau}$.
+
+	Then, from the semantics,  $\sem{e'}$ and $\sem{e''}$ are both distributions over a non-value expression. Combined with the IH and the fact that $\sem{\cdot}$ does not add any probability mass to $\vals_{\tau}$ if $\cdot$ is a non-value expression, 
+	\[
+		\bigsemstep{e : \tau}{k+1}(\vals_{\tau}) \leq \bigsemstep{e : \tau}{k+2}(\vals_{\tau}).
+	\]
+
+	In all cases, $\bigsemstep{e : \tau}{k+1}(\vals_{\tau}) \leq \bigsemstep{e : \tau}{k+2}(\vals_{\tau})$.
+\end{proof}
+
+
+\begin{lemma}[Basic properties of $\bigsemstep{\cdot, \cdot}{n}$]
+	Let $(e : \tau, \discretize{e} : \discretize{\tau}) \in P_{\tau}$ and $n \in \mathbb{N}$. Let $V_{\tau}$ be the measurable set of value pairs. We have:
+	\begin{enumerate}
+		\item\label{lem:bigstepsem1-pairing} $\bigsemstep{e : \tau, \discretize{e} : \discretize{\tau}}{n}(V_{\tau}) \leq \bigsemstep{e : \tau, \discretize{e} : \discretize{\tau}}{n+1}(V_{\tau})$
+		\item\label{lem:bigstepsem2-pairing} $\bigsemstep{e : \tau, \discretize{e} : \discretize{\tau}}{n}(\bot) \leq \bigsemstep{e : \tau, \discretize{e} : \discretize{\tau}}{n+1}(\bot)$
+	\end{enumerate}
+\end{lemma}
+
+\begin{proof}
+	By induction on $n$. Analogous to proof of~\Cref{lem:bigstepsem}.
+\end{proof}
+
+
+%
+\begin{definition}
+	Let $e:\tau$. The \emph{(big-step) semantics} $\bigsem{e:\tau} \in \mathcal{D}(Vals_\tau + \bot)$ and $\bigsem{e:\tau, \discretize{e : \tau} : \discretize{\tau}} \in \mathcal{D}(V_\tau + \bot)$ are respectively defined as 
+	%
+	\begin{align*}
+		\bigsem{e:\tau} ={}& \lambda A. \lim_{n\to\infty} \bigsemstep{e:\tau}{n}(A) \\
+		%
+		\bigsem{e:\tau,  \discretize{e} : \discretize{\tau}} ={}& \lambda A. \lim_{n\to\infty} \bigsemstep{e:\tau,  \discretize{e} : \discretize{\tau}}{n}(A)
+	\end{align*}
+	%
+\end{definition}
+%
+%
+% Well-definedness of these objects follows from the monotone convergence theorem: The probability of evaluating to some set of values or an error is montonically increasing in $n$ and upper-bounded by $1$. 
+By~\Cref{lem:bigstepsem1,lem:bigstepsem2}, the sequence $\bigsemstep{e : \tau}{n}$ is monotonically increasing for values and error. Moreover, $\bigsemstep{e : \tau}{n}$ defines a subprobability measure, and thus $\bigsemstep{e : \tau}{n} \leq 1$ for every $n \in \Nats$. Thus, by the monotone convergence theorem, the pointwise limit exists.
+
+\begin{lemma}[Continunity of projections]
+	For all $n \in \Nats$,
+	\begin{enumerate}
+		\item $\pi_1(\lim_{n \to \infty} \bigsemstep{e,e'}{n}) = \lim_{n \to \infty} \pi_1(\bigsemstep{e,e'}{n})$
+		\item $\pi_2(\lim_{n \to \infty} \bigsemstep{e,e'}{n}) = \lim_{n \to \infty} \pi_2(\bigsemstep{e,e'}{n})$ 
+	\end{enumerate}
+\end{lemma}
+
+\begin{proof}
+	We prove part i) in detail; the proof of part ii) is analogous. Fix an arbitrary measurable $A \in \Sigma_1$:
+	\begin{align*}
+		&\pi_1(\lim_{n \to \infty} \bigsemstep{e,e'}{n})(A) \\
+		&= \left(\lim_{n \to \infty} \bigsemstep{e,e'}{n}\right)(A \times X_2) \tag{by definition of $\pi_1$}\\
+		&= \sup_{n \in \Nats} \bigsemstep{e,e'}{n}(A \times X_2) \tag{since $\bigsemstep{e,e'}{n}$ is monotone}\\
+		&= \sup_{n \in \Nats} \pi_1(\bigsemstep{e,e'}{n})(A) \tag{by definition of $\pi_1$}\\
+		&= \lim_{n \to \infty} \pi_1(\bigsemstep{e,e'}{n})(A) \tag{since $\pi_1(\bigsemstep{e,e'}{n})$ is monotone}
+	\end{align*}
+	Since $A$ was arbitrary, this implies:
+	\[
+		\pi_1(\lim_{n \to \infty} \bigsemstep{e,e'}{n}) =  \lim_{n \to \infty} \pi_1(\bigsemstep{e,e'}{n}),
+	\]
+	as desired.
+\end{proof}
+
+\begin{lemma}[$n$-step coupling projection]
+	\label{lem:proj_cont}
+	For all $n \in \Nats$, 
+	\begin{enumerate}
+		\item $\pi_1(\bigsemstep{e : \tau,\discretize{e} : \discretize{\tau}}{n}) = \bigsemstep{e : \tau}{n}$
+		\item $\pi_2(\bigsemstep{e : \tau,\discretize{e} : \discretize{\tau}}{n}) = \bigsemstep{\discretize{e} : \discretize{\tau}}{n}$
+	\end{enumerate}
+\end{lemma}
+
+
+\begin{proof}
+	By induction on $n$. We prove i), as the proof for ii) is analogous.
+
+	\underline{Base case:} $n=0$
+	\begin{align*}
+		&\pi_1\!\left(\bigsemstep{e:\tau,\,\discretize{e'}:\discretize{\tau'}}{0}\right) \\
+		= \quad&\pi_1(\delta_{(e:\tau,\,\discretize{e'}:\discretize{\tau'})}) \tag{definition of $n$-step coupling semantics}\\
+		= \quad&\delta_{e:\tau} \tag{projection of Dirac} \\
+		= \quad&\bigsemstep{e:\tau}{0}. \tag{definition of $n$-step semantics}\\
+	\end{align*}
+	
+	\underline{Inductive step:} $n > 0$
+	\begin{align*}
+		&\pi_1\!\left(\bigsemstep{e:\tau,\,\discretize{e'}:\discretize{\tau'}}{n}\right) \\
+		%
+		= \quad&\pi_1(\bigsemstep{e : \tau, \discretize{e} : \discretize{\tau}}{n-1} \monbind  \lambda (f, g). \sem{f : \tau, g : \discretize{\tau}}) \tag{definition of $n$-step coupling semantics}\\
+		%
+		= \quad&(\bigsemstep{e : \tau, \discretize{e} : \discretize{\tau}}{n-1} \monbind  \lambda (f, g). \sem{f : \tau, g : \discretize{\tau}}) \monbind \lambda (f,g).\dirac{f} \tag{by (2)} \\
+		%
+		= \quad&\bigsemstep{e : \tau, \discretize{e} : \discretize{\tau}}{n-1} \monbind  \lambda (f, g). (\sem{f : \tau, g : \discretize{\tau}} \monbind \lambda (f,g).\dirac{f}) \tag{monad assoc.}\\
+		%
+		= \quad&\bigsemstep{e : \tau, \discretize{e} : \discretize{\tau}}{n-1} \monbind  \lambda (f, g). \pi_1(\sem{f,g}) \tag{by (2)}\\
+		%
+		= \quad&\bigsemstep{e : \tau, \discretize{e} : \discretize{\tau}}{n-1} \monbind  \lambda (f, g). \sem{f} \tag{\Cref{lem:small_step_coupling_props}.\ref{lem:small_step_coupling_props1}}\\
+		%
+		= \quad&\bigsemstep{e : \tau, \discretize{e} : \discretize{\tau}}{n-1} \monbind  \lambda (f, g). (\dirac{f} \monbind \lambda f.\sem{f}) \tag{monad unit}\\
+		%
+		= \quad&(\bigsemstep{e : \tau, \discretize{e} : \discretize{\tau}}{n-1} \monbind  \lambda (f, g). \dirac{f}) \monbind \lambda f.\sem{f} \tag{monad assoc.}\\
+		%
+		= \quad&\pi_1(\bigsemstep{e : \tau, \discretize{e} : \discretize{\tau}}{n-1}) \monbind \lambda f.\sem{f} \tag{by (2)}\\
+		%
+		= \quad&\bigsemstep{e : \tau}{n-1} \monbind \lambda f.\sem{f} \tag{by I.H.}\\
+		%
+		= \quad&\bigsemstep{e : \tau}{n} \tag{definition of $n$-step semantics}
+	\end{align*}
+\end{proof}
+
+% \begin{proof}
+% 	By induction on $n$. We prove part i) in detail; the proof of part ii) is analogous.
+
+% 	\underline{Base case:} $n=0$:
+
+% 	By definition of the big-step semantics, 
+% 	\[
+% 		\bigsemstep{e : \tau, \discretize{e'} : \discretize{\tau'}}{0} = \delta_{(e : \tau, \discretize{e'} : \discretize{\tau'})}
+% 	\]
+
+% 	Projecting the first component: $\pi_1(\delta_{(e : \tau, \discretize{e'} : \discretize{\tau'})}) = \delta_{e : \tau} = \bigsemstep{e : \tau}{0}$.
+
+% 	\underline{Inductive step:} Assume for $n-1$. For $n > 0$:
+% 	\[
+% 		\bigsemstep{e : \tau, \discretize{e'} : \discretize{\tau'}}{n} = \bigsemstep{e : \tau, \discretize{e'} : \discretize{\tau'}}{n-1} \monbind  \lambda (f,f'). \sem{f : \tau, f' : \tau'}
+% 	\]
+
+% 	\todo[inline]{TO finish}
+% 	By~\Cref{lem:bind-proj},
+% 	\[
+% 		\pi_1(\bigsemstep{e : \tau, \discretize{e'} : \discretize{\tau'}}{n}) = \pi_1(\bigsemstep{e : \tau, \discretize{e'} : \discretize{\tau'}}{n-1}) \monbind  \lambda f. \pi_1(\sem{f : \tau, f' : \tau'})
+% 	\]
+
+% 	By the IH, $\pi_1(\bigsemstep{e : \tau,\discretize{e'} : \discretize{\tau'}}{n-1}) = \bigsemstep{e : \tau}{n-1}$.
+
+% 	By~\Cref{lem:small-step-proj}, $\pi_1(\sem{f : \tau, f' : \tau'}) = \sem{f : \tau}$.
+
+% 	So,
+% 	\[
+% 		\pi_1(\bigsemstep{e : \tau,\discretize{e'} : \discretize{\tau'}}{n}) = \bigsemstep{e : \tau}{n-1} \monbind \lambda f.\sem{f : \tau} = \bigsemstep{e : \tau}{n}.
+% 	\]
+% \end{proof}
+
+The following will imply our desired equivalence claim:
+
+\begin{lemma}[Big-step coupling projection]\label{lem:big_step_coupling_props}
+	Let $\bigsem{e : \tau, \discretize{e'} : \discretize{\tau'}} \in \mathcal{D}(P_{\tau} + \bot)$. Then,
+	\begin{enumerate}
+		\item\label{lem:big_step_coupling_props1} $\pi_1(\bigsem{e : \tau, \discretize{e'} : \discretize{\tau'}}) = \bigsem{e : \tau}$
+		\item\label{lem:big_step_coupling_props2} $\pi_2(\bigsem{e : \tau, \discretize{e'} : \discretize{\tau'}}) = \bigsem{\discretize{e'} : \discretize{\tau'}}$
+	\end{enumerate}
+\end{lemma}
+
+\begin{proof}
+	\begin{align*}
+		&\pi_1(\bigsem{e : \tau, \discretize{e'} : \discretize{\tau'}}) \\
+		&= \pi_1(\lim_{n \to \infty} \bigsemstep{e : \tau, \discretize{e'} : \discretize{\tau'}}{n}) \tag{by defintion of big-step coupling semantics} \\
+		&= \lim_{n \to \infty} \pi_1(\bigsemstep{e : \tau, \discretize{e'} : \discretize{\tau'}}{n}) \tag{by communitivity lemma} \\
+		&= \lim_{n \to \infty} \bigsemstep{e : \tau}{n} \tag{by definition of n-step projection lemma} \\
+		&= \bigsem{e : \tau} \tag{by definition of big-step semantics}
+	\end{align*}
+\end{proof}
+
+% The following will imply our desired equivalence claim:
+
+%\kevin{the folllowing must be measurable} \\
+%Define $V_\tau = \{ (v:\tau, \discretize{v} : \discretize{\tau}) ~|~ v:\tau \}$.\\
+%\kevin{we might have to prove the first point below differently}
+%
+% \begin{lemma}
+% 	\label{lem:big_step_coupling_props}
+% 	Let $e:\tau$. We have:
+% 	%
+% 	\begin{enumerate}
+% 		\item\label{lem:big_step_coupling_props1} $\pi_1(\bigsem{e:\tau, \discretize{e} : \discretize{\tau}}) = \bigsem{e:\tau}$.
+% 		%
+% 			\item\label{lem:big_step_coupling_props2} $\pi_2(\bigsem{e:\tau, \discretize{e} : \discretize{\tau}}) = \bigsem{\discretize{e}:\discretize{\tau}}$.
+% 	\end{enumerate}
+% \end{lemma}
+% %
+% \begin{proof}
+% 	Follows immeditaley from \Cref{lem:small_step_coupling_props}.
+% \end{proof}
+%
+%
+\begin{theorem}\label{thm:contextual-equivalence}
+	Let $e:\bool$. Then $\bigsem{e:\bool} = \bigsem{\discretize{e:\bool} : \bool}$.
+\end{theorem}
+%
+\begin{proof}
+	Since $\mathcal{D}(Vals_\tau + \bot)$ contains only discrete distributions, we proceed by case distinction on the probability of the final outcome $v\in\{\true,\false,\bot\}$.\\
+	%
+	
+	\emph{The case $v=\true$.} We have 
+	%
+	\begin{align*}
+		&  \bigsem{e : \bool}(\true) \\
+		%
+		{}={}~& \pi_1 (\bigsem{e : \bool, \discretize{e}:\discretize{\bool}})(\true)
+		\tag{\Cref{lem:big_step_coupling_props}.\ref{lem:big_step_coupling_props1}} \\
+		%
+		{}={}~& (\bigsem{e : \bool, \discretize{e}:\discretize{\bool}} \gg\!= \lambda(e_1,e_2). \delta_{e_1})(\true)
+		\tag{definition} \\
+		%
+		{}={}~& \bigsem{e : \bool, \discretize{e}:\discretize{\bool}}((\true,\true))\cdot \delta_{\true}(\true) \\
+		&{}+ 
+		\bigsem{e : \bool, \discretize{e}:\discretize{\bool}}((\false,\false))\cdot \delta_{\false}(\true) \\
+		&{}+ 
+		\bigsem{e : \bool, \discretize{e}:\discretize{\bool}}(\bot)\cdot \delta_{\bot}(\true) 
+		\tag{definition of $\gg\!=$} \\
+		%
+		{}={}~& \bigsem{e : \bool, \discretize{e}:\discretize{\bool}}((\true,\true))
+		\tag{definition of $\delta$} \\
+		%
+		{}={}~& \pi_2(\bigsem{e : \bool, \discretize{e}:\discretize{\bool}})(\true)
+		\tag{reasoning completely analogous} \\
+		%
+		{}={}~& \bigsem{\discretize{e}:\discretize{\bool}}(\true)
+		\tag{\Cref{lem:big_step_coupling_props}.\ref{lem:big_step_coupling_props2}} ~.
+	\end{align*}
+	
+	The cases $v=\false$ and $v=\bot$ are completely analogous.
+	
+%	\noindent
+%	\emph{The case $v = \bot$.} Immediate by \Cref{lem:big_step_coupling_props}.\ref{lem:big_step_coupling_props1}. \\
+%	
+%	\noindent
+%	\emph{The case $v=\true$.} We have 
+%	%
+%	\begin{align*}
+%		& \bigsem{e :\bool}(\{\true\}) \\
+%		%
+%		={}& \bigsem{e:\bool, \discretize{e:\bool}:{\bool}}(\{\true\} \times \{\true,\false\})
+%		\tag{\Cref{lem:big_step_coupling_props}.\ref{lem:big_step_coupling_props2}} \\
+%		%
+%		={} & \bigsem{e:\bool, \discretize{e:\bool}:{\bool}}( (\{\true\} \times \{\true,\false\}) \cap \{(\true,\true), (\false,\false)\})
+%		\tag{\Cref{lem:big_step_coupling_props}.\ref{lem:big_step_coupling_props4}} \\ 
+%		%
+%		={}& \bigsem{e:\bool, \discretize{e:\bool}:{\bool}}(\{(\true,\true)\})
+%		\tag{set algebra} \\
+%		%
+%		={}& \bigsem{e:\bool, \discretize{e:\bool}:{\bool}}( (\{\true,\false\} \times \{\true\}) \cap \{(\true,\true), (\false,\false)\})
+%		\tag{set algebra} \\
+%		%
+%		={}& \bigsem{e:\bool, \discretize{e:\bool}:{\bool}}(\{\true,\false\} \times \{\true\})
+%		\tag{\Cref{lem:big_step_coupling_props}.\ref{lem:big_step_coupling_props4}} \\
+%		%
+%		={}& \bigsem{\discretize{e :\bool}}(\{\true\})~.
+%		\tag{\Cref{lem:big_step_coupling_props}.\ref{lem:big_step_coupling_props3}} 
+%	\end{align*}
+%	%
+%	
+%	\noindent
+%	\emph{The case $v=\false$.} Completely analogous to the previous case.
+\end{proof}
+\fi
+The former synchronous proof is omitted. It relied on a false
+translation/substitution commutation equation and could not account for
+administrative stuttering or for the recursive implementation encoding of
+divergence.
+
+\subsection{Outstanding Slice compiler-simulation conjectures}
+\label{lem:bigstepsem}
+\label{tab:coupling_smallstep_1}
+\label{tab:coupling_smallstep_2}
+\label{lem:proj_cont}
+
+The legacy main-text summary still cites these labels. They now point to this
+list of open obligations, not to established lemmas or synchronous coupling
+tables.
+
+The abstract exact-real transfer theorem applies to Slice only after the
+following premises have been established for the actual source and target
+kernels:
+
+\begin{enumerate}
+  \item a measurable related-state carrier $R$;
+  \item one coherent measurable joint sub-Markov kernel
+        $C:R\to\mathcal D_{\leq1}(R)$;
+  \item exact source and weak-target marginals for $C$;
+  \item terminal synchrony, with Boolean values related diagonally and
+        observation failure related only to observation failure; and
+  \item weak-to-ordinary target terminal cofinality.
+\end{enumerate}
+
+Pointwise existence of couplings is insufficient. In addition, the emitted
+recursive encoding of $\diverge$ has a deterministic self-step and therefore
+cannot be coupled one-for-one with the primitive zero kernel. Its treatment
+requires a divergence-delay clause and a separate terminal-cofinality proof.
+All Slice-specific premises in this subsection remain conjectures.

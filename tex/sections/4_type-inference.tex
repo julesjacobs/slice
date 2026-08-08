@@ -2,7 +2,7 @@
 
 We now describe our type inference algorithm, whose goal is to annotate each subexpression of a program with its most precise type. Specifically, we focus on expressions of type $\float[B;V]$ and show how \Slice{} populates the cut set $B$ and value set $V$, which later determine how and whether the expression can be discretized. Type inference for all other types is standard and follows the classic Hindley-Milner algorithm. For float-typed expressions, we use a two-phase approach: the first phase traverses the program once to generate constraints over cut and value sets; the second phase solves those constraints to produce a fully annotated program.
 
-The distinction between typing and type inference is important. The correctness argument cleanly separates into two pieces: (1) type inference produces a typing derivation matching our typing rules, and (2) given such a typing derivation, discretization is semantics preserving. Thus the proof of discretization does not have to reason directly about the type inference procedure.
+The distinction between typing and type inference is important. The intended correctness argument separates into two obligations: (1) type inference produces a typing derivation matching our typing rules, and (2) given such a typing derivation, the generated program satisfies the weak compiler simulation stated in \Cref{sec:soundness}. The second obligation is not discharged here.
 
 \subsection{Constraint Generation}
 

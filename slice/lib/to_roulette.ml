@@ -58,7 +58,7 @@ and string_of_expr_node ?(indent=0) (ExprNode expr_node) : string =
     | _ ->
       let e1_str = string_of_expr_indented ~indent:(indent+2) e1 in
       let e2_str = string_of_expr_indented ~indent e2 in
-      Printf.sprintf "(define %s %s)\n%s" x e1_str e2_str)
+      Printf.sprintf "(let ([%s %s]) %s)" x e1_str e2_str)
   | Sample dist_exp -> string_of_sample ~indent dist_exp
   | DistrCase cases ->
     let cases = Ast.normalize_distr_case ~policy:Ast.Generated cases in
@@ -135,6 +135,15 @@ and string_of_expr_node ?(indent=0) (ExprNode expr_node) : string =
     let e2_str = string_of_expr_indented ~indent e2 in
     Printf.sprintf "(%s %s)" e1_str e2_str *)
 
+  | FuncApp
+      ( ExprNode
+          (Fix
+             ( f,
+               x,
+               ExprNode (FuncApp (ExprNode (Var f'), ExprNode (Var x'))) )),
+        ExprNode Unit )
+    when f = f' && x = x' ->
+      Printf.sprintf "(letrec ([%s (lambda () (%s))]) (%s))" f f f
   | FuncApp (e1, e2) ->
     (* Flatten a left-nested application: ((f a) b) -> (f a b) *)
     let rec collect_args acc = function
@@ -177,7 +186,8 @@ and string_of_expr_node ?(indent=0) (ExprNode expr_node) : string =
   | Assign (e1, e2) -> Printf.sprintf "(set-box! %s %s)" (string_of_expr_indented ~indent e1) (string_of_expr_indented ~indent e2)
   | Seq (e1, e2) -> Printf.sprintf "%s; %s" (string_of_expr_indented ~indent e1) (string_of_expr_indented ~indent e2)
   | Unit -> "()"
-  | RuntimeError _ -> ""
+  | RuntimeError message ->
+      failwith ("Roulette backend cannot serialize RuntimeError: " ^ message)
 and string_of_sample ?(indent=0) dist_exp = 
   match dist_exp with
   | Distr2 (DUniform, e1, e2) -> Printf.sprintf "uniform(%s, %s)" (string_of_expr_indented ~indent e1) (string_of_expr_indented ~indent e2)
@@ -279,7 +289,8 @@ and string_of_aexpr_node ?(indent=0) (TAExprNode ae_node) : string =
   | Assign (te1, te2) -> Printf.sprintf "(%s := %s)" (string_of_texpr_indented ~indent te1) (string_of_texpr_indented ~indent te2)
   | Seq (te1, te2) -> Printf.sprintf "%s; %s" (string_of_texpr_indented ~indent te1) (string_of_texpr_indented ~indent te2)
   | Unit -> "()"
-  | RuntimeError _ -> ""
+  | RuntimeError message ->
+      failwith ("Roulette backend cannot serialize RuntimeError: " ^ message)
 
 and string_of_asample ?(indent=0) dist_exp =
   match dist_exp with

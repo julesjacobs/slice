@@ -61,7 +61,7 @@
 		\quad e_2 : \float[B_2;V_2]) : \float[B;V]
 		\end{array}$}}
         & $e_1, e_2 \in \mathbb{R},\; e_1 \geq e_2$
-        & $\diverge : \tau$ \\
+        & $\diverge : \discretize{\floattype{B}{V}}$ \\
         \caserule
 		%
         & $B = \top,\; \neg(e_1,e_2\in\mathbb R \land e_1\geq e_2)$
@@ -70,6 +70,7 @@
 		%
         & $\begin{array}[t]{@{}l@{}}
             e_1, e_2 \in \mathbb{R},\; e_1<e_2, \\
+            V_1=\{e_1\},\;V_2=\{e_2\}, \\
             B = \{\sim_1\!\!b_1, \ldots, \sim_n\!\!b_n\}\neq\top
           \end{array}$
         & $\begin{array}[t]{@{}l@{}}
@@ -96,7 +97,10 @@
             \quad \logand\; v_2' \fineq{(|B_2|+1)} \discretize{w_j : \floattype{B_2}{V_2}}\; \thenkw \\
             \quad\quad \discretize{\uniform(v_i, w_j) : \float[B;V]} \\
             \ldots \\
-            \elsekw\; \discretize{\uniform(v_n, w_m) : \float[B;V]}
+            \elsekw\; \ifkw\; v_1' \fineq{(|B_1|+1)} \discretize{v_n : \floattype{B_1}{V_1}} \\
+            \quad \logand\; v_2' \fineq{(|B_2|+1)} \discretize{w_m : \floattype{B_2}{V_2}}\; \thenkw \\
+            \quad\quad \discretize{\uniform(v_n, w_m) : \float[B;V]} \\
+            \elsekw\; \diverge : \fin{|B|+1}
           \end{array}$ \\
         \bottomrule
         \bottomrule
@@ -105,17 +109,52 @@
     \caption{Discretization function. The displayed cases are pairwise disjoint. Uniform distributions require a strict parameter ordering $e_1<e_2$.
         Equivalently, because such distributions are atomless, the interval masses in the constant-parameter
         rule can be computed from the clamped CDF, with $\mathrm{CDF}(-\infty)=0$ and
-        $\mathrm{CDF}(+\infty)=1$.
+        $\mathrm{CDF}(+\infty)=1$. The final row is the ideal exact-real dispatch schema.
+        The OCaml emitter uses a nested hygienic core elaboration; correspondence between that
+        emitted term and this schema is an explicit compiler-correctness obligation.
         For the $\uniform$ distribution, $V = \top$ is implicit, and all remaining cut-set and value-set
-        cases are ruled out by the constraints enforced during type inference. In particular,
-        dispatchability ensures that the finite value sets enumerated by the last case are nonempty.
-        For all other language
+        cases are outside this rule. The theorem applies only under the displayed representation,
+        finite-domain, nonempty-domain, sampler-domain, and reachable-value adequacy premises.
+        Equal or reversed uniform bounds are malformed under the strict uniform contract. For all other language
         constructs, $\discretize{\cdot}$ recurses structurally over them.}
     \label{fig:discretization-code}
 \end{figure*}
-This section presents local transformation rules for our type-directed discretization algorithm, with examples. Our goal is to compute, from a typed expression $e : \bool$ and its type annotations, a \emph{discretized} expression $\discretize{e : \bool} : \bool$ such that $e$ and $\discretize{e : \bool}$ are \emph{semantically equivalent}, i.e., they induce the same distribution. We refer to this intended semantics-preserving transformation as \emph{exact discretization}, to distinguish it from approaches~\cite{Garg2024BitBlast,Huang2021AQUA} that approximate continuous programs via externally chosen precision parameters. For the uniform fragment defined in \Cref{sec:soundness}, \Cref{thm:maintext:sound} states this equality conditional on the remaining weak compiler-simulation obligation. Intuitively, when a program uses continuous quantities only through finitely many comparison outcomes, exact inference should reduce to a discrete problem, and discretization makes that reduction explicit.
+This section presents local transformation rules for our type-directed discretization algorithm, with examples. Our goal is to compute, from a typed expression $e : \bool$ and its type annotations, a \emph{discretized} expression $\discretize{e : \bool} : \bool$ such that $e$ and $\discretize{e : \bool}$ are \emph{semantically equivalent}, i.e., they induce the same distribution. We refer to this intended semantics-preserving transformation as \emph{exact discretization}, to distinguish it from approaches~\cite{Garg2024BitBlast,Huang2021AQUA} that approximate continuous programs via externally chosen precision parameters. The abstract exact-real transfer theorem identifies sufficient semantic premises for equality. Whether the \Slice{} transformation satisfies those premises remains conjectural. The OCaml/GSL binary64 artifact is not identified with the ideal exact-real target and is not certified by this theorem. Intuitively, when a program uses continuous quantities only through finitely many comparison outcomes, exact inference should reduce to a discrete problem, and exact discretization aims to make that reduction explicit.
 
-As shown in \Cref{fig:discretization-code}, $\discretize{e : \tau}$ is defined recursively on $e : \tau$ and its type annotations; we focus on continuous uniform distributions, with others handled analogously. The only sub-expressions replaced by $\discretize{\cdot}$ are float constants and sampling instructions. The rule schemata are local, but their selection and parameters come from globally inferred cut/value information; \Cref{sec:soundness} states the remaining proof obligation for this non-local, type-mediated construction. Before detailing the rules, we outline how type annotations guide discretization. The type system is designed so that every typed sub-expression of the form
+The displayed rules define the ideal exact-real target transformation. For a
+finite dispatcher, an index not represented by the enumerated arms, or an
+enumerated parameter tuple outside the formal domain of the sampler, takes the
+primitive target term $\diverge$. This is distinct from
+$\observekw\;\false$: the former contributes missing mass, whereas the latter
+produces explicit observation-failure mass at $\bot$.
+
+Correct branch selection additionally requires the reachable-value adequacy
+premise that every runtime parameter value belongs to its inferred value set.
+The final finite-equality guard rejects unmatched indices, but does not prove
+this adequacy premise.
+
+The OCaml emitter uses hygienic left-to-right bindings, nested
+parameter-by-parameter dispatch, and represents primitive divergence by
+$(\fixkw\;f\;u:=f\;u)\;()$. This PR does not prove that the literal emitted AST
+implements the ideal rule, nor that the recursive encoding is weakly cofinal
+with primitive divergence.
+
+\begin{lemma}[Typing of generated recursive divergence]
+\label{lem:generated-recursive-divergence-typing}
+For fresh $f,u$ and every type $\tau$,
+\[
+  \Gamma\vdash(\fixkw\;f\;u:=f\,u)\;():\tau.
+\]
+\end{lemma}
+
+\begin{proof}
+Under $f:\unit\to\tau$ and $u:\unit$, application gives $f\,u:\tau$.
+Hence \textsc{Fix} gives
+$\fixkw\;f\;u:=f\,u:\unit\to\tau$. The result follows from
+\textsc{Unit} and \textsc{App}.
+\end{proof}
+
+As shown in \Cref{fig:discretization-code}, $\discretize{e : \tau}$ is defined recursively on $e : \tau$ and its type annotations; we focus on continuous uniform distributions, with others handled analogously. The only sub-expressions replaced by $\discretize{\cdot}$ are float constants and sampling instructions. The rule schemata are local, but their selection and parameters come from globally inferred cut/value information; the appendix lists the outstanding compiler-simulation conjectures for this non-local, type-mediated construction. The implementation represents finite equality with the same $\fineq{n}$ core expression used by the ideal schema: its type checker requires two $\fin{n}$ operands and its evaluator compares their finite indices. This shared primitive does not by itself prove correspondence between the flattened schema and the emitter's nested dispatch. Before detailing the rules, we outline how type annotations guide discretization. The type system is designed so that every typed sub-expression of the form
 $e = \uniform(e_1, e_2 )$ of type $\float[B;V]$ with $B=\{\sim_1\!\!b_1, \ldots, \sim_n\!\!b_n\} \neq \top$
 %
 can be \emph{discretized} to an expression $e' : \fin{n+1}$ such that 
