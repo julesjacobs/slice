@@ -1,6 +1,18 @@
 % !TeX root = ../slice.tex
-\section{Soundness Proof}
+\section{Soundness Obligations}
 \label{sec:app:soundness_new}
+
+Throughout this appendix, $Expr$ denotes the closed, well-typed operational
+carrier $Expr^{\mathsf U+}_{\mathrm{cl}}$ from \Cref{sec:soundness}; thus
+$Expr_\tau$ means $Expr^{\mathsf U+}_{\tau,\mathrm{cl}}$.  Likewise, $Vals_\tau$ and $\skel_\tau$ denote,
+respectively, the values in this fragment and the skeletons arising from this
+fragment.  An unqualified typing judgment $e:\tau$ in this appendix therefore
+ranges over $Expr_\tau$. Source-only domains are written explicitly as
+$Expr^{\mathsf U}_{\mathrm{cl}}$.  We assume that capture-avoiding substitution,
+the transformation, and the small-step rules preserve closedness and typing,
+and that all-real-hole reconstruction covers this carrier.  Borelness of every
+admissible filling domain, typed substitution, and the small-step kernel remain
+explicit conjectures below.
 
 \subsection{Measure Theory Preliminaries}
 
@@ -158,13 +170,15 @@ for all $A \in \mathcal{F}_Y$.
 	\]
 \end{proof}
 
-\begin{definition}[Markov kernels]
-	Given measurable spaces $(X, \Sigma_X)$ and $(Y, \Sigma_Y)$, a Markov kernel with source $X$ and target $Y$ is a function $P : X \times \Sigma_Y \to [0,1]$ (or equivalently, $X \to \Sigma_Y \to [0,1]$) that maps each source state $x \in X$ to a distribution over target states $P(x, -) : \Sigma_Y \to [0,1]$.
-
-	We call $P$ a \emph{Markov kernel} if it satisfies two conditions:
+\begin{definition}[Sub-Markov kernels]
+	Given measurable spaces $(X, \Sigma_X)$ and $(Y, \Sigma_Y)$, a
+	\emph{sub-Markov kernel} with source $X$ and target $Y$ is a function
+	$P:X\times\Sigma_Y\to[0,1]$ (equivalently,
+	$X\to\Sigma_Y\to[0,1]$) satisfying two conditions:
 
 	\begin{enumerate}
-		\item \emph{Probability measure:} For each source state $x \in X$, the map $A \mapsto P(x, A)$ must be a probability measure.
+		\item \emph{Subprobability measure:} For each source state $x \in X$,
+		the map $A \mapsto P(x,A)$ is a subprobability measure.
 		
 		\item \emph{Measurable function:} For each event $A \in \Sigma_Y$ in the target space, the map $x \mapsto P(x,A)$ must be a measurable function.
 	\end{enumerate}
@@ -191,17 +205,118 @@ for all $A \in \mathcal{F}_Y$.
 
 \subsection{Measure Space on Expressions}
 \label{app:measure_space_expressions}
-To make the probabilistic semantics precise, we construct an appropriate measure space structure on the set of expressions by factoring out real numbers using the notion of what we call \emph{expression skeletons}.
+The carrier construction must factor out every exact-real atom, not only
+term-level float constants.  Otherwise real-valued weights or subtype
+annotations remain in the skeleton tag and the proposed skeleton index need
+not be countable.
+
+\begin{definition}[All-real-hole typed skeletons]
+	Fix a full annotated result type $\tau$.  An all-real-hole typed skeleton
+	is obtained from a canonical finite elaborated derivation concluding
+	$\vdash e:\tau$ by replacing every occurrence of an exact-real atom by a
+	fresh occurrence-indexed hole.  This includes term-level real literals, probabilities in
+	finite discrete choices, real cut boundaries, real members of finite
+	value-set annotations, and real atoms in the context, result type, and
+	intermediate typing annotations.  Every required equality between
+	occurrences is recorded as a constraint on their separate coordinates.
+
+	Write $\skel_\tau$ for the resulting finite skeletons for this fixed full
+	type $\tau$.  Skeleton tags retain constructors, rule names, de Bruijn indices,
+	natural-number arities, and hole indices, but no real numbers.  If
+	$s\in\skel_\tau$ has $m_s$ holes, let
+	\[
+		A_{s;\tau}\subseteq\mathbb R^{m_s}
+	\]
+	be the fillings satisfying all actual typing, annotation, and
+	transformation-side conditions, including reconstruction of exactly the
+	fixed conclusion type $\tau$, and write $s[\vec r]$ for reconstruction.
+	The canonical derivation and fresh occurrence-indexed policy give every
+	expression a unique skeleton tag and filling.
+\end{definition}
+
+\begin{lemma}[Countability of all-real-hole skeletons]
+	\label{lem:countable-all-real-skeletons}
+	For every fixed full annotated result type $\tau$, $\skel_\tau$ is
+	countable.
+\end{lemma}
+
+\begin{proof}
+	Finite trees over the countable alphabet of constructors, typing-rule
+	names, de Bruijn indices, natural-number arities, and hole indices form a
+	countable set.  No exact-real atom remains in a skeleton tag.
+\end{proof}
+
+\begin{conjecture}[Borel filling domains]
+	\label{conj:borel-filling-domains}
+	For every $s\in\skel_\tau$, the set $A_{s;\tau}$ is a Borel subset of
+	$\mathbb R^{m_s}$.
+\end{conjecture}
+
+This is a separate measure-theoretic obligation.  It requires enumerating the
+actual typing, annotation, and transformation-side conditions and proving that
+each induces a Borel constraint; it is not implied merely by
+$A_{s;\tau}\subseteq\mathbb R^{m_s}$.
+
+\begin{definition}[Fixed-skeleton carrier]
+	\label{def:sigma-algebra-construction-holes}
+	Give $A_{s;\tau}$ the subspace Borel $\sigma$-algebra
+	$\mathcal F_{s;\tau}$.  Define
+	\[
+		Expr_{s;\tau}=\{s[\vec r]\mid\vec r\in A_{s;\tau}\}
+	\]
+	and transport $\mathcal F_{s;\tau}$ along the reconstruction bijection to
+	obtain $\mathcal F_{Expr_{s;\tau}}$.
+\end{definition}
+
+\begin{lemma}[Fixed-skeleton isomorphism]
+	\label{lem:isomorphism}
+	Reconstruction $A_{s;\tau}\to Expr_{s;\tau}$ and decomposition
+	$Expr_{s;\tau}\to A_{s;\tau}$ are inverse measurable maps by the transported
+	$\sigma$-algebra.
+\end{lemma}
+
+\begin{definition}[Expression carrier]
+	\label{def:sigma-algebra-construction-expressions}
+	Define
+	\[
+		Expr_\tau=\bigsqcup_{s\in\skel_\tau}Expr_{s;\tau},
+		\qquad
+		\mathcal F_{Expr_\tau}
+		=\{A\mid
+		A\cap Expr_{s;\tau}\in\mathcal F_{Expr_{s;\tau}}
+		\text{ for every }s\in\skel_\tau\}.
+	\]
+\end{definition}
+
+\begin{lemma}[Conditional standard-Borel expression carrier]
+	\label{lem:measurable-expr-t}
+	If \Cref{conj:borel-filling-domains} holds for every $s\in\skel_\tau$,
+	then $Expr_\tau$ is a standard Borel space.
+\end{lemma}
+
+\begin{proof}
+	Each $A_{s;\tau}$ is then a standard Borel subspace of a
+	finite-dimensional Euclidean space, hence so is its isomorphic
+	fixed-skeleton carrier.  By
+	\Cref{lem:countable-all-real-skeletons}, $Expr_\tau$ is a countable
+	disjoint union of standard Borel spaces, which is standard Borel.
+\end{proof}
+
+\iffalse
 
 \begin{definition}[Expression Skeleton]
-	An expression skeleton $s$ is a syntactic expression obtained from a program by replacing each occurrence of a float constant with a hole of the form $\square$. The set of skeletons is generated by the grammar:
+	An expression skeleton $s$ is a syntactic expression in the operationally
+	closed fragment obtained by replacing each occurrence of a float constant
+	with a hole of the form $\square$. The set of skeletons is generated by the
+	following grammar (with only the constructs reachable from
+	$Expr^{\mathsf U+}$):
 	\begin{align*}
 		s ::= \; 
 		&\square \mid x \mid \true \mid \false \mid \finconst{k}{n} \mid \diverge \mid () \\
 		&\mid \letkw \; x = s_1 \; \inkw \; s_2 \mid \ifkw \; s_1 \; \thenkw \; s_2 \; \elsekw \; s_3 \\
-		&\mid s_1 < s_2 \mid s_1 \leq s_2 \mid s_1 \finlt{n} s_2 \mid s_1 \finleq{n} s_2 \\
-		&\mid \uniform(s_1, s_2) \mid \gaussian(s_1, s_2) \mid \exponential(s) \mid \betafn(s_1, s_2) \mid \discrete(p_0, \ldots, p_{n-1}) \\
-		&\mid s_1\; \logand\; s_2 \mid s_1\; \logor\; s_2 \mid \lognot\; s \mid \observekw(s) \mid s_1; s_2 \\
+		&\mid s_1 < s_2 \mid s_1 \finlt{n} s_2 \mid s_1 \fineq{n} s_2 \\
+		&\mid \uniform(s_1, s_2) \mid \discrete(p_0, \ldots, p_{n-1}) \\
+		&\mid s_1\; \logand\; s_2 \mid s_1\; \logor\; s_2 \mid \lognot\; s \mid \observekw(s) \\
 		&\mid (s_1, s_2) \mid \fstkw \; s \mid \sndkw \; s \\
 		&\mid \funkw \; x \to s \mid s_1 \; s_2 \mid \fixkw\; f\; x := s \\
 		&\mid \textnormal{\ttfamily nil} \mid s_1 :: s_2 \\
@@ -229,7 +344,8 @@ skeletons by adding a distinguished typing rule for holes.
 		\inferrule{ }{\square : \floattype{B}{V}}
 	\]
 
-	We denote by $\skel_{\tau}$ the set of all well-typed expression skeletons, where:
+	We denote by $\skel_{\tau}$ the set of all well-typed expression skeletons
+	in the operationally closed fragment, where:
 
 	\[
 		\skel_{\tau} := \{s \in \skel \mid s : \tau\}.
@@ -237,7 +353,7 @@ skeletons by adding a distinguished typing rule for holes.
 \end{definition}
 
 \begin{remark}
-	Both $\skel_\tau$ and $Expr_\tau$ are to be understood as the set of all well-typed skeletons and expressions, respectively, \emph{equipped
+	Both $\skel_\tau$ and $Expr_\tau$ are to be understood as the set of all well-typed fragment skeletons and fragment expressions, respectively, \emph{equipped
 	with their full subtype information}.
 
 	For example,
@@ -474,7 +590,7 @@ Intuitively, $Expr_{s;\tau}$ consists exactly of those expressions whose syntact
 \end{proof}
 
 
-Now we combine the measurable spaces for each distinct skeleton into a single measurable space of all well-typed expressions of type $\tau$. The set of all well-typed expressions of type $\tau$ is thus the disjoint union:
+Now we combine the measurable spaces for each distinct skeleton into a single measurable space of all well-typed expressions in the operational closure of type $\tau$. This set is the disjoint union:
 \[
 	Expr_{\tau} = \bigsqcup_{s : \tau \in \skel_{\tau}} Expr_{s;\tau}.
 \]
@@ -550,9 +666,11 @@ This union is disjoint because every typed expression $e : \tau$ has a unique sk
 \end{proof}
 
 
+\fi
+
 \begin{definition}[Extension with error element]\label{def:meas-space-with-error}
 	Let $(Expr_\tau,\mathcal F_{Expr_\tau})$ be the measurable space of well-typed
-	expressions of type $\tau$. Define
+	operationally closed expressions of type $\tau$. Define
 	\[
 	Expr_\tau + \bot := Expr_\tau \cup \{\bot\},
 	\]
@@ -610,7 +728,7 @@ Finally, we can equip this measurable space $(Expr_{\tau} + \bot, \mathcal{F}_{E
 We give some basic lemmas:
 
 \begin{lemma}\label{lem:measurable-subsets}
-	Let $(Expr_{\tau} + \bot, \mathcal{F}_{Expr_{\tau} + \bot})$ be the Borel measurable space of well-typed expressions with error from Definition~\ref{def:meas-space-with-error}. Let $\vals_{\tau} \subset Expr_{\tau}$ be the set of all well-typed value expressions. Let $N_{\tau} \subset Expr_{\tau}$, defined as $N = Expr_{\tau} \setminus \vals_{\tau}$, be the set of all well-typed non-value expressions. Let $\{\bot\}$ be the singleton set containing the error element $\bot$. The following are true:
+	Let $(Expr_{\tau} + \bot, \mathcal{F}_{Expr_{\tau} + \bot})$ be the measurable space of well-typed operationally closed expressions with error from Definition~\ref{def:meas-space-with-error}; it is standard Borel conditional on \Cref{conj:borel-filling-domains}. Let $\vals_{\tau} \subset Expr_{\tau}$ be the set of value expressions in this fragment. Let $N_{\tau} \subset Expr_{\tau}$, defined as $N = Expr_{\tau} \setminus \vals_{\tau}$, be the set of non-value expressions in this fragment. Let $\{\bot\}$ be the singleton set containing the error element $\bot$. The following are true:
 	\begin{enumerate}
 		\item\label{lem:measurable-vals} The set $\vals_{\tau} \in \mathcal{F}_{Expr_{\tau} + \bot}$.
 		\item\label{lem:measurable-error} The set $\{\bot\} \in \mathcal{F}_{Expr_{\tau} + \bot}$.
@@ -648,7 +766,9 @@ Note that in general, given $(X, \Sigma_X)$ and $(Y, \Sigma_Y)$ to be measurable
 
 \subsection{Distribution Monad with Error}
 
-Let $X$ be a set equipped with a suitable measurable space so that $\mathcal{D}(X + \bot)$ denotes the set of probability measures over $X + \bot$. We will make heavy use of the following generic monad construction, for which one easily verifies the monad laws:
+Let $X$ be a set equipped with a suitable measurable space so that
+$\mathcal{D}(X + \bot)$ denotes the set of subprobability measures over
+$X + \bot$. We use the following generic bind construction:
 
 \begin{definition}[Distribution Monad with Error]
 	\label{def:dist-monad}
@@ -657,12 +777,14 @@ Let $X$ be a set equipped with a suitable measurable space so that $\mathcal{D}(
 	\begin{align*}
 		& \text{return} \colon X \to \mathcal{D}(X + \bot), \quad \text{return}(x) = \delta_x \\
 		%
-		& \text{bind} \colon \mathcal{D}(X + \bot) \to ((X + \bot) \to \mathcal{D}(Y + \bot)) \to \mathcal{D}(Y + \bot), \\
+		& \text{bind} \colon \mathcal{D}(X + \bot) \to (X \to \mathcal{D}(Y + \bot)) \to \mathcal{D}(Y + \bot), \\
 		%& \text{bind}(\mu)(f)(y) := \sum_{x \in support(\mu)} \mu(x) \cdot f_{\bot}(x)(y) \\
-		&\text{bind}(\mu)(f)(A) = \int_{X + \bot} f(x)(A) \cdot \mu(dx)~,
+		&\text{bind}(\mu)(f)(A) = \int_{X + \bot} f_\bot(x)(A) \cdot \mu(dx)~,
 	\end{align*}
 	%
-	where $\delta_x$ denotes the Dirac measure for $x$, and $f$ is a Markov kernel.
+	where $\delta_x$ denotes the Dirac measure for $x$, $f$ is an ordinary
+	sub-Markov kernel on $X$, and $f_\bot$ is its strict extension from
+	\Cref{def:bot-extension}.  Thus bind propagates existing $\bot$ mass.
 %	
 %	Define $\text{return} \colon X \to \mathcal{D}(X + \bot)$ by $\text{return}_X(x) := \delta_x$, where $\delta_x$ denotes the Dirac distribution on $x$: for any $y \in X$, we have $\delta_x(y) = 1$ if $y = x$, otherwise $\delta_x(y) = 0$. Further, define $\text{bind} : \mathcal{D}(X + \bot) \to (X \to \mathcal{D}(Y + \bot)) \to \mathcal{D}(Y + \bot)$ by:
 %	\begin{enumerate}
@@ -685,28 +807,33 @@ Let $X$ be a set equipped with a suitable measurable space so that $\mathcal{D}(
 	\]
 \end{definition}
 
-\begin{lemma}[$\bot$-extension is a Markov kernel]\label{lem:bot-extension-kernel}
-	Given a Markov kernel $f : X \to \mathcal{D}(Y + \bot)$, its $\bot$ extension $f_{\bot} : (X + \bot) \to \mathcal{D}(Y + \bot)$ is also a Markov kernel.
+\begin{lemma}[$\bot$-extension is a sub-Markov kernel]\label{lem:bot-extension-kernel}
+	Given a sub-Markov kernel $f : X \to \mathcal{D}(Y + \bot)$, its
+	strict $\bot$ extension $f_{\bot} : (X + \bot) \to
+	\mathcal{D}(Y + \bot)$ is also a sub-Markov kernel.
 \end{lemma}
 	
 \begin{proof}
-	We verify the two conditions for $f_{\bot}$ to be a Markov kernel.
+	We verify the two conditions for $f_{\bot}$ to be a sub-Markov kernel.
 	
-	\paragraph{(1) Probability measure:}
+	\paragraph{(1) Subprobability measure:}
 	We show for each $e \in X + \bot$, the map 
 	\[
 		A \mapsto f_{\bot}(e)(A)
 	\]
-	is a probability measure.
+	is a subprobability measure.
 
 	Fix $e \in X + \bot$. 
 	\begin{itemize}
-	\item If $e = \bot$, then $f_{\bot}(\bot) = \delta_{\bot}$, the Dirac measure at $\bot$, which is a probability measure on $Y + \bot$.
+	\item If $e = \bot$, then $f_{\bot}(\bot) = \delta_{\bot}$, the Dirac
+	measure at $\bot$, which is a subprobability measure on $Y + \bot$.
 	
-	\item If $e \in X$, then $f_{\bot}(e) = f(e)$, and since $f$ is a Markov kernel by assumption, $f(e)$ is a probability measure on $Y + \bot$.
+	\item If $e \in X$, then $f_{\bot}(e) = f(e)$, which is a
+	subprobability measure by assumption.
 	\end{itemize}
 	
-	Thus, for all $e \in X + \bot$, the map $A \mapsto f_{\bot}(e)(A)$ is a probability measure.
+	Thus, for all $e \in X + \bot$, the map $A \mapsto f_{\bot}(e)(A)$ is a
+	subprobability measure.
 	
 	\paragraph{(2) Measurable function:}
 	We show for each $A \in \mathcal{F}_{Y + \bot}$, the map $e \mapsto f_{\bot}(e)(A)$ is a measurable function.
@@ -746,24 +873,59 @@ Let $X$ be a set equipped with a suitable measurable space so that $\mathcal{D}(
 		= &\{e \in X \mid f(e)(A) > a \} \cup \{\bot \mid \dirac{\bot}(A) > a \}
 	\end{align*}
 
-	The first set is measurable in $X$ (and hence $X + \bot$) since $f$ is a Markov kernel by assumption. The second set is either $\emptyset \in \mathcal{F}_{X + \bot}$ or $\{\bot\} \in \mathcal{F}_{X + \bot}$. Since $ \mathcal{F}_{X + \bot}$ is closed under countable unions, then $g^{-1}(B) \in \mathcal{F}_{X + \bot}$ for every $B \in \mathcal{B}([0,1])$. Thus, for all $A \in \mathcal{F}_{Y + \bot}$, the map $e \mapsto f_{\bot}(e)(A)$ is a measurable function.
+	The first set is measurable in $X$ (and hence $X + \bot$) since $f$ is a
+	sub-Markov kernel by assumption. The second set is either $\emptyset \in
+	\mathcal{F}_{X + \bot}$ or $\{\bot\} \in \mathcal{F}_{X + \bot}$.
+	Hence the required inverse image is measurable.
 	
 	\medskip
 	
-	Since both conditions hold, $f_{\bot}$ is a Markov kernel.
+	Since both conditions hold, $f_{\bot}$ is a sub-Markov kernel.
 \end{proof}
 
-\begin{lemma}[Dirac return is a Markov kernel]\label{lem:dirac-return-kernel}
+\begin{lemma}[Strict-bind accounting]\label{lem:strict-bind-accounting}
+	For $\mu\in\mathcal D(X+\bot)$ and a sub-Markov kernel
+	$f:X\to\mathcal D(Y+\bot)$, write
+	\[
+		\mathsf{fail}(\mu)=\mu(\{\bot\}),\qquad
+		\mathsf{mass}(\mu)=\mu(X+\bot),\qquad
+		\mathsf{miss}(\mu)=1-\mathsf{mass}(\mu).
+	\]
+	Then the strict bind from \Cref{def:dist-monad} satisfies
+	\begin{align*}
+		\mathsf{fail}(\mu\monbind f)
+		&=\mathsf{fail}(\mu)
+		  +\int_X\mathsf{fail}(f(x))\,\mu(dx),\\
+		\mathsf{mass}(\mu\monbind f)
+		&=\mathsf{fail}(\mu)
+		  +\int_X\mathsf{mass}(f(x))\,\mu(dx),\\
+		\mathsf{miss}(\mu\monbind f)
+		&=\mathsf{miss}(\mu)
+		  +\int_X\mathsf{miss}(f(x))\,\mu(dx).
+	\end{align*}
+\end{lemma}
+
+\begin{proof}
+	Split the defining integral over the measurable coproduct
+	$X+\bot$.  On $X$, the strict extension is $f$; at $\bot$ it is
+	$\delta_\bot$.  Evaluating first at $\{\bot\}$ and then at the whole
+	space gives the first two identities.  For the third, subtract the
+	second identity from $1$ and use
+	$\mu(X+\bot)=\mu(X)+\mu(\{\bot\})$.
+\end{proof}
+
+\begin{lemma}[Dirac return is a sub-Markov kernel]\label{lem:dirac-return-kernel}
 	For any measurable space $(X,\mathcal{F}_X)$, the map
 	\[
 		\mathsf{return} : X \to \mathcal{D}(X+\bot),
 		\qquad x \mapsto \delta_x .
 	\]
-	is a Markov kernel.
+	is a sub-Markov kernel.
 \end{lemma}
 
 \begin{proof}
-	We verify the two conditions for $\mathsf{return}$ to be a Markov kernel.
+	A Dirac probability measure is in particular a subprobability measure, and
+	the measurability argument below establishes the second kernel condition.
 
 	\paragraph{(1) Probability measure:}
 	We show for each $x \in X$, the map 
@@ -828,23 +990,23 @@ Let $X$ be a set equipped with a suitable measurable space so that $\mathcal{D}(
 	Hence $g^{-1}(B)\in\mathcal{F}_X$ for every $B\in\mathcal{B}([0,1])$, and $g$ is measurable.
 \end{proof}
 
-\begin{lemma}[Zero kernel is a Markov kernel]\label{lem:zero-kernel}
+\begin{lemma}[Zero kernel is a sub-Markov kernel]\label{lem:zero-kernel}
     Let $(X, \mathcal{F}_X)$ and $(Y, \mathcal{F}_Y)$ be measurable spaces. The constant-zero map
     \[
         f : X \to \mathcal{D}(Y), \qquad f(x)(A) := 0
     \]
-    is a Markov kernel.
+    is a sub-Markov kernel.
 \end{lemma}
 
 \begin{proof}
     We verify the two kernel conditions.
 
-    \paragraph{(1) Probability measure.}
+    \paragraph{(1) Subprobability measure.}
 	We show for each $x \in X$, the map
 	\[
 		A \mapsto f(x)(A)
 	\]
-	is a probability measure. 
+	is a subprobability measure.
 
     Fix any $x \in X$. Then $f(x)$ is the zero measure: it satisfies 
     $\sigma$-additivity since
@@ -860,10 +1022,10 @@ Let $X$ be a set equipped with a suitable measurable space so that $\mathcal{D}(
     For any $A \in \mathcal{F}_Y$, the map $x \mapsto f(x)(A) = 0$ is the 
     constant-zero function on $X$, hence measurable.
 
-    Thus both conditions hold, so $f$ is a Markov kernel.
+    Thus both conditions hold, so $f$ is a sub-Markov kernel.
 \end{proof}
 
-\begin{lemma}[Composition of Markov kernels]\label{lem:kernel-composition}
+\begin{lemma}[Composition of sub-Markov kernels]\label{lem:kernel-composition}
 	Let $(X, \Sigma_X)$, $(Y, \Sigma_Y)$, and $(Z, \Sigma_Z)$ be measurable spaces.
 	If 
 	\[
@@ -871,13 +1033,13 @@ Let $X$ be a set equipped with a suitable measurable space so that $\mathcal{D}(
 		\quad\text{and}\quad
 		Q : Y \to \mathcal{D}(Z)
 	\]
-	are Markov kernels, then their composition
+	are sub-Markov kernels, then their composition
 	\[
-		(P \monbind Q)(A)
+		(P \monbind Q)(x,A)
 		\;:=\;
-		\int_{x \in supp(P)} Q(x)(A)\, P(dx)
+		\int_Y Q(y,A)\,P(x,dy)
 	\]
-	defines a Markov kernel
+	defines a sub-Markov kernel
 	\[
 		P \monbind Q : X \to \mathcal{D}(Z).
 	\]
@@ -891,22 +1053,13 @@ Let $X$ be a set equipped with a suitable measurable space so that $\mathcal{D}(
 \label{app:small-step}
 \input{figures/sem_smallstep}
 
-Throughout this section, we denote by $e :\tau$ a well-typed expression of type $\tau$ and implicitly assume that all sub-expressions are annotated with types, as well. Moreover, for the typed expression $ e: \tau = \uniform(e_1 : \float[B_1; V_1], e_2 :\float[B_2;V_2]) : \float[B,V]$ with $B,B_1,B_2 \neq \top$ and $V_1,V_2\notin\{\emptyset,\top\}$, we introduce an auxiliary statement $\dc$ and let
-%
-\[
-	\discretize{ e: \tau} = \dc(\discretize{e_1 : \float[B_1; V_1]}, \discretize{e_2 :\float[B_2;V_2]})~.
-\]
-%
-We define the semantics of $\dc$ in such a way that it behaves like the discretized program in the last case of \Cref{fig:discretization-code} but resolves the let-bindings and the conditional choices in a single step, which will simplify our proof. We equip this statement with the following typing rule :
-%
-\begin{align*}
-	\inferrule[\textsc{TDiscreteCase}]
-	{e_1 : \fin{|B_1| + 1} \\
-		e_2 : \fin{|B_2| + 1} \\ \distinguishes{B_1}{V_1} \\ \distinguishes{B_2}{V_2}}
-	{\dc(e_1, e_2) : \fin{|B|+1}}
-\end{align*}
+Throughout this section, $e:\tau$ denotes a well-typed expression whose
+subexpressions are fully type-annotated.  The dynamic-parameter transformation
+in \Cref{fig:discretization-code} denotes the displayed nest of core-language
+let-bindings, conditionals, Boolean conjunctions, finite equalities, and a
+discrete choice.  No auxiliary one-step dispatch constructor is added to the
+language.
 
- 
 %
 % \kevin{measurable space todo} \\
 % %\kevin{get rid of discrete thing, is for my intuition}\\
@@ -942,10 +1095,14 @@ We define the semantics of $\dc$ in such a way that it behaves like the discreti
 %
 %
 %
-Equipped with these notions, we define the small-step semantics of our language:
+Equipped with these notions, we define the small-step semantics of the
+operationally closed fragment:
 %
 \begin{definition}
-	The small-step semantics $\sem{e :\tau} \in \mathcal{D}(Expr_{\tau} + \bot)$ is defined recursively on the structure of $e:\tau$ by the rules in \Cref{tab:smallstep-1} and \Cref{tab:smallstep-2}. 
+	For $e:\tau\in Expr^{\mathsf U+}_{\tau,\mathrm{cl}}$, the small-step semantics
+	$\sem{e :\tau} \in \mathcal{D}(Expr^{\mathsf U+}_{\tau,\mathrm{cl}} + \bot)$ is
+	defined recursively on the structure of $e:\tau$ by the rules in
+	\Cref{tab:smallstep-1,tab:smallstep-2}.
 \end{definition}
 
 In the \textsc{Discrete} row, the typing premises ensure that the displayed weights form a nonempty probability vector. Hence $\text{Discrete}(p_0,\ldots,p_{n-1})=\sum_{i=0}^{n-1}p_i\,\dirac{\finconst{i}{n}}$ is a probability measure in $\mathcal{D}(Expr_{\fin{n}}+\bot)$.
@@ -1040,7 +1197,7 @@ The missing probability mass in $\sem{e :\tau}$ is the probability of encounteri
     by definition, so $\phi_{\vec{c}}$ is measurable.
 \end{proof}
 
-\begin{lemma}[Substitution is measurable]\label{lem:subst-measurable}
+\begin{conjecture}[Substitution is measurable]\label{lem:subst-measurable}
     Fix a typed expression $e : \tau_2$ and a variable $x : \tau_1$. The substitution map
     \[
         \mathrm{Sub}_{e,x} \colon Val_{\tau_1} \to Expr_{\tau_2},
@@ -1049,8 +1206,9 @@ The missing probability mass in $\sem{e :\tau}$ is the probability of encounteri
     \]
     is measurable, where $Val_{\tau_1} \subseteq Expr_{\tau_1}$ carries the subspace $\sigma$-algebra inherited
     from $(Expr_{\tau_1}, \mathcal{F}_{Expr_{\tau_1}})$.
-\end{lemma}
+\end{conjecture}
 
+\iffalse
 \begin{proof}
 	We show that $\mathrm{Sub}_{e,x}^{-1}(A) \in \mathcal{F}_{Val_{\tau_1}}$ for all $A \in \mathcal{F}_{Expr_{\tau_2}}$. 
 	
@@ -1126,10 +1284,23 @@ The missing probability mass in $\sem{e :\tau}$ is the probability of encounteri
     \]
     Hence $\mathrm{Sub}_{e,x}$ is measurable.
 \end{proof}
+\fi
 
-\begin{lemma}[Monadic bind is a Markov kernel]\label{lem:bind-kernel}
-	For every occurrence of a monadic bind $\mu \monbind f$ given in the small-step operational semantics in~\Cref{tab:smallstep-1,tab:smallstep-2}, $f : (Expr_{\tau_1} + \bot) \to \mathcal{D}(Expr_{\tau_2} + \bot)$ is a Markov kernel.
-\end{lemma}
+\begin{conjecture}[Measurability of operational contexts]\label{lem:bind-kernel}
+	For every occurrence of a monadic bind $\mu \monbind f$ in the small-step
+	operational semantics in~\Cref{tab:smallstep-1,tab:smallstep-2},
+	$f : Expr_{\tau_1} \to
+	\mathcal{D}(Expr_{\tau_2} + \bot)$ is a sub-Markov kernel.  This is the
+	ordinary continuation on $Expr_{\tau_1}$; strict bind supplies its bottom
+	extension $f_\bot$.
+\end{conjecture}
+
+The skeleton construction reduces this claim to measurability of the
+corresponding context maps on each skeleton component.  The argument is
+straightforward for fixed syntactic contexts, but a complete case analysis is
+not supplied here.
+
+\iffalse
 
 \begin{proof}
 	We first prove that $f : Expr_{\tau_1} \to \mathcal{D}(Expr_{\tau_2} + \bot)$ is a Markov kernel. Let $e$ be an expression whose evaluation rule contains a monadic bind $\mu \monbind f$. We proceed by case analysis on $e$:
@@ -1278,14 +1449,24 @@ The missing probability mass in $\sem{e :\tau}$ is the probability of encounteri
 
 		Thus, $f \colon Expr_{\tau_1} \to \mathcal{D}(Expr_{\tau_2} + \bot)$ is a Markov kernel.
 
-		\item All other cases analogous. \todo[inline]{Maybe show the comparison case}
+		\item All other cases are analogous.
 	\end{itemize}
 	By~\Cref{lem:bot-extension-kernel}, the $\bot$-extension $f_\bot \colon (Expr_{\tau_1} + \bot) \to \mathcal{D}(Expr_{\tau_2} + \bot)$ is also a Markov kernel, as required.
 \end{proof}
+\fi
 
-\begin{lemma}[Small-step semantics is a Markov kernel]\label{lem:small-step-kernel}
-    For each type $\tau$, the small-step operational semantics $\sem{\cdot} \colon Expr_{\tau} \to \mathcal{D}(Expr_{\tau} + \bot)$ defines a Markov kernel.
-\end{lemma}
+\begin{conjecture}[Small-step measurability]\label{lem:small-step-kernel}
+	For each type $\tau$, the small-step operational semantics
+	$\sem{\cdot} \colon Expr_{\tau} \to
+	\mathcal{D}(Expr_{\tau} + \bot)$ defines a sub-Markov kernel.
+\end{conjecture}
+
+This requires, in addition to
+\Cref{lem:bind-kernel}, measurability of the sampler kernels as their parameters
+vary and measurability of the case partition used by the small-step tables.
+These measure-theoretic obligations remain open.
+
+\iffalse
 \begin{proof}
     By induction on the typing derivation of $e : \tau$. We show in each case that the map $e \mapsto \sem{e : \tau}$ is a Markov kernel.
 
@@ -1338,13 +1519,178 @@ The missing probability mass in $\sem{e :\tau}$ is the probability of encounteri
 		\item All other cases are analogous.
 	\end{itemize}
 \end{proof}
+\fi
 
 
 
 
 
 
-\subsection{Small-Step Coupling Semantics}
+\subsection{Big-Step Semantics}
+
+Conditional on \Cref{lem:small-step-kernel}, the complete ordinary small-step
+tables above can be iterated without assuming a synchronous coupling.  Define
+the ordinary kernel $S_\tau:Expr_\tau\to\mathcal D(Expr_\tau+\bot)$ to take one
+small step at non-values and to return $\delta_v$ at values.  Its strict
+extension $(S_\tau)_\bot$ makes values and $\bot$ absorbing.  With the strict
+bind from \Cref{def:dist-monad}, define
+\[
+	\mu^e_0=\delta_e
+	\qquad\text{and}\qquad
+	\mu^e_{n+1}=\mu^e_n\monbind S_\tau.
+\]
+Let $T_\tau=Vals_\tau+\bot$ and define the terminal restriction
+$\nu^e_n(A)=\mu^e_n(A\cap T_\tau)$.  Absorption implies
+$\nu^e_n(A)\leq\nu^e_{n+1}(A)$ for every measurable
+$A\subseteq T_\tau$.  Notice that this statement is only about terminal
+restrictions: the full measures $\mu^e_n$ need not be monotone on arbitrary
+measurable sets.
+
+\begin{definition}[Big-step semantics]
+	For $e:\tau\in Expr_\tau$, define
+	\[
+		\bigsem{e:\tau}(A)=\sup_{n\in\Nats}\nu^e_n(A)
+		\qquad(A\subseteq T_\tau\text{ measurable}).
+	\]
+\end{definition}
+
+Because $(\nu^e_n)_n$ is an increasing sequence of subprobability measures,
+its pointwise supremum is a subprobability measure.  Missing mass represents
+execution that has not reached a value or observation failure in any finite
+number of steps, including divergence and runtime parameter errors in this
+model.  This construction supplies the ordinary big-step semantics; it does
+not establish a relation between a source expression and its generated target.
+
+\begin{theorem}[Coherent coupling transfer to terminal semantics]
+	\label{thm:coherent-terminal-transfer}
+	Let $S:X\to\mathcal D(X)$ and $T:Y\to\mathcal D(Y)$ be measurable
+	sub-Markov kernels.  Let $F_X\subseteq X$ and $F_Y\subseteq Y$ be
+	measurable pointwise-absorbing terminal sets: $S(x)=\delta_x$ for every
+	$x\in F_X$ and $T(y)=\delta_y$ for every $y\in F_Y$.  Let
+	$R\subseteq X\times Y$ be a
+	measurable relation that is terminal-synchronous:
+	$(x,y)\in R$ implies $x\in F_X$ iff $y\in F_Y$.  Suppose there is one
+	measurable sub-Markov kernel
+	\[
+		C:R\longrightarrow\mathcal D(R)
+	\]
+	whose marginals factor through the ordinary kernels, so for every
+	$(x,y)\in R$ and measurable $A\subseteq X$, $B\subseteq Y$,
+	\[
+		C((x,y),\pi_X^{-1}(A))=S(x,A),\qquad
+		C((x,y),\pi_Y^{-1}(B))=T(y,B).
+	\]
+	For every $(x_0,y_0)\in R$, the terminal big-step semantics of $x_0$
+	and $y_0$ are the marginals of a terminal subprobability coupling
+	supported on $R\cap(F_X\times F_Y)$.  In particular, their terminal
+	total masses, and hence their aggregate missing masses, are equal.  No
+	almost-sure termination premise is required.
+\end{theorem}
+
+\begin{proof}
+	Put $\eta_0=\delta_{(x_0,y_0)}$ and define ordinary kernel iteration by
+	$\eta_{n+1}(A)=\int_R C(r,A)\,\eta_n(dr)$.  Induction on $n$ shows that the
+	marginals of $\eta_n$ are the $n$-step measures generated by $S$ and
+	$T$.  For example,
+	\begin{align*}
+		(\pi_X)_*\eta_{n+1}(A)
+		&=\int_R C(r,\pi_X^{-1}(A))\,\eta_n(dr)\\
+		&=\int_R S(\pi_Xr,A)\,\eta_n(dr)
+		 =\int_X S(x,A)\,(\pi_X)_*\eta_n(dx),
+	\end{align*}
+	and similarly for $Y$.  Terminal synchrony and pointwise absorption make the
+	restrictions of $\eta_n$ to $R\cap(F_X\times F_Y)$ increasing.  Their
+	pointwise supremum is therefore a subprobability measure.  Taking
+	marginals commutes with these increasing suprema and yields exactly the
+	two terminal big-step measures.  Since both are marginals of the same
+	terminal coupling, they have equal total mass; subtracting from $1$
+	gives equal missing mass.
+\end{proof}
+
+If measurable failure sets $B_X\subseteq F_X$ and $B_Y\subseteq F_Y$ also
+satisfy $x\in B_X$ iff $y\in B_Y$ for every $(x,y)\in R$, the same coupling
+gives equal explicit failure mass by evaluation on
+$R\cap(B_X\times B_Y)$.  This conclusion concerns the represented failure
+outcome.  Divergence and other killed execution remain aggregate missing mass
+and are not identified with failure.
+
+\begin{corollary}[Collapsed-to-ordinary terminal transfer]
+	\label{cor:collapsed-terminal-transfer}
+	Suppose \Cref{thm:coherent-terminal-transfer} applies to a source kernel
+	$S$ and a measurable collapsed target kernel $\overline T$.  If the
+	ordinary target kernel $T$ is terminal-cofinal with $\overline T$, meaning
+	that for every initial target $y$ and measurable terminal event
+	$A\subseteq F_Y$,
+	\[
+		\sup_n \overline T^{(n)}(y,A)=\sup_n T^{(n)}(y,A),
+	\]
+	then the transferred target marginal is the ordinary target terminal
+	semantics.
+\end{corollary}
+
+\begin{proof}
+	The theorem identifies the source terminal semantics with that of
+	$\overline T$.  The displayed cofinality premise identifies the latter
+	measure, event by event, with the ordinary target terminal semantics.
+\end{proof}
+
+\subsection{Weak Compiler-Simulation Obligation}
+
+The transformation shown in \Cref{fig:discretization-code} emits core-language
+let-bindings, conditionals, Boolean conjunctions, finite equalities, and
+discrete choices.  It does not emit the auxiliary $\dc$ constructor used by the
+earlier synchronous proof.  Consequently, the graph
+$\{(e,\discretize e)\}$ is not closed under one ordinary step: target dispatch
+can take several deterministic steps while the source does not move.
+
+Let $\longrightarrow_{\mathrm a}$ contain the deterministic administrative
+target reductions for let substitution, finite equality, Boolean conjunction,
+and conditional selection.  A noncircular application of
+\Cref{thm:coherent-terminal-transfer,cor:collapsed-terminal-transfer} requires,
+for each type $\tau$:
+\begin{enumerate}
+	\item Borelness of every all-real-hole filling domain
+	$A_{s;\tau}$, as required by
+	\Cref{conj:borel-filling-domains}, and the resulting standard-Borel
+	expression carrier;
+	\item a measurable administrative normalizer $N_\tau$ that terminates on
+	generated administrative terms, and a measurable collapsed target kernel
+	$\overline S_\tau$ obtained from the ordinary target semantics through
+	that normalizer;
+	\item a measurable related-state carrier $R_\tau$ containing each initial
+	pair $(e,\discretize e)$ under consideration;
+	\item one measurable joint sub-Markov kernel on $R_\tau$ whose marginals
+	are exactly the source kernel and $\overline S_\tau$ and whose support
+	remains in $R_\tau$;
+	\item terminal synchrony, equality of related terminal Boolean values, and
+	compatibility of the distinguished observation-failure outcomes;
+	\item terminal cofinality between $\overline S_\tau$ and the ordinary
+	target kernel.
+\end{enumerate}
+
+Under these premises, equal explicit observation-failure mass and equal
+aggregate missing mass are conclusions of the coherent transfer theorem, not
+simulation assumptions.  The finite-step marginal equalities and their
+terminal-limit transfer are likewise conclusions of
+\Cref{thm:coherent-terminal-transfer}, not additional conjecture premises.
+
+\begin{conjecture}[Weak-simulation exactness]
+	\label{thm:contextual-equivalence}
+	The literal Slice transformation satisfies the measurable normalization,
+	joint-kernel, terminal-synchrony, and cofinality premises above for every
+	$e:\bool\in Expr^{\mathsf U}_{\bool,\mathrm{cl}}$,
+	and consequently
+	$\bigsem{e:\bool}=\bigsem{\discretize{e:\bool}:\bool}$.
+\end{conjecture}
+
+The synchronous coupling tables and their projection argument are therefore
+not part of the current proof.  They relied on a proof-only $\dc$ step and did
+not account for stuttering in the literal generated target.  The conjecture
+above records the required theorem; its formal statement and proof remain
+open.
+
+\endinput
+\subsection{Disabled Synchronous Coupling Argument}
 \input{figures/coupling_smallstep}
 
 %\kevin{todo: measurable space} 
@@ -1352,7 +1698,9 @@ The missing probability mass in $\sem{e :\tau}$ is the probability of encounteri
 %	Let $\tau$ be a type, and let $P_\tau = \{ (e:\tau, \discretize{e} : \discretize{\tau}) ~|~ e:\tau \}$. Given a suitable measurable space, we denote by $\mathcal{D}(P_\tau + \bot)$ 
 %	the set of sub-probability measures over $P_\tau$. 
 %\end{definition}
-Define $P_\tau = \{ (e:\tau, \discretize{e:\tau} : \discretize{\tau}) ~|~ e:\tau \}$. Exploiting that $e:\tau$ is a value iff $\discretize{e} : \discretize{\tau}$ is a value, we define:
+Define $P_\tau = \{ (e:\tau, \discretize{e:\tau} : \discretize{\tau})
+~|~ e:\tau\in Expr^{\mathsf U}_\tau \}$. Exploiting that $e:\tau$ is a value
+iff $\discretize{e} : \discretize{\tau}$ is a value, we define:
 %
 \begin{definition}
 	The small-step coupling  $\sem{e :\tau, \discretize{e}: \discretize{\tau}} \in \mathcal{D}(P_{\tau} + \bot)$ is defined recursively on the structure of $e:\tau$ by the rules in \Cref{tab:coupling_smallstep_1,tab:coupling_smallstep_2}. 
@@ -1392,7 +1740,7 @@ We have the following key property:
 %
 \begin{lemma}[Small-step coupling projection]
 	\label{lem:small_step_coupling_props}
-	Let $e:\tau$. We have:
+	Let $e:\tau\in Expr^{\mathsf U}_\tau$. We have:
 	%
 	\begin{enumerate}
 		\item\label{lem:small_step_coupling_props1} $\pi_1(\sem{e:\tau, \discretize{e} : \discretize{\tau}}) = \sem{e:\tau}$.
@@ -1649,7 +1997,12 @@ As a sanity check, we show that the $n$-step semantics defines a Markov kernel.
 \end{proof}
 
 
-For every type $\tau$, we denote by $\vals_\tau$ the set of values of type $\tau$ and equip it with a suitable measurable sub-space of the measurable space over $Expr_\tau + \bot$ (cf. \Cref{lem:measurable-subsets}.\ref{lem:measurable-vals}). Moreover, let $V_\tau = \{ (v:\tau, \discretize{v} : \discretize{\tau}) ~|~ v:\tau \}$.
+For every type $\tau$, we denote by $\vals_\tau$ the set of values in
+$Expr_\tau$ and equip it with a suitable measurable sub-space of the measurable
+space over $Expr_\tau + \bot$ (cf.
+\Cref{lem:measurable-subsets}.\ref{lem:measurable-vals}). Moreover, let
+$V_\tau = \{ (v:\tau, \discretize{v} : \discretize{\tau}) ~|~
+v:\tau\in Vals^{\mathsf U}_\tau \}$.
 
 
 \begin{lemma}[Basic Properties of $\bigsemstep{\cdot}{n}$]
@@ -1777,7 +2130,11 @@ For every type $\tau$, we denote by $\vals_\tau$ the set of values of type $\tau
 
 %
 \begin{definition}
-	Let $e:\tau$. The \emph{(big-step) semantics} $\bigsem{e:\tau} \in \mathcal{D}(Vals_\tau + \bot)$ and $\bigsem{e:\tau, \discretize{e : \tau} : \discretize{\tau}} \in \mathcal{D}(V_\tau + \bot)$ are respectively defined as 
+	For $e:\tau\in Expr_\tau$, the \emph{(big-step) semantics}
+	$\bigsem{e:\tau} \in \mathcal{D}(Vals_\tau + \bot)$ is defined below.
+	For $e:\tau\in Expr^{\mathsf U}_\tau$, the coupled big-step semantics
+	$\bigsem{e:\tau, \discretize{e : \tau} : \discretize{\tau}}
+	\in \mathcal{D}(V_\tau + \bot)$ is defined analogously:
 	%
 	\begin{align*}
 		\bigsem{e:\tau} ={}& \lambda A. \lim_{n\to\infty} \bigsemstep{e:\tau}{n}(A) \\
@@ -1938,7 +2295,8 @@ The following will imply our desired equivalence claim:
 %
 %
 \begin{theorem}\label{thm:contextual-equivalence}
-	Let $e:\bool$. Then $\bigsem{e:\bool} = \bigsem{\discretize{e:\bool} : \bool}$.
+	Let $e:\bool\in Expr^{\mathsf U}_\bool$. Then
+	$\bigsem{e:\bool} = \bigsem{\discretize{e:\bool} : \bool}$.
 \end{theorem}
 %
 \begin{proof}

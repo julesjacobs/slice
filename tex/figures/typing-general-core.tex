@@ -40,6 +40,11 @@
          \Gamma \vdash e_2 : \fin{n}}
         {\Gamma \vdash e_1 \finleq{n} e_2 : \bool}
 
+        \inferrule[\textsc{FinEq}]
+        {\Gamma \vdash e_1 : \fin{n} \\
+         \Gamma \vdash e_2 : \fin{n}}
+        {\Gamma \vdash e_1 \fineq{n} e_2 : \bool}
+
         \inferrule[\textsc{Diverge}]
         {\ }
         {\Gamma \vdash \diverge : \tau}

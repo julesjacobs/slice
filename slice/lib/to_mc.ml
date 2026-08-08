@@ -144,19 +144,19 @@ let rec subst (x : string) (v : A.expr) (A.ExprNode e : A.expr) : A.expr =
       if f = x || y = x then A.ExprNode e
       else
         let fv_v = free_vars v in
-        let body =
+        let f, body =
           if StringSet.mem f fv_v then (
             let avoid = StringSet.union (free_vars body) fv_v |> StringSet.add x in
             let f' = fresh_name avoid f in
-            rename f f' body)
-          else body
+            (f', rename f f' body))
+          else (f, body)
         in
-        let body =
+        let y, body =
           if StringSet.mem y fv_v then (
             let avoid = StringSet.union (free_vars body) fv_v |> StringSet.add x in
             let y' = fresh_name avoid y in
-            rename y y' body)
-          else body
+            (y', rename y y' body))
+          else (y, body)
         in
         A.ExprNode (A.Fix (f, y, subst x v body))
   | A.Let (y, e1, e2) ->
@@ -195,25 +195,25 @@ let rec subst (x : string) (v : A.expr) (A.ExprNode e : A.expr) : A.expr =
   | A.MatchList (scrut, nil_br, xh, xt, cons_br) ->
       let scrut' = subst x v scrut in
       let nil_br' = subst x v nil_br in
-      let cons_br' =
-        if xh = x || xt = x then cons_br
+      let xh, xt, cons_br' =
+        if xh = x || xt = x then (xh, xt, cons_br)
         else
           let fv_v = free_vars v in
-          let cons_br =
+          let xh, cons_br =
             if StringSet.mem xh fv_v then (
               let avoid = StringSet.union (free_vars cons_br) fv_v |> StringSet.add x in
               let xh' = fresh_name avoid xh in
-              rename xh xh' cons_br)
-            else cons_br
+              (xh', rename xh xh' cons_br))
+            else (xh, cons_br)
           in
-          let cons_br =
+          let xt, cons_br =
             if StringSet.mem xt fv_v then (
               let avoid = StringSet.union (free_vars cons_br) fv_v |> StringSet.add x in
               let xt' = fresh_name avoid xt in
-              rename xt xt' cons_br)
-            else cons_br
+              (xt', rename xt xt' cons_br))
+            else (xt, cons_br)
           in
-          subst x v cons_br
+          (xh, xt, subst x v cons_br)
       in
       A.ExprNode (A.MatchList (scrut', nil_br', xh, xt, cons_br'))
   | A.Ref e1 -> A.ExprNode (A.Ref (subst x v e1))
