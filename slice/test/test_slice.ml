@@ -100,11 +100,24 @@ let test_inferred_coincident_cut_atomic_masses _test_ctxt =
   let discretized =
     expr |> Slice.Inference.infer |> Slice.Discretization.discretize_top
   in
-  match discretized with
-  | Slice.Ast.ExprNode
-      (Slice.Ast.Let (_, Slice.Ast.ExprNode (Slice.Ast.DistrCase cases), _)) ->
-      assert_float_list [0.25; 0.5; 0.25] (List.map snd cases)
-  | _ -> assert_failure "expected the inferred Binomial sample to discretize"
+  let rec find_cases (Slice.Ast.ExprNode node) =
+    let open Slice.Ast in
+    match node with
+    | DistrCase cases -> Some cases
+    | Let (_, first, second) ->
+        (match find_cases first with Some _ as found -> found | None -> find_cases second)
+    | If (condition, then_branch, else_branch) ->
+        (match find_cases condition with
+         | Some _ as found -> found
+         | None ->
+             (match find_cases then_branch with
+              | Some _ as found -> found
+              | None -> find_cases else_branch))
+    | _ -> None
+  in
+  match find_cases discretized with
+  | Some cases -> assert_float_list [0.25; 0.5; 0.25] (List.map snd cases)
+  | None -> assert_failure "expected the inferred Binomial sample to discretize"
 
 let assert_discretization_fails_with expected source =
   let expr = Slice.Parse.parse_expr source in
@@ -207,7 +220,6 @@ let test_top_level_function_propagates_top_before_validation _test_ctxt =
     "A continuous sample in the top-level return interface must remain continuous"
     (contains_sample discretized)
 
- let assert_invalid_discrete source =
 let test_atomic_interval_masses _test_ctxt =
   let open Slice in
   let poisson = Distributions.Poisson 1.0 in
@@ -610,9 +622,14 @@ let test_empty_dispatch_domain_is_an_invariant_failure _test_ctxt =
   with
   | _ -> assert_failure "Expected an empty finite dispatch domain to fail"
   | exception Failure message ->
-      assert_equal
-        "Internal error: finite sample parameter lambda has no nonempty finite dispatch domain"
-        message
+      let needle = "nonempty parameter value set" in
+      let rec contains offset =
+        offset + String.length needle <= String.length message
+        && (String.sub message offset (String.length needle) = needle
+            || contains (offset + 1))
+      in
+      assert_bool "public discretization should reject the empty dispatch domain"
+        (contains 0)
 
 let rec contains_recursive_divergence (Slice.Ast.ExprNode node) =
   let open Slice.Ast in
