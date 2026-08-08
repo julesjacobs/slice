@@ -6,6 +6,20 @@ let () = Random.self_init ()
 exception RuntimeError of string
 exception ObserveFailure (* New custom exception for observe failures *)
 
+let select_distr_case (r : float) (cases : (expr * float) list) : expr =
+  if r < 0.0 || r >= 1.0 || Float.is_nan r then
+    invalid_arg "select_distr_case: draw must be in [0,1)";
+  let cases = Ast.normalize_distr_case ~policy:Ast.Generated cases in
+  let rec find_case cumulative_prob = function
+    | [] -> assert false
+    | [(e, _)] -> e
+    | (e, p) :: rest ->
+        let next_cumulative_prob = cumulative_prob +. p in
+        if r < next_cumulative_prob then e
+        else find_case next_cumulative_prob rest
+  in
+  find_case 0.0 cases
+
 let rec lookup x env = 
   match env with
   | [] -> raise (RuntimeError ("Unbound variable: " ^ x))
@@ -35,15 +49,7 @@ let rec eval (env : env) (ExprNode e_node : expr) : value =
 
   | DistrCase cases ->
       let r = Random.float 1.0 in
-      let rec find_case cumulative_prob case_list =
-        match case_list with
-        | [] -> raise (RuntimeError "DistrCase: Random value exceeded total probability (should not happen)")
-        | (e, p) :: rest -> 
-            let next_cumulative_prob = cumulative_prob +. p in
-            if r <= next_cumulative_prob then eval env e
-            else find_case next_cumulative_prob rest
-      in
-      find_case 0.0 cases
+      eval env (select_distr_case r cases)
 
   | Cmp (cmp_op, e1, e2, _flipped) ->
       let v1 = eval env e1 in
@@ -234,4 +240,4 @@ and eval_dist env dist_exp =
        | _ -> raise (RuntimeError "Type error: two-argument distribution expects floats for cdistr conversion"))
 
 (* Entry point for evaluation with an empty environment *)
-let run e = eval [] e 
+let run e = eval [] e
