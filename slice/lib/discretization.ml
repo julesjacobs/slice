@@ -150,6 +150,9 @@ let rec validate_distribution_parameters (((_, TAExprNode node) as texpr) : texp
       validate_child cons_case
   | Var _ | Const _ | BoolConst _ | FinConst _ | Nil | Unit | RuntimeError _ -> ()
 
+let prob_cdistr_intervals cuts dist =
+  interval_probabilities (Lats.CutSet.of_list cuts) dist
+
 (* 
 Discretizer from typed expressions to discrete expressions.
 

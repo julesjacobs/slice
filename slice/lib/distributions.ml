@@ -35,8 +35,7 @@ let validate_uniform_bounds lo hi =
     Error "Uniform bounds must be finite"
   else if lo >= hi then
     Error "Uniform low must be less than high"
-  else
-    Ok ()
+  else Ok ()
 
 let validate_uniform_bounds_exn lo hi =
   match validate_uniform_bounds lo hi with
@@ -45,34 +44,82 @@ let validate_uniform_bounds_exn lo hi =
 
 let uniform_cdf_interior lo hi x =
   let width = hi -. lo in
-  if is_finite width then
-    (x -. lo) /. width
+  if is_finite width then (x -. lo) /. width
   else
-    (* Scaling avoids overflow in [hi - lo] when finite bounds span most of
-       the floating-point range. *)
     let scale = max (abs_float lo) (abs_float hi) in
     ((x /. scale) -. (lo /. scale))
     /. ((hi /. scale) -. (lo /. scale))
 
-(* ocaml-gsl converts integer CDF boundaries with [Unsigned_int_val].  Reject
-   boundaries outside both the host-int and GSL unsigned-int ranges instead of
-   pretending that an unbounded distribution has reached cumulative mass 1. *)
-let gsl_host_integer_max =
-  Int64.min 0xffff_ffffL (Int64.of_int max_int)
+(* Keep integer-support CDF calls inside the representable host range and
+   preserve strict versus non-strict integer boundaries. *)
 
-let integer_cdf ~upper_support cdf x =
+(* ocaml-gsl converts these arguments with [Unsigned_int_val], so values above
+   UINT_MAX would silently wrap before reaching GSL. *)
+let gsl_unsigned_int_max = 0xffff_ffffL
+
+let gsl_host_integer_max =
+  Int64.min gsl_unsigned_int_max (Int64.of_int max_int)
+
+let check_gsl_unsigned_int name value =
+  if value < 0 || Int64.of_int value > gsl_host_integer_max then
+    invalid_arg (name ^ " is outside the GSL unsigned-int range")
+
+let require_finite name x =
+  if not (is_finite x) then invalid_arg (name ^ " must be finite")
+
+let require_positive name x =
+  require_finite name x;
+  if x <= 0.0 then invalid_arg (name ^ " must be positive")
+
+let validate_cdistr = function
+  | Uniform (lo, hi) -> validate_uniform_bounds_exn lo hi
+  | Gaussian (m, s) -> require_finite "Gaussian mean" m; require_positive "Gaussian sigma" s
+  | Exponential x -> require_positive "Exponential lambda" x
+  | Beta (a, b) -> require_positive "Beta alpha" a; require_positive "Beta beta" b
+  | LogNormal (m, s) -> require_finite "LogNormal mu" m; require_positive "LogNormal sigma" s
+  | Gamma (a, b) -> require_positive "Gamma shape" a; require_positive "Gamma scale" b
+  | Laplace x -> require_positive "Laplace scale" x
+  | Cauchy x -> require_positive "Cauchy scale" x
+  | Pareto (a, b) -> require_positive "Pareto a" a; require_positive "Pareto b" b
+  | Weibull (a, b) -> require_positive "Weibull a" a; require_positive "Weibull b" b
+  | TDist x -> require_positive "TDist nu" x
+  | Chi2 x -> require_positive "Chi2 nu" x
+  | Logistic x -> require_positive "Logistic scale" x
+  | Gumbel1 (a, b) -> require_positive "Gumbel1 a" a; require_positive "Gumbel1 b" b
+  | Gumbel2 (a, b) -> require_positive "Gumbel2 a" a; require_positive "Gumbel2 b" b
+  | Rayleigh x -> require_positive "Rayleigh sigma" x
+  | Exppow (a, b) -> require_positive "Exppow a" a; require_positive "Exppow b" b
+  | Poisson mu ->
+      require_finite "Poisson mu" mu;
+      if mu < 0.0 then invalid_arg "Poisson mu must be non-negative"
+  | Binomial (p, n) ->
+      require_finite "Binomial p" p;
+      if p < 0.0 || p > 1.0 then invalid_arg "Binomial p must be between zero and one";
+      check_gsl_unsigned_int "Binomial n" n
+
+let integer_cdf ~strict ~upper_support cdf x =
   if classify_float x = FP_nan then invalid_arg "CDF is undefined at NaN"
-  else if x < 0.0 then 0.0
+  else if x = neg_infinity then 0.0
+  else if x = infinity then 1.0
+  else if (strict && x <= 0.0) || ((not strict) && x < 0.0) then 0.0
   else
     match upper_support with
-    | Some upper when x >= float_of_int upper -> 1.0
-    | _ when x > Int64.to_float gsl_host_integer_max ->
-        invalid_arg "integer CDF boundary is outside the GSL unsigned-int range"
-    | _ -> cdf (int_of_float (floor x))
+    | Some upper
+      when (strict && x > float_of_int upper)
+           || ((not strict) && x >= float_of_int upper) ->
+        1.0
+    | _ ->
+        let k_float = if strict then ceil x -. 1.0 else floor x in
+        if k_float > Int64.to_float gsl_host_integer_max then
+          invalid_arg "integer CDF boundary is outside the GSL unsigned-int range"
+        else cdf (int_of_float k_float)
 
+(** [cdistr_cdf dist x] is the right-continuous CDF [P(X <= x)]. *)
 let cdistr_cdf dist x =
   if classify_float x = FP_nan then invalid_arg "CDF is undefined at NaN"
-  else match dist with
+  else begin
+  validate_cdistr dist;
+  match dist with
   | Uniform (lo, hi) ->
       validate_uniform_bounds_exn lo hi;
       if x <= lo then 0.0
@@ -96,27 +143,41 @@ let cdistr_cdf dist x =
   | Gumbel2 (a, b)          -> Gsl.Cdf.gumbel2_P ~x:x ~a ~b
   | Rayleigh sigma          -> Gsl.Cdf.rayleigh_P ~x:x ~sigma
   | Exppow (a, b)           -> Gsl.Cdf.exppow_P ~x:x ~a ~b
+  | Poisson 0.0             -> if x < 0.0 then 0.0 else 1.0
   | Poisson mu              ->
-      integer_cdf ~upper_support:None
+      integer_cdf ~strict:false ~upper_support:None
         (fun k -> Gsl.Cdf.poisson_P ~k ~mu) x
+  | Binomial (_, 0) | Binomial (0.0, _) -> if x < 0.0 then 0.0 else 1.0
+  | Binomial (1.0, n)       -> if x < float_of_int n then 0.0 else 1.0
   | Binomial (p, n)         ->
-      integer_cdf ~upper_support:(Some n)
+      integer_cdf ~strict:false ~upper_support:(Some n)
         (fun k -> Gsl.Cdf.binomial_P ~k ~p ~n) x
+  end
 
-(** [cdistr_cdf_below dist x] is the left limit of the CDF: [P(X < x)].
-    It differs from [cdistr_cdf] at atoms. Integer-valued distributions need
-    an explicit implementation so that an endpoint's strictness is preserved. *)
-let cdistr_cdf_below dist x =
-  if classify_float x = FP_nan then invalid_arg "CDF is undefined at NaN"
-  else if x = neg_infinity then 0.0
-  else if x = infinity then 1.0
-  else
-    match dist with
-    | Poisson _ | Binomial _ ->
-        if x <= 0.0 then 0.0 else cdistr_cdf dist (ceil x -. 1.0)
-    | _ -> cdistr_cdf dist x
+(** [cdistr_cdf_left dist x] is the left limit [P(X < x)].  This differs
+    from [cdistr_cdf] at atoms. *)
+let cdistr_cdf_left dist x =
+  if classify_float x = FP_nan then invalid_arg "CDF is undefined at NaN";
+  validate_cdistr dist;
+  match dist with
+  | Poisson 0.0 ->
+      if x <= 0.0 then 0.0 else 1.0
+  | Poisson mu ->
+      integer_cdf ~strict:true ~upper_support:None
+        (fun k -> Gsl.Cdf.poisson_P ~k ~mu) x
+  | Binomial (_, 0) | Binomial (0.0, _) ->
+      if x <= 0.0 then 0.0 else 1.0
+  | Binomial (1.0, n) ->
+      if x <= float_of_int n then 0.0 else 1.0
+  | Binomial (p, n) ->
+      integer_cdf ~strict:true ~upper_support:(Some n)
+        (fun k -> Gsl.Cdf.binomial_P ~k ~p ~n) x
+  | _ -> cdistr_cdf dist x
+
+let cdistr_cdf_below = cdistr_cdf_left
 
 let cdistr_sample dist =
+  validate_cdistr dist;
   match dist with
   | Uniform (lo, hi) ->
       validate_uniform_bounds_exn lo hi;
@@ -153,8 +214,11 @@ let cdistr_sample dist =
       Gsl.Randist.rayleigh rng ~sigma
   | Exppow (a, b) ->
       Gsl.Randist.exppow rng ~a ~b
+  | Poisson 0.0 -> 0.0
   | Poisson mu ->
       float_of_int (Gsl.Randist.poisson rng ~mu)
+  | Binomial (_, 0) | Binomial (0.0, _) -> 0.0
+  | Binomial (1.0, n) -> float_of_int n
   | Binomial (p,n) ->
       float_of_int (Gsl.Randist.binomial rng ~p ~n)
 
@@ -184,31 +248,20 @@ let string_of_two_arg_dist_kind (kind: Ast.two_arg_dist_kind) : string =
   | Ast.DBinomial    -> "binomial"
 
 let get_cdistr_from_single_arg_kind (kind: Ast.single_arg_dist_kind) (arg1: float) : (cdistr, string) result =
-  match kind with
-  | Ast.DExponential -> 
-      if arg1 <= 0.0 then Error "Exponential lambda must be positive"
-      else Ok (Exponential arg1)
-  | Ast.DLaplace -> 
-      if arg1 <= 0.0 then Error "Laplace scale must be positive"
-      else Ok (Laplace arg1)
-  | Ast.DCauchy -> 
-      if arg1 <= 0.0 then Error "Cauchy scale must be positive"
-      else Ok (Cauchy arg1)
-  | Ast.DTDist -> 
-      if arg1 <= 0.0 then Error "TDist nu must be positive"
-      else Ok (TDist arg1)
-  | Ast.DChi2 -> 
-      if arg1 <= 0.0 then Error "Chi2 nu must be positive"
-      else Ok (Chi2 arg1)
-  | Ast.DLogistic -> 
-      if arg1 <= 0.0 then Error "Logistic scale must be positive"
-      else Ok (Logistic arg1)
-  | Ast.DRayleigh -> 
-      if arg1 <= 0.0 then Error "Rayleigh sigma must be positive"
-      else Ok (Rayleigh arg1)
-  | Ast.DPoisson -> 
-      if arg1 <= 0.0 then Error "Poisson mu must be positive"
-      else Ok (Poisson arg1)
+  let dist =
+    match kind with
+    | Ast.DExponential -> Exponential arg1
+    | Ast.DLaplace -> Laplace arg1
+    | Ast.DCauchy -> Cauchy arg1
+    | Ast.DTDist -> TDist arg1
+    | Ast.DChi2 -> Chi2 arg1
+    | Ast.DLogistic -> Logistic arg1
+    | Ast.DRayleigh -> Rayleigh arg1
+    | Ast.DPoisson -> Poisson arg1
+  in
+  match validate_cdistr dist with
+  | () -> Ok dist
+  | exception Invalid_argument msg -> Error msg
 
 let get_cdistr_from_two_arg_kind (kind: Ast.two_arg_dist_kind) (arg1: float) (arg2: float) : (cdistr, string) result =
   match kind with
@@ -216,33 +269,28 @@ let get_cdistr_from_two_arg_kind (kind: Ast.two_arg_dist_kind) (arg1: float) (ar
       (match validate_uniform_bounds arg1 arg2 with
        | Ok () -> Ok (Uniform (arg1, arg2))
        | Error _ as error -> error)
-  | Ast.DGaussian -> 
-      if arg2 <= 0.0 then Error "Gaussian sigma must be positive"
-      else Ok (Gaussian (arg1, arg2))
-  | Ast.DBeta -> 
-      if arg1 <= 0.0 || arg2 <= 0.0 then Error "Beta alpha and beta_param must be positive"
-      else Ok (Beta (arg1, arg2))
-  | Ast.DLogNormal -> 
-      if arg2 <= 0.0 then Error "LogNormal sigma must be positive"
-      else Ok (LogNormal (arg1, arg2))
-  | Ast.DGamma -> 
-      if arg1 <= 0.0 || arg2 <= 0.0 then Error "Gamma shape and scale must be positive"
-      else Ok (Gamma (arg1, arg2))
-  | Ast.DPareto -> 
-      if arg1 <= 0.0 || arg2 <= 0.0 then Error "Pareto a and b must be positive"
-      else Ok (Pareto (arg1, arg2))
-  | Ast.DWeibull -> 
-      if arg1 <= 0.0 || arg2 <= 0.0 then Error "Weibull a and b must be positive"
-      else Ok (Weibull (arg1, arg2))
-  | Ast.DGumbel1 -> 
-      if arg2 <= 0.0 then Error "Gumbel1 b must be positive"
-      else Ok (Gumbel1 (arg1, arg2))
-  | Ast.DGumbel2 -> 
-      if arg2 <= 0.0 then Error "Gumbel2 b must be positive"
-      else Ok (Gumbel2 (arg1, arg2))
-  | Ast.DExppow -> 
-      if arg1 <= 0.0 || arg2 <= 0.0 then Error "Exppow a and b must be positive"
-      else Ok (Exppow (arg1, arg2))
+  | (Ast.DGaussian | Ast.DBeta | Ast.DLogNormal | Ast.DGamma | Ast.DPareto
+    | Ast.DWeibull | Ast.DGumbel1 | Ast.DGumbel2 | Ast.DExppow) as kind ->
+      let dist =
+        match kind with
+        | Ast.DGaussian -> Gaussian (arg1, arg2)
+        | Ast.DBeta -> Beta (arg1, arg2)
+        | Ast.DLogNormal -> LogNormal (arg1, arg2)
+        | Ast.DGamma -> Gamma (arg1, arg2)
+        | Ast.DPareto -> Pareto (arg1, arg2)
+        | Ast.DWeibull -> Weibull (arg1, arg2)
+        | Ast.DGumbel1 -> Gumbel1 (arg1, arg2)
+        | Ast.DGumbel2 -> Gumbel2 (arg1, arg2)
+        | Ast.DExppow -> Exppow (arg1, arg2)
+        | Ast.DUniform | Ast.DBinomial -> assert false
+      in
+      (match validate_cdistr dist with
+       | () -> Ok dist
+       | exception Invalid_argument msg -> Error msg)
   | Ast.DBinomial -> 
-      if arg1 <= 0.0 || arg2 < 0.0 then Error "Binomial p must be positive and n must be non-negative"
+      if classify_float arg1 = FP_nan || arg1 < 0.0 || arg1 > 1.0 then
+        Error "Binomial p must be between zero and one"
+      else if classify_float arg2 = FP_nan || arg2 < 0.0 || arg2 <> floor arg2
+              || arg2 > Int64.to_float gsl_host_integer_max then
+        Error "Binomial n must be an unsigned-int-range non-negative integer"
       else Ok (Binomial (arg1, int_of_float arg2))

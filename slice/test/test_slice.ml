@@ -208,6 +208,141 @@ let test_top_level_function_propagates_top_before_validation _test_ctxt =
     (contains_sample discretized)
 
  let assert_invalid_discrete source =
+let test_atomic_interval_masses _test_ctxt =
+  let open Slice in
+  let poisson = Distributions.Poisson 1.0 in
+  let p0 = exp (-1.0) in
+  assert_float_list [0.0; p0; 1.0 -. p0]
+    (Discretization.prob_cdistr_intervals [Lats.Less 0.0; Lats.LessEq 0.0] poisson);
+  assert_float_list [p0; 1.0 -. p0]
+    (Discretization.prob_cdistr_intervals [Lats.Less 1.0] poisson);
+  let bernoulli = Distributions.Binomial (0.5, 1) in
+  assert_float_list [0.5; 0.5]
+    (Discretization.prob_cdistr_intervals [Lats.Less 1.0] bernoulli);
+  assert_float_list [0.0; 0.5; 0.5]
+    (Discretization.prob_cdistr_intervals [Lats.Less 0.0; Lats.LessEq 0.0] bernoulli)
+
+let test_atomic_cdf_between_integers _test_ctxt =
+  let open Slice.Distributions in
+  let poisson = Poisson 1.0 in
+  assert_equal 0.0 (cdistr_cdf poisson (-0.5));
+  assert_equal 0.0 (cdistr_cdf_left poisson 0.0);
+  assert_bool "right-continuous Poisson CDF includes the atom at zero"
+    (abs_float (cdistr_cdf poisson 0.0 -. exp (-1.0)) < 1e-12);
+  assert_equal 1.0 (cdistr_cdf (Poisson 0.0) 0.0);
+  assert_equal 0.0 (cdistr_cdf_left (Poisson 0.0) 0.0);
+  assert_equal 1.0 (cdistr_cdf (Binomial (0.0, 0)) 0.0);
+  assert_equal 0.0 (cdistr_cdf_left (Binomial (0.0, 0)) 0.0)
+
+let test_integer_cdf_large_boundary _test_ctxt =
+  let open Slice.Distributions in
+  let host_max = Int64.to_int gsl_host_integer_max in
+  let host_max_float = Int64.to_float gsl_host_integer_max in
+  let seen = ref None in
+  ignore
+    (integer_cdf ~strict:false ~upper_support:None
+       (fun k -> seen := Some k; 0.0) host_max_float);
+  assert_equal (Some host_max) !seen;
+  ignore
+    (integer_cdf ~strict:true ~upper_support:None
+       (fun k -> seen := Some k; 0.0) (host_max_float +. 1.0));
+  assert_equal (Some host_max) !seen;
+  let range_error =
+    Invalid_argument "integer CDF boundary is outside the GSL unsigned-int range"
+  in
+  assert_raises range_error
+    (fun () -> ignore (cdistr_cdf (Poisson 1.0) (host_max_float +. 1.0)));
+  assert_raises range_error
+    (fun () -> ignore (cdistr_cdf_left (Poisson 1.0) (host_max_float +. 2.0)))
+
+let test_atomic_parameter_domains _test_ctxt =
+  let open Slice in
+  assert_equal (Ok (Distributions.Poisson 0.0))
+    (Distributions.get_cdistr_from_single_arg_kind Ast.DPoisson 0.0);
+  assert_equal (Ok (Distributions.Binomial (0.0, 0)))
+    (Distributions.get_cdistr_from_two_arg_kind Ast.DBinomial 0.0 0.0);
+  assert_bool "binomial rejects p > 1"
+    (Result.is_error (Distributions.get_cdistr_from_two_arg_kind Ast.DBinomial 1.1 2.0));
+  assert_bool "binomial rejects fractional n"
+    (Result.is_error (Distributions.get_cdistr_from_two_arg_kind Ast.DBinomial 0.5 2.5));
+  let host_max = Int64.to_int Distributions.gsl_host_integer_max in
+  let host_max_float = Int64.to_float Distributions.gsl_host_integer_max in
+  assert_equal (Ok (Distributions.Binomial (0.5, host_max)))
+    (Distributions.get_cdistr_from_two_arg_kind
+       Ast.DBinomial 0.5 host_max_float);
+  assert_bool "binomial rejects n above the host/GSL integer range"
+    (Result.is_error
+       (Distributions.get_cdistr_from_two_arg_kind
+          Ast.DBinomial 0.5 (host_max_float +. 1.0)));
+  assert_raises (Invalid_argument "Binomial n is outside the GSL unsigned-int range")
+    (fun () ->
+      ignore (Distributions.cdistr_cdf (Distributions.Binomial (0.5, -1)) 0.0))
+
+let test_direct_atomic_constructors_are_validated_everywhere _test_ctxt =
+  let open Slice.Distributions in
+  let check dist expected =
+    assert_raises expected (fun () -> ignore (cdistr_cdf dist 0.0));
+    assert_raises expected (fun () -> ignore (cdistr_cdf_left dist 0.0));
+    assert_raises expected (fun () -> ignore (cdistr_sample dist))
+  in
+  check (Poisson (-1.0)) (Invalid_argument "Poisson mu must be non-negative");
+  check (Poisson infinity) (Invalid_argument "Poisson mu must be finite");
+  check (Binomial (nan, 1)) (Invalid_argument "Binomial p must be finite");
+  check (Binomial (1.1, 1))
+    (Invalid_argument "Binomial p must be between zero and one");
+  check (Binomial (0.5, -1))
+    (Invalid_argument "Binomial n is outside the GSL unsigned-int range")
+
+let test_distribution_parameter_domains _test_ctxt =
+  let open Slice in
+  let invalid1 kind x =
+    assert_bool "single-argument constructor must reject its parameter"
+      (Result.is_error (Distributions.get_cdistr_from_single_arg_kind kind x))
+  in
+  let invalid2 kind x y =
+    assert_bool "two-argument constructor must reject its parameters"
+      (Result.is_error (Distributions.get_cdistr_from_two_arg_kind kind x y))
+  in
+  List.iter (invalid1 Ast.DExponential) [0.0; -1.0; nan; infinity];
+  List.iter (invalid1 Ast.DLaplace) [0.0; nan; infinity];
+  List.iter (invalid1 Ast.DCauchy) [0.0; nan; infinity];
+  List.iter (invalid1 Ast.DTDist) [0.0; nan; infinity];
+  List.iter (invalid1 Ast.DChi2) [0.0; nan; infinity];
+  List.iter (invalid1 Ast.DLogistic) [0.0; nan; infinity];
+  List.iter (invalid1 Ast.DRayleigh) [0.0; nan; infinity];
+  invalid2 Ast.DGaussian nan 1.0;
+  invalid2 Ast.DGaussian 0.0 nan;
+  invalid2 Ast.DBeta nan 1.0;
+  invalid2 Ast.DLogNormal infinity 1.0;
+  invalid2 Ast.DGamma 1.0 infinity;
+  invalid2 Ast.DPareto 1.0 nan;
+  invalid2 Ast.DWeibull infinity 1.0;
+  List.iter
+    (fun (a, b) -> invalid2 Ast.DGumbel1 a b)
+    [(0.0, 1.0); (-1.0, 1.0); (nan, 1.0); (1.0, infinity)];
+  List.iter
+    (fun (a, b) -> invalid2 Ast.DGumbel2 a b)
+    [(0.0, 1.0); (-1.0, 1.0); (nan, 1.0); (1.0, infinity)];
+  invalid2 Ast.DExppow 1.0 nan;
+  assert_equal (Ok (Distributions.Gumbel2 (2.0, 9.0)))
+    (Distributions.get_cdistr_from_two_arg_kind Ast.DGumbel2 2.0 9.0);
+  assert_bool "Gumbel-II uses the GSL coefficient parameterization"
+    (abs_float
+       (Distributions.cdistr_cdf (Distributions.Gumbel2 (2.0, 9.0)) 3.0
+        -. exp (-1.0))
+     < 1e-12);
+  assert_bool "Gumbel-I uses the GSL parameterization"
+    (abs_float
+       (Distributions.cdistr_cdf
+          (Distributions.Gumbel1 (2.0, 9.0)) (log 9.0 /. 2.0)
+        -. exp (-1.0))
+     < 1e-12);
+  let expected = Invalid_argument "Gumbel2 a must be positive" in
+  let malformed = Distributions.Gumbel2 (0.0, 1.0) in
+  assert_raises expected (fun () -> ignore (Distributions.cdistr_cdf malformed 1.0));
+  assert_raises expected (fun () -> ignore (Distributions.cdistr_sample malformed))
+
+let assert_invalid_discrete source =
   match Slice.Parse.parse_expr source with
   | _ -> assert_failure ("Expected invalid discrete weights: " ^ source)
   | exception Failure _ -> ()
@@ -760,6 +895,14 @@ let suite =
      "test_top_level_function_propagates_top_before_validation"
        >:: test_top_level_function_propagates_top_before_validation;
       "test_discrete_weights" >:: test_discrete_weights;
+     "test_atomic_interval_masses" >:: test_atomic_interval_masses;
+     "test_atomic_cdf_between_integers" >:: test_atomic_cdf_between_integers;
+     "test_integer_cdf_large_boundary" >:: test_integer_cdf_large_boundary;
+     "test_atomic_parameter_domains" >:: test_atomic_parameter_domains;
+     "direct atomic constructors are validated everywhere" >::
+       test_direct_atomic_constructors_are_validated_everywhere;
+     "distribution parameter domains" >:: test_distribution_parameter_domains;
+     "test_discrete_weights" >:: test_discrete_weights;
      "test_discrete_rejects_nonfinite" >:: test_discrete_rejects_nonfinite;
      "test_discrete_rejects_unrepresentable_prefix" >::
        test_discrete_rejects_unrepresentable_prefix;
