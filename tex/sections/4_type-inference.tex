@@ -86,7 +86,9 @@ Each of the constraints is handled as follows:
 
     \item \textbf{Less-equal answerability} ($\answersleq{B}{V_1}{V_2}$): Analogous to less-than. \circled{5}
 
-    \item \textbf{Equality constraints} ($B_1 = B_2$ or $V_1 = V_2$): We unify the variables, treating them as the same variable throughout the solving process. Any update to one variable is immediately reflected in all variables unified with it. \circled{6}
+	    \item \textbf{Equality constraints} ($B_1 = B_2$ or $V_1 = V_2$): We unify the variables, treating them as the same variable throughout the solving process. Any update to one variable is immediately reflected in all variables unified with it. \circled{6}
+
+	    \item \textbf{Top consistency} ($B_1 \equiv_{\top} B_2$): If either becomes $\top$, set both to $\top$. \circled{7}
 \end{itemize}
 
 The solver repeatedly processes constraints until reaching a fixed point, where no constraint causes any further updates to the variables. The monotonicity of the lattice operations ensures that this process terminates. This procedure may add more cuts to $B$s than strictly necessary, but it never sets $B=\top$ unless that is the only way to satisfy all constraints. In other words, the discretization itself may be suboptimal in terms of the number of cuts.

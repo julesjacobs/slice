@@ -202,10 +202,29 @@
       & $\textcolor{teal}{B_3 = B_7, B_6 = B_7}$
         & $\textcolor{teal}{B_3 = B_7, B_6 = B_7}$ \\
 
-      & $\textcolor{teal}{B_9 = B_{10}, B_{10} = B_{11}}$
-        & $\textcolor{teal}{B_9 = B_{11}, B_{10} = B_{11}}$ \\
+	      & $\textcolor{teal}{B_9 = B_{10}, B_{10} = B_{11}}$
+	        & $\textcolor{teal}{B_9 = B_{11}, B_{10} = B_{11}}$ \\[0.6em]
 
-      \end{tabular}
+	      % =====================================================
+	      % Top-consistency constraints
+	      % =====================================================
+	      \multirow{2}{*}{
+	        \textcolor{black}{
+	          $\left\{
+	          \begin{array}{c}
+	          \\ \\
+	          \end{array}
+	          \right.$
+	        }
+	        \;\textsc{\circled{7}}
+	      }
+	      & $\textcolor{violet}{B_1 \equiv_{\top} B_3, B_2 \equiv_{\top} B_3}$
+	        & $\textcolor{violet}{\emptyset}$ \\
+
+	      & $\textcolor{violet}{B_4 \equiv_{\top} B_6, B_5 \equiv_{\top} B_6}$
+	        & $\textcolor{violet}{\emptyset}$ \\
+
+	      \end{tabular}
     }
       \caption{\emph{Lattice solving}. Each pass performs monotone updates to $B_i$ or $V_i$. Lines annotated with $\emptyset$ denote constraint is trivially satisfied.}
   \end{subfigure}

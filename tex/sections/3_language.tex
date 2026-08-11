@@ -192,6 +192,7 @@ To understand the typing rules, keep in mind that the cut sets $B$ need to be su
 Rule \textsc{Float-Const} assigns a constant $c$ the type $\float[B; V]$ whenever $\has{V}{c}$ holds (i.e., $c\in V$ or $V=\top$). Constants do not constrain the cut set, but recording them in $V$ ensures later comparisons know which values must remain distinguishable.
 
 \paragraph{Continuous distributions.} Rule \textsc{Continuous-1} types a single-argument distribution when its argument $e$ has type $\float[B; V]$ and $\distinguishes{B}{V}$:
+We write $B_1 \equiv_{\top} B_2$ iff $B_1=\top \Longleftrightarrow B_2=\top$.
 \begin{definition}
 	\label{def:distinguishes}
 		Let $B\in \cutsets$ and $V\in\valsets$. We say that \emph{$\distinguishes{B}{V}$} if $B = \top$ or ($V \neq \top$ and every interval $I$ induced by $B$ contains at most one value in $V$, i.e., $

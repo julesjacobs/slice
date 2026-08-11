@@ -1,18 +1,24 @@
 \begin{figure}
+	\centering
 	\scalebox{0.75}{
 \begin{mathpar}
     \inferrule[\textsc{Float-Const}]
     {\ \has{V}{c}}
     {\Gamma \vdash c : \float[B; V]}
 
-    \inferrule[\textsc{Continuous-1}]
-    {\ \Gamma \vdash e : \float[B_1; V_1] \text{ and } \distinguishes{B_1}{V_1}}
-    {\Gamma \vdash \exponential(e) : \float[B; \top]}
+	    \inferrule[\textsc{Continuous-1}]
+	    {\ \Gamma \vdash e : \float[B_1; V_1] \and \distinguishes{B_1}{V_1}
+	    \and B_1 \equiv_{\top} B}
+	    {\Gamma \vdash \exponential(e) : \float[B; \top]}
 
-    \inferrule[\textsc{Continuous-2}]
-    {\ \Gamma \vdash e_1 : \float[B_1; V_1] \text{ and } \distinguishes{B_1}{V_1} \and 
-       \Gamma \vdash e_2 : \float[B_2; V_2] \text{ and } \distinguishes{B_2}{V_2}}
-    {\Gamma \vdash \uniform(e_1, e_2) : \float[B; \top]}
+	    \makebox[\linewidth][c]{$\displaystyle
+	      \inferrule[\textsc{Continuous-2}]
+	      {\ \Gamma \vdash e_1 : \float[B_1; V_1] \and \distinguishes{B_1}{V_1}
+	         \and B_1 \equiv_{\top} B \and
+	         \Gamma \vdash e_2 : \float[B_2; V_2] \and \distinguishes{B_2}{V_2}
+	         \and B_2 \equiv_{\top} B}
+	      {\Gamma \vdash \uniform(e_1, e_2) : \float[B; \top]}
+	    $}
 
     \inferrule[\textsc{Less}]
     {\Gamma \vdash e_1 : \float[B; V_1] \and \Gamma \vdash e_2 : \float[B; V_2] \and \answerslt{B}{V_1}{V_2}}
