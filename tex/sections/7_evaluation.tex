@@ -358,45 +358,45 @@ We observe that discretization (\Slice) becomes expensive for larger $n$, eventu
     \midrule
     ClickGraph~\cite{gehr2016psi} & 10 & \textbf{1.551 (81.4×)} & 1.841 & 126.263 &
     \makecell{\texttt{t.o.}\,$\bullet$ \\ \texttt{t.o.}\,$\circ$} &
-    \makecell{0.112\,$\bullet$ \\ 0.033\,$\circ$} &
-    \makecell{\texttt{t.o.}\,$\bullet$ \\ \texttt{err.}\,$\circ$} &
-    \makecell{\texttt{t.o.}\,$\bullet$ \\ \texttt{err.}\,$\circ$} \\
+    \makecell{0.046\,$\bullet$ \\ 0.035\,$\circ$} &
+    \makecell{\texttt{t.o.}\,$\bullet$ \\ 11.287\,$\circ$} &
+    \makecell{\texttt{t.o.}\,$\bullet$ \\ 11.322\,$\circ$} \\
     \midrule
     ClinicalTrial~\cite{gehr2016psi} & 20 & \textbf{6.854 (4.5×)} & 8.692 & 31.102 &
     \makecell{\texttt{t.o.}\,$\bullet$ \\ 1.916\,$\circ$} &
-    \makecell{\texttt{err.}\,$\bullet$ \\ 0.022\,$\circ$} &
-    \makecell{\texttt{t.o.}\,$\bullet$ \\ \texttt{err.}\,$\circ$} &
-    \makecell{\texttt{err.}\,$\bullet$ \\ \texttt{err.}\,$\circ$} \\
+    \makecell{\texttt{t.o.}\,$\bullet$ \\ \texttt{t.o.}\,$\circ$} &
+    \makecell{\texttt{t.o.}\,$\bullet$ \\ \texttt{t.o.}\,$\circ$} &
+    \makecell{\texttt{t.o.}\,$\bullet$ \\ \texttt{t.o.}\,$\circ$} \\
     \midrule
     CoinBias~\cite{gehr2016psi} & 5 & 0.294 & \textbf{0.234 (3.7×)} & 0.867 &
     \makecell{20.138\,$\bullet$ \\ 0.369\,$\circ$} &
-    \makecell{0.011\,$\bullet$ \\ 0.006\,$\circ$} &
-    \makecell{5.812\,$\bullet$ \\ \texttt{err.}\,$\circ$} &
-    \makecell{5.823\,$\bullet$ \\ \texttt{err.}\,$\circ$} \\
+    \makecell{0.058\,$\bullet$ \\ 0.025\,$\circ$} &
+    \makecell{4.789\,$\bullet$ \\ 0.528\,$\circ$} &
+    \makecell{4.847\,$\bullet$ \\ 0.553\,$\circ$} \\
     \midrule
     Election~\cite{Saad2021SPPL} & 2 & 0.878 & \textbf{0.663 (23.7×)} & 15.739 &
-    \texttt{t.o.} & 0.071 & \texttt{t.o.} & \texttt{t.o.} \\
+    \texttt{t.o.} & 0.019 & \texttt{t.o.} & \texttt{t.o.} \\
     \midrule
-    MarkovSwitching~\cite{Saad2021SPPL} & 10 & \textbf{0.044 (14.2×)} & \textbf{0.044 (14.2×)} & 0.624 &
-    \texttt{t.o.} & 0.059 & \texttt{err.} & \texttt{err.} \\
+    MarkovSwitching~\cite{Saad2021SPPL} & 10 & \textbf{0.044 (6.7×)} & \textbf{0.044 (6.7×)} & 0.624 &
+    \texttt{t.o.} & 0.020 & 0.275 & 0.295 \\
     \midrule
     StudentInterviews~\cite{Saad2021SPPL} & 10 & 1.287 & 1.681 & 56.781 &
-    \texttt{t.o.} & 0.019 & 0.606 & \textbf{0.625 (2.1×)} \\
+    \texttt{t.o.} & 0.025 & 0.443 & \textbf{0.468 (2.8×)} \\
     \midrule
     SurveyUnbias~\cite{gehr2016psi} & 10 & \textbf{0.044 (8.2×)} & 0.157 & 0.361 &
     \makecell{\texttt{t.o.}\,$\bullet$ \\ \texttt{t.o.}\,$\circ$} &
-    \makecell{0.021\,$\bullet$ \\ 0.025\,$\circ$} &
+    \makecell{0.027\,$\bullet$ \\ 0.029\,$\circ$} &
     \makecell{\texttt{t.o.}\,$\bullet$ \\ \texttt{err.}\,$\circ$} &
     \makecell{\texttt{t.o.}\,$\bullet$ \\ \texttt{err.}\,$\circ$} \\
     \midrule
     TrueSkill~\cite{gehr2016psi} & 2 & \textbf{0.042 (5.2×)} & 0.157 & 0.217 &
     \makecell{\texttt{t.o.}\,$\bullet$ \\ 0.068\,$\circ$} &
-    \makecell{0.027\,$\bullet$ \\ 0.013\,$\circ$} &
-    \makecell{\texttt{err.}\,$\bullet$ \\ 0.390\,$\circ$} &
-    \makecell{\texttt{err.}\,$\bullet$ \\ 0.403\,$\circ$} \\
+    \makecell{0.027\,$\bullet$ \\ 0.018\,$\circ$} &
+    \makecell{\texttt{err.}\,$\bullet$ \\ 0.215\,$\circ$} &
+    \makecell{\texttt{err.}\,$\bullet$ \\ 0.233\,$\circ$} \\
     \bottomrule
     \end{tabular}  
 }  
-\caption{Execution times (in seconds) for benchmarks from PSI~\cite{gehr2016psi} and SPPL~\cite{Saad2021SPPL}, with modified and unmodified \PSI{} and Hakaru exact inference baselines. Timeout=120s. For benchmarks with two outputs for \PSI{} and Hakaru, $\bullet$ marks the modified program and $\circ$ marks the unmodified program.}
+\caption{Execution times (in seconds) for benchmarks from PSI~\cite{gehr2016psi} and SPPL~\cite{Saad2021SPPL}, with modified and unmodified \PSI{} and Hakaru exact inference baselines. Timeout=120s. For benchmarks with two outputs for \PSI{} and Hakaru, $\bullet$ marks the modified program and $\circ$ marks the unmodified program. \texttt{err.} represents a crash, caused by out of memory.}
     \label{tab:benchmarks_psi}
 \end{table}
