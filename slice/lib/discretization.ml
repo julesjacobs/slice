@@ -24,9 +24,37 @@ let get_const_idx_and_modulus (f : float) (cut_set_from_context : CutSet.t) : in
   (idx, modulus)
 
 (* Calculate probability for a given distribution in an interval *)
-let prob_cdistr_interval (left : float) (right : float) (dist : Distributions.cdistr) : float =
+let is_discrete_integer_distribution = function
+  | Distributions.Poisson _ | Distributions.Binomial _ -> true
+  | _ -> false
+
+let prob_cdistr_cut (dist : Distributions.cdistr) (cut : Lats.cut) : float =
   let cdf = Distributions.cdistr_cdf dist in
-  cdf right -. cdf left
+  match is_discrete_integer_distribution dist, cut with
+  | true, Lats.Less f ->
+      if f = neg_infinity then 0.0
+      else if f = infinity then 1.0
+      else
+        let k = int_of_float (ceil f) - 1 in
+        if k < 0 then 0.0 else cdf (float_of_int k)
+  | true, Lats.LessEq f ->
+      if f = neg_infinity then 0.0
+      else if f = infinity then 1.0
+      else
+        let k = int_of_float (floor f) in
+        if k < 0 then 0.0 else cdf (float_of_int k)
+  | false, Lats.Less f
+  | false, Lats.LessEq f ->
+      cdf f
+
+let prob_cdistr_cut_interval (dist : Distributions.cdistr) (cuts : Lats.cut list) (idx : int) : float =
+  let num_intervals = List.length cuts + 1 in
+  if num_intervals = 1 then 1.0
+  else
+    let cut_cdf i = prob_cdistr_cut dist (List.nth cuts i) in
+    if idx = 0 then cut_cdf 0
+    else if idx = num_intervals - 1 then 1.0 -. cut_cdf (idx - 1)
+    else cut_cdf idx -. cut_cdf (idx - 1)
 
 (* 
 Discretizer from typed expressions to discrete expressions.
@@ -117,24 +145,9 @@ let discretize (e : texpr) : expr =
           if overall_modulus <= 0 then failwith "Internal error: Sample modulus must be positive";
 
           let final_expr_producer (concrete_distr : Distributions.cdistr) : expr =
-            let get_float_val_from_cut (b: Lats.cut) : float = 
-              match b with Lats.Less f -> f | Lats.LessEq f -> f
+            let probs =
+              List.init overall_modulus (prob_cdistr_cut_interval concrete_distr outer_cuts)
             in
-
-            let intervals_for_probs = List.init overall_modulus (fun k_idx ->
-              (* k_idx is the discrete outcome index, from 0 to overall_modulus - 1 *)
-              let left_for_cdf = 
-                if k_idx = 0 then neg_infinity
-                else get_float_val_from_cut (List.nth outer_cuts (k_idx - 1))
-              in
-              let right_for_cdf =
-                if k_idx = overall_modulus - 1 then infinity
-                else get_float_val_from_cut (List.nth outer_cuts k_idx)
-              in
-              (* Ensure left <= right. If bounds imply same float val, interval is [v,v] -> prob should be 0 by CDF diff *)
-              (min left_for_cdf right_for_cdf, max left_for_cdf right_for_cdf)
-            ) in
-            let probs = List.map (fun (l,r) -> prob_cdistr_interval l r concrete_distr) intervals_for_probs in
             if List.exists (fun p -> p < -0.0001 || p > 1.0001) probs then
                 failwith ("Internal error: generated probabilities are invalid: " ^ Pretty.string_of_float_list probs ^ " for distribution " ^ Pretty.string_of_cdistr concrete_distr ^ Printf.sprintf " with %d outer bounds." (List.length outer_cuts));
             let sum_probs = List.fold_left (+.) 0.0 probs in

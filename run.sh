@@ -115,6 +115,8 @@ if [ "$RUN_STORM" = true ]; then
   exit 0
 fi
 
+OUTPUT_FILE="/tmp/output.$OUTPUT_EXT"
+
 # Roulette backend specified
 if [ "$BACKEND" = "roulette" ]; then
   if [ "$TIME_FLAG" = true ]; then
@@ -140,24 +142,24 @@ case $BACKEND in
     # Run dice backend
     cd dice || exit 1
     if [ "$TIME_FLAG" = true ]; then
-      ./run_dice.sh --time "../output.$OUTPUT_EXT" 2>/dev/null
-      backend_time_dice=$(./run_dice.sh --time "../output.$OUTPUT_EXT" 2>&1 >/dev/null)
+      ./run_dice.sh --time "$OUTPUT_FILE" 2>/dev/null
+      backend_time_dice=$(./run_dice.sh --time "$OUTPUT_FILE" 2>&1 >/dev/null)
       total_time=$(echo "$slice_time_dice + $backend_time_dice" | bc -l)
       echo "$total_time" >&2
     else
-      ./run_dice.sh "../output.$OUTPUT_EXT"
+      ./run_dice.sh "$OUTPUT_FILE"
     fi
     ;;
   "roulette")
     # Run racket for roulette backend
     cd roulette || exit 1
     if [ "$TIME_FLAG" = true ]; then
-      ./run_roulette.sh --time "../output.$OUTPUT_EXT" 2>/dev/null
-      backend_time_roulette=$(./run_roulette.sh --time "../output.$OUTPUT_EXT" 2>&1 >/dev/null)
+      ./run_roulette.sh --time "$OUTPUT_FILE" 2>/dev/null
+      backend_time_roulette=$(./run_roulette.sh --time "$OUTPUT_FILE" 2>&1 >/dev/null)
       total_time=$(echo "$slice_time_roulette + $backend_time_roulette" | bc -l)
       echo "$total_time" >&2
     else
-      ./run_roulette.sh "../output.$OUTPUT_EXT"
+      ./run_roulette.sh "$OUTPUT_FILE"
     fi
     ;;
 esac
