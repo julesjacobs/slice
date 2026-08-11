@@ -35,7 +35,7 @@ posterior =
                    tossResult_3, tossResult_4]
 
     return (
-        (tossResults[0], (tossResults[1], (tossResults[2], (tossResults[3], tossResults[4])))),
+        (tossResult_0, (tossResult_1, (tossResult_2, (tossResult_3, tossResult_4)))),
         bias < 3/10
     )
   )

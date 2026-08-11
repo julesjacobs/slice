@@ -31,7 +31,7 @@ posterior =
                      beta(1, 1)
         click0 <~ bern(beta1)
         click1 <~ bern(beta2)
-        return [click0, click1]
+        return (click0, click1)
 
     clicks_0 = [true, true, true, false, false]
     clicks_1 = [true, true, true, false, false]
@@ -45,14 +45,23 @@ posterior =
     clickPair_3 <~ draw_click_pair(similarityAll)
     clickPair_4 <~ draw_click_pair(similarityAll)
 
-    sim_0 = [clickPair_0[0], clickPair_1[0], clickPair_2[0],
-             clickPair_3[0], clickPair_4[0]]
-    sim_1 = [clickPair_0[1], clickPair_1[1], clickPair_2[1],
-             clickPair_3[1], clickPair_4[1]]
+    click0_0 = match clickPair_0: (click0, click1): click0
+    click0_1 = match clickPair_1: (click0, click1): click0
+    click0_2 = match clickPair_2: (click0, click1): click0
+    click0_3 = match clickPair_3: (click0, click1): click0
+    click0_4 = match clickPair_4: (click0, click1): click0
+    click1_0 = match clickPair_0: (click0, click1): click1
+    click1_1 = match clickPair_1: (click0, click1): click1
+    click1_2 = match clickPair_2: (click0, click1): click1
+    click1_3 = match clickPair_3: (click0, click1): click1
+    click1_4 = match clickPair_4: (click0, click1): click1
+
+    sim_0 = [click0_0, click0_1, click0_2, click0_3, click0_4]
+    sim_1 = [click1_0, click1_1, click1_2, click1_3, click1_4]
 
     return (
-        ((sim_0[0], (sim_0[1], (sim_0[2], (sim_0[3], sim_0[4])))),
-         (sim_1[0], (sim_1[1], (sim_1[2], (sim_1[3], sim_1[4]))))),
+        ((click0_0, (click0_1, (click0_2, (click0_3, click0_4)))),
+         (click1_0, (click1_1, (click1_2, (click1_3, click1_4))))),
         similarityAll < 3/10
     )
   )

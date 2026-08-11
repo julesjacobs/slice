@@ -75,8 +75,8 @@ posterior =
                     treatedGroup_8, treatedGroup_9]
 
     return (
-        ((controlGroup[0], (controlGroup[1], (controlGroup[2], (controlGroup[3], (controlGroup[4], (controlGroup[5], (controlGroup[6], (controlGroup[7], (controlGroup[8], controlGroup[9]))))))))),
-         (treatedGroup[0], (treatedGroup[1], (treatedGroup[2], (treatedGroup[3], (treatedGroup[4], (treatedGroup[5], (treatedGroup[6], (treatedGroup[7], (treatedGroup[8], treatedGroup[9])))))))))),
+        ((controlGroup_0, (controlGroup_1, (controlGroup_2, (controlGroup_3, (controlGroup_4, (controlGroup_5, (controlGroup_6, (controlGroup_7, (controlGroup_8, controlGroup_9))))))))),
+         (treatedGroup_0, (treatedGroup_1, (treatedGroup_2, (treatedGroup_3, (treatedGroup_4, (treatedGroup_5, (treatedGroup_6, (treatedGroup_7, (treatedGroup_8, treatedGroup_9)))))))))),
         isEffective
     )
   )
