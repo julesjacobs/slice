@@ -786,33 +786,38 @@ The typing rules for general language constructs is given in \Cref{fig:typing-ge
 % \end{proof}
 
 
+\clearpage
 \section{Discretization Proofs}
 \subsection{Proof of Lemma~\ref{lem:type-transformations}}
 \begin{theorem}[Discretization Is Well-Typed]
-	Let $\Gamma \vdash e : \tau$. We have
-	$
-	\discretize{\Gamma} \vdash \discretize{e : \tau} : \discretize{\tau},
-	$
-	where $\discretize{\Gamma}$ transforms all types in $\Gamma$, i.e., $\discretize{\Gamma}(x) = \discretize{\Gamma(x)}$ for all $x \in \textnormal{dom}(\Gamma)$.
+		Let $\Gamma \vdash e : \tau$. We have
+		\[
+		\discretize{\Gamma} \vdash \discretize{e : \tau} : \discretize{\tau},
+		\]
+		where $\discretize{\Gamma}$ transforms all types in $\Gamma$, i.e., $\discretize{\Gamma}(x) = \discretize{\Gamma(x)}$ for all $x \in \textnormal{dom}(\Gamma)$.
 \end{theorem}
 
 \begin{proof}\label{proof:type-transformations}
+  \setlength{\parskip}{0.3em plus 0.1em}
   We proceed by induction on the structure of the typing derivation $\Gamma \vdash e : \tau$, matching each case of the discretization function $\discretize{\cdot}$ defined in Figure~\ref{fig:discretization-code}.
-  
-  \medskip
+
+  \par\medskip\noindent
   \textbf{Case} $e = x$.
+  \par\nopagebreak
   Since $\Gamma(x) = \tau$, we have $\discretize{\Gamma}(x) = \discretize{\tau}$. Moreover, $\discretize{x : \tau} = x$, so $\discretize{\Gamma} \vdash x : \discretize{\tau}$.
-  
-  \medskip
+
+  \par\medskip\noindent
   \textbf{Case} $e = (c : \float[B;V])$.
+  \par\nopagebreak
   The \textsc{Float-Const} rule was applied, so $\has{V}{c}$ holds.
-  \begin{itemize}
+  \begin{itemize}[leftmargin=1.5em, itemsep=0.35em, topsep=0.35em]
       \item If $B = \top$: then $\discretize{c : \float[B;V]} = c$ and $\discretize{\float[B;V]} = \float$. Since $\has{V}{c}$ still holds, $c$ is well-typed at $\float$ by \textsc{Float-Const}.
       \item If $B \neq \top$: then $\discretize{c : \float[B;V]} = \finconst{k}{|B|+1}$ for the unique $k$ such that $c \in \intervals{B}_k$, and $\discretize{\float[B;V]} = \fin{|B|+1}$. Since $0 \leq k < |B|+1$, the finite constant $\finconst{k}{|B|+1}$ is well-typed at $\fin{|B|+1}$ by \textsc{FinConst}.
   \end{itemize}
-  
-  \medskip
+
+  \par\medskip\noindent
   \textbf{Case} $e = (\letkw\; x = e_1 : \tau_1 \;\inkw\; e_2 : \tau_2)$.
+  \par\nopagebreak
   By the inductive hypothesis,
   \[
       \discretize{\Gamma} \vdash \discretize{e_1 : \tau_1} : \discretize{\tau_1}
@@ -823,30 +828,34 @@ The typing rules for general language constructs is given in \Cref{fig:typing-ge
   \[
       \discretize{\Gamma} \vdash \letkw\; x = \discretize{e_1 : \tau_1} \;\inkw\; \discretize{e_2 : \tau_2} : \discretize{\tau_2}.
   \]
-  
-  \medskip
+
+  \par\medskip\noindent
   \textbf{Case} $e = (\ifkw\; e_1 : \bool \;\thenkw\; e_2 : \tau \;\elsekw\; e_3 : \tau)$.
+  \par\nopagebreak
   By the inductive hypothesis, $\discretize{\Gamma} \vdash \discretize{e_i : \tau_i} : \discretize{\tau_i}$ for $i = 1, 2, 3$, where $\tau_1 = \bool$ and $\tau_2 = \tau_3 = \tau$. Since $\discretize{\bool} = \bool$, applying \textsc{If} gives
   \[
       \discretize{\Gamma} \vdash \ifkw\; \discretize{e_1 : \bool} \;\thenkw\; \discretize{e_2 : \tau} \;\elsekw\; \discretize{e_3 : \tau} : \discretize{\tau}.
   \]
-  
-  \medskip
+
+  \par\medskip\noindent
   \textbf{Case} $e = (e_1 : \float[B; V_1] < e_2 : \float[B; V_2])$.
+  \par\nopagebreak
   The \textsc{Less} rule was applied, so both subexpressions share the same cut set $B$ and $\answerslt{B}{V_1}{V_2}$ holds. By the inductive hypothesis, $\discretize{\Gamma} \vdash \discretize{e_i : \float[B;V_i]} : \discretize{\float[B;V_i]}$ for $i = 1, 2$.
-  \begin{itemize}
+  \begin{itemize}[leftmargin=1.5em, itemsep=0.35em, topsep=0.35em]
       \item If $B = \top$: then $\discretize{\float[B;V_i]} = \float$ for both $i$, and the standard float comparison gives type $\bool = \discretize{\bool}$.
       \item If $B \neq \top$: then both subexpressions are discretized to type $\fin{|B|+1}$, and the finite comparison $<_{\#(|B|+1)}$ is well-typed at $\bool = \discretize{\bool}$ by \textsc{FinLess}.
   \end{itemize}
-  
-  \medskip
+
+  \par\medskip\noindent
   \textbf{Case} $e = (e_1 : \float[B; V_1] \leq e_2 : \float[B; V_2])$.
+  \par\nopagebreak
   Analogous to the $<$ case, using $\answersleq{B}{V_1}{V_2}$ and \textsc{FinLessEq}.
-  
-  \medskip
+
+  \par\medskip\noindent
   \textbf{Case} $e = (\uniform(e_1 : \float[B_1; V_1],\; e_2 : \float[B_2; V_2]) : \float[B; \top])$.
+  \par\nopagebreak
   The \textsc{Continuous-2} rule was applied, so $\distinguishes{B_1}{V_1}$ and $\distinguishes{B_2}{V_2}$ hold. By the inductive hypothesis, $\discretize{\Gamma} \vdash \discretize{e_i : \float[B_i;V_i]} : \discretize{\float[B_i;V_i]}$ for $i = 1, 2$. Also, $B_i \equiv_{\top} B$, so $B_i=\top$ iff $B=\top$. We consider each sub-case of the discretization function:
-  \begin{itemize}
+  \begin{itemize}[leftmargin=1.5em, itemsep=0.5em, topsep=0.35em]
       \item $e_1, e_2 \in \mathbb{R}$ and $e_1 > e_2$: then $\discretize{\uniform(\ldots) : \float[B;\top]} = \diverge$, which is well-typed at any type by \textsc{Diverge}.
   
       \item $B = \top$: then $\discretize{\float[B;\top]} = \float$, and
@@ -864,253 +873,22 @@ The typing rules for general language constructs is given in \Cref{fig:typing-ge
       \item $B \neq \top$, $B_1 \neq \top$, $B_2 \neq \top$, and $e_1$ or $e_2$ is a variable: the algorithm generates conditionals over all pairs $(v_i, w_j)$, each branch dispatching to a constant parameter in $\uniform$. By the previous sub-case, each branch $\discretize{\uniform(v_i, w_j) : \float[B;\top]}$ is well-typed at $\fin{|B|+1} = \discretize{\float[B;\top]}$. The conditional structure is well-typed by \textsc{If} (as in the $\ifkw$ case above), so the full expression is well-typed at $\discretize{\float[B;\top]}$.
   \end{itemize}
 
-  \medskip
+  \par\medskip\noindent
   \textbf{Case} a one-argument continuous distribution. Analogous, using $B_1 \equiv_{\top} B$.
-  
-  \medskip
+
+  \par\medskip\noindent
   \textbf{Case} $e$ is any other language construct (functions, pairs, lists, \emph{etc.}).
+  \par\nopagebreak
   By definition of $\discretize{\cdot}$, the discretization recurses structurally over $e$ and $\tau$. That is, $\discretize{e : \tau}$ is formed by applying $\discretize{\cdot}$ to each subexpression and subtype of $e : \tau$, and $\discretize{\tau}$ is formed by applying $\discretize{\cdot}$ to each component type of $\tau$. The result then follows immediately by applying the inductive hypothesis to each subterm, analogous to the above cases.
-  
-  \medskip
-  \noindent
+
+  \par\medskip\noindent
   In every case, the typing derivation is preserved under $\discretize{\cdot}$. Therefore,
   \[
       \discretize{\Gamma} \vdash \discretize{e : \tau} : \discretize{\tau}. \qedhere
   \]
 \end{proof}
 
-%\input{sections/6_soundness.tex}
-
-%\clearpage
-%\section{NEW Soundness Proof}
 \input{sections/6a_soundness}
-
-%\clearpage
-%\section{Soundness Proof (Notes)}
-%\input{sections/6_soundness}
-
-
-%\section{Structural Operational Semantics for Markov Chain Construction}\label{ap:sos-rules}
-%
-%Values:
-%\[
-%  v \;::=\; \finconst{k}{n} \mid c \mid \mathtt{true} \mid \mathtt{false} \mid
-%         () \mid \nil \mid v_1 :: v_2 \mid (v_1, v_2)
-%         \mid \mathbf{fun}\; x \to e \mid \mathbf{fix}\; f\; x :=\, e
-%\]
-%
-%The step relation $\step{e}{p}{e'}$ denotes a transition with probability
-%$p \in (0,1]$.  The special target $\fail$ is an absorbing failure state
-%produced by \textsc{Obs-False}.
-%
-%%% -----------------------------------------------------------------------
-%%% Figure 1: Let, Application, Conditionals, Comparisons
-%%% -----------------------------------------------------------------------
-%\begin{figure}[t]
-%    \begin{mathpar}
-%    %% Let
-%    \inferrule*[right=Let-Step]
-%      {\step{e_1}{p}{e_1'}}
-%      {\step{\mathtt{let}\; x = e_1 \;\mathtt{in}\; e_2}{p}
-%            {\mathtt{let}\; x = e_1' \;\mathtt{in}\; e_2}}
-%    
-%    \inferrule*[right=Let-Val]
-%      { }
-%      {\step{\mathtt{let}\; x = v \;\mathtt{in}\; e_2}{1}{e_2[v/x]}}
-%    
-%    %% Application
-%    \inferrule*[right=App-Step-1]
-%      {\step{e_1}{p}{e_1'}}
-%      {\step{e_1\; e_2}{p}{e_1'\; e_2}}
-%    
-%    \inferrule*[right=App-Step-2]
-%      {\step{e_2}{p}{e_2'}}
-%      {\step{v\; e_2}{p}{v\; e_2'}}
-%    
-%    \inferrule*[right=App-Beta]
-%      { }
-%      {\step{(\mathbf{fun}\; x \to e)\; v}{1}{e[v/x]}}
-%    
-%    \inferrule*[right=App-Fix]
-%      { }
-%      {\step{(\mathbf{fix}\; f\; x := e)\; v}{1}{e[\,v/x\,]}}
-%    
-%    %% Conditionals
-%    \inferrule*[right=If-Step]
-%      {\step{e_c}{p}{e_c'}}
-%      {\step{\mathtt{if}\; e_c \;\mathtt{then}\; e_t \;\mathtt{else}\; e_f}{p}
-%            {\mathtt{if}\; e_c' \;\mathtt{then}\; e_t \;\mathtt{else}\; e_f}}
-%    
-%    \inferrule*[right=If-True]
-%      { }
-%      {\step{\mathtt{if}\; \mathtt{true} \;\mathtt{then}\; e_t \;\mathtt{else}\; e_f}{1}{e_t}}
-%    
-%    \inferrule*[right=If-False]
-%      { }
-%      {\step{\mathtt{if}\; \mathtt{false} \;\mathtt{then}\; e_t \;\mathtt{else}\; e_f}{1}{e_f}}
-%    
-%    %% Comparisons
-%    \inferrule*[right=Cmp-Step-1]
-%      {\step{e_1}{p}{e_1'}}
-%      {\step{\mathtt{cmp}(e_1,\, e_2)}{p}{\mathtt{cmp}(e_1',\, e_2)}}
-%    
-%    \inferrule*[right=Cmp-Step-2]
-%      {\step{e_2}{p}{e_2'}}
-%      {\step{\mathtt{cmp}(v,\, e_2)}{p}{\mathtt{cmp}(v,\, e_2')}}
-%    
-%    \inferrule*[right=CmpLt-T]
-%      {v_1 < v_2}
-%      {\step{\mathtt{cmp}_{<}(v_1,\, v_2)}{1}{\mathtt{true}}}
-%    
-%    \inferrule*[right=CmpLt-F]
-%      {v_1 \geq v_2}
-%      {\step{\mathtt{cmp}_{<}(v_1,\, v_2)}{1}{\mathtt{false}}}
-%    
-%    \inferrule*[right=CmpLe-T]
-%      {v_1 \leq v_2}
-%      {\step{\mathtt{cmp}_{\leq}(v_1,\, v_2)}{1}{\mathtt{true}}}
-%    
-%    \inferrule*[right=CmpLe-F]
-%      {v_1 > v_2}
-%      {\step{\mathtt{cmp}_{\leq}(v_1,\, v_2)}{1}{\mathtt{false}}}
-%    \end{mathpar}
-%    \caption{Small-step semantics (part 1): let-binding, application, conditionals, and comparisons.}
-%    \label{fig:sos-1}
-%    \end{figure}
-%    
-%    %% -----------------------------------------------------------------------
-%    %% Figure 2: Booleans, Pairs, Lists
-%    %% -----------------------------------------------------------------------
-%    \begin{figure}[t]
-%    \begin{mathpar}
-%    %% Boolean operators
-%    \inferrule*[right=And-Step]
-%      {\step{e_1}{p}{e_1'}}
-%      {\step{e_1 \logand e_2}{p}{e_1' \logand e_2}}
-%    
-%    \inferrule*[right=And-False]
-%      { }
-%      {\step{\mathtt{false} \logand e}{1}{\mathtt{false}}}
-%    
-%    \inferrule*[right=And-True]
-%      { }
-%      {\step{\mathtt{true} \logand e}{1}{e}}
-%    
-%    \inferrule*[right=Or-Step]
-%      {\step{e_1}{p}{e_1'}}
-%      {\step{e_1 \logor e_2}{p}{e_1' \logor e_2}}
-%    
-%    \inferrule*[right=Or-True]
-%      { }
-%      {\step{\mathtt{true} \logor e}{1}{\mathtt{true}}}
-%    
-%    \inferrule*[right=Or-False]
-%      { }
-%      {\step{\mathtt{false} \logor e}{1}{e}}
-%    
-%    \inferrule*[right=Not-Step]
-%      {\step{e}{p}{e'}}
-%      {\step{\lognot\, e}{p}{\lognot\, e'}}
-%    
-%    \inferrule*[right=Not-True]
-%      { }
-%      {\step{\lognot\, \mathtt{true}}{1}{\mathtt{false}}}
-%    
-%    \inferrule*[right=Not-False]
-%      { }
-%      {\step{\lognot\, \mathtt{false}}{1}{\mathtt{true}}}
-%    
-%    %% Pairs
-%    \inferrule*[right=Pair-Step-1]
-%      {\step{e_1}{p}{e_1'}}
-%      {\step{(e_1,\, e_2)}{p}{(e_1',\, e_2)}}
-%    
-%    \inferrule*[right=Pair-Step-2]
-%      {\step{e_2}{p}{e_2'}}
-%      {\step{(v,\, e_2)}{p}{(v,\, e_2')}}
-%    
-%    \inferrule*[right=Fst-Step]
-%      {\step{e}{p}{e'}}
-%      {\step{\mathtt{fst}(e)}{p}{\mathtt{fst}(e')}}
-%    
-%    \inferrule*[right=Fst-Val]
-%      { }
-%      {\step{\mathtt{fst}(v_1,\, v_2)}{1}{v_1}}
-%    
-%    \inferrule*[right=Snd-Step]
-%      {\step{e}{p}{e'}}
-%      {\step{\mathtt{snd}(e)}{p}{\mathtt{snd}(e')}}
-%    
-%    \inferrule*[right=Snd-Val]
-%      { }
-%      {\step{\mathtt{snd}(v_1,\, v_2)}{1}{v_2}}
-%    
-%    %% Lists
-%    \inferrule*[right=Cons-Step-1]
-%      {\step{e_1}{p}{e_1'}}
-%      {\step{e_1 :: e_2}{p}{e_1' :: e_2}}
-%    
-%    \inferrule*[right=Cons-Step-2]
-%      {\step{e_2}{p}{e_2'}}
-%      {\step{v :: e_2}{p}{v :: e_2'}}
-%    
-%    \inferrule*[right=Match-Step]
-%      {\step{e}{p}{e'}}
-%      {\step{\mathtt{match}\; e \;\mathtt{with}\; \nil \to e_n \mid x{::}xs \to e_c}
-%            {p}
-%            {\mathtt{match}\; e' \;\mathtt{with}\; \nil \to e_n \mid x{::}xs \to e_c}}
-%    
-%    \inferrule*[right=Match-Nil]
-%      { }
-%      {\step{\mathtt{match}\; \nil \;\mathtt{with}\; \nil \to e_n \mid x{::}xs \to e_c}
-%            {1}{e_n}}
-%    
-%    \inferrule*[right=Match-Cons]
-%      { }
-%      {\step{\mathtt{match}\;(v_h :: v_t)\;\mathtt{with}\; \nil \to e_n \mid x{::}xs \to e_c}
-%            {1}{e_c[v_h/x][v_t/xs]}}
-%    \end{mathpar}
-%    \caption{Small-step semantics (part 2): boolean operators, pairs, and lists.}
-%    \label{fig:sos-2}
-%    \end{figure}
-%    
-%    %% -----------------------------------------------------------------------
-%    %% Figure 3: Sequencing, Discrete distribution, Observe
-%    %% -----------------------------------------------------------------------
-%    \begin{figure}[t]
-%    \begin{mathpar}
-%    %% Sequencing
-%    \inferrule*[right=Seq-Step]
-%      {\step{e_1}{p}{e_1'}}
-%      {\step{e_1;\; e_2}{p}{e_1';\; e_2}}
-%    
-%    \inferrule*[right=Seq-Val]
-%      { }
-%      {\step{v;\; e_2}{1}{e_2}}
-%    
-%    %% Discrete distribution
-%    \inferrule*[right=Discrete]
-%      {\ }
-%      {\step{\mathtt{discrete}(p_0,\;\ldots,\; p_n)}{p_i}{i}}
-%    
-%    %% Observe
-%    \inferrule*[right=Obs-Step]
-%      {\step{e}{p}{e'}}
-%      {\step{\mathtt{observe}\; e}{p}{\mathtt{observe}\; e'}}
-%    
-%    \inferrule*[right=Obs-True]
-%      { }
-%      {\step{\mathtt{observe}\; \mathtt{true}}{1}{()}}
-%    
-%    \inferrule*[right=Obs-False]
-%      { }
-%      {\step{\mathtt{observe}\; \mathtt{false}}{1}{\fail}}
-%    \end{mathpar}
-%    \caption{Small-step semantics (part 3): sequencing, discrete distributions, and observations. The target $\fail$ in \textsc{Obs-False} is an absorbing failure state.}
-%    \label{fig:sos-3}
-%\end{figure}
-
-%\todo[inline]{Add accept/done states in the semantics}
 
 
 \section{Benchmarks}
