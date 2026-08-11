@@ -146,7 +146,7 @@ let get_cdistr_from_single_arg_kind (kind: Ast.single_arg_dist_kind) (arg1: floa
 let get_cdistr_from_two_arg_kind (kind: Ast.two_arg_dist_kind) (arg1: float) (arg2: float) : (cdistr, string) result =
   match kind with
   | Ast.DUniform -> 
-      if arg1 > arg2 then Error "Uniform low > high"
+      if arg1 >= arg2 then Error "Uniform low must be less than high"
       else Ok (Uniform (arg1, arg2))
   | Ast.DGaussian -> 
       if arg2 <= 0.0 then Error "Gaussian sigma must be positive"
