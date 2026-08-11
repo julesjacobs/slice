@@ -102,10 +102,8 @@
         \bottomrule
     \end{tabular}
     \end{adjustbox}
-    \caption{Discretization function, where $\mathrm{CDF}(b_{0}) = 0$ and $\mathrm{CDF}(b_{n+1}) = 1$.
-        For the $\uniform$ distribution, $V = \top$ is implicit, and all remaining cut-set and value-set
-        cases are ruled out by the constraints enforced during type inference. For all other language
-        constructs, $\discretize{\cdot}$ recurses structurally over them.}
+    \caption{Discretization function, where $\mathrm{CDF}(b_{0}) = 0$ and $\mathrm{CDF}(b_{n+1}) = 1$. For brevity, the table writes $\mathrm{CDF}(b_i)$ for each cut endpoint $b_i$, by which we mean either $\mathrm{CDF}(b_i^-)$ or $\mathrm{CDF}(b_i)$ depending on if the cut is strict or non-strict. Here, $\mathrm{CDF}(b_i^-)=\Pr[X<b_i]$ denotes the left limit at $b_i$, while $\mathrm{CDF}(b_i)=\Pr[X\leq b_i]$. These coincide for continuous distributions, but may differ for discrete or mixed distributions when $\Pr[X=b_i]>0$.
+    For the $\uniform$ distribution, $V = \top$ is implicit; all remaining cut-set and value-set cases are ruled out by type inference. For all other language constructs, $\discretize{\cdot}$ recurses structurally over them.}
     \label{fig:discretization-code}
 \end{figure*}
 This section presents local transformation rules for our type-directed discretization algorithm, with examples. Our goal is to compute, from a typed expression $e : \bool$ and its type annotations, a \emph{discretized} expression $\discretize{e : \bool} : \bool$ such that $e$ and $\discretize{e : \bool}$ are \emph{semantically equivalent}, i.e., they induce the same distribution. We refer to this semantics-preserving transformation as \emph{exact discretization}, to distinguish it from approaches~\cite{Garg2024BitBlast,Huang2021AQUA} that approximate continuous programs via externally chosen precision parameters. Exactness here is the equality proved by \Cref{thm:maintext:sound}: the transformed program preserves the relevant probabilities of the source program, not merely an approximation with an error bound. Intuitively, when a program uses continuous quantities only through finitely many comparison outcomes, exact inference should reduce to a discrete problem, and exact discretization makes that reduction explicit.

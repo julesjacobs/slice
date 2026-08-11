@@ -719,52 +719,49 @@ let bf_final = search_before_full init in
     \caption{A \emph{discretized} 4-bit Bloom filter program with continuous samples, locality-sensitive hash functions, and search and insert functions.}
     \label{fig:app:bloom-filter:disc}
 \end{figure*}
-
-
-
+\clearpage
 \section{List of Supported \Slicebf\xspace Distributions}\label{appen:supported-distributions}
+The list of distributions supported by \Slice{}, along with their probability density / mass functions, is given in~\Cref{fig:implemented-distribution-laws}. \Slice{} supports discrete distributions by applying the same cut-set and value-set analysis used for continuous distributions, \emph{provided that the discrete distribution admits a well-defined CDF}. The extension to discrete distributions does not introduce any fundamental changes to the discretization algorithm.
 
-The list of distributions supported by \Slice{}, along with their probability density / mass functions, is given in the following table. \Slice{} supports discrete distributions by applying the same cut-set and value-set analysis used for continuous distributions, \emph{provided that the discrete distribution admits a well-defined CDF}. The extension to discrete distributions does not introduce any fundamental changes to the discretization algorithm.
-
-\begin{figure}[h]
-\begin{tabular}{l l @{\qquad} l l}
+\begin{figure*}[t]
+\small
+\setlength{\tabcolsep}{4pt}
+\renewcommand{\arraystretch}{1.05}
+\begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{.18\textwidth} >{\raggedright\arraybackslash}p{.35\textwidth} >{\raggedright\arraybackslash}p{.14\textwidth} >{\raggedright\arraybackslash}p{.27\textwidth}@{}}
     \toprule
-    \textbf{Distribution} & \textbf{Density} & \textbf{Distribution} & \textbf{Density} \\
+    \textbf{Source constructor} & \textbf{Density or PMF} & \textbf{Support} & \textbf{Parameter domain and convention} \\
     \midrule
-    Exponential & $\lambda e^{-\lambda x}$ 
-        & Uniform & $\frac{1}{b - a}$ \\
-    Laplace & $\frac{1}{2b} e^{-\frac{|x - \mu|}{b}}$ 
-        & Gaussian & $\frac{1}{\sqrt{2\pi}\sigma} e^{-\frac{(x - \mu)^2}{2\sigma^2}}$ \\
-    Cauchy & $\frac{1}{\pi \gamma \left[1 + \left(\frac{x - x_0}{\gamma}\right)^2\right]}$ 
-        & Beta & $\frac{x^{\alpha - 1}(1 - x)^{\beta - 1}}{B(\alpha, \beta)}$ \\
-    Student-T & $c \left(1 + \frac{x^2}{\nu} \right)^{-\frac{\nu + 1}{2}}$ 
-        & LogNormal & $\frac{1}{x\sigma \sqrt{2\pi}} e^{-\frac{(\ln x - \mu)^2}{2\sigma^2}}$ \\
-    Chi-squared & $\frac{1}{2^{k/2} \Gamma(k/2)} x^{k/2 - 1} e^{-x/2}$ 
-        & Gamma & $\frac{\beta^\alpha}{\Gamma(\alpha)} x^{\alpha - 1} e^{-\beta x}$ \\
-    Logistic & $\frac{e^{-(x - \mu)/s}}{s(1 + e^{-(x - \mu)/s})^2}$ 
-        & Pareto & $\frac{\alpha x_m^\alpha}{x^{\alpha + 1}}$ \\
-    Rayleigh & $\frac{x}{\sigma^2} e^{-x^2 / (2\sigma^2)}$ 
-        & Weibull & $\frac{k}{\lambda} \left( \frac{x}{\lambda} \right)^{k-1} e^{-(x/\lambda)^k}$ \\
-    & & Gumbel-1 & $\frac{1}{\beta} e^{-(z + e^{-z})}$,\quad $z = \frac{x - \mu}{\beta}$ \\
-    & & Gumbel-2 & $\frac{\alpha \beta x^{-\alpha - 1} e^{-(x/\beta)^{-\alpha}}}{\beta}$ \\
-    & & Exponentiated Power & $k \lambda x^{k - 1} e^{-(x/\lambda)^k}$ \\
+    \multicolumn{4}{@{}l}{\textit{Continuous distributions}} \\
+    \addlinespace[2pt]
+    \texttt{exponential($\lambda$)} & $\lambda e^{-\lambda x}$ & $[0,\infty)$ & Rate $\lambda>0$ \\
+    \texttt{uniform($a,b$)} & $\frac{1}{b-a}\mathbf{1}_{[a,b)}(x)$ & $[a,b]$ & Endpoints $a<b$ \\
+    \texttt{laplace($b$)} & $\frac{1}{2b}e^{-|x|/b}$ & $\mathbb R$ & Centered; scale $b>0$ \\
+    \texttt{gaussian($\mu,\sigma$)} & $\frac{1}{\sqrt{2\pi}\sigma}e^{-(x-\mu)^2/(2\sigma^2)}$ & $\mathbb R$ & Location $\mu\in\mathbb R$; standard deviation $\sigma>0$ \\
+    \texttt{cauchy($\gamma$)} & $\frac{\gamma}{\pi(x^2+\gamma^2)}$ & $\mathbb R$ & Centered; scale $\gamma>0$ \\
+    \texttt{beta($\alpha,\beta$)} & $\frac{x^{\alpha-1}(1-x)^{\beta-1}}{B(\alpha,\beta)}$ & $[0,1]$ & Shapes $\alpha,\beta>0$ \\
+    \texttt{tdist($\nu$)} & $\frac{\Gamma((\nu+1)/2)}{\sqrt{\nu\pi}\,\Gamma(\nu/2)}(1+x^2/\nu)^{-(\nu+1)/2}$ & $\mathbb R$ & Centered; degrees of freedom $\nu>0$ \\
+    \texttt{lognormal($\mu,\sigma$)} & $\frac{1}{x\sigma\sqrt{2\pi}}e^{-(\log x-\mu)^2/(2\sigma^2)}$ & $[0,\infty)$ & Log-location $\mu\in\mathbb R$; log-scale $\sigma>0$ \\
+    \texttt{chi2($\nu$)} & $\frac{x^{\nu/2-1}e^{-x/2}}{2^{\nu/2}\Gamma(\nu/2)}$ & $[0,\infty)$ & Real degrees of freedom $\nu>0$ \\
+    \texttt{gamma($\alpha,\theta$)} & $\frac{x^{\alpha-1}e^{-x/\theta}}{\Gamma(\alpha)\theta^\alpha}$ & $[0,\infty)$ & Shape $\alpha>0$; scale $\theta>0$ \\
+    \texttt{logistic($s$)} & $\frac{e^{-x/s}}{s(1+e^{-x/s})^2}$ & $\mathbb R$ & Centered; scale $s>0$ \\
+    \texttt{pareto($a,b$)} & $a b^a x^{-a-1}$ & $[b,\infty)$ & GSL shape $a>0$; threshold/scale $b>0$ \\
+    \texttt{rayleigh($\sigma$)} & $\frac{x}{\sigma^2}e^{-x^2/(2\sigma^2)}$ & $[0,\infty)$ & Scale $\sigma>0$ \\
+    \texttt{weibull($a,b$)} & $\frac{b}{a}(x/a)^{b-1}e^{-(x/a)^b}$ & $[0,\infty)$ & GSL scale $a>0$; exponent $b>0$ \\
+    \texttt{gumbel1($a,b$)} & $a b\,e^{-(b e^{-a x}+a x)}$ & $\mathbb R$ & GSL parameters $a,b>0$ \\
+    \texttt{gumbel2($a,b$)} & $a b\,x^{-a-1}e^{-b x^{-a}}$ & $[0,\infty)$ & GSL shape $a>0$; coefficient $b>0$ \\
+    \texttt{exppow($a,b$)} & $\frac{1}{2a\Gamma(1+1/b)}e^{-(|x|/a)^b}$ & $\mathbb R$ & Scale $a>0$; exponent $b>0$ \\
     \midrule
-    \multicolumn{4}{l}{\textbf{Discrete Distributions}} \\
-    \midrule
-    Poisson & $\frac{\lambda^k e^{-\lambda}}{k!}$ 
-        & Geometric & $(1 - p)^{k - 1} p$ \\
-
-    Binomial & $\binom{n}{k} p^k (1 - p)^{n - k}$ 
-        & Negative Binomial & $\binom{k + r - 1}{k} (1 - p)^r p^k$ \\
-
-    Hypergeometric & $\frac{\binom{K}{k} \binom{N - K}{n - k}}{\binom{N}{n}}$ 
-        & Bernoulli & $p^k (1 - p)^{1 - k}$ \\
-
-    Discrete Uniform & $\frac{1}{n}$ 
-        & Multinomial & $\frac{n!}{x_1! \cdots x_k!} p_1^{x_1} \cdots p_k^{x_k}$ \\
+    \multicolumn{4}{@{}l}{\textit{Discrete distributions}} \\
+    \addlinespace[2pt]
+    \texttt{poisson($\mu$)} & $e^{-\mu}\mu^k/k!$ & $\mathbb N_0$ if $\mu>0$; $\{0\}$ if $\mu=0$ & Mean $\mu\geq0$ \\
+    \texttt{binomial($p,n$)} & $\binom nk p^k(1-p)^{n-k}$ & $\{0,\ldots,n\}$, with endpoint degeneracies & $0\leq p\leq1$; integer $0\leq n\leq\min(2^{32}-1,\texttt{max\_int})$ \\
     \bottomrule
-\end{tabular}
-\end{figure}
+\end{tabularx}
+\caption{List of supported distributions.
+The binomial support is $\{0\}$ when $n=0$ or $p=0$, and $\{n\}$ when
+$p=1$; otherwise it is $\{0,\ldots,n\}$.}
+\label{fig:implemented-distribution-laws}
+\end{figure*}
 
     
     
