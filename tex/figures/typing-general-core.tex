@@ -26,6 +26,10 @@
             \sum_{i=0}^{n-1} p_i = 1}
         {\Gamma \vdash \discrete(p_0, \ldots, p_{n-1}) : \fin{n}}
 
+        \inferrule[\textsc{Diverge}]
+        {\ }
+        {\Gamma \vdash \diverge : \tau}
+
         \inferrule[\textsc{FinConst}]
         {0 \leq k < n}
         {\Gamma \vdash \finconst{k}{n} : \fin{n}}
@@ -39,10 +43,6 @@
         {\Gamma \vdash e_1 : \fin{n} \\
          \Gamma \vdash e_2 : \fin{n}}
         {\Gamma \vdash e_1 \finleq{n} e_2 : \bool}
-
-        \inferrule[\textsc{Diverge}]
-        {\ }
-        {\Gamma \vdash \diverge : \tau}
     \end{mathpar}
 }
     \caption{Typing rules for general language constructs}

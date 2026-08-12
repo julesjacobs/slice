@@ -1,6 +1,6 @@
 \section{Type Inference}\label{sec:type-inference}
 
-We now describe our type inference algorithm, whose goal is to annotate each subexpression of a program with its most precise type. Specifically, we focus on expressions of type $\float[B;V]$ and show how \Slice{} populates the cut set $B$ and value set $V$, which later determine how and whether the expression can be discretized. Type inference for all other types is standard and follows the classic Hindley-Milner algorithm. For float-typed expressions, we use a two-phase approach: the first phase traverses the program once to generate constraints over cut and value sets; the second phase solves those constraints to produce a fully annotated program.
+We now describe our type inference algorithm, whose goal is to annotate each subexpression of a program with a sound type. Specifically, we focus on expressions of type $\float[B;V]$ and show how \Slice{} populates the cut set $B$ and value set $V$, which later determine how and whether the expression can be discretized. Type inference for all other types is standard and follows the classic Hindley-Milner algorithm. For float-typed expressions, we use a two-phase approach: the first phase traverses the program once to generate constraints over cut and value sets; the second phase solves those constraints to produce a fully annotated program.
 
 The distinction between typing and type inference is important. The correctness argument cleanly separates into two pieces: (1) type inference produces a typing derivation matching our typing rules, and (2) given such a typing derivation, discretization is semantics preserving. Thus the proof of discretization does not have to reason directly about the type inference procedure.
 
@@ -24,7 +24,7 @@ The type inference rules closely mirror the typing rules in Figure~\ref{fig:typi
           \mid B_1 \equiv_{\top} B_2   %\text{\quad (join only if $B_1 = \top$ or $B_2 = \top$)} \\
           \mid C_1, C_2   %\text{\quad (conjunction)}
     \end{aligned}$}
-\caption{Syntax for our constraint language. Constraints correspond to the semantic requirements in our type system: subtyping ensures type compatibility, $\distinguishes{B}{V}$ ensures that distribution parameters can be recovered after discretization, $\answerslt{B}{V_1}{V_2}$ and $\answersleq{B}{V_1}{V_2}$ ensure that comparison results can be determined after discretization, and $\has{V}{c}$ ensures that constants are properly tracked.}
+\caption{Syntax for our constraint language. Constraints correspond to the semantic requirements in our type system: subtyping ensures type compatibility, $\distinguishes{B}{V}$ ensures that distribution parameters can be recovered after discretization, $\answerslt{B}{V_1}{V_2}$ and $\answersleq{B}{V_1}{V_2}$ ensure that comparison results can be determined after discretization, and $\has{V}{c}$ ensures that constants are properly tracked. $B_1 \equiv_{\top} B_2$ holds exactly when $B_1 = \top \iff B_2 = \top$.}
 \label{fig:constraints-grammar}
 \end{figure}
 
@@ -45,7 +45,7 @@ Once constraint generation completes, we obtain a system of constraints over typ
 \begin{enumerate}
     \item \textbf{Subtyping reduction}: We first process all subtyping constraints of the form $\subtype{\tau_1}{\tau_2}$. Since subtyping for float types follows the rule $\subtype{\float[B_1;V_1]}{\float[B_2;V_2]}$ if and only if $B_1 = B_2$ and $V_1 \sqsubseteq V_2$, we reduce each subtyping constraint to corresponding equality and subset constraints on the cut and value sets. Subtyping elimination continues until only constraints among $B$'s and $V$'s remain.
 
-    \item \textbf{Lattice constraint solving}: After subtyping reduction, we are left with constraints purely over cut sets and value sets: equalities, subset relations, and the specialized constraints $\distinguishes{B}{V}$, $\answerslt{B}{V_1}{V_2}$, and $\has{V}{c}$. These constraints are solved using a monotone fixed-point algorithm over the cut and value lattices.
+    \item \textbf{Lattice constraint solving}: After subtyping reduction, we are left with constraints purely over cut sets and value sets: equalities, subset relations, and the specialized constraints $\distinguishes{B}{V}$, $\answerslt{B}{V_1}{V_2}$, $\answersleq{B}{V_1}{V_2}$, and $\has{V}{c}$. These constraints are solved using a monotone fixed-point algorithm over the cut and value lattices.
 \end{enumerate}
 
 \paragraph{Subtyping Reduction.}
@@ -78,7 +78,7 @@ Each of the constraints is handled as follows:
 
     \item \textbf{Subset constraints} ($B_1 \sqsubseteq B_2$ or $V_1 \sqsubseteq V_2$): We ensure that the contents of the first variable are always a subset of the second. When $B_1$ or $V_1$ is updated, we propagate the changes to $B_2$ or $V_2$ by taking the least upper bound. \circled{3}
 
-    \item \textbf{Recoverability} ($\distinguishes{B}{V}$): This constraint ensures that the cut set $B$ can distinguish all values in $V$. If $V$ is a finite set $\{v_1, ..., v_n\}$ with $n > 1$, we require that $B$ contains at least $n-1$ cuts to separate these values. If the cuts do not separate the values in the current solver state, we insert additional cuts to satisfy this condition. There is no canonical way to do this, so we use a heuristic: we insert a cut $\clt{x}$ for each value $x \in V$ that is not already separated by existing cuts. If $B = \top$, the constraint is trivially satisfied. \circled{4}
+    \item \textbf{Recoverability} ($\distinguishes{B}{V}$): This constraint ensures that the cut set $B$ can distinguish all values in $V$. If $B = \top$, the constraint is already satisfied. If $V = \top$ and $B \neq \top$, we set $B := \top$, since no finite cut set recovers an unrestriced real value. Otherwise $V$ is finite; we use a heuristic of inserting $\cleq{x}$ for each value $x \in V$. These cuts place distinct elements of $V$ in distinct intervals and therefore satisfy recoverability. This choice can add redundant cuts, but remains sound. \circled{4}
 
     \item \textbf{Less-than answerability} ($\answerslt{B}{V_1}{V_2}$): Intuitively, this constraint ensures that $B$ contains enough cuts to answer all possible comparisons of the form ``$v_1 < v_2$'' where $v_1 \in V_1$ and $v_2 \in V_2$.
     If $B = \top$, the constraint is trivially satisfied.
@@ -88,7 +88,7 @@ Each of the constraints is handled as follows:
 
 	    \item \textbf{Equality constraints} ($B_1 = B_2$ or $V_1 = V_2$): We unify the variables, treating them as the same variable throughout the solving process. Any update to one variable is immediately reflected in all variables unified with it. \circled{6}
 
-	    \item \textbf{Top consistency} ($B_1 \equiv_{\top} B_2$): If either becomes $\top$, set both to $\top$. \circled{7}
+	    \item \textbf{Top consistency} ($B_1 \equiv_{\top} B_2$): If either variable becomes $\top$, set both to $\top$. \circled{7}
 \end{itemize}
 
 The solver repeatedly processes constraints until reaching a fixed point, where no constraint causes any further updates to the variables. The monotonicity of the lattice operations ensures that this process terminates. This procedure may add more cuts to $B$s than strictly necessary, but it never sets $B=\top$ unless that is the only way to satisfy all constraints. In other words, the discretization itself may be suboptimal in terms of the number of cuts.
