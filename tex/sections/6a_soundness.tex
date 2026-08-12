@@ -1364,7 +1364,60 @@ The missing probability mass in $\sem{e :\tau}$ is the probability of encounteri
 %	Let $\tau$ be a type, and let $P_\tau = \{ (e:\tau, \discretize{e} : \discretize{\tau}) ~|~ e:\tau \}$. Given a suitable measurable space, we denote by $\mathcal{D}(P_\tau + \bot)$ 
 %	the set of sub-probability measures over $P_\tau$. 
 %\end{definition}
-Define $P_\tau = \{ (e:\tau, \discretize{e:\tau} : \discretize{\tau}) ~|~ e:\tau \}$. Exploiting that $e:\tau$ is a value iff $\discretize{e} : \discretize{\tau}$ is a value, we define:
+Define $P_\tau = \{ (e:\tau, \discretize{e:\tau} : \discretize{\tau}) ~|~ e:\tau \}$. To define subprobability measures and kernels on the coupling space, we
+must first equip it with a $\sigma$-algebra. Since
+\[
+P_\tau\subseteq Expr_\tau\times Expr_{\discretize{\tau}},
+\]
+we use the subspace $\sigma$-algebra from
+\Cref{def:subspace-sigma-algebra}, inherited from the product measurable
+space. We then extend this space with the isolated error element
+$\bot$, as for $Expr_\tau+\bot$.
+
+
+\begin{definition}[$\sigma$-algebra construction on $P_\tau$]
+Let
+\[
+	P_\tau
+	=
+	\{(e:\tau,\discretize{e}:\discretize{\tau})\mid e:\tau\}
+	\subseteq
+	Expr_\tau\times Expr_{\discretize{\tau}}.
+\]
+We equip $P_\tau$ with the subspace $\sigma$-algebra
+\[
+	\mathcal F_{P_\tau}
+	:=
+	\left\{
+	P_\tau\cap A
+	\;\middle|\;
+	A\in
+	\mathcal F_{Expr_\tau}
+	\otimes
+	\mathcal F_{Expr_{\discretize{\tau}}}
+	\right\}.
+\]
+We equip $P_\tau+\bot$ with
+\[
+	\mathcal F_{P_\tau+\bot}
+	:=
+	\{A,\ A\cup\{\bot\}\mid A\in\mathcal F_{P_\tau}\}.
+\]
+\end{definition}
+
+\begin{lemma}\label{lem:measurable-coupling-space}
+	$(P_\tau,\mathcal F_{P_\tau})$
+	and $(P_\tau+\bot,\mathcal F_{P_\tau+\bot})$
+	are measurable spaces.
+\end{lemma}
+
+\begin{proof}
+	The first claim follows from
+	\Cref{def:subspace-sigma-algebra}. The second follows from the same
+	error-extension construction used for \(Expr_\tau+\bot\).
+\end{proof}
+
+Now, exploiting that $e:\tau$ is a value iff $\discretize{e} : \discretize{\tau}$ is a value, we define:
 %
 \begin{definition}
 	The small-step coupling  $\sem{e :\tau, \discretize{e}: \discretize{\tau}} \in \mathcal{D}(P_{\tau} + \bot)$ is defined recursively on the structure of $e:\tau$ by the rules in \Cref{tab:coupling_smallstep_1,tab:coupling_smallstep_2}. 
