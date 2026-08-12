@@ -151,7 +151,7 @@ This is the correct behavior: consider repeatedly running the program under a re
 The discretized program for the case study from \Cref{sec:examples:7} is shown in \Cref{fig:app:epsball}. \Slice{} takes 0.000s, and we generate a Markov chain consisting of $192365$ states in $38.69$ seconds. \Storm takes $0.69$ seconds for model checking, and reports that the sought-after probability is $0.034474...$.
 
 % Discretized version
-\begin{figure*}[t]
+\begin{figure}[t]
     \centering
     \begin{minipage}[t]{0.46\textwidth}
     \vspace{0pt}
@@ -241,7 +241,7 @@ The discretized program for the case study from \Cref{sec:examples:7} is shown i
     
     \caption{A \emph{discretized} infinite stochastic process for random interval covering over $[0,1]$, involving continuous sampling, higher-order recursion, and lists.}
     \label{fig:app:epsball}
-\end{figure*}
+\end{figure}
 
 
 \section{\Slicebf{} Case Studies (continued)}
@@ -250,7 +250,7 @@ The discretized program for the case study from \Cref{sec:examples:7} is shown i
 The full program for the case study from \Cref{sec:casestudy:epsball} is shown in \Cref{fig:app:epsball-observe}. The discretized program is shown in \Cref{fig:app:epsball-observe:disc}.
 
 % Continuous version
-\begin{figure*}[t]
+\begin{figure}[t]
     \centering
     \begin{minipage}[t]{0.46\textwidth}
     \vspace{0pt}
@@ -348,10 +348,10 @@ let final = cover init in
     
 \caption{An infinite stochastic process for random interval covering over $[0,1]$, involving conditioning, continuous sampling, higher-order recursion, and lists.}
     \label{fig:app:epsball-observe}
-\end{figure*}
+\end{figure}
 
 % Discretized version
-\begin{figure*}[t]
+\begin{figure}[t]
     \centering
     \begin{minipage}[t]{0.46\textwidth}
     \vspace{0pt}
@@ -453,14 +453,14 @@ let final = cover init in
     
     \caption{A \emph{discretized} infinite stochastic process for random interval covering over $[0,1]$, involving conditioning, continuous sampling, higher-order recursion, and lists.}
     \label{fig:app:epsball-observe:disc}
-\end{figure*}
+\end{figure}
 
 
 \subsection{Bloom Filter}\label{ap:casestudy:bloom}
 The full program for the case study from \Cref{sec:casestudy:bloom} is shown in \Cref{fig:app:bloom-filter}. The discretized program is shown in \Cref{fig:app:bloom-filter:disc}.
 
 % Continuous version
-\begin{figure*}[t]
+\begin{figure}[t]
     \centering
     \begin{minipage}[t]{0.46\textwidth}
     \vspace{0pt}
@@ -585,10 +585,10 @@ let bf_final = search_before_full init in
     
     \caption{A 4-bit Bloom filter program with continuous samples, locality-sensitive hash functions, and search and insert functions.}
     \label{fig:app:bloom-filter}
-\end{figure*}
+\end{figure}
 
 % Discretized version
-\begin{figure*}[t]
+\begin{figure}[t]
     \centering
     \begin{minipage}[t]{0.46\textwidth}
     \vspace{0pt}
@@ -718,12 +718,12 @@ let bf_final = search_before_full init in
     
     \caption{A \emph{discretized} 4-bit Bloom filter program with continuous samples, locality-sensitive hash functions, and search and insert functions.}
     \label{fig:app:bloom-filter:disc}
-\end{figure*}
+\end{figure}
 \clearpage
 \section{List of Supported \Slicebf\xspace Distributions}\label{appen:supported-distributions}
 The list of distributions supported by \Slice{}, along with their probability density / mass functions, is given in~\Cref{fig:implemented-distribution-laws}. \Slice{} supports discrete distributions by applying the same cut-set and value-set analysis used for continuous distributions, \emph{provided that the discrete distribution admits a well-defined CDF}. The extension to discrete distributions does not introduce any fundamental changes to the discretization algorithm.
 
-\begin{figure*}[t]
+\begin{figure}[t]
 \small
 \setlength{\tabcolsep}{4pt}
 \renewcommand{\arraystretch}{1.05}
@@ -761,7 +761,7 @@ The list of distributions supported by \Slice{}, along with their probability de
 The binomial support is $\{0\}$ when $n=0$ or $p=0$, and $\{n\}$ when
 $p=1$; otherwise it is $\{0,\ldots,n\}$.}
 \label{fig:implemented-distribution-laws}
-\end{figure*}
+\end{figure}
 
     
     
