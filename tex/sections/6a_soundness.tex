@@ -1660,148 +1660,257 @@ As a sanity check, we show that the $n$-step semantics defines a sub-Markov kern
 	Analogous to proof of~\Cref{lem:big-step-n-kernel}.
 \end{proof}
 
+For every type $\tau$, we denote by $\vals_\tau$ the set of values of
+type $\tau$. By~\Cref{lem:measurable-subsets},
+$\vals_\tau+\bot$ and $Expr_\tau\setminus\vals_\tau$ are measurable
+subsets of $Expr_\tau+\bot$, which we equip with their subspace
+$\sigma$-algebras. 
 
-For every type $\tau$, we denote by $\vals_\tau$ the set of values of type $\tau$ and equip it with a suitable measurable sub-space of the measurable space over $Expr_\tau + \bot$ (cf. \Cref{lem:measurable-subsets}.\ref{lem:measurable-vals}). Moreover, let $V_\tau = \{ (v:\tau, \discretize{v} : \discretize{\tau}) ~|~ v:\tau \}$.
-
-
-\begin{lemma}[Basic Properties of $\bigsemstep{\cdot}{n}$]
-	\label{lem:bigstepsem}
-	Let $e : \tau \in Expr_{\tau}$ and $n \in \mathbb{N}$. Let $\vals_{\tau}$ be the measurable set of values. We have:
-	\begin{enumerate}
-		\item\label{lem:bigstepsem1} $\bigsemstep{e : \tau}{n}(\vals_{\tau}) \leq \bigsemstep{e : \tau}{n+1}(\vals_{\tau})$
-		\item\label{lem:bigstepsem2} $\bigsemstep{e : \tau}{n}(\bot) \leq \bigsemstep{e : \tau}{n+1}(\bot)$
-	\end{enumerate}
-\end{lemma}
-%
-\begin{proof}
-	By induction on $n$.
-
-	\underline{Base case}: $n=0$.
-
-	We must show $\bigsemstep{e : \tau}{0}(\vals_{\tau}) \leq \bigsemstep{e : \tau}{1}(\vals_{\tau})$.
-
-	By definition,
-	\[
-		\bigsemstep{e : \tau}{0} = \delta_{e : \tau}.
-	\]
-
-	Therefore,
-	\[
-		\bigsemstep{e : \tau}{0}(\vals_{\tau}) =
-		\begin{cases}
-			1 &\text{ if } e \in \vals_{\tau} \\
-			0 &\text{ if } e \notin \vals_{\tau}
-		\end{cases}
-	\]
-
-	Now, for $n=1$, by definition,
-	\[
-		\bigsemstep{e : \tau}{1} = \delta_{e : \tau} \gg\!= \lambda e'.\sem{e'} = \sem{e : \tau}.
-	\]
-
-	We analyze the two cases for $e$:
-
-	\textbf{Case 1:} $e$ is a value $v$. Then, $\bigsemstep{e : \tau}{0}(\vals_{\tau}) = 1$.
-
-	For $n=1$:
-	\[
-		\bigsemstep{e : \tau}{1} = \delta_{v : \tau} \gg\!= \lambda e'.\sem{e'} = \sem{v : \tau}.
-	\]
-	From the semantics, $\sem{v : \tau} = \delta_{v : \tau}$, which means $\bigsemstep{e : \tau}{1} = \delta_{v : \tau}$, and thus
-	\[
-		\bigsemstep{e : \tau}{1}(V) = 1,
-	\]
-	and thus $\bigsemstep{e : \tau}{0}(\vals_{\tau}) \leq \bigsemstep{e : \tau}{1}(\vals_{\tau})$.
-
-	\textbf{Case 2:} $e$ is an expression. Then, $\bigsemstep{e : \tau}{0}(\vals_{\tau}) = 0$.
-
-	For $n=1$:
-	\[
-		\bigsemstep{e : \tau}{1} = \delta_{e : \tau} \gg\!= \lambda e'.\sem{e'} = \sem{e : \tau}.
-	\]
-	From the semantics, $\sem{e : \tau}$ may step to either a value, which means $\sem{e : \tau}(\vals_{\tau}) \geq 0$, or an expression, which means $\sem{e : \tau}(\vals_{\tau}) = 0$. In either case, 
-	\[
-		\bigsemstep{e : \tau}{1}(\vals_{\tau}) \geq 0,
-	\]
-	and thus $\bigsemstep{e : \tau}{0}(\vals_{\tau}) \leq \bigsemstep{e : \tau}{1}(\vals_{\tau})$.
-
-	\underline{Inductive step}:
-	We want to show that for $n = k+1$:
-	\begin{align*}
-		\bigsemstep{e : \tau}{k+1}(\vals_{\tau}) \leq \bigsemstep{e : \tau}{k+2}(\vals_{\tau}).
-	\end{align*}
-
-	By the recursive definition:
-	\begin{align*}
-		&\bigsemstep{e : \tau}{k}, \\
-		&\bigsemstep{e : \tau}{k+1} = \bigsemstep{e : \tau}{k} \gg\!= \lambda e'.\sem{e'}, \\
-		&\bigsemstep{e : \tau}{k+2} = \bigsemstep{e : \tau}{k+1} \gg\!= \lambda e''.\sem{e''} = (\bigsemstep{e : \tau}{k} \gg\!= \lambda e'.\sem{e'}) \gg\!= \lambda e''.\sem{e''}
-	\end{align*}
-
-	By the IH,
-	\begin{align*}
-		\bigsemstep{e : \tau}{k}(\vals_{\tau}) \leq \bigsemstep{e : \tau}{k+1}(\vals_{\tau}).
-	\end{align*}
-
-	We do a case analysis on $e'$ and $e''$, whether they are in $N_{\tau}$ or $\vals_{\tau}$.
-
-	\textbf{Case} $e' \in \vals_{\tau}$, $e'' \in \vals_{\tau}$.
-
-	Then, from the semantics, $\sem{e'}$ and $\sem{e''}$ are both Diracs over a value. Combined with the IH and the fact that $\sem{\cdot}$ does not change the probability mass of $\cdot$ if it is a value, 
-	\[
-		\bigsemstep{e : \tau}{k+1}(\vals_{\tau}) \leq \bigsemstep{e : \tau}{k+2}(\vals_{\tau}).
-	\]
-
-	\textbf{Case} $e' \in \vals_{\tau}$, $e'' \in N_{\tau}$.
-	
-	Then, from the semantics, $\sem{e'}$ is a Dirac over a value and $\sem{e''}$ is a distribution over a non-value expression. Combined with the IH and the fact that $\sem{\cdot}$ does not change the probability mass of $\cdot$ if it is a value and that $\sem{\cdot}$ does not add any probability mass to $\vals_{\tau}$ if $\cdot$ is a non-value expression,
-	\[
-		\bigsemstep{e : \tau}{k+1}(\vals_{\tau}) \leq \bigsemstep{e : \tau}{k+2}(\vals_{\tau}).
-	\]
-
-	\textbf{Case} $e' \in \vals_{\tau}$, $e'' \in N_{\tau}$.
-
-	Analogous to the previous case, but with $e'$ and $e''$ switched.
-
-	\textbf{Case} $e' \in N_{\tau}$, $e'' \in N_{\tau}$.
-
-	Then, from the semantics,  $\sem{e'}$ and $\sem{e''}$ are both distributions over a non-value expression. Combined with the IH and the fact that $\sem{\cdot}$ does not add any probability mass to $\vals_{\tau}$ if $\cdot$ is a non-value expression, 
-	\[
-		\bigsemstep{e : \tau}{k+1}(\vals_{\tau}) \leq \bigsemstep{e : \tau}{k+2}(\vals_{\tau}).
-	\]
-
-	In all cases, $\bigsemstep{e : \tau}{k+1}(\vals_{\tau}) \leq \bigsemstep{e : \tau}{k+2}(\vals_{\tau})$.
-\end{proof}
+Furthermore, let
+\[
+K_\tau:(Expr_\tau+\bot)\to\mathcal D(Expr_\tau+\bot)
+\]
+be the \(\bot\)-extension of the small-step kernel:
+\[
+K_\tau(x,A)
+=
+\begin{cases}
+\sem{x:\tau}(A) & x\in Expr_\tau,\\
+\delta_\bot(A)  & x=\bot,
+\end{cases}
+\qquad
+A\in\mathcal F_{Expr_\tau+\bot}.
+\]
+Thus, for every \(e:\tau\),
+\[
+\bigsemstep{e:\tau}{0}=\delta_e
+\]
+and
+\[
+\bigsemstep{e:\tau}{n+1}(A)
+=
+\int_{Expr_\tau+\bot}
+K_\tau(x,A)\,
+\bigsemstep{e:\tau}{n}(dx).
+\]
 
 
-\begin{lemma}[Basic properties of $\bigsemstep{\cdot, \cdot}{n}$]
-	Let $(e : \tau, \discretize{e} : \discretize{\tau}) \in P_{\tau}$ and $n \in \mathbb{N}$. Let $V_{\tau}$ be the measurable set of value pairs. We have:
-	\begin{enumerate}
-		\item\label{lem:bigstepsem1-pairing} $\bigsemstep{e : \tau, \discretize{e} : \discretize{\tau}}{n}(V_{\tau}) \leq \bigsemstep{e : \tau, \discretize{e} : \discretize{\tau}}{n+1}(V_{\tau})$
-		\item\label{lem:bigstepsem2-pairing} $\bigsemstep{e : \tau, \discretize{e} : \discretize{\tau}}{n}(\bot) \leq \bigsemstep{e : \tau, \discretize{e} : \discretize{\tau}}{n+1}(\bot)$
-	\end{enumerate}
+
+\begin{lemma}[Monotonicity of n-step semantics]
+\label{lem:bigstepsem}
+For every \(e:\tau\), \(n\in\Nats\), and
+\(A\in\mathcal F_{\vals_\tau+\bot}\),
+\[
+\bigsemstep{e:\tau}{n}(A)
+\leq
+\bigsemstep{e:\tau}{n+1}(A).
+\]
 \end{lemma}
 
 \begin{proof}
-	By induction on $n$. Analogous to proof of~\Cref{lem:bigstepsem}.
+Fix \(e:\tau\), \(n\in\Nats\), and
+\(A\in\mathcal F_{\vals_\tau+\bot}\). Write
+\[
+\mu_n:=\bigsemstep{e:\tau}{n}.
+\]
+Every \(x\in\vals_\tau+\bot\) is absorbing:
+\[
+K_\tau(x,-)=\delta_x.
+\]
+Indeed, \(\sem{v:\tau}=\delta_v\) for every
+\(v\in\vals_\tau\), while the \(\bot\)-extension maps
+\(\bot\) to \(\delta_\bot\). Therefore,
+\begin{align*}
+\bigsemstep{e:\tau}{n+1}(A)
+&=
+\int_{Expr_\tau+\bot}K_\tau(x,A)\,\mu_n(dx)
+&& \tag{definition of the \(n\)-step semantics}
+\\
+&=
+\int_{\vals_\tau+\bot}K_\tau(x,A)\,\mu_n(dx)
++
+\int_{Expr_\tau\setminus\vals_\tau}K_\tau(x,A)\,\mu_n(dx)
+&& \tag{partition of \(Expr_\tau+\bot\)}
+\\
+&=
+\int_{\vals_\tau+\bot}\delta_x(A)\,\mu_n(dx)
++
+\int_{Expr_\tau\setminus\vals_\tau}K_\tau(x,A)\,\mu_n(dx)
+&& \tag{terminal states are absorbing}
+\\
+&=
+\int_{\vals_\tau+\bot}\mathbf{1}_A(x)\,\mu_n(dx)
++
+\int_{Expr_\tau\setminus\vals_\tau}K_\tau(x,A)\,\mu_n(dx)
+&& \tag{\(\delta_x(A)=\mathbf{1}_A(x)\)}
+\\
+&=
+\mu_n(A)
++
+\int_{Expr_\tau\setminus\vals_\tau}K_\tau(x,A)\,\mu_n(dx)
+&& \tag{\(A\subseteq\vals_\tau+\bot\)}
+\\
+&\geq
+\mu_n(A)
+&& \tag{nonnegativity}
+\\
+&=
+\bigsemstep{e:\tau}{n}(A).
+&& \tag{definition of \(\mu_n\)}
+\end{align*}
 \end{proof}
 
 
-%
-\begin{definition}
-	Let $e:\tau$. The \emph{(big-step) semantics} $\bigsem{e:\tau} \in \mathcal{D}(Vals_\tau + \bot)$ and $\bigsem{e:\tau, \discretize{e : \tau} : \discretize{\tau}} \in \mathcal{D}(V_\tau + \bot)$ are respectively defined as 
-	%
-	\begin{align*}
-		\bigsem{e:\tau} ={}& \lambda A. \lim_{n\to\infty} \bigsemstep{e:\tau}{n}(A) \\
-		%
-		\bigsem{e:\tau,  \discretize{e} : \discretize{\tau}} ={}& \lambda A. \lim_{n\to\infty} \bigsemstep{e:\tau,  \discretize{e} : \discretize{\tau}}{n}(A)
-	\end{align*}
-	%
+\begin{lemma}
+\label{lem:bigstep-well-defined}
+For every \(e:\tau\),
+\[
+\bigsem{e:\tau}\in\mathcal D(\vals_\tau+\bot).
+\]
+That is, \(\bigsem{e:\tau}\) is a subprobability measure on
+\(\vals_\tau+\bot\).
+\end{lemma}
+
+\begin{proof}
+Fix \(e:\tau\), and write
+\[
+\mu_n:=\bigsemstep{e:\tau}{n}.
+\]
+Each \(\mu_n\) is a subprobability measure on \(Expr_\tau+\bot\). Since
+\(\vals_\tau+\bot\) is measurable, every
+\(A\in\mathcal F_{\vals_\tau+\bot}\) is also measurable in
+\(Expr_\tau+\bot\).
+
+First,
+\begin{align*}
+\bigsem{e:\tau}(\emptyset)
+&=
+\lim_{n\to\infty}\mu_n(\emptyset)
+&& \tag{definition of \(\bigsem{e:\tau}\)}
+\\
+&=
+\lim_{n\to\infty}0
+&& \tag{\(\mu_n\) is a measure}
+\\
+&=0.
+\end{align*}
+
+Now let
+\[
+(A_i)_{i\in\Nats}\subseteq\mathcal F_{\vals_\tau+\bot}
+\]
+be pairwise disjoint. Then
+\begin{align*}
+\bigsem{e:\tau}\!\left(\bigcup_{i\in\Nats}A_i\right)
+&=
+\lim_{n\to\infty}
+\mu_n\!\left(\bigcup_{i\in\Nats}A_i\right)
+&& \tag{definition of \(\bigsem{e:\tau}\)}
+\\
+&=
+\lim_{n\to\infty}
+\sum_{i\in\Nats}\mu_n(A_i)
+&& \tag{countable additivity of \(\mu_n\)}
+\\
+&=
+\sum_{i\in\Nats}
+\lim_{n\to\infty}\mu_n(A_i)
+&& \tag{monotone convergence on \(\Nats\)}
+\\
+&=
+\sum_{i\in\Nats}\bigsem{e:\tau}(A_i).
+&& \tag{definition of \(\bigsem{e:\tau}\)}
+\end{align*}
+The monotone-convergence step applies because
+\[
+\mu_n(A_i)\leq\mu_{n+1}(A_i)
+\]
+for every \(i,n\in\Nats\), by~\Cref{lem:bigstepsem}. Thus
+\(\bigsem{e:\tau}\) is countably additive and therefore a measure on
+\(\vals_\tau+\bot\).
+
+Finally,
+\begin{align*}
+\bigsem{e:\tau}(\vals_\tau+\bot)
+&=
+\lim_{n\to\infty}\mu_n(\vals_\tau+\bot)
+&& \tag{definition of \(\bigsem{e:\tau}\)}
+\\
+&\leq 1.
+&& \tag{\(\mu_n\) is a subprobability measure}
+\end{align*}
+Therefore \(\bigsem{e:\tau}\) is a subprobability measure on
+\(\vals_\tau+\bot\).
+\end{proof}
+
+
+Moreover, let
+\[
+V_\tau
+=
+\{(v:\tau,\discretize{v}:\discretize{\tau})\mid v:\tau\}.
+\]
+We equip $V_\tau+\bot$ with the subspace $\sigma$-algebra inherited
+from $P_\tau+\bot$.
+
+\begin{lemma}[Monotonicity of n-step coupling semantics]
+\label{lem:bigstepsem-pairing}
+For every $(e:\tau,\discretize{e}:\discretize{\tau})\in P_\tau$,
+$n\in\Nats$, and $A\in\mathcal F_{V_\tau+\bot}$,
+\[
+\bigsemstep{e:\tau,\discretize{e}:\discretize{\tau}}{n}(A)
+\leq
+\bigsemstep{e:\tau,\discretize{e}:\discretize{\tau}}{n+1}(A).
+\]
+\end{lemma}
+
+\begin{proof}
+The coupled small-step semantics maps every element of $V_\tau$ to
+its Dirac measure, while the $\bot$-extension maps $\bot$ to
+$\delta_\bot$. Thus every element of $V_\tau+\bot$ is absorbing. The
+remainder is analogous to the proof of~\Cref{lem:bigstepsem}, replacing
+$Expr_\tau+\bot$ by $P_\tau+\bot$ and $\vals_\tau+\bot$ by
+$V_\tau+\bot$.
+\end{proof}
+
+\begin{lemma}
+\label{lem:bigstep-coupling-well-defined}
+For every $(e:\tau,\discretize{e}:\discretize{\tau})\in P_\tau$,
+\[
+\bigsem{e:\tau,\discretize{e}:\discretize{\tau}}
+\in\mathcal D(V_\tau+\bot).
+\]
+That is, the coupled big-step semantics is a subprobability measure on
+$V_\tau+\bot$.
+\end{lemma}
+
+\begin{proof}
+Analogous to the proof of~\Cref{lem:bigstep-well-defined}, replacing
+$Expr_\tau+\bot$ by $P_\tau+\bot$, $\vals_\tau+\bot$ by
+$V_\tau+\bot$, and using~\Cref{lem:bigstepsem-pairing} for
+monotonicity.
+\end{proof}
+
+\begin{definition}[Big-step semantics]
+Let $e:\tau$. For measurable events in the respective terminal spaces,
+the source and coupled \emph{(big-step) semantics} are defined by
+\begin{align*}
+\bigsem{e:\tau}(A)
+&:= \lim_{n\to\infty}\bigsemstep{e:\tau}{n}(A),
+&& A\in\mathcal F_{\vals_\tau+\bot},
+\\
+\bigsem{e:\tau,\discretize{e}:\discretize{\tau}}(A)
+&:= \lim_{n\to\infty}
+\bigsemstep{e:\tau,\discretize{e}:\discretize{\tau}}{n}(A),
+&& A\in\mathcal F_{V_\tau+\bot}.
+\end{align*}
 \end{definition}
-%
-%
-% Well-definedness of these objects follows from the monotone convergence theorem: The probability of evaluating to some set of values or an error is montonically increasing in $n$ and upper-bounded by $1$. 
-By~\Cref{lem:bigstepsem1,lem:bigstepsem2}, the sequence $\bigsemstep{e : \tau}{n}$ is monotonically increasing for values and error. Moreover, $\bigsemstep{e : \tau}{n}$ defines a subprobability measure, and thus $\bigsemstep{e : \tau}{n} \leq 1$ for every $n \in \Nats$. Thus, by the monotone convergence theorem, the pointwise limit exists.
+
+By~\Cref{lem:bigstepsem,lem:bigstepsem-pairing}, the source and coupled
+$n$-step semantics are monotonically increasing on every measurable
+event in $\vals_\tau+\bot$ and $V_\tau+\bot$, respectively.
+By~\Cref{lem:bigstep-well-defined,lem:bigstep-coupling-well-defined},
+their pointwise limits are subprobability measures.
 
 \begin{lemma}[Continunity of projections]
 	For all $n \in \Nats$,
