@@ -61,7 +61,7 @@
 		\quad e_2 : \float[B_2;V_2]) : \float[B;V]
 		\end{array}$}}
         & $e_1, e_2 \in \mathbb{R},\; e_1 \geq e_2$
-        & $\diverge : \tau$ \\
+        & $\diverge$ \\
         \caserule
 		%
         & $B = \top$
@@ -91,19 +91,18 @@
             \ifkw\; v_1' \fineq{(|B_1|+1)} \discretize{v_1 : \floattype{B_1}{V_1}} \\
             \quad \logand\; v_2' \fineq{(|B_2|+1)} \discretize{w_1 : \floattype{B_2}{V_2}}\; \thenkw \\
             \quad\quad \discretize{\uniform(v_1, w_1) : \float[B;V]} \\
-            \ldots \\
-            \elsekw\; \ifkw\; v_1' \fineq{(|B_1|+1)} \discretize{v_i : \floattype{B_1}{V_1}} \\
-            \quad \logand\; v_2' \fineq{(|B_2|+1)} \discretize{w_j : \floattype{B_2}{V_2}}\; \thenkw \\
-            \quad\quad \discretize{\uniform(v_i, w_j) : \float[B;V]} \\
-            \ldots \\
-            \elsekw\; \discretize{\uniform(v_n, w_m) : \float[B;V]}
+            \ldots ~\text{(enumerate over $V_1 \times V_2$)} ~\ldots \\
+            \elsekw\; \ifkw\; v_1' \fineq{(|B_1|+1)} \discretize{v_n : \floattype{B_1}{V_1}} \\
+            \quad \logand\; v_2' \fineq{(|B_2|+1)} \discretize{w_m : \floattype{B_2}{V_2}}\; \thenkw \\
+            \quad\quad \discretize{\uniform(v_n, w_m) : \float[B;V]} \\
+            \elsekw\; \diverge
           \end{array}$ \\
         \bottomrule
         \bottomrule
     \end{tabular}
     \end{adjustbox}
-    \caption{Discretization function, where $\mathrm{CDF}(b_{0}) = 0$ and $\mathrm{CDF}(b_{n+1}) = 1$. For brevity, the table writes $\mathrm{CDF}(b_i)$ for each cut endpoint $b_i$, by which we mean either $\mathrm{CDF}(b_i^-)$ or $\mathrm{CDF}(b_i)$ depending on if the cut is strict or non-strict. Here, $\mathrm{CDF}(b_i^-)=\Pr[X<b_i]$ denotes the left limit at $b_i$, while $\mathrm{CDF}(b_i)=\Pr[X\leq b_i]$. These coincide for continuous distributions, but may differ for discrete or mixed distributions when $\Pr[X=b_i]>0$.
-    For the $\uniform$ distribution, $V = \top$ is implicit; all remaining cut-set and value-set cases are ruled out by type inference. For all other language constructs, $\discretize{\cdot}$ recurses structurally over them.}
+    \caption{Discretization function, where $\mathrm{CDF}(b_{0}) = 0$ and $\mathrm{CDF}(b_{n+1}) = 1$. For brevity, the table writes $\mathrm{CDF}(b_i)$ for each cut $b_i$, by which we mean either $\mathrm{CDF}(b_i^-)$ or $\mathrm{CDF}(b_i)$ depending on if the cut is strict or non-strict. Here, $\mathrm{CDF}(b_i^-)=\Pr[X<b_i]$ denotes the left limit at $b_i$, while $\mathrm{CDF}(b_i)=\Pr[X\leq b_i]$. These coincide for continuous distributions, but may differ for discrete or mixed distributions when $\Pr[X=b_i]>0$.
+    For the $\uniform$ distribution, $V = \top$ is implicit, and all remaining cut-set and value-set cases are ruled out by type inference. For the final $\uniform$ case, if $V_1 = \emptyset$ and/or $V_2 = \emptyset$, the case enumeration is empty and thus yields $\diverge$. For all other language constructs, $\discretize{\cdot}$ recurses structurally over them.}
     \label{fig:discretization-code}
 \end{figure}
 This section presents local transformation rules for our type-directed discretization algorithm, with examples. Our goal is to compute, from a typed expression $e : \bool$ and its type annotations, a \emph{discretized} expression $\discretize{e : \bool} : \bool$ such that $e$ and $\discretize{e : \bool}$ are \emph{semantically equivalent}, i.e., they induce the same distribution. We refer to this semantics-preserving transformation as \emph{exact discretization}, to distinguish it from approaches~\cite{Garg2024BitBlast,Huang2021AQUA} that approximate continuous programs via externally chosen precision parameters. Exactness here is the equality proved by \Cref{thm:maintext:sound}: the transformed program preserves the relevant probabilities of the source program, not merely an approximation with an error bound. Intuitively, when a program uses continuous quantities only through finitely many comparison outcomes, exact inference should reduce to a discrete problem, and exact discretization makes that reduction explicit.
@@ -123,10 +122,10 @@ Consider a uniform distribution whose outcomes are compared to constants:
 	%
 %
 %
-\begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
+\begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!,gobble=4]
     let x = uniform(0, 1) : !{\ft{B}}! in
       (x : !{\ft{B}}! < (0.3 : !{\ftb{B}{\{0.3\}}}!)) || 
-       (x : !{\ft{B}}! >= (0.5 : !{\ftb{B}{\{0.5\}}}!))
+      (x : !{\ft{B}}! >= (0.5 : !{\ftb{B}{\{0.5\}}}!))
 \end{lstlisting}    
 %
 where $B= \{ \clt{0.3},\clt{0.5} \}$. The cut set $B$ informs us that the probability of the comparisons evaluating to $\true$ is determined by the probability of $x$ evaluating to one of the intervals 
@@ -143,7 +142,7 @@ induced by $B$. Hence, all expressions of type $\text{\ftb{B}{$\cdot$}}$ can be 
 
 Now consider the discretized expression obtained from computing $\discretize{e: \bool}$, given by 
 %
-\begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!,mathescape]
+\begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!,mathescape,gobble=4]
     let x = discrete(0.3, 0.2, 0.5) in (x <#3 1#3) || (x >=#3 2#3).
 \end{lstlisting}
 %
@@ -161,28 +160,27 @@ that maps each constant $c \in\{0.3,0.5\}$ to the unique interval in $\intervals
 \begin{example}
 	If the arguments to a uniform sampling are non-constant, the situation becomes more challenging. Consider the following typed expression $e : \bool$ (again only showing relevant types):
 	%
-    \begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!]
-	let x = (
-		if uniform(0, 1) : !{\ft{\{<0.5\}}}! < (0.5 : !{\ftb{\{<0.5\}}{\{0.5\}}}!) then
-		10 : !{\ftb{\{<=10,<=20\}}{\{10\}}}!
-		else
-		20 : !{\ftb{\{<=10,<=20\}}{\{20\}}}! ) : !{\ftb{\{<=10,<=20\}}{\{10,20\}}}! in
-	
-	uniform(0 : !{\ftb{\{<=0\}}{\{0\}}}!, x : !{\ftb{\{<=10,<=20\}}{\{10,20\}}}!) : !{\ft{\{<5\}}}! 
-	  < (5 : !{\ftb{\{<5\}}{\{5\}}}!)
-	\end{lstlisting}	
+\begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!,gobble=4]
+    let x = (
+      if uniform(0, 1) : !{\ft{\{<0.5\}}}! < (0.5 : !{\ftb{\{<0.5\}}{\{0.5\}}}!) then
+        10 : !{\ftb{\{<=10,<=20\}}{\{10\}}}!
+      else
+        20 : !{\ftb{\{<=10,<=20\}}{\{20\}}}!) : !{\ftb{\{<=10,<=20\}}{\{10,20\}}}! in
+    uniform(0 : !{\ftb{\{<=0\}}{\{0\}}}!, x : !{\ftb{\{<=10,<=20\}}{\{10,20\}}}!) : !{\ft{\{<5\}}}!
+      < (5 : !{\ftb{\{<5\}}{\{5\}}}!)
+\end{lstlisting}	
 	%
 		Why can this expression be discretized even though the argument to the second uniform sampling instruction is non-constant? The typing information $(x : \text{\ftb{\{<=10,<=20\}}{\{10,20\}}})$ correctly tells us that \emph{$x$ can only take the values $10$ and $20$}. Consequently, $x$ (and the $\ifkw$-expression generating it) can be discretized to a finite type $\fin{3}$ such that the probability of the resulting discrete expression evaluating to $\finconst{0}{3}$ (resp.\ $\finconst{1}{3}$) \emph{coincides} with the probability of the continuous expression evaluating to $10$ (resp.\ $20$). Let us (partially) apply $\discretize{e: \bool}$, resulting in:
 	%
-    \begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!,mathescape]
-        let x = if discrete(0.5, 0.5) <#2 1#2 then 0#3 else 1#3 in
-        ( let v1' = !$\discretize{\texttt{0 : \ftb{\{<=0\}}{\{0\}}}}$! in
-            let v2'  = !$\discretize{\texttt{x : \ftb{\{<=10,<=20\}}{\{10,20\}}}}$! in 
-            if v1' ==#2 !$\discretize{\texttt{0 : \ftb{\{<=0\}}{\{0\}}}}$! && 
-			 v2' ==#3 !$\discretize{\texttt{10 : \ftb{\{<=10,<=20\}}{\{10,20\}}}}$! 
-	    then !$\discretize{\texttt{\uniform(0,10) : \ft{\{<5\}}}}$!
-            else !$\discretize{\texttt{\uniform(0,20) : \ft{\{<5\}}}}$! ) <#2 !$\discretize{\texttt{5 : \ftb{\{<5\}}{\{5\}}}}$!
-        \end{lstlisting}	
+\begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!,mathescape,gobble=4]
+    let x = if discrete(0.5, 0.5) <#2 1#2 then 0#3 else 1#3 in
+    ( let v1' = !$\discretize{\texttt{0 : \ftb{\{<=0\}}{\{0\}}}}$! in
+      let v2'  = !$\discretize{\texttt{x : \ftb{\{<=10,<=20\}}{\{10,20\}}}}$! in 
+      if v1' ==#2 !$\discretize{\texttt{0 : \ftb{\{<=0\}}{\{0\}}}}$! && 
+         v2' ==#3 !$\discretize{\texttt{10 : \ftb{\{<=10,<=20\}}{\{10,20\}}}}$! 
+      then !$\discretize{\texttt{\uniform(0,10) : \ft{\{<5\}}}}$!
+      else !$\discretize{\texttt{\uniform(0,20) : \ft{\{<5\}}}}$! ) <#2 !$\discretize{\texttt{5 : \ftb{\{<5\}}{\{5\}}}}$!
+\end{lstlisting}	
 	%
 		The continuous $\uniform(0,x)$-expression is replaced by a case distinction on the discretizations of $\uniform(0,10)$ and $\uniform(0,20)$, with each case executed with the correct probability $0.5$. Since this reduces the remaining discretization process to discretizing expressions with \emph{constant parameters only}, the remaining steps are completely analogous to~\Cref{ex:discretize_simple}.
 \end{example}
@@ -193,28 +191,25 @@ A similar intuition applies to discretizable comparisons $e_1 < e_2$, where \emp
 \begin{example}
 	Consider the following typed expression $(e_1 \leq e_2) : \bool$, given by
 	%
-    \begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!,mathescape]
-	(if discrete(0.5, 0.5) <#2 1#2 then 
-		uniform(0,10) : !{\ft{B}}! else 2.5 : !{\ftb{B}{\{2.5\}}}!)
-	<=
-	(if discrete(0.5, 0.5) <#2 1#2 
-		then 2.5 : !{\ftb{B}{\{2.5\}}}! else 3.5 : !{\ftb{B}{\{3.5\}}}!)
-    \end{lstlisting}
+\begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!,mathescape,gobble=4]
+    (if discrete(0.5, 0.5) <#2 1#2 then 
+      uniform(0,10) : !{\ft{B}}! else 2.5 : !{\ftb{B}{\{2.5\}}}!)
+    <=
+    (if discrete(0.5, 0.5) <#2 1#2 
+      then 2.5 : !{\ftb{B}{\{2.5\}}}! else 3.5 : !{\ftb{B}{\{3.5\}}}!)
+\end{lstlisting}
 	%
 	where $B = \{\cleq{2.5}, \cleq{3.5}\}$, and where $e_1 : \text{\ft{B}}$ and $e_2 : \text{\ftb{B}{\{2.5,3.5\}}}$. Intuitively, $e_1$ samples from a mixture of a uniform and a dirac distribution, and $e_2$ samples from a finite distribution. Why can $e_1 \leq e_2$ be discretized even though neither $e_1$ nor $e_2$ is a constant? As suggested by its type, $e_2$ can take only finitely many values, namely $\{2.5,3.5\}$. We apply $\discretize{\cdot}$:
 	%
 	%
-    \begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!,mathescape]
-        (if discrete(0.5, 0.5) <#2 1#2 then discrete(0.25, 0.1, 0.65) else 0#3)
-        <=
-        (if discrete(0.5, 0.5) <#2 1#2 then 0#3 else 1#3)
-    \end{lstlisting}
+\begin{lstlisting}[aboveskip=1em,belowskip=1em,escapechar=!,mathescape,gobble=4]
+    (if discrete(0.5, 0.5) <#2 1#2 then discrete(0.25, 0.1, 0.65) else 0#3)
+    <=
+    (if discrete(0.5, 0.5) <#2 1#2 then 0#3 else 1#3)
+\end{lstlisting}
 	%
 		Notice that the probability of $e_1$ evaluating to some value in $(-\infty, 2.5]$ indeed \emph{coincides} with the probability of the discretization of $e_1$ evaluating to $\finconst{0}{3}$. For $e_2$, on the other hand, the probability of it evaluating to $2.5$ (resp.\ $3.5$) \emph{coincides} with the probability of its discretization evaluating to $\finconst{0}{3}$ (resp.\ $\finconst{1}{3}$). For this reason, we obtain a semantically equivalent discretization of $e_1 \leq e_2$.
 \end{example}
-
-
-
 
 \subsubsection{Discretization of Types}
 We conclude by extending $\discretize{\cdot}$ to types. \Cref{fig:discretization-types} shows how type $\tau$ is discretized to type $\discretize{\tau}$. We then obtain the following natural result, proved in~\Cref{proof:type-transformations}:

@@ -1475,7 +1475,7 @@ We have the following key property:
 	where
 	%
 	\begin{enumerate}
-		\item $c_1 \leq c_2$,
+		\item $c_1 < c_2$,
 		%
 		\item $B =  \{\sim_1\!\!b_1, \ldots, \sim_n\!\!b_n\}$,
 		%
@@ -2112,21 +2112,26 @@ Write
 	d_2=\discretize{e_2:\float[B_2;V_2]}.
 \]
 
-For values
-\[
-	k_1=\discretize{v_i:\float[B_1;V_1]}
-	\qquad\text{and}\qquad
-	k_2=\discretize{w_j:\float[B_2;V_2]},
-\]
-define
+For arbitrary values $k_1:\fin{|B_1|+1}$ and
+$k_2:\fin{|B_2|+1}$, define
 \[
 	q(k_1,k_2)
 	=
-	\discretize{\uniform(v_i,w_j):\float[B;\top]}.
+	\begin{cases}
+		\discretize{\uniform(v_i,w_j):\float[B;\top]}
+		& \begin{array}{l}
+			\text{if there exists }(v_i,w_j)\in V_1\times V_2\text{ such that}\\
+			k_1=\discretize{v_i:\float[B_1;V_1]}\text{ and }\\
+			k_2=\discretize{w_j:\float[B_2;V_2]},
+		  \end{array}\\[1ex]
+		\diverge & \text{if no such pair exists}.
+	\end{cases}
 \]
-The values $v_i$ and $w_j$ are unique because
+When such a pair exists, it is unique because
 $\distinguishes{B_1}{V_1}$ and
-$\distinguishes{B_2}{V_2}$.
+$\distinguishes{B_2}{V_2}$; if $V_1=\emptyset$ or
+$V_2=\emptyset$, no such pair exists and hence
+$q(k_1,k_2)=\diverge$ for all $k_1,k_2$.
 
 By the operational rule for $\dc$ and
 \Cref{lem:sequential-evaluation},
@@ -2146,9 +2151,11 @@ By the operational rule for $\dc$ and
 Now consider $e_{\mathrm{case}}$. Its two outer
 $\letkw$-bindings evaluate $d_1$ and $d_2$ in the same order.
 Once they evaluate to $k_1$ and $k_2$, finite equality and
-conjunction select the unique branch indexed by $(v_i,w_j)$.
-Thus the remaining nested conditional evaluates to
-$q(k_1,k_2)$. Applying \Cref{lem:sequential-evaluation} again gives
+conjunction select the unique branch indexed by $(v_i,w_j)$ when a
+matching pair exists; otherwise, including whenever $V_1=\emptyset$
+or $V_2=\emptyset$, the final branch yields $\diverge$.
+Thus the remaining nested conditional evaluates to $q(k_1,k_2)$.
+Applying \Cref{lem:sequential-evaluation} again gives
 \[
 	\bigsem{e_{\mathrm{case}}}
 	=

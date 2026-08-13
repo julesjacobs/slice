@@ -23,17 +23,6 @@ There is no exact inference system that, to our knowledge, can cover programs co
 %
 %For each case study, we apply \Slice{} to obtain a discrete program and then construct a finite Markov chain from that program using the structural operational semantics given in~\Cref{ap:sos-rules}. From here, \Storm{} can be used to perform exact quantitative analysis. The full continuous and discretized programs are given in~\Cref{ap:mot}.
 
-\subsubsection{Conditional Resampling Loop}
-Consider the continuous program depicted in \Cref{fig:conditional-resampling}, containing continuous sampling, unbounded recursion, and conditioning inside of the recursion. \Slice automatically discretizes this program, also shown in \Cref{fig:conditional-resampling}. We generate the corresponding Markov chain by unfolding the small-step semantics in a breadth-first manner. In the presence of unbounded recursion, this Markov chain \emph{might} be infinite and this process might thus diverge. If, however, it terminates, the resulting Markov chain is finite and precisely captures the execution behavior of the discretized program. For this example, this is the case: Even though the discretized program contains unbounded recursion, its execution behavior can be modelled as a finite-state Markov chain\footnote{We apply a straightforward optimization: Intermediate execution steps that do not branch probabilistically can be collapsed into a single transition. This is the reason why all states in \Cref{fig:conditional-resampling} correspond to the header of the recursive function.}, where $\bot$ is a special state entered when encountered an observation failure.
-
-Now, using the probabilistic model checker \Storm, we can perform exact inference: It is immediate that the Markov chain's probability $\Pr(\lozenge \texttt{true} \mid 
-\square \lnot \bot)$  of eventually reaching $\true$ (in LTL: $\lozenge\true$)  \emph{given} that we never enter the observation-failure state $\bot$ (in LTL: $\square \lnot \bot$) equals the measure of $\true$ in the program's normalized posterior distribution. 
-
-%We first study a small but revealing program with unbounded recursion (cf.~\Cref{fig:conditional-resampling}). Starting from $x=1$ (l.\ \ref{ln:cr-init}), it first conditions on $x \ge 0.2$ (l.\ \ref{ln:cr-obs}), then either terminates with \lstinline{true} if $x \le 0.5$ (l.\ \ref{ln:cr-true}), recurses on the same value if $0.5 < x \le 0.8$ (l.\ \ref{ln:cr-loop}), or samples a fresh $y \sim \uniform(0,1)$ and continues from $y$ (l.\ \ref{ln:cr-sample}). Thus, although execution may continue for an unbounded number of steps, the control flow depends only on the outcomes of comparisons against the constants $0.2$, $0.5$, and $0.8$.
-%
-%\Slice{} exploits exactly this fact. It partitions the sampled interval into finitely many regions induced by these cuts, and rewrites the program so that it ranges over abstract discrete states instead of arbitrary reals. In the discretized program, the observation and branch conditions are rewritten over these abstract states (l.\ \ref{ln:dcr-obs}--\ref{ln:dcr-loop}), and the continuous resampling step is replaced by the exact discrete distribution \lstinline{discrete(0.2,0.3,0.3,0.2)} (l.\ \ref{ln:dcr-sample}).
-
-
 \begin{figure}[!t]
     \centering
     
@@ -172,13 +161,23 @@ Now, using the probabilistic model checker \Storm, we can perform exact inferenc
     \label{fig:conditional-resampling}
 \end{figure}
 
+\subsubsection{Conditional Resampling Loop}
+Consider the continuous program depicted in \Cref{fig:conditional-resampling}, containing continuous sampling, unbounded recursion, and conditioning inside of the recursion. \Slice automatically discretizes this program, also shown in \Cref{fig:conditional-resampling}. We generate the corresponding Markov chain by unfolding the small-step semantics in a breadth-first manner. In the presence of unbounded recursion, this Markov chain \emph{might} be infinite and this process might thus diverge. If, however, it terminates, the resulting Markov chain is finite and precisely captures the execution behavior of the discretized program. For this example, this is the case: Even though the discretized program contains unbounded recursion, its execution behavior can be modelled as a finite-state Markov chain\footnote{We apply a straightforward optimization: Intermediate execution steps that do not branch probabilistically can be collapsed into a single transition. This is the reason why all states in \Cref{fig:conditional-resampling} correspond to the header of the recursive function.}, where $\bot$ is a special state entered when encountered an observation failure.
+
+Now, using the probabilistic model checker \Storm, we can perform exact inference: It is immediate that the Markov chain's probability $\Pr(\lozenge \texttt{true} \mid 
+\square \lnot \bot)$  of eventually reaching $\true$ (in LTL: $\lozenge\true$)  \emph{given} that we never enter the observation-failure state $\bot$ (in LTL: $\square \lnot \bot$) equals the measure of $\true$ in the program's normalized posterior distribution. 
+
+%We first study a small but revealing program with unbounded recursion (cf.~\Cref{fig:conditional-resampling}). Starting from $x=1$ (l.\ \ref{ln:cr-init}), it first conditions on $x \ge 0.2$ (l.\ \ref{ln:cr-obs}), then either terminates with \lstinline{true} if $x \le 0.5$ (l.\ \ref{ln:cr-true}), recurses on the same value if $0.5 < x \le 0.8$ (l.\ \ref{ln:cr-loop}), or samples a fresh $y \sim \uniform(0,1)$ and continues from $y$ (l.\ \ref{ln:cr-sample}). Thus, although execution may continue for an unbounded number of steps, the control flow depends only on the outcomes of comparisons against the constants $0.2$, $0.5$, and $0.8$.
+%
+%\Slice{} exploits exactly this fact. It partitions the sampled interval into finitely many regions induced by these cuts, and rewrites the program so that it ranges over abstract discrete states instead of arbitrary reals. In the discretized program, the observation and branch conditions are rewritten over these abstract states (l.\ \ref{ln:dcr-obs}--\ref{ln:dcr-loop}), and the continuous resampling step is replaced by the exact discrete distribution \lstinline{discrete(0.2,0.3,0.3,0.2)} (l.\ \ref{ln:dcr-sample}).
+
 \subsubsection{Random Interval Covering of $[0,1]$ with Conditioning}
 \label{sec:casestudy:epsball}
 
 Our second case study extends the random interval covering example from \Cref{sec:examples:7}  by conditioning inside of the recursion: We condition on \emph{every} sample falling within \emph{at most} one interval. The difference to the program in \Cref{sec:examples:7} is:
 %As before, the program maintains a list-valued state of interval predicates and coverage flags; here we only show the difference to the program in \Cref{fig:epsball}:
 %
-
+\begin{figure}[H]
 \begin{minipage}[t]{0.48\textwidth}
     \vspace{0pt}
     \begin{lstlisting}[aboveskip=0.4em,belowskip=0.4em,gobble=4,
@@ -221,6 +220,7 @@ Our second case study extends the random interval covering example from \Cref{se
     is_covered final !\linelabel{ln:cov-final}!
     \end{lstlisting}
 \end{minipage}
+\end{figure}
 %
 
 \noindent
@@ -235,8 +235,8 @@ Currently, our Markov chain construction process is rather naive: extending the 
 %
 We model a probabilistically populated variant of a Bloom filter \cite{Bloom1970SpaceTime}, which is a data structure using hash functions for storing data space efficiently: one can insert data into a Bloom filter and subsequently query whether a given data point is stored in it. Due to aggressive compression via hashing, this process can be faulty: while it can never produce false-negatives, it can produce false-positives. Now conisder the following program (full program shown in~\Cref{fig:app:bloom-filter}):
 
+\begin{figure}[H]
 \begin{minipage}[t]{0.48\textwidth}
-\vspace{0pt}
 \begin{lstlisting}[aboveskip=0.4em,belowskip=0.4em,
   language=OCaml,
   escapechar=!,
@@ -267,7 +267,6 @@ let h1 = fun q -> !\linelabel{ln:bloom-h1}!
 \end{minipage}
 \hfill
 \begin{minipage}[t]{0.48\textwidth}
-\vspace{0pt}
 \begin{lstlisting}[aboveskip=0.4em,belowskip=0.4em,
   language=OCaml,
   escapechar=!,
@@ -297,6 +296,7 @@ let bf_final = (search_before_full init) in
   not (full bf_final) !\linelabel{ln:bloom-final}!
 \end{lstlisting}
 \end{minipage}
+\end{figure}
 %
 
 The program samples a Gaussian key (l. \ref{ln:bloom-key}) and starts from an empty four-bit Bloom filter (l. \ref{ln:bloom-init}). It then builds the filter recursively by drawing fresh Gaussian samples (l.\ \ref{ln:bloom-samples}) and inserting each one into the filter by hashing the sampled real twice using the comparison-based hash functions \lstinline{h1} and \lstinline{h2} (l.\ \ref{ln:bloom-h1} and \ref{ln:bloom-h2}), following a locality-sensitive hashing technique that hashes similar input items into the same buckets. Each insertion sets the corresponding bits in the filter using \lstinline{insert} (l.\ \ref{ln:bloom-insert}). The unbounded recursion continues until either the filter becomes full or the key is reported present by \lstinline{search} (l.\ \ref{ln:bloom-search}). The final Boolean result, \lstinline{not (full bf_final)} (l.\ \ref{ln:bloom-final}), therefore asks whether the key was found strictly before the filter became full.
