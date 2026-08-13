@@ -331,72 +331,8 @@ We report runtime (seconds) for (i) \SPPL{}, (ii) \Slice{} (discretization only)
 
 We next use benchmark suites from prior work, detailed in \Cref{tab:benchmarks_dt,tab:benchmarks_dt_extra,tab:benchmarks_psi} in Appendix \Cref{app:benchmarks}. 
 
-The decision-tree benchmarks (\Cref{tab:benchmarks_dt,tab:benchmarks_dt_extra}) from~\cite{albarghouthi2017fairsquare} assess fairness properties under different population models. DT$_n$ denotes a tree with $n$ conditionals, the second column specifies the population model, and the remaining columns report runtimes. We split \SPPL{} execution into translation and fairness-judgment phases to make phase costs explicit. We additionally report runtimes for \PSI{} and \Hakaru{}. For \Hakaru{}, we separate Disintegrate, Simplify, and Total runtimes. Hakaru's disintegration phase transforms the original probabilistic program into a new Hakaru program representing a conditional distribution, which is then simplified by Maple to perform exact inference through computer algebra. Thus, the Total column reports the timing for the full exact inference pipeline.
-
-We observe that discretization (\Slice) becomes expensive for larger $n$, eventually yielding a timeout. Regarding end-to-end runtimes, \Slice{}+\Dice{} mostly outperforms \SPPL, whereas \Slice{}+\Roulette{} is mostly inferior to \SPPL.
+The decision-tree benchmarks (\Cref{tab:benchmarks_dt,tab:benchmarks_dt_extra}) from~\cite{albarghouthi2017fairsquare} assess fairness properties under different population models. DT$_n$ denotes a tree with $n$ conditionals, the second column specifies the population model, and the remaining columns report runtimes. We split \SPPL{} execution into translation and fairness-judgment phases to make phase costs explicit. We additionally report runtimes for \PSI{} and \Hakaru{}. For \Hakaru{}, we separate Disintegrate, Simplify, and Total runtimes. Hakaru's disintegration phase transforms the original probabilistic program into a new Hakaru program representing a conditional distribution, which is then simplified by Maple to perform exact inference through computer algebra. Thus, the Total column reports the timing for the full exact inference pipeline. We observe that discretization (\Slice) becomes expensive for larger $n$, eventually yielding a timeout. Regarding end-to-end runtimes, \Slice{}+\Dice{} mostly outperforms \SPPL, whereas \Slice{}+\Roulette{} is mostly inferior to \SPPL.
 
 \Cref{tab:benchmarks_psi} reports on representative benchmarks drawn from the \PSI{} and \SPPL{} benchmark sets that \Slice{} can handle. Several benchmarks originate in the \PSI{} suite, but their \SPPL{}-compatible variants replace certain continuous choices with finite ones; for example, CoinBias and SurveyUnbias are adapted analogously. These variants permit an apples-to-apples comparison between \Slice{} and \SPPL{} and can be handled directly by \Slice{}. For completeness, we also report \PSI{}/\Hakaru{}~\cite{Narayanan2016Hakaru} results on the original, unmodified programs, which remain outside the class of programs supported by \Slice{} as well as \SPPL{}. Programs requiring numeric transformations or arithmetic \emph{remain outside the language features of \Slice}. We report (i) \Slice{}+\Dice{}, (ii) \Slice{}+\Roulette{}, (iii) \SPPL{}, (iv) \PSI{}, (v) \Hakaru{} (Disintegrate), and (v) \Hakaru{} (Simplify) in seconds. We observe that both \Slice{}+\Dice{} and \Slice{}+\Roulette{} are competitive with \SPPL{}, \PSI{}, and \Hakaru{} (Disintegrate + Simplify).
 
 % Probably add something later about what disintegrate does + what simplify does in Hakaru.
-
-\begin{table}[!t]
-\centering \vspace{-.3cm}
-\small
-\setlength{\tabcolsep}{2pt}
-\resizebox{\columnwidth}{!}{%
-\begin{tabular}{lcccccccc}
-    \toprule
-    \multirow{2}{*}{\textbf{Benchmark}} &
-    \multirow{2}{*}{\textbf{Datasets}} &
-    \multirow{2}{*}{\textbf{Slice+Dice (s)}} &
-    \multirow{2}{*}{\textbf{Slice+Roulette (s)}} &
-    \multirow{2}{*}{\textbf{SPPL (s)}} &
-    \multirow{2}{*}{\textbf{PSI (s)}} &
-    \multicolumn{3}{c}{\textbf{Hakaru (s)}} \\
-    \cmidrule(lr){7-9}
-    & & & & & & \textbf{Disintegrate} & \textbf{Simplify} & \textbf{Total} \\
-    \midrule
-    ClickGraph~\cite{gehr2016psi} & 10 & \textbf{1.551 (81.4×)} & 1.841 & 126.263 &
-    \makecell{\texttt{t.o.}\,$\bullet$ \\ \texttt{t.o.}\,$\circ$} &
-    \makecell{0.046\,$\bullet$ \\ 0.035\,$\circ$} &
-    \makecell{\texttt{t.o.}\,$\bullet$ \\ 11.287\,$\circ$} &
-    \makecell{\texttt{t.o.}\,$\bullet$ \\ 11.322\,$\circ$} \\
-    \midrule
-    ClinicalTrial~\cite{gehr2016psi} & 20 & \textbf{6.854 (4.5×)} & 8.692 & 31.102 &
-    \makecell{\texttt{t.o.}\,$\bullet$ \\ 1.916\,$\circ$} &
-    \makecell{\texttt{t.o.}\,$\bullet$ \\ \texttt{t.o.}\,$\circ$} &
-    \makecell{\texttt{t.o.}\,$\bullet$ \\ \texttt{t.o.}\,$\circ$} &
-    \makecell{\texttt{t.o.}\,$\bullet$ \\ \texttt{t.o.}\,$\circ$} \\
-    \midrule
-    CoinBias~\cite{gehr2016psi} & 5 & 0.294 & \textbf{0.234 (3.7×)} & 0.867 &
-    \makecell{20.138\,$\bullet$ \\ 0.369\,$\circ$} &
-    \makecell{0.058\,$\bullet$ \\ 0.025\,$\circ$} &
-    \makecell{4.789\,$\bullet$ \\ 0.528\,$\circ$} &
-    \makecell{4.847\,$\bullet$ \\ 0.553\,$\circ$} \\
-    \midrule
-    Election~\cite{Saad2021SPPL} & 2 & 0.878 & \textbf{0.663 (23.7×)} & 15.739 &
-    \texttt{t.o.} & 0.019 & \texttt{t.o.} & \texttt{t.o.} \\
-    \midrule
-    MarkovSwitching~\cite{Saad2021SPPL} & 10 & \textbf{0.044 (6.7×)} & \textbf{0.044 (6.7×)} & 0.624 &
-    \texttt{t.o.} & 0.020 & 0.275 & 0.295 \\
-    \midrule
-    StudentInterviews~\cite{Saad2021SPPL} & 10 & 1.287 & 1.681 & 56.781 &
-    \texttt{t.o.} & 0.025 & 0.443 & \textbf{0.468 (2.8×)} \\
-    \midrule
-    SurveyUnbias~\cite{gehr2016psi} & 10 & \textbf{0.044 (8.2×)} & 0.157 & 0.361 &
-    \makecell{\texttt{t.o.}\,$\bullet$ \\ \texttt{t.o.}\,$\circ$} &
-    \makecell{0.027\,$\bullet$ \\ 0.029\,$\circ$} &
-    \makecell{\texttt{t.o.}\,$\bullet$ \\ \texttt{err.}\,$\circ$} &
-    \makecell{\texttt{t.o.}\,$\bullet$ \\ \texttt{err.}\,$\circ$} \\
-    \midrule
-    TrueSkill~\cite{gehr2016psi} & 2 & \textbf{0.042 (5.2×)} & 0.157 & 0.217 &
-    \makecell{\texttt{t.o.}\,$\bullet$ \\ 0.068\,$\circ$} &
-    \makecell{0.027\,$\bullet$ \\ 0.018\,$\circ$} &
-    \makecell{\texttt{err.}\,$\bullet$ \\ 0.215\,$\circ$} &
-    \makecell{\texttt{err.}\,$\bullet$ \\ 0.233\,$\circ$} \\
-    \bottomrule
-    \end{tabular}  
-}  
-\caption{Execution times (in seconds) for benchmarks from PSI~\cite{gehr2016psi} and SPPL~\cite{Saad2021SPPL}, with modified and unmodified \PSI{} and Hakaru exact inference baselines. Timeout=120s. For benchmarks with two outputs for \PSI{} and Hakaru, $\bullet$ marks the modified program and $\circ$ marks the unmodified program. \texttt{err.} represents a crash, caused by out of memory.}
-    \label{tab:benchmarks_psi}
-\end{table}
