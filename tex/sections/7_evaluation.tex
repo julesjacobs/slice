@@ -1,6 +1,6 @@
 \section{Implementation, Case Studies, and Evaluation}\label{sec:implem_eval}
 
-We have implemented the \Slice{} type inference and discretization procedures in OCaml. The implementation is open-source and available at \url{https://github.com/[anonymized]}, together with all benchmarks, scripts, and a Docker image for reproduction. To compute the interval masses of continuous distributions, we use the OCaml GSL package~\cite{gsl} for cumulative distribution function calculations. All experiments were run in this Docker image on an Apple M3 with 16\,GB of RAM.
+We have implemented the \Slice{} type inference and discretization procedures in OCaml. To compute the interval masses of continuous distributions, we use the OCaml GSL package~\cite{gsl} for cumulative distribution function calculations. All experiments were run on an Apple M3 with 16\,GB of RAM.
 
 This section is driven by two research questions:
 %
@@ -15,7 +15,7 @@ For the second question, we evaluate \Slice{}+\Dice{} and \Slice{}+\Roulette{} o
 
 \subsection{\Slicebf+\Stormbf: Case Studies}\label{sec:case-studies}
 %
-There is no exact inference system that, to our knowledge, can cover programs combining all three features: continuous sampling, higher-order functions, and unbounded recursion. As a consequence, there is no exact inference engine for the programs in \Cref{sec:examples:7,sec:casestudy:epsball,sec:casestudy:bloom}. Instead, we use \emph{probabilistic model checking}: The small-step semantics of our language (cf.\ \Cref{tab:smallstep-1,tab:smallstep-2}) for discrete programs gives rise to a \emph{Markov chain} modeling the  stochastic process of program execution, inspired by~\cite{Jansen2022BoundedModelCheckingProbPrograms} on imperative programs. If that Markov chain is finite, we can use the probabilistic model checker \Storm \cite{storm} for exact inference. Let us start with an illustrative example.
+There is no exact inference system that, to our knowledge, can cover programs combining all three features: continuous sampling, higher-order functions, and unbounded recursion. As a consequence, there is no exact inference engine for the programs in \Cref{sec:examples:7,sec:casestudy:epsball,sec:casestudy:bloom}. Instead, we use \emph{probabilistic model checking}: The small-step semantics of our language (cf.\ \Cref{tab:smallstep-1,tab:smallstep-2}) for discrete programs gives rise to a \emph{Markov chain} modeling the  stochastic process of program execution, inspired by~\cite{Jansen2016BoundedModelCheckingProbPrograms} on imperative programs. If that Markov chain is finite, we can use the probabilistic model checker \Storm \cite{storm} for exact inference. Let us start with an illustrative example.
 %\kbin{old}
 
 
@@ -177,7 +177,7 @@ Now, using the probabilistic model checker \Storm, we can perform exact inferenc
 Our second case study extends the random interval covering example from \Cref{sec:examples:7}  by conditioning inside of the recursion: We condition on \emph{every} sample falling within \emph{at most} one interval. The difference to the program in \Cref{sec:examples:7} is:
 %As before, the program maintains a list-valued state of interval predicates and coverage flags; here we only show the difference to the program in \Cref{fig:epsball}:
 %
-\begin{figure}[H]
+\begin{center}
 \begin{minipage}[t]{0.48\textwidth}
     \vspace{0pt}
     \begin{lstlisting}[aboveskip=0.4em,belowskip=0.4em,gobble=4,
@@ -220,9 +220,8 @@ Our second case study extends the random interval covering example from \Cref{se
     is_covered final !\linelabel{ln:cov-final}!
     \end{lstlisting}
 \end{minipage}
-\end{figure}
+\end{center}
 %
-
 \noindent
 The key new component is the recursive function \lstinline{non_overlap} (l.\ \ref{ln:cov-nonoverlap}), which checks whether a sampled point $y$ hits more than one interval of the initially sampled intervals. The loop \lstinline{cover} (l.\ \ref{ln:cov-cover}) repeatedly samples a Gaussian point and immediately conditions on this predicate via \lstinline{observe} (l.\ \ref{ln:cov-obs}), so only executions in which the point lies in at most one interval are retained. The measure of $\true$ in the conditional posterior distribution is thus the probability that this unbounded process hits every interval at least once \emph{given} that each sampled point falls in at most one interval.
 
@@ -234,8 +233,7 @@ Currently, our Markov chain construction process is rather naive: extending the 
 \label{sec:casestudy:bloom}
 %
 We model a probabilistically populated variant of a Bloom filter \cite{Bloom1970SpaceTime}, which is a data structure using hash functions for storing data space efficiently: one can insert data into a Bloom filter and subsequently query whether a given data point is stored in it. Due to aggressive compression via hashing, this process can be faulty: while it can never produce false-negatives, it can produce false-positives. Now conisder the following program (full program shown in~\Cref{fig:app:bloom-filter}):
-
-\begin{figure}[H]
+\begin{center}
 \begin{minipage}[t]{0.48\textwidth}
 \begin{lstlisting}[aboveskip=0.4em,belowskip=0.4em,
   language=OCaml,
@@ -296,9 +294,8 @@ let bf_final = (search_before_full init) in
   not (full bf_final) !\linelabel{ln:bloom-final}!
 \end{lstlisting}
 \end{minipage}
-\end{figure}
+\end{center}
 %
-
 The program samples a Gaussian key (l. \ref{ln:bloom-key}) and starts from an empty four-bit Bloom filter (l. \ref{ln:bloom-init}). It then builds the filter recursively by drawing fresh Gaussian samples (l.\ \ref{ln:bloom-samples}) and inserting each one into the filter by hashing the sampled real twice using the comparison-based hash functions \lstinline{h1} and \lstinline{h2} (l.\ \ref{ln:bloom-h1} and \ref{ln:bloom-h2}), following a locality-sensitive hashing technique that hashes similar input items into the same buckets. Each insertion sets the corresponding bits in the filter using \lstinline{insert} (l.\ \ref{ln:bloom-insert}). The unbounded recursion continues until either the filter becomes full or the key is reported present by \lstinline{search} (l.\ \ref{ln:bloom-search}). The final Boolean result, \lstinline{not (full bf_final)} (l.\ \ref{ln:bloom-final}), therefore asks whether the key was found strictly before the filter became full.
 
 The key simplification is that the hash functions never inspect the exact value of a sample. They only ask which region the sample falls into, using the cut points $-2$, $0$, and $2$. These cuts partition the real line into four regions, which already coincide with the Bloom filter's index space. \Slice{} therefore replaces each Gaussian draw by its bucket index while preserving exactly the probability of every collision pattern relevant to insertion and search. The fully discretized program is shown in~\Cref{fig:app:bloom-filter:disc}. \Slice{} takes less than 0.001s, and we generate a Markov chain consisting of $14$ states in $0.023$ seconds. \Storm takes $0.001$ seconds for model checking, and reports the probability $0.91314...$.

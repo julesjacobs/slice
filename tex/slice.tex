@@ -18,7 +18,6 @@
 \usepackage{wrapfig}
 \usepackage{csquotes}
 \usepackage{tikz}
-\usepackage{float}
 \usepackage[table]{xcolor}
 % acmart/newtxmath already define \Bbbk; loading amssymb can re-trigger
 % "Command \Bbbk already defined" on some TeX setups.
@@ -166,6 +165,10 @@
   \city{New York}
   \state{New York}
   \country{USA}}
+\affiliation{%
+  \institution{ETH Zurich}
+  \city{Zurich}
+  \country{Switzerland}}
 
 \author{Kevin Batz}
 \email{kevin.batz@uni-muenster.de}
@@ -250,7 +253,7 @@
 
 \clearpage
 \section*{Data-Availability Statement}
-An anonymized artifact for this paper is available. It contains our OCaml implementation of \Slice{}, all case studies and benchmarks used in the evaluation, the scripts needed to run the experiments, and a Docker image for reproducing the results. The artifact also includes \Dice{}, \Roulette{}, and \Storm{} backends used in our evaluation, together with the translation procedures from discretized programs to each backend. All reported experiments were executed within this Docker environment on an Apple M3 machine with 16\,GB of RAM. We intend to submit the artifact for Artifact Evaluation. The current artifact is a research prototype, but it contains the code, benchmarks, and infrastructure needed to reproduce all experimental results reported in the paper.
+A reproducible artifact for the evaluation in~\Cref{sec:implem_eval} is available on Zenodo~\cite{Wu2026SliceArtifact}.
 
 \begin{acks}
 % TODO(camera-ready): Add the approved acknowledgment text, including all
