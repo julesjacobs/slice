@@ -129,67 +129,6 @@
 \hfuzz=999pt
 \vfuzz=999pt
 
-\title{Type-Directed Discretization of Probabilistic Programs}
-
-% TODO(camera-ready): Replace these placeholders with the rights-management
-% values supplied by ACM after completing the eRights form. The conspicuous
-% DOI placeholder prevents acmart's built-in sample value from being mistaken
-% for real publication metadata.
-\setcopyright{none} % TODO: replace with the value supplied by ACM
-\copyrightyear{2026}
-\acmYear{2026}
-\acmDOI{XX.XXXX/XXXXXXX.XXXXXXX} % TODO: replace with the DOI supplied by ACM
-\acmISBN{} % TODO: add the ISBN if applicable
-%
-% TODO(camera-ready): Add the publication metadata supplied by the venue.
-% For a PACMPL article, this normally includes \acmJournal, \acmVolume,
-% \acmNumber, \acmArticle, and \acmMonth.
-% \acmJournal{PACMPL}
-% \acmVolume{XX}
-% \acmNumber{XXXX}
-% \acmArticle{XXX}
-% \acmMonth{X}
-
-\author{Katherine Wu}
-\email{kaw324@cornell.edu}
-\affiliation{%
-  \institution{Cornell University}
-  \city{Ithaca}
-  \state{New York}
-  \country{USA}}
-
-\author{Jules Jacobs}
-\email{julesjacobs@gmail.com}
-\affiliation{%
-  \institution{Jane Street}
-  \city{New York}
-  \state{New York}
-  \country{USA}}
-\affiliation{%
-  \institution{ETH Zurich}
-  \city{Zurich}
-  \country{Switzerland}}
-
-\author{Kevin Batz}
-\email{kevin.batz@uni-muenster.de}
-\affiliation{%
-  \institution{University of M\"unster}
-  \city{M\"unster}
-  \country{Germany}}
-
-\author{Alexandra Silva}
-\email{alexandra.silva@cornell.edu}
-\affiliation{%
-  \institution{Cornell University}
-  \city{Ithaca}
-  \state{New York}
-  \country{USA}}
-
-% TODO:
-\ccsdesc[500]{TODO}
-
-\keywords{probabilistic programming, exact inference, discretization, type systems}
-
 \lstdefinelanguage{Dice}{
     morekeywords={let, in, if, then, else, fst, snd, fun, observe, match, with, end, ref, fix},
     morekeywords=[2]{uniform, discrete, gaussian, exponential, beta, flip},
@@ -226,12 +165,100 @@
 % Set this as the default language for listings
 \lstset{language=Dice}
 
+%%% The following is specific to  and the paper
+%%% 'Type-Directed Discretization of Probabilistic Programs'
+%%% by Katherine Wu, Jules Jacobs, Kevin Batz, and Alexandra Silva.
+%%%
+\setcopyright{cc}
+\setcctype{by}
+\acmDOI{10.1145/3839534}
+\acmYear{2026}
+\acmJournal{PACMPL}
+\acmVolume{10}
+\acmNumber{OOPSLA2}
+\acmArticle{402}
+\acmMonth{10}
+\acmSubmissionID{oopslab26main-p1463-p}
+\received{2026-03-17}
+\received[accepted]{2026-06-10}
+
 \begin{document}
+
+\title{Type-Directed Discretization of Probabilistic Programs}
+
+\author{Katherine Wu}
+\orcid{0000-0002-4179-0411}
+\affiliation{%
+  \institution{Cornell University}
+  \city{Ithaca}
+  \country{USA}
+}
+\email{kaw324@cornell.edu}
+
+\author{Jules Jacobs}
+\orcid{0000-0003-1976-3182}
+\affiliation{%
+  \institution{ETH Zurich}
+  \city{Zurich}
+  \country{Switzerland}
+}
+\affiliation{%
+  \institution{Jane Street}
+  \city{New York}
+  \country{USA}
+}
+\email{julesjacobs@gmail.com}
+
+\author{Kevin Batz}
+\orcid{0000-0001-8705-2564}
+\affiliation{%
+  \institution{University of Munster}
+  \city{Munster}
+  \country{Germany}
+}
+\email{kevin.batz@uni-muenster.de}
+
+\author{Alexandra Silva}
+\orcid{0000-0001-5014-9784}
+\affiliation{%
+  \institution{Cornell University}
+  \city{Ithaca}
+  \country{USA}
+}
+\email{alexandra.silva@cornell.edu}
 
 % Build an appendix-only TOC by hiding pre-appendix entries in the .toc stream.
 \addtocontents{toc}{\protect\setcounter{tocdepth}{-10}}
 
 \input{sections/0_abstract}
+
+\begin{CCSXML}
+<ccs2012>
+   <concept>
+       <concept_id>10002950.10003648.10003649</concept_id>
+       <concept_desc>Mathematics of computing~Probabilistic representations</concept_desc>
+       <concept_significance>500</concept_significance>
+       </concept>
+   <concept>
+       <concept_id>10002950.10003648.10003662</concept_id>
+       <concept_desc>Mathematics of computing~Probabilistic inference problems</concept_desc>
+       <concept_significance>500</concept_significance>
+       </concept>
+   <concept>
+       <concept_id>10003752.10010124.10010131.10010134</concept_id>
+       <concept_desc>Theory of computation~Operational semantics</concept_desc>
+       <concept_significance>500</concept_significance>
+       </concept>
+ </ccs2012>
+\end{CCSXML}
+
+\ccsdesc[500]{Mathematics of computing~Probabilistic representations}
+\ccsdesc[500]{Mathematics of computing~Probabilistic inference problems}
+\ccsdesc[500]{Theory of computation~Operational semantics}
+
+\keywords{probabilistic programming, exact inference, discretization, type systems}
+
+\bibliographystyle{ACM-Reference-Format}
 
 \maketitle
 
@@ -253,15 +280,14 @@
 
 \clearpage
 \section*{Data-Availability Statement}
-A reproducible artifact for the evaluation in~\Cref{sec:implem_eval} is available on Zenodo~\cite{Wu2026SliceArtifact}. The extended version of this paper (e.g. with appendices) is also available~\cite{Wu2026SliceArxiv}.
+A reproducible artifact for the evaluation in~\Cref{sec:implem_eval} is available on Zenodo~\cite{Wu2026SliceArtifact}. The extended version of this paper (e.g. with appendices) is also available~\cite{Wu2026SliceExtended}.
 
 \begin{acks}
-% TODO(camera-ready): Add the approved acknowledgment text, including all
-% funding sources and grant numbers.
-TODO
+We are grateful to our OOPSLA reviewers who helped us improve the paper. We also thank Cheng Zhang for providing feedback on an initial draft of our paper, as well as the Silva Lab retreat guests for helpful discussions. This work was supported by the NSF Graduate Research Fellowship Program under Grant No. DGE-2139899. Additionally, this research was developed with funding from the Defense Advanced Research Projects Agency (DARPA) and the
+Office of Naval Research (ONR). The views, opinions, and/or findings contained in this material are those of the authors
+and should not be interpreted as representing the official views or policies of the Department of the Navy, DARPA, or the U.S. Government. 
 \end{acks}
 
-\bibliographystyle{ACM-Reference-Format}
 \bibliography{refs}
 
 \addtocontents{toc}{\protect\setcounter{tocdepth}{2}}

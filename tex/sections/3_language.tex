@@ -6,7 +6,7 @@ We now describe the language (\Cref{sec:sub_language}), its types (\Cref{sec:typ
 %
 \input{figures/grammar}
 %
-The syntax in \Cref{fig:grammar} extends a standard higher-order functional core with probabilistic choices. Beyond constants, variables, comparisons, Boolean operators, conditionals, pairs, and lists, \Slice{} offers first-class functions, recursion, and observations. The construct $\observekw(e)$ conditions on $e$ holding. Finite-domain constants $\finconst{k}{n}$ range over $\{\finconst{0}{n},\ldots,\finconst{(n-1)}{n}\}$ as discussed below. The expression $\discrete(p_0,\ldots,p_{n-1})$ requires a nonempty list of probabilities: $n \geq 1$, every $p_i \geq 0$, and $\sum_i p_i = 1$. It returns $\finconst{k}{n}$ with probability $p_k$. For random sampling, we include the usual discrete distributions and any continuous distribution with a tractable cumulative distribution function (one- or two-argument variants such as exponential, laplace, uniform, gaussian, beta, gamma). Adding further distributions is straightforward as long as their CDFs are known; \Cref{appen:supported-distributions} lists the ones implemented. For brevity, we include only $<$ and $\leq$ (and resp. $\finlt{n}$ and $\finleq{n}$) in the language, but we desugar $>$ and $\geq$ (and their finite variants $\fingt{n}$ and $\fingeq{n}$) by swapping their operands, as well as $\fineq{n}$ by binding each operand once and testing both $\finleq{n}$ directions.
+The syntax in \Cref{fig:grammar} extends a standard higher-order functional core with probabilistic choices. Beyond constants, variables, comparisons, Boolean operators, conditionals, pairs, and lists, \Slice{} offers first-class functions, recursion, and observations. The construct $\observekw(e)$ conditions on $e$ holding. Finite-domain constants $\finconst{k}{n}$ range over $\{\finconst{0}{n},\ldots,\finconst{(n-1)}{n}\}$ as discussed below. The expression $\discrete(p_0,\ldots,p_{n-1})$ requires a nonempty list of probabilities: $n \geq 1$, every $p_i \geq 0$, and $\sum_i p_i = 1$. It returns $\finconst{k}{n}$ with probability $p_k$. For random sampling, we include the usual discrete distributions and any continuous distribution with a tractable cumulative distribution function (one- or two-argument variants such as exponential, laplace, uniform, gaussian, beta, gamma). Adding further distributions is straightforward as long as their CDFs are known; \cite[\Cref*{appen:supported-distributions}]{Wu2026SliceExtended} lists the ones implemented. For brevity, we include only $<$ and $\leq$ (and resp. $\finlt{n}$ and $\finleq{n}$) in the language, but we desugar $>$ and $\geq$ (and their finite variants $\fingt{n}$ and $\fingeq{n}$) by swapping their operands, as well as $\fineq{n}$ by binding each operand once and testing both $\finleq{n}$ directions.
 
 % \item \textbf{Discrete distributions}: The $\discrete(p_0, \ldots, p_{n-1})$ construct returns a finite type value $\finconst{k}{n}$ \kevin{let's maybe explain the types first?  $\finconst{k}{n}$ is not introduced} with probability $p_k$.
 
@@ -191,7 +191,7 @@ To understand the typing rules, keep in mind that the cut sets $B$ need to be su
 \paragraph{Constants.}
 Rule \textsc{Float-Const} assigns a constant $c$ the type $\float[B; V]$ whenever $\has{V}{c}$ holds (i.e., $c\in V$ or $V=\top$). Constants do not constrain the cut set, but recording them in $V$ ensures later comparisons know which values must remain distinguishable.
 
-\paragraph{Continuous distributions.} Rule \textsc{Continuous-1} types a single-argument distribution when its argument $e$ has type $\float[B; V]$ and $\distinguishes{B}{V}$:
+\paragraph{Continuous Distributions.} Rule \textsc{Continuous-1} types a single-argument distribution when its argument $e$ has type $\float[B; V]$ and $\distinguishes{B}{V}$:
 We write $B_1 \equiv_{\top} B_2$ iff $B_1=\top \Longleftrightarrow B_2=\top$.
 \begin{definition}
 	\label{def:distinguishes}
@@ -271,7 +271,7 @@ Finally, for non-strict comparisons, the rule is analogous to \Cref{def:answers-
 \paragraph{Subtyping.}
 The type system includes a subtyping relation that captures when one type can be replaced by another. The subtyping rules are shown in Figure~\ref{fig:subtyping}. For float types $\float[B;V]$, subtyping follows the lattice ordering on $V$: an expression known to range over some set of values can also be considered to range over a superset of those values. For $B$, we require equality to make sure that the discretized representation of the expression is not changed by subtyping.
 
-All other typing rules are standard and depicted in Figure~\ref{fig:typing-general} and~\Cref{appen:typing-rules}, respectively.
+All other typing rules are standard and depicted in Figure~\ref{fig:typing-general} and~\cite[\Cref*{appen:typing-rules}]{Wu2026SliceExtended}, respectively.
 
 
 \input{figures/subtyping}

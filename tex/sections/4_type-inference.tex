@@ -95,7 +95,7 @@ The solver repeatedly processes constraints until reaching a fixed point, where 
 
 Lattice constraint solving takes time polynomial in the size of the program: at worst, \emph{every} constant in the program gets added to the cut set or value set of every subexpression \mbox{of type $\float[B;V]$.}
 
-\paragraph{Additional constraint for contextual equivalence.}
+\paragraph{Additional Constraint for Contextual Equivalence.}
 When the return type of the program involves a float type, either directly or as part of a larger compound type (e.g., $\float[B;V] \to \float[B';V']$), we add an additional constraint to ensure that these float types are not discretized. %For example:
 %\[
 %  \float[B;V] \to \float[B';V'].

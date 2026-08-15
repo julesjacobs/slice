@@ -36,7 +36,7 @@ In particular, our soundness theorem does not deem the latter a valid discretiza
 
 \subsubsection{Small Step Semantics}
 %
-The type-dependent semantic functional $\bigsem{\cdot}$ is defined via a \emph{small-step} semantic functional $\sem{\cdot}\colon Expr_\tau \to \mathcal{D}(Expr_\tau + \bot)$. Defining the latter requires us to carefully design a suitable measurable space over the set of type-annotated expressions of type $\tau$ and $\bot$. All details on these measure-theoretic constructions are presented in \Cref{app:measure_space_expressions}. Let us consider the key idea here.
+The type-dependent semantic functional $\bigsem{\cdot}$ is defined via a \emph{small-step} semantic functional $\sem{\cdot}\colon Expr_\tau \to \mathcal{D}(Expr_\tau + \bot)$. Defining the latter requires us to carefully design a suitable measurable space over the set of type-annotated expressions of type $\tau$ and $\bot$. All details on these measure-theoretic constructions are presented in \cite[\Cref*{app:measure_space_expressions}]{Wu2026SliceExtended}. Let us consider the key idea here.
 
 Let $\tau=\bool$ for the sake of concreteness. Care must be taken since, e.g., sub-expressions of type $\floattype{B}{\{3.5,4.5\}}$ cannot evaluate to \emph{arbitrary} reals but are restricted to the values $\{3.5,4.5\}$. We tackle this by extracting from each type-annotated expression a suitable \emph{skeleton}, where float constants are replaced by \enquote{holes} (hence the term \enquote{skeleton}). For instance, the expression
 %
@@ -59,7 +59,7 @@ gives rise to the skeleton
 %
 and the type annotations tell us that the possible values these holes can be filled with are in $\Reals \times \{3.5,4.5 \}$. We can thus inherit a measurable space over all well-typed expressions arising from this particular skeleton $s$ from the standard Borel measurable space over $\Reals \times \{3.5,4.5 \}$. The measurable space over \emph{all} well-typed expressions of type $\bool$ (i.e., over $Expr_\bool$) is then obtained from the measurable spaces of \emph{all} skeletons that give rise to expressions of type $\bool$.
 
-Equipped with this family of measurable spaces, we define the small-step functional $\sem{\cdot}$ in the expected, type-preserving manner (cf.\ \Cref{tab:smallstep-1,tab:smallstep-2}). For instance, if $e_1$ is not a value, then\footnote{Put formally, $(\mu \gg\!= f)(A) = \int f(x)(A) \cdot \mu(dx)$, see \Cref{def:dist-monad} for details. $\dirac{e}$ denotes the Dirac distribution of $e$.}
+Equipped with this family of measurable spaces, we define the small-step functional $\sem{\cdot}$ in the expected, type-preserving manner (cf.\ \cite[\Cref*{tab:smallstep-1,tab:smallstep-2}]{Wu2026SliceExtended}). For instance, if $e_1$ is not a value, then\footnote{Put formally, $(\mu \gg\!= f)(A) = \int f(x)(A) \cdot \mu(dx)$, see \cite[\Cref*{def:dist-monad}]{Wu2026SliceExtended} for details. $\dirac{e}$ denotes the Dirac distribution of $e$.}
 %
 \[
 	\sem{(\letkw \; x = e_1 : \tau_1 \; \inkw \; e_2 : \tau_2) : \tau_2}
@@ -74,7 +74,7 @@ Equipped with this family of measurable spaces, we define the small-step functio
 %
 i.e., $\sem{ e_1 : \tau_1}$ yields the sub-distribution over expressions obtained from executing $e_1$ for \emph{one step}, and the monadic bind $\gg\!=$ \enquote{folds} this distribution into the surrounding $\letkw$-statement. The intuition for the remaining statements is analogous. Crucially, $\gg\!=$ propagates the probability of encountering $\bot$ --- an observation failure --- through executions. For instance, assume that $e_1$ from above is given by $\observekw\; (\false : \bool)  : \unit$. Since $e_1$ encounters an observation failure with probability $1$, i.e., $\sem{\observekw\; (\false : \bool)  : \unit}(\{\bot\}) = 1$, the same holds for the surrounding $\letkw$-statement, i.e., also $\sem{(\letkw \; x = e_1 : \tau_1 \; \inkw \; e_2 : \tau_2) : \tau_2}(\{\bot\})=1$.
 %
-All details --- including proofs that all monadic binds are well-behaved since they operate on suitable sub-Markov kernels --- are provided in \Cref{app:small-step}.
+All details --- including proofs that all monadic binds are well-behaved since they operate on suitable sub-Markov kernels --- are provided in \cite[\Cref*{app:small-step}]{Wu2026SliceExtended}.
 
 \subsubsection{From Small-Step to Big-Step Semantics}
 \label{sec:smallsem_to_bigsem}
@@ -94,13 +94,13 @@ We now define $\bigsem{\cdot}$ via $\sem{\cdot}$. For that, we first lift the on
 		\end{cases} 
 \end{align*}
 %
-This construction is well-defined since the functional $\sem{\cdot}$ itself gives rise to a suitable sub-Markov kernel (\Cref{lem:small-step-kernel}). We then define for every type $\tau$ the functional $\bigsem{\cdot}\colon Expr_\tau \to \mathcal{D}(Vals_\tau + \bot)$ as
+This construction is well-defined since the functional $\sem{\cdot}$ itself gives rise to a suitable sub-Markov kernel (\cite[\Cref*{lem:small-step-kernel}]{Wu2026SliceExtended}). We then define for every type $\tau$ the functional $\bigsem{\cdot}\colon Expr_\tau \to \mathcal{D}(Vals_\tau + \bot)$ as
 %
 $
 	\bigsem{e:\tau} = \lambda A. \lim_{n\to\infty} \bigsemstep{e:\tau}{n}(A)~,
 $
 % 
-which is well-defined by the monotone convergence theorem: the sequence $(\bigsemstep{e : \tau}{n})_{n\in\Nats}$ is monotonically increasing for every measurable set $A$ over $Vals_\tau + \bot$ (cf.\ \Cref{lem:bigstepsem}) and upper-bounded by $1$: executing a program for more and more steps can only increase the probability of terminating in a given set of values or an observation failure.
+which is well-defined by the monotone convergence theorem: the sequence $(\bigsemstep{e : \tau}{n})_{n\in\Nats}$ is monotonically increasing for every measurable set $A$ over $Vals_\tau + \bot$ (cf.\ \cite[\Cref*{lem:bigstepsem}]{Wu2026SliceExtended}) and upper-bounded by $1$: executing a program for more and more steps can only increase the probability of terminating in a given set of values or an observation failure.
 
 %
 %\kbin{old}
@@ -124,7 +124,7 @@ Intuitively, we prove that the two programs can execute in a synchronized manner
 %e, and which lets us conclude semantic equivalence for expressions of type $\bool$.
 %more general argument which enables us to conclude semantic equivalence.% The crucial point is when we encounter a continuous sampling instruction in $e$, in which case we have to prove that its discretized counterpart $\discretize{e:\tau}$
 
-Towards this end, define for every type $\tau$ the set $P_\tau = \{ (e:\tau, \discretize{e : \tau} : \discretize{\tau}) ~|~ e:\tau \}$. We define a \emph{coupled small-step semantics} $\sem{\cdot,\cdot} \colon P_\tau \to \mathcal{D}(P_\tau + \bot)$ (cf.\ \Cref{tab:coupling_smallstep_1,tab:coupling_smallstep_2}), which models the simultaneous execution of $e$ and $\discretize{e:\tau}$. The key property of this coupled semantics is that the semantics of both $e$ and $\discretize{e:\tau}$ can be recovered in a sense we formalize next.
+Towards this end, define for every type $\tau$ the set $P_\tau = \{ (e:\tau, \discretize{e : \tau} : \discretize{\tau}) ~|~ e:\tau \}$. We define a \emph{coupled small-step semantics} $\sem{\cdot,\cdot} \colon P_\tau \to \mathcal{D}(P_\tau + \bot)$ (cf.\ \cite[\Cref*{tab:coupling_smallstep_1,tab:coupling_smallstep_2}]{Wu2026SliceExtended}), which models the simultaneous execution of $e$ and $\discretize{e:\tau}$. The key property of this coupled semantics is that the semantics of both $e$ and $\discretize{e:\tau}$ can be recovered in a sense we formalize next.
 
 Given $\mu \in \mathcal{D}(P_\tau + \bot)$, we define the \emph{projection of $\mu$ onto the $i$-th component} for $i\in\{ 1,2 \}$ as
 %
@@ -158,7 +158,7 @@ With projections, we recover the semantics of $e$ and $\discretize{e:\tau}$ as f
 %	By induction on the typing derivation of $e:\tau$. See \Cref{lem:small_step_coupling_props}.
 %\end{proof}
 
-Now, using a limit construction analogous to \Cref{sec:smallsem_to_bigsem} for obtaining a coupled \emph{big-step} semantics $\bigsem{\cdot,\cdot} \colon P_\tau \to \mathcal{D}(V_\tau + \bot)$, where $V_\tau = \{ (v:\tau, \discretize{v} : \discretize{\tau}) ~|~ v:\tau~\text{is a value} \}$, we prove a suitable continuity property of projection (cf.\ \Cref{lem:proj_cont}) to conclude that \Cref{lem:maintext:small_step_coupling_props} transfers to $\bigsem{\cdot,\cdot}$. Finally, observing that $V_\bool + \bot = \{(\true,\true), (\false,\false), \bot\}$ yields the desired claim:
+Now, using a limit construction analogous to \Cref{sec:smallsem_to_bigsem} for obtaining a coupled \emph{big-step} semantics $\bigsem{\cdot,\cdot} \colon P_\tau \to \mathcal{D}(V_\tau + \bot)$, where $V_\tau = \{ (v:\tau, \discretize{v} : \discretize{\tau}) ~|~ v:\tau~\text{is a value} \}$, we prove a suitable continuity property of projection (cf.\ \cite[\Cref*{lem:proj_cont}]{Wu2026SliceExtended}) to conclude that \Cref{lem:maintext:small_step_coupling_props} transfers to $\bigsem{\cdot,\cdot}$. Finally, observing that $V_\bool + \bot = \{(\true,\true), (\false,\false), \bot\}$ yields the desired claim:
 
 %\noindent
 \emph{Proof of \Cref{thm:maintext:sound}}. Let $v \in \{\true,\false,\bot\}$. We have

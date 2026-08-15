@@ -1,0 +1,104 @@
+let perfB1 = binomial(0.9, 100) in
+let _perfB1_observed = observe(80 <= perfB1) in
+
+let skillA = poisson(100) in
+let _skillA_observed = observe(77 <= skillA && skillA < 125) in
+
+let perfA1 =
+  if skillA <= 77 then binomial(0.9, 77)
+  else if skillA <= 78 then binomial(0.9, 78)
+  else if skillA <= 79 then binomial(0.9, 79)
+  else if skillA <= 80 then binomial(0.9, 80)
+  else if skillA <= 81 then binomial(0.9, 81)
+  else if skillA <= 82 then binomial(0.9, 82)
+  else if skillA <= 83 then binomial(0.9, 83)
+  else if skillA <= 84 then binomial(0.9, 84)
+  else if skillA <= 85 then binomial(0.9, 85)
+  else if skillA <= 86 then binomial(0.9, 86)
+  else if skillA <= 87 then binomial(0.9, 87)
+  else if skillA <= 88 then binomial(0.9, 88)
+  else if skillA <= 89 then binomial(0.9, 89)
+  else if skillA <= 90 then binomial(0.9, 90)
+  else if skillA <= 91 then binomial(0.9, 91)
+  else if skillA <= 92 then binomial(0.9, 92)
+  else if skillA <= 93 then binomial(0.9, 93)
+  else if skillA <= 94 then binomial(0.9, 94)
+  else if skillA <= 95 then binomial(0.9, 95)
+  else if skillA <= 96 then binomial(0.9, 96)
+  else if skillA <= 97 then binomial(0.9, 97)
+  else if skillA <= 98 then binomial(0.9, 98)
+  else if skillA <= 99 then binomial(0.9, 99)
+  else if skillA <= 100 then binomial(0.9, 100)
+  else if skillA <= 101 then binomial(0.9, 101)
+  else if skillA <= 102 then binomial(0.9, 102)
+  else if skillA <= 103 then binomial(0.9, 103)
+  else if skillA <= 104 then binomial(0.9, 104)
+  else if skillA <= 105 then binomial(0.9, 105)
+  else if skillA <= 106 then binomial(0.9, 106)
+  else if skillA <= 107 then binomial(0.9, 107)
+  else if skillA <= 108 then binomial(0.9, 108)
+  else if skillA <= 109 then binomial(0.9, 109)
+  else if skillA <= 110 then binomial(0.9, 110)
+  else if skillA <= 111 then binomial(0.9, 111)
+  else if skillA <= 112 then binomial(0.9, 112)
+  else if skillA <= 113 then binomial(0.9, 113)
+  else if skillA <= 114 then binomial(0.9, 114)
+  else if skillA <= 115 then binomial(0.9, 115)
+  else if skillA <= 116 then binomial(0.9, 116)
+  else if skillA <= 117 then binomial(0.9, 117)
+  else if skillA <= 118 then binomial(0.9, 118)
+  else if skillA <= 119 then binomial(0.9, 119)
+  else if skillA <= 120 then binomial(0.9, 120)
+  else if skillA <= 121 then binomial(0.9, 121)
+  else if skillA <= 122 then binomial(0.9, 122)
+  else if skillA <= 123 then binomial(0.9, 123)
+  else binomial(0.9, 124)
+in
+
+let result =
+  if perfB1 <= 80 then
+    if perfA1 > 80 then 1.0 else 0.0
+  else if perfB1 <= 81 then
+    if perfA1 > 81 then 1.0 else 0.0
+  else if perfB1 <= 82 then
+    if perfA1 > 82 then 1.0 else 0.0
+  else if perfB1 <= 83 then
+    if perfA1 > 83 then 1.0 else 0.0
+  else if perfB1 <= 84 then
+    if perfA1 > 84 then 1.0 else 0.0
+  else if perfB1 <= 85 then
+    if perfA1 > 85 then 1.0 else 0.0
+  else if perfB1 <= 86 then
+    if perfA1 > 86 then 1.0 else 0.0
+  else if perfB1 <= 87 then
+    if perfA1 > 87 then 1.0 else 0.0
+  else if perfB1 <= 88 then
+    if perfA1 > 88 then 1.0 else 0.0
+  else if perfB1 <= 89 then
+    if perfA1 > 89 then 1.0 else 0.0
+  else if perfB1 <= 90 then
+    if perfA1 > 90 then 1.0 else 0.0
+  else if perfB1 <= 91 then
+    if perfA1 > 91 then 1.0 else 0.0
+  else if perfB1 <= 92 then
+    if perfA1 > 92 then 1.0 else 0.0
+  else if perfB1 <= 93 then
+    if perfA1 > 93 then 1.0 else 0.0
+  else if perfB1 <= 94 then
+    if perfA1 > 94 then 1.0 else 0.0
+  else if perfB1 <= 95 then
+    if perfA1 > 95 then 1.0 else 0.0
+  else if perfB1 <= 96 then
+    if perfA1 > 96 then 1.0 else 0.0
+  else if perfB1 <= 97 then
+    if perfA1 > 97 then 1.0 else 0.0
+  else if perfB1 <= 98 then
+    if perfA1 > 98 then 1.0 else 0.0
+  else if perfB1 <= 99 then
+    if perfA1 > 99 then 1.0 else 0.0
+  else
+    if perfA1 > 100 then 1.0 else 0.0
+in
+
+let _result_observed = observe(result <= 0 && result >= 0) in
+50 <= perfA1 && perfA1 <= 50

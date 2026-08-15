@@ -1,6 +1,8 @@
 
 \begin{table}[t]
 	\allowdisplaybreaks
+	\caption{Small-step operational semantics. In the last case, the existence of suitable $v_i$ and $w_j$ is guaranteed since $\distinguishes{B_i}{V_i}$ and $e_i\in V_i$ for $i \in \{1,2\}$. Here, every function of the form $f(g) = \lambda g. \dirac{\ldots}$ is extended to $f_{\bot}$ in the sense of ~\Cref{def:bot-extension}.}
+	\label{tab:smallstep-1}%
 	\begin{center}
 		\begin{adjustbox}{width=\textwidth}
 		\begin{tabular}{l l l l l}
@@ -112,12 +114,12 @@
 	\end{adjustbox}
 	\end{center}%=
 	%
-	\caption{Small-step operational semantics. In the last case, the existence of suitable $v_i$ and $w_j$ is guaranteed since $\distinguishes{B_i}{V_i}$ and $e_i\in V_i$ for $i \in \{1,2\}$. Here, every function of the form $f(g) = \lambda g. \dirac{\ldots}$ is extended to $f_{\bot}$ in the sense of ~\Cref{def:bot-extension}.}
-	\label{tab:smallstep-1}%
 \end{table}%
 
 \begin{table}[t]
 	\allowdisplaybreaks
+	\caption{Small-step operational semantics (continued). Here, every function of the form $f(g) = \lambda g. \dirac{\ldots}$ is extended to $f_{\bot}$ in the sense of \Cref{def:bot-extension}.}
+	\label{tab:smallstep-2}%
 	\begin{center}
 		\begin{adjustbox}{width=\textwidth}
 		\begin{tabular}{l l l l l}
@@ -227,6 +229,4 @@
 	\end{adjustbox}
 	\end{center}%=
 	%
-	\caption{Small-step operational semantics (continued). Here, every function of the form $f(g) = \lambda g. \dirac{\ldots}$ is extended to $f_{\bot}$ in the sense of \Cref{def:bot-extension}.}
-	\label{tab:smallstep-2}%
 \end{table}%

@@ -1,0 +1,233 @@
+let n = 4000 in
+let param = discrete(
+  0.01: 250,
+  0.01: 251,
+  0.01: 252,
+  0.01: 253,
+  0.01: 254,
+  0.01: 255,
+  0.01: 256,
+  0.01: 257,
+  0.01: 258,
+  0.01: 259,
+  0.01: 260,
+  0.01: 261,
+  0.01: 262,
+  0.01: 263,
+  0.01: 264,
+  0.01: 265,
+  0.01: 266,
+  0.01: 267,
+  0.01: 268,
+  0.01: 269,
+  0.01: 270,
+  0.01: 271,
+  0.01: 272,
+  0.01: 273,
+  0.01: 274,
+  0.01: 275,
+  0.01: 276,
+  0.01: 277,
+  0.01: 278,
+  0.01: 279,
+  0.01: 280,
+  0.01: 281,
+  0.01: 282,
+  0.01: 283,
+  0.01: 284,
+  0.01: 285,
+  0.01: 286,
+  0.01: 287,
+  0.01: 288,
+  0.01: 289,
+  0.01: 290,
+  0.01: 291,
+  0.01: 292,
+  0.01: 293,
+  0.01: 294,
+  0.01: 295,
+  0.01: 296,
+  0.01: 297,
+  0.01: 298,
+  0.01: 299,
+  0.01: 300,
+  0.01: 301,
+  0.01: 302,
+  0.01: 303,
+  0.01: 304,
+  0.01: 305,
+  0.01: 306,
+  0.01: 307,
+  0.01: 308,
+  0.01: 309,
+  0.01: 310,
+  0.01: 311,
+  0.01: 312,
+  0.01: 313,
+  0.01: 314,
+  0.01: 315,
+  0.01: 316,
+  0.01: 317,
+  0.01: 318,
+  0.01: 319,
+  0.01: 320,
+  0.01: 321,
+  0.01: 322,
+  0.01: 323,
+  0.01: 324,
+  0.01: 325,
+  0.01: 326,
+  0.01: 327,
+  0.01: 328,
+  0.01: 329,
+  0.01: 330,
+  0.01: 331,
+  0.01: 332,
+  0.01: 333,
+  0.01: 334,
+  0.01: 335,
+  0.01: 336,
+  0.01: 337,
+  0.01: 338,
+  0.01: 339,
+  0.01: 340,
+  0.01: 341,
+  0.01: 342,
+  0.01: 343,
+  0.01: 344,
+  0.01: 345,
+  0.01: 346,
+  0.01: 347,
+  0.01: 348,
+  0.01: 349
+) in
+
+let p =
+  if param <= 250 then beta(277, 250)
+  else if param <= 251 then beta(277, 251)
+  else if param <= 252 then beta(277, 252)
+  else if param <= 253 then beta(277, 253)
+  else if param <= 254 then beta(277, 254)
+  else if param <= 255 then beta(277, 255)
+  else if param <= 256 then beta(277, 256)
+  else if param <= 257 then beta(277, 257)
+  else if param <= 258 then beta(277, 258)
+  else if param <= 259 then beta(277, 259)
+  else if param <= 260 then beta(277, 260)
+  else if param <= 261 then beta(277, 261)
+  else if param <= 262 then beta(277, 262)
+  else if param <= 263 then beta(277, 263)
+  else if param <= 264 then beta(277, 264)
+  else if param <= 265 then beta(277, 265)
+  else if param <= 266 then beta(277, 266)
+  else if param <= 267 then beta(277, 267)
+  else if param <= 268 then beta(277, 268)
+  else if param <= 269 then beta(277, 269)
+  else if param <= 270 then beta(277, 270)
+  else if param <= 271 then beta(277, 271)
+  else if param <= 272 then beta(277, 272)
+  else if param <= 273 then beta(277, 273)
+  else if param <= 274 then beta(277, 274)
+  else if param <= 275 then beta(277, 275)
+  else if param <= 276 then beta(277, 276)
+  else if param <= 277 then beta(277, 277)
+  else if param <= 278 then beta(277, 278)
+  else if param <= 279 then beta(277, 279)
+  else if param <= 280 then beta(277, 280)
+  else if param <= 281 then beta(277, 281)
+  else if param <= 282 then beta(277, 282)
+  else if param <= 283 then beta(277, 283)
+  else if param <= 284 then beta(277, 284)
+  else if param <= 285 then beta(277, 285)
+  else if param <= 286 then beta(277, 286)
+  else if param <= 287 then beta(277, 287)
+  else if param <= 288 then beta(277, 288)
+  else if param <= 289 then beta(277, 289)
+  else if param <= 290 then beta(277, 290)
+  else if param <= 291 then beta(277, 291)
+  else if param <= 292 then beta(277, 292)
+  else if param <= 293 then beta(277, 293)
+  else if param <= 294 then beta(277, 294)
+  else if param <= 295 then beta(277, 295)
+  else if param <= 296 then beta(277, 296)
+  else if param <= 297 then beta(277, 297)
+  else if param <= 298 then beta(277, 298)
+  else if param <= 299 then beta(277, 299)
+  else if param <= 300 then beta(277, 300)
+  else if param <= 301 then beta(277, 301)
+  else if param <= 302 then beta(277, 302)
+  else if param <= 303 then beta(277, 303)
+  else if param <= 304 then beta(277, 304)
+  else if param <= 305 then beta(277, 305)
+  else if param <= 306 then beta(277, 306)
+  else if param <= 307 then beta(277, 307)
+  else if param <= 308 then beta(277, 308)
+  else if param <= 309 then beta(277, 309)
+  else if param <= 310 then beta(277, 310)
+  else if param <= 311 then beta(277, 311)
+  else if param <= 312 then beta(277, 312)
+  else if param <= 313 then beta(277, 313)
+  else if param <= 314 then beta(277, 314)
+  else if param <= 315 then beta(277, 315)
+  else if param <= 316 then beta(277, 316)
+  else if param <= 317 then beta(277, 317)
+  else if param <= 318 then beta(277, 318)
+  else if param <= 319 then beta(277, 319)
+  else if param <= 320 then beta(277, 320)
+  else if param <= 321 then beta(277, 321)
+  else if param <= 322 then beta(277, 322)
+  else if param <= 323 then beta(277, 323)
+  else if param <= 324 then beta(277, 324)
+  else if param <= 325 then beta(277, 325)
+  else if param <= 326 then beta(277, 326)
+  else if param <= 327 then beta(277, 327)
+  else if param <= 328 then beta(277, 328)
+  else if param <= 329 then beta(277, 329)
+  else if param <= 330 then beta(277, 330)
+  else if param <= 331 then beta(277, 331)
+  else if param <= 332 then beta(277, 332)
+  else if param <= 333 then beta(277, 333)
+  else if param <= 334 then beta(277, 334)
+  else if param <= 335 then beta(277, 335)
+  else if param <= 336 then beta(277, 336)
+  else if param <= 337 then beta(277, 337)
+  else if param <= 338 then beta(277, 338)
+  else if param <= 339 then beta(277, 339)
+  else if param <= 340 then beta(277, 340)
+  else if param <= 341 then beta(277, 341)
+  else if param <= 342 then beta(277, 342)
+  else if param <= 343 then beta(277, 343)
+  else if param <= 344 then beta(277, 344)
+  else if param <= 345 then beta(277, 345)
+  else if param <= 346 then beta(277, 346)
+  else if param <= 347 then beta(277, 347)
+  else if param <= 348 then beta(277, 348)
+  else beta(277, 349)
+in
+
+let votes =
+  if p <= 0.05 then binomial(0.025, n)
+  else if p <= 0.1 then binomial(0.075, n)
+  else if p <= 0.15 then binomial(0.125, n)
+  else if p <= 0.2 then binomial(0.175, n)
+  else if p <= 0.25 then binomial(0.225, n)
+  else if p <= 0.3 then binomial(0.275, n)
+  else if p <= 0.35 then binomial(0.325, n)
+  else if p <= 0.4 then binomial(0.375, n)
+  else if p <= 0.45 then binomial(0.425, n)
+  else if p <= 0.5 then binomial(0.475, n)
+  else if p <= 0.55 then binomial(0.525, n)
+  else if p <= 0.6 then binomial(0.575, n)
+  else if p <= 0.65 then binomial(0.625, n)
+  else if p <= 0.7 then binomial(0.675, n)
+  else if p <= 0.75 then binomial(0.725, n)
+  else if p <= 0.8 then binomial(0.775, n)
+  else if p <= 0.85 then binomial(0.825, n)
+  else if p <= 0.9 then binomial(0.875, n)
+  else if p <= 0.95 then binomial(0.925, n)
+  else binomial(0.975, n)
+in
+
+let win = votes > 2000 in
+let _win = observe(win) in
+param <= 250
