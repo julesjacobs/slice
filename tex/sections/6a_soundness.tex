@@ -275,7 +275,7 @@ skeletons by adding a distinguished typing rule for holes.
 		\quad\text{such that}\quad
 		e = s[\vec{r}].
 	\]
-	The explicit recursive definition of $\decompose$ is shown in Figures~\ref{fig:decompose-definition-1} and~\ref{fig:decompose-definition-2}.
+	The explicit recursive definition of $\decompose$ is shown in \Cref{fig:decompose-definition-1,fig:decompose-definition-2}.
 \end{definition}
 
 \input{figures/decompose.tex}
@@ -356,7 +356,7 @@ skeletons by adding a distinguished typing rule for holes.
 \end{lemma}
 
 \begin{proof}
-	For a fixed $s : \tau \in \skel_{\tau}$, $(\R^{\holes(s)}, \mathcal{B}(\R^{\holes(s)}))$ is a Borel measurable space and $A_{s; \tau} \subseteq \R^{\holes(s)}$. Thus, by Definition~\ref{def:subspace-sigma-algebra}, $(A_{s;\tau}, \{A_{s;\tau} \cap M \mid M \in \mathcal{B}(\R^{\holes(s)})\}) = (A_{s;\tau}, \mathcal{F}_{s;\tau})$ is a Borel measurable space.
+	For a fixed $s : \tau \in \skel_{\tau}$, $(\R^{\holes(s)}, \mathcal{B}(\R^{\holes(s)}))$ is a Borel measurable space and $A_{s; \tau} \subseteq \R^{\holes(s)}$. Thus, by \Cref{def:subspace-sigma-algebra}, $(A_{s;\tau}, \{A_{s;\tau} \cap M \mid M \in \mathcal{B}(\R^{\holes(s)})\}) = (A_{s;\tau}, \mathcal{F}_{s;\tau})$ is a Borel measurable space.
 \end{proof}
 
 
@@ -459,11 +459,11 @@ Intuitively, $Expr_{s;\tau}$ consists exactly of those expressions whose syntact
 		\mathcal{F}_{Expr_{s;\tau}} := \quad&\left\{
 			\{e : \tau \in Expr_{s;\tau} \mid \decompose(e : \tau)_2 \in B\} \mid B \in 
 			\mathcal{F}_{s;\tau}
-		\right\} \tag{Definition~\ref{def:sigma-algebra-construction-skeletons}} \\
+		\right\} \tag{\Cref{def:sigma-algebra-construction-skeletons}} \\
 		:= \quad&\left\{
 			\decompose_{s;\tau}^{-1}(B) \mid B \in \mathcal{F}_{s;\tau}
 		\right\} \tag{unfolding the preimage of $\decompose_{s;\tau}$} \\
-		:= \quad&\decompose_{s;\tau}^{-1}(\mathcal{F}_{s;\tau}) \tag{Definition~\ref{def:pullback}}
+		:= \quad&\decompose_{s;\tau}^{-1}(\mathcal{F}_{s;\tau}) \tag{\Cref{def:pullback}}
 	\end{align*}
 	By~\Cref{lem:decompose-restriction-bijection}, $\decompose_{s;\tau} \colon Expr_{s;\tau} \to A_{s;\tau}$ is a bijection. By~\Cref{lem:pullback-iso}, $\decompose_{s;\tau}$ induces an isomorphism $(Expr_{s;\tau}, \mathcal{F}_{Expr_{s;\tau}}) \cong (A_{s;\tau}, \mathcal{F}_{s;\tau})$.
 \end{proof}
@@ -500,7 +500,7 @@ This union is disjoint because every typed expression $e : \tau$ has a unique sk
 
 	\paragraph{(i) Contains $Expr_{\tau}$:}
 	
-	We show $Expr_{\tau} \in \mathcal{F}_{Expr_\tau}$. By Definition~\ref{def:sigma-algebra-construction-expressions}, it suffices to show that $\forall s \in \skel_\tau$, $Expr_{\tau} \cap Expr_{s;\tau} \in \mathcal{F}_{Expr_{s;\tau}}$. 
+	We show $Expr_{\tau} \in \mathcal{F}_{Expr_\tau}$. By \Cref{def:sigma-algebra-construction-expressions}, it suffices to show that $\forall s \in \skel_\tau$, $Expr_{\tau} \cap Expr_{s;\tau} \in \mathcal{F}_{Expr_{s;\tau}}$.
 
 	Observe that:
 	\begin{align*}
@@ -516,7 +516,7 @@ This union is disjoint because every typed expression $e : \tau$ has a unique sk
 
 	\paragraph{(ii) Closure under complements:}
 
-	Let $A \in \mathcal{F}_{Expr_\tau}$. We show that $Expr_\tau \setminus A \in \mathcal{F}_{Expr_\tau}$. By Definition~\ref{def:sigma-algebra-construction-expressions}, it suffices to show that $\forall s \in \skel_\tau$, $(Expr_\tau \setminus A) \cap Expr_{s;\tau} \in \mathcal{F}_{Expr_{s;\tau}}$.
+	Let $A \in \mathcal{F}_{Expr_\tau}$. We show that $Expr_\tau \setminus A \in \mathcal{F}_{Expr_\tau}$. By \Cref{def:sigma-algebra-construction-expressions}, it suffices to show that $\forall s \in \skel_\tau$, $(Expr_\tau \setminus A) \cap Expr_{s;\tau} \in \mathcal{F}_{Expr_{s;\tau}}$.
 	
 	Fix $s \in \skel_\tau$.  Observe that:
 	\begin{align*}
@@ -525,7 +525,7 @@ This union is disjoint because every typed expression $e : \tau$ has a unique sk
 		=\; &Expr_{s;\tau} \setminus (A \cap Expr_{s;\tau}). \tag{since $Expr_{s;\tau} \subseteq Expr_\tau$, so $Expr_\tau \cap Expr_{s;\tau} = Expr_{s;\tau}$}
 	\end{align*}
 
-	Since $A \in \mathcal{F}_{Expr_\tau}$ by assumption, by Definition~\ref{def:sigma-algebra-construction-expressions}, we have $A \cap Expr_{s;\tau} \in \mathcal{F}_{Expr_{s;\tau}}$, and because $\mathcal{F}_{Expr_{s;\tau}}$ is a $\sigma$-algebra, it is closed under complements relative to $Expr_{s;\tau}$. Hence
+	Since $A \in \mathcal{F}_{Expr_\tau}$ by assumption, by \Cref{def:sigma-algebra-construction-expressions}, we have $A \cap Expr_{s;\tau} \in \mathcal{F}_{Expr_{s;\tau}}$, and because $\mathcal{F}_{Expr_{s;\tau}}$ is a $\sigma$-algebra, it is closed under complements relative to $Expr_{s;\tau}$. Hence
 	\[
 		Expr_{s;\tau} \setminus (A \cap Expr_{s;\tau}) \in \mathcal{F}_{Expr_{s;\tau}}.
 	\]
@@ -533,7 +533,7 @@ This union is disjoint because every typed expression $e : \tau$ has a unique sk
 
 	\paragraph{(iii) Closure under countable unions:}
 
-	Let $(A_n)_{n \in \Nats}$ be a sequence with $A_n \in \mathcal{F}_{Expr_\tau}$ for all $n$. We show that $\bigcup_{n \in \Nats} A_n \in \mathcal{F}_{Expr_\tau}$. By Definition~\ref{def:sigma-algebra-construction-expressions}, it suffices to show that $\forall s \in \skel_\tau$,
+	Let $(A_n)_{n \in \Nats}$ be a sequence with $A_n \in \mathcal{F}_{Expr_\tau}$ for all $n$. We show that $\bigcup_{n \in \Nats} A_n \in \mathcal{F}_{Expr_\tau}$. By \Cref{def:sigma-algebra-construction-expressions}, it suffices to show that $\forall s \in \skel_\tau$,
 	$\left(\bigcup_{n \in \Nats} A_n\right) \cap Expr_{s;\tau} \in \mathcal{F}_{Expr_{s;\tau}}$.
 	
 	Fix $s \in \skel_\tau$. Using distributivity of $\cap$ over $\cup$, we have
@@ -542,7 +542,7 @@ This union is disjoint because every typed expression $e : \tau$ has a unique sk
 		=
 		\bigcup_{n \in \Nats} \left(A_n \cap Expr_{s;\tau}\right).
 	\]
-	Since each $A_n \in \mathcal{F}_{Expr_\tau}$ by assumption, by Definition~\ref{def:sigma-algebra-construction-expressions}, we have $A_n \cap Expr_{s;\tau} \in \mathcal{F}_{Expr_{s;\tau}}$ for all $n$. Because $\mathcal{F}_{Expr_{s;\tau}}$ is a $\sigma$-algebra, it is closed under countable unions, hence
+	Since each $A_n \in \mathcal{F}_{Expr_\tau}$ by assumption, by \Cref{def:sigma-algebra-construction-expressions}, we have $A_n \cap Expr_{s;\tau} \in \mathcal{F}_{Expr_{s;\tau}}$ for all $n$. Because $\mathcal{F}_{Expr_{s;\tau}}$ is a $\sigma$-algebra, it is closed under countable unions, hence
 	\[
 		\bigcup_{n \in \Nats} \left(A_n \cap Expr_{s;\tau}\right) \in \mathcal{F}_{Expr_{s;\tau}}.
 	\]
@@ -613,7 +613,7 @@ Finally, we can equip this measurable space $(Expr_{\tau} + \bot, \mathcal{F}_{E
 We give some basic lemmas:
 
 \begin{lemma}\label{lem:measurable-subsets}
-	Let $(Expr_{\tau} + \bot, \mathcal{F}_{Expr_{\tau} + \bot})$ be the Borel measurable space of well-typed expressions with error from Definition~\ref{def:meas-space-with-error}. Let $\vals_{\tau} \subset Expr_{\tau}$ be the set of all well-typed value expressions. Let $N_{\tau} \subset Expr_{\tau}$, defined as $N = Expr_{\tau} \setminus \vals_{\tau}$, be the set of all well-typed non-value expressions. Let $\{\bot\}$ be the singleton set containing the error element $\bot$. The following are true:
+	Let $(Expr_{\tau} + \bot, \mathcal{F}_{Expr_{\tau} + \bot})$ be the Borel measurable space of well-typed expressions with error from \Cref{def:meas-space-with-error}. Let $\vals_{\tau} \subset Expr_{\tau}$ be the set of all well-typed value expressions. Let $N_{\tau} \subset Expr_{\tau}$, defined as $N = Expr_{\tau} \setminus \vals_{\tau}$, be the set of all well-typed non-value expressions. Let $\{\bot\}$ be the singleton set containing the error element $\bot$. The following are true:
 	\begin{enumerate}
 		\item\label{lem:measurable-vals} The set $\vals_{\tau} \in \mathcal{F}_{Expr_{\tau} + \bot}$.
 		\item\label{lem:measurable-error} The set $\{\bot\} \in \mathcal{F}_{Expr_{\tau} + \bot}$.
@@ -638,7 +638,7 @@ We give some basic lemmas:
 		Thus, $\vals_{\tau} \cap Expr_{s;\tau} \in \mathcal{F}_{Expr_{s;\tau}}$ for any $s \in \skel_{\tau}$, so $\vals_{\tau} \in \mathcal{F}_{Expr_{\tau}} \subseteq \mathcal{F}_{Expr_{\tau} + \bot}$.
 
 		\item \textbf{(Measurability of $\{\bot\}$):} Taking $A = \emptyset$ in 
-        Definition~\ref{def:meas-space-with-error} gives $\{\bot\} \in \mathcal{F}_{Expr_\tau + \bot}$.
+	        \Cref{def:meas-space-with-error} gives $\{\bot\} \in \mathcal{F}_{Expr_\tau + \bot}$.
 
         \item \textbf{(Measurability of $N_{\tau}$):} $N_{\tau} = Expr_\tau \setminus \vals_{\tau}$ is the 
         complement of $\vals_{\tau}$ in $Expr_\tau$. Since $\vals_{\tau} \in \mathcal{F}_{Expr_\tau}$ 
@@ -1120,7 +1120,7 @@ The missing probability mass in $\sem{e :\tau}$ is the probability of encounteri
         \tag{$t[\vec{u}]$ ranges over $Expr_{t;\tau_2}$}
 	\end{align*}
 
-    By~\Cref{def:sigma-algebra-construction-expressions}, $A \cap Expr_{t;\tau_2} \in \mathcal{F}_{Expr_{t;\tau_2}}$, and by Lemma~\ref{lem:pullback-iso}, $A_t \in \mathcal{F}_{t;\tau_2}$. We compute:
+	    By~\Cref{def:sigma-algebra-construction-expressions}, $A \cap Expr_{t;\tau_2} \in \mathcal{F}_{Expr_{t;\tau_2}}$, and by \Cref{lem:pullback-iso}, $A_t \in \mathcal{F}_{t;\tau_2}$. We compute:
     \begin{align*}
         R_s
         &= \{\vec{r} \in A_{s;\tau_1} \mid e[s[\vec{r}]/x] \in A\} \\
@@ -1257,7 +1257,7 @@ The missing probability mass in $\sem{e :\tau}$ is the probability of encounteri
 			\qquad
 			\phi_{\vec{c}}(\vec{r}) := (\vec{r}, \vec{c}).
 		\]
-		By Lemma~\ref{lem:constant-extension-measurable}, $\phi_{\vec{c}}$ is measurable. 
+			By \Cref{lem:constant-extension-measurable}, $\phi_{\vec{c}}$ is measurable.
 
 		Define the measurable set of hole-assignments corresponding to $A$ at skeleton $s'$:
 		\begin{align*}

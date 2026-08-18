@@ -196,6 +196,7 @@ The discretized program for the case study from \Cref{sec:examples:7} is shown i
     \end{lstlisting}
     \end{minipage}
     \hfill
+    \hspace{-4pt}%
     \begin{minipage}[t]{0.46\textwidth}
     \vspace{0pt}
     \begin{lstlisting}[aboveskip=0.4em,belowskip=0.4em,
@@ -237,7 +238,8 @@ The discretized program for the case study from \Cref{sec:examples:7} is shown i
     let final = cover init in
       is_covered final !\linelabel{ap-ln:final}!
     \end{lstlisting}
-    \end{minipage}
+    \end{minipage}%
+    \hspace{4pt}
     
     \caption{A \emph{discretized} infinite stochastic process for random interval covering over $[0,1]$, involving continuous sampling, higher-order recursion, and lists.}
     \label{fig:app:epsball}
@@ -306,6 +308,7 @@ let non_overlap =
     \end{lstlisting}
     \end{minipage}
     \hfill
+    \hspace{-4pt}%
     \begin{minipage}[t]{0.46\textwidth}
     \vspace{0pt}
     \begin{lstlisting}[aboveskip=0.4em,belowskip=0.4em,
@@ -344,7 +347,8 @@ let is_covered = fix is_covered ys :=
 let final = cover init in
   is_covered final
     \end{lstlisting}
-    \end{minipage}
+    \end{minipage}%
+    \hspace{4pt}
     
 \caption{An infinite stochastic process for random interval covering over $[0,1]$, involving conditioning, continuous sampling, higher-order recursion, and lists.}
     \label{fig:app:epsball-observe}
@@ -407,6 +411,7 @@ let non_overlap =
     \end{lstlisting}
     \end{minipage}
     \hfill
+    \hspace{-4pt}%
     \begin{minipage}[t]{0.46\textwidth}
     \vspace{0pt}
     \begin{lstlisting}[aboveskip=0.4em,belowskip=0.4em,
@@ -449,7 +454,8 @@ let is_covered = fix is_covered ys :=
 let final = cover init in
   is_covered final
     \end{lstlisting}
-    \end{minipage}
+    \end{minipage}%
+    \hspace{4pt}
     
     \caption{A \emph{discretized} infinite stochastic process for random interval covering over $[0,1]$, involving conditioning, continuous sampling, higher-order recursion, and lists.}
     \label{fig:app:epsball-observe:disc}
@@ -526,6 +532,7 @@ let search = fun q -> fun h1
     \end{lstlisting}
     \end{minipage}
     \hfill
+    \hspace{-4pt}%
     \begin{minipage}[t]{0.46\textwidth}
     \vspace{0pt}
     \begin{lstlisting}[aboveskip=0.4em,belowskip=0.4em,
@@ -581,7 +588,8 @@ let search_before_full = fix loop bf :=
 let bf_final = search_before_full init in
   not (full bf_final)
     \end{lstlisting}
-    \end{minipage}
+    \end{minipage}%
+    \hspace{4pt}
     
     \caption{A 4-bit Bloom filter program with continuous samples, locality-sensitive hash functions, and search and insert functions.}
     \label{fig:app:bloom-filter}
@@ -654,6 +662,7 @@ let search = fun q -> fun h1
     \end{lstlisting}
     \end{minipage}
     \hfill
+    \hspace{-4pt}%
     \begin{minipage}[t]{0.46\textwidth}
     \vspace{0pt}
     \begin{lstlisting}[aboveskip=0.4em,belowskip=0.4em,
@@ -714,7 +723,8 @@ let search_before_full = fix loop bf :=
 let bf_final = search_before_full init in
   not (full bf_final)
     \end{lstlisting}
-    \end{minipage}
+    \end{minipage}%
+    \hspace{4pt}
     
     \caption{A \emph{discretized} 4-bit Bloom filter program with continuous samples, locality-sensitive hash functions, and search and insert functions.}
     \label{fig:app:bloom-filter:disc}
@@ -789,7 +799,7 @@ The typing rules for general language constructs is given in \Cref{fig:typing-ge
 
 \begin{proof}[Proof of~\Cref{lem:type-transformations}]\label{proof:type-transformations}
   \setlength{\parskip}{0.3em plus 0.1em}
-  We proceed by induction on the structure of the typing derivation $\Gamma \vdash e : \tau$, matching each case of the discretization function $\discretize{\cdot}$ defined in Figure~\ref{fig:discretization-code}.
+  We proceed by induction on the structure of the typing derivation $\Gamma \vdash e : \tau$, matching each case of the discretization function $\discretize{\cdot}$ defined in \Cref{fig:discretization-code}.
 
   \par\medskip\noindent
   \textbf{Case} $e = x$.
@@ -801,7 +811,7 @@ The typing rules for general language constructs is given in \Cref{fig:typing-ge
   \par\nopagebreak
   The \textsc{Float-Const} rule was applied, so $\has{V}{c}$ holds.
   \begin{itemize}[leftmargin=1.5em, itemsep=0.35em, topsep=0.35em]
-      \item If $B = \top$: then $\discretize{c : \float[B;V]} = c$ and $\discretize{\float[B;V]} = \float$. Since $\has{V}{c}$ still holds, $c$ is well-typed at $\float$ by \textsc{Float-Const}.
+      \item If $B = \top$: then $\discretize{c : \float[B;V]} = c$ and $\discretize{\float[B;V]} = \float[B;V]$. Since $\has{V}{c}$ still holds, $c$ is well-typed at $\float[B;V]$ by \textsc{Float-Const}.
       \item If $B \neq \top$: then $\discretize{c : \float[B;V]} = \finconst{k}{|B|+1}$ for the unique $k$ such that $c \in \intervals{B}_k$, and $\discretize{\float[B;V]} = \fin{|B|+1}$. Since $0 \leq k < |B|+1$, the finite constant $\finconst{k}{|B|+1}$ is well-typed at $\fin{|B|+1}$ by \textsc{FinConst}.
   \end{itemize}
 
@@ -832,7 +842,7 @@ The typing rules for general language constructs is given in \Cref{fig:typing-ge
   \par\nopagebreak
   The \textsc{Less} rule was applied, so both subexpressions share the same cut set $B$ and $\answerslt{B}{V_1}{V_2}$ holds. By the inductive hypothesis, $\discretize{\Gamma} \vdash \discretize{e_i : \float[B;V_i]} : \discretize{\float[B;V_i]}$ for $i = 1, 2$.
   \begin{itemize}[leftmargin=1.5em, itemsep=0.35em, topsep=0.35em]
-      \item If $B = \top$: then $\discretize{\float[B;V_i]} = \float$ for both $i$, and the standard float comparison gives type $\bool = \discretize{\bool}$.
+      \item If $B = \top$: then $\discretize{\float[B;V_i]} = \float[B;V_i]$ for both $i$, and the standard float comparison gives type $\bool = \discretize{\bool}$.
       \item If $B \neq \top$: then both subexpressions are discretized to type $\fin{|B|+1}$, and the finite comparison $<_{\#(|B|+1)}$ is well-typed at $\bool = \discretize{\bool}$ by \textsc{FinLess}.
   \end{itemize}
 
@@ -848,7 +858,7 @@ The typing rules for general language constructs is given in \Cref{fig:typing-ge
   \begin{itemize}[leftmargin=1.5em, itemsep=0.5em, topsep=0.35em]
       \item $e_1, e_2 \in \mathbb{R}$ and $e_1 \geq e_2$: then $\discretize{\uniform(\ldots) : \float[B;\top]} = \diverge$, which is well-typed at any type by \textsc{Diverge}.
   
-      \item $B = \top$: then $\discretize{\float[B;\top]} = \float$, and
+      \item $B = \top$: then $\discretize{\float[B;\top]} = \float[B;\top]$, and
       \[
           \discretize{\uniform(e_1, e_2) : \float[B;\top]} = \uniform\!\bigl(\discretize{e_1 : \float[B_1;V_1]},\, \discretize{e_2 : \float[B_2;V_2]}\bigr).
       \]
@@ -860,9 +870,10 @@ The typing rules for general language constructs is given in \Cref{fig:typing-ge
       \]
       where $p_k = \mathrm{CDF}(b_{k+1}) - \mathrm{CDF}(b_k)$. Each $p_k \in [0,1]$ and $\sum_k p_k = 1$, so this is well-typed at $\fin{|B|+1}$ by \textsc{Discrete}.
   
-      \item If $B,B_1,B_2 \neq \top$ and $V_1=\emptyset$ or $V_2=\emptyset$, then the enumeration over $V_1\times V_2$ is empty, so the generated expression evaluates $\discretize{e_1}$ and $\discretize{e_2}$ through its two outer $\letkw$-bindings and then yields $\diverge$; the bindings are well-typed by the inductive hypotheses, and their body is well-typed at $\fin{|B|+1}$ by \textsc{Diverge}.
+      \item If $B,B_1,B_2 \neq \top$ and $V_1=\emptyset$ or $V_2=\emptyset$, then the enumeration over $V_1\times V_2$ is empty, so the generated expression evaluates $\discretize{e_1}$ and $\discretize{e_2}$ through its two outer $\letkw$-bindings and then yields $\diverge$; the bindings are well-typed by the inductive hypotheses and weakening, and their body is well-typed at $\fin{|B|+1}$ by \textsc{Diverge}.
 
-      \item $B \neq \top$, $B_1 \neq \top$, $B_2 \neq \top$, $V_1,V_2\neq\emptyset$, and $e_1$ or $e_2$ is a variable: the algorithm generates conditionals over all pairs $(v_i, w_j)$, each branch dispatching to a constant parameter in $\uniform$. By the previous sub-case, each branch $\discretize{\uniform(v_i, w_j) : \float[B;\top]}$ is well-typed at $\fin{|B|+1} = \discretize{\float[B;\top]}$. The final $\elsekw\;\diverge$ branch has the same type by \textsc{Diverge}; hence the conditional structure is well-typed by \textsc{If} (as in the $\ifkw$ case above), and the full expression is well-typed at $\discretize{\float[B;\top]}$.
+      \item $B,B_1,B_2 \neq \top$, $V_1,V_2\neq\emptyset$, and
+      $e_1\notin\mathbb{R}$ or $e_2\notin\mathbb{R}$: the algorithm generates conditionals over all pairs $(v_i, w_j)$, each branch dispatching to a constant parameter in $\uniform$. The inductive hypotheses and weakening type the two outer $\letkw$-bindings. In each guard, both operands of each finite equality have the same finite type; since finite equality is desugared using \textsc{FinLessEq}, each equality has type $\bool$, as does their conjunction. By a previous subcase, each branch $\discretize{\uniform(v_i, w_j) : \float[B;\top]}$ is well-typed at $\fin{|B|+1} = \discretize{\float[B;\top]}$. The final $\elsekw\;\diverge$ branch has the same type by \textsc{Diverge}; hence the conditional structure is well-typed by \textsc{If} (as in the $\ifkw$ case above), and the full expression is well-typed at $\discretize{\float[B;\top]}$.
   \end{itemize}
 
   \par\medskip\noindent
@@ -888,7 +899,7 @@ The typing rules for general language constructs is given in \Cref{fig:typing-ge
 \subsection{Asymptotic Scaling}
 
 \subsubsection{Code Sketches for Scaling Benchmarks}\label{app:synthetic-sketches}
-This section contains code snippets of the programs  (\Cref{fig:cond-benchmarks-a-example,fig:cond-benchmarks-b-example,fig:cond-benchmarks-c-example,fig:cond-benchmarks-d-example,fig:alt-benchmarks-a-example,fig:alt-benchmarks-b-example,fig:alt-benchmarks-c-example,fig:alt-benchmarks-d-example}) used in the scaling experiments in Section~\ref{sec:synthetic-benchmarks}. We implemented a Python script that automatically generates these programs based on configurable parameters such as program size, guard structure, and dependency pattern. For reproducibility, we used a fixed random seed to generate each program. All $r_i$ values in the generated programs, where $0 \leq r_i \leq 1$ is randomly chosen, are rounded to two decimal places.
+This section contains code snippets of the programs  (\Cref{fig:cond-benchmarks-a-example,fig:cond-benchmarks-b-example,fig:cond-benchmarks-c-example,fig:cond-benchmarks-d-example,fig:alt-benchmarks-a-example,fig:alt-benchmarks-b-example,fig:alt-benchmarks-c-example,fig:alt-benchmarks-d-example}) used in the scaling experiments in \Cref{sec:synthetic-benchmarks}. We implemented a Python script that automatically generates these programs based on configurable parameters such as program size, guard structure, and dependency pattern. For reproducibility, we used a fixed random seed to generate each program. All $r_i$ values in the generated programs, where $0 \leq r_i \leq 1$ is randomly chosen, are rounded to two decimal places.
 
 All of these programs follow the same structural pattern: they define a sequence of random variables $X_1,\ldots,X_n$, where each $X_i$ is drawn from a uniform distribution whose parameters depend on the value of a single predecessor variable through a conditional branch of the form:
 \[
@@ -913,7 +924,7 @@ Thus each program is a Bayesian network of conditionally independent nodes, diff
             let x5 = if x4 < 0.51 then uniform(0,8) else uniform(0,9) in
             x5 < 0.5
         \end{lstlisting}
-        \caption{Conditional Independent (Figure~\ref{fig:cond-benchmarks-a}): Size-5 chain in which each variable depends on its immediate predecessor; all uniform distributions are distinct.}
+        \caption{Conditional Independent (\Cref{fig:cond-benchmarks-a}): Size 5 chain in which each variable depends on its immediate predecessor; all uniform distributions are distinct.}
         \label{fig:cond-benchmarks-a-example}
     \end{subfigure}
     \begin{subfigure}{\textwidth}
@@ -925,7 +936,7 @@ Thus each program is a Bayesian network of conditionally independent nodes, diff
             let x5 = if x1 < 0.48 then uniform(0,8) else uniform(0,9) in
             x5 < 0.5
         \end{lstlisting}
-        \caption{Conditional Independent Fork (Figure~\ref{fig:cond-benchmarks-b}): Size-5 fork in which $x_1$ is the sole parent of all subsequent variables; all uniform distributions are distinct.}
+        \caption{Conditional Independent Fork (\Cref{fig:cond-benchmarks-b}): Size 5 fork in which $x_1$ is the sole parent of all subsequent variables; all uniform distributions are distinct.}
         \label{fig:cond-benchmarks-b-example}
     \end{subfigure}
     \begin{subfigure}{\textwidth}
@@ -937,7 +948,7 @@ Thus each program is a Bayesian network of conditionally independent nodes, diff
             let x5 = if x1 < 0.14 then uniform(0,8) else uniform(0,9) in
             x5 < 0.5
         \end{lstlisting}
-        \caption{Conditional Random 1 (Figure~\ref{fig:cond-benchmarks-c}): Size-5 program with randomly selected predecessors. Some variables may be unused; all uniform distributions are distinct.}
+        \caption{Conditional Random 1 (\Cref{fig:cond-benchmarks-c}): Size 5 program with randomly selected predecessors. Some variables may be unused; all uniform distributions are distinct.}
         \label{fig:cond-benchmarks-c-example}
     \end{subfigure}
     \begin{subfigure}{\textwidth}
@@ -949,7 +960,7 @@ Thus each program is a Bayesian network of conditionally independent nodes, diff
             let x5 = if uniform(0, 4) < 0.4 then x1 else uniform(0, 2) in
             x4 < 0.5
         \end{lstlisting}
-        \caption{Conditional Random 2 (Figure~\ref{fig:cond-benchmarks-d}): Size-5 program with randomized guards and branches. Uniform upper bounds are random integers from 0 to 10 and may repeat.}
+        \caption{Conditional Random 2 (\Cref{fig:cond-benchmarks-d}): Size 5 program with randomized guards and branches. Uniform upper bounds are random integers from 0 to 10 and may repeat.}
         \label{fig:cond-benchmarks-d-example}
     \end{subfigure}
     \caption{Representative programs from the scaling benchmarks.}
@@ -967,7 +978,7 @@ Thus each program is a Bayesian network of conditionally independent nodes, diff
             let x5 = if x2 < 0.93 then uniform(0,8) else uniform(0,9) in
             x5 < 0.5
         \end{lstlisting}
-        \caption{Alternating Guard 1 (Figure~\ref{fig:alt-benchmarks-a}): Size-5 program with guard span 2. Guard variables cycle over the span, so variables beyond it may be unused.}
+        \caption{Alternating Guard 1 (\Cref{fig:alt-benchmarks-a}): Size 5 program with guard span 2. Guard variables cycle over the span, so variables beyond it may be unused.}
         \label{fig:alt-benchmarks-a-example}
     \end{subfigure}
     \begin{subfigure}{\textwidth}
@@ -979,7 +990,7 @@ Thus each program is a Bayesian network of conditionally independent nodes, diff
             let x5 = if x2 < 0.57 then uniform(0,8) else x4 in
             x5 < 0.5
         \end{lstlisting}
-        \caption{Alternating Guard 2 (Figure~\ref{fig:alt-benchmarks-b}): Size-5 program with guard span 2. Every variable is later used as a guard or else-branch expression; all uniform distributions are distinct.}
+        \caption{Alternating Guard 2 (\Cref{fig:alt-benchmarks-b}): Size 5 program with guard span 2. Every variable is later used as a guard or else-branch expression; all uniform distributions are distinct.}
         \label{fig:alt-benchmarks-b-example}
     \end{subfigure}
     \begin{subfigure}{\textwidth}
@@ -991,7 +1002,7 @@ Thus each program is a Bayesian network of conditionally independent nodes, diff
             let x5 = if x2 < 0.5 then x4 else uniform(0,8) in
             x5 < 0.5
         \end{lstlisting}
-        \caption{Alternating Guard 3 (Figure~\ref{fig:alt-benchmarks-c}): Size-5 program with guard span 2. Every variable is later used as a guard or then-branch expression; all uniform distributions are distinct.}
+        \caption{Alternating Guard 3 (\Cref{fig:alt-benchmarks-c}): Size 5 program with guard span 2. Every variable is later used as a guard or then-branch expression; all uniform distributions are distinct.}
         \label{fig:alt-benchmarks-c-example}
     \end{subfigure}
     \begin{subfigure}{\textwidth}
@@ -1003,7 +1014,7 @@ Thus each program is a Bayesian network of conditionally independent nodes, diff
             let x5 = if x2 < 0.51 then uniform(0,3) else uniform(0,7) in
             x5 < 0.5
         \end{lstlisting}
-        \caption{Random Alternating (Figure~\ref{fig:alt-benchmarks-d}): Size-5 program with guard span 2. Uniform upper bounds are random integers from 0 to 10 and may repeat.}
+        \caption{Random Alternating (\Cref{fig:alt-benchmarks-d}): Size 5 program with guard span 2. Uniform upper bounds are random integers from 0 to 10 and may repeat.}
         \label{fig:alt-benchmarks-d-example}
     \end{subfigure}
     \caption{Representative programs from the scaling benchmarks.}
@@ -1142,7 +1153,7 @@ We report runtime (seconds) for (i) \SPPL{}, (ii) \Slice{} (discretization only)
 
 \FloatBarrier
 \subsection{Baselines}
-We finally evaluate \Slice{} on \SPPL{}-compatible versions of benchmarks drawn from prior work~\cite{gehr2016psi,Saad2021SPPL}. Most benchmark programs are taken directly from the \SPPL{} Github repository and translated into \Slice{}. In some cases, the \SPPL{} versions differ from the original \PSI{} benchmarks, for example by replacing continuous choices with finite ones so that the programs fall within the class supported by \SPPL{}. CoinBias and SurveyUnbias are not included in the \SPPL{} repository, so we adapted these benchmarks in the same style. Consequently, the \Slice{} and \SPPL{} columns in \Cref{tab:benchmarks_psi} evaluate the same benchmark programs and provide an apples-to-apples comparison. The full benchmark programs are provided in \Cref{app:baseline-programs-full}. The first column in the table gives the benchmark name, the second shows the number of datasets on which to condition the program, and the remaining columns display execution times in seconds. For benchmarks with both modified and unmodified versions, the \PSI{} and \Hakaru{} cells report the modified timing marked by $\bullet$ above the unmodified timing marked by $\circ$. For Hakaru, we report disintegration, subsequent simplification, and their total. \texttt{t.o.} denotes the same 120s timeout used elsewhere, and \texttt{err.} denotes a tool error.
+We finally evaluate \Slice{} on benchmarks drawn from prior work~\cite{gehr2016psi,Saad2021SPPL}. Most benchmark programs are taken directly from the \SPPL{} Github repository and translated into \Slice{}. In some cases, the \SPPL{} versions differ from the original \PSI{} benchmarks, for example by replacing continuous choices with finite ones so that the programs fall within the class supported by \SPPL{}. CoinBias and SurveyUnbias are not included in the \SPPL{} repository, so we adapted these benchmarks in the same style. Consequently, the \Slice{} and \SPPL{} columns in \Cref{tab:benchmarks_psi} evaluate the same benchmark programs and provide an apples-to-apples comparison. The full benchmark programs are provided in \Cref{app:baseline-programs-full}. The first column in the table gives the benchmark name, the second shows the number of datasets on which to condition the program, and the remaining columns display execution times in seconds. For benchmarks with both modified and unmodified versions, the \PSI{} and \Hakaru{} cells report the modified timing marked by $\bullet$ above the unmodified timing marked by $\circ$. The $\bullet$ entries therefore provide the apples-to-apples comparison with \Slice{} and \SPPL{}. For Hakaru, we report disintegration, subsequent simplification, and their total. \texttt{t.o.} denotes the same 120s timeout used elsewhere, and \texttt{err.} denotes a tool error.
 
 \begin{table}[H]
 \centering
@@ -1181,22 +1192,22 @@ We finally evaluate \Slice{} on \SPPL{}-compatible versions of benchmarks drawn 
     \makecell{4.789\,$\bullet$ \\ 0.528\,$\circ$} &
     \makecell{4.847\,$\bullet$ \\ 0.553\,$\circ$} \\
     \midrule
-    Election~\cite{Saad2021SPPL} & 2 & \textbf{1.587} & \texttt{t.o.} & 19.410 &
+    Election~\cite{Saad2021SPPL} & -- & \textbf{1.587} & \texttt{t.o.} & 19.410 &
     \texttt{t.o.} & 0.019 & \texttt{t.o.} & \texttt{t.o.} \\
     \midrule
-    MarkovSwitching~\cite{Saad2021SPPL} & 10 & 0.423 & \textbf{0.240} & 19.998 &
+    MarkovSwitching~\cite{Saad2021SPPL} & -- & 0.423 & \textbf{0.240} & 19.998 &
     \texttt{t.o.} & 0.020 & 0.275 & 0.295 \\
     \midrule
-    StudentInterviews~\cite{Saad2021SPPL} & 10 & 3.331 & \texttt{t.o.} & 53.209 &
+    StudentInterviews~\cite{Saad2021SPPL} & -- & 3.331 & \texttt{t.o.} & 53.209 &
     \texttt{t.o.} & 0.025 & 0.443 & \textbf{0.468} \\
     \midrule
-    SurveyUnbias~\cite{gehr2016psi} & 10 & 75.221 & \textbf{0.651} & 3.519 &
+    SurveyUnbias~\cite{gehr2016psi} & 5 & 75.221 & \textbf{0.651} & 3.519 &
     \makecell{\texttt{t.o.}\,$\bullet$ \\ \texttt{t.o.}\,$\circ$} &
     \makecell{0.027\,$\bullet$ \\ 0.029\,$\circ$} &
     \makecell{\texttt{t.o.}\,$\bullet$ \\ \texttt{err.}\,$\circ$} &
     \makecell{\texttt{t.o.}\,$\bullet$ \\ \texttt{err.}\,$\circ$} \\
     \midrule
-    TrueSkill~\cite{gehr2016psi} & 2 & \textbf{0.750} & 68.669 & 32.881 &
+    TrueSkill~\cite{gehr2016psi} & 3 & \textbf{0.750} & 68.669 & 32.881 &
     \makecell{\texttt{t.o.}\,$\bullet$ \\ 0.068\,$\circ$} &
     \makecell{0.027\,$\bullet$ \\ 0.018\,$\circ$} &
     \makecell{\texttt{err.}\,$\bullet$ \\ 0.215\,$\circ$} &

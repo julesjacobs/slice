@@ -1,4 +1,4 @@
-\documentclass[acmsmall,screen,dvipsnames,x11names]{acmart}
+\documentclass[acmsmall]{acmart}
 
 \usepackage[most]{tcolorbox}
 \usepackage{listings}
@@ -21,6 +21,8 @@
 \usepackage[table]{xcolor}
 % acmart/newtxmath already define \Bbbk; loading amssymb can re-trigger
 % "Command \Bbbk already defined" on some TeX setups.
+
+\definecolor{ForestGreen}{cmyk}{0.91,0,0.88,0.12}
 
 \newcommand{\caserule}{%
   \arrayrulecolor{gray!50}\cmidrule{2-3}\arrayrulecolor{black}}
@@ -280,7 +282,7 @@
 
 \clearpage
 \section*{Data-Availability Statement}
-A reproducible artifact for the evaluation in~\Cref{sec:implem_eval} is available on Zenodo~\cite{Wu2026SliceArtifact}. The extended version of this paper (e.g. with appendices) is also available~\cite{Wu2026SliceExtended}.
+A reproducible artifact for the evaluation in~\Cref{sec:implem_eval} is available on Zenodo~\cite{Wu2026SliceArtifact}. %The extended version of this paper (e.g. with appendices) is also available~\cite{Wu2026SliceExtended}.
 
 \begin{acks}
 We are grateful to our OOPSLA reviewers who helped us improve the paper. We also thank Cheng Zhang for providing feedback on an initial draft of our paper, as well as the Silva Lab retreat guests for helpful discussions. This work was supported by the NSF Graduate Research Fellowship Program under Grant No. DGE-2139899. Additionally, this research was developed with funding from the Defense Advanced Research Projects Agency (DARPA) and the
