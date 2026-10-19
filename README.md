@@ -1,6 +1,6 @@
 # Slice: Type-Directed Discretization of Continuous Probabilistic Programs
 
-Slice is a probabilistic programming language that automatically discretizes continuous distributions to enable exact inference. This repository contains the implementation described in our POPL 2025 paper.
+Slice is a probabilistic programming language that automatically discretizes continuous distributions to enable exact inference. This repository contains the implementation described in our OOPSLA 2026 paper.
 
 ## Quick Start
 
