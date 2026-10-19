@@ -103,10 +103,16 @@ The paper "Slice: Type-Directed Discretization of Continuous Probabilistic Progr
 ## Citation
 
 ```bibtex
-@inproceedings{slice2025,
-  title={Slice: Type-Directed Discretization of Continuous Probabilistic Programs},
-  author={[Authors]},
-  booktitle={Proceedings of the ACM on Programming Languages (POPL)},
-  year={2025}
+@article{slice2026,
+author = {Wu, Katherine and Jacobs, Jules and Batz, Kevin and Silva, Alexandra},
+title = {Type-Directed Discretization of Probabilistic Programs},
+year = {2026},
+issue_date = {October 2026},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+volume = {10},
+number = {OOPSLA2},
+url = {https://doi.org/10.1145/3839534},
+doi = {10.1145/3839534}, 
 }
 ```
